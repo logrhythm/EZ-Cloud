@@ -16,9 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.json({
-    message: '🚧'
-  });
+  res.sendFile(__dirname + '/public_web_root/index.html');
 });
 
 app.get('/test', (req, res) => {
@@ -28,6 +26,10 @@ app.get('/test', (req, res) => {
 });
 
 app.use('/api/v1', api);
+
+app.get('/:file(*)', (req, res) => {
+  res.sendFile(__dirname + '/public_web_root/' + req.params.file);
+});
 
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);
