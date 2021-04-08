@@ -7,7 +7,7 @@ var Service = require('node-windows').Service;
 var svc = new Service({
   name:'EZ-Cloud Server',
   description: 'The Backend server of the EZ-Cloud for Legacy SIEM',
-  script: require('path').join(__dirname,'index.js')
+  script: require('path').join(__dirname,'../src/index.js')
   // nodeOptions: [
   //   '--harmony',
   //   '--max_old_space_size=4096'
