@@ -2,24 +2,24 @@ const request = require('supertest');
 
 const app = require('../src/app');
 
-describe('GET /api/v1', () => {
-  it('responds with a json message', (done) => {
+describe('GET /non-existing-file', () => {
+  it('responds with a not found message', (done) => {
     request(app)
-      .get('/api/v1')
+      .get('/non-existing-file')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
-      .expect(200, {
-        message: 'API - All good'
-      }, done);
+      .expect(404, done);
   });
 });
 
-describe('GET /api/v1/test', () => {
+describe('GET /', () => {
   it('responds with a json message', (done) => {
     request(app)
-      .get('/api/v1/test')
+      .get('/test')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
-      .expect(200, ['😀', '😳', '🙄'], done);
+      .expect(200, {
+        message: '👋 All good mate'
+      }, done);
   });
 });
