@@ -30,79 +30,79 @@ ssh
 //     }
 // })
 .exec('./test.sh >/dev/null 2>/dev/null || exit 1', {
-    err: function(stderr) {
-        console.error('ERROR: ' + stderr);
-    },
-    exit: function(code) {
-        console.log('Return code: ' + code);
-        if (code === 1) {
-            console.log('test.sh not present');
-            return false;
-        }
-    },
-    out: function(stdout) {
-        console.log('OUTPUT: ' + stdout);
+  err: function(stderr) {
+    console.error('ERROR: ' + stderr);
+  },
+  exit: function(code) {
+    console.log('Return code: ' + code);
+    if (code === 1) {
+      console.log('test.sh not present');
+      return false;
     }
+  },
+  out: function(stdout) {
+    console.log('OUTPUT: ' + stdout);
+  }
 })
 .exec('ls test.sh >/dev/null 2>/dev/null || exit 1', {
-    err: function(stderr) {
-        console.error('ERROR: ' + stderr);
-    },
-    exit: function(code) {
-        console.log('Return code: ' + code);
-        if (code === 1) {
-            console.log('test.sh (via LS) not present');
-            return false;
-        }
-    },
-    out: function(stdout) {
-        console.log('OUTPUT: ' + stdout);
+  err: function(stderr) {
+    console.error('ERROR: ' + stderr);
+  },
+  exit: function(code) {
+    console.log('Return code: ' + code);
+    if (code === 1) {
+      console.log('test.sh (via LS) not present');
+      return false;
     }
+  },
+  out: function(stdout) {
+    console.log('OUTPUT: ' + stdout);
+  }
 })
 .exec('./test2.sh >/dev/null 2>/dev/null || exit 1', {
-    err: function(stderr) {
-        console.error('ERROR: ' + stderr);
-    },
-    exit: function(code) {
-        console.log('Return code: ' + code);
-        if (code === 1) {
-            console.log('test2.sh cannot run');
-            return false;
-        }
-    },
-    out: function(stdout) {
-        console.log('OUTPUT: ' + stdout);
+  err: function(stderr) {
+    console.error('ERROR: ' + stderr);
+  },
+  exit: function(code) {
+    console.log('Return code: ' + code);
+    if (code === 1) {
+      console.log('test2.sh cannot run');
+      return false;
     }
+  },
+  out: function(stdout) {
+      console.log('OUTPUT: ' + stdout);
+  }
 })
 .exec('ls lrctl >/dev/null 2>/dev/null || exit 1', {
-    err: function(stderr) {
-        console.error('ERROR: ' + stderr);
-    },
-    exit: function(code) {
-        console.log('Return code: ' + code);
-        if (code === 1) {
-            console.log('lrctl (via LS) not present');
-            return false;
-        }
-    },
-    out: function(stdout) {
-        console.log('OUTPUT: ' + stdout);
+  err: function(stderr) {
+      console.error('ERROR: ' + stderr);
+  },
+  exit: function(code) {
+    console.log('Return code: ' + code);
+    if (code === 1) {
+      console.log('lrctl (via LS) not present');
+      return false;
     }
+  },
+  out: function(stdout) {
+    console.log('OUTPUT: ' + stdout);
+  }
 })
 .exec('./lrctl --help >/dev/null 2>/dev/null || exit 1', {
-    err: function(stderr) {
-        console.error('ERROR: ' + stderr);
-    },
-    exit: function(code) {
-        console.log('Return code: ' + code);
-        if (code === 1) {
-            console.log('lrctl not present');
-            return false;
-        }
-    },
-    out: function(stdout) {
-        console.log('OUTPUT: ' + stdout);
+  err: function(stderr) {
+    console.error('ERROR: ' + stderr);
+  },
+  exit: function(code) {
+    console.log('Return code: ' + code);
+    if (code === 1) {
+      console.log('lrctl not present');
+      return false;
     }
+  },
+  out: function(stdout) {
+    console.log('OUTPUT: ' + stdout);
+  }
 })
 .start();
 
