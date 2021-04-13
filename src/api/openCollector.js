@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 // Get SSH config
 const fs = require('fs');
-const configSsh = JSON.parse(fs.readFileSync(__dirname + '\\..\\..\\config\\' + 'ssh.json', 'utf8')).config;
+const path = require('path');
+// const configSsh = JSON.parse(fs.readFileSync(__dirname + '\\..\\..\\config\\' + 'ssh.json', 'utf8')).config;
+const configSsh = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'config', 'ssh.json'), 'utf8')).config;
 // Create SSH object
 var SSH = require('simple-ssh');
 
@@ -94,7 +96,6 @@ router.get('/CheckOSVersion', async (req, res) => {
   if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
     // Waiting - Sync
     if (!osVersion.stillChecking) {
-      console.log('checkOSVersion()');
       checkOSVersion();
     }
     const loopEndTime = Date.now() / 1000 + maxCheckInterval
@@ -176,7 +177,6 @@ router.get('/CheckDockerPresence', async (req, res) => {
     }
   }
   
-  console.log('return')
   res.json(dockerPresence);
 
 });
@@ -553,14 +553,12 @@ router.get('/ReadOcConfiguration', async (req, res) => {
       readOcConfiguration();
     }
   }
-  console.log(req.query.Raw);
+
   if (req.query.Raw === undefined || (req.query.Raw !== undefined && req.query.Raw.toLowerCase() === 'false')) {
     // Send as JSON
-    console.log('Send JSON');
     res.json(ocConfiguration);
   } else {
     // Send RAW
-    console.log('Send RAW');
     res.send(ocConfiguration.payload);
   }
 
