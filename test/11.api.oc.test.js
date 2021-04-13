@@ -6,6 +6,7 @@ describe('GET /api/v1/oc', () => {
   it('responds with a json message', (done) => {
     request(app)
       .get('/api/v1/oc')
+      .trustLocalhost()
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200, {
@@ -18,6 +19,7 @@ describe('GET /api/v1/oc/CheckOCHelperVersion', () => {
   it('responds with a json message including "version", "detailed" and "full"', (done) => {
     request(app)
       .get('/api/v1/oc/CheckOCHelperVersion')
+      .trustLocalhost()
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -32,6 +34,7 @@ describe('GET /api/v1/oc/CheckOSVersion', () => {
   it('responds with a json message including "stillChecking", "lastSuccessfulCheckTimeStampUtc" and "payload"', (done) => {
     request(app)
       .get('/api/v1/oc/CheckOSVersion')
+      .trustLocalhost()
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -47,6 +50,7 @@ describe('GET /api/v1/oc/CheckDockerPresence', () => {
   it('responds with a json message including "stillChecking", "lastSuccessfulCheckTimeStampUtc" and "payload"', (done) => {
     request(app)
       .get('/api/v1/oc/CheckDockerPresence')
+      .trustLocalhost()
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -62,6 +66,7 @@ describe('GET /api/v1/oc/CheckDockerVersion', () => {
   it('responds with a json message including "stillChecking", "lastSuccessfulCheckTimeStampUtc" and "payload"', (done) => {
     request(app)
       .get('/api/v1/oc/CheckDockerVersion')
+      .trustLocalhost()
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -80,6 +85,7 @@ describe('GET /api/v1/oc/CheckOCPresence', function () {
     request(app)
       .get('/api/v1/oc/CheckOCPresence')
       .timeout(10000)
+      .trustLocalhost()
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -101,6 +107,7 @@ describe('GET /api/v1/oc/CheckOCVersion', function () {
     request(app)
       .get('/api/v1/oc/CheckOCVersion')
       .timeout(10000)
+      .trustLocalhost()
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -119,6 +126,7 @@ describe('GET /api/v1/oc/CheckOCHealth', function () {
     request(app)
       .get('/api/v1/oc/CheckOCHealth')
       .timeout(10000)
+      .trustLocalhost()
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -137,6 +145,7 @@ describe('GET /api/v1/oc/ReadOCConfiguration', function () {
     request(app)
       .get('/api/v1/oc/ReadOCConfiguration')
       .timeout(10000)
+      .trustLocalhost()
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -157,6 +166,7 @@ describe('GET /api/v1/oc/ReadOCConfiguration?Raw', function () {
     request(app)
       .get('/api/v1/oc/ReadOCConfiguration?Raw')
       .timeout(10000)
+      .trustLocalhost()
       .set('Accept', 'application/json')
       .expect('Content-Type', /text/)
       .expect(200)
