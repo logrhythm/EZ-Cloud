@@ -11,18 +11,21 @@ require('dotenv').config();
 const httpsKey = fs.readFileSync(path.join(__dirname, '..', 'config', 'https.key.pem'));
 const httpsCert = fs.readFileSync(path.join(__dirname, '..', 'config', 'https.cert.pem'));
 
-const middlewares = require('./middlewares');
-const api = require('./api');
-
 const app = express();
 const httpsServer = https.createServer({ key: httpsKey, cert: httpsCert }, app);
+const io = require('socket.io')(httpsServer);
 
 app.use(morgan('dev'));
-// Getting rid of contentSecurityPolicy for now, as it forces it to use HTTPS (which we don't have)
-// app.use(helmet({ contentSecurityPolicy: false }));
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+const middlewares = require('./middlewares');
+const api = require('./api');
+
+io.on('connection', () => {
+  console.log('Socket.io => CONNECTION'); // XXX
+});
 
 app.get('/test', (req, res) => {
   res.json({
