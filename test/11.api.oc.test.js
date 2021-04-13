@@ -73,10 +73,13 @@ describe('GET /api/v1/oc/CheckDockerVersion', () => {
   });
 });
 
-describe('GET /api/v1/oc/CheckOCPresence', () => {
+// eslint-disable-next-line func-names
+describe('GET /api/v1/oc/CheckOCPresence', function () {
+  this.timeout(10000);
   it('responds with a json message including "stillChecking", "lastSuccessfulCheckTimeStampUtc", "payload", "presence", "lrtclPresent", "lrtclCanRun" and "ocPresent"', (done) => {
     request(app)
       .get('/api/v1/oc/CheckOCPresence')
+      .timeout(10000)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -91,10 +94,13 @@ describe('GET /api/v1/oc/CheckOCPresence', () => {
   });
 });
 
-describe('GET /api/v1/oc/CheckOCVersion', () => {
+// eslint-disable-next-line func-names
+describe('GET /api/v1/oc/CheckOCVersion', function () {
+  this.timeout(10000);
   it('responds with a json message including "stillChecking", "lastSuccessfulCheckTimeStampUtc", "payload" and "version"', (done) => {
     request(app)
       .get('/api/v1/oc/CheckOCVersion')
+      .timeout(10000)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -106,10 +112,13 @@ describe('GET /api/v1/oc/CheckOCVersion', () => {
   });
 });
 
-describe('GET /api/v1/oc/CheckOCHealth', () => {
+// eslint-disable-next-line func-names
+describe('GET /api/v1/oc/CheckOCHealth', function () {
+  this.timeout(10000);
   it('responds with a json message including "stillChecking", "lastSuccessfulCheckTimeStampUtc", "payload" and "health"', (done) => {
     request(app)
       .get('/api/v1/oc/CheckOCHealth')
+      .timeout(10000)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -121,10 +130,13 @@ describe('GET /api/v1/oc/CheckOCHealth', () => {
   });
 });
 
-describe('GET /api/v1/oc/ReadOCConfiguration', () => {
+// eslint-disable-next-line func-names
+describe('GET /api/v1/oc/ReadOCConfiguration', function () {
+  this.timeout(10000);
   it('responds with a json message including "stillChecking", "lastSuccessfulCheckTimeStampUtc", "payload", "heartbeat:", "timezone:" and "pipelines:"', (done) => {
     request(app)
       .get('/api/v1/oc/ReadOCConfiguration')
+      .timeout(10000)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -138,10 +150,13 @@ describe('GET /api/v1/oc/ReadOCConfiguration', () => {
   });
 });
 
-describe('GET /api/v1/oc/ReadOCConfiguration?Raw', () => {
+// eslint-disable-next-line func-names
+describe('GET /api/v1/oc/ReadOCConfiguration?Raw', function () {
+  this.timeout(10000);
   it('responds with a text message including "heartbeat:", "timezone:" and "pipelines:"', (done) => {
     request(app)
       .get('/api/v1/oc/ReadOCConfiguration?Raw')
+      .timeout(10000)
       .set('Accept', 'application/json')
       .expect('Content-Type', /text/)
       .expect(200)
