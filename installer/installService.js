@@ -1,10 +1,10 @@
 // Full doc at:
 // https://github.com/coreybutler/node-windows
 
-var Service = require('node-windows').Service;
+const Service = require('node-windows').Service;
 
 // Create a new service object
-var svc = new Service({
+const svc = new Service({
   name:'EZ-Cloud Server',
   description: 'The Backend server of the EZ-Cloud for Legacy SIEM',
   script: require('path').join(__dirname,'../src/index.js')
@@ -21,10 +21,9 @@ var svc = new Service({
 // svc.logOnAs.account = 'username';
 // svc.logOnAs.password = 'password';
 
-
 // Listen for the "install" event, which indicates the
 // process is available as a service.
-svc.on('install',function(){
+svc.on('install', function () {
   svc.start();
 });
 

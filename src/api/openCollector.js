@@ -77,7 +77,9 @@ function checkOSVersion () {
         } 
         catch {
           osVersion.payload = null;
+          // osVersion.errors.push(error);
         }
+
         osVersion.outputs.push(stdout);
         osVersion.stillChecking = false;
       }
