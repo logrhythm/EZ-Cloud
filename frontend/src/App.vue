@@ -5,6 +5,10 @@
 </template>
 <script>
 export default {
-  name: 'App'
+  name: 'App',
+  mounted () {
+    // set to Dark Mode
+    this.$q.dark.set(true)
+  }
 }
 </script>
