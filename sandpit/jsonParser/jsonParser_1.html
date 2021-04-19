@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sandpit - JSON fields mapper</title>
+    <script src="dist/selectable.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="example4.css">
+</head>
+<body>
+<div id="app">
+    <h1>Sandpit - JSON fields mapper</h1>
+
+    <div>
+        <label for="search">Search: </label>
+        <input type="text" id="search" v-model="search">
+    </div>
+
+    <div class="wrapper" ref="scrollbox">
+        <div class="content">
+            <!-- <div id="selectbox"></div> -->
+            <!-- <div id="selection-area"></div> -->
+            <div v-selectable="{
+                selectedGetter: selectedGetter,
+                selectedSetter: selectedSetter,
+                selectingSetter: selectingSetter
+                }"
+               data-items=".item"
+               data-box="#selectbox"
+               data-constraint="#selection-area"
+               ref="vsel">
+                    <div v-for="(jsonPath, i) in jsonPathes"
+                        :key="jsonPath.id"
+                        v-show="isPersonShown(jsonPath)">
+                        <span
+                            :class="{ selected: !!selected[jsonPath.id], selecting: !!selecting[jsonPath.id] }"
+                            class="item">{{ jsonPath.name }}
+                        </span>: <span v-if="jsonPath.values && jsonPath.values.length" >{{ jsonPath.values[0].value }}</span>
+                    </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="wrapper" ref="scrollbox">
+        <div class="content">
+            <div id="selectbox"></div>
+            <div id="selection-area"></div>
+            <div v-selectable="{
+                selectedGetter: selectedGetter,
+                selectedSetter: selectedSetter,
+                selectingSetter: selectingSetter
+                }"
+               data-items=".item"
+               data-box="#selectbox"
+               data-constraint="#selection-area"
+               ref="vsel">
+                    <div v-for="(jsonPath, i) in jsonPathes"
+                        :key="jsonPath.id"
+                        v-show="isPersonShown(jsonPath)"
+                        class="row"
+                    >
+                        <div style="width: 4rem;" class="">
+                            <!-- {{ jsonPath.seenInLogCount }} -->
+                            <!-- <span
+                                v-for="c in jsonPath.seenInLogCount" :key="c"
+                            >-</span> -->
+                            <div :style="'height: .2rem; background-color: #5070ff; width: ' + jsonPath.seenInLogCount / maxSeenInLog * 4 + 'rem'"></div>
+                            <div style="height: .05rem; background-color: #7373be; width: 4rem"></div>
+                        </div>
+                        <div style="margin-left: 0.3rem;"
+                        class="fixed-font">
+                            <span
+                                v-for="d in jsonPath.depth" :key="d"
+                                class="span-json"
+                            ></span>
+                            <span
+                                style="font-weight: bold;"
+                                :class="{ selected: !!selected[jsonPath.id], selecting: !!selecting[jsonPath.id] }"
+                                class="item">{{ jsonPath.leaf }}</span><span v-if="jsonPath.values && jsonPath.values.length">: {{ jsonPath.values[0].value }}</span>
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <button @click="clearSelection">Clear selection</button>
+        <button @click="selectAll">Select all</button>
+        <button @click="invertSelection">Invert selection</button>
+        <button @click="loadData">Reload data</button>
+        <label><input type="checkbox" v-model="addMode"> Toggle Add Mode</label>
+    </div>
+
+    <div>
+        Selected JSON pathes ({{ selectedCount }}): {{ selectedPathes }}
+    </div>
+    <div>
+        {{ maxSeenInLog }} / {{ logSample.length }}
+    </div>
+    <div>
+        <pre>{{ jsonPathes }}</pre>
+    </div>
+</div>
+<script>
+    const externalData = [
+        { id: 0, name: '.timestamp', leaf: 'timestamp', depth: 1, mappedField: '', seenInLogCount: 4, values: [ { value: '20210416T01:02:03', count: 1 }, { value: '20210416T02:02:03', count: 1 }, { value: '20210416T03:02:03', count: 1 }, { value: '20210416T04:02:03', count: 1 } ] },
+        { id: 1, name: '.id', leaf: 'id', depth: 1, mappedField: 'session', seenInLogCount: 4, values: [ { value: 'abc-def-123456-fedcba', count: 1 }, { value: 'def-def-123456-fedcba', count: 1 }, { value: 'xyz-def-123456-fedcba', count: 1 }, { value: 'cab-def-123456-fedcba', count: 1 } ] },
+        { id: 2, name: '.code', leaf: 'code', depth: 1, mappedField: 'vmid', seenInLogCount: 4, values: [ { value: 15, count: 1 }, { value: 452, count: 2 }, { value: 28, count: 1 } ] },
+        { id: 3, name: '.destination', leaf: 'destination', depth: 1, mappedField: '', seenInLogCount: 3 },
+        { id: 4, name: '.destination.ip', leaf: 'ip', depth: 2, mappedField: 'dip', seenInLogCount: 3, values: [ { value: '192.168.0.5', count: 2 }, { value: '192.168.0.1', count: 1 } ] },
+        { id: 5, name: '.destination.port', leaf: 'port', depth: 2, mappedField: 'dport', seenInLogCount: 3, values: [ { value: 80, count: 2 }, { value: 1234, count: 1 } ] },
+        { id: 6, name: '.source.', leaf: 'source', depth: 1, mappedField: '', seenInLogCount: 4 },
+        { id: 7, name: '.source.ip', leaf: 'ip', depth: 2, mappedField: 'sip', seenInLogCount: 4, values: [{ value: '10.1.2.3', count: 2 }, { value: '10.1.2.4', count: 1 }, { value: '10.5.4.3', count: 1 }] },
+        { id: 8, name: '.source.port', leaf: 'port', depth: 2, mappedField: 'sport', seenInLogCount: 4, values: [ { value: 4567, count: 1 }, { value: 13456, count: 1 }, { value: 12321, count: 1 }, { value: 11234, count: 1 } ] },
+        { id: 9, name: '.boop', leaf: 'boop', depth: 1, mappedField: '', seenInLogCount: 1, values: [ { value: 'bam', count: 1 } ] },
+    ];
+
+    new Vue({
+        el: '#app',
+
+        data: {
+            jsonPathes: [],
+            selected: [],
+            selecting: [],
+            showHidden: false,
+            search: '',
+            addMode: false,
+            logSample: [ {}, {}, {}, {} ]
+        },
+
+        mounted() {
+            vueSelectable.setOptions(this.$refs.vsel, { scrollingFrame: this.$refs.scrollbox });
+            this.loadData();
+        },
+
+        computed: {
+            selectedCount() {
+                return this.selected.reduce((counter, value) => counter + (value ? 1 : 0), 0);
+            },
+
+            selectedPathes() {
+                return this.selectedCount > 0 ?
+                    this.jsonPathes.filter((p, i) => !!this.selected[i])
+                        .map(p => p.name + ' (' + p.value + ')')
+                        .join(', ') :
+                    'none';
+            },
+
+            maxSeenInLog() {
+                var max = 0;
+                this.jsonPathes.forEach(jp => {
+                    if (jp.seenInLogCount > max) {
+                        max = jp.seenInLogCount;
+                    }
+                });
+                return max;
+            }
+        },
+
+        methods: {
+            loadData() {
+                setTimeout(() => { this.jsonPathes = [].concat(externalData); }, 300);
+            },
+
+            isPersonShown(jsonPath) {
+                let searchLine = this.search.trim().toLowerCase();
+
+                return !searchLine ||
+                    (jsonPath.name + ' ' + jsonPath.value).toLowerCase().includes(searchLine);
+            },
+
+            googleIt(jsonPath) {
+                window.open(`http://www.google.com/search?q=${jsonPath.name}+${jsonPath.value}`, '_blank');
+            },
+
+            clearSelection() {
+                this.selected = [];
+            },
+
+            selectAll() {
+                this.selected = new Array(this.jsonPathes.length).fill(true);
+            },
+
+            invertSelection() {
+                this.selected = this.selected.length > 0 ?
+                    this.selected.map(i => !i) :
+                    new Array(this.jsonPathes.length).fill(true);
+            },
+
+            selectedGetter() {
+                console.log('selectedGetter');
+                return this.selected;
+            },
+
+            selectedSetter(v) {
+                console.log('selectedSetter:');
+                console.log(v);
+                this.selected = v;
+            },
+            
+            selectingSetter(v) {
+                console.log('selectingSetter:');
+                console.log(v);
+                this.selecting = v;
+            }
+        },
+
+        watch: {
+            jsonPathes: {
+                handler() {
+                    this.$nextTick(() => vueSelectable.setSelectableItems(this.$refs.vsel));
+                },
+                deep: true
+            },
+
+            addMode(val) {
+              vueSelectable.setOptions(this.$refs.vsel, { overrideAddMode: val });
+            }
+        },
+
+        directives: {
+            selectable: vueSelectable.default
+        }
+    });
+</script>
+</body>
+</html>
