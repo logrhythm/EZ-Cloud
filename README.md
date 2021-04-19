@@ -1,10 +1,12 @@
 # EZ-Cloud
  EZ-Cloud for Legacy SIEM
 
+# Backend:
 ## Setup
 ### Microsoft Windows
 
 ```
+cd backend
 npm install -g node-windows
 npm link node-windows
 npm install
@@ -17,18 +19,37 @@ netsh advfirewall firewall add rule name="EZ-Cloud - Backend server (TCP/8400)" 
 ### Coding
 
 ```
+cd backend
 npm run dev
 ```
 
 ### Lint
 
 ```
+cd backend
 npm run lint
 ```
 
 ### Test
 
 ```
+cd backend
 npm run test
 ```
 
+# Frontend:
+## Setup
+
+```
+cd frontend
+npm install
+```
+
+## Development
+
+### Coding
+
+```
+cd frontend
+quasar dev --modern
+```
