@@ -3,7 +3,12 @@
   "version": "0.0.1",
   "description": "User Interface for EZ-Cloud for Legacy SIEM",
   "productName": "EZ Cloud Client",
-  "author": "Tony Massé <50835088+TonyMasse@users.noreply.github.com>",
+  "author": "Tony Massé <tony.masse@logrhythm.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TonyMasse/EZ-Cloud.git"
+  },
   "private": true,
   "scripts": {
     "lint": "eslint --ext .js,.vue ./",
