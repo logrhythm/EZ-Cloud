@@ -77,7 +77,35 @@
                             <span
                                 style="font-weight: bold;"
                                 :class="{ selected: !!selected[jsonPath.id], selecting: !!selecting[jsonPath.id] }"
-                                class="item">{{ jsonPath.leaf }}</span><span v-if="jsonPath.values && jsonPath.values.length">: {{ jsonPath.values[0].value }}</span>
+                                class="item json-style-leaf">{{ jsonPath.leaf }}</span
+                            ><span
+                                v-if="jsonPath.values && jsonPath.values.length && jsonPath.values[0].type && jsonPath.values[0].type === 'Object'"
+                                class="json-style-object"
+                            > {}</span
+                            ><span
+                                v-if="jsonPath.values && jsonPath.values.length && jsonPath.values[0].type && jsonPath.values[0].type === 'Array'"
+                                class="json-style-array"
+                            > []</span
+                            ><span
+                                v-if="jsonPath.values && jsonPath.values.length && jsonPath.values[0].type && jsonPath.values[0].type === 'String' && showAllTypes"
+                                class="json-style-string"
+                            > ""</span
+                            ><span
+                                v-if="jsonPath.values && jsonPath.values.length && jsonPath.values[0].type && jsonPath.values[0].type === 'Number' && showAllTypes"
+                                class="json-style-number"
+                            > 00</span
+                            ><span
+                                v-if="jsonPath.values && jsonPath.values.length && jsonPath.values[0].type && jsonPath.values[0].type === 'Boolean' && showAllTypes"
+                                class="json-style-boolean"
+                            > &&</span
+                            ><span
+                                v-if="jsonPath.values && jsonPath.values.length && jsonPath.values[0].value !== undefined"
+                            >: {{ jsonPath.values[0].value }}</span
+                            ><span
+                                v-if="jsonPath.values && jsonPath.values.length && jsonPath.values[0].type && showExtraDetails"
+                                style="font-style: italic; opacity: 50%;"
+                            > ({{ jsonPath.values[0].type }}:{{ jsonPath.values[0].count }}/{{ jsonPath.seenInLogCount }})</span
+                            >
                         </div>
                     </div>
             </div>
@@ -90,13 +118,15 @@
         <button @click="invertSelection">Invert selection</button>
         <button @click="loadData">Reload data</button>
         <label><input type="checkbox" v-model="addMode"> Toggle Add Mode</label>
+        <label><input type="checkbox" v-model="showAllTypes"> Show all types</label>
+        <label><input type="checkbox" v-model="showExtraDetails"> Show extra details</label>
     </div>
 
     <div>
         Selected JSON pathes ({{ selectedCount }}): {{ selectedPathes }}
     </div>
     <div>
-        {{ maxSeenInLog }} / {{ logSample.length }}
+        {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ logSample.length }}
     </div>
     <div>
         <pre>{{ jsonPathes }}</pre>
@@ -104,16 +134,24 @@
 </div>
 <script>
     const externalData = [
-        { id: 0, name: '.timestamp', leaf: 'timestamp', depth: 1, mappedField: '', seenInLogCount: 4, values: [ { value: '20210416T01:02:03', count: 1 }, { value: '20210416T02:02:03', count: 1 }, { value: '20210416T03:02:03', count: 1 }, { value: '20210416T04:02:03', count: 1 } ] },
-        { id: 1, name: '.id', leaf: 'id', depth: 1, mappedField: 'session', seenInLogCount: 4, values: [ { value: 'abc-def-123456-fedcba', count: 1 }, { value: 'def-def-123456-fedcba', count: 1 }, { value: 'xyz-def-123456-fedcba', count: 1 }, { value: 'cab-def-123456-fedcba', count: 1 } ] },
-        { id: 2, name: '.code', leaf: 'code', depth: 1, mappedField: 'vmid', seenInLogCount: 4, values: [ { value: 15, count: 1 }, { value: 452, count: 2 }, { value: 28, count: 1 } ] },
-        { id: 3, name: '.destination', leaf: 'destination', depth: 1, mappedField: '', seenInLogCount: 3 },
-        { id: 4, name: '.destination.ip', leaf: 'ip', depth: 2, mappedField: 'dip', seenInLogCount: 3, values: [ { value: '192.168.0.5', count: 2 }, { value: '192.168.0.1', count: 1 } ] },
-        { id: 5, name: '.destination.port', leaf: 'port', depth: 2, mappedField: 'dport', seenInLogCount: 3, values: [ { value: 80, count: 2 }, { value: 1234, count: 1 } ] },
-        { id: 6, name: '.source.', leaf: 'source', depth: 1, mappedField: '', seenInLogCount: 4 },
-        { id: 7, name: '.source.ip', leaf: 'ip', depth: 2, mappedField: 'sip', seenInLogCount: 4, values: [{ value: '10.1.2.3', count: 2 }, { value: '10.1.2.4', count: 1 }, { value: '10.5.4.3', count: 1 }] },
-        { id: 8, name: '.source.port', leaf: 'port', depth: 2, mappedField: 'sport', seenInLogCount: 4, values: [ { value: 4567, count: 1 }, { value: 13456, count: 1 }, { value: 12321, count: 1 }, { value: 11234, count: 1 } ] },
-        { id: 9, name: '.boop', leaf: 'boop', depth: 1, mappedField: '', seenInLogCount: 1, values: [ { value: 'bam', count: 1 } ] },
+        { id: 0, name: '.', leaf: '', depth: 0, mappedField: '', seenInLogCount: 4, values: [ { type: 'Object', count: 4 } ] },
+        { id: 1, name: '.timestamp', leaf: 'timestamp', depth: 1, mappedField: '', seenInLogCount: 4, values: [ { value: '20210416T01:02:03', type: 'String', count: 1 }, { value: '20210416T02:02:03', type: 'String', count: 1 }, { value: '20210416T03:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 } ] },
+        { id: 2, name: '.id', leaf: 'id', depth: 1, mappedField: 'session', seenInLogCount: 4, values: [ { value: 'abc-def-123456-fedcba', type: 'String', count: 1 }, { value: 'def-def-123456-fedcba', type: 'String', count: 1 }, { value: 'xyz-def-123456-fedcba', type: 'String', count: 1 }, { value: 'cab-def-123456-fedcba', type: 'String', count: 1 } ] },
+        { id: 3, name: '.code', leaf: 'code', depth: 1, mappedField: 'vmid', seenInLogCount: 4, values: [ { value: 15, type: 'Number', count: 1 }, { value: 452, type: 'Number', count: 2 }, { value: 28, type: 'Number', count: 1 } ] },
+        { id: 4, name: '.destination', leaf: 'destination', depth: 1, mappedField: '', seenInLogCount: 3, values: [ { type: 'Object', count: 3 }] },
+        { id: 5, name: '.destination.ip', leaf: 'ip', depth: 2, mappedField: 'dip', seenInLogCount: 3, values: [ { value: '192.168.0.5', type: 'String', count: 2 }, { value: '192.168.0.1', type: 'String', count: 1 } ] },
+        { id: 6, name: '.destination.port', leaf: 'port', depth: 2, mappedField: 'dport', seenInLogCount: 3, values: [ { value: 80, type: 'Number', count: 2 }, { value: 1234, type: 'Number', count: 1 } ] },
+        { id: 7, name: '.source.', leaf: 'source', depth: 1, mappedField: '', seenInLogCount: 4, values: [ { type: 'Object', count: 4 }] },
+        { id: 8, name: '.source.ip', leaf: 'ip', depth: 2, mappedField: 'sip', seenInLogCount: 4, values: [{ value: '10.1.2.3', type: 'String', count: 2 }, { value: '10.1.2.4', type: 'String', count: 1 }, { value: '10.5.4.3', type: 'String', count: 1 }] },
+        { id: 9, name: '.source.port', leaf: 'port', depth: 2, mappedField: 'sport', seenInLogCount: 4, values: [ { value: 4567, type: 'Number', count: 1 }, { value: 13456, type: 'Number', count: 1 }, { value: 12321, type: 'Number', count: 1 }, { value: 11234, type: 'Number', count: 1 } ] },
+        { id: 10, name: '.boop', leaf: 'boop', depth: 1, mappedField: '', seenInLogCount: 1, values: [ { value: 'bam', type: 'String', count: 1 } ] },
+        { id: 11, name: '.options', leaf: 'options', depth: 1, mappedField: '', seenInLogCount: 2, values: [ { type: 'Array', count: 2 } ] },
+        { id: 12, name: '.options.0', leaf: '0', depth: 2, mappedField: '', seenInLogCount: 2, values: [ { type: 'Object', count: 2 } ] },
+        { id: 13, name: '.options.0.enable', leaf: 'enable', depth: 3, mappedField: '', seenInLogCount: 2, values: [ { value: 'always', type: 'String', count: 1 }, { value: 'first', type: 'String', count: 1 } ] },
+        { id: 14, name: '.options.0.suppress', leaf: 'suppress', depth: 3, mappedField: '', seenInLogCount: 2, values: [ { value: false, type: 'Boolean', count: 2 } ] },
+        { id: 15, name: '.activities', leaf: 'activities', depth: 1, mappedField: '', seenInLogCount: 3, values: [ { type: 'Array', count: 3 } ] },
+        { id: 16, name: '.activities.0', leaf: '0', depth: 2, mappedField: '', seenInLogCount: 3, values: [ { value: 'Add', type: 'String', count: 3 } ] },
+        { id: 17, name: '.activities.1.', leaf: '1', depth: 2, mappedField: '', seenInLogCount: 3, values: [ { value: 'Validate', type: 'String', count: 3 } ] },
     ];
 
     new Vue({
@@ -126,7 +164,10 @@
             showHidden: false,
             search: '',
             addMode: false,
-            logSample: [ {}, {}, {}, {} ]
+            logSample: [ {}, {}, {}, {} ],
+            processedLogsCount: 4,
+            showAllTypes: true,
+            showExtraDetails: true
         },
 
         mounted() {
@@ -203,7 +244,28 @@
                 console.log('selectingSetter:');
                 console.log(v);
                 this.selecting = v;
-            }
+            },
+
+            processLogSample ( { logSample: [], options: {} } )
+             {
+                 // Steps:
+                 // - get FileBeat to write to disk in specific file for LS
+                 // - Backend tails disk file
+                 // - bring logs to Front (UI) as they arrive (via Socket.io)
+                 // - limit to 10k log samples on disk (or to given size, whichever is the easiest to achieve)
+                 // - process logs in background on UI
+                 // - keep stats updated on UI
+                 // - for each log:
+                 //     - recursively go through each keys:
+                 //           - populate the jsonPathes object with:
+                 //               - full dotted path, leaf name, and depth, if not already in
+                 //               - increment seenInLogCount
+                 //               - add value to values.value (if not already in)
+                 //               - add type to values.type (if not already in)
+                 //               - increment values.count for value / type
+                 //     - increment processedLogsCount
+
+             } // processLogSample
         },
 
         watch: {

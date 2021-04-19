@@ -33,6 +33,29 @@ body {
     padding-left: .8rem;
     border-left: 1px solid #037d92;
 }
+.json-style-leaf {
+    font-style: bold;
+}
+.json-style-object {
+    font-style: italic;
+    color: blueviolet;
+}
+.json-style-array {
+    font-style: italic;
+    color: rgb(148, 14, 41);
+}
+.json-style-string {
+    font-style: italic;
+    color: rgb(80, 112, 255);
+}
+.json-style-number {
+    font-style: italic;
+    color: rgb(15, 129, 50);
+}
+.json-style-boolean {
+    font-style: italic;
+    color: rgb(32, 227, 253);
+}
 .row {
     display: flex; /* or inline-flex */
     align-items: center;
@@ -41,8 +64,8 @@ body {
 /* Styles for v-selectable display */
 #selectbox {
     position: absolute;
-    border: 1px dotted rgb(106, 43, 253);
-    background-color: rgba(67, 34, 143, 0.315);
+    border: 1px dotted rgb(213, 141, 255);
+    background-color: rgba(162, 0, 255, 0.315);
     z-index: 9999;
     top: 0;
     left: 0;
