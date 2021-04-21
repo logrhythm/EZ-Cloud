@@ -11,8 +11,8 @@
       </div>
 
       <div class="q-mt-md fit column">
-        <div v-for="jsonPath in jsonPathes"
-          :key="jsonPath.id"
+        <div v-for="(jsonPath, i) in jsonPathes"
+          :key="i"
           class="row items-stretch q-my-none q-py-none json-path-line"
           style="min-height: 1.5rem;"
         >
@@ -26,8 +26,7 @@
           </div>
           <div
             v-for="d in jsonPath.depth" :key="d"
-            class="row q-ml-xs q-pl-sm"
-            style="border-left: 1px solid #05b5d4;"
+            class="row q-ml-xs q-pl-sm json-indentation-bar"
           />
           <div
             class="fixed-font content-center col row q-mr-md"
@@ -49,7 +48,7 @@
                     <q-item-label>
                       <div class="row justify-between">
                         <div>
-                          <div class="text-bold">{{ value.value }}</div>
+                          <div class="force-long-text-wrap ellipsis-3-lines">{{ value.value }}</div>
                         </div>
                         <q-chip v-if="showAllTypes" dense size="sm" class="q-ml-sm" :class="(value.type ? 'json-bg-type-' + value.type.toLowerCase() : '')">{{ (value.type ? value.type : '') }}</q-chip>
                       </div>
@@ -61,14 +60,19 @@
               </div>
             </q-tooltip>
             <div
-              :class="{ selected: !!selected[jsonPath.id], selecting: !!selecting[jsonPath.id] }"
-              class="json-style-leaf text-bold"
+              class="json-style-leaf text-bold text-light-blue-3"
             >
               {{ jsonPath.leaf }}
             </div>
-            <div v-if="jsonPath.values && jsonPath.values.length && jsonPath.values[0].value !== undefined">
-              <!-- : {{ jsonPath.values[0].value }} -->
-              : {{ orderBy(jsonPath.values, 'count', -1)[0].value }}
+            <div v-if="jsonPath.values && jsonPath.values.length && jsonPath.values[0].value !== undefined" class="force-long-text-wrap ellipsis-3-lines">
+              :&nbsp;
+            </div>
+            <div
+              v-if="jsonPath.values && jsonPath.values.length && jsonPath.values[0].value !== undefined"
+              class="force-long-text-wrap ellipsis-3-lines"
+              :class="(orderBy(jsonPath.values, 'count', -1)[0].type ? 'json-type-' + orderBy(jsonPath.values, 'count', -1)[0].type.toLowerCase() : '')"
+            >
+              {{ orderBy(jsonPath.values, 'count', -1)[0].value }}
             </div>
             <!-- <span
               v-if="jsonPath.values && jsonPath.values.length && jsonPath.values[0].type && jsonPath.values[0].type === 'Object'"
@@ -163,9 +167,6 @@
       </div>
 
       <div class="q-mt-md">
-        Selected JSON pathes ({{ selectedCount }}): {{ selectedPathes }}
-      </div>
-      <div>
         {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ logSample.length }}
       </div>
       <div>
@@ -180,25 +181,28 @@
 import Vue2Filters from 'vue2-filters'
 
 const externalData = [
-  { id: 0, name: '.', leaf: '', depth: 0, mappedField: '', seenInLogCount: 4, values: [{ type: 'Object', count: 4 }] },
-  { id: 1, name: '.timestamp', leaf: 'timestamp', depth: 1, mappedField: '', seenInLogCount: 4, values: [{ value: '20210416T01:02:03', type: 'String', count: 1 }, { value: '20210416T02:02:03', type: 'String', count: 1 }, { value: '20210416T03:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }] },
-  // /* to show super long list of values */ { id: 1, name: '.timestamp', leaf: 'timestamp', depth: 1, mappedField: '', seenInLogCount: 4, values: [{ value: '20210416T01:02:03', type: 'String', count: 1 }, { value: '20210416T02:02:03', type: 'String', count: 1 }, { value: '20210416T03:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }] },
-  { id: 2, name: '.id', leaf: 'id', depth: 1, mappedField: 'session', seenInLogCount: 4, values: [{ value: 'abc-def-123456-fedcba', type: 'String', count: 1 }, { value: 'def-def-123456-fedcba', type: 'String', count: 1 }, { value: 'xyz-def-123456-fedcba', type: 'String', count: 1 }, { value: 'cab-def-123456-fedcba', type: 'String', count: 1 }] },
-  { id: 3, name: '.code', leaf: 'code', depth: 1, mappedField: 'vmid', seenInLogCount: 4, values: [{ value: 15, type: 'Number', count: 1 }, { value: 452, type: 'Number', count: 2 }, { value: 28, type: 'Number', count: 1 }] },
-  { id: 4, name: '.destination', leaf: 'destination', depth: 1, mappedField: '', seenInLogCount: 3, values: [{ type: 'Object', count: 3 }] },
-  { id: 5, name: '.destination.ip', leaf: 'ip', depth: 2, mappedField: 'dip', seenInLogCount: 3, values: [{ value: '192.168.0.5', type: 'String', count: 2 }, { value: '192.168.0.1', type: 'String', count: 1 }] },
-  { id: 6, name: '.destination.port', leaf: 'port', depth: 2, mappedField: 'dport', seenInLogCount: 3, values: [{ value: 80, type: 'Number', count: 2 }, { value: 1234, type: 'Number', count: 1 }] },
-  { id: 7, name: '.source', leaf: 'source', depth: 1, mappedField: '', seenInLogCount: 4, values: [{ type: 'Object', count: 4 }] },
-  { id: 8, name: '.source.ip', leaf: 'ip', depth: 2, mappedField: 'sip', seenInLogCount: 4, values: [{ value: '10.1.2.3', type: 'String', count: 2 }, { value: '10.1.2.4', type: 'String', count: 1 }, { value: '10.5.4.3', type: 'String', count: 1 }] },
-  { id: 9, name: '.source.port', leaf: 'port', depth: 2, mappedField: 'sport', seenInLogCount: 4, values: [{ value: 4567, type: 'Number', count: 1 }, { value: 13456, type: 'Number', count: 1 }, { value: 12321, type: 'Number', count: 1 }, { value: 11234, type: 'Number', count: 1 }] },
-  { id: 10, name: '.boop', leaf: 'boop', depth: 1, mappedField: '', seenInLogCount: 1, values: [{ value: 'bam', type: 'String', count: 1 }] },
-  { id: 11, name: '.options', leaf: 'options', depth: 1, mappedField: '', seenInLogCount: 2, values: [{ type: 'Array', count: 2 }] },
-  { id: 12, name: '.options.0', leaf: '0', depth: 2, mappedField: '', seenInLogCount: 2, values: [{ type: 'Object', count: 2 }] },
-  { id: 13, name: '.options.0.enable', leaf: 'enable', depth: 3, mappedField: '', seenInLogCount: 2, values: [{ value: 'always', type: 'String', count: 1 }, { value: 'first', type: 'String', count: 1 }] },
-  { id: 14, name: '.options.0.suppress', leaf: 'suppress', depth: 3, mappedField: '', seenInLogCount: 2, values: [{ value: false, type: 'Boolean', count: 2 }] },
-  { id: 15, name: '.activities', leaf: 'activities', depth: 1, mappedField: '', seenInLogCount: 3, values: [{ type: 'Array', count: 3 }] },
-  { id: 16, name: '.activities.0', leaf: '0', depth: 2, mappedField: '', seenInLogCount: 3, values: [{ value: 'Add', type: 'String', count: 3 }] },
-  { id: 17, name: '.activities.1', leaf: '1', depth: 2, mappedField: '', seenInLogCount: 3, values: [{ value: 'Validate', type: 'String', count: 3 }] }
+  { name: '.', leaf: '', depth: 0, mappedField: '', seenInLogCount: 4, values: [{ type: 'Object', count: 4 }] },
+  { name: '.timestamp', leaf: 'timestamp', depth: 1, mappedField: '', seenInLogCount: 4, values: [{ value: '20210416T01:02:03', type: 'String', count: 1 }, { value: '20210416T02:02:03', type: 'String', count: 1 }, { value: '20210416T03:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }] },
+  // /* to show super long list of values */ { name: '.timestamp', leaf: 'timestamp', depth: 1, mappedField: '', seenInLogCount: 4, values: [{ value: '20210416T01:02:03', type: 'String', count: 1 }, { value: '20210416T02:02:03', type: 'String', count: 1 }, { value: '20210416T03:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }] },
+  { name: '.id', leaf: 'id', depth: 1, mappedField: 'session', seenInLogCount: 4, values: [{ value: 'abc-def-123456-fedcba', type: 'String', count: 1 }, { value: 'def-def-123456-fedcba', type: 'String', count: 1 }, { value: 'xyz-def-123456-fedcba', type: 'String', count: 1 }, { value: 'cab-def-123456-fedcba', type: 'String', count: 1 }] },
+  { name: '.code', leaf: 'code', depth: 1, mappedField: 'vmid', seenInLogCount: 4, values: [{ value: 15, type: 'Number', count: 1 }, { value: 452, type: 'Number', count: 2 }, { value: 28, type: 'Number', count: 1 }] },
+  { name: '.destination', leaf: 'destination', depth: 1, mappedField: '', seenInLogCount: 3, values: [{ type: 'Object', count: 3 }] },
+  { name: '.destination.ip', leaf: 'ip', depth: 2, mappedField: 'dip', seenInLogCount: 3, values: [{ value: '192.168.0.5', type: 'String', count: 2 }, { value: '192.168.0.1', type: 'String', count: 1 }] },
+  { name: '.destination.port', leaf: 'port', depth: 2, mappedField: 'dport', seenInLogCount: 3, values: [{ value: 80, type: 'Number', count: 2 }, { value: 1234, type: 'Number', count: 1 }] },
+  { name: '.source', leaf: 'source', depth: 1, mappedField: '', seenInLogCount: 4, values: [{ type: 'Object', count: 4 }] },
+  { name: '.source.ip', leaf: 'ip', depth: 2, mappedField: 'sip', seenInLogCount: 4, values: [{ value: '10.1.2.3', type: 'String', count: 2 }, { value: '10.1.2.4', type: 'String', count: 1 }, { value: '10.5.4.3', type: 'String', count: 1 }] },
+  { name: '.source.port', leaf: 'port', depth: 2, mappedField: 'sport', seenInLogCount: 4, values: [{ value: 4567, type: 'Number', count: 1 }, { value: 13456, type: 'Number', count: 1 }, { value: 12321, type: 'Number', count: 1 }, { value: 11234, type: 'Number', count: 1 }] },
+  { name: '.boop', leaf: 'boop', depth: 1, mappedField: '', seenInLogCount: 1, values: [{ value: 'bam', type: 'String', count: 1 }] },
+  { name: '.options', leaf: 'options', depth: 1, mappedField: '', seenInLogCount: 2, values: [{ type: 'Array', count: 2 }] },
+  { name: '.options.0', leaf: '0', depth: 2, mappedField: '', seenInLogCount: 2, values: [{ type: 'Object', count: 2 }] },
+  { name: '.options.0.enable', leaf: 'enable', depth: 3, mappedField: '', seenInLogCount: 2, values: [{ value: 'always', type: 'String', count: 1 }, { value: 'first', type: 'String', count: 1 }] },
+  { name: '.options.0.suppress', leaf: 'suppress', depth: 3, mappedField: '', seenInLogCount: 2, values: [{ value: false, type: 'Boolean', count: 2 }] },
+  { name: '.activities', leaf: 'activities', depth: 1, mappedField: '', seenInLogCount: 3, values: [{ type: 'Array', count: 3 }] },
+  { name: '.activities.0', leaf: '0', depth: 2, mappedField: '', seenInLogCount: 3, values: [{ value: 'Add', type: 'String', count: 3 }] },
+  { name: '.activities.1', leaf: '1', depth: 2, mappedField: '', seenInLogCount: 3, values: [{ value: 'Validate', type: 'String', count: 3 }] },
+  { name: '.long-fields', leaf: 'long-field', depth: 1, mappedField: '', seenInLogCount: 3, values: [{ type: 'Object', count: 1 }] },
+  { name: '.long-fields.with-spaces', leaf: 'with-spaces', depth: 2, mappedField: '', seenInLogCount: 2, values: [{ value: 'Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate ', type: 'String', count: 1 }, { value: 'Validate', type: 'String', count: 1 }] },
+  { name: '.long-field.no-space', leaf: 'no-space', depth: 2, mappedField: '', seenInLogCount: 3, values: [{ value: 'ValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidate', type: 'String', count: 2 }, { value: 'Validate', type: 'String', count: 1 }] }
 ]
 
 export default {
@@ -206,11 +210,7 @@ export default {
   data () {
     return {
       jsonPathes: [],
-      selected: [],
-      selecting: [],
-      showHidden: false,
       search: '',
-      addMode: false,
       logSample: [{}, {}, {}, {}],
       processedLogsCount: 4,
       showAllTypes: true,
@@ -339,18 +339,6 @@ export default {
   },
   mixins: [Vue2Filters.mixin],
   computed: {
-    selectedCount () {
-      return this.selected.reduce((counter, value) => counter + (value ? 1 : 0), 0)
-    },
-
-    selectedPathes () {
-      return this.selectedCount > 0
-        ? this.jsonPathes.filter((p, i) => !!this.selected[i])
-          .map(p => p.name + ' (' + p.value + ')')
-          .join(', ')
-        : 'none'
-    },
-
     maxSeenInLog () {
       let max = 0
       this.jsonPathes.forEach(jp => {
@@ -421,13 +409,13 @@ export default {
 .fixed-font {
     font-family: monospace;
 }
-/* .span-json {
-    margin-left: .2rem;
-    padding-left: .8rem;
-    border-left: 1px solid #05b5d4;
-} */
+.json-indentation-bar {
+    /* border-left: 1px solid #05b5d4; */
+    border-left: 1px solid #858585;
+}
 .json-style-leaf {
-    font-style: bold;
+    /* font-style: bold; */
+    /* color: light-blue-3 */
 }
 /* .json-style-object {
     font-style: italic;
@@ -449,6 +437,28 @@ export default {
     font-style: italic;
     color: rgb(32, 227, 253);
 } */
+
+/* JSON value foreground */
+.json-type-object {
+  color: rgb(138, 43, 226);
+}
+.json-type-array {
+  color: rgb(148, 14, 41);
+}
+.json-type-string {
+  color: rgb(80, 112, 255);
+}
+.json-type-number {
+  color: rgb(21, 173, 66);
+}
+.json-type-boolean {
+  color: rgb(32, 227, 253);
+}
+.json-type- { /* to catch empty types */
+  color: rgb(117, 115, 1);
+}
+
+/* Chips backgrounds */
 .json-bg-type-object {
   background-color: rgb(82, 26, 134);
   color: white;
@@ -472,5 +482,24 @@ export default {
 .json-path-line:hover {
   /* background-color: rgb(49, 18, 42); */
   background-image: linear-gradient(rgba(49, 18, 42, .75), rgba(49, 18, 42, 1), rgba(49, 18, 42, .75));
+}
+.force-long-text-wrap {
+
+  /* These are technically the same, but use both */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+
+  -ms-word-break: break-all;
+  /* This is the dangerous one in WebKit, as it breaks things wherever */
+  word-break: break-all;
+  /* Instead use this non-standard one: */
+  word-break: break-word;
+
+  /* Adds a hyphen where the word breaks, if supported (No Blink) */
+  -ms-hyphens: auto;
+  -moz-hyphens: auto;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+
 }
 </style>
