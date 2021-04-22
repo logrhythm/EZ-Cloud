@@ -5,9 +5,57 @@
         Pipelines Builder
       </div>
       <div class="q-mt-md">
-        <q-btn class="q-mr-lg" dense label="Reload data" flat color="primary" @click="loadData()" />
+        <q-btn class="q-mr-lg" dense label="Reload sampe mapping" flat color="primary" @click="loadData()" />
         <label class="q-mx-md"><input type="checkbox" v-model="showExtraDetails"> Show extra details</label>
         <label class="q-mx-md"><input type="checkbox" v-model="showAllTypes"> Show types</label>
+      </div>
+      <div class="q-mt-md">
+        <div class="text-h4" style="opacity:.4">
+          Queues
+        </div>
+        <div class="text-caption">
+          Manual input (one log at a time)
+        </div>
+        <q-input
+          v-model="queueInDataEntry"
+          filled
+          autogrow
+          label="queueInDataEntry"
+          @keypress.shift.enter.prevent="queueInAdd({values: queueInDataEntry});"
+        >
+          <template v-slot:after>
+            <q-btn round dense flat icon="add" @click="queueInAdd({ values: queueInDataEntry })" />
+          </template>
+        </q-input>
+        <div class="text-caption">
+          Input Q
+        </div>
+        <q-input
+          v-model="queueInWindow"
+          filled
+          autogrow
+          readonly
+          label="queueIn"
+        >
+          <template v-slot:after>
+            <q-btn round dense flat icon="input" @click="queueProcessAdd({ fromArray: queueIn })" :disable="Object.keys(queueProcess).length > 0" />
+          </template>
+        </q-input>
+        <div class="text-caption">
+          Process Queue
+        </div>
+        <q-input
+          v-model="queueProcessWindow"
+          filled
+          autogrow
+          readonly
+          label="queueProcess"
+        >
+          <template v-slot:after>
+            <!-- <q-btn round dense flat icon="send" @click="processLogSample({ logSample: queueProcess, options: {} }).finally({ console.log('processLogSample IS DONE'); })" :disable="Object.keys(queueProcess).length === 0"/> -->
+            <q-btn round dense flat icon="send" @click="processLogSample({ options: { cleanQueueProcessAfterProcess: true } })" :disable="Object.keys(queueProcess).length === 0"/>
+          </template>
+        </q-input>
       </div>
 
       <div class="q-mt-md fit column">
@@ -167,7 +215,7 @@
       </div>
 
       <div class="q-mt-md">
-        {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ logSample.length }}
+        {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ processedLogs.length }}
       </div>
       <div>
         <pre>{{ jsonPathes }}</pre>
@@ -180,39 +228,37 @@
 <script>
 import Vue2Filters from 'vue2-filters'
 
-const externalData = [
-  { name: '.', leaf: '', depth: 0, mappedField: '', seenInLogCount: 4, values: [{ type: 'Object', count: 4 }] },
-  { name: '.timestamp', leaf: 'timestamp', depth: 1, mappedField: '', seenInLogCount: 4, values: [{ value: '20210416T01:02:03', type: 'String', count: 1 }, { value: '20210416T02:02:03', type: 'String', count: 1 }, { value: '20210416T03:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }] },
-  // /* to show super long list of values */ { name: '.timestamp', leaf: 'timestamp', depth: 1, mappedField: '', seenInLogCount: 4, values: [{ value: '20210416T01:02:03', type: 'String', count: 1 }, { value: '20210416T02:02:03', type: 'String', count: 1 }, { value: '20210416T03:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }] },
-  { name: '.id', leaf: 'id', depth: 1, mappedField: 'session', seenInLogCount: 4, values: [{ value: 'abc-def-123456-fedcba', type: 'String', count: 1 }, { value: 'def-def-123456-fedcba', type: 'String', count: 1 }, { value: 'xyz-def-123456-fedcba', type: 'String', count: 1 }, { value: 'cab-def-123456-fedcba', type: 'String', count: 1 }] },
-  { name: '.code', leaf: 'code', depth: 1, mappedField: 'vmid', seenInLogCount: 4, values: [{ value: 15, type: 'Number', count: 1 }, { value: 452, type: 'Number', count: 2 }, { value: 28, type: 'Number', count: 1 }] },
-  { name: '.destination', leaf: 'destination', depth: 1, mappedField: '', seenInLogCount: 3, values: [{ type: 'Object', count: 3 }] },
-  { name: '.destination.ip', leaf: 'ip', depth: 2, mappedField: 'dip', seenInLogCount: 3, values: [{ value: '192.168.0.5', type: 'String', count: 2 }, { value: '192.168.0.1', type: 'String', count: 1 }] },
-  { name: '.destination.port', leaf: 'port', depth: 2, mappedField: 'dport', seenInLogCount: 3, values: [{ value: 80, type: 'Number', count: 2 }, { value: 1234, type: 'Number', count: 1 }] },
-  { name: '.source', leaf: 'source', depth: 1, mappedField: '', seenInLogCount: 4, values: [{ type: 'Object', count: 4 }] },
-  { name: '.source.ip', leaf: 'ip', depth: 2, mappedField: 'sip', seenInLogCount: 4, values: [{ value: '10.1.2.3', type: 'String', count: 2 }, { value: '10.1.2.4', type: 'String', count: 1 }, { value: '10.5.4.3', type: 'String', count: 1 }] },
-  { name: '.source.port', leaf: 'port', depth: 2, mappedField: 'sport', seenInLogCount: 4, values: [{ value: 4567, type: 'Number', count: 1 }, { value: 13456, type: 'Number', count: 1 }, { value: 12321, type: 'Number', count: 1 }, { value: 11234, type: 'Number', count: 1 }] },
-  { name: '.boop', leaf: 'boop', depth: 1, mappedField: '', seenInLogCount: 1, values: [{ value: 'bam', type: 'String', count: 1 }] },
-  { name: '.options', leaf: 'options', depth: 1, mappedField: '', seenInLogCount: 2, values: [{ type: 'Array', count: 2 }] },
-  { name: '.options.0', leaf: '0', depth: 2, mappedField: '', seenInLogCount: 2, values: [{ type: 'Object', count: 2 }] },
-  { name: '.options.0.enable', leaf: 'enable', depth: 3, mappedField: '', seenInLogCount: 2, values: [{ value: 'always', type: 'String', count: 1 }, { value: 'first', type: 'String', count: 1 }] },
-  { name: '.options.0.suppress', leaf: 'suppress', depth: 3, mappedField: '', seenInLogCount: 2, values: [{ value: false, type: 'Boolean', count: 2 }] },
-  { name: '.activities', leaf: 'activities', depth: 1, mappedField: '', seenInLogCount: 3, values: [{ type: 'Array', count: 3 }] },
-  { name: '.activities.0', leaf: '0', depth: 2, mappedField: '', seenInLogCount: 3, values: [{ value: 'Add', type: 'String', count: 3 }] },
-  { name: '.activities.1', leaf: '1', depth: 2, mappedField: '', seenInLogCount: 3, values: [{ value: 'Validate', type: 'String', count: 3 }] },
-  { name: '.long-fields', leaf: 'long-field', depth: 1, mappedField: '', seenInLogCount: 3, values: [{ type: 'Object', count: 1 }] },
-  { name: '.long-fields.with-spaces', leaf: 'with-spaces', depth: 2, mappedField: '', seenInLogCount: 2, values: [{ value: 'Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate ', type: 'String', count: 1 }, { value: 'Validate', type: 'String', count: 1 }] },
-  { name: '.long-field.no-space', leaf: 'no-space', depth: 2, mappedField: '', seenInLogCount: 3, values: [{ value: 'ValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidate', type: 'String', count: 2 }, { value: 'Validate', type: 'String', count: 1 }] }
-]
+const externalData = []
+// const externalData = [
+//   { name: '.', leaf: '', depth: 0, mappedField: '', seenInLogCount: 4, values: [{ type: 'Object', count: 4 }] },
+//   { name: '.timestamp', leaf: 'timestamp', depth: 1, mappedField: '', seenInLogCount: 4, values: [{ value: '20210416T01:02:03', type: 'String', count: 1 }, { value: '20210416T02:02:03', type: 'String', count: 1 }, { value: '20210416T03:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }] },
+//   // /* to show super long list of values */ { name: '.timestamp', leaf: 'timestamp', depth: 1, mappedField: '', seenInLogCount: 4, values: [{ value: '20210416T01:02:03', type: 'String', count: 1 }, { value: '20210416T02:02:03', type: 'String', count: 1 }, { value: '20210416T03:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }, { value: '20210416T04:02:03', type: 'String', count: 1 }] },
+//   { name: '.id', leaf: 'id', depth: 1, mappedField: 'session', seenInLogCount: 4, values: [{ value: 'abc-def-123456-fedcba', type: 'String', count: 1 }, { value: 'def-def-123456-fedcba', type: 'String', count: 1 }, { value: 'xyz-def-123456-fedcba', type: 'String', count: 1 }, { value: 'cab-def-123456-fedcba', type: 'String', count: 1 }] },
+//   { name: '.code', leaf: 'code', depth: 1, mappedField: 'vmid', seenInLogCount: 4, values: [{ value: 15, type: 'Number', count: 1 }, { value: 452, type: 'Number', count: 2 }, { value: 28, type: 'Number', count: 1 }] },
+//   { name: '.destination', leaf: 'destination', depth: 1, mappedField: '', seenInLogCount: 3, values: [{ type: 'Object', count: 3 }] },
+//   { name: '.destination.ip', leaf: 'ip', depth: 2, mappedField: 'dip', seenInLogCount: 3, values: [{ value: '192.168.0.5', type: 'String', count: 2 }, { value: '192.168.0.1', type: 'String', count: 1 }] },
+//   { name: '.destination.port', leaf: 'port', depth: 2, mappedField: 'dport', seenInLogCount: 3, values: [{ value: 80, type: 'Number', count: 2 }, { value: 1234, type: 'Number', count: 1 }] },
+//   { name: '.source', leaf: 'source', depth: 1, mappedField: '', seenInLogCount: 4, values: [{ type: 'Object', count: 4 }] },
+//   { name: '.source.ip', leaf: 'ip', depth: 2, mappedField: 'sip', seenInLogCount: 4, values: [{ value: '10.1.2.3', type: 'String', count: 2 }, { value: '10.1.2.4', type: 'String', count: 1 }, { value: '10.5.4.3', type: 'String', count: 1 }] },
+//   { name: '.source.port', leaf: 'port', depth: 2, mappedField: 'sport', seenInLogCount: 4, values: [{ value: 4567, type: 'Number', count: 1 }, { value: 13456, type: 'Number', count: 1 }, { value: 12321, type: 'Number', count: 1 }, { value: 11234, type: 'Number', count: 1 }] },
+//   { name: '.boop', leaf: 'boop', depth: 1, mappedField: '', seenInLogCount: 1, values: [{ value: 'bam', type: 'String', count: 1 }] },
+//   { name: '.options', leaf: 'options', depth: 1, mappedField: '', seenInLogCount: 2, values: [{ type: 'Array', count: 2 }] },
+//   { name: '.options.0', leaf: '0', depth: 2, mappedField: '', seenInLogCount: 2, values: [{ type: 'Object', count: 2 }] },
+//   { name: '.options.0.enable', leaf: 'enable', depth: 3, mappedField: '', seenInLogCount: 2, values: [{ value: 'always', type: 'String', count: 1 }, { value: 'first', type: 'String', count: 1 }] },
+//   { name: '.options.0.suppress', leaf: 'suppress', depth: 3, mappedField: '', seenInLogCount: 2, values: [{ value: false, type: 'Boolean', count: 2 }] },
+//   { name: '.activities', leaf: 'activities', depth: 1, mappedField: '', seenInLogCount: 3, values: [{ type: 'Array', count: 3 }] },
+//   { name: '.activities.0', leaf: '0', depth: 2, mappedField: '', seenInLogCount: 3, values: [{ value: 'Add', type: 'String', count: 3 }] },
+//   { name: '.activities.1', leaf: '1', depth: 2, mappedField: '', seenInLogCount: 3, values: [{ value: 'Validate', type: 'String', count: 3 }] },
+//   { name: '.long-fields', leaf: 'long-field', depth: 1, mappedField: '', seenInLogCount: 3, values: [{ type: 'Object', count: 1 }] },
+//   { name: '.long-fields.with-spaces', leaf: 'with-spaces', depth: 2, mappedField: '', seenInLogCount: 2, values: [{ value: 'Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate Validate ', type: 'String', count: 1 }, { value: 'Validate', type: 'String', count: 1 }] },
+//   { name: '.long-field.no-space', leaf: 'no-space', depth: 2, mappedField: '', seenInLogCount: 3, values: [{ value: 'ValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidateValidate', type: 'String', count: 2 }, { value: 'Validate', type: 'String', count: 1 }] }
+// ]
 
 export default {
   name: 'PagePipelineBuilder',
   data () {
     return {
-      jsonPathes: [],
       search: '',
-      logSample: [{}, {}, {}, {}],
-      processedLogsCount: 4,
       showAllTypes: true,
       showExtraDetails: false,
       mdiTags: [ // Built using tooling/20210420.MDI Tags and fields.xlsx
@@ -334,7 +380,13 @@ export default {
         { label: 'NAT TCP/UDP Port (Origin)', value: 'snatport', description: 'The Network Address Translated (NAT) port from which activity originated (i.e., client, attacker port).' },
         { label: 'NAT TCP/UDP Port (Impacted)', value: 'dnatport', description: 'The Network Address Translated (NAT) port to which activity was targeted (i.e., server, target port).' }
       ],
-      mdiTagsOptions: []
+      mdiTagsOptions: [], // Used in the Select field
+      queueIn: [], // To feed from the Server Tail, or the queueInDataEntry field
+      queueInDataEntry: '{"timestamp":"20210422T16:40:00","id":"abcdef-1234","code":15,"destination":{"ip":"172.16.1.2","port":443},"source":{"ip":"192.168.0.1","port":44444},"bam":"boop","values":[{"type":"Object","count":4},{"type":"Plane","count":25,"value":"A320"}]}', // To enter log data by hand
+      queueProcess: {}, // The one record we are working on (coming from the queueIn, one at a time)
+      processedLogs: [], // The logs, once processed
+      processedLogsCount: 0, // The count of processed logs
+      jsonPathes: [] // The extracted keys and values from the processedLogSample. Used for display and mapping. Saved.
     }
   },
   mixins: [Vue2Filters.mixin],
@@ -347,7 +399,13 @@ export default {
         }
       })
       return max
-    }
+    }, // maxSeenInLog
+    queueInWindow () {
+      return JSON.stringify(this.queueIn)
+    }, // queueInWindow
+    queueProcessWindow () {
+      return JSON.stringify(this.queueProcess)
+    } // queueProcessWindow
   },
 
   methods: {
@@ -368,6 +426,46 @@ export default {
       }
     }, // filterMdiTagsOptions
 
+    queueInAdd ({ values }) {
+      if (typeof values === 'string') {
+        // deal with it as Strings
+        try {
+          this.queueIn.push(JSON.parse(values))
+        } catch {
+          // Not proper JSON
+          console.log('String is not a proper JSON')
+        }
+      } else if (Array.isArray(values)) {
+        // deal with it as Array of strings or JSON objects
+        values.forEach(value => {
+          if (typeof value === 'string') {
+            try {
+              this.queueIn.push(JSON.parse(value))
+            } catch {
+              // Not proper JSON
+              console.log('String is not a proper JSON')
+            }
+          } else {
+            this.queueIn.push(value)
+          }
+        })
+      } else if (typeof values === 'object') {
+        // deal with it as a single JSON object
+        this.queueIn.push(values)
+      }
+    }, // queueInAdd
+
+    queueProcessAdd ({ fromArray }) {
+      // Take the top of list item (oldest) from queueIn and push it to the Process
+      if (Object.keys(this.queueProcess).length === 0) {
+        if (fromArray && fromArray.length > 0) {
+          this.queueProcess = fromArray.shift()
+        }
+      } else {
+        console.log('queueProcessAdd - queueProcess is NOT empty. Try again later.')
+      }
+    }, // queueProcessAdd
+
     processLogSample ({ logSample, options }) {
       // Steps:
       // - get FileBeat to write to disk in specific file for LS
@@ -385,8 +483,113 @@ export default {
       //               - add type to values.type (if not already in)
       //               - increment values.count for value / type
       //     - increment processedLogsCount
+      //     - add log to processedLogs
 
-    } // processLogSample
+      // console.log('processLogSample...')
+
+      // Check if we got provided a logSample, if not falls back onto this.queueProcess
+      const logSampleProvidedAsVariable = (logSample && Object.keys(logSample).length > 0)
+      const logSampleToProcess = (logSampleProvidedAsVariable ? logSample : this.queueProcess)
+
+      // console.log(logSampleToProcess)
+      // console.log(options)
+
+      this.processLogKey({ leaf: logSampleToProcess, parentPath: '', depth: 0, maxDepth: 5 })
+
+      this.processedLogsCount++
+      this.processedLogs.push(logSampleToProcess)
+
+      if (!logSampleProvidedAsVariable && options && options.cleanQueueProcessAfterProcess) {
+        this.queueProcess = {}
+      }
+
+      // console.log('processLogSample... DONE')
+    }, // processLogSample
+
+    processLogKey ({ leaf, parentPath, depth, maxDepth }) {
+      // recursively go through each keys
+      const maxDepth_ = (maxDepth || 50) // Default max depth 50
+      if (maxDepth_ > 0) { // fail safe
+        let thisKeyPath = ''
+        if ((!parentPath || parentPath === '') && (!depth || depth === 0)) {
+          // This is the root of the object, so let's deal with it accordingly
+
+          // Upsert it first
+          this.upsertToJsonPaths({ thisKeyPath: '.', depth: 0, key: '', value: leaf })
+
+          // And crawl through it
+          if (typeof leaf === 'object') {
+            this.processLogKey({ leaf: leaf, parentPath: thisKeyPath, depth: depth + 1, maxDepth: maxDepth_ - 1 })
+          }
+        } else {
+          // This is NOT the root of the object
+
+          Object.keys(leaf).forEach(key => {
+            thisKeyPath = parentPath + '.' + key
+
+            // Upsert it first
+            this.upsertToJsonPaths({ thisKeyPath: thisKeyPath, depth: depth, key: key, value: leaf[key] })
+
+            // Loop through its sub-elements, if any
+            if (typeof leaf[key] === 'object') {
+              this.processLogKey({ leaf: leaf[key], parentPath: thisKeyPath, depth: depth + 1, maxDepth: maxDepth_ - 1 })
+            }
+          })
+        }
+      }
+    }, // processLogKey
+
+    upsertToJsonPaths ({ thisKeyPath, depth, key, value }) {
+      const currentPositionInJsonPaths = this.jsonPathes.findIndex(path => path.name === thisKeyPath)
+      // console.log('(' + depth + ': ' + currentPositionInJsonPaths + ') ' + thisKeyPath + ' ==> ' + value)
+
+      let thisPath = {}
+      if (currentPositionInJsonPaths >= 0) {
+        // We already have this in our table, let's use it
+        thisPath = this.jsonPathes[currentPositionInJsonPaths]
+      } else {
+        // New item, let's create it
+        thisPath = {
+          name: thisKeyPath,
+          leaf: key,
+          depth: depth,
+          seenInLogCount: 0,
+          values: []
+        }
+      }
+
+      // Update thisPath
+      thisPath.seenInLogCount++
+
+      if (typeof value !== 'object') {
+        const valueCurrentPositionInValues = thisPath.values.findIndex(v => v.value === value)
+        if (valueCurrentPositionInValues >= 0) {
+          // Already in
+          thisPath.values[valueCurrentPositionInValues].count++
+        } else {
+          // Adding value to array
+          thisPath.values.push({
+            value: value,
+            type: typeof value,
+            count: 1
+          })
+        }
+      } else {
+        if (thisPath.values.length === 0) {
+          thisPath.values.push({
+            type: (Array.isArray(value) ? 'array' : typeof value),
+            count: 1
+          })
+        } else {
+          thisPath.values[0].count++
+        }
+      }
+
+      if (currentPositionInJsonPaths < 0) {
+        // Now let's add this new Path to the list
+        this.jsonPathes.push(thisPath)
+      }
+    } // upsertToJsonPaths
   },
 
   mounted () {
