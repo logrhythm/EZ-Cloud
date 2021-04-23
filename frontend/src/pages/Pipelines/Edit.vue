@@ -608,6 +608,9 @@ export default {
       console.log('tail.log.abc')
       console.log(payload)
       if (payload.code && payload.code === 'STDOUT' && payload.payload) {
+        if (typeof payload.payload === 'string') {
+          payload.payload = { signleStringLog: payload.payload }
+        }
         this.queueInAdd({ values: payload.payload })
       }
     })
