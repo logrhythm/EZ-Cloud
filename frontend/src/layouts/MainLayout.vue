@@ -20,6 +20,22 @@
           :key="link.title"
           v-bind="link"
         />
+        <q-item v-if="!socket.connected">
+          <q-tooltip content-style="font-size: 1rem;">
+            Live connection with server has been lost.<br>
+            Some features might not work anymore.
+          </q-tooltip>
+          <q-item-section
+            avatar
+          >
+            <q-icon name="cloud_off" color="orange">
+            </q-icon>
+          </q-item-section>
+
+          <q-item-section>
+            <q-item-label class="text-orange">Disconnected</q-item-label>
+          </q-item-section>
+        </q-item>
       </q-list>
     </q-scroll-area>
   </q-drawer>
@@ -67,7 +83,8 @@ export default {
           icon: 'settings',
           link: '#/Settings'
         }
-      ]
+      ],
+      socket: this.$socket
     }
   }
 }
