@@ -25,6 +25,14 @@ const routes = [
   },
 
   {
+    path: '/Settings',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/Settings/Settings.vue') }
+    ]
+  },
+
+  {
     path: '/Pipelines',
     component: () => import('layouts/MainLayout.vue'),
     children: [

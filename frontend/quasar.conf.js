@@ -22,7 +22,9 @@ module.exports = function (/* ctx */) {
     boot: [
 
       'i18n',
-      'axios'
+      'axios',
+      'global-constants', // Global Constants - TM 2021-04-23
+      'socket-io.js' // Socket.IO - TM 2021-04-23
     ],
 
     // https://v1.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
