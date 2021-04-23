@@ -6,6 +6,7 @@
       </div>
       <div class="q-mt-md">
         <q-btn class="q-mr-lg" dense label="Reload sampe mapping" flat color="primary" @click="loadData()" />
+        <q-btn class="q-mr-lg" dense label="Init Tail" flat color="primary" @click="initTail()" />
         <label class="q-mx-md"><input type="checkbox" v-model="showExtraDetails"> Show extra details</label>
         <label class="q-mx-md"><input type="checkbox" v-model="showAllTypes"> Show types</label>
       </div>
@@ -258,6 +259,7 @@ export default {
   name: 'PagePipelineBuilder',
   data () {
     return {
+      socket: this.$socket,
       search: '',
       showAllTypes: true,
       showExtraDetails: false,
@@ -589,12 +591,26 @@ export default {
         // Now let's add this new Path to the list
         this.jsonPathes.push(thisPath)
       }
-    } // upsertToJsonPaths
+    }, // upsertToJsonPaths
+
+    initTail () {
+      if (this.socket.connected) {
+        this.socket.emit('tail.init', '/var/log/messages')
+      }
+    }
   },
 
   mounted () {
     this.mdiTagsOptions = this.mdiTags
     this.loadData()
+    // Event when Server sends a new log via Tail
+    this.socket.on('tail.log.abc', (payload) => {
+      console.log('tail.log.abc')
+      console.log(payload)
+      if (payload.code && payload.code === 'STDOUT' && payload.payload) {
+        this.queueInAdd({ values: payload.payload })
+      }
+    })
   },
 
   watch: {
