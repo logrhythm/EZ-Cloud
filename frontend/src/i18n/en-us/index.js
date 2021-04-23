@@ -3,5 +3,6 @@
 
 export default {
   failed: 'Action failed',
-  success: 'Action was successful'
+  success: 'Action was successful',
+  'Save settings to local web browser.': 'Save settings to local web browser.'
 }
