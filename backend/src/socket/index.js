@@ -5,60 +5,100 @@ const configSsh = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'c
 // Create SSH object
 var SSH = require('simple-ssh');
 
+let tails = [];
+
 function socketConnect(socket) {
   // eslint-disable-next-line no-console
-  console.log(`Socket.io => CONNECTION : ${socket.id}`); // XXX
+  console.log(`Socket.io => CONNECTION : ${socket.id} (auth: ${socket.token})`); // XXX
 
   if (socket.connected) {
-    socket.emit('tail.log.abc', { code: 'OK', log: 'some log' });
+    socket.emit('tail.log', { code: 'OK', log: 'some log' });
   }
+  socket.on('connect', () => {
+    // eslint-disable-next-line no-console
+    console.log('Sokect.on(connect)');
+  });
 
-  // handle the event sent with socket.send()
-  socket.on('tail.init', (pathToTail) => {
+  // A new tail is requested
+  socket.on('tail.init', (payload) => {
     // eslint-disable-next-line no-console
     console.log('tail.init');
     // eslint-disable-next-line no-console
-    console.log(pathToTail);
+    console.log(payload);
 
-    var ssh = new SSH(configSsh);
+    if (
+      payload
+      && payload.path
+      && payload.tailId
+      && payload.path.length > 0
+      && payload.tailId.length > 0
+    ) {
+      // Check the tailId doesn't already exist
+      if (!tails[payload.tailId]) {
+        tails[payload.tailId] = new SSH(configSsh);
 
-    /* eslint-disable max-len */
+        tails[payload.tailId]
+          .exec(`tail -n 0 -F ${payload.path}`, {
+            err(stderr) {
+              if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'ERROR', payload: stderr });
+              }
+            },
+            exit(code) {
+              if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'EXIT', payload: code });
+              }
+            },
+            out(stdout) {
+              if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+              }
+            }
+          })
+          .on('end', (err) => {
+            if (socket.connected) {
+              socket.emit('tail.log', { tailId: payload.tailId, code: 'END', payload: err });
+            }
+          })
+          .start({
+            failure() {
+              if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'FAILURE' });
+              }
+            }
+          });
+      }
+    }
+  }); // On: tail.init
 
-    // .exec('uname -r | awk -F. -v OFS= \'{print "{\\"version\\":{\\"detailed\\":{\\"major\\":\\""$1,"\\", \\"minor\\":\\""$2,"\\", \\"build\\":\\""$3,"\\"}, \\"full\\":\\""$1,"."$2,"."$3,"."$4,"."$5,"\\"}}"}\'', {
-    // .exec(`tail -n 1 ${  pathToTail}`, {
+  // Killing an existing tail
+  socket.on('tail.kill', (payload) => {
+    // eslint-disable-next-line no-console
+    console.log('tail.kill');
+    // eslint-disable-next-line no-console
+    console.log(payload);
 
-    /* eslint-enable max-len */
-    ssh
-      .exec(`tail -f ${pathToTail}`, {
-        err: function(stderr) {
-          if (socket.connected) {
-            socket.emit('tail.log.abc', { code: 'ERROR', payload: stderr });
-          }
-        },
-        exit: function(code) {
-          if (socket.connected) {
-            socket.emit('tail.log.abc', { code: 'EXIT', payload: code });
-          }
-        },
-        out: function(stdout) {
-          if (socket.connected) {
-            socket.emit('tail.log.abc', { code: 'STDOUT', payload: stdout });
-          }
-        }
-      })
-      .on('end', function(err) {
-        if (socket.connected) {
-          socket.emit('tail.log.abc', { code: 'END', payload: err });
-        }
-    })
-      .start({
-        failure: function () {
-          if (socket.connected) {
-            socket.emit('tail.log.abc', { code: 'FAILURE' });
-          }
-        }
-      });
-  });
+    if (
+      payload
+      && payload.tailId
+      && payload.tailId.length > 0
+    ) {
+      // Check the tailId exists
+      if (tails[payload.tailId]) {
+        tails[payload.tailId].end();
+        tails[payload.tailId] = null;
+      }
+    }
+  }); // On: tail.kill
+
+  // Killing an existing tail
+  socket.on('tail.showtaillist', () => {
+    // eslint-disable-next-line no-console
+    console.log('tail.showtaillist');
+
+    // eslint-disable-next-line no-console
+    console.log(tails);
+  }); // On: tail.showtaillist
 }
 
 module.exports = socketConnect;
