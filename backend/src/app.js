@@ -38,7 +38,7 @@ const middlewares = require('./middlewares');
 const api = require('./api');
 
 // process.socket = { io: {} };
-const socketConnect = require('./socket')
+const socketConnect = require('./socket');
 
 io.on('connection', socketConnect);
 
