@@ -6,11 +6,61 @@
       </div>
       <div class="q-mt-md">
         <q-btn class="q-mr-lg" dense label="Reload sampe mapping" flat color="primary" @click="loadData()" />
-        <q-btn class="q-mr-lg" dense label="Init Tail" flat color="primary" @click="initTail()" />
-        <label class="q-mx-md"><input type="checkbox" v-model="showExtraDetails"> Show extra details</label>
-        <label class="q-mx-md"><input type="checkbox" v-model="showAllTypes"> Show types</label>
+        <q-btn class="q-mr-lg" dense label="Init Tail" flat color="primary" @click="tailEnabled = true" :disable="tailEnabled" />
+        <q-btn class="q-mr-lg" dense label="Kill Tail" flat color="negative" @click="tailEnabled = false" :disable="!tailEnabled" />
+        <q-btn class="q-mr-lg" dense label="List Tails" flat color="secondary" @click="listTails()" />
+        <q-toggle v-model="tailEnabled" label="Tail Log Source Stream" />
+        <q-toggle v-model="showExtraDetails" label="Show extra details" />
+        <q-toggle v-model="showAllTypes" label="Show types" />
+        <q-toggle v-model="processInBackground" label="Process in Background" />
+        <q-toggle v-model="showQueues" label="Show Queues" />
+        <q-item  style="width: 15rem;">
+          <q-item-section avatar>
+            <q-icon name="speed" />
+          </q-item-section>
+          <q-item-section>
+            <q-slider
+              v-model="processInBackgroundMaxRate"
+              :min="0"
+              :max="10"
+              label
+              :label-value="'Background Process max: ' + processInBackgroundMaxRate + ' / second'"
+            />
+          </q-item-section>
+        </q-item>
+        <q-item  style="width: 25rem;">
+          <q-item-section avatar>
+            <q-icon name="download" />
+          </q-item-section>
+          <q-item-section>
+            <q-slider
+              v-model="queueInMaxSize"
+              :min="0"
+              :max="2000"
+              label
+              :label-value="'Max messages in Queue In: ' + queueInMaxSize"
+            />
+          </q-item-section>
+        </q-item>
+        <q-item  style="width: 25rem;">
+          <q-item-section avatar>
+            <q-icon name="download_for_offline" />
+          </q-item-section>
+          <q-item-section>
+            <q-slider
+              v-model="processedLogsMaxSize"
+              :min="0"
+              :max="1000"
+              label
+              :label-value="'Max messages in Processed Logs: ' + processedLogsMaxSize"
+            />
+          </q-item-section>
+        </q-item>
       </div>
-      <div class="q-mt-md">
+      <div>
+        tailId: {{ tailId }}
+      </div>
+      <div class="q-mt-md" v-show="showQueues">
         <div class="text-h4" style="opacity:.4">
           Queues
         </div>
@@ -39,7 +89,10 @@
           label="queueIn"
         >
           <template v-slot:after>
-            <q-btn round dense flat icon="input" @click="queueProcessAdd({ fromArray: queueIn })" :disable="Object.keys(queueProcess).length > 0" />
+            <div class="column">
+              <q-btn round dense flat icon="input" @click="queueProcessAdd({ fromArray: queueIn })" :disable="Object.keys(queueProcess).length > 0" />
+              <q-btn round dense flat icon="close" @click="queueIn=[]" :disable="queueIn.length == 0" color="red" />
+            </div>
           </template>
         </q-input>
         <div class="text-caption">
@@ -216,17 +269,18 @@
       </div>
 
       <div class="q-mt-md">
-        {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ processedLogs.length }}
+        {{ queueIn.length }} / {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ processedLogs.length }}
       </div>
-      <div>
+      <!-- <div>
         <pre>{{ jsonPathes }}</pre>
-      </div>
+      </div> -->
 
     </div>
   </q-page>
 </template>
 
 <script>
+import { uid } from 'quasar'
 import Vue2Filters from 'vue2-filters'
 
 const externalData = []
@@ -383,12 +437,19 @@ export default {
         { label: 'NAT TCP/UDP Port (Impacted)', value: 'dnatport', description: 'The Network Address Translated (NAT) port to which activity was targeted (i.e., server, target port).' }
       ],
       mdiTagsOptions: [], // Used in the Select field
+      showQueues: false, // Collapse / Hide the Queues panel if false (default)
       queueIn: [], // To feed from the Server Tail, or the queueInDataEntry field
       queueInDataEntry: '{"timestamp":"20210422T16:40:00","id":"abcdef-1234","code":15,"destination":{"ip":"172.16.1.2","port":443},"source":{"ip":"192.168.0.1","port":44444},"bam":"boop","values":[{"type":"Object","count":4},{"type":"Plane","count":25,"value":"A320"}]}', // To enter log data by hand
       queueProcess: {}, // The one record we are working on (coming from the queueIn, one at a time)
       processedLogs: [], // The logs, once processed
       processedLogsCount: 0, // The count of processed logs
-      jsonPathes: [] // The extracted keys and values from the processedLogSample. Used for display and mapping. Saved.
+      jsonPathes: [], // The extracted keys and values from the processedLogSample. Used for display and mapping. Saved.
+      tailEnabled: false, // Are we running a tail against the sample/capture file?
+      tailId: '', // UUID of the tail. Needed to be able to kill it on the server
+      processInBackground: false,
+      processInBackgroundMaxRate: 5, // once per second by default
+      queueInMaxSize: 200, // Maximum number of log messages in queueIn
+      processedLogsMaxSize: 200 // Maximum number of log messages in processedLogs
     }
   },
   mixins: [Vue2Filters.mixin],
@@ -495,11 +556,15 @@ export default {
 
       // console.log(logSampleToProcess)
       // console.log(options)
+      if (Object.keys(logSampleToProcess).length > 0) {
+        this.processLogKey({ leaf: logSampleToProcess, parentPath: '', depth: 0, maxDepth: 5 })
 
-      this.processLogKey({ leaf: logSampleToProcess, parentPath: '', depth: 0, maxDepth: 5 })
-
-      this.processedLogsCount++
-      this.processedLogs.push(logSampleToProcess)
+        this.processedLogsCount++
+        // Add the processed sample to processedLogs, except if we have enough of them already
+        if (this.processedLogsCount < this.processedLogsMaxSize) {
+          this.processedLogs.push(logSampleToProcess)
+        }
+      }
 
       if (!logSampleProvidedAsVariable && options && options.cleanQueueProcessAfterProcess) {
         this.queueProcess = {}
@@ -593,23 +658,50 @@ export default {
       }
     }, // upsertToJsonPaths
 
+    processLogSampleInBackground ({ options }) {
+      this.queueProcessAdd({ fromArray: this.queueIn })
+      this.processLogSample({ options: { cleanQueueProcessAfterProcess: true } })
+    }, // processLogSampleInBackground
+
     initTail () {
       if (this.socket.connected) {
-        this.socket.emit('tail.init', '/var/log/messages')
+        // this.socket.emit('tail.init', { tailId: this.tailId, path: '/var/log/messages' })
+        this.socket.emit('tail.init', { tailId: this.tailId, path: '/tmp/mistnet.log' })
+      }
+    },
+
+    killTail () {
+      if (this.socket.connected) {
+        this.socket.emit('tail.kill', { tailId: this.tailId })
+      }
+    },
+
+    listTails () {
+      if (this.socket.connected) {
+        this.socket.emit('tail.showtaillist')
       }
     }
   },
 
   mounted () {
+    this.tailId = uid()
     this.mdiTagsOptions = this.mdiTags
     this.loadData()
     // Event when Server sends a new log via Tail
-    this.socket.on('tail.log.abc', (payload) => {
-      console.log('tail.log.abc')
-      console.log(payload)
-      if (payload.code && payload.code === 'STDOUT' && payload.payload) {
+    this.socket.on('tail.log', (payload) => {
+      // console.log(payload)
+      // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "STDOUT", payload: "Apr 26 14:44:21 oc-ez containerd: time="2021-04-26… systemd-logind: New session 44703 of user root.↵"}
+      // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "END"}
+      // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "EXIT", payload: null}
+      if (
+        payload.code &&
+        payload.code === 'STDOUT' &&
+        payload.payload &&
+        payload.tailId &&
+        payload.tailId === this.tailId
+      ) {
         if (typeof payload.payload === 'string') {
-          payload.payload = { signleStringLog: payload.payload }
+          payload.payload = { singleStringLog: payload.payload }
         }
         this.queueInAdd({ values: payload.payload })
       }
@@ -617,12 +709,51 @@ export default {
   },
 
   watch: {
-    // jsonPathes: {
-    //   handler () {
-    //     this.$nextTick(() => vueSelectable.setSelectableItems(this.$refs.vsel));
-    //   },
-    //   deep: true
-    // }
+    processInBackground: {
+      handler () {
+        if (this.processInBackground) {
+          this.backgroundProcessInterval = setInterval(() => {
+            if (this.processInBackground) {
+              this.processLogSampleInBackground({})
+            }
+          }, 1000 / this.processInBackgroundMaxRate)
+        } else {
+          clearInterval(this.backgroundProcessInterval)
+        }
+      },
+      deep: false
+    }, // processInBackground
+    queueIn: {
+      handler () {
+        // If we have received enough log messages, stop the capture
+        if ((this.queueIn.length + this.processedLogsCount) >= this.queueInMaxSize) {
+          this.tailEnabled = false
+        }
+      },
+      deep: false
+    }, // queueIn
+    tailEnabled: {
+      handler () {
+        if (this.tailEnabled) {
+          this.initTail()
+        } else {
+          this.killTail()
+        }
+      },
+      deep: false
+    } // tailEnabled
+  },
+
+  created () {
+    //
+  },
+
+  beforeDestroy () {
+    clearInterval(this.backgroundProcessInterval)
+  },
+
+  destroyed () {
+    this.killTail()
   }
 }
 </script>
