@@ -14,6 +14,7 @@
         <q-toggle v-model="showAllTypes" label="Show types" />
         <q-toggle v-model="processInBackground" label="Process in Background" />
         <q-toggle v-model="showQueues" label="Show Queues" />
+        <q-toggle v-model="wrapSingleStringLog" label="Wrap Single String Logs" />
         <q-item  style="width: 15rem;">
           <q-item-section avatar>
             <q-icon name="speed" />
@@ -21,7 +22,7 @@
           <q-item-section>
             <q-slider
               v-model="processInBackgroundMaxRate"
-              :min="0"
+              :min="1"
               :max="10"
               label
               :label-value="'Background Process max: ' + processInBackgroundMaxRate + ' / second'"
@@ -35,7 +36,7 @@
           <q-item-section>
             <q-slider
               v-model="queueInMaxSize"
-              :min="0"
+              :min="1"
               :max="2000"
               label
               :label-value="'Max messages in Queue In: ' + queueInMaxSize"
@@ -49,7 +50,7 @@
           <q-item-section>
             <q-slider
               v-model="processedLogsMaxSize"
-              :min="0"
+              :min="1"
               :max="1000"
               label
               :label-value="'Max messages in Processed Logs: ' + processedLogsMaxSize"
@@ -113,10 +114,138 @@
       </div>
 
       <div class="q-mt-md fit column">
-        <div v-for="(jsonPath, i) in jsonPathes"
+        <q-virtual-scroll
+          style="max-height: 80vh;"
+          :items="orderBy(jsonPathes, 'name')"
+          virtual-scroll-item-size="48"
+        >
+          <template v-slot="{ item, index }">
+            <div
+              :key="index"
+              class="row items-stretch q-my-none q-py-none json-path-line"
+              style="min-height: 1.5rem;"
+            >
+            <div class="row content-center q-mr-sm q-gutter-y-none" style="width: 3rem;">
+              <q-tooltip content-style="font-size: 1em;">
+                <q-icon name="stop" color="blue-10" />Relative frequency <span style="font-weight: bold;">{{ Math.round(item.seenInLogCount / maxSeenInLog * 100) }}%</span> ({{ item.seenInLogCount }}&nbsp;/&nbsp;{{ maxSeenInLog }}).<br>
+                <q-icon name="stop" color="indigo-10" />Seen in <span style="font-weight: bold;">{{ Math.round(item.seenInLogCount / processedLogsCount * 100) }}%</span> of the logs ({{ item.seenInLogCount }}&nbsp;/&nbsp;{{ processedLogsCount }}).
+              </q-tooltip>
+              <q-linear-progress :value="item.seenInLogCount / maxSeenInLog" color="blue-10" />
+              <q-linear-progress :value="item.seenInLogCount / processedLogsCount" color="indigo-10" />
+            </div>
+            <div
+              v-for="d in item.depth" :key="d"
+              class="row q-ml-xs q-pl-sm json-indentation-bar"
+            />
+            <div
+              class="fixed-font content-center col row q-mr-md"
+            >
+              <q-tooltip content-style="font-size: 1em;" anchor="center middle" self="center middle">
+                <div>
+                  <div class="row items-center q-gutter-x-sm">
+                    <q-icon name="account_tree" color="blue-3" />
+                    <div class="fixed-font text-bold">{{ item.name }}</div>
+                  </div>
+                  <q-separator />
+                  <q-item
+                    v-for="(value, i) in orderBy(item.values, 'count', -1)" :key="i"
+                    style="min-width: 25rem;"
+                  >
+                    <q-item-section>
+                      <q-item-label>
+                        <div class="row justify-between">
+                          <div>
+                            <div class="force-long-text-wrap ellipsis-3-lines">{{ value.value }}</div>
+                          </div>
+                          <q-chip v-if="showAllTypes" dense size="sm" class="q-ml-sm" :class="(value.type ? 'json-bg-type-' + value.type.toLowerCase() : '')">{{ (value.type ? value.type : '') }}</q-chip>
+                        </div>
+                      </q-item-label>
+                        <q-linear-progress :value="value.count / item.seenInLogCount" color="blue-3" />
+                    </q-item-section>
+                  </q-item>
+                </div>
+              </q-tooltip>
+              <div
+                class="json-style-leaf text-bold text-light-blue-3"
+              >
+                {{ item.leaf }}
+              </div>
+              <div v-if="item.values && item.values.length && item.values[0].value !== undefined" class="force-long-text-wrap ellipsis-3-lines">
+                :&nbsp;
+              </div>
+              <div
+                v-if="item.values && item.values.length && item.values[0].value !== undefined"
+                class="force-long-text-wrap ellipsis-3-lines"
+                :class="(orderBy(item.values, 'count', -1)[0].type ? 'json-type-' + orderBy(item.values, 'count', -1)[0].type.toLowerCase() : '')"
+              >
+                {{ orderBy(item.values, 'count', -1)[0].value }}
+              </div>
+              <span
+                v-if="item.values && item.values.length && item.values[0].type && showExtraDetails"
+                style="font-style: italic; opacity: 50%;"> ({{ item.values[0].type }}:{{ item.values[0].count }}/{{ item.seenInLogCount }})</span>
+              <q-chip v-if="showAllTypes" dense size="sm" class="q-ml-sm" :class="(item.values && item.values.length && item.values[0].type ? 'json-bg-type-' + item.values[0].type.toLowerCase() : '')">{{ (item.values && item.values.length && item.values[0].type ? item.values[0].type : '') }}</q-chip>
+            </div>
+            <q-select
+              dense
+              standout="bg-grey-8 text-white"
+              bg-color="dark"
+              v-model="item.mappedField"
+              emit-value
+              map-options
+              :options="mdiTagsOptions"
+              label="Mapping"
+              stack-label
+              style="width: 18rem;"
+              class="q-mx-sm q-my-xs"
+
+              use-input
+              input-debounce="0"
+              @filter="filterMdiTagsOptions"
+            >
+              <template v-slot:option="scope">
+                <q-item
+                  v-bind="scope.itemProps"
+                  v-on="scope.itemEvents"
+                  v-if="scope.opt.label && scope.opt.label !== '<hr>'"
+                  style="width: 25rem;"
+                >
+                  <q-item-section>
+                    <q-item-label v-if="scope.opt.value && scope.opt.value.length > 0"><div class="row justify-between"><div class="text-bold">{{ scope.opt.label }}</div><div class="fixed-font text-caption">&lt;{{ scope.opt.value }}&gt;</div></div></q-item-label>
+                    <q-item-label v-else class="text-bold">{{ scope.opt.label }}</q-item-label>
+                    <q-item-label caption>{{ scope.opt.description }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-separator v-if="scope.opt.separator" inset :spaced="scope.opt.label && scope.opt.label === '<hr>'"  />
+              </template>
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-grey">
+                    No results
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+            <q-select
+              dense
+              standout="bg-grey-8 text-white"
+              bg-color="dark"
+              v-model="item.modifiers"
+              :options="['Parse JSON', 'Stringify JSON', 'Fan out']"
+              style="width: 20rem;"
+              class="q-mx-sm q-my-xs"
+              label="Modifiers"
+              stack-label
+              multiple
+            />
+            </div>
+          </template>
+        </q-virtual-scroll>
+
+        <!-- <div v-for="(jsonPath, i) in orderBy(jsonPathes, 'name')"
           :key="i"
           class="row items-stretch q-my-none q-py-none json-path-line"
           style="min-height: 1.5rem;"
+          v-show="false"
         >
           <div class="row content-center q-mr-sm q-gutter-y-none" style="width: 3rem;">
             <q-tooltip content-style="font-size: 1em;">
@@ -140,8 +269,6 @@
                   <div class="fixed-font text-bold">{{ jsonPath.name }}</div>
                 </div>
                 <q-separator />
-                  <!-- v-for="(value, i) in jsonPath.values.sort(function(a, b) { return (a.count && b.count ? a.count - b.count : 0); } )" :key="i" -->
-                  <!-- v-for="(value, i) in jsonPath.values.sort(function(a, b) { return (a.count ? a.count : 0) - (b.count ? b.count : 0); } )" :key="i" -->
                 <q-item
                   v-for="(value, i) in orderBy(jsonPath.values, 'count', -1)" :key="i"
                   style="min-width: 25rem;"
@@ -156,7 +283,6 @@
                       </div>
                     </q-item-label>
                       <q-linear-progress :value="value.count / jsonPath.seenInLogCount" color="blue-3" />
-                    <!-- <q-item-label caption>caption</q-item-label> -->
                   </q-item-section>
                 </q-item>
               </div>
@@ -176,43 +302,11 @@
             >
               {{ orderBy(jsonPath.values, 'count', -1)[0].value }}
             </div>
-            <!-- <span
-              v-if="jsonPath.values && jsonPath.values.length && jsonPath.values[0].type && jsonPath.values[0].type === 'Object'"
-              class="json-style-object"
-            > {}</span
-            ><span
-              v-if="jsonPath.values && jsonPath.values.length && jsonPath.values[0].type && jsonPath.values[0].type === 'Array'"
-              class="json-style-array"
-            > []</span
-            ><span
-              v-if="jsonPath.values && jsonPath.values.length && jsonPath.values[0].type && jsonPath.values[0].type === 'String' && showAllTypes"
-              class="json-style-string"
-            > ""</span
-            ><span
-              v-if="jsonPath.values && jsonPath.values.length && jsonPath.values[0].type && jsonPath.values[0].type === 'Number' && showAllTypes"
-              class="json-style-number"
-            > 00</span
-            ><span
-              v-if="jsonPath.values && jsonPath.values.length && jsonPath.values[0].type && jsonPath.values[0].type === 'Boolean' && showAllTypes"
-              class="json-style-boolean"
-            > &&</span
-            > -->
             <span
               v-if="jsonPath.values && jsonPath.values.length && jsonPath.values[0].type && showExtraDetails"
               style="font-style: italic; opacity: 50%;"> ({{ jsonPath.values[0].type }}:{{ jsonPath.values[0].count }}/{{ jsonPath.seenInLogCount }})</span>
             <q-chip v-if="showAllTypes" dense size="sm" class="q-ml-sm" :class="(jsonPath.values && jsonPath.values.length && jsonPath.values[0].type ? 'json-bg-type-' + jsonPath.values[0].type.toLowerCase() : '')">{{ (jsonPath.values && jsonPath.values.length && jsonPath.values[0].type ? jsonPath.values[0].type : '') }}</q-chip>
           </div>
-          <!-- <q-select
-            dense
-            outlined
-            v-model="jsonPath.mappedField"
-            emit-value
-            map-options
-            :options="mdiTags"
-            label="Mapping"
-            style="min-width: 18rem;"
-          >
-          </q-select> -->
           <q-select
             dense
             standout="bg-grey-8 text-white"
@@ -265,7 +359,7 @@
             stack-label
             multiple
           />
-        </div>
+        </div> -->
       </div>
 
       <div class="q-mt-md">
@@ -438,6 +532,7 @@ export default {
       ],
       mdiTagsOptions: [], // Used in the Select field
       showQueues: false, // Collapse / Hide the Queues panel if false (default)
+      wrapSingleStringLog: true,
       queueIn: [], // To feed from the Server Tail, or the queueInDataEntry field
       queueInDataEntry: '{"timestamp":"20210422T16:40:00","id":"abcdef-1234","code":15,"destination":{"ip":"172.16.1.2","port":443},"source":{"ip":"192.168.0.1","port":44444},"bam":"boop","values":[{"type":"Object","count":4},{"type":"Plane","count":25,"value":"A320"}]}', // To enter log data by hand
       queueProcess: {}, // The one record we are working on (coming from the queueIn, one at a time)
@@ -447,7 +542,7 @@ export default {
       tailEnabled: false, // Are we running a tail against the sample/capture file?
       tailId: '', // UUID of the tail. Needed to be able to kill it on the server
       processInBackground: false,
-      processInBackgroundMaxRate: 5, // once per second by default
+      processInBackgroundMaxRate: 1, // once per second by default
       queueInMaxSize: 200, // Maximum number of log messages in queueIn
       processedLogsMaxSize: 200 // Maximum number of log messages in processedLogs
     }
@@ -590,18 +685,28 @@ export default {
           }
         } else {
           // This is NOT the root of the object
+          if (typeof leaf === 'object') {
+            Object.keys(leaf).forEach(key => {
+              thisKeyPath = parentPath + '.' + key
 
-          Object.keys(leaf).forEach(key => {
-            thisKeyPath = parentPath + '.' + key
+              // Upsert it first
+              this.upsertToJsonPaths({ thisKeyPath: thisKeyPath, depth: depth, key: key, value: leaf[key] })
 
-            // Upsert it first
-            this.upsertToJsonPaths({ thisKeyPath: thisKeyPath, depth: depth, key: key, value: leaf[key] })
-
-            // Loop through its sub-elements, if any
-            if (typeof leaf[key] === 'object') {
-              this.processLogKey({ leaf: leaf[key], parentPath: thisKeyPath, depth: depth + 1, maxDepth: maxDepth_ - 1 })
-            }
-          })
+              // Loop through its sub-elements, if any
+              if (typeof leaf[key] === 'object' && leaf[key]) {
+                this.processLogKey(
+                  {
+                    leaf: leaf[key],
+                    parentPath: thisKeyPath,
+                    depth: depth + 1,
+                    maxDepth: maxDepth_ - 1
+                  }
+                )
+              }
+            })
+          } else {
+            console.log('Not type object')
+          }
         }
       }
     }, // processLogKey
@@ -680,15 +785,9 @@ export default {
       if (this.socket.connected) {
         this.socket.emit('tail.showtaillist')
       }
-    }
-  },
+    },
 
-  mounted () {
-    this.tailId = uid()
-    this.mdiTagsOptions = this.mdiTags
-    this.loadData()
-    // Event when Server sends a new log via Tail
-    this.socket.on('tail.log', (payload) => {
+    handleSocketOnTailLog (payload) {
       // console.log(payload)
       // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "STDOUT", payload: "Apr 26 14:44:21 oc-ez containerd: time="2021-04-26… systemd-logind: New session 44703 of user root.↵"}
       // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "END"}
@@ -700,12 +799,20 @@ export default {
         payload.tailId &&
         payload.tailId === this.tailId
       ) {
-        if (typeof payload.payload === 'string') {
+        if (this.wrapSingleStringLog && typeof payload.payload === 'string') {
           payload.payload = { singleStringLog: payload.payload }
         }
         this.queueInAdd({ values: payload.payload })
       }
-    })
+    }
+  },
+
+  mounted () {
+    this.tailId = uid()
+    this.mdiTagsOptions = this.mdiTags
+    this.loadData()
+    // Event when Server sends a new log via Tail
+    this.socket.on('tail.log', this.handleSocketOnTailLog)
   },
 
   watch: {
