@@ -58,8 +58,11 @@
           </q-item-section>
         </q-item>
       </div>
-      <div>
-        tailId: {{ tailId }}
+      <div class="q-mt-md">
+        <span class="text-bold">tailId: </span>{{ tailId }}
+      </div>
+      <div class="q-mt-md">
+        <span class="text-bold">Queues / Stacks sizes: </span>{{ queueIn.length }} / {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ processedLogs.length }}
       </div>
       <div class="q-mt-md" v-show="showQueues">
         <div class="text-h4" style="opacity:.4">
@@ -362,9 +365,6 @@
         </div> -->
       </div>
 
-      <div class="q-mt-md">
-        {{ queueIn.length }} / {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ processedLogs.length }}
-      </div>
       <!-- <div>
         <pre>{{ jsonPathes }}</pre>
       </div> -->
@@ -584,7 +584,38 @@ export default {
       }
     }, // filterMdiTagsOptions
 
+    handleSocketOnTailLog (payload) {
+      // console.log(payload)
+      // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "STDOUT", payload: "Apr 26 14:44:21 oc-ez containerd: time="2021-04-26… systemd-logind: New session 44703 of user root.↵"}
+      // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "END"}
+      // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "EXIT", payload: null}
+      if (
+        payload.code &&
+        payload.code === 'STDOUT' &&
+        payload.payload &&
+        payload.tailId &&
+        payload.tailId === this.tailId
+      ) {
+        if (typeof payload.payload === 'string') {
+          const newPayload = []
+          // eslint-disable-next-line quotes
+          payload.payload.split("\n").forEach(lr => {
+            if (this.wrapSingleStringLog && typeof lr === 'string') {
+              newPayload.push({ singleStringLog: lr })
+            } else {
+              newPayload.push(lr)
+            }
+          })
+          this.queueInAdd({ values: newPayload })
+        } else {
+          this.queueInAdd({ values: payload.payload })
+        }
+      }
+    },
+
     queueInAdd ({ values }) {
+      console.log('queueInAdd:')
+      console.log(values)
       if (typeof values === 'string') {
         // deal with it as Strings
         try {
@@ -784,25 +815,6 @@ export default {
     listTails () {
       if (this.socket.connected) {
         this.socket.emit('tail.showtaillist')
-      }
-    },
-
-    handleSocketOnTailLog (payload) {
-      // console.log(payload)
-      // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "STDOUT", payload: "Apr 26 14:44:21 oc-ez containerd: time="2021-04-26… systemd-logind: New session 44703 of user root.↵"}
-      // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "END"}
-      // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "EXIT", payload: null}
-      if (
-        payload.code &&
-        payload.code === 'STDOUT' &&
-        payload.payload &&
-        payload.tailId &&
-        payload.tailId === this.tailId
-      ) {
-        if (this.wrapSingleStringLog && typeof payload.payload === 'string') {
-          payload.payload = { singleStringLog: payload.payload }
-        }
-        this.queueInAdd({ values: payload.payload })
       }
     }
   },
