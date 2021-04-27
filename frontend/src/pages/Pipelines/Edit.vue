@@ -11,7 +11,8 @@
         <q-btn class="q-mr-lg" dense label="List Tails" flat color="secondary" @click="listTails()" />
         <q-toggle v-model="tailEnabled" label="Tail Log Source Stream" />
         <q-toggle v-model="showExtraDetails" label="Show extra details" />
-        <q-toggle v-model="showAllTypes" label="Show types" />
+        <q-toggle v-model="showTypesInMainList" label="Show types (main list)" />
+        <q-toggle v-model="showTypesInPopup" label="Show types (popups)" />
         <q-toggle v-model="processInBackground" label="Process in Background" />
         <q-toggle v-model="showQueues" label="Show Queues" />
         <q-toggle v-model="wrapSingleStringLog" label="Wrap Single String Logs" />
@@ -160,7 +161,7 @@
                           <div>
                             <div class="force-long-text-wrap ellipsis-3-lines">{{ value.value }}</div>
                           </div>
-                          <q-chip v-if="showAllTypes" dense size="sm" class="q-ml-sm" :class="(value.type ? 'json-bg-type-' + value.type.toLowerCase() : '')">{{ (value.type ? value.type : '') }}</q-chip>
+                          <q-chip v-if="showTypesInPopup" dense size="sm" class="q-ml-sm" :class="(value.type ? 'json-bg-type-' + value.type.toLowerCase() : '')">{{ (value.type ? value.type : '') }}</q-chip>
                         </div>
                       </q-item-label>
                         <q-linear-progress :value="value.count / item.seenInLogCount" color="blue-3" />
@@ -186,7 +187,7 @@
               <span
                 v-if="item.values && item.values.length && item.values[0].type && showExtraDetails"
                 style="font-style: italic; opacity: 50%;"> ({{ item.values[0].type }}:{{ item.values[0].count }}/{{ item.seenInLogCount }})</span>
-              <q-chip v-if="showAllTypes" dense size="sm" class="q-ml-sm" :class="(item.values && item.values.length && item.values[0].type ? 'json-bg-type-' + item.values[0].type.toLowerCase() : '')">{{ (item.values && item.values.length && item.values[0].type ? item.values[0].type : '') }}</q-chip>
+              <q-chip v-if="showTypesInMainList" dense size="sm" class="q-ml-sm" :class="(item.values && item.values.length && item.values[0].type ? 'json-bg-type-' + item.values[0].type.toLowerCase() : '')">{{ (item.values && item.values.length && item.values[0].type ? item.values[0].type : '') }}</q-chip>
             </div>
             <q-select
               dense
@@ -266,7 +267,8 @@ export default {
     return {
       socket: this.$socket,
       search: '',
-      showAllTypes: true,
+      showTypesInMainList: false,
+      showTypesInPopup: true,
       showExtraDetails: false,
       mdiTags: [ // Built using tooling/20210420.MDI Tags and fields.xlsx
         { label: 'Application Tab', disable: true, description: '', separator: true },
@@ -389,7 +391,7 @@ export default {
       ],
       mdiTagsOptions: [], // Used in the Select field
       showQueues: false, // Collapse / Hide the Queues panel if false (default)
-      wrapSingleStringLog: true,
+      wrapSingleStringLog: false,
       queueIn: [], // To feed from the Server Tail, or the queueInDataEntry field
       queueInDataEntry: '{"timestamp":"20210422T16:40:00","id":"abcdef-1234","code":15,"destination":{"ip":"172.16.1.2","port":443},"source":{"ip":"192.168.0.1","port":44444},"bam":"boop","values":[{"type":"Object","count":4},{"type":"Plane","count":25,"value":"A320"}]}', // To enter log data by hand
       queueProcess: {}, // The one record we are working on (coming from the queueIn, one at a time)
@@ -425,7 +427,12 @@ export default {
 
   methods: {
     resetData () {
-      setTimeout(() => { this.jsonPathes = [] }, 300)
+      setTimeout(() => {
+        this.jsonPathes = []
+        this.maxSeenInLog = 0
+        this.processedLogsCount = 0
+        this.processedLogs = []
+      }, 300)
     },
 
     filterMdiTagsOptions (val, update, abort) {
@@ -446,6 +453,7 @@ export default {
       // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "STDOUT", payload: "Apr 26 14:44:21 oc-ez containerd: time="2021-04-26… systemd-logind: New session 44703 of user root.↵"}
       // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "END"}
       // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "EXIT", payload: null}
+      // If we are getting data from the remote job, breack it in multiple lines (if \n is found in it) and push it in the queueIn
       if (
         payload.code &&
         payload.code === 'STDOUT' &&
@@ -467,6 +475,19 @@ export default {
         } else {
           this.queueInAdd({ values: payload.payload })
         }
+      }
+
+      // If the remote job died, turn the Tail off here too
+      if (
+        payload.code &&
+        (
+          payload.code === 'END' ||
+          payload.code === 'EXIT'
+        ) &&
+        payload.tailId &&
+        payload.tailId === this.tailId
+      ) {
+        this.tailEnabled = false
       }
     },
 
@@ -514,7 +535,7 @@ export default {
     processLogSample ({ logSample, options }) {
       // Steps:
       // - get FileBeat to write to disk in specific file for LS
-      // - Backend tails disk file
+      // - Backend tails disk file remotely (via SSH)
       // - bring logs to Front (UI) as they arrive (via Socket.io)
       // - limit to 10k log samples on disk (or to given size, whichever is the easiest to achieve)
       // - process logs in background on UI
@@ -731,7 +752,7 @@ export default {
 }
 .json-indentation-bar {
     /* border-left: 1px solid #05b5d4; */
-    border-left: 1px solid #858585;
+    border-left: 1px solid #525252;
 }
 .json-style-leaf {
     /* font-style: bold; */
