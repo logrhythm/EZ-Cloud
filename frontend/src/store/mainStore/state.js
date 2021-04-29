@@ -6,6 +6,7 @@ export default function () {
       //   name: '',
       //   hostname: '',
       //   port: 22,
+      //   authenticationMethod: 'password', // password, private_key
       //   username: '',
       //   password: '',
       //   privateKey: '',
@@ -26,6 +27,7 @@ export default function () {
         name: 'OC-1',
         hostname: '192.168.0.223',
         port: 22,
+        authenticationMethod: 'password', // password, private_key
         username: 'root',
         password: 'logrhythm!1',
         privateKey: null,
@@ -46,6 +48,7 @@ export default function () {
         name: 'OC-2',
         hostname: '192.168.0.101',
         port: 22,
+        authenticationMethod: 'password', // password, private_key
         username: 'root',
         password: 'logrhythm!1',
         privateKey: null,
@@ -61,9 +64,10 @@ export default function () {
         name: 'OC-LAB',
         hostname: '192.168.4.28',
         port: 22,
-        username: 'root',
-        password: 'logrhythm!1',
-        privateKey: null,
+        authenticationMethod: 'private_key', // password, private_key
+        username: null,
+        password: null,
+        privateKey: 'logrhythm!logrhythm!logrhythm!logrhythm!logrhythm!',
         pipelines: [],
         osVersion: '',
         ocInstalled: false,

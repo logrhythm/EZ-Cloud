@@ -8,6 +8,10 @@ export function upsertOpenCollector ({ state, commit }, payload) {
   }
 }
 
+export function getOpenCollectors ({ commit }) {
+  // Get it from the API
+}
+
 export function upsertPipeline ({ state, commit }, payload) {
   console.log('upsertPipeline')
   console.log(payload)

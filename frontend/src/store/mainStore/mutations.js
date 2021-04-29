@@ -13,7 +13,7 @@ export function addOpenCollector (state, payload) {
 export function updateOpenCollector (state, payload) {
   if (payload && payload.uid && payload.uid.length) {
     const openCollectorToUpdate = state.openCollectors.find(oc => oc.uid === payload.uid)
-    Array([
+    const branches = [
       'name',
       'hostname',
       'port',
@@ -24,7 +24,8 @@ export function updateOpenCollector (state, payload) {
       'ocVersion',
       'fbInstalled',
       'fbVersion'
-    ]).forEach((branch) => {
+    ]
+    branches.forEach((branch) => {
       if (payload[branch]) {
         openCollectorToUpdate[branch] = payload[branch]
       }
