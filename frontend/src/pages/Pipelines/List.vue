@@ -21,7 +21,7 @@
             </div>
             <div class="row q-gutter-md">
               <div class="col" >
-                <q-btn rounded dense color="primary" icon="add" label="Add New Pipeline" @click="doPromptForPipelineDetails()" style="width:200px;">
+                <q-btn rounded dense color="primary" icon="add" label="Add New Pipeline" @click="doPromptForPipelineDetails()" style="min-width:12rem;">
                   <q-tooltip content-style="font-size: 1em">
                     Create a new Pipeline.
                   </q-tooltip>
@@ -65,7 +65,7 @@
             <q-icon name="arrow_circle_up" color="green" size="md" v-if="props.value === 'Ready'" />
             <q-icon name="construction" size="md" v-else-if ="props.value === 'Dev'" />
             <q-icon name="auto_awesome" size="md" v-else-if ="props.value === 'New'" />
-            <q-icon name="arrow_circle_down" color="grey" size="md" v-else />
+            <q-icon name="help_center" color="grey" size="md" v-else />
             <q-tooltip content-style="font-size: 1em">
               {{ props.value }}
             </q-tooltip>
@@ -105,7 +105,7 @@ export default {
     return {
       searchFilter: '',
       columns: [
-        { name: 'actions', align: 'center', label: 'Action', field: 'actions', sortable: false },
+        { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
         { name: 'status', align: 'center', label: 'Status', field: 'status', sortable: true },
         { name: 'name', align: 'center', label: 'Pipeline Name', field: 'name', sortable: true },
         { name: 'openCollector', align: 'center', label: 'Primary Open Collector', field: 'openCollector', sortable: true }
@@ -147,7 +147,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions('mainStore', ['upsertOpenCollector', 'upsertPipeline', 'deleteOpenCollector', 'deletePipeline', 'getPipelines']),
+    ...mapActions('mainStore', ['upsertPipeline', 'deletePipeline', 'getPipelines']),
     openPipeline (row) {
       this.$router.push({ path: '/Pipelines/' + row.uid + '/Edit' })
     }, // openPipeline
