@@ -16,6 +16,7 @@
         <q-toggle v-model="processInBackground" label="Process in Background" />
         <q-toggle v-model="showQueues" label="Show Queues" />
         <q-toggle v-model="wrapSingleStringLog" label="Wrap Single String Logs" />
+        <q-toggle v-model="extractMessageFieldOnly" label="Extract/queue in Filebeat 'message' only" />
         <q-item  style="width: 15rem;">
           <q-item-section avatar>
             <q-icon name="speed" />
@@ -405,7 +406,8 @@ export default {
       processInBackgroundMaxRate: 1, // once per second by default
       queueInMaxSize: 200, // Maximum number of log messages in queueIn
       processedLogsMaxSize: 200, // Maximum number of log messages in processedLogs
-      bufferStdOut: '' // Buffer to concatenate incoming STDOUT data until we find a carriage return
+      bufferStdOut: '', // Buffer to concatenate incoming STDOUT data until we find a carriage return
+      extractMessageFieldOnly: true
     }
   },
   mixins: [Vue2Filters.mixin],
@@ -574,19 +576,15 @@ export default {
         values.forEach(value => {
           if (typeof value === 'string') {
             if (value.length > 0) {
-              if (this.queueIn.length < this.queueInMaxSize) {
-                try {
-                  this.queueIn.push(JSON.parse(value))
-                } catch {
-                  // Not proper JSON
-                  console.log('String is not a proper JSON')
-                }
+              try {
+                this.queueInPush(JSON.parse(value))
+              } catch {
+                // Not proper JSON
+                console.log('String is not a proper JSON')
               }
             }
           } else {
-            if (this.queueIn.length < this.queueInMaxSize) {
-              this.queueIn.push(value)
-            }
+            this.queueInPush(value)
           }
         })
       } else if (typeof values === 'object') {
@@ -595,11 +593,27 @@ export default {
         // Increase counter
         this.incomingLogCount++
 
-        if (this.queueIn.length < this.queueInMaxSize) {
-          this.queueIn.push(values)
-        }
+        this.queueInPush(values)
       }
     }, // queueInAdd
+
+    queueInPush (value) {
+      if (this.queueIn.length < this.queueInMaxSize) {
+        if (this.extractMessageFieldOnly) {
+          if (!value.message) {
+            console.log('No .message found in log object')
+          }
+          try {
+            this.queueIn.push(JSON.parse(value.message))
+          } catch {
+            // Not proper JSON
+            console.log('Field .message does not contain proper JSON')
+          }
+        } else {
+          this.queueIn.push(value)
+        }
+      }
+    },
 
     queueProcessAdd ({ fromArray }) {
       // Take the top of list item (oldest) from queueIn and push it to the Process
