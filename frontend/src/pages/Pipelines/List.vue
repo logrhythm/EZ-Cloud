@@ -97,7 +97,6 @@
 </template>
 
 <script>
-// import { uid } from 'quasar'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
@@ -129,7 +128,7 @@ export default {
       this.pipelines.forEach(p => {
         const pipelineOpenCollector = this.openCollectors.find(oc => oc.uid === p.primaryOpenCollector)
         list.push(Object.assign({}, p, {
-          openCollector: pipelineOpenCollector.name + ' (' + pipelineOpenCollector.hostname + ')'
+          openCollector: (pipelineOpenCollector && pipelineOpenCollector.name && pipelineOpenCollector.hostname ? pipelineOpenCollector.name + ' (' + pipelineOpenCollector.hostname + ')' : null)
         }))
       })
       return list
@@ -183,7 +182,7 @@ export default {
         {
           name: this.newPipelineName,
           status: 'New',
-          primaryOpenCollector: this.newPipelineOpenCollector.value
+          primaryOpenCollector: (this.newPipelineOpenCollector && this.newPipelineOpenCollector.value && this.newPipelineOpenCollector.value.length ? this.newPipelineOpenCollector.value : null)
         }
       )
     }
