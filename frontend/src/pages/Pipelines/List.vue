@@ -78,11 +78,11 @@
           </q-card-section>
 
           <q-card-section class="q-pt-none">
-            <q-select dense v-model="newPipelineOpenCollector" :options="openCollectorsOptions" label="Open Collector" />
+            <q-input dense v-model="newPipelineName" autofocus label="Pipeline Name" @keyup.esc="promptForNewPipelineDetails = false" :rules="[val => !!val || $t('Pipeline name cannot be empty')]" />
           </q-card-section>
 
           <q-card-section class="q-pt-none">
-            <q-input dense v-model="newPipelineName" autofocus label="Pipeline Name" @keyup.enter="addNewPipeline()" @keyup.esc="promptForNewPipelineDetails = false" :rules="[val => !!val || $t('Pipeline name cannot be empty')]" />
+            <q-select dense v-model="newPipelineOpenCollector" :options="openCollectorsOptions" label="Open Collector" />
           </q-card-section>
 
           <q-card-actions align="right" class="text-primary">
@@ -179,7 +179,7 @@ export default {
         {
           uid: uid(),
           pipelineName: this.newPipelineName,
-          status: 'enabled',
+          status: 'disabled',
           openCollector: this.newPipelineOpenCollector
         }
       )
