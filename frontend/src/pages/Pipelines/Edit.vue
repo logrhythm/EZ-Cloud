@@ -63,7 +63,7 @@
         <span class="text-bold">tailId: </span>{{ tailId }}
       </div>
       <div class="q-mt-md">
-        <span class="text-bold">Queues / Stacks sizes: </span>{{ queueIn.length }} / {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ processedLogs.length }}
+        <span class="text-bold">Queues / Stacks sizes: </span>{{ incomingLogCount }} / {{ queueIn.length }} / {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ processedLogs.length }}
       </div>
       <div class="q-mt-md" v-show="showQueues">
         <div class="text-h4" style="opacity:.4">
@@ -392,6 +392,7 @@ export default {
       mdiTagsOptions: [], // Used in the Select field
       showQueues: false, // Collapse / Hide the Queues panel if false (default)
       wrapSingleStringLog: false,
+      incomingLogCount: 0, // Number of lines of logs sent over the socket
       queueIn: [], // To feed from the Server Tail, or the queueInDataEntry field
       queueInDataEntry: '{"timestamp":"20210422T16:40:00","id":"abcdef-1234","code":15,"destination":{"ip":"172.16.1.2","port":443},"source":{"ip":"192.168.0.1","port":44444},"bam":"boop","values":[{"type":"Object","count":4},{"type":"Plane","count":25,"value":"A320"}]}', // To enter log data by hand
       queueProcess: {}, // The one record we are working on (coming from the queueIn, one at a time)
@@ -403,7 +404,8 @@ export default {
       processInBackground: false,
       processInBackgroundMaxRate: 1, // once per second by default
       queueInMaxSize: 200, // Maximum number of log messages in queueIn
-      processedLogsMaxSize: 200 // Maximum number of log messages in processedLogs
+      processedLogsMaxSize: 200, // Maximum number of log messages in processedLogs
+      bufferStdOut: '' // Buffer to concatenate incoming STDOUT data until we find a carriage return
     }
   },
   mixins: [Vue2Filters.mixin],
@@ -428,8 +430,8 @@ export default {
   methods: {
     resetData () {
       setTimeout(() => {
+        this.incomingLogCount = 0
         this.jsonPathes = []
-        this.maxSeenInLog = 0
         this.processedLogsCount = 0
         this.processedLogs = []
       }, 300)
@@ -448,11 +450,20 @@ export default {
       }
     }, // filterMdiTagsOptions
 
+    //        ##     ##    ###    ##    ## ########  ##       ########  ######   #######   ######  ##    ## ######## ########  #######  ##    ## ########    ###    #### ##       ##        #######   ######
+    //        ##     ##   ## ##   ###   ## ##     ## ##       ##       ##    ## ##     ## ##    ## ##   ##  ##          ##    ##     ## ###   ##    ##      ## ##    ##  ##       ##       ##     ## ##    ##
+    //        ##     ##  ##   ##  ####  ## ##     ## ##       ##       ##       ##     ## ##       ##  ##   ##          ##    ##     ## ####  ##    ##     ##   ##   ##  ##       ##       ##     ## ##
+    //        ######### ##     ## ## ## ## ##     ## ##       ######    ######  ##     ## ##       #####    ######      ##    ##     ## ## ## ##    ##    ##     ##  ##  ##       ##       ##     ## ##   ####
+    //        ##     ## ######### ##  #### ##     ## ##       ##             ## ##     ## ##       ##  ##   ##          ##    ##     ## ##  ####    ##    #########  ##  ##       ##       ##     ## ##    ##
+    //        ##     ## ##     ## ##   ### ##     ## ##       ##       ##    ## ##     ## ##    ## ##   ##  ##          ##    ##     ## ##   ###    ##    ##     ##  ##  ##       ##       ##     ## ##    ##
+    //        ##     ## ##     ## ##    ## ########  ######## ########  ######   #######   ######  ##    ## ########    ##     #######  ##    ##    ##    ##     ## #### ######## ########  #######   ######
+
     handleSocketOnTailLog (payload) {
       // console.log(payload)
       // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "STDOUT", payload: "Apr 26 14:44:21 oc-ez containerd: time="2021-04-26… systemd-logind: New session 44703 of user root.↵"}
       // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "END"}
       // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "EXIT", payload: null}
+
       // If we are getting data from the remote job, breack it in multiple lines (if \n is found in it) and push it in the queueIn
       if (
         payload.code &&
@@ -462,18 +473,58 @@ export default {
         payload.tailId === this.tailId
       ) {
         if (typeof payload.payload === 'string') {
-          const newPayload = []
+          // Add new data to end of buffer
+          this.bufferStdOut += payload.payload
+
           // eslint-disable-next-line quotes
-          payload.payload.split("\n").forEach(lr => {
-            if (this.wrapSingleStringLog && typeof lr === 'string') {
-              newPayload.push({ singleStringLog: lr })
-            } else {
-              newPayload.push(lr)
+          if (this.bufferStdOut.indexOf("\n") > -1) {
+            const newPayload = []
+            // eslint-disable-next-line quotes
+            this.bufferStdOut.split("\n").forEach(lr => {
+              if (this.wrapSingleStringLog && typeof lr === 'string') {
+                newPayload.push({ singleStringLog: lr })
+              } else {
+                newPayload.push(lr)
+              }
+            })
+
+            // Empty the buffer
+            this.bufferStdOut = ''
+
+            // Check if the last element of the array is not empty (denoting a string not terminated with a carriage return)
+            // If found, put it back in the bufferStdOut, as it's most likely the beginning of a truncated line
+            if (newPayload.length > 0) {
+              if (newPayload[newPayload.length - 1].length !== 0) {
+                this.bufferStdOut = newPayload.pop()
+              }
             }
-          })
-          this.queueInAdd({ values: newPayload })
+
+            this.queueInAdd({ values: newPayload })
+          }
         } else {
           this.queueInAdd({ values: payload.payload })
+        }
+      }
+
+      // If we are getting STDERR data from the remote job, breack it in multiple lines (if \n is found in it) and log it to the console
+      if (
+        payload.code &&
+        payload.code === 'STDERR' &&
+        payload.payload &&
+        payload.tailId &&
+        payload.tailId === this.tailId
+      ) {
+        if (typeof payload.payload === 'string') {
+          console.log(payload.payload)
+          // const newPayload = []
+          // // eslint-disable-next-line quotes
+          // payload.payload.split("\n").forEach(lr => {
+          //   console.log(lr)
+          // })
+          // this.queueInAdd({ values: newPayload })
+        } else {
+          console.log(payload.payload)
+          // this.queueInAdd({ values: payload.payload })
         }
       }
 
@@ -491,33 +542,62 @@ export default {
       }
     },
 
+    //         #######  ##     ## ######## ##     ## ########
+    //        ##     ## ##     ## ##       ##     ## ##
+    //        ##     ## ##     ## ##       ##     ## ##
+    //        ##     ## ##     ## ######   ##     ## ######
+    //        ##  ## ## ##     ## ##       ##     ## ##
+    //        ##    ##  ##     ## ##       ##     ## ##
+    //         ##### ##  #######  ########  #######  ########
+
     queueInAdd ({ values }) {
       if (typeof values === 'string') {
         // deal with it as Strings
-        try {
-          this.queueIn.push(JSON.parse(values))
-        } catch {
-          // Not proper JSON
-          console.log('queueInAdd // String is not a proper JSON')
-          console.log(values)
+
+        // Increase counter
+        this.incomingLogCount++
+
+        if (this.queueIn.length < this.queueInMaxSize) {
+          try {
+            this.queueIn.push(JSON.parse(values))
+          } catch {
+            // Not proper JSON
+            console.log('String is not a proper JSON')
+          }
         }
       } else if (Array.isArray(values)) {
         // deal with it as Array of strings or JSON objects
+
+        // Increase counter
+        this.incomingLogCount = this.incomingLogCount + values.length
+
         values.forEach(value => {
           if (typeof value === 'string') {
-            try {
-              this.queueIn.push(JSON.parse(value))
-            } catch {
-              // Not proper JSON
-              console.log('String is not a proper JSON')
+            if (value.length > 0) {
+              if (this.queueIn.length < this.queueInMaxSize) {
+                try {
+                  this.queueIn.push(JSON.parse(value))
+                } catch {
+                  // Not proper JSON
+                  console.log('String is not a proper JSON')
+                }
+              }
             }
           } else {
-            this.queueIn.push(value)
+            if (this.queueIn.length < this.queueInMaxSize) {
+              this.queueIn.push(value)
+            }
           }
         })
       } else if (typeof values === 'object') {
         // deal with it as a single JSON object
-        this.queueIn.push(values)
+
+        // Increase counter
+        this.incomingLogCount++
+
+        if (this.queueIn.length < this.queueInMaxSize) {
+          this.queueIn.push(values)
+        }
       }
     }, // queueInAdd
 
