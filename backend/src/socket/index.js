@@ -42,6 +42,19 @@ function socketConnect(socket) {
         const filebeatConfig = `filebeat.inputs:\n- type: log\n  enabled: true\n  paths:\n    - ${payload.path}\noutput.console:\n  enabled: true\n  pretty: false\nlogging.level: error\n`;
 
         tails[payload.tailId]
+          .exec(`if [ -d "/tmp/ez-${payload.tailId}" ]; then ps auxwww | grep \`cat /tmp/ez-${payload.tailId}/running.pid\` | grep -v "grep" -q && exit 42; fi;`, {
+            exit(code) {
+              if (code === 42) {
+                // If Filebeat is still running for this Pipeline,
+                // simply prevent from running it again.
+                if (socket.connected) {
+                  socket.emit('tail.log', { tailId: payload.tailId, code: 'ERROR', payload: 'Filebeat is still running for this Pipeline' });
+                  socket.emit('tail.log', { tailId: payload.tailId, code: 'EXIT', payload: code });
+                }
+                return false;
+              }
+            }
+          })
           .exec(`rm -rf /tmp/ez-${payload.tailId}`, {})
           .exec(`mkdir /tmp/ez-${payload.tailId}`, {})
           .exec(`mkdir /tmp/ez-${payload.tailId}/lib`, {})
