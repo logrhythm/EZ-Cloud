@@ -62,7 +62,9 @@
         </template>
         <template v-slot:body-cell-status="props">
           <q-td :props="props">
-            <q-icon name="arrow_circle_up" color="green" size="md" v-if="props.value === 'enabled'" />
+            <q-icon name="arrow_circle_up" color="green" size="md" v-if="props.value === 'Ready'" />
+            <q-icon name="construction" size="md" v-else-if ="props.value === 'Dev'" />
+            <q-icon name="auto_awesome" size="md" v-else-if ="props.value === 'New'" />
             <q-icon name="arrow_circle_down" color="grey" size="md" v-else />
             <q-tooltip content-style="font-size: 1em">
               {{ props.value }}
@@ -82,7 +84,7 @@
           </q-card-section>
 
           <q-card-section class="q-pt-none">
-            <q-select dense v-model="newPipelineOpenCollector" :options="openCollectorsOptions" label="Open Collector" />
+            <q-select dense v-model="newPipelineOpenCollector" :options="openCollectorsOptions" label="Primary Open Collector" />
           </q-card-section>
 
           <q-card-actions align="right" class="text-primary">
@@ -95,7 +97,8 @@
 </template>
 
 <script>
-import { uid } from 'quasar'
+// import { uid } from 'quasar'
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'PagePipelinesList',
@@ -105,16 +108,8 @@ export default {
       columns: [
         { name: 'actions', align: 'center', label: 'Action', field: 'actions', sortable: false },
         { name: 'status', align: 'center', label: 'Status', field: 'status', sortable: true },
-        { name: 'pipelineName', align: 'center', label: 'Pipeline Name', field: 'pipelineName', sortable: true },
-        { name: 'openCollector', align: 'center', label: 'Open Collector', field: 'openCollector', sortable: true }
-      ],
-      tableData: [
-        {
-          uid: 'b9f7c85a-a278-11eb-bcbc-0242ac130002',
-          pipelineName: 'Mistnet',
-          status: 'enabled',
-          openCollector: 'OC-1 (192.168.0.100)'
-        }
+        { name: 'name', align: 'center', label: 'Pipeline Name', field: 'name', sortable: true },
+        { name: 'openCollector', align: 'center', label: 'Primary Open Collector', field: 'openCollector', sortable: true }
       ],
       pagination: {
         sortBy: 'status',
@@ -124,21 +119,39 @@ export default {
       tableLoading: false,
       promptForNewPipelineDetails: false,
       newPipelineName: '',
-      newPipelineOpenCollector: '',
-      openCollectorsOptions: [
-        'OC-1 (192.168.0.100)',
-        'OC-2 (192.168.0.101)',
-        'OC-LAB (192.168.4.28)'
-      ]
+      newPipelineOpenCollector: null
     } // return
   },
+  computed: {
+    ...mapGetters('mainStore', ['openCollectors', 'pipelines']),
+    tableData () {
+      const list = []
+      this.pipelines.forEach(p => {
+        const pipelineOpenCollector = this.openCollectors.find(oc => oc.uid === p.primaryOpenCollector)
+        list.push(Object.assign({}, p, {
+          openCollector: pipelineOpenCollector.name + ' (' + pipelineOpenCollector.hostname + ')'
+        }))
+      })
+      return list
+    },
+    openCollectorsOptions () {
+      const options = []
+      this.openCollectors.forEach(oc => {
+        options.push(
+          {
+            value: oc.uid,
+            label: oc.name + ' (' + oc.hostname + ')'
+          }
+        )
+      })
+      return options
+    }
+  },
   methods: {
+    ...mapActions('mainStore', ['upsertOpenCollector', 'upsertPipeline', 'deleteOpenCollector', 'deletePipeline', 'getPipelines']),
     openPipeline (row) {
       this.$router.push({ path: '/Pipelines/' + row.uid + '/Edit' })
     }, // openPipeline
-    getPipelines () {
-      //
-    }, // getPipelines
     deletePipelinePrompt (row) {
       if (typeof row !== 'undefined') {
         // ask to confirm
@@ -159,28 +172,18 @@ export default {
         }) // }).onOk(() => {
       }
     }, // deletePipelinePrompt
-    deletePipeline (pipelineDetails) {
-      // Check if the pipeline is in the table. If it is, then remove it
-      const position = this.tableData.findIndex(pipeline => pipeline.uid === pipelineDetails.uid)
-      if (position >= 0) {
-        this.tableData.splice(position, 1)
-      } else {
-        console.log('❌ Pipeline with UID "' + pipelineDetails.uid + '" not found.')
-      }
-    }, // deletePipeline
     doPromptForPipelineDetails () {
       this.newPipelineName = ''
-      this.newPipelineOpenCollector = ''
+      this.newPipelineOpenCollector = null
       this.promptForNewPipelineDetails = true
     }, // doPromptForPipelineDetails
     addNewPipeline () {
       this.promptForNewPipelineDetails = false
-      this.tableData.push(
+      this.upsertPipeline(
         {
-          uid: uid(),
-          pipelineName: this.newPipelineName,
-          status: 'disabled',
-          openCollector: this.newPipelineOpenCollector
+          name: this.newPipelineName,
+          status: 'New',
+          primaryOpenCollector: this.newPipelineOpenCollector.value
         }
       )
     }
