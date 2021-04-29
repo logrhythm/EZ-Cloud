@@ -36,9 +36,20 @@ function socketConnect(socket) {
       // Check the tailId doesn't already exist
       if (!tails[payload.tailId]) {
         tails[payload.tailId] = new SSH(configSsh);
+        // eslint-disable-next-line quotes
+        // eslint-disable-next-line max-len
+        // const filebeatConfig = "filebeat.inputs:\n- type: log\n  enabled: true\n  paths:\n    - /var/log/*.log\noutput.console:\n  enabled: true\n  pretty: false\nlogging.level: error\n";
+        const filebeatConfig = `filebeat.inputs:\n- type: log\n  enabled: true\n  paths:\n    - ${payload.path}\noutput.console:\n  enabled: true\n  pretty: false\nlogging.level: error\n`;
 
         tails[payload.tailId]
-          .exec(`tail -n 0 -F ${payload.path}`, {
+          .exec(`rm -rf /tmp/ez-${payload.tailId}`, {})
+          .exec(`mkdir /tmp/ez-${payload.tailId}`, {})
+          .exec(`mkdir /tmp/ez-${payload.tailId}/lib`, {})
+          .exec(`chmod 700 /tmp/ez-${payload.tailId}/lib`, {})
+          .exec(`cat > /tmp/ez-${payload.tailId}/config.yml`, { in: filebeatConfig })
+          .exec(`chmod 700 /tmp/ez-${payload.tailId}/config.yml`, {})
+          // .exec(`tail -n 0 -F ${payload.path}`, {
+          .exec(`/usr/share/filebeat/bin/filebeat -c config.yml --path.home /usr/share/filebeat --path.config /tmp/ez-${payload.tailId} --path.data /tmp/ez-${payload.tailId}/lib -e & echo -e $! > /tmp/ez-${payload.tailId}/running.pid`, {
             err(stderr) {
               if (socket.connected) {
                 socket.emit('tail.log', { tailId: payload.tailId, code: 'ERROR', payload: stderr });
@@ -60,6 +71,7 @@ function socketConnect(socket) {
               socket.emit('tail.log', { tailId: payload.tailId, code: 'END', payload: err });
             }
           })
+          // .exec(`echo 123 > /tmp/ez-${payload.tailId}/running.pid`, {})
           .start({
             failure() {
               if (socket.connected) {
