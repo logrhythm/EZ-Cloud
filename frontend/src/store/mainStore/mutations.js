@@ -17,6 +17,7 @@ export function updateOpenCollector (state, payload) {
       'name',
       'hostname',
       'port',
+      'authenticationMethod',
       'username',
       'privateKey',
       'osVersion',
