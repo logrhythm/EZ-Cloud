@@ -14,3 +14,4 @@ backend/src/public_web_root/icons/*
 backend/src/public_web_root/fonts/*
 backend/src/public_web_root/css/*
 backend/src/public_web_root/index.html
+backend/.vscode/settings.json
