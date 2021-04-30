@@ -46,7 +46,9 @@ const routes = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/Pipelines/List.vue') },
-      { path: ':pipelineUid/Edit', component: () => import('pages/Pipelines/Edit.vue') }
+      { path: ':pipelineUid/Properties', component: () => import('src/pages/Pipelines/Properties.vue') },
+      { path: ':pipelineUid/Collection/Edit', component: () => import('src/pages/Pipelines/CollectionEdit.vue') },
+      { path: ':pipelineUid/Mapping/Edit', component: () => import('src/pages/Pipelines/MappingEdit.vue') }
     ]
   },
 

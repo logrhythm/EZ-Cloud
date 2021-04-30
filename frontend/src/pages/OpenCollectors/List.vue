@@ -157,7 +157,7 @@ export default {
         { name: 'ocVersion', align: 'center', label: 'OpenCollector version', field: 'ocVersion', sortable: true },
         { name: 'osVersion', align: 'center', label: 'OS version', field: 'osVersion', sortable: true },
         { name: 'fbVersion', align: 'center', label: 'Filebeat version', field: 'fbVersion', sortable: true },
-        { name: 'pipelinesCount', align: 'center', label: 'Pipelines', field: 'pipelinesCount', sortable: true }
+        { name: 'pipelinesCount', align: 'center', label: 'Log Sources', field: 'pipelinesCount', sortable: true }
       ],
       pagination: {
         sortBy: 'name',

@@ -149,7 +149,7 @@ export default {
   methods: {
     ...mapActions('mainStore', ['upsertPipeline', 'deletePipeline', 'getPipelines']),
     openPipeline (row) {
-      this.$router.push({ path: '/Pipelines/' + row.uid + '/Edit' })
+      this.$router.push({ path: '/Pipelines/' + row.uid + '/Properties' })
     }, // openPipeline
     deletePipelinePrompt (row) {
       if (typeof row !== 'undefined') {
