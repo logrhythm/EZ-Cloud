@@ -11,6 +11,7 @@ CREATE TABLE [dbo].[pipelines](
 	[status] [tinyint] NOT NULL,
 	[primaryOpenCollector] [char](40) NULL,
 	[fieldsMappingJson] [nvarchar](max) NULL,
+	[collectionConfigJson] [nvarchar](max) NULL,
  CONSTRAINT [PK_pipelines] PRIMARY KEY CLUSTERED 
 (
 	[uid] ASC
