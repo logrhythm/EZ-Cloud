@@ -82,33 +82,37 @@ export default function () {
       //   name: '',
       //   status: 'New', // New, Dev, Ready
       //   primaryOpenCollector: '', // UID of the main OC
-      //   fieldsMapping: []
+      //   fieldsMapping: [],
+      //   collectionConfig: {}
       // },
       {
         uid: 'b9f7c85a-a278-11eb-bcbc-0242ac130002',
         name: 'Mistnet',
         status: 'Dev', // New, Dev, Ready
         primaryOpenCollector: 'd25e3226-a90d-11eb-bcbc-0242ac130002', // UID of the main OC
-        fieldsMapping: []
+        fieldsMapping: [],
+        collectionConfig: {}
       },
       {
         uid: '7dc7d568-a90e-11eb-bcbc-0242ac130002',
         name: 'Magic Cloud 2000',
         status: 'New', // New, Dev, Ready
         primaryOpenCollector: '5c23be18-a90e-11eb-bcbc-0242ac130002', // UID of the main OC
-        fieldsMapping: []
+        fieldsMapping: [],
+        collectionConfig: {}
       },
       {
         uid: 'b9e1cf48-a910-11eb-bcbc-0242ac130002',
         name: 'Azure Event Hub',
         status: 'Ready', // New, Dev, Ready
         primaryOpenCollector: '5c23be18-a90e-11eb-bcbc-0242ac130002', // UID of the main OC
-        fieldsMapping: []
+        fieldsMapping: [],
+        collectionConfig: {}
       }
     ],
     logSamples: [
       {
-        pipelinesUid: '',
+        pipelineUid: '',
         logs: []
       }
     ]
