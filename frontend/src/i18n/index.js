@@ -1,5 +1,7 @@
-import enUS from './en-us'
+import enGB from './en-gb/en_gb.json'
+// import enUS from './en-us'
 
 export default {
-  'en-us': enUS
+  'en-gb': enGB,
+  'en-us': enGB
 }

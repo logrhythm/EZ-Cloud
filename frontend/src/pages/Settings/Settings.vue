@@ -1,16 +1,25 @@
 <template>
   <q-page class="q-gutter-sm q-pa-xl">
-    <div class="text-h4 q-mb-md">EZ Backend Base URLs</div>
-    <q-input dense v-model="ezBackendBaseUrlWeb" label="Website" autofocus />
-    <q-input dense v-model="ezBackendBaseUrlApi" label="API" autofocus />
-    <q-input dense v-model="ezBackendBaseUrlSocket" label="Socket" autofocus />
+    <q-card class="q-pa-md q-ma-none">
+      <q-card-section horizontal>
+        <q-card-section class="col">
+          <div class="text-h4">EZ Backend Base URLs</div>
+          <q-input v-model="ezBackendBaseUrlWeb" label="Website" autofocus />
+          <q-input v-model="ezBackendBaseUrlApi" label="API"  />
+          <q-input v-model="ezBackendBaseUrlSocket" label="Socket"  />
+        </q-card-section>
 
-    <q-btn class="q-mx-sm" dense glossy color="primary" icon="save" @click="saveSettings()" :loading="savingAction" >
-      <q-tooltip content-style="font-size: 1em">
-        {{ $t('Save settings to local web browser.') }}
-      </q-tooltip>
-    </q-btn>
+        <q-separator vertical />
 
+        <q-card-actions>
+          <q-btn glossy class="full-height" color="primary" icon="save" @click="saveSettings()" :loading="savingAction" >
+            <q-tooltip content-style="font-size: 1em">
+              {{ $t('Save settings to local web browser.') }}
+            </q-tooltip>
+          </q-btn>
+        </q-card-actions>
+      </q-card-section>
+    </q-card>
   </q-page>
 </template>
 

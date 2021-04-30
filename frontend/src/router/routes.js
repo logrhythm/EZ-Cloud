@@ -33,6 +33,15 @@ const routes = [
   },
 
   {
+    path: '/OpenCollectors',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/OpenCollectors/List.vue') },
+      { path: ':openCollectorUid/View', component: () => import('pages/OpenCollectors/View.vue') }
+    ]
+  },
+
+  {
     path: '/Pipelines',
     component: () => import('layouts/MainLayout.vue'),
     children: [
