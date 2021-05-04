@@ -1,126 +1,250 @@
 <template>
   <q-page class="q-pa-sm">
-    <div class="">
-      <div class="text-h2" style="opacity:.4">
-        Pipelines Builder
-      </div>
-      <div class="q-mt-md">
-        <q-btn class="q-mr-lg" dense label="Reset Sample mapping" flat color="primary" @click="resetData()" />
-        <q-btn class="q-mr-lg" dense label="Init Tail" flat color="primary" @click="tailEnabled = true" :disable="tailEnabled" />
-        <q-btn class="q-mr-lg" dense label="Kill Tail" flat color="negative" @click="tailEnabled = false" :disable="!tailEnabled" />
-        <q-btn class="q-mr-lg" dense label="List Tails" flat color="secondary" @click="listTails()" />
-        <q-toggle v-model="tailEnabled" label="Tail Log Source Stream" />
-        <q-toggle v-model="showExtraDetails" label="Show extra details" />
-        <q-toggle v-model="showTypesInMainList" label="Show types (main list)" />
-        <q-toggle v-model="showTypesInPopup" label="Show types (popups)" />
-        <q-toggle v-model="processInBackground" label="Process in Background" />
-        <q-toggle v-model="showQueues" label="Show Queues" />
-        <q-toggle v-model="wrapSingleStringLog" label="Wrap Single String Logs" />
-        <q-toggle v-model="extractMessageFieldOnly" label="Extract/queue in Filebeat 'message' only" />
-        <q-item  style="width: 15rem;">
-          <q-item-section avatar>
-            <q-icon name="speed" />
-          </q-item-section>
-          <q-item-section>
-            <q-slider
-              v-model="processInBackgroundMaxRate"
-              :min="1"
-              :max="10"
-              label
-              :label-value="'Background Process max: ' + processInBackgroundMaxRate + ' / second'"
-            />
-          </q-item-section>
-        </q-item>
-        <q-item  style="width: 25rem;">
-          <q-item-section avatar>
-            <q-icon name="download" />
-          </q-item-section>
-          <q-item-section>
-            <q-slider
-              v-model="queueInMaxSize"
-              :min="1"
-              :max="2000"
-              label
-              :label-value="'Max messages in Queue In: ' + queueInMaxSize"
-            />
-          </q-item-section>
-        </q-item>
-        <q-item  style="width: 25rem;">
-          <q-item-section avatar>
-            <q-icon name="download_for_offline" />
-          </q-item-section>
-          <q-item-section>
-            <q-slider
-              v-model="processedLogsMaxSize"
-              :min="1"
-              :max="1000"
-              label
-              :label-value="'Max messages in Processed Logs: ' + processedLogsMaxSize"
-            />
-          </q-item-section>
-        </q-item>
-      </div>
-      <div class="q-mt-md">
-        <span class="text-bold">tailId: </span>{{ tailId }}
-      </div>
-      <div class="q-mt-md">
-        <span class="text-bold">Queues / Stacks sizes: </span>{{ incomingLogCount }} / {{ queueIn.length }} / {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ processedLogs.length }}
-      </div>
-      <div class="q-mt-md" v-show="showQueues">
-        <div class="text-h4" style="opacity:.4">
-          Queues
-        </div>
-        <div class="text-caption">
-          Manual input (one log at a time)
-        </div>
-        <q-input
-          v-model="queueInDataEntry"
-          filled
-          autogrow
-          label="queueInDataEntry"
-          @keypress.shift.enter.prevent="queueInAdd({values: queueInDataEntry});"
-        >
-          <template v-slot:after>
-            <q-btn round dense flat icon="add" @click="queueInAdd({ values: queueInDataEntry })" />
-          </template>
-        </q-input>
-        <div class="text-caption">
-          Input Q
-        </div>
-        <q-input
-          v-model="queueInWindow"
-          filled
-          autogrow
-          readonly
-          label="queueIn"
-        >
-          <template v-slot:after>
-            <div class="column">
-              <q-btn round dense flat icon="input" @click="queueProcessAdd({ fromArray: queueIn })" :disable="Object.keys(queueProcess).length > 0" />
-              <q-btn round dense flat icon="close" @click="queueIn=[]" :disable="queueIn.length == 0" color="red" />
-            </div>
-          </template>
-        </q-input>
-        <div class="text-caption">
-          Process Queue
-        </div>
-        <q-input
-          v-model="queueProcessWindow"
-          filled
-          autogrow
-          readonly
-          label="queueProcess"
-        >
-          <template v-slot:after>
-            <!-- <q-btn round dense flat icon="send" @click="processLogSample({ logSample: queueProcess, options: {} }).finally({ console.log('processLogSample IS DONE'); })" :disable="Object.keys(queueProcess).length === 0"/> -->
-            <q-btn round dense flat icon="send" @click="processLogSample({ options: { cleanQueueProcessAfterProcess: true } })" :disable="Object.keys(queueProcess).length === 0"/>
-          </template>
-        </q-input>
-      </div>
+    <q-header elevated style="background: var(--q-color-dark);">
+      <q-toolbar class="q-gutter-x-sm">
+<!--
+        - Pipeline Builder - move actions to menu / icon bar (including Settings icon/button)
+        -- Return (to list / to Properties)
+        -- ----
+        -- Save
+        -- Revert to last saved
+        -- ----
+        -- Tail
+        -- Enter log sample manually
+        -- ----
+        -- Process in background
+        -- ----
+        -- Export JQ Pipeline
+        -- Show JQ output
+        -- ----
+        -- Settings
+        --- Show types (main list)
+        --- Show types (popups)
+        --- Accept and Wrap single string logs
+        --- Extract/queue in Filebeat '.message' only
+        --- Background Process: max MPS
+        --- Max messages in Queue In
+        --- Max messages in Processed Logs
+ -->
+        <q-btn no-caps flat dense icon="arrow_back" label="Return to Properties" />
+        <q-separator vertical />
+        <q-btn no-caps flat dense icon="save" label="Save" color="primary" />
+        <q-btn no-caps flat dense icon="restore" label="Reverse to last saved" />
+        <q-separator vertical />
+        <q-btn no-caps flat dense icon="play_circle_outline" label="Start Live Tail" color="secondary" @click="tailEnabled = true" v-if="!tailEnabled" />
+        <q-btn no-caps flat dense icon="stop" label="Stop Live Tail" @click="tailEnabled = false" v-else />
+        <q-separator vertical />
+        <q-btn no-caps flat dense icon="search" label="Start background processing" color="secondary" @click="processInBackground = true" v-if="!processInBackground" />
+        <q-btn no-caps flat dense icon="search_off" label="Stop background processing" @click="processInBackground = false" v-else />
+        <q-separator vertical />
+        <q-btn no-caps flat dense icon="file_download" label="Export JQ" />
+        <q-btn no-caps flat dense icon="visibility" label="Show JQ" v-if="!showJqOutput" @click="showJqOutput = true" />
+        <q-btn no-caps flat dense icon="visibility_off" label="Hide JQ output" v-else @click="showJqOutput = false" />
 
-      <div class="q-mt-md fit column">
+        <q-toolbar-title style="opacity:.4" class="text-center">Pipeline Builder</q-toolbar-title>
+
+        <q-btn no-caps flat dense icon="pending" label="Advanced">
+          <q-menu>
+            <div class="row no-wrap q-pa-md">
+              <div class="column">
+                <div class="text-h6 q-mb-md">Advanced</div>
+                <q-toggle v-model="showExtraDetails" label="Show extra details" />
+                <q-toggle v-model="showQueues" label="Show Queues" />
+              </div>
+            </div>
+          </q-menu>
+        </q-btn>
+        <q-btn no-caps flat dense icon="settings" label="Settings">
+          <q-menu>
+            <div class="row no-wrap q-pa-md">
+              <div class="column">
+                <div class="text-h6 q-mb-md">Settings</div>
+                <q-item class="q-pl-none" >
+                <q-toggle v-model="showTypesInMainList" label="Show types in Fields list" />
+                </q-item>
+                <q-item class="q-pl-none" >
+                <q-toggle v-model="showTypesInPopup" label="Show types in Value popups" />
+                </q-item>
+                <q-item class="q-pl-none" >
+                <q-toggle v-model="wrapSingleStringLog" label="Accept and Wrap non-JSON logs" />
+                </q-item>
+                <q-item class="q-pl-none" >
+                  <q-toggle v-model="extractMessageFieldOnly" label="Extract Filebeat '.message' only" />
+                </q-item>
+                <q-item  style="width: 20rem;">
+                  <q-item-section avatar>
+                    <q-icon name="speed" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-slider
+                      v-model="processInBackgroundMaxRate"
+                      :min="1"
+                      :max="10"
+                      label
+                      :label-value="'Background Process max: ' + processInBackgroundMaxRate + ' / second'"
+                    />
+                  </q-item-section>
+                </q-item>
+                <q-item  style="width: 20rem;">
+                  <q-item-section avatar>
+                    <q-icon name="download" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-slider
+                      v-model="queueInMaxSize"
+                      :min="1"
+                      :max="2000"
+                      label
+                      :label-value="'Max messages in Queue In: ' + queueInMaxSize"
+                    />
+                  </q-item-section>
+                </q-item>
+                <q-item  style="width: 20rem;">
+                  <q-item-section avatar>
+                    <q-icon name="download_for_offline" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-slider
+                      v-model="processedLogsMaxSize"
+                      :min="1"
+                      :max="1000"
+                      label
+                      :label-value="'Max messages in Processed Logs: ' + processedLogsMaxSize"
+                    />
+                  </q-item-section>
+                </q-item>
+              </div>
+            </div>
+          </q-menu>
+        </q-btn>
+      </q-toolbar>
+    </q-header>
+    <div class="">
+      <!-- <div class="q-mt-md">
+        <span class="text-bold">tailId: </span>{{ tailId }}
+      </div> -->
+      <div class="">
+          <q-tooltip content-style="font-size: 1rem;">
+            <!-- <span class="text-bold">Queues / Stacks sizes: </span>{{ incomingLogCount }} / {{ queueIn.length }} / {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ processedLogs.length }} -->
+            <div class="row content-center items-center q-gutter-x-sm">
+              <q-linear-progress :value=".75" color="indigo" size="lg" stripe style="width: 5rem;" track-color="grey-10"/>
+              <div>
+                Inbound Queue: <span style="font-weight: bold;">{{ Math.round(queueIn.length / queueInMaxSize * 100) }}%</span> ({{ queueIn.length }}&nbsp;/&nbsp;{{ queueInMaxSize }}).
+              </div>
+            </div>
+            <div class="row content-center items-center q-gutter-x-sm">
+              <q-linear-progress :value=".75" color="teal" size="lg" style="width: 5rem;" track-color="grey-10" />
+              <div>
+                Processed Messages: <span style="font-weight: bold;">{{ Math.round(processedLogsCount / processedLogsMaxSize * 100) }}%</span> ({{ processedLogsCount }}&nbsp;/&nbsp;{{ processedLogsMaxSize }}).
+              </div>
+            </div>
+            <q-separator class="q-my-sm" />
+            <q-icon name="info" color="blue-10" size="sm" class="q-mr-sm" /><span>Total Messages sent by the backend: </span><span style="font-weight: bold;">{{ incomingLogCount }}</span><br>
+            <span>This includes the messages already in transit when the Live Tail got stopped.</span>
+          </q-tooltip>
+        <q-linear-progress :value="queueIn.length / queueInMaxSize" color="indigo" size="lg" stripe track-color="grey-10" />
+        <q-linear-progress :value="processedLogsCount / processedLogsMaxSize" color="teal" size="lg" track-color="grey-10" />
+      </div>
+      <!-- <div class="q-mt-md">
+        <span class="text-bold">Queues / Stacks sizes: </span>{{ incomingLogCount }} / {{ queueIn.length }} / {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ processedLogs.length }}
+      </div> -->
+      <q-card class="q-mt-md" v-show="showQueues">
+        <q-card-section class="text-h4" style="opacity:.4">
+          Queues
+        </q-card-section>
+        <q-separator />
+        <q-card-section>
+          <div class="text-caption">
+            Manual input (one log at a time)
+          </div>
+          <q-input
+            v-model="queueInDataEntry"
+            filled
+            autogrow
+            label="queueInDataEntry"
+            @keypress.shift.enter.prevent="queueInAdd({values: queueInDataEntry});"
+          >
+            <template v-slot:after>
+              <q-btn round dense flat icon="add" @click="queueInAdd({ values: queueInDataEntry })" />
+            </template>
+          </q-input>
+        </q-card-section>
+        <q-card-section>
+          <div class="text-caption">
+            Input Q
+          </div>
+          <q-input
+            v-model="queueInWindow"
+            filled
+            autogrow
+            readonly
+            label="queueIn"
+          >
+            <template v-slot:after>
+              <div class="column">
+                <q-btn round dense flat icon="input" @click="queueProcessAdd({ fromArray: queueIn })" :disable="Object.keys(queueProcess).length > 0" />
+                <q-btn round dense flat icon="close" @click="queueIn=[]" :disable="queueIn.length == 0" color="red" />
+              </div>
+            </template>
+          </q-input>
+        </q-card-section>
+        <q-card-section>
+          <div class="text-caption">
+            Process Queue
+          </div>
+          <q-input
+            v-model="queueProcessWindow"
+            filled
+            autogrow
+            readonly
+            label="queueProcess"
+          >
+            <template v-slot:after>
+              <!-- <q-btn round dense flat icon="send" @click="processLogSample({ logSample: queueProcess, options: {} }).finally({ console.log('processLogSample IS DONE'); })" :disable="Object.keys(queueProcess).length === 0"/> -->
+              <q-btn round dense flat icon="send" @click="processLogSample({ options: { cleanQueueProcessAfterProcess: true } })" :disable="Object.keys(queueProcess).length === 0"/>
+            </template>
+          </q-input>
+        </q-card-section>
+      </q-card>
+
+      <q-card class="q-mt-md fit column">
+        <div
+          class="row items-stretch text-bold"
+          style="min-height: 2.5rem;"
+        >
+          <div class="row content-center q-ml-sm" style="width: 3rem;">
+            Freq.
+          </div>
+          <q-separator vertical class="q-ml-xs" />
+          <div
+            class="content-center col row q-mx-sm q-px-sm"
+          >
+            Fields
+          </div>
+          <q-separator vertical />
+          <div
+            style="width: 18rem;"
+            class="row content-center q-mx-sm q-my-xs q-px-sm"
+          >
+            Mapping
+          </div>
+          <q-separator vertical />
+          <div
+            style="width: 20rem;"
+            class="row content-center q-mx-sm q-my-xs q-px-sm"
+          >
+            Modifiers
+          </div>
+          <div
+            style="width: 1rem;"
+          >
+          </div>
+        </div>
+        <q-separator />
+        <!-- DATA -->
+          <!-- style="height: calc(100vh - (50px + 10px + 10px + 30px));" -->
         <q-virtual-scroll
-          style="max-height: 80vh;"
+          style="height: calc(100vh - (150px)); min-height: 10rem;"
           :items="orderBy(jsonPathes, 'name')"
           virtual-scroll-item-size="48"
         >
@@ -130,122 +254,151 @@
               class="row items-stretch q-my-none q-py-none json-path-line"
               style="min-height: 1.5rem;"
             >
-            <div class="row content-center q-mr-sm q-gutter-y-none" style="width: 3rem;">
-              <q-tooltip content-style="font-size: 1em;">
-                <q-icon name="stop" color="blue-10" />Relative frequency <span style="font-weight: bold;">{{ Math.round(item.seenInLogCount / maxSeenInLog * 100) }}%</span> ({{ item.seenInLogCount }}&nbsp;/&nbsp;{{ maxSeenInLog }}).<br>
-                <q-icon name="stop" color="indigo-10" />Seen in <span style="font-weight: bold;">{{ Math.round(item.seenInLogCount / processedLogsCount * 100) }}%</span> of the logs ({{ item.seenInLogCount }}&nbsp;/&nbsp;{{ processedLogsCount }}).
-              </q-tooltip>
-              <q-linear-progress :value="item.seenInLogCount / maxSeenInLog" color="blue-10" />
-              <q-linear-progress :value="item.seenInLogCount / processedLogsCount" color="indigo-10" />
-            </div>
-            <div
-              v-for="d in item.depth" :key="d"
-              class="row q-ml-xs q-pl-sm json-indentation-bar"
-            />
-            <div
-              class="fixed-font content-center col row q-mr-md"
-            >
-              <q-tooltip content-style="font-size: 1em;" anchor="center middle" self="center middle">
-                <div>
-                  <div class="row items-center q-gutter-x-sm">
-                    <q-icon name="account_tree" color="blue-3" />
-                    <div class="fixed-font text-bold">{{ item.name }}</div>
+              <div class="row content-center q-mr-sm q-gutter-y-none" style="width: 3rem;">
+                <q-tooltip content-style="font-size: 1em;">
+                  <q-icon name="stop" color="blue-10" />Relative frequency <span style="font-weight: bold;">{{ Math.round(item.seenInLogCount / maxSeenInLog * 100) }}%</span> ({{ item.seenInLogCount }}&nbsp;/&nbsp;{{ maxSeenInLog }}).<br>
+                  <q-icon name="stop" color="indigo-10" />Seen in <span style="font-weight: bold;">{{ Math.round(item.seenInLogCount / processedLogsCount * 100) }}%</span> of the logs ({{ item.seenInLogCount }}&nbsp;/&nbsp;{{ processedLogsCount }}).
+                </q-tooltip>
+                <q-linear-progress :value="item.seenInLogCount / maxSeenInLog" color="blue-10" />
+                <q-linear-progress :value="item.seenInLogCount / processedLogsCount" color="indigo-10" />
+              </div>
+              <div
+                v-for="d in item.depth" :key="d"
+                class="row q-ml-xs q-pl-sm json-indentation-bar"
+              />
+              <div
+                class="fixed-font content-center col row q-mr-md"
+              >
+                <q-tooltip content-style="font-size: 1em;" anchor="center middle" self="center middle">
+                  <div>
+                    <div class="row items-center q-gutter-x-sm">
+                      <q-icon name="account_tree" color="blue-3" />
+                      <div class="fixed-font text-bold">{{ item.name }}</div>
+                    </div>
+                    <q-separator />
+                    <q-item
+                      v-for="(value, i) in orderBy(item.values, 'count', -1)" :key="i"
+                      style="min-width: 25rem;"
+                    >
+                      <q-item-section>
+                        <q-item-label>
+                          <div class="row justify-between">
+                            <div>
+                              <div class="force-long-text-wrap ellipsis-3-lines">{{ value.value }}</div>
+                            </div>
+                            <q-chip v-if="showTypesInPopup" dense size="sm" class="q-ml-sm" :class="(value.type ? 'json-bg-type-' + value.type.toLowerCase() : '')">{{ (value.type ? value.type : '') }}</q-chip>
+                          </div>
+                        </q-item-label>
+                          <q-linear-progress :value="value.count / item.seenInLogCount" color="blue-3" />
+                      </q-item-section>
+                    </q-item>
                   </div>
-                  <q-separator />
+                </q-tooltip>
+                <div
+                  class="json-style-leaf text-bold text-light-blue-3"
+                >
+                  {{ item.leaf }}
+                </div>
+                <div v-if="item.values && item.values.length && item.values[0].value !== undefined" class="force-long-text-wrap ellipsis-3-lines">
+                  :&nbsp;
+                </div>
+                <div
+                  v-if="item.values && item.values.length && item.values[0].value !== undefined"
+                  class="force-long-text-wrap ellipsis-3-lines"
+                  :class="(orderBy(item.values, 'count', -1)[0].type ? 'json-type-' + orderBy(item.values, 'count', -1)[0].type.toLowerCase() : '')"
+                >
+                  {{ orderBy(item.values, 'count', -1)[0].value }}
+                </div>
+                <span
+                  v-if="item.values && item.values.length && item.values[0].type && showExtraDetails"
+                  style="font-style: italic; opacity: 50%;"> ({{ item.values[0].type }}:{{ item.values[0].count }}/{{ item.seenInLogCount }})</span>
+                <q-chip v-if="showTypesInMainList" dense size="sm" class="q-ml-sm" :class="(item.values && item.values.length && item.values[0].type ? 'json-bg-type-' + item.values[0].type.toLowerCase() : '')">{{ (item.values && item.values.length && item.values[0].type ? item.values[0].type : '') }}</q-chip>
+              </div>
+              <q-select
+                dense
+                standout="bg-grey-8 text-white"
+                bg-color="dark"
+                v-model="item.mappedField"
+                emit-value
+                map-options
+                :options="mdiTagsOptions"
+                label="Mapping"
+                stack-label
+                style="width: 18rem;"
+                class="q-mx-sm q-my-xs"
+
+                use-input
+                input-debounce="0"
+                @filter="filterMdiTagsOptions"
+              >
+                <template v-slot:option="scope">
                   <q-item
-                    v-for="(value, i) in orderBy(item.values, 'count', -1)" :key="i"
-                    style="min-width: 25rem;"
+                    v-bind="scope.itemProps"
+                    v-on="scope.itemEvents"
+                    v-if="scope.opt.label && scope.opt.label !== '<hr>'"
+                    style="width: 25rem;"
                   >
                     <q-item-section>
-                      <q-item-label>
-                        <div class="row justify-between">
-                          <div>
-                            <div class="force-long-text-wrap ellipsis-3-lines">{{ value.value }}</div>
-                          </div>
-                          <q-chip v-if="showTypesInPopup" dense size="sm" class="q-ml-sm" :class="(value.type ? 'json-bg-type-' + value.type.toLowerCase() : '')">{{ (value.type ? value.type : '') }}</q-chip>
-                        </div>
-                      </q-item-label>
-                        <q-linear-progress :value="value.count / item.seenInLogCount" color="blue-3" />
+                      <q-item-label v-if="scope.opt.value && scope.opt.value.length > 0"><div class="row justify-between"><div class="text-bold">{{ scope.opt.label }}</div><div class="fixed-font text-caption">&lt;{{ scope.opt.value }}&gt;</div></div></q-item-label>
+                      <q-item-label v-else class="text-bold">{{ scope.opt.label }}</q-item-label>
+                      <q-item-label caption>{{ scope.opt.description }}</q-item-label>
                     </q-item-section>
                   </q-item>
-                </div>
-              </q-tooltip>
-              <div
-                class="json-style-leaf text-bold text-light-blue-3"
-              >
-                {{ item.leaf }}
-              </div>
-              <div v-if="item.values && item.values.length && item.values[0].value !== undefined" class="force-long-text-wrap ellipsis-3-lines">
-                :&nbsp;
-              </div>
-              <div
-                v-if="item.values && item.values.length && item.values[0].value !== undefined"
-                class="force-long-text-wrap ellipsis-3-lines"
-                :class="(orderBy(item.values, 'count', -1)[0].type ? 'json-type-' + orderBy(item.values, 'count', -1)[0].type.toLowerCase() : '')"
-              >
-                {{ orderBy(item.values, 'count', -1)[0].value }}
-              </div>
-              <span
-                v-if="item.values && item.values.length && item.values[0].type && showExtraDetails"
-                style="font-style: italic; opacity: 50%;"> ({{ item.values[0].type }}:{{ item.values[0].count }}/{{ item.seenInLogCount }})</span>
-              <q-chip v-if="showTypesInMainList" dense size="sm" class="q-ml-sm" :class="(item.values && item.values.length && item.values[0].type ? 'json-bg-type-' + item.values[0].type.toLowerCase() : '')">{{ (item.values && item.values.length && item.values[0].type ? item.values[0].type : '') }}</q-chip>
-            </div>
-            <q-select
-              dense
-              standout="bg-grey-8 text-white"
-              bg-color="dark"
-              v-model="item.mappedField"
-              emit-value
-              map-options
-              :options="mdiTagsOptions"
-              label="Mapping"
-              stack-label
-              style="width: 18rem;"
-              class="q-mx-sm q-my-xs"
-
-              use-input
-              input-debounce="0"
-              @filter="filterMdiTagsOptions"
-            >
-              <template v-slot:option="scope">
-                <q-item
-                  v-bind="scope.itemProps"
-                  v-on="scope.itemEvents"
-                  v-if="scope.opt.label && scope.opt.label !== '<hr>'"
-                  style="width: 25rem;"
-                >
-                  <q-item-section>
-                    <q-item-label v-if="scope.opt.value && scope.opt.value.length > 0"><div class="row justify-between"><div class="text-bold">{{ scope.opt.label }}</div><div class="fixed-font text-caption">&lt;{{ scope.opt.value }}&gt;</div></div></q-item-label>
-                    <q-item-label v-else class="text-bold">{{ scope.opt.label }}</q-item-label>
-                    <q-item-label caption>{{ scope.opt.description }}</q-item-label>
-                  </q-item-section>
-                </q-item>
-                <q-separator v-if="scope.opt.separator" inset :spaced="scope.opt.label && scope.opt.label === '<hr>'"  />
-              </template>
-              <template v-slot:no-option>
-                <q-item>
-                  <q-item-section class="text-grey">
-                    No results
-                  </q-item-section>
-                </q-item>
-              </template>
-            </q-select>
-            <q-select
-              dense
-              standout="bg-grey-8 text-white"
-              bg-color="dark"
-              v-model="item.modifiers"
-              :options="['Parse JSON', 'Stringify JSON', 'Fan out']"
-              style="width: 20rem;"
-              class="q-mx-sm q-my-xs"
-              label="Modifiers"
-              stack-label
-              multiple
-            />
+                  <q-separator v-if="scope.opt.separator" inset :spaced="scope.opt.label && scope.opt.label === '<hr>'"  />
+                </template>
+                <template v-slot:no-option>
+                  <q-item>
+                    <q-item-section class="text-grey">
+                      No results
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+              <q-select
+                dense
+                standout="bg-grey-8 text-white"
+                bg-color="dark"
+                v-model="item.modifiers"
+                :options="['Parse JSON', 'Stringify JSON', 'Fan out']"
+                style="width: 20rem;"
+                class="q-mx-sm q-my-xs"
+                label="Modifiers"
+                stack-label
+                multiple
+              />
             </div>
           </template>
         </q-virtual-scroll>
-      </div>
+      </q-card>
+      <q-card class="q-mt-md" v-show="showJqOutput">
+        <q-card-section class="text-h4" style="opacity:.4">
+          OpenCollector Transform JQ
+        </q-card-section>
+        <q-separator />
+        <q-card-section>
+            <!-- autogrow -->
+          <q-input
+            v-model="jqOutput"
+            type="textarea"
+            filled
+            readonly
+            label="Transform JQ"
+            style="min-height: 20rem;"
+            rows="32"
+            class="fixed-font"
+          >
+            <template v-slot:after>
+              <q-btn round dense flat icon="content_copy" @click="copyToClipboard(jqOutput)" :disable="!jqOutput || (jqOutput && jqOutput.length === 0)">
+                <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                  Copy to Clipboad
+                </q-tooltip>
+              </q-btn>
+            </template>
+          </q-input>
+
+        </q-card-section>
+
+      </q-card>
     </div>
   </q-page>
 </template>
@@ -259,7 +412,8 @@
 //       ##    ## ##    ## ##    ##   ##  ##           ##
 //        ######   ######  ##     ## #### ##           ##
 
-import { uid } from 'quasar'
+import { uid, copyToClipboard } from 'quasar'
+import { mapState } from 'vuex'
 import Vue2Filters from 'vue2-filters'
 
 export default {
@@ -407,11 +561,14 @@ export default {
       queueInMaxSize: 200, // Maximum number of log messages in queueIn
       processedLogsMaxSize: 200, // Maximum number of log messages in processedLogs
       bufferStdOut: '', // Buffer to concatenate incoming STDOUT data until we find a carriage return
-      extractMessageFieldOnly: true
+      extractMessageFieldOnly: true,
+      showJqOutput: false
+      // jqOutput: 'aaaim'
     }
   },
   mixins: [Vue2Filters.mixin],
   computed: {
+    ...mapState('mainStore', ['jqTransformTemplate']),
     maxSeenInLog () {
       let max = 0
       this.jsonPathes.forEach(jp => {
@@ -426,7 +583,10 @@ export default {
     }, // queueInWindow
     queueProcessWindow () {
       return JSON.stringify(this.queueProcess)
-    } // queueProcessWindow
+    }, // queueProcessWindow
+    jqOutput () {
+      return this.jqTransformTemplate
+    }
   },
 
   methods: {
@@ -656,6 +816,9 @@ export default {
         // Add the processed sample to processedLogs, except if we have enough of them already
         if (this.processedLogsCount < this.processedLogsMaxSize) {
           this.processedLogs.push(logSampleToProcess)
+        } else {
+          // Turning off the background processing of the logs
+          this.processInBackground = false
         }
       }
 
@@ -779,6 +942,10 @@ export default {
       if (this.socket.connected) {
         this.socket.emit('tail.showtaillist')
       }
+    },
+
+    copyToClipboard (value) {
+      copyToClipboard(value)
     }
   },
 
