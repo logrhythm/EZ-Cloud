@@ -121,7 +121,7 @@
     </q-header>
     <div class="">
       <!-- <div class="q-mt-md">
-        <span class="text-bold">tailId: </span>{{ tailId }}
+        <span class="text-bold">tailId: </span>{{ pipelineUid }}
       </div> -->
       <div class="">
           <q-tooltip content-style="font-size: 1rem;">
@@ -412,7 +412,7 @@
 //       ##    ## ##    ## ##    ##   ##  ##           ##
 //        ######   ######  ##     ## #### ##           ##
 
-import { uid, copyToClipboard } from 'quasar'
+import { copyToClipboard } from 'quasar'
 import { mapState } from 'vuex'
 import Vue2Filters from 'vue2-filters'
 
@@ -421,6 +421,7 @@ export default {
   data () {
     return {
       socket: this.$socket,
+      pipelineUid: '', // UUID of the pipeline, used as the UUID of the tail too. Needed to be able to kill it on the server
       search: '',
       showTypesInMainList: false,
       showTypesInPopup: true,
@@ -555,7 +556,7 @@ export default {
       processedLogsCount: 0, // The count of processed logs
       jsonPathes: [], // The extracted keys and values from the processedLogSample. Used for display and mapping. Saved.
       tailEnabled: false, // Are we running a tail against the sample/capture file?
-      tailId: '', // UUID of the tail. Needed to be able to kill it on the server
+      // tailId: '', // UUID of the tail. Needed to be able to kill it on the server
       processInBackground: false,
       processInBackgroundMaxRate: 1, // once per second by default
       queueInMaxSize: 200, // Maximum number of log messages in queueIn
@@ -632,7 +633,7 @@ export default {
         payload.code === 'STDOUT' &&
         payload.payload &&
         payload.tailId &&
-        payload.tailId === this.tailId
+        payload.tailId === this.pipelineUid
       ) {
         if (typeof payload.payload === 'string') {
           // Add new data to end of buffer
@@ -674,7 +675,7 @@ export default {
         payload.code === 'STDERR' &&
         payload.payload &&
         payload.tailId &&
-        payload.tailId === this.tailId
+        payload.tailId === this.pipelineUid
       ) {
         if (typeof payload.payload === 'string') {
           console.log(payload.payload)
@@ -698,7 +699,7 @@ export default {
           payload.code === 'EXIT'
         ) &&
         payload.tailId &&
-        payload.tailId === this.tailId
+        payload.tailId === this.pipelineUid
       ) {
         this.tailEnabled = false
       }
@@ -928,13 +929,13 @@ export default {
 
     initTail () {
       if (this.socket.connected) {
-        this.socket.emit('tail.init', { tailId: this.tailId, path: '/tmp/mistnet.log' })
+        this.socket.emit('tail.init', { tailId: this.pipelineUid, path: '/tmp/mistnet.log' })
       }
     },
 
     killTail () {
       if (this.socket.connected) {
-        this.socket.emit('tail.kill', { tailId: this.tailId })
+        this.socket.emit('tail.kill', { tailId: this.pipelineUid })
       }
     },
 
@@ -950,7 +951,13 @@ export default {
   },
 
   mounted () {
-    this.tailId = uid()
+    if (this.$route.params.pipelineUid && this.$route.params.pipelineUid.length) {
+      if (this.pipelineUid !== this.$route.params.pipelineUid) {
+        this.pipelineUid = this.$route.params.pipelineUid
+      }
+    }
+
+    // this.tailId = uid()
     this.mdiTagsOptions = this.mdiTags
     this.resetData()
     // Event when Server sends a new log via Tail

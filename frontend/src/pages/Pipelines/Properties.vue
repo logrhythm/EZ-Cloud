@@ -98,8 +98,8 @@ export default {
   data () {
     return {
       socket: this.$socket,
-      pipelineUid: '7dc7d568-a90e-11eb-bcbc-0242ac130002'
-      // pipelineUid: ''
+      // pipelineUid: '7dc7d568-a90e-11eb-bcbc-0242ac130002'
+      pipelineUid: ''
     }
   },
   computed: {
@@ -113,6 +113,13 @@ export default {
     editPipelineMapping () {
       this.$router.push({ path: '/Pipelines/' + this.pipelineUid + '/Mapping/Edit' })
     } // editPipelineMapping
+  },
+  mounted () {
+    if (this.$route.params.pipelineUid && this.$route.params.pipelineUid.length) {
+      if (this.pipelineUid !== this.$route.params.pipelineUid) {
+        this.pipelineUid = this.$route.params.pipelineUid
+      }
+    }
   }
 }
 </script>
