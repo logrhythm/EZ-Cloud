@@ -720,9 +720,11 @@ export default {
         // Increase counter
         this.incomingLogCount++
 
-        if (this.queueIn.length < this.queueInMaxSize) {
+        // if (this.tailEnabled && (this.queueIn.length < this.queueInMaxSize)) {
+        if (values.length > 0) {
           try {
-            this.queueIn.push(JSON.parse(values))
+            // this.queueIn.push(JSON.parse(values))
+            this.queueInPush(JSON.parse(values))
           } catch {
             // Not proper JSON
             console.log('String is not a proper JSON')
@@ -759,7 +761,7 @@ export default {
     }, // queueInAdd
 
     queueInPush (value) {
-      if (this.queueIn.length < this.queueInMaxSize) {
+      if (this.tailEnabled && (this.queueIn.length < this.queueInMaxSize)) {
         if (this.extractMessageFieldOnly) {
           if (!value.message) {
             console.log('No .message found in log object')
