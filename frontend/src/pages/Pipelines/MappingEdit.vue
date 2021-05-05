@@ -26,7 +26,7 @@
         --- Max messages in Queue In
         --- Max messages in Processed Logs
  -->
-        <q-btn no-caps flat dense icon="arrow_back" label="Return to Properties" />
+        <q-btn no-caps flat dense icon="arrow_back" label="Return to Properties" :to="'/Pipelines/' + this.pipelineUid + '/Properties'" />
         <q-separator vertical />
         <q-btn no-caps flat dense icon="save" label="Save" color="primary" />
         <q-btn no-caps flat dense icon="restore" label="Reverse to last saved" />
