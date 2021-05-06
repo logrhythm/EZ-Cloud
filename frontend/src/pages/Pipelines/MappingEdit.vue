@@ -712,7 +712,7 @@ export default {
     //        ##     ## ##     ## ######   ##     ## ######
     //        ##  ## ## ##     ## ##       ##     ## ##
     //        ##    ##  ##     ## ##       ##     ## ##
-    //         ##### ##  #######  ########  #######  ########
+    //        ##### ##  #######  ########  #######  ########
 
     queueInAdd ({ values }) {
       if (typeof values === 'string') {
@@ -790,25 +790,33 @@ export default {
       }
     }, // queueProcessAdd
 
-    processLogSample ({ logSample, options }) {
-      // Steps:
-      // - get FileBeat to write to disk in specific file for LS
-      // - Backend tails disk file remotely (via SSH)
-      // - bring logs to Front (UI) as they arrive (via Socket.io)
-      // - limit to 10k log samples on disk (or to given size, whichever is the easiest to achieve)
-      // - process logs in background on UI
-      // - keep stats updated on UI
-      // - for each log:
-      //     - recursively go through each keys:
-      //           - populate the jsonPathes object with:
-      //               - full dotted path, leaf name, and depth, if not already in
-      //               - increment seenInLogCount
-      //               - add value to values.value (if not already in)
-      //               - add type to values.type (if not already in)
-      //               - increment values.count for value / type
-      //     - increment processedLogsCount
-      //     - add log to processedLogs
+    //        ########  ########   #######   ######  ########  ######   ######        ##        #######   ######    ######
+    //        ##     ## ##     ## ##     ## ##    ## ##       ##    ## ##    ##       ##       ##     ## ##    ##  ##    ##
+    //        ##     ## ##     ## ##     ## ##       ##       ##       ##             ##       ##     ## ##        ##
+    //        ########  ########  ##     ## ##       ######    ######   ######        ##       ##     ## ##   ####  ######
+    //        ##        ##   ##   ##     ## ##       ##             ##       ##       ##       ##     ## ##    ##        ##
+    //        ##        ##    ##  ##     ## ##    ## ##       ##    ## ##    ##       ##       ##     ## ##    ##  ##    ##
+    //        ##        ##     ##  #######   ######  ########  ######   ######        ########  #######   ######    ######
 
+    // Steps:
+    // - get FileBeat to write to disk in specific file for LS
+    // - Backend tails disk file remotely (via SSH)
+    // - bring logs to Front (UI) as they arrive (via Socket.io)
+    // - limit to 10k log samples on disk (or to given size, whichever is the easiest to achieve)
+    // - process logs in background on UI
+    // - keep stats updated on UI
+    // - for each log:
+    //     - recursively go through each keys:
+    //           - populate the jsonPathes object with:
+    //               - full dotted path, leaf name, and depth, if not already in
+    //               - increment seenInLogCount
+    //               - add value to values.value (if not already in)
+    //               - add type to values.type (if not already in)
+    //               - increment values.count for value / type
+    //     - increment processedLogsCount
+    //     - add log to processedLogs
+
+    processLogSample ({ logSample, options }) {
       // Check if we got provided a logSample, if not falls back onto this.queueProcess
       const logSampleProvidedAsVariable = (logSample && Object.keys(logSample).length > 0)
       const logSampleToProcess = (logSampleProvidedAsVariable ? logSample : this.queueProcess)
@@ -931,6 +939,14 @@ export default {
       this.processLogSample({ options: { cleanQueueProcessAfterProcess: true } })
     }, // processLogSampleInBackground
 
+    //        ########    ###    #### ##
+    //           ##      ## ##    ##  ##
+    //           ##     ##   ##   ##  ##
+    //           ##    ##     ##  ##  ##
+    //           ##    #########  ##  ##
+    //           ##    ##     ##  ##  ##
+    //           ##    ##     ## #### ########
+
     initTail () {
       if (this.socket.connected) {
         this.socket.emit('tail.init', { tailId: this.pipelineUid, path: '/tmp/mistnet.log' })
@@ -948,6 +964,14 @@ export default {
         this.socket.emit('tail.showtaillist')
       }
     },
+
+    //              ##  #######
+    //              ## ##     ##
+    //              ## ##     ##
+    //              ## ##     ##
+    //        ##    ## ##  ## ##
+    //        ##    ## ##    ##
+    //         ######   ##### ##
 
     copyToClipboard (value) {
       copyToClipboard(value)
@@ -978,13 +1002,22 @@ export default {
       }
 
       // Fanning out the log
-      // XXXXXXXXXXXXX SHOULD NOT BE USED AS IS
-      // NEED TO REPLACE PART OF FULL PATH WITH FLATTEN ARRAY ID
+      const flattenArrays = [] // array of the IDs
       const flattenArrayPlaceholder = []
       const flattenArrayPlaceholderTemplate = '        "{{EZ_flatten_array_id}}": flatten_array({{EZ_message_root}}{{EZ_flatten_array_field_path}}),'
       const flattenArrayAddFieldPlaceholderTemplate = '    add_field({{EZ_flatten_array_name_placeholder}}{{EZ_flatten_array_field_doted_path_placeholder}}; .output.{{EZ_mdi_field_placeholder}}) |'
       const flattenArrayAddFieldPlaceholder = [] // multiple strings
+
+      // Mapping of the fields
+      const addFieldPlaceholderTemplate = '    add_field({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}; .output.{{EZ_mdi_field_placeholder}}) |'
+      const addFieldPlaceholder = [] // multiple strings
+
+      // MDI Sub-rules
+      const subRulesAddFieldPlaceholderTemplate = '    add_field({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}; .output.{{EZ_mdi_tag_placeholder}}) |'
+      const subRulesAddFieldPlaceholder = []
+
       this.jsonPathes.forEach(path => {
+        // Fanning out the log
         if (path.modifiers && path.modifiers.length) {
           let messageRoot = ''
           if (this.extractMessageFieldOnly) {
@@ -992,40 +1025,62 @@ export default {
           }
 
           const flattenArrayId = 'flatten_array_' + path.name.replace(/[^a-zA-Z0-9]/g, '_')
+          flattenArrays.push(path.name)
+
           flattenArrayPlaceholder.push(
             flattenArrayPlaceholderTemplate
               .replace(/{{EZ_flatten_array_id}}/g, flattenArrayId)
               .replace(/{{EZ_message_root}}/g, messageRoot)
               .replace(/{{EZ_flatten_array_field_path}}/g, path.name)
           )
-
-          flattenArrayAddFieldPlaceholder.push(
-            flattenArrayAddFieldPlaceholderTemplate
-              .replace(/{{EZ_flatten_array_name_placeholder}}/g, flattenArrayId)
-              .replace(/{{EZ_flatten_array_field_doted_path_placeholder}}/g, path.name)
-              .replace(/{{EZ_mdi_field_placeholder}}/g, path.mapping)
-          )
         }
       })
 
-      // Mapping of the fields
-      const addFieldPlaceholderTemplate = '    add_field({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}; .output.{{EZ_mdi_field_placeholder}}) |'
-      const addFieldPlaceholder = [] // multiple strings
       this.jsonPathes.forEach(path => {
+        // Mapping of the fields
         if (path.mappedField && path.mappedField.length) {
-          addFieldPlaceholder.push(
-            addFieldPlaceholderTemplate
-              .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-              .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
-              .replace(/{{EZ_mdi_field_placeholder}}/g, path.mappedField)
-          )
-        }
-      })
+          // First check if the field is part (sub branch) of a Fanned out branch
+          let isSubFannedOutBranch = false
+          let flattenArrayPathName = ''
+          flattenArrays.forEach(fa => {
+            if (
+              path.name &&
+              path.name.indexOf(fa) === 0 &&
+              fa.length > flattenArrayPathName.length
+            ) {
+              flattenArrayPathName = fa
+              isSubFannedOutBranch = true
+            }
+          })
 
-      // MDI Sub-rules
-      const subRulesAddFieldPlaceholderTemplate = '    add_field({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}; .output.{{EZ_mdi_tag_placeholder}}) |'
-      const subRulesAddFieldPlaceholder = []
-      this.jsonPathes.forEach(path => {
+          if (isSubFannedOutBranch) {
+            // Field is a Sub of a Fanned out branch
+            flattenArrayAddFieldPlaceholder.push(
+              flattenArrayAddFieldPlaceholderTemplate
+                .replace(
+                  /{{EZ_flatten_array_name_placeholder}}/g,
+                  'flatten_array_' + flattenArrayPathName.replace(/[^a-zA-Z0-9]/g, '_') // rebuild the flatten array ID
+                )
+                .replace(
+                  /{{EZ_flatten_array_field_doted_path_placeholder}}/g,
+                  path.name
+                    .replace(flattenArrayPathName, '') // Remove the part of the path that is the flatten array's own path
+                    .replace(/\[\d+\]/, '') // remove any array numerical ID (like [0], [1], etc...)
+                )
+                .replace(/{{EZ_mdi_field_placeholder}}/g, path.mappedField)
+            )
+          } else {
+            // Standard field
+            addFieldPlaceholder.push(
+              addFieldPlaceholderTemplate
+                .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
+                .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+                .replace(/{{EZ_mdi_field_placeholder}}/g, path.mappedField)
+            )
+          }
+        }
+
+        // MDI Sub-rules
         if (path.mappedField && path.mappedField.length && path.mappedField.indexOf('tag') === 0) {
           subRulesAddFieldPlaceholder.push(
             subRulesAddFieldPlaceholderTemplate
@@ -1036,6 +1091,35 @@ export default {
         }
       })
 
+      // // const addFieldPlaceholderTemplate = '    add_field({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}; .output.{{EZ_mdi_field_placeholder}}) |'
+      // // const addFieldPlaceholder = [] // multiple strings
+      // this.jsonPathes.forEach(path => {
+      //   // // Mapping of the fields
+      //   // if (path.mappedField && path.mappedField.length) {
+      //   //   addFieldPlaceholder.push(
+      //   //     addFieldPlaceholderTemplate
+      //   //       .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
+      //   //       .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+      //   //       .replace(/{{EZ_mdi_field_placeholder}}/g, path.mappedField)
+      //   //   )
+      //   // }
+      // })
+
+      // // MDI Sub-rules
+      // // const subRulesAddFieldPlaceholderTemplate = '    add_field({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}; .output.{{EZ_mdi_tag_placeholder}}) |'
+      // // const subRulesAddFieldPlaceholder = []
+      // this.jsonPathes.forEach(path => {
+      //   // // MDI Sub-rules
+      //   // if (path.mappedField && path.mappedField.length && path.mappedField.indexOf('tag') === 0) {
+      //   //   subRulesAddFieldPlaceholder.push(
+      //   //     subRulesAddFieldPlaceholderTemplate
+      //   //       .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
+      //   //       .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+      //   //       .replace(/{{EZ_mdi_tag_placeholder}}/g, path.mappedField)
+      //   //   )
+      //   // }
+      // })
+
       // Put this all together
       jqTransform = jqTransform
         .replace(/{{EZ_flatten_array_placeholder}}/g, flattenArrayPlaceholder.join('\r'))
@@ -1043,23 +1127,6 @@ export default {
         .replace(/{{EZ_flatten_array__add_field_placeholder}}/g, flattenArrayAddFieldPlaceholder.join('\r'))
         .replace(/{{EZ_add_field_placeholder}}/g, addFieldPlaceholder.join('\r'))
         .replace(/{{EZ_sub_rules__add_field_placeholder}}/g, subRulesAddFieldPlaceholder.join('\r'))
-
-      /*
-# Generated on: {{EZ_generation_timestamp}}
-# By: {{EZ_generation_user}}
-# For Stream: {{EZ_stream_name_placeholder}}
-# UID: {{EZ_stream_id_placeholder}}
-{{EZ_flatten_array_placeholder}}
-            "original_message": {{EZ_original_message_placeholder}}
-    add_field("{{EZ_beatname_placeholder}}"; .output.beatname) |
-    add_field("{{EZ_stream_name_placeholder}}"; .output.stream_name) |
-{{EZ_flatten_array__add_field_placeholder}}
-#    add_field({{EZ_flatten_array_name_placeholder}}{{EZ_flatten_array_field_doted_path_placeholder}}; .output.{{EZ_mdi_field_placeholder}}) |
-{{EZ_add_field_placeholder}}
-    add_field({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}; .output.{{EZ_mdi_field_placeholder}}) |
-{{EZ_sub_rules__add_field_placeholder}}
-    add_field({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}; .output.tag1) |
-      */
 
       // And ship it back
       this.jqOutput = jqTransform
