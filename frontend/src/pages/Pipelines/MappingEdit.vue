@@ -359,7 +359,7 @@
                 standout="bg-grey-8 text-white"
                 bg-color="dark"
                 v-model="item.modifiers"
-                :options="['Parse JSON', 'Stringify JSON', 'Fan out']"
+                :options="['Parse JSON', 'Stringify JSON', 'Fan out', 'Sub Rule selector']"
                 style="width: 20rem;"
                 class="q-mx-sm q-my-xs"
                 label="Modifiers"
@@ -1016,23 +1016,34 @@ export default {
       const subRulesAddFieldPlaceholderTemplate = '    add_field({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}; .output.{{EZ_mdi_tag_placeholder}}) |'
       const subRulesAddFieldPlaceholder = []
 
+      let messageRoot = ''
+      if (this.extractMessageFieldOnly) {
+        messageRoot = '.message | fromjson | '
+      }
+
+      // Fanning out the log
       this.jsonPathes.forEach(path => {
-        // Fanning out the log
         if (path.modifiers && path.modifiers.length) {
-          let messageRoot = ''
-          if (this.extractMessageFieldOnly) {
-            messageRoot = '.message | fromjson | '
-          }
+          path.modifiers.forEach(pm => {
+            if (pm === 'Fan out') {
+              const flattenArrayId = 'flatten_array_' + path.name.replace(/[^a-zA-Z0-9]/g, '_')
+              flattenArrays.push(path.name)
 
-          const flattenArrayId = 'flatten_array_' + path.name.replace(/[^a-zA-Z0-9]/g, '_')
-          flattenArrays.push(path.name)
-
-          flattenArrayPlaceholder.push(
-            flattenArrayPlaceholderTemplate
-              .replace(/{{EZ_flatten_array_id}}/g, flattenArrayId)
-              .replace(/{{EZ_message_root}}/g, messageRoot)
-              .replace(/{{EZ_flatten_array_field_path}}/g, path.name)
-          )
+              flattenArrayPlaceholder.push(
+                flattenArrayPlaceholderTemplate
+                  .replace(/{{EZ_flatten_array_id}}/g, flattenArrayId)
+                  .replace(/{{EZ_message_root}}/g, messageRoot)
+                  .replace(/{{EZ_flatten_array_field_path}}/g, path.name)
+              )
+            } else if (pm === 'Sub Rule selector') {
+              subRulesAddFieldPlaceholder.push(
+                subRulesAddFieldPlaceholderTemplate
+                  .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
+                  .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+                  .replace(/{{EZ_mdi_tag_placeholder}}/g, 'tag1')
+              )
+            }
+          })
         }
       })
 
@@ -1080,15 +1091,15 @@ export default {
           }
         }
 
-        // MDI Sub-rules
-        if (path.mappedField && path.mappedField.length && path.mappedField.indexOf('tag') === 0) {
-          subRulesAddFieldPlaceholder.push(
-            subRulesAddFieldPlaceholderTemplate
-              .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-              .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
-              .replace(/{{EZ_mdi_tag_placeholder}}/g, path.mappedField)
-          )
-        }
+        // // MDI Sub-rules
+        // if (path.mappedField && path.mappedField.length && path.mappedField.indexOf('tag') === 0) {
+        //   subRulesAddFieldPlaceholder.push(
+        //     subRulesAddFieldPlaceholderTemplate
+        //       .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
+        //       .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+        //       .replace(/{{EZ_mdi_tag_placeholder}}/g, path.mappedField)
+        //   )
+        // }
       })
 
       // // const addFieldPlaceholderTemplate = '    add_field({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}; .output.{{EZ_mdi_field_placeholder}}) |'
