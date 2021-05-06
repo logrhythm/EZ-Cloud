@@ -38,7 +38,7 @@
         <q-btn no-caps flat dense icon="search_off" label="Stop background processing" @click="processInBackground = false" v-else />
         <q-separator vertical />
         <q-btn no-caps flat dense icon="file_download" label="Export JQ" />
-        <q-btn no-caps flat dense icon="visibility" label="Show JQ" v-if="!showJqOutput" @click="buildJqTransform(); showJqOutput = true" />
+        <q-btn no-caps flat dense icon="visibility" label="Show JQ" v-if="!showJqOutput" @click="buildJqFilter(); buildJqTransform(); showJqOutput = true" />
         <q-btn no-caps flat dense icon="visibility_off" label="Hide JQ output" v-else @click="showJqOutput = false" />
 
         <q-toolbar-title style="opacity:.4" class="text-center">Pipeline Builder</q-toolbar-title>
@@ -372,30 +372,59 @@
       </q-card>
       <q-card class="q-mt-md" v-show="showJqOutput">
         <q-card-section class="text-h4" style="opacity:.4">
-          OpenCollector Transform JQ
+          OpenCollector JQ
         </q-card-section>
         <q-separator />
+        <q-card-section class="text-h6" style="opacity:.6">
+          JQ Filter
+        </q-card-section>
         <q-card-section>
             <!-- autogrow -->
           <q-input
-            v-model="jqOutput"
+            v-model="jqFilterOutput"
             type="textarea"
             filled
             readonly
-            label="Transform JQ"
-            style="min-height: 20rem;"
-            rows="32"
+            :label="'is_' + beatName + '.jq'"
+            style="min-height: 10rem;"
+            rows="21"
             class="fixed-font"
           >
             <template v-slot:after>
-              <q-btn round dense flat icon="content_copy" @click="copyToClipboard(jqOutput)" :disable="!jqOutput || (jqOutput && jqOutput.length === 0)">
+              <q-btn round dense flat icon="content_copy" @click="copyToClipboard(jqFilterOutput)" :disable="!jqFilterOutput || (jqFilterOutput && jqFilterOutput.length === 0)">
                 <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
                   Copy to Clipboad
                 </q-tooltip>
               </q-btn>
             </template>
           </q-input>
+        </q-card-section>
 
+        <q-separator />
+
+        <q-card-section class="text-h6" style="opacity:.6">
+          Transform JQ
+        </q-card-section>
+        <q-card-section>
+            <!-- autogrow -->
+          <q-input
+            v-model="jqTransformOutput"
+            type="textarea"
+            filled
+            readonly
+            :label="beatName + '.jq'"
+            style="min-height: 20rem;"
+            rows="32"
+            class="fixed-font"
+          >
+            <template v-slot:after>
+              <q-btn round dense flat icon="content_copy" @click="copyToClipboard(jqTransformOutput)" :disable="!jqTransformOutput || (jqTransformOutput && jqTransformOutput.length === 0)">
+                <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                  Copy to Clipboad
+                </q-tooltip>
+              </q-btn>
+            </template>
+          </q-input>
         </q-card-section>
 
       </q-card>
@@ -564,15 +593,22 @@ export default {
       bufferStdOut: '', // Buffer to concatenate incoming STDOUT data until we find a carriage return
       extractMessageFieldOnly: true,
       showJqOutput: false,
-      jqOutput: ''
+      jqFilterOutput: '',
+      jqTransformOutput: ''
     }
   },
   mixins: [Vue2Filters.mixin],
   computed: {
-    ...mapState('mainStore', ['loggedInUser', 'pipelines', 'jqTransformTemplate']),
+    ...mapState('mainStore', ['loggedInUser', 'pipelines', 'jqFilterTemplate', 'jqTransformTemplate']),
     pipelineName () {
       const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
       return (pipeline && pipeline.name && pipeline.name.length ? pipeline.name : '')
+    },
+    beatName () {
+      // Beat Name will be PipleineName in lower case and without space no double quote
+      return this.pipelineName
+        .replace(/[ "]/g, '_')
+        .toLowerCase()
     },
     maxSeenInLog () {
       let max = 0
@@ -977,13 +1013,23 @@ export default {
       copyToClipboard(value)
     },
 
+    buildJqFilter () {
+      let jqFilter = ''
+
+      // First pass to change the headers and static fields
+      jqFilter = this.jqFilterTemplate
+        .replace(/{{EZ_generation_timestamp}}/g, (new Date()).toISOString())
+        .replace(/{{EZ_generation_user}}/g, this.loggedInUser)
+        .replace(/{{EZ_stream_name_placeholder}}/g, this.pipelineName)
+        .replace(/{{EZ_stream_id_placeholder}}/g, this.pipelineUid)
+        .replace(/{{EZ_beatname_placeholder}}/g, this.beatName)
+
+      // And ship it back
+      this.jqFilterOutput = jqFilter
+    },
+
     buildJqTransform () {
       let jqTransform = ''
-
-      // Beat Name will be PipleineName in lower case and without space no double quote
-      const beatName = this.pipelineName
-        .replace(/[ "]/g, '_')
-        .toLowerCase()
 
       // First pass to change the headers and static fields
       jqTransform = this.jqTransformTemplate
@@ -991,7 +1037,7 @@ export default {
         .replace(/{{EZ_generation_user}}/g, this.loggedInUser)
         .replace(/{{EZ_stream_name_placeholder}}/g, this.pipelineName)
         .replace(/{{EZ_stream_id_placeholder}}/g, this.pipelineUid)
-        .replace(/{{EZ_beatname_placeholder}}/g, beatName)
+        .replace(/{{EZ_beatname_placeholder}}/g, this.beatName)
 
       // What do we use for original_message?
       let originalMessagePlaceholder = '. | tojson'
@@ -1140,7 +1186,7 @@ export default {
         .replace(/{{EZ_sub_rules__add_field_placeholder}}/g, subRulesAddFieldPlaceholder.join('\r'))
 
       // And ship it back
-      this.jqOutput = jqTransform
+      this.jqTransformOutput = jqTransform
     },
 
     reverseToLastSaved () {

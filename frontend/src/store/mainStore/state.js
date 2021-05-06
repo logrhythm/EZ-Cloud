@@ -118,6 +118,27 @@ export default function () {
         logs: []
       }
     ],
+    jqFilterTemplate: `# -------------------------------------------
+# THIS TRANSFORM WAS AUTOMATICALLY GENERATED.
+# ANY MANUAL MODIFICATION WILL BE LOST.
+# -------------------------------------------
+# Generated on: {{EZ_generation_timestamp}}
+# By: {{EZ_generation_user}}
+# For Stream: {{EZ_stream_name_placeholder}}
+# UID: {{EZ_stream_id_placeholder}}
+# -------------------------------------------
+
+# is_{{EZ_beatname_placeholder}} checks if the data matches the {{EZ_stream_name_placeholder}} criteria
+def is_{{EZ_beatname_placeholder}}:
+    ."@metadata".beat == "filebeat"
+    and
+    (
+      .fields.stream.id == "{{EZ_stream_id_placeholder}}"
+      or
+      .fields.stream.name == "{{EZ_stream_name_placeholder}}"
+    )
+;
+   `,
     jqTransformTemplate: `# -------------------------------------------
 # THIS TRANSFORM WAS AUTOMATICALLY GENERATED.
 # ANY MANUAL MODIFICATION WILL BE LOST.
@@ -215,7 +236,7 @@ def transform:
 {{EZ_add_field_placeholder}}
 
     # For the Sub Rules
-    
+
 {{EZ_sub_rules__add_field_placeholder}}
 
     # this filter produces the output object, for sending to SYSLOG output
