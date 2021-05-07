@@ -43,7 +43,10 @@
               Mapping
           </q-card-section>
           <q-card-section>
-              ...
+              Fields detected: {{ detectedFields }}
+          </q-card-section>
+          <q-card-section>
+              Fields mapped: {{ mappedFields }}
           </q-card-section>
         </q-card-section>
 
@@ -59,6 +62,11 @@
             <q-btn icon="download">
               <q-tooltip content-style="font-size: 1rem;">
                 Download Mapping as JQ Pipeline
+              </q-tooltip>
+            </q-btn>
+            <q-btn icon="delete" text-color="negative" @click="deleteMappingPrompt()">
+              <q-tooltip content-style="font-size: 1rem;">
+                Delete Mapping
               </q-tooltip>
             </q-btn>
         </q-card-actions>
@@ -103,7 +111,24 @@ export default {
     }
   },
   computed: {
-    ...mapGetters('mainStore', ['openCollectors', 'pipelines'])
+    ...mapGetters('mainStore', ['openCollectors', 'pipelines']),
+    pipeline () {
+      const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
+      return (pipeline || {
+        uid: '',
+        name: '',
+        status: 'New', // New, Dev, Ready
+        primaryOpenCollector: '', // UID of the main OC
+        fieldsMapping: [],
+        collectionConfig: {}
+      })
+    },
+    detectedFields () {
+      return (this.pipeline.fieldsMapping ? this.pipeline.fieldsMapping.length : 0)
+    },
+    mappedFields () {
+      return (this.pipeline.fieldsMapping ? this.pipeline.fieldsMapping.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0) : 0)
+    }
   },
   methods: {
     ...mapActions('mainStore', ['upsertPipeline']),
@@ -112,7 +137,33 @@ export default {
     }, // editPipelineCollection
     editPipelineMapping () {
       this.$router.push({ path: '/Pipelines/' + this.pipelineUid + '/Mapping/Edit' })
-    } // editPipelineMapping
+    }, // editPipelineMapping
+    deleteMappingPrompt () {
+      // ask to confirm
+      this.$q.dialog({
+        title: 'Confirm',
+        message: 'Do you REALLY want to delete the Mapping information for this Pipeline?',
+        ok: {
+          push: true,
+          color: 'negative'
+        },
+        cancel: {
+          push: true,
+          color: 'positive'
+        },
+        persistent: true
+      }).onOk(() => {
+        this.deleteMapping()
+      }) // }).onOk(() => {
+    }, // deleteMappingPrompt
+    deleteMapping () {
+      if (this.pipelineUid && this.pipelineUid.length) {
+        this.upsertPipeline({
+          uid: this.pipelineUid,
+          fieldsMapping: []
+        })
+      }
+    } // deleteMapping
   },
   mounted () {
     if (this.$route.params.pipelineUid && this.$route.params.pipelineUid.length) {
