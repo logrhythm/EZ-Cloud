@@ -6,8 +6,8 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE TABLE [dbo].[logSamples](
-	[uid] [char](40) NOT NULL,
-	[pipelineUid] [char](40) NULL,
+	[uid] [varchar](40) NOT NULL,
+	[pipelineUid] [varchar](40) NULL,
 	[name] [nvarchar](250) NULL,
  CONSTRAINT [PK_logSamples] PRIMARY KEY CLUSTERED 
 (

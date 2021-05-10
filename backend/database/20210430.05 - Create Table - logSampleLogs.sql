@@ -6,7 +6,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE TABLE [dbo].[logSampleLogs](
-	[logSampleUid] [char](40) NOT NULL,
+	[logSampleUid] [varchar](40) NOT NULL,
 	[text] [nvarchar](max) NOT NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 

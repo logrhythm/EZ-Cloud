@@ -6,10 +6,10 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE TABLE [dbo].[pipelines](
-	[uid] [char](40) NOT NULL,
+	[uid] [varchar](40) NOT NULL,
 	[name] [nvarchar](50) NULL,
 	[status] [tinyint] NOT NULL,
-	[primaryOpenCollector] [char](40) NULL,
+	[primaryOpenCollector] [varchar](40) NULL,
 	[fieldsMappingJson] [nvarchar](max) NULL,
 	[collectionConfigJson] [nvarchar](max) NULL,
  CONSTRAINT [PK_pipelines] PRIMARY KEY CLUSTERED 

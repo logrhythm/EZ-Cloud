@@ -6,11 +6,11 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE TABLE [dbo].[openCollectors](
-	[uid] [char](40) NOT NULL,
+	[uid] [varchar](40) NOT NULL,
 	[name] [nvarchar](50) NULL,
 	[hostname] [nvarchar](50) NULL,
 	[port] [int] NULL,
-	[authenticationMethod] [nchar](15) NULL,
+	[authenticationMethod] [nvarchar](15) NULL,
 	[username] [nvarchar](100) NULL,
 	[password] [nvarchar](250) NULL,
 	[privateKey] [nvarchar](max) NULL,
