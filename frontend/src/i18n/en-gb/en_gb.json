@@ -21,5 +21,13 @@
   "SSH Port": "SSH Port",
   "SSH User name": "SSH User name",
   "SSH Password": "SSH Password",
-  "SSH Private Key": "SSH Private Key"
+  "SSH Private Key": "SSH Private Key",
+  "Downloading": "Downloading",
+  "Succesfully loaded": "Succesfully loaded",
+  "[API SUCCESS]": "[API SUCCESS]",
+  "[API ERROR]": "[API ERROR]",
+  "Error querying persistance layer.": "Error querying persistance layer.",
+  "Invalid response": "Invalid response",
+  "No \"response\" object in AJAX response": "No \"response\" object in AJAX response",
+  "Loading error": "Loading error"
 }
