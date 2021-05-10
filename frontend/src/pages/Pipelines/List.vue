@@ -38,7 +38,7 @@
                 </q-input>
               </div>
               <!-- <q-separator vertical dark color="orange" /> -->
-              <q-btn dense outline icon="refresh" @click="getPipelines()">
+              <q-btn dense outline icon="refresh" @click="loadPipelines()">
                 <q-tooltip content-style="font-size: 1em">
                   Reload the list of Pipelines.
                 </q-tooltip>
@@ -185,6 +185,19 @@ export default {
           primaryOpenCollector: (this.newPipelineOpenCollector && this.newPipelineOpenCollector.value && this.newPipelineOpenCollector.value.length ? this.newPipelineOpenCollector.value : null)
         }
       )
+    },
+    loadPipelines () {
+      this.getPipelines(
+        {
+          loadingVariableName: 'tableLoading',
+          caller: this
+        }
+      )
+    }
+  }, // mehtods
+  mounted () {
+    if (this.pipelines && this.pipelines.length === 0) {
+      this.loadPipelines()
     }
   }
 
