@@ -41,7 +41,7 @@ async function getDataFromSql(parameters) {
     targetVariable.stillChecking = true;
     targetVariable.errors = [];
     targetVariable.outputs = [];
-    targetVariable.payload = null;
+    targetVariable.payload = [];
 
     // Connect
     const connection = new Connection(configSql);
@@ -111,19 +111,9 @@ async function getDataFromSql(parameters) {
 // GetCollectors
 // #############################################
 
-const collectors = {
-  stillChecking: false,
-  payload: null, // null (unchecked) or database results
-  errors: [], // array of all the errors
-  outputs: [] // array of all the outputs
-};
+const collectors = {};
 
-const collectorsPipelines = {
-  stillChecking: false,
-  payload: null, // null (unchecked) or database results
-  errors: [], // array of all the errors
-  outputs: [] // array of all the outputs
-};
+const collectorsPipelines = {};
 
 router.get('/GetCollectors', async (req, res) => {
   await getDataFromSql({
@@ -135,7 +125,7 @@ router.get('/GetCollectors', async (req, res) => {
       FROM [dbo].[openCollectorsPipelines]
       `
   });
-  console.log(collectorsPipelines);
+
   await getDataFromSql({
     targetVariable: collectors,
     query: `
@@ -206,50 +196,41 @@ router.get('/GetCollectors', async (req, res) => {
 // GetPipelines
 // #############################################
 
-const pipelines = {
-  stillChecking: false,
-  payload: null, // null (unchecked) or database results
-  errors: [], // array of all the errors
-  outputs: [] // array of all the outputs
-};
+const pipelines = {};
 
 router.get('/GetPipelines', async (req, res) => {
-  if (!pipelines.stillChecking) {
-    getDataFromSql({
-      targetVariable: pipelines,
-      query: `
-      SELECT [uid]
-        ,[name]
-        ,[status]
-        ,[primaryOpenCollector]
-        ,[fieldsMappingJson]
-        ,[collectionConfigJson]
-      FROM [dbo].[pipelines]
-    `
-    });
-  }
-  const loopEndTime = Date.now() / 1000 + maxCheckInterval;
+  await waitMilliseconds(2000);
+  await getDataFromSql({
+    targetVariable: pipelines,
+    query: `
+    SELECT p.[uid]
+      ,p.[name]
+      ,p.[status] AS [statusId]
+      ,s.[name] AS [status]
+      ,p.[primaryOpenCollector]
+      ,p.[fieldsMappingJson]
+      ,p.[collectionConfigJson]
+  FROM [dbo].[pipelines] p
+  LEFT JOIN [dbo].[states] s
+    ON s.[id] = p.[status]
+  `
+  });
 
-  // Waiting - Sync
-  while (pipelines.stillChecking && (loopEndTime > (Date.now() / 1000))) {
-    // Wait for 50 ms
-    // eslint-disable-next-line no-await-in-loop
-    await waitMilliseconds(50);
-  }
-  if (pipelines.stillChecking) {
-    pipelines.errors.push('Timeout');
-  }
-
-  // Bring some values to their final boolean type
   if (pipelines && pipelines.payload && Array.isArray(pipelines.payload)) {
     pipelines.payload.forEach((pipeline) => {
-      /* eslint-disable no-param-reassign */
-      pipeline.ocInstalled = (pipeline.ocInstalled && pipeline.ocInstalled === 1);
-      pipeline.fbInstalled = (pipeline.fbInstalled && pipeline.fbInstalled === 1);
-      /* eslint-enable no-param-reassign */
-    });
+        try {
+          pipeline.fieldsMapping = JSON.parse((pipeline.fieldsMappingJson && pipeline.fieldsMappingJson.length > 0 ? pipeline.fieldsMappingJson : '{}'));
+        } catch {
+          pipeline.fieldsMapping = {}
+        }
+        try {
+          pipeline.collectionConfig = JSON.parse((pipeline.collectionConfigJson && pipeline.collectionConfigJson.length > 0 ? pipeline.fieldsMappingJson : '{}'));
+        } catch {
+          pipeline.collectionConfig = {}
+        }
+      });
   }
-
+  // JSON.parse(
   res.json(pipelines);
 });
 
