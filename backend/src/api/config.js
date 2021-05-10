@@ -7,8 +7,7 @@ const path = require('path');
 
 const configSql = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'config', 'database.json'), 'utf8')).config;
 // Create SQL object
-const { Connection } = require('tedious');
-const { Request } = require('tedious');
+const { Connection, Request, TYPES } = require('tedious');
 
 function waitMilliseconds(delay = 250) {
   return new Promise((resolve) => {
@@ -37,7 +36,7 @@ router.get('/', (req, res) => {
 async function getDataFromSql(parameters) {
   let stillChecking = true;
   if (parameters && parameters.query && parameters.query.length && parameters.targetVariable) {
-    const { targetVariable, query } = parameters;
+    const { targetVariable, query, variables } = parameters;
     targetVariable.stillChecking = true;
     targetVariable.errors = [];
     targetVariable.outputs = [];
@@ -66,6 +65,26 @@ async function getDataFromSql(parameters) {
         targetVariable.stillChecking = false;
         stillChecking = false;
       });
+
+      if (variables && Array.isArray(variables)) {
+        variables.forEach((variable) => {
+          if (variable.name && variable.name.length > 0) {
+            request.addParameter(variable.name, TYPES[variable.type], (variable.value || null));
+            // if (typeof variable.value === 'string') {
+            //   request.addParameter(variable.name, TYPES.NVarChar, (variable.value || null));
+            // }
+            // if (typeof variable.value === 'number') {
+            //   request.addParameter(variable.name, TYPES.Int, (variable.value || null));
+            // }
+            // if (typeof variable.value === 'boolean') {
+            //   request.addParameter(variable.name, TYPES.TinyInt, (variable.value > 0));
+            // }
+            // if (variable.value === null) {
+            //   request.addParameter(variable.name, TYPES.Null, null);
+            // }
+          }
+        });
+      }
 
       request.on('row', (columns) => {
         // Make sure targetVariable.payload is an array
@@ -218,20 +237,133 @@ router.get('/GetPipelines', async (req, res) => {
 
   if (pipelines && pipelines.payload && Array.isArray(pipelines.payload)) {
     pipelines.payload.forEach((pipeline) => {
-        try {
-          pipeline.fieldsMapping = JSON.parse((pipeline.fieldsMappingJson && pipeline.fieldsMappingJson.length > 0 ? pipeline.fieldsMappingJson : '{}'));
-        } catch {
-          pipeline.fieldsMapping = {}
-        }
-        try {
-          pipeline.collectionConfig = JSON.parse((pipeline.collectionConfigJson && pipeline.collectionConfigJson.length > 0 ? pipeline.fieldsMappingJson : '{}'));
-        } catch {
-          pipeline.collectionConfig = {}
-        }
-      });
+      /* eslint-disable no-param-reassign */
+      try {
+        pipeline.fieldsMapping = JSON.parse((pipeline.fieldsMappingJson && pipeline.fieldsMappingJson.length > 0 ? pipeline.fieldsMappingJson : '{}'));
+      } catch (error) {
+        pipeline.fieldsMapping = {};
+      }
+      try {
+        pipeline.collectionConfig = JSON.parse((pipeline.collectionConfigJson && pipeline.collectionConfigJson.length > 0 ? pipeline.fieldsMappingJson : '{}'));
+      } catch (error) {
+        pipeline.collectionConfig = {};
+      }
+      /* eslint-enable no-param-reassign */
+    });
   }
   // JSON.parse(
   res.json(pipelines);
+});
+
+// #############################################
+// UpdateCollector
+// #############################################
+
+const collectorToUpdate = {};
+
+router.get('/UpdateCollector', async (req, res) => {
+  const variables = [];
+  if (req.query) {
+    [
+      { name: 'uid', type: 'NVarChar' },
+      { name: 'name', type: 'NVarChar' },
+      { name: 'hostname', type: 'NVarChar' },
+      { name: 'port', type: 'Int' },
+      { name: 'authenticationMethod', type: 'NVarChar' },
+      { name: 'username', type: 'NVarChar' },
+      { name: 'password', type: 'NVarChar' },
+      { name: 'privateKey', type: 'NVarChar' },
+      { name: 'osVersion', type: 'NVarChar' },
+      { name: 'ocInstalled', type: 'TinyInt' },
+      { name: 'ocVersion', type: 'NVarChar' },
+      { name: 'fbInstalled', type: 'TinyInt' },
+      { name: 'fbVersion', type: 'NVarChar' }
+    ].forEach((v) => {
+      variables.push({
+        name: v.name,
+        type: v.type,
+        value: (req.query[v.name] || null)
+      });
+    });
+  }
+  console.log(variables);
+  await getDataFromSql({
+    targetVariable: collectorToUpdate,
+    query: `
+    EXECUTE [dbo].[upsert_openCollector] 
+       @uid
+      ,@name
+      ,@hostname
+      ,@port
+      ,@authenticationMethod
+      ,@username
+      ,@password
+      ,@privateKey
+      ,@osVersion
+      ,@ocInstalled
+      ,@ocVersion
+      ,@fbInstalled
+      ,@fbVersion
+      ;
+    `,
+    variables
+    // [
+    //   {
+    //     name: 'uid',
+    //     value: req.query.uid
+    //   },
+    //   {
+    //     name: 'name',
+    //     value: ''
+    //   },
+    //   {
+    //     name: 'hostname',
+    //     value: ''
+    //   },
+    //   {
+    //     name: 'port',
+    //     value: 22
+    //   },
+    //   {
+    //     name: 'authenticationMethod',
+    //     value: 'auth M'
+    //   },
+    //   {
+    //     name: 'username',
+    //     value: ''
+    //   },
+    //   {
+    //     name: 'password',
+    //     value: ''
+    //   },
+    //   {
+    //     name: 'privateKey',
+    //     value: 'asdfghjkl;'
+    //   },
+    //   {
+    //     name: 'osVersion',
+    //     value: ''
+    //   },
+    //   {
+    //     name: 'ocInstalled',
+    //     value: false
+    //   },
+    //   {
+    //     name: 'ocVersion',
+    //     value: ''
+    //   },
+    //   {
+    //     name: 'fbInstalled',
+    //     value: false
+    //   },
+    //   {
+    //     name: 'fbVersion',
+    //     value: ''
+    //   }
+    // ]
+  });
+
+  res.json(collectorToUpdate);
 });
 
 module.exports = router;
