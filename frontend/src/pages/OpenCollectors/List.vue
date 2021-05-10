@@ -36,7 +36,7 @@
                   </template>
                 </q-input>
               </div>
-              <q-btn dense outline icon="refresh" @click="getOpenCollectors()">
+              <q-btn dense outline icon="refresh" @click="loadOpenCollectors()">
                 <q-tooltip content-style="font-size: 1em">
                   Reload the list of OpenCollectors.
                 </q-tooltip>
@@ -206,6 +206,14 @@ export default {
     openOpenCollector (row) {
       this.$router.push({ path: '/OpenCollectors/' + row.uid + '/View' })
     }, // openOpenCollector
+    loadOpenCollectors () {
+      this.getOpenCollectors(
+        {
+          loadingVariableName: 'tableLoading',
+          caller: this
+        }
+      )
+    }, // loadOpenCollectors
     refreshOpenCollector (row) {
       //
     }, // refreshOpenCollector
@@ -261,6 +269,11 @@ export default {
           fbVersion: ''
         }
       )
+    }
+  }, // methods
+  mounted () {
+    if (this.openCollectors.length === 0) {
+      this.loadOpenCollectors()
     }
   }
 }

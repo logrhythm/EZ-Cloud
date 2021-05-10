@@ -48,6 +48,12 @@ export function deleteOpenCollector (state, payload) {
   }
 }
 
+export function getOpenCollectors (state, payload) {
+  if (payload && Array.isArray(payload)) {
+    state.openCollectors = payload
+  }
+}
+
 export function addPipeline (state, payload) {
   if (payload && payload.name && payload.name.length > 0) {
     const newPipelines = Object.assign({}, payload)
@@ -94,5 +100,11 @@ export function deletePipeline (state, payload) {
     if (position >= 0) {
       state.pipelines.splice(position, 1)
     }
+  }
+}
+
+export function getOpenPipelines (state, payload) {
+  if (payload && Array.isArray(payload)) {
+    state.pipelines = payload
   }
 }
