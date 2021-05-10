@@ -11,7 +11,7 @@
         "options":{
             "encrypt":false,
             "port": 1433,
-            "database":"LogRhythmEMDB",
+            "database":"EZ",
             "requestTimeout": 30000
         }
     }
