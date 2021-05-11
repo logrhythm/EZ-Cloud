@@ -233,7 +233,11 @@ export default {
           },
           persistent: true
         }).onOk(() => {
-          this.deleteOpenCollector(row)
+          this.deleteOpenCollector({
+            pushToApi: true,
+            caller: this,
+            openCollector: row
+          })
         }) // }).onOk(() => {
       }
     }, // deleteOpenCollectorPrompt

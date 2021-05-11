@@ -1,8 +1,24 @@
 import { uid } from 'quasar'
 
+// ######################################################################
+// COLLECTORS
+// ######################################################################
+
+export function getOpenCollectors ({ commit }, payload) {
+  getDataFromSite({
+    apiUrl: '/config/GetCollectors',
+    dataLabel: 'Collectors',
+    countDataLabel: true,
+    commit: commit,
+    targetCommitName: 'getOpenCollectors',
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    silent: false,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    debug: false
+  })
+}
+
 export function upsertOpenCollector ({ state, commit }, payload) {
-  console.log('upsertOpenCollector')
-  console.log(payload)
   if (payload && payload.openCollector) {
     const openCollectorPayload = Object.assign({}, payload.openCollector)
 
@@ -35,17 +51,50 @@ export function upsertOpenCollector ({ state, commit }, payload) {
   }
 }
 
-export function getOpenCollectors ({ commit }, payload) {
+export function deleteOpenCollector ({ state, commit }, payload) {
+  if (payload && payload.openCollector) {
+    const openCollectorPayload = Object.assign({}, payload.openCollector)
+
+    // Update the Store
+    if (state.openCollectors.filter(oc => oc.uid === openCollectorPayload.uid).length > 0) {
+      commit('deleteOpenCollector', openCollectorPayload)
+    }
+
+    // Persist
+    if (
+      payload.pushToApi &&
+      payload.pushToApi === true &&
+      openCollectorPayload.uid &&
+      openCollectorPayload.uid.length
+    ) {
+      postDataToSite({
+        apiUrl: '/config/DeleteCollector',
+        dataLabel: 'Collector',
+        apiCallParams: { uid: openCollectorPayload.uid },
+        loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+        silent: false,
+        caller: (payload && payload.caller ? payload.caller : this._vm),
+        debug: true
+      })
+    }
+  }
+}
+
+// ######################################################################
+// PIPELINES
+// ######################################################################
+
+export function getPipelines ({ commit }, payload) {
   getDataFromSite({
-    apiUrl: '/config/GetCollectors',
-    dataLabel: 'Collectors',
+    apiUrl: '/config/GetPipelines',
+    dataLabel: 'Pipelines',
     countDataLabel: true,
     commit: commit,
-    targetCommitName: 'getOpenCollectors',
+    targetCommitName: 'getOpenPipelines',
     loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
     silent: false,
     caller: (payload && payload.caller ? payload.caller : this._vm),
-    debug: false
+    debug: true
   })
 }
 
@@ -85,20 +134,6 @@ export function deletePipeline ({ state, commit }, payload) {
       commit('deletePipeline', payload)
     }
   }
-}
-
-export function getPipelines ({ commit }, payload) {
-  getDataFromSite({
-    apiUrl: '/config/GetPipelines',
-    dataLabel: 'Pipelines',
-    countDataLabel: true,
-    commit: commit,
-    targetCommitName: 'getOpenPipelines',
-    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
-    silent: false,
-    caller: (payload && payload.caller ? payload.caller : this._vm),
-    debug: true
-  })
 }
 
 //           ###    ########  ####       ##     ## ######## #### ##       #### ######## #### ########  ######
