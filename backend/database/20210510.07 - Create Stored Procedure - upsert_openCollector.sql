@@ -33,7 +33,7 @@ BEGIN
   IF EXISTS (SELECT *
     FROM openCollectors
     WHERE uid = @uid)
-	  IF @password = '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' AND @privateKey = '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **'
+	  IF @password = N'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' AND @privateKey = N'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **'
 		  UPDATE [dbo].[openCollectors]
 			SET 
 			  [name] = @name
@@ -50,7 +50,7 @@ BEGIN
 			  ,[fbVersion] = @fbVersion
 		  WHERE uid = @uid;
 		ELSE
-			IF @password = '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **'
+			IF @password = N'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **'
 			  UPDATE [dbo].[openCollectors]
 				SET 
 				  [name] = @name
@@ -67,7 +67,7 @@ BEGIN
 				  ,[fbVersion] = @fbVersion
 			  WHERE uid = @uid;
 			ELSE
-				IF @privateKey = '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **'
+				IF @privateKey = N'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **'
 				  UPDATE [dbo].[openCollectors]
 					SET 
 					  [name] = @name
