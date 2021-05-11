@@ -45,7 +45,7 @@ export function upsertOpenCollector ({ state, commit }, payload) {
         loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
         silent: false,
         caller: (payload && payload.caller ? payload.caller : this._vm),
-        debug: true
+        debug: false
       })
     }
   }
@@ -74,7 +74,7 @@ export function deleteOpenCollector ({ state, commit }, payload) {
         loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
         silent: false,
         caller: (payload && payload.caller ? payload.caller : this._vm),
-        debug: true
+        debug: false
       })
     }
   }
@@ -94,7 +94,7 @@ export function getPipelines ({ commit }, payload) {
     loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
     silent: false,
     caller: (payload && payload.caller ? payload.caller : this._vm),
-    debug: true
+    debug: false
   })
 }
 
@@ -122,7 +122,7 @@ export function upsertPipeline ({ state, commit }, payload) {
         loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
         silent: false,
         caller: (payload && payload.caller ? payload.caller : this._vm),
-        debug: true
+        debug: false
       })
     }
   }
