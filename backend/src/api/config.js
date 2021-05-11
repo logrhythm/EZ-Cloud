@@ -270,7 +270,6 @@ router.get('/GetCollectors', async (req, res) => {
 const pipelines = {};
 
 router.get('/GetPipelines', async (req, res) => {
-  await waitMilliseconds(2000);
   await getDataFromSql({
     targetVariable: pipelines,
     query: `
