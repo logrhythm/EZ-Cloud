@@ -253,20 +253,25 @@ export default {
       this.promptForNewOpenCollectorDetails = false
       this.upsertOpenCollector(
         {
-          uid: this.newOpenCollectorUid,
-          name: this.newOpenCollectorName,
-          hostname: this.newOpenCollectorHostname,
-          port: this.newOpenCollectorPort,
-          authenticationMethod: this.newOpenCollectorAuthMethod, // password, private_key
-          username: this.newOpenCollectorUsername,
-          password: this.newOpenCollectorPassword,
-          privateKey: this.newOpenCollectorPrivateKey,
-          pipelines: [],
-          osVersion: '',
-          ocInstalled: false,
-          ocVersion: '',
-          fbInstalled: false,
-          fbVersion: ''
+          pushToApi: true,
+          caller: this,
+          openCollector:
+          {
+            uid: this.newOpenCollectorUid,
+            name: this.newOpenCollectorName,
+            hostname: this.newOpenCollectorHostname,
+            port: this.newOpenCollectorPort,
+            authenticationMethod: this.newOpenCollectorAuthMethod, // password, private_key
+            username: this.newOpenCollectorUsername,
+            password: this.newOpenCollectorPassword,
+            privateKey: this.newOpenCollectorPrivateKey,
+            pipelines: [], // XXXXXXXXXXXX
+            osVersion: '',
+            ocInstalled: false,
+            ocVersion: '',
+            fbInstalled: false,
+            fbVersion: ''
+          }
         }
       )
     }
