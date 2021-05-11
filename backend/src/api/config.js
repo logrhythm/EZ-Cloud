@@ -69,7 +69,12 @@ async function getDataFromSql(parameters) {
       if (variables && Array.isArray(variables)) {
         variables.forEach((variable) => {
           if (variable.name && variable.name.length > 0) {
-            request.addParameter(variable.name, TYPES[variable.type], (variable.value || null));
+            // request.addParameter(variable.name, TYPES[variable.type], (variable.value || null));
+            request.addParameter(
+              variable.name,
+              TYPES[variable.type],
+              (variable.value !== undefined ? variable.value : null)
+            );
             // if (typeof variable.value === 'string') {
             //   request.addParameter(variable.name, TYPES.NVarChar, (variable.value || null));
             // }
@@ -124,6 +129,45 @@ async function getDataFromSql(parameters) {
       stillChecking = false;
     }
   }
+}
+
+function createSqlVariables(req, definitions) {
+  const variables = [];
+  if (req && (req.query || req.body) && definitions && Array.isArray(definitions)) {
+    [
+      { name: 'uid', type: 'NVarChar' },
+      { name: 'name', type: 'NVarChar' },
+      { name: 'hostname', type: 'NVarChar' },
+      { name: 'port', type: 'Int' },
+      { name: 'authenticationMethod', type: 'NVarChar' },
+      { name: 'username', type: 'NVarChar' },
+      { name: 'password', type: 'NVarChar' },
+      { name: 'privateKey', type: 'NVarChar' },
+      { name: 'osVersion', type: 'NVarChar' },
+      { name: 'ocInstalled', type: 'TinyInt' },
+      { name: 'ocVersion', type: 'NVarChar' },
+      { name: 'fbInstalled', type: 'TinyInt' },
+      { name: 'fbVersion', type: 'NVarChar' }
+    ].filter((def) => def.name && def.type && def.name.length && def.type.length)
+      .forEach((def) => {
+        variables.push({
+          name: def.name,
+          type: def.type,
+          /* eslint-disable no-nested-ternary */
+          value: (
+            req.body[def.name] !== undefined
+              ? req.body[def.name]
+              : (
+                req.query[def.name] !== undefined
+                  ? req.query[def.name]
+                  : null
+              )
+          )
+          /* eslint-enable no-nested-ternary */
+        });
+      });
+  }
+  return variables;
 }
 
 // #############################################
@@ -261,32 +305,57 @@ router.get('/GetPipelines', async (req, res) => {
 
 const collectorToUpdate = {};
 
-router.get('/UpdateCollector', async (req, res) => {
+router.post('/UpdateCollector', async (req, res) => {
   const variables = [];
-  if (req.query) {
-    [
-      { name: 'uid', type: 'NVarChar' },
-      { name: 'name', type: 'NVarChar' },
-      { name: 'hostname', type: 'NVarChar' },
-      { name: 'port', type: 'Int' },
-      { name: 'authenticationMethod', type: 'NVarChar' },
-      { name: 'username', type: 'NVarChar' },
-      { name: 'password', type: 'NVarChar' },
-      { name: 'privateKey', type: 'NVarChar' },
-      { name: 'osVersion', type: 'NVarChar' },
-      { name: 'ocInstalled', type: 'TinyInt' },
-      { name: 'ocVersion', type: 'NVarChar' },
-      { name: 'fbInstalled', type: 'TinyInt' },
-      { name: 'fbVersion', type: 'NVarChar' }
-    ].forEach((v) => {
-      variables.push({
-        name: v.name,
-        type: v.type,
-        value: (req.query[v.name] || null)
-      });
-    });
-  }
-  console.log(variables);
+  const types = [
+    { name: 'uid', type: 'NVarChar' },
+    { name: 'name', type: 'NVarChar' },
+    { name: 'hostname', type: 'NVarChar' },
+    { name: 'port', type: 'Int' },
+    { name: 'authenticationMethod', type: 'NVarChar' },
+    { name: 'username', type: 'NVarChar' },
+    { name: 'password', type: 'NVarChar' },
+    { name: 'privateKey', type: 'NVarChar' },
+    { name: 'osVersion', type: 'NVarChar' },
+    { name: 'ocInstalled', type: 'TinyInt' },
+    { name: 'ocVersion', type: 'NVarChar' },
+    { name: 'fbInstalled', type: 'TinyInt' },
+    { name: 'fbVersion', type: 'NVarChar' }
+  ];
+  // if (req.query || req.body) {
+  //   [
+  //     { name: 'uid', type: 'NVarChar' },
+  //     { name: 'name', type: 'NVarChar' },
+  //     { name: 'hostname', type: 'NVarChar' },
+  //     { name: 'port', type: 'Int' },
+  //     { name: 'authenticationMethod', type: 'NVarChar' },
+  //     { name: 'username', type: 'NVarChar' },
+  //     { name: 'password', type: 'NVarChar' },
+  //     { name: 'privateKey', type: 'NVarChar' },
+  //     { name: 'osVersion', type: 'NVarChar' },
+  //     { name: 'ocInstalled', type: 'TinyInt' },
+  //     { name: 'ocVersion', type: 'NVarChar' },
+  //     { name: 'fbInstalled', type: 'TinyInt' },
+  //     { name: 'fbVersion', type: 'NVarChar' }
+  //   ].forEach((v) => {
+  //     variables.push({
+  //       name: v.name,
+  //       type: v.type,
+  //       /* eslint-disable no-nested-ternary */
+  //       value: (
+  //         req.body[v.name] !== undefined
+  //           ? req.body[v.name]
+  //           : (
+  //             req.query[v.name] !== undefined
+  //               ? req.query[v.name]
+  //               : null
+  //           )
+  //       )
+  //       /* eslint-enable no-nested-ternary */
+  //     });
+  //   });
+  // }
+  // console.log(variables);
   await getDataFromSql({
     targetVariable: collectorToUpdate,
     query: `
@@ -306,61 +375,24 @@ router.get('/UpdateCollector', async (req, res) => {
       ,@fbVersion
       ;
     `,
-    variables
-    // [
-    //   {
-    //     name: 'uid',
-    //     value: req.query.uid
-    //   },
-    //   {
-    //     name: 'name',
-    //     value: ''
-    //   },
-    //   {
-    //     name: 'hostname',
-    //     value: ''
-    //   },
-    //   {
-    //     name: 'port',
-    //     value: 22
-    //   },
-    //   {
-    //     name: 'authenticationMethod',
-    //     value: 'auth M'
-    //   },
-    //   {
-    //     name: 'username',
-    //     value: ''
-    //   },
-    //   {
-    //     name: 'password',
-    //     value: ''
-    //   },
-    //   {
-    //     name: 'privateKey',
-    //     value: 'asdfghjkl;'
-    //   },
-    //   {
-    //     name: 'osVersion',
-    //     value: ''
-    //   },
-    //   {
-    //     name: 'ocInstalled',
-    //     value: false
-    //   },
-    //   {
-    //     name: 'ocVersion',
-    //     value: ''
-    //   },
-    //   {
-    //     name: 'fbInstalled',
-    //     value: false
-    //   },
-    //   {
-    //     name: 'fbVersion',
-    //     value: ''
-    //   }
-    // ]
+    variables: createSqlVariables(
+      req,
+      [
+        { name: 'uid', type: 'NVarChar' },
+        { name: 'name', type: 'NVarChar' },
+        { name: 'hostname', type: 'NVarChar' },
+        { name: 'port', type: 'Int' },
+        { name: 'authenticationMethod', type: 'NVarChar' },
+        { name: 'username', type: 'NVarChar' },
+        { name: 'password', type: 'NVarChar' },
+        { name: 'privateKey', type: 'NVarChar' },
+        { name: 'osVersion', type: 'NVarChar' },
+        { name: 'ocInstalled', type: 'TinyInt' },
+        { name: 'ocVersion', type: 'NVarChar' },
+        { name: 'fbInstalled', type: 'TinyInt' },
+        { name: 'fbVersion', type: 'NVarChar' }
+      ]
+    )
   });
 
   res.json(collectorToUpdate);
