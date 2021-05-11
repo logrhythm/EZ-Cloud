@@ -25,13 +25,13 @@ router.get('/', (req, res) => {
   });
 });
 
-// #############################################
+// ##########################################################################################
 // getDataFromSql
 // #########
 // Utilitarian function to get the data from
 // SQL using parameters.query and dump it in the
 // parameters.targetVariable
-// #############################################
+// ##########################################################################################
 
 async function getDataFromSql(parameters) {
   let stillChecking = true;
@@ -131,6 +131,14 @@ async function getDataFromSql(parameters) {
   }
 }
 
+// ##########################################################################################
+// createSqlVariables
+// #########
+// Utilitarian function to create the array of
+// fields type mapping to be provided to
+// getDataFromSql as parameters.targetVariable
+// ##########################################################################################
+
 function createSqlVariables(req, definitions) {
   const variables = [];
   if (req && (req.query || req.body) && definitions && Array.isArray(definitions)) {
@@ -170,9 +178,9 @@ function createSqlVariables(req, definitions) {
   return variables;
 }
 
-// #############################################
+// ##########################################################################################
 // GetCollectors
-// #############################################
+// ##########################################################################################
 
 const collectors = {};
 
@@ -221,8 +229,8 @@ router.get('/GetCollectors', async (req, res) => {
       .forEach((collector) => {
         // Bring some values to their final boolean type
         /* eslint-disable no-param-reassign */
-        collector.ocInstalled = (collector.ocInstalled && collector.ocInstalled === 1);
-        collector.fbInstalled = (collector.fbInstalled && collector.fbInstalled === 1);
+        collector.ocInstalled = (!!(collector.ocInstalled && collector.ocInstalled === 1));
+        collector.fbInstalled = (!!(collector.fbInstalled && collector.fbInstalled === 1));
         /* eslint-enable no-param-reassign */
 
         // Map the Collectors-Pipelines
@@ -255,9 +263,9 @@ router.get('/GetCollectors', async (req, res) => {
   res.json(collectors);
 });
 
-// #############################################
+// ##########################################################################################
 // GetPipelines
-// #############################################
+// ##########################################################################################
 
 const pipelines = {};
 
@@ -299,63 +307,13 @@ router.get('/GetPipelines', async (req, res) => {
   res.json(pipelines);
 });
 
-// #############################################
+// ##########################################################################################
 // UpdateCollector
-// #############################################
+// ##########################################################################################
 
 const collectorToUpdate = {};
 
 router.post('/UpdateCollector', async (req, res) => {
-  const variables = [];
-  const types = [
-    { name: 'uid', type: 'NVarChar' },
-    { name: 'name', type: 'NVarChar' },
-    { name: 'hostname', type: 'NVarChar' },
-    { name: 'port', type: 'Int' },
-    { name: 'authenticationMethod', type: 'NVarChar' },
-    { name: 'username', type: 'NVarChar' },
-    { name: 'password', type: 'NVarChar' },
-    { name: 'privateKey', type: 'NVarChar' },
-    { name: 'osVersion', type: 'NVarChar' },
-    { name: 'ocInstalled', type: 'TinyInt' },
-    { name: 'ocVersion', type: 'NVarChar' },
-    { name: 'fbInstalled', type: 'TinyInt' },
-    { name: 'fbVersion', type: 'NVarChar' }
-  ];
-  // if (req.query || req.body) {
-  //   [
-  //     { name: 'uid', type: 'NVarChar' },
-  //     { name: 'name', type: 'NVarChar' },
-  //     { name: 'hostname', type: 'NVarChar' },
-  //     { name: 'port', type: 'Int' },
-  //     { name: 'authenticationMethod', type: 'NVarChar' },
-  //     { name: 'username', type: 'NVarChar' },
-  //     { name: 'password', type: 'NVarChar' },
-  //     { name: 'privateKey', type: 'NVarChar' },
-  //     { name: 'osVersion', type: 'NVarChar' },
-  //     { name: 'ocInstalled', type: 'TinyInt' },
-  //     { name: 'ocVersion', type: 'NVarChar' },
-  //     { name: 'fbInstalled', type: 'TinyInt' },
-  //     { name: 'fbVersion', type: 'NVarChar' }
-  //   ].forEach((v) => {
-  //     variables.push({
-  //       name: v.name,
-  //       type: v.type,
-  //       /* eslint-disable no-nested-ternary */
-  //       value: (
-  //         req.body[v.name] !== undefined
-  //           ? req.body[v.name]
-  //           : (
-  //             req.query[v.name] !== undefined
-  //               ? req.query[v.name]
-  //               : null
-  //           )
-  //       )
-  //       /* eslint-enable no-nested-ternary */
-  //     });
-  //   });
-  // }
-  // console.log(variables);
   await getDataFromSql({
     targetVariable: collectorToUpdate,
     query: `
