@@ -29,5 +29,9 @@
   "Error querying persistance layer.": "Error querying persistance layer.",
   "Invalid response": "Invalid response",
   "No \"response\" object in AJAX response": "No \"response\" object in AJAX response",
-  "Loading error": "Loading error"
+  "Loading error": "Loading error",
+  "Uploading": "Uploading",
+  "Succesfully update": "Succesfully update",
+  "Update error": "Update error",
+  "Error updating persistance layer.": "Error updating persistance layer."
 }
