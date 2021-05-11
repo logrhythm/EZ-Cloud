@@ -1,9 +1,36 @@
+import { uid } from 'quasar'
+
 export function upsertOpenCollector ({ state, commit }, payload) {
-  if (payload) {
-    if (state.openCollectors.filter(oc => oc.uid === payload.uid).length > 0) {
-      commit('updateOpenCollector', payload)
+  console.log('upsertOpenCollector')
+  console.log(payload)
+  if (payload && payload.openCollector) {
+    const openCollectorPayload = Object.assign({}, payload.openCollector)
+
+    // Update the Store
+    if (state.openCollectors.filter(oc => oc.uid === openCollectorPayload.uid).length > 0) {
+      commit('updateOpenCollector', openCollectorPayload)
     } else {
-      commit('addOpenCollector', payload)
+      if (!openCollectorPayload.uid || (openCollectorPayload.uid && openCollectorPayload.uid.length === 0)) {
+        openCollectorPayload.uid = uid()
+      }
+      commit('addOpenCollector', openCollectorPayload)
+    }
+
+    // Persist
+    if (
+      payload.pushToApi &&
+      payload.pushToApi === true &&
+      state.openCollectors.filter(oc => oc.uid === openCollectorPayload.uid).length > 0
+    ) {
+      postDataToSite({
+        apiUrl: '/config/UpdateCollector',
+        dataLabel: 'Collector',
+        apiCallParams: state.openCollectors.find(oc => oc.uid === openCollectorPayload.uid),
+        loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+        silent: false,
+        caller: (payload && payload.caller ? payload.caller : this._vm),
+        debug: true
+      })
     }
   }
 }
@@ -26,15 +53,29 @@ export function upsertPipeline ({ state, commit }, payload) {
   console.log('upsertPipeline')
   console.log(payload)
   if (payload) {
+    // Update the Store
     if (state.pipelines.filter(p => p.uid === payload.uid).length > 0) {
       commit('updatePipeline', payload)
     } else {
       commit('addPipeline', payload)
     }
-  }
 
-  if (payload.pushToApi && payload.pushToApi === true) {
-    postDataToSite({})
+    // Persist
+    if (
+      payload._pushToApi &&
+      payload._pushToApi === true &&
+      state.pipelines.filter(p => p.uid === payload.uid).length > 0
+    ) {
+      postDataToSite({
+        apiUrl: '/config/UpdatePipeline',
+        dataLabel: 'Pipeline',
+        apiCallParams: state.pipelines.find(p => p.uid === payload.uid),
+        loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+        silent: false,
+        caller: (payload && payload.caller ? payload.caller : this._vm),
+        debug: true
+      })
+    }
   }
 }
 
@@ -70,7 +111,22 @@ export function getPipelines ({ commit }, payload) {
 
 import { i18n } from 'boot/i18n'
 
-function getDataFromSite (params = { apiUrl: '', dataLabel: '', countDataLabel: false, targetObjectName: '', commit: null, targetCommitName: '', loadingVariableName: '', apiCallParams: {}, silent: false, logToConsole: true, caller: this, debug: false, onSuccessLoadCallBack: null, onErrorCallBack: null }) {
+function getDataFromSite (params = {
+  apiUrl: '',
+  dataLabel: '',
+  countDataLabel: false,
+  targetObjectName: '',
+  commit: null,
+  targetCommitName: '',
+  loadingVariableName: '',
+  apiCallParams: {},
+  silent: false,
+  logToConsole: true,
+  caller: this,
+  debug: false,
+  onSuccessLoadCallBack: null,
+  onErrorCallBack: null
+}) {
   let messageForLogAndPopup = ''
   let captionForLogAndPopup = ''
   let queryResultedInError = false
@@ -115,9 +171,6 @@ function getDataFromSite (params = { apiUrl: '', dataLabel: '', countDataLabel: 
     console.log('getDataFromSite -- GET')
   }
   params.caller.$axios.get(params.caller.globalConstants.baseUrl.api + params.apiUrl, {
-    // params: {
-    //   journeyProjectUid: params.projectUid
-    // }
     params: params.apiCallParams
   })
     .then(function (response) {
@@ -144,7 +197,7 @@ function getDataFromSite (params = { apiUrl: '', dataLabel: '', countDataLabel: 
           }
         } else {
           queryResultedInError = false
-          if (params.countDataLabel) {
+          if (params.countDataLabel && Array.isArray(response.data.payload)) {
             messageForLogAndPopup = i18n.t('Succesfully loaded') + ' ' + response.data.payload.length + ' ' + params.dataLabel + '.'
           } else {
             messageForLogAndPopup = i18n.t('Succesfully loaded') + ' ' + params.dataLabel + '.'
@@ -219,13 +272,11 @@ function postDataToSite (params = {
   dataLabel: '',
   countDataLabel: false,
   targetObjectName: '',
+  commit: null,
+  targetCommitName: '',
   loadingVariableName: '',
-  projectUid: '',
   apiCallParams: {},
   silent: false,
-  checkResponseTree: true,
-  elasticQuery: false,
-  elasticOnlyReturnSource: false,
   logToConsole: true,
   caller: this,
   debug: false,
@@ -235,31 +286,36 @@ function postDataToSite (params = {
   let messageForLogAndPopup = ''
   let captionForLogAndPopup = ''
   let queryResultedInError = false
-  let labelCount = ''
+  let notificationPopupId = null
 
   if (typeof params.apiUrl === 'undefined') { params.apiUrl = '' }
   if (typeof params.dataLabel === 'undefined') { params.dataLabel = '' }
   if (typeof params.countDataLabel === 'undefined') { params.countDataLabel = false }
   if (typeof params.targetObjectName === 'undefined') { params.targetObjectName = '' }
+  if (typeof params.commit === 'undefined') { params.commit = null }
+  if (typeof params.targetCommitName === 'undefined') { params.targetCommitName = '' }
   if (typeof params.loadingVariableName === 'undefined') { params.loadingVariableName = '' }
-  if (typeof params.projectUid === 'undefined') { params.projectUid = '' }
   if (typeof params.apiCallParams === 'undefined') { params.apiCallParams = {} }
   if (typeof params.silent === 'undefined') { params.silent = false }
-  if (typeof params.checkResponseTree === 'undefined') { params.checkResponseTree = true }
-  if (typeof params.elasticQuery === 'undefined') { params.elasticQuery = false }
-  if (typeof params.elasticOnlyReturnSource === 'undefined') { params.elasticOnlyReturnSource = false }
   if (typeof params.logToConsole === 'undefined') { params.logToConsole = true }
   if (typeof params.caller === 'undefined') { params.caller = this }
   if (typeof params.debug === 'undefined') { params.debug = false }
   if (typeof params.onSuccessCallBack === 'undefined') { params.onSuccessCallBack = null }
   if (typeof params.onErrorCallBack === 'undefined') { params.onErrorCallBack = null }
 
-  if (params.elasticQuery) {
-    params.checkResponseTree = false
-  }
-
   if (params.debug) {
     console.log('postDataToSite -- BEGIN')
+  }
+
+  if (!params.silent) {
+    notificationPopupId = params.caller.$q.notify({
+      icon: 'cloud_upload',
+      message: i18n.t('Uploading') + ' ' + params.dataLabel + '...',
+      type: 'ongoing'
+    })
+  }
+  if (params.logToConsole) {
+    console.log('☁️ ' + i18n.t('Uploading') + ' ' + params.dataLabel + '...')
   }
 
   // If a loadingVariable is provided, set it to true
@@ -279,76 +335,31 @@ function postDataToSite (params = {
         console.log(response)
       }
 
-      if (!params.elasticQuery) {
-        // It's Tony's API output
-        if (typeof response.data.response === 'object') {
-          if (params.targetObjectName.length) {
-            if (typeof response.data.payload === 'object') {
-              // Assign to targetObject
-              params.caller[params.targetObjectName] = response.data.payload
+      if (response.data && response.data.payload) {
+        if (params.targetObjectName.length) {
+          // Assign to targetObject
+          params.caller[params.targetObjectName] = response.data.payload
 
-              if (!response.data.response.error) {
-                queryResultedInError = false
-                if (params.countDataLabel) {
-                  captionForLogAndPopup = i18n.t('Succesfully loaded') + ' ' + response.data.payload.length + ' ' + params.dataLabel + '.'
-                } else {
-                  captionForLogAndPopup = i18n.t('Succesfully loaded') + ' ' + params.dataLabel + '.'
-                }
-              } else {
-                queryResultedInError = true
-                messageForLogAndPopup = response.data.response.result
-                if (process.env.DEV) {
-                  messageForLogAndPopup += ':'
-                  captionForLogAndPopup = response.data.response.sqlError
-                }
-              }
-            } else {
-              captionForLogAndPopup = i18n.t('Invalid response') + '. ' + i18n.t('No "data" object in AJAX response')
-              queryResultedInError = true
-            }
-          }
-          messageForLogAndPopup = i18n.t('Succesfully updated') + ' ' + params.dataLabel + '.'
-        } else {
-          messageForLogAndPopup = i18n.t('Invalid response') + '. ' + i18n.t('No "response" object in AJAX response')
-          queryResultedInError = true
-        }
-      } else { // It's Elastic output
-        // Assign to targetObject
-        let responseHits = []
-        if (typeof response.data.hits === 'object') {
-          if (typeof response.data.hits.hits !== 'undefined') {
-            responseHits = response.data.hits.hits
-            if (params.elasticOnlyReturnSource) {
-              const responseHitsSources = []
-              responseHits.forEach((hit, i) => {
-                if (typeof hit._source !== 'undefined') {
-                  responseHitsSources.push(hit._source)
-                }
-              })
-              responseHits = responseHitsSources
-            }
+          if (params.countDataLabel && Array.isArray(response.data.payload)) {
+            captionForLogAndPopup = i18n.t('Succesfully loaded') + ' ' + response.data.payload.length + ' ' + params.dataLabel + '.'
+          } else {
+            captionForLogAndPopup = i18n.t('Succesfully loaded') + ' ' + params.dataLabel + '.'
           }
         }
-        params.caller[params.targetObjectName] = responseHits
-        if (!response.data.error) {
-          queryResultedInError = false
-          if (params.countDataLabel) {
-            if (typeof response.data.hits === 'object') {
-              if (typeof response.data.hits.total !== 'undefined') {
-                labelCount = ' ' + response.data.hits.total
-              }
-            }
-          }
-          messageForLogAndPopup = i18n.t('Succesfully loaded') + labelCount + ' ' + params.dataLabel + '.'
-          messageForLogAndPopup = i18n.t('Succesfully updated') + ' ' + params.dataLabel + '.'
-        } else {
+
+        if (response.data.errors && Array.isArray(response.data.errors) && response.data.errors.length > 0) {
           queryResultedInError = true
-          messageForLogAndPopup = response.data.reason
+          messageForLogAndPopup = i18n.t('Error updating persistance layer.')
           if (process.env.DEV) {
-            messageForLogAndPopup += ':'
-            captionForLogAndPopup = response.data.type
+            captionForLogAndPopup = response.data.errors.join(' / ')
           }
+        } else {
+          queryResultedInError = false
+          messageForLogAndPopup = i18n.t('Succesfully updated') + ' ' + params.dataLabel + '.'
         }
+      } else {
+        queryResultedInError = true
+        messageForLogAndPopup = i18n.t('Invalid response') + '. ' + i18n.t('No "response" object in AJAX response')
       }
     })
     .catch(function (errorMessage) {
@@ -367,11 +378,13 @@ function postDataToSite (params = {
           console.log('⚠️ ' + i18n.t('[API ERROR]') + ' ' + messageForLogAndPopup + ' // ' + captionForLogAndPopup)
         }
         if (!params.silent) {
-          params.caller.$q.notify({
+          notificationPopupId({
+            type: 'negative',
             color: 'negative',
             icon: 'report_problem',
             message: messageForLogAndPopup,
-            caption: captionForLogAndPopup
+            caption: captionForLogAndPopup,
+            timeout: 4000
           })
         }
         if (typeof params.onErrorCallBack === 'function') {
@@ -385,7 +398,8 @@ function postDataToSite (params = {
           console.log('✔️ ' + i18n.t('[API SUCCESS]') + ' ' + messageForLogAndPopup + ' // ' + captionForLogAndPopup)
         }
         if (!params.silent) {
-          params.caller.$q.notify({
+          notificationPopupId({
+            type: 'positive',
             color: 'positive',
             icon: 'check',
             message: messageForLogAndPopup,
