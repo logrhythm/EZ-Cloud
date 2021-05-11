@@ -356,4 +356,29 @@ router.post('/UpdateCollector', async (req, res) => {
   res.json(collectorToUpdate);
 });
 
+// ##########################################################################################
+// DeleteCollector
+// ##########################################################################################
+
+const collectorToDelete = {};
+
+router.post('/DeleteCollector', async (req, res) => {
+  await getDataFromSql({
+    targetVariable: collectorToDelete,
+    query: `
+    DELETE FROM [dbo].[openCollectors]
+      WHERE uid = @uid
+      ;
+    `,
+    variables: createSqlVariables(
+      req,
+      [
+        { name: 'uid', type: 'NVarChar' }
+      ]
+    )
+  });
+
+  res.json(collectorToDelete);
+});
+
 module.exports = router;
