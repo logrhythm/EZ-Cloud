@@ -33,21 +33,72 @@ BEGIN
   IF EXISTS (SELECT *
     FROM openCollectors
     WHERE uid = @uid)
-      UPDATE [dbo].[openCollectors]
-        SET 
-          [name] = @name
-          ,[hostname] = @hostname
-          ,[port] = @port
-          ,[authenticationMethod] = @authenticationMethod
-          ,[username] = @username
-          ,[password] = @password
-          ,[privateKey] = @privateKey
-          ,[osVersion] = @osVersion
-          ,[ocInstalled] = @ocInstalled
-          ,[ocVersion] = @ocVersion
-          ,[fbInstalled] = @fbInstalled
-          ,[fbVersion] = @fbVersion
-      WHERE uid = @uid;
+	  IF @password = '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' AND @privateKey = '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **'
+		  UPDATE [dbo].[openCollectors]
+			SET 
+			  [name] = @name
+			  ,[hostname] = @hostname
+			  ,[port] = @port
+			  ,[authenticationMethod] = @authenticationMethod
+			  ,[username] = @username
+			  --,[password] = @password
+			  --,[privateKey] = @privateKey
+			  ,[osVersion] = @osVersion
+			  ,[ocInstalled] = @ocInstalled
+			  ,[ocVersion] = @ocVersion
+			  ,[fbInstalled] = @fbInstalled
+			  ,[fbVersion] = @fbVersion
+		  WHERE uid = @uid;
+		ELSE
+			IF @password = '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **'
+			  UPDATE [dbo].[openCollectors]
+				SET 
+				  [name] = @name
+				  ,[hostname] = @hostname
+				  ,[port] = @port
+				  ,[authenticationMethod] = @authenticationMethod
+				  ,[username] = @username
+				  --,[password] = @password
+				  ,[privateKey] = @privateKey
+				  ,[osVersion] = @osVersion
+				  ,[ocInstalled] = @ocInstalled
+				  ,[ocVersion] = @ocVersion
+				  ,[fbInstalled] = @fbInstalled
+				  ,[fbVersion] = @fbVersion
+			  WHERE uid = @uid;
+			ELSE
+				IF @privateKey = '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **'
+				  UPDATE [dbo].[openCollectors]
+					SET 
+					  [name] = @name
+					  ,[hostname] = @hostname
+					  ,[port] = @port
+					  ,[authenticationMethod] = @authenticationMethod
+					  ,[username] = @username
+					  ,[password] = @password
+					  --,[privateKey] = @privateKey
+					  ,[osVersion] = @osVersion
+					  ,[ocInstalled] = @ocInstalled
+					  ,[ocVersion] = @ocVersion
+					  ,[fbInstalled] = @fbInstalled
+					  ,[fbVersion] = @fbVersion
+				  WHERE uid = @uid;
+				ELSE
+				  UPDATE [dbo].[openCollectors]
+					SET 
+					  [name] = @name
+					  ,[hostname] = @hostname
+					  ,[port] = @port
+					  ,[authenticationMethod] = @authenticationMethod
+					  ,[username] = @username
+					  ,[password] = @password
+					  ,[privateKey] = @privateKey
+					  ,[osVersion] = @osVersion
+					  ,[ocInstalled] = @ocInstalled
+					  ,[ocVersion] = @ocVersion
+					  ,[fbInstalled] = @fbInstalled
+					  ,[fbVersion] = @fbVersion
+				  WHERE uid = @uid;
   ELSE
     INSERT INTO [dbo].[openCollectors]
       ([uid]
