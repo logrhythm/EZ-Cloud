@@ -167,7 +167,11 @@ export default {
           },
           persistent: true
         }).onOk(() => {
-          this.deletePipeline(row)
+          this.deletePipeline({
+            pushToApi: true,
+            caller: this,
+            pipeline: row
+          })
         }) // }).onOk(() => {
       }
     }, // deletePipelinePrompt
@@ -180,9 +184,14 @@ export default {
       this.promptForNewPipelineDetails = false
       this.upsertPipeline(
         {
-          name: this.newPipelineName,
-          status: 'New',
-          primaryOpenCollector: (this.newPipelineOpenCollector && this.newPipelineOpenCollector.value && this.newPipelineOpenCollector.value.length ? this.newPipelineOpenCollector.value : null)
+          pushToApi: true,
+          caller: this,
+          pipeline:
+          {
+            name: this.newPipelineName,
+            status: 'New',
+            primaryOpenCollector: (this.newPipelineOpenCollector && this.newPipelineOpenCollector.value && this.newPipelineOpenCollector.value.length ? this.newPipelineOpenCollector.value : null)
+          }
         }
       )
     },
