@@ -126,10 +126,8 @@ export default {
     ...mapGetters('mainStore', ['openCollectors', 'pipelines']),
     tableData () {
       const list = []
-      console.log(this.openCollectors)
       this.pipelines.forEach(pipeline => {
         const pipelineOpenCollector = this.openCollectors.find(oc => oc.uid === pipeline.primaryOpenCollector)
-        console.log(pipelineOpenCollector)
         list.push(Object.assign({}, pipeline, {
           openCollector: (pipelineOpenCollector && pipelineOpenCollector.name && pipelineOpenCollector.hostname ? pipelineOpenCollector.name + ' (' + pipelineOpenCollector.hostname + ')' : null)
         }))
