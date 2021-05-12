@@ -151,7 +151,6 @@ export default {
       return options
     },
     tableLoading () {
-      // return this.collectorsLoading || this.pipelinesLoading
       return this.dataLoading // Coming from the Mixin: mixinSharedLoadCollectorsAndPipelines
     }
   },

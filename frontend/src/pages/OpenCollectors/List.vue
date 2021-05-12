@@ -168,7 +168,6 @@ export default {
         descending: false,
         rowsPerPage: 25
       },
-      tableLoading: false,
       promptForNewOpenCollectorDetails: false,
       newOpenCollectorUid: '',
       newOpenCollectorName: '',
@@ -209,6 +208,9 @@ export default {
         )
       })
       return options
+    },
+    tableLoading () {
+      return this.dataLoading // Coming from the Mixin: mixinSharedLoadCollectorsAndPipelines
     }
   },
   methods: {
