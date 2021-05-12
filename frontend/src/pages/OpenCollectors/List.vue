@@ -143,9 +143,13 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
+import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 
 export default {
   name: 'PageOpenCollectorsList',
+  mixins: [
+    mixinSharedLoadCollectorsAndPipelines // Shared functions to load the Collectors and Pipelines
+  ],
   data () {
     return {
       searchFilter: '',
@@ -293,9 +297,9 @@ export default {
     }
   }, // methods
   mounted () {
-    if (this.openCollectors.length === 0) {
-      this.loadOpenCollectors()
-    }
+    // if (this.openCollectors.length === 0) {
+    //   this.loadOpenCollectors()
+    // }
   }
 }
 

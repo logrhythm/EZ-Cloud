@@ -5,8 +5,12 @@
 </template>
 
 <script>
-export default {
+import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 
+export default {
+  mixins: [
+    mixinSharedLoadCollectorsAndPipelines // Shared functions to load the Collectors and Pipelines
+  ]
 }
 </script>
 

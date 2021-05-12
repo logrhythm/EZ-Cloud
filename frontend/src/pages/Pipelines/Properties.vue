@@ -100,9 +100,13 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
+import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 
 export default {
   name: 'PagePipelineProperties',
+  mixins: [
+    mixinSharedLoadCollectorsAndPipelines // Shared functions to load the Collectors and Pipelines
+  ],
   data () {
     return {
       socket: this.$socket,

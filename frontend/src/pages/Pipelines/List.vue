@@ -98,9 +98,13 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
+import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 
 export default {
   name: 'PagePipelinesList',
+  mixins: [
+    mixinSharedLoadCollectorsAndPipelines // Shared functions to load the Collectors and Pipelines
+  ],
   data () {
     return {
       searchFilter: '',
@@ -115,8 +119,8 @@ export default {
         descending: true,
         rowsPerPage: 25
       },
-      pipelinesLoading: false,
-      collectorsLoading: false,
+      // pipelinesLoading: false,
+      // collectorsLoading: false,
       promptForNewPipelineDetails: false,
       newPipelineName: '',
       newPipelineOpenCollector: null
@@ -147,7 +151,8 @@ export default {
       return options
     },
     tableLoading () {
-      return this.collectorsLoading || this.pipelinesLoading
+      // return this.collectorsLoading || this.pipelinesLoading
+      return this.dataLoading // Coming from the Mixin: mixinSharedLoadCollectorsAndPipelines
     }
   },
   methods: {
@@ -198,31 +203,31 @@ export default {
           }
         }
       )
-    },
-    loadPipelines () {
-      this.getPipelines(
-        {
-          loadingVariableName: 'pipelinesLoading',
-          caller: this
-        }
-      )
-    },
-    loadOpenCollectors () {
-      this.getOpenCollectors(
-        {
-          loadingVariableName: 'collectorsLoading',
-          caller: this
-        }
-      )
-    } // loadOpenCollectors
+    }
+    // loadPipelines () {
+    //   this.getPipelines(
+    //     {
+    //       loadingVariableName: 'pipelinesLoading',
+    //       caller: this
+    //     }
+    //   )
+    // },
+    // loadOpenCollectors () {
+    //   this.getOpenCollectors(
+    //     {
+    //       loadingVariableName: 'collectorsLoading',
+    //       caller: this
+    //     }
+    //   )
+    // } // loadOpenCollectors
   }, // mehtods
   mounted () {
-    if (this.pipelines && this.pipelines.length === 0) {
-      this.loadPipelines()
-    }
-    if (this.openCollectors.length === 0) {
-      this.loadOpenCollectors()
-    }
+  //   if (this.pipelines && this.pipelines.length === 0) {
+  //     this.loadPipelines()
+  //   }
+  //   if (this.openCollectors.length === 0) {
+  //     this.loadOpenCollectors()
+  //   }
   }
 
 }

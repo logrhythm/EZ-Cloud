@@ -446,10 +446,15 @@
 
 import { copyToClipboard } from 'quasar'
 import { mapState, mapGetters, mapActions } from 'vuex'
+import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import Vue2Filters from 'vue2-filters'
 
 export default {
   name: 'PagePipelineBuilder',
+  mixins: [
+    mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
+    Vue2Filters.mixin
+  ],
   data () {
     return {
       socket: this.$socket,
@@ -602,7 +607,6 @@ export default {
       saving: false
     }
   },
-  mixins: [Vue2Filters.mixin],
   computed: {
     ...mapState('mainStore', ['loggedInUser', 'jqFilterTemplate', 'jqTransformTemplate']),
     ...mapGetters('mainStore', ['pipelines']),
