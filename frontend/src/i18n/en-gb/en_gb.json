@@ -31,7 +31,7 @@
   "No \"response\" object in AJAX response": "No \"response\" object in AJAX response",
   "Loading error": "Loading error",
   "Uploading": "Uploading",
-  "Succesfully update": "Succesfully update",
+  "Succesfully updated": "Succesfully updated",
   "Update error": "Update error",
   "Error updating persistance layer.": "Error updating persistance layer."
 }
