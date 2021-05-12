@@ -174,7 +174,13 @@ export default {
       newOpenCollectorUsername: '',
       newOpenCollectorPassword: '',
       newOpenCollectorPrivateKey: '',
-      newOpenCollectorOpenCollector: null
+      // newOpenCollectorOpenCollector: null,
+      newOpenCollectorPipelines: [],
+      newOpenCollectorOsVersion: '',
+      newOpenCollectorOcInstalled: false,
+      newOpenCollectorOcVersion: '',
+      newOpenCollectorFbInstalled: false,
+      newOpenCollectorFbVersion: ''
     } // return
   },
   computed: {
@@ -250,6 +256,12 @@ export default {
       this.newOpenCollectorUsername = (existing && existing.username ? existing.username : null)
       this.newOpenCollectorPassword = (existing && existing.password ? existing.password : null)
       this.newOpenCollectorPrivateKey = (existing && existing.privateKey ? existing.privateKey : null)
+      this.newOpenCollectorPipelines = (existing && existing.pipelines ? existing.pipelines : [])
+      this.newOpenCollectorOsVersion = (existing && existing.osVersion ? existing.osVersion : '')
+      this.newOpenCollectorOcInstalled = (existing && existing.ocInstalled ? existing.ocInstalled : false)
+      this.newOpenCollectorOcVersion = (existing && existing.ocVersion ? existing.ocVersion : '')
+      this.newOpenCollectorFbInstalled = (existing && existing.fbInstalled ? existing.fbInstalled : false)
+      this.newOpenCollectorFbVersion = (existing && existing.fbVersion ? existing.fbVersion : '')
 
       this.promptForNewOpenCollectorDetails = true
     }, // doPromptForOpenCollectorDetails
@@ -265,16 +277,16 @@ export default {
             name: this.newOpenCollectorName,
             hostname: this.newOpenCollectorHostname,
             port: this.newOpenCollectorPort,
-            authenticationMethod: this.newOpenCollectorAuthMethod, // password, private_key
+            authenticationMethod: this.newOpenCollectorAuthMethod, // "password", "private_key"
             username: this.newOpenCollectorUsername,
             password: this.newOpenCollectorPassword,
             privateKey: this.newOpenCollectorPrivateKey,
-            pipelines: [], // XXXXXXXXXXXX
-            osVersion: '',
-            ocInstalled: false,
-            ocVersion: '',
-            fbInstalled: false,
-            fbVersion: ''
+            pipelines: this.newOpenCollectorPipelines,
+            osVersion: this.newOpenCollectorOsVersion,
+            ocInstalled: this.newOpenCollectorOcInstalled,
+            ocVersion: this.newOpenCollectorOcVersion,
+            fbInstalled: this.newOpenCollectorFbInstalled,
+            fbVersion: this.newOpenCollectorFbVersion
           }
         }
       )
