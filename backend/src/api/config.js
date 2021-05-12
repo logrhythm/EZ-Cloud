@@ -73,7 +73,16 @@ async function getDataFromSql(parameters) {
             request.addParameter(
               variable.name,
               TYPES[variable.type],
-              (variable.value !== undefined ? variable.value : null)
+              (
+                // eslint-disable-next-line no-nested-ternary
+                variable.value !== undefined
+                  ? (
+                    typeof variable.value === 'object'
+                      ? JSON.stringify(variable.value)
+                      : variable.value
+                  )
+                  : null
+              )
             );
             // if (typeof variable.value === 'string') {
             //   request.addParameter(variable.name, TYPES.NVarChar, (variable.value || null));
@@ -277,11 +286,13 @@ router.get('/GetPipelines', async (req, res) => {
       /* eslint-disable no-param-reassign */
       try {
         pipeline.fieldsMapping = JSON.parse((pipeline.fieldsMappingJson && pipeline.fieldsMappingJson.length > 0 ? pipeline.fieldsMappingJson : '{}'));
+        delete pipeline.fieldsMappingJson;
       } catch (error) {
         pipeline.fieldsMapping = {};
       }
       try {
         pipeline.collectionConfig = JSON.parse((pipeline.collectionConfigJson && pipeline.collectionConfigJson.length > 0 ? pipeline.fieldsMappingJson : '{}'));
+        delete pipeline.collectionConfigJson;
       } catch (error) {
         pipeline.collectionConfig = {};
       }
