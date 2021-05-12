@@ -115,7 +115,8 @@ export default {
         descending: true,
         rowsPerPage: 25
       },
-      tableLoading: false,
+      pipelinesLoading: false,
+      collectorsLoading: false,
       promptForNewPipelineDetails: false,
       newPipelineName: '',
       newPipelineOpenCollector: null
@@ -125,9 +126,9 @@ export default {
     ...mapGetters('mainStore', ['openCollectors', 'pipelines']),
     tableData () {
       const list = []
-      this.pipelines.forEach(p => {
-        const pipelineOpenCollector = this.openCollectors.find(oc => oc.uid === p.primaryOpenCollector)
-        list.push(Object.assign({}, p, {
+      this.pipelines.forEach(pipeline => {
+        const pipelineOpenCollector = this.openCollectors.find(oc => oc.uid === pipeline.primaryOpenCollector)
+        list.push(Object.assign({}, pipeline, {
           openCollector: (pipelineOpenCollector && pipelineOpenCollector.name && pipelineOpenCollector.hostname ? pipelineOpenCollector.name + ' (' + pipelineOpenCollector.hostname + ')' : null)
         }))
       })
@@ -144,10 +145,13 @@ export default {
         )
       })
       return options
+    },
+    tableLoading () {
+      return this.collectorsLoading || this.pipelinesLoading
     }
   },
   methods: {
-    ...mapActions('mainStore', ['upsertPipeline', 'deletePipeline', 'getPipelines']),
+    ...mapActions('mainStore', ['upsertPipeline', 'deletePipeline', 'getPipelines', 'getOpenCollectors']),
     openPipeline (row) {
       this.$router.push({ path: '/Pipelines/' + row.uid + '/Properties' })
     }, // openPipeline
@@ -198,15 +202,26 @@ export default {
     loadPipelines () {
       this.getPipelines(
         {
-          loadingVariableName: 'tableLoading',
+          loadingVariableName: 'pipelinesLoading',
           caller: this
         }
       )
-    }
+    },
+    loadOpenCollectors () {
+      this.getOpenCollectors(
+        {
+          loadingVariableName: 'collectorsLoading',
+          caller: this
+        }
+      )
+    } // loadOpenCollectors
   }, // mehtods
   mounted () {
     if (this.pipelines && this.pipelines.length === 0) {
       this.loadPipelines()
+    }
+    if (this.openCollectors.length === 0) {
+      this.loadOpenCollectors()
     }
   }
 

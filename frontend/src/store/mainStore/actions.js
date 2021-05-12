@@ -113,20 +113,22 @@ export function upsertPipeline ({ state, commit }, payload) {
     }
 
     // Persist
-    if (
-      payload.pushToApi &&
-      payload.pushToApi === true &&
-      state.pipelines.filter(p => p.uid === pipelinePayload.uid).length > 0
-    ) {
-      postDataToSite({
-        apiUrl: '/config/UpdatePipeline',
-        dataLabel: 'Pipeline',
-        apiCallParams: state.pipelines.find(p => p.uid === pipelinePayload.uid),
-        loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
-        silent: false,
-        caller: (payload && payload.caller ? payload.caller : this._vm),
-        debug: false
-      })
+    if (!(payload.pushToApi == null || (payload.pushToApi && payload.pushToApi === false))) {
+      if (
+        // payload.pushToApi &&
+        // payload.pushToApi === true &&
+        state.pipelines.filter(p => p.uid === pipelinePayload.uid).length > 0
+      ) {
+        postDataToSite({
+          apiUrl: '/config/UpdatePipeline',
+          dataLabel: 'Pipeline',
+          apiCallParams: state.pipelines.find(p => p.uid === pipelinePayload.uid),
+          loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+          silent: false,
+          caller: (payload && payload.caller ? payload.caller : this._vm),
+          debug: false
+        })
+      }
     }
   }
 }
