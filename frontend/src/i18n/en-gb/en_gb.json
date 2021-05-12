@@ -33,5 +33,6 @@
   "Uploading": "Uploading",
   "Succesfully updated": "Succesfully updated",
   "Update error": "Update error",
-  "Error updating persistance layer.": "Error updating persistance layer."
+  "Error updating persistance layer.": "Error updating persistance layer.",
+  "Switch to this Collection Method.": "Switch to this Collection Method."
 }

@@ -120,7 +120,7 @@
           <q-card-actions vertical class="justify-around q-px-md">
             <q-btn glossy class="full-height" color="primary" icon="check_circle_outline" @click="switchCollectionMethod()" >
               <q-tooltip content-style="font-size: 1em">
-                {{ $t('Save settings to local web browser.') }}
+                {{ $t('Switch to this Collection Method.') }}
               </q-tooltip>
             </q-btn>
           </q-card-actions>
