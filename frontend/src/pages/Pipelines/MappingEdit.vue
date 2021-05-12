@@ -319,8 +319,7 @@
               </div>
               <q-select
                 dense
-                standout="bg-grey-8 text-white"
-                bg-color="dark"
+                standout="bg-blue-8 text-white"
                 v-model="item.mappedField"
                 emit-value
                 map-options
@@ -359,8 +358,7 @@
               </q-select>
               <q-select
                 dense
-                standout="bg-grey-8 text-white"
-                bg-color="dark"
+                standout="bg-blue-8 text-white"
                 v-model="item.modifiers"
                 :options="['Parse JSON', 'Stringify JSON', 'Fan out', 'Sub Rule selector']"
                 style="width: 20rem;"

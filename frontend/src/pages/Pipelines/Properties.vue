@@ -5,7 +5,7 @@
     </div>
     <q-card>
       <q-card-section horizontal>
-        <q-card-section class="col">
+        <q-card-section class="col q-ma-none q-pa-none">
           <q-card-section class="text-h4">
               Collection
           </q-card-section>
@@ -38,7 +38,7 @@
     </q-card>
     <q-card>
       <q-card-section horizontal>
-        <q-card-section class="col">
+        <q-card-section class="col q-ma-none q-pa-none">
           <q-card-section class="text-h4">
               Mapping
           </q-card-section>
@@ -128,10 +128,10 @@ export default {
       })
     },
     detectedFields () {
-      return (this.pipeline.fieldsMapping ? this.pipeline.fieldsMapping.length : 0)
+      return (this.pipeline.fieldsMapping && Array.isArray(this.pipeline.fieldsMapping) ? this.pipeline.fieldsMapping.length : 0)
     },
     mappedFields () {
-      return (this.pipeline.fieldsMapping ? this.pipeline.fieldsMapping.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0) : 0)
+      return (this.pipeline.fieldsMapping && Array.isArray(this.pipeline.fieldsMapping) ? this.pipeline.fieldsMapping.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0) : 0)
     }
   },
   methods: {
