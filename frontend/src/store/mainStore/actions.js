@@ -99,26 +99,29 @@ export function getPipelines ({ commit }, payload) {
 }
 
 export function upsertPipeline ({ state, commit }, payload) {
-  console.log('upsertPipeline')
-  console.log(payload)
-  if (payload) {
+  if (payload && payload.pipeline) {
+    const pipelinePayload = Object.assign({}, payload.pipeline)
+
     // Update the Store
-    if (state.pipelines.filter(p => p.uid === payload.uid).length > 0) {
-      commit('updatePipeline', payload)
+    if (state.pipelines.filter(p => p.uid === pipelinePayload.uid).length > 0) {
+      commit('updatePipeline', pipelinePayload)
     } else {
-      commit('addPipeline', payload)
+      if (!pipelinePayload.uid || (pipelinePayload.uid && pipelinePayload.uid.length === 0)) {
+        pipelinePayload.uid = uid()
+      }
+      commit('addPipeline', pipelinePayload)
     }
 
     // Persist
     if (
-      payload._pushToApi &&
-      payload._pushToApi === true &&
-      state.pipelines.filter(p => p.uid === payload.uid).length > 0
+      payload.pushToApi &&
+      payload.pushToApi === true &&
+      state.pipelines.filter(p => p.uid === pipelinePayload.uid).length > 0
     ) {
       postDataToSite({
         apiUrl: '/config/UpdatePipeline',
         dataLabel: 'Pipeline',
-        apiCallParams: state.pipelines.find(p => p.uid === payload.uid),
+        apiCallParams: state.pipelines.find(p => p.uid === pipelinePayload.uid),
         loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
         silent: false,
         caller: (payload && payload.caller ? payload.caller : this._vm),
@@ -129,9 +132,30 @@ export function upsertPipeline ({ state, commit }, payload) {
 }
 
 export function deletePipeline ({ state, commit }, payload) {
-  if (payload) {
-    if (state.pipelines.filter(p => p.uid === payload.uid).length > 0) {
-      commit('deletePipeline', payload)
+  if (payload && payload.pipeline) {
+    const pipelinePayload = Object.assign({}, payload.pipeline)
+
+    // Update the Store
+    if (state.pipelines.filter(oc => oc.uid === pipelinePayload.uid).length > 0) {
+      commit('deletePipeline', pipelinePayload)
+    }
+
+    // Persist
+    if (
+      payload.pushToApi &&
+      payload.pushToApi === true &&
+      pipelinePayload.uid &&
+      pipelinePayload.uid.length
+    ) {
+      postDataToSite({
+        apiUrl: '/config/DeletePipeline',
+        dataLabel: 'Pipeline',
+        apiCallParams: { uid: pipelinePayload.uid },
+        loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+        silent: false,
+        caller: (payload && payload.caller ? payload.caller : this._vm),
+        debug: false
+      })
     }
   }
 }
