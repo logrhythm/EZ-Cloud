@@ -142,21 +142,7 @@ async function getDataFromSql(parameters) {
 function createSqlVariables(req, definitions) {
   const variables = [];
   if (req && (req.query || req.body) && definitions && Array.isArray(definitions)) {
-    [
-      { name: 'uid', type: 'NVarChar' },
-      { name: 'name', type: 'NVarChar' },
-      { name: 'hostname', type: 'NVarChar' },
-      { name: 'port', type: 'Int' },
-      { name: 'authenticationMethod', type: 'NVarChar' },
-      { name: 'username', type: 'NVarChar' },
-      { name: 'password', type: 'NVarChar' },
-      { name: 'privateKey', type: 'NVarChar' },
-      { name: 'osVersion', type: 'NVarChar' },
-      { name: 'ocInstalled', type: 'TinyInt' },
-      { name: 'ocVersion', type: 'NVarChar' },
-      { name: 'fbInstalled', type: 'TinyInt' },
-      { name: 'fbVersion', type: 'NVarChar' }
-    ].filter((def) => def.name && def.type && def.name.length && def.type.length)
+    definitions.filter((def) => def.name && def.type && def.name.length && def.type.length)
       .forEach((def) => {
         variables.push({
           name: def.name,
@@ -378,6 +364,68 @@ router.post('/DeleteCollector', async (req, res) => {
   });
 
   res.json(collectorToDelete);
+});
+
+module.exports = router;
+
+// ##########################################################################################
+// UpdatePipeline
+// ##########################################################################################
+
+const pipelineToUpdate = {};
+
+router.post('/UpdatePipeline', async (req, res) => {
+  await getDataFromSql({
+    targetVariable: pipelineToUpdate,
+    query: `
+    EXECUTE [dbo].[upsert_Pipeline] 
+       @uid
+      ,@name
+      ,@status
+      ,@primaryOpenCollector
+      ,@fieldsMapping
+      ,@collectionConfig
+      ;
+    `,
+    variables: createSqlVariables(
+      req,
+      [
+        { name: 'uid', type: 'NVarChar' },
+        { name: 'name', type: 'NVarChar' },
+        { name: 'status', type: 'NVarChar' },
+        { name: 'primaryOpenCollector', type: 'NVarChar' },
+        { name: 'fieldsMapping', type: 'NVarChar' },
+        { name: 'collectionConfig', type: 'NVarChar' }
+      ]
+    )
+  });
+
+  res.json(pipelineToUpdate);
+});
+
+// ##########################################################################################
+// DeletePipeline
+// ##########################################################################################
+
+const pipelineToDelete = {};
+
+router.post('/DeletePipeline', async (req, res) => {
+  await getDataFromSql({
+    targetVariable: pipelineToDelete,
+    query: `
+    DELETE FROM [dbo].[pipelines]
+      WHERE uid = @uid
+      ;
+    `,
+    variables: createSqlVariables(
+      req,
+      [
+        { name: 'uid', type: 'NVarChar' }
+      ]
+    )
+  });
+
+  res.json(pipelineToDelete);
 });
 
 module.exports = router;
