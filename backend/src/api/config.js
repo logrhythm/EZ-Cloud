@@ -285,13 +285,13 @@ router.get('/GetPipelines', async (req, res) => {
     pipelines.payload.forEach((pipeline) => {
       /* eslint-disable no-param-reassign */
       try {
-        pipeline.fieldsMapping = JSON.parse((pipeline.fieldsMappingJson && pipeline.fieldsMappingJson.length > 0 ? pipeline.fieldsMappingJson : '{}'));
+        pipeline.fieldsMapping = JSON.parse((pipeline.fieldsMappingJson && pipeline.fieldsMappingJson.length > 0 ? pipeline.fieldsMappingJson : '[]'));
         delete pipeline.fieldsMappingJson;
       } catch (error) {
         pipeline.fieldsMapping = {};
       }
       try {
-        pipeline.collectionConfig = JSON.parse((pipeline.collectionConfigJson && pipeline.collectionConfigJson.length > 0 ? pipeline.fieldsMappingJson : '{}'));
+        pipeline.collectionConfig = JSON.parse((pipeline.collectionConfigJson && pipeline.collectionConfigJson.length > 0 ? pipeline.collectionConfigJson : '{}'));
         delete pipeline.collectionConfigJson;
       } catch (error) {
         pipeline.collectionConfig = {};
