@@ -90,7 +90,7 @@ export function getPipelines ({ commit }, payload) {
     dataLabel: 'Pipelines',
     countDataLabel: true,
     commit: commit,
-    targetCommitName: 'getOpenPipelines',
+    targetCommitName: 'getPipelines',
     loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
     silent: false,
     caller: (payload && payload.caller ? payload.caller : this._vm),

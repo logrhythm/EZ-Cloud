@@ -87,8 +87,21 @@ export function updatePipeline (state, payload) {
       }
     })
 
+    // Array([
+    //   'fieldsMapping',
+    //   'collectionConfig'
+    // ]).forEach((branch) => {
+    //   if (payload[branch]) {
+    //     pipelineToUpdate[branch] = [].concat(payload[branch])
+    //   }
+    // })
+
     if (payload.fieldsMapping) {
       pipelineToUpdate.fieldsMapping = [].concat(payload.fieldsMapping)
+    }
+    console.log('COMMIT - updatePipeline')
+    if (payload.collectionConfig) {
+      pipelineToUpdate.collectionConfig = payload.collectionConfig
     }
   }
 }
@@ -103,7 +116,7 @@ export function deletePipeline (state, payload) {
   }
 }
 
-export function getOpenPipelines (state, payload) {
+export function getPipelines (state, payload) {
   if (payload && Array.isArray(payload)) {
     state.pipelines = payload
   }

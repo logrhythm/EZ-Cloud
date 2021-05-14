@@ -134,9 +134,9 @@ def is_{{EZ_beatname_placeholder}}:
     ."@metadata".beat == "filebeat"
     and
     (
-      .fields.stream.id == "{{EZ_stream_id_placeholder}}"
+      .fields.stream_id == "{{EZ_stream_id_placeholder}}"
       or
-      .fields.stream.name == "{{EZ_stream_name_placeholder}}"
+      .fields.stream_name == "{{EZ_stream_name_placeholder}}"
     )
 ;
    `,
@@ -244,22 +244,375 @@ def transform:
     # This filter should be left in place in most cases
     .output
 ;
-`
+`,
+    collectionMethodTemplates: [
+      {
+        collectionMethod: 'log',
+        definition: [
+          {
+            name: 'enabled',
+            label: 'Enabled',
+            type: {
+              name: 'boolean' // array, object, boolean, string, number, regex, option
+            },
+            // options: [{ value: true, label: 'True' }, { value: false, label: 'False' }],
+            default: true,
+            description: 'Is this Collection Method enabled?',
+            required: true,
+            readonly: true
+          },
+          // {
+          //   name: 'paths-TEST',
+          //   label: 'File Paths - TEST',
+          //   type: {
+          //     name: 'string'
+          //   },
+          //   quotes: {
+          //     required: true,
+          //     options: [{ value: '\'', label: 'Single quote: \'' }, { value: '"', label: 'Double quote: "' }], // ' or " on nothing
+          //     default: '"'
+          //   },
+          //   default: '/path/to/file.log',
+          //   description: 'A single glob-based path that will be crawled and fetched.',
+          //   required: true
+          // },
+          {
+            name: 'paths',
+            label: 'File Paths',
+            type: {
+              name: 'array', // array, object, boolean, string, number, regex, option
+              of: { // for array and object
+                type: {
+                  name: 'string'
+                },
+                quotes: {
+                  required: true,
+                  options: [{ value: '\'', label: 'Single quote: \'' }, { value: '"', label: 'Double quote: "' }], // ' or " on nothing
+                  default: '"'
+                },
+                default: '',
+                description: 'A single glob-based path that will be crawled and fetched. For example: /path/to/file.log',
+                required: true
+              }
+            },
+            // default: '',
+            description: 'A list of glob-based paths that will be crawled and fetched. All patterns supported by Go Glob are also supported here. For example, to fetch all files from a predefined level of subdirectories, the following pattern can be used: /var/log/*/*.log. This fetches all .log files from the subfolders of /var/log. It does not fetch log files from the /var/log folder itself. It is possible to recursively fetch all files in all subdirectories of a directory using the optional recursive_glob settings.',
+            required: true
+          },
+          {
+            name: 'fields',
+            label: 'Identification Fields',
+            type: {
+              name: 'object', // array, object, boolean, string, number, regex, option
+              of: { // for array and object
+                type: {
+                  name: 'string'
+                },
+                default: '',
+                description: '',
+                required: true
+              }
+            },
+            description: '',
+            required: true
+          },
+          {
+            name: 'encoding',
+            label: 'Text encoding',
+            type: {
+              name: 'option' // array, object, boolean, string, number, regex, option
+            },
+            options: [
+              { value: null, label: '** Not specified **<hr>' },
+              { value: 'plain', label: 'Plain ASCII encoding' },
+              { value: 'utf-8', label: 'UTF-8 encoding' },
+              { value: 'gbk', label: 'simplified Chinese charaters' },
+              { value: 'iso8859-6e', label: 'ISO8859-6E, Latin/Arabic' },
+              { value: 'iso8859-6i', label: 'ISO8859-6I, Latin/Arabic' },
+              { value: 'iso8859-8e', label: 'ISO8859-8E, Latin/Hebrew' },
+              { value: 'iso8859-8i', label: 'ISO8859-8I, Latin/Hebrew' },
+              { value: 'iso8859-1', label: 'ISO8859-1, Latin-1' },
+              { value: 'iso8859-2', label: 'ISO8859-2, Latin-2' },
+              { value: 'iso8859-3', label: 'ISO8859-3, Latin-3' },
+              { value: 'iso8859-4', label: 'ISO8859-4, Latin-4' },
+              { value: 'iso8859-5', label: 'ISO8859-5, Latin/Cyrillic' },
+              { value: 'iso8859-6', label: 'ISO8859-6, Latin/Arabic' },
+              { value: 'iso8859-7', label: 'ISO8859-7, Latin/Greek' },
+              { value: 'iso8859-8', label: 'ISO8859-8, Latin/Hebrew' },
+              { value: 'iso8859-9', label: 'ISO8859-9, Latin-5' },
+              { value: 'iso8859-10', label: 'ISO8859-10, Latin-6' },
+              { value: 'iso8859-13', label: 'ISO8859-13, Latin-7' },
+              { value: 'iso8859-14', label: 'ISO8859-14, Latin-8' },
+              { value: 'iso8859-15', label: 'ISO8859-15, Latin-9' },
+              { value: 'iso8859-16', label: 'ISO8859-16, Latin-10' },
+              { value: 'cp437', label: 'IBM CodePage 437' },
+              { value: 'cp850', label: 'IBM CodePage 850' },
+              { value: 'cp852', label: 'IBM CodePage 852' },
+              { value: 'cp855', label: 'IBM CodePage 855' },
+              { value: 'cp858', label: 'IBM CodePage 858' },
+              { value: 'cp860', label: 'IBM CodePage 860' },
+              { value: 'cp862', label: 'IBM CodePage 862' },
+              { value: 'cp863', label: 'IBM CodePage 863' },
+              { value: 'cp865', label: 'IBM CodePage 865' },
+              { value: 'cp866', label: 'IBM CodePage 866' },
+              { value: 'ebcdic-037', label: 'IBM CodePage 037' },
+              { value: 'ebcdic-1040', label: 'IBM CodePage 1140' },
+              { value: 'ebcdic-1047', label: 'IBM CodePage 1047' },
+              { value: 'koi8r', label: 'KOI8-R, Russian (Cyrillic)' },
+              { value: 'koi8u', label: 'KOI8-U, Ukranian (Cyrillic)' },
+              { value: 'macintosh', label: 'Macintosh encoding' },
+              { value: 'macintosh-cyrillic', label: 'Macintosh Cyrillic encoding' },
+              { value: 'windows1250', label: 'Windows1250, Central and Eastern European' },
+              { value: 'windows1251', label: 'Windows1251, Russian, Serbian (Cyrillic)' },
+              { value: 'windows1252', label: 'Windows1252, Legacy' },
+              { value: 'windows1253', label: 'Windows1253, Modern Greek' },
+              { value: 'windows1254', label: 'Windows1254, Turkish' },
+              { value: 'windows1255', label: 'Windows1255, Hebrew' },
+              { value: 'windows1256', label: 'Windows1256, Arabic' },
+              { value: 'windows1257', label: 'Windows1257, Estonian, Latvian, Lithuanian' },
+              { value: 'windows1258', label: 'Windows1258, Vietnamese' },
+              { value: 'windows874', label: 'Windows874, ISO/IEC 8859-11, Latin/Thai' },
+              { value: 'utf-16-bom', label: 'UTF-16 with required BOM' },
+              { value: 'utf-16be-bom', label: 'big endian UTF-16 with required BOM' },
+              { value: 'utf-16le-bom', label: 'little endian UTF-16 with required BOM' }
+            ],
+            default: 'utf-8',
+            description: 'The file encoding to use for reading data that contains international characters. The plain encoding is special, because it does not validate or transform any input.',
+            required: false
+          },
+          {
+            name: 'include_lines',
+            label: 'Include Lines',
+            type: {
+              name: 'array', // array, object, boolean, string, number, regex, option
+              of: { // for array and object
+                type: {
+                  name: 'regex' // array, object, boolean, string, number, regex, option
+                },
+                quotes: {
+                  required: true,
+                  options: [{ value: '\'', label: 'Single quote: \'' }, { value: '"', label: 'Double quote: "' }], // ' or " on nothing
+                  default: '\''
+                },
+                default: '',
+                required: false
+              }
+            },
+            description: 'A list of regular expressions to match the lines that you want Filebeat to include. Filebeat exports only the lines that match a regular expression in the list. By default, all lines are exported. Empty lines are ignored. If multiline settings also specified, each multiline message is combined into a single line before the lines are filtered by include_lines.',
+            required: false
+          },
+          {
+            name: 'exclude_lines',
+            label: 'Exclude Lines',
+            type: {
+              name: 'array', // array, object, boolean, string, number, regex, option
+              of: { // for array and object
+                type: {
+                  name: 'regex' // array, object, boolean, string, number, regex, option
+                },
+                quotes: {
+                  required: true,
+                  options: [{ value: '\'', label: 'Single quote: \'' }, { value: '"', label: 'Double quote: "' }], // ' or " on nothing
+                  default: '\''
+                },
+                default: '',
+                required: false
+              }
+            },
+            description: 'A list of regular expressions to match the lines that you want Filebeat to exclude. Filebeat drops any lines that match a regular expression in the list. By default, no lines are dropped. Empty lines are ignored. If multiline settings are also specified, each multiline message is combined into a single line before the lines are filtered by exclude_lines.',
+            required: false
+          },
+          {
+            name: 'exclude_files',
+            label: 'Exclude Files',
+            type: {
+              name: 'array', // array, object, boolean, string, number, regex, option
+              of: { // for array and object
+                type: {
+                  name: 'regex' // array, object, boolean, string, number, regex, option
+                },
+                quotes: {
+                  required: true,
+                  options: [{ value: '\'', label: 'Single quote: \'' }, { value: '"', label: 'Double quote: "' }], // ' or " on nothing
+                  default: '\''
+                },
+                default: '',
+                required: false
+              }
+            },
+            description: 'A list of regular expressions to match the files that you want Filebeat to ignore. By default no files are excluded.',
+            required: false,
+            readonly: true
+          },
+          {
+            name: 'ignore_older',
+            label: 'Ignore Older',
+            type: {
+              name: 'number' // array, object, boolean, string, number, regex, option
+            },
+            suffix: {
+              required: true,
+              options: [{ value: 's', label: 'Seconds' }, { value: 'm', label: 'Minutes' }, { value: 'h', label: 'Hours' }], // s, m, KiB, MiB
+              default: 'h'
+            },
+            default: '0',
+            min: 0,
+            max: 3600,
+            description: 'If this option is enabled, Filebeat ignores any files that were modified before the specified timespan. Configuring ignore_older can be especially useful if you keep log files for a long time. For example, if you want to start Filebeat, but only want to send the newest files and files from last week, you can configure this option. You can use time like 2 hours and 5 minutes. The default is 0, which disables the setting. Excluding out the config has the same effect as setting it to 0. IMPORTANT: You must set ignore_older to be greater than close_inactive.',
+            required: false
+          },
+          {
+            name: 'close_inactive',
+            label: 'Close Inactive',
+            type: {
+              name: 'number' // array, object, boolean, string, number, regex, option
+            },
+            suffix: {
+              required: true,
+              options: [{ value: 's', label: 'Seconds' }, { value: 'm', label: 'Minutes' }, { value: 'h', label: 'Hours' }], // s, m, KiB, MiB
+              default: 'm'
+            },
+            default: '5m',
+            min: 0,
+            max: 3600,
+            description: 'When this option is enabled, Filebeat closes the file handle if a file has not been harvested for the specified duration. The counter for the defined period starts when the last log line was read by the harvester. It is not based on the modification time of the file. If the closed file changes again, a new harvester is started and the latest changes will be picked up after scan_frequency has elapsed. We recommended that you set close_inactive to a value that is larger than the least frequent updates to your log files.For example, if your log files get updated every few seconds, you can safely set close_inactive to 1m.If there are log files with very different update rates, you can use multiple configurations with different values. Setting close_inactive to a lower value means that file handles are closed sooner.However this has the side effect that new log lines are not sent in near real time if the harvester is closed. The timestamp for closing a file does not depend on the modification time of the file.Instead, Filebeat uses an internal timestamp that reflects when the file was last harvested.For example, if close_inactive is set to 5 minutes, the countdown for the 5 minutes starts after the harvester reads the last line of the file. You can use time like 2 hours and 5 minutes.The default is 5 minutes. WARNING: Only use this option if you understand that data loss is a potential side effect.',
+            required: false
+          },
+          {
+            name: 'scan_frequency',
+            label: 'Scan Frequency',
+            type: {
+              name: 'number' // array, object, boolean, string, number, regex, option
+            },
+            suffix: {
+              required: true,
+              options: [{ value: 's', label: 'Seconds' }, { value: 'm', label: 'Minutes' }, { value: 'h', label: 'Hours' }], // s, m, KiB, MiB
+              default: 's'
+            },
+            default: 10,
+            min: 1,
+            max: 3600,
+            description: 'How often Filebeat checks for new files in the paths that are specified for harvesting. For example, if you specify a glob like /var/log/*, the directory is scanned for files using the frequency specified by scan_frequency. Specify 1s to scan the directory as frequently as possible without causing Filebeat to scan too frequently. We do not recommend to set this value < 1 second. If you require log lines to be sent in near real time do not use a very low scan_frequency but adjust close_inactive so the file handler stays open and constantly polls your files. The default setting is 10 seconds.',
+            required: false
+          },
+          {
+            name: 'max_bytes',
+            label: 'Max Bytes',
+            type: {
+              name: 'number' // array, object, boolean, string, number, regex, option
+            },
+            default: '10485760',
+            min: 0,
+            max: 52428800, // 50 MB
+            description: 'The maximum number of bytes that a single log message can have. All bytes after max_bytes are discarded and not sent. This setting is especially useful for multiline log messages, which can get large. The default is 10MB (10485760).',
+            required: false
+          }
+        ] // log
+      }
+    ]
   }
 }
 /*
-# Generated on: {{EZ_generation_timestamp}}
-# By: {{EZ_generation_user}}
-# For Stream: {{EZ_stream_name_placeholder}}
-# UID: {{EZ_stream_id_placeholder}}
-{{EZ_flatten_array_placeholder}}
-            "original_message": {{EZ_original_message_placeholder}}
-    add_field("{{EZ_beatname_placeholder}}"; .output.beatname) |
-    add_field("{{EZ_stream_name_placeholder}}"; .output.stream_name) |
-{{EZ_flatten_array__add_field_placeholder}}
-#    add_field({{EZ_flatten_array_name_placeholder}}{{EZ_flatten_array_field_doted_path_placeholder}}; .output.{{EZ_mdi_field_placeholder}}) |
-{{EZ_add_field_placeholder}}
-    add_field({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}; .output.{{EZ_mdi_field_placeholder}}) |
-{{EZ_sub_rules__add_field_placeholder}}
-    add_field({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}; .output.tag1) |
+definition
+- name
+- type
+-- array
+--- of
+-- object
+--- of
+-- boolean
+-- string
+-- number
+-- regex
+-- options
+-- prefix
+-- suffix // s, m, KiB, MiB
+-- quotes // ' or " on nothing
+-- default
+-- min
+-- max
+- description
+- required
+
+[
+  {
+    name: '',
+    type: {
+      name: '', // array, object, boolean, string, number, regex, option
+      of: { // for array and object
+        type: {
+          name: '', // array, object, boolean, string, number, regex, option
+          of: ...
+        },
+        options: [{ value: '', label: '' }, { value: '', label: '' }],
+        prefix: {
+          required: false,
+          options: [{ value: '', label: '' }, { value: '', label: '' }],
+          default: ''
+        },
+        suffix: {
+          required: false,
+          options: [{ value: '', label: '' }, { value: '', label: '' }], // s, m, KiB, MiB
+          default: ''
+        },
+        quotes: {
+          required: false,
+          options: [{ value: '\'', label: 'Single quote: \'' }, { value: '"', label: 'Double quote: "' }], // ' or " on nothing
+          default: ''
+        },
+        default: '',
+        min: null,
+        max: null,
+        description: '',
+        required: false,
+        readonly: true
+      }
+    },
+    options: [{ value: '', label: '' }, { value: '', label: '' }],
+    prefix: {
+      required: false,
+      options: [{ value: '', label: '' }, { value: '', label: '' }],
+      default: ''
+    },
+    suffix: {
+      required: false,
+      options: [{ value: '', label: '' }, { value: '', label: '' }], // s, m, KiB, MiB
+      default: ''
+    },
+    quotes: {
+      required: false,
+      options: [{ value: '\'', label: 'Single quote: \'' }, { value: '"', label: 'Double quote: "' }], // ' or " on nothing
+      default: ''
+    },
+    default: '',
+    min: null,
+    max: null,
+    description: '',
+    required: false,
+    readonly: true
+  }
+]
+
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /var/log/*.log
+  encoding: utf-8
+  #   plain, utf-8, utf-16be-bom, utf-16be, utf-16le, big5, gb18030, gbk,
+  #    hz-gb-2312, euc-kr, euc-jp, iso-2022-jp, shift-jis, ... http://www.w3.org/TR/encoding
+  #include_lines: ['^ERR', '^WARN']
+  #exclude_lines: ['^DBG']
+  #exclude_files: ['.gz$']
+  fields:
+  #  level: debug
+  #  review: 1
+  ignore_older: 0
+  #ignore_older: 5m
+  #ignore_older: 24h
+  scan_frequency: 10s
+  #max_bytes: 10485760
+  file_identity: inode_deviceid
+  #file_identity: path
+  #file_identity: inode_marker
 */

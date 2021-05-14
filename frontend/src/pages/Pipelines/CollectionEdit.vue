@@ -5,7 +5,7 @@
         <q-btn no-caps flat dense icon="arrow_back" label="Return to Properties" :to="'/Pipelines/' + this.pipelineUid + '/Properties'" />
         <q-separator vertical />
         <q-btn no-caps flat dense icon="save" label="Save" color="primary" :disabled="!needsSaving" @click="save()" />
-        <q-btn no-caps flat dense icon="restore" label="Reverse to last saved" @click="reverseToLastSaved()" />
+        <q-btn no-caps flat dense icon="restore" label="Reverse to last saved" @click="reverseToLastSavedPrompt()" />
         <!-- <q-separator vertical />
         <q-btn no-caps flat dense icon="play_circle_outline" label="Start Live Tail" color="secondary" @click="tailEnabled = true" v-if="!tailEnabled" />
         <q-btn no-caps flat dense icon="stop" label="Stop Live Tail" @click="tailEnabled = false" v-else /> -->
@@ -17,19 +17,20 @@
         <q-btn no-caps flat dense icon="visibility" label="Show JQ" v-if="!showJqOutput" @click="buildJqFilter(); buildJqTransform(); showJqOutput = true" />
         <q-btn no-caps flat dense icon="visibility_off" label="Hide JQ output" v-else @click="showJqOutput = false" /> -->
 
-        <q-toolbar-title style="opacity:.4" class="text-center">Collection Builder</q-toolbar-title>
+        <q-toolbar-title style="opacity:.4" class="text-center">Collection Builder<span v-if="pipeline && pipeline.name && pipeline.name.length">:  {{ pipeline.name }}</span></q-toolbar-title>
 
-        <!-- <q-btn no-caps flat dense icon="pending" label="Advanced">
+        <q-btn no-caps flat dense icon="pending" label="Advanced">
           <q-menu>
             <div class="row no-wrap q-pa-md">
               <div class="column">
                 <div class="text-h6 q-mb-md">Advanced</div>
-                <q-toggle v-model="showExtraDetails" label="Show extra details" />
-                <q-toggle v-model="showQueues" label="Show Queues" />
+                <q-toggle v-model="showCollectionConfig" label="Show Collection Configuration (JSON)" />
+                <q-toggle v-model="showCollectionConfigYml" :disable="true" label="Show Collection Configuration (YML)" />
+                <q-toggle v-model="showCollectionMethodTemplate" label="Show Collection Method Template" />
               </div>
             </div>
           </q-menu>
-        </q-btn> -->
+        </q-btn>
         <!-- <q-btn no-caps flat dense icon="settings" label="Settings">
           <q-menu>
             <div class="row no-wrap q-pa-md">
@@ -108,8 +109,10 @@
                   dense
                   standout="bg-blue-8 text-white"
                   v-model="collectionMethod"
-                  :options="['Flat File', 'HTTP', 'Web Hook', 'Syslog']"
-                  style="width: 20rem;"
+                  emit-value
+                  map-options
+                  :options="[{value: 'log', label: 'Flat File'}, {value: 'httpjson', label: 'HTTP / REST API'}, {value: 'http_endpoint', label: 'HTTP / Web Hook Endpoint'}, {value: 'syslog', label: 'Syslog'}]"
+                  style="min-width: 20rem;"
                   class="q-mx-sm q-my-xs"
                 />
             </q-card-section>
@@ -118,7 +121,7 @@
           <q-separator vertical />
 
           <q-card-actions vertical class="justify-around q-px-md">
-            <q-btn glossy class="full-height" color="primary" icon="check_circle_outline" @click="switchCollectionMethod()" >
+            <q-btn glossy class="full-height" color="primary" icon="check_circle_outline" @click="switchCollectionMethodPrompt()" >
               <q-tooltip content-style="font-size: 1em">
                 {{ $t('Switch to this Collection Method.') }}
               </q-tooltip>
@@ -131,8 +134,37 @@
             Collection Parameters
         </q-card-section>
         <q-separator />
+        <div class="q-gutter-y-md">
+          <q-card-section
+            v-for="(fieldTemplate, fieldIndex) in (collectionMethodTemplate && collectionMethodTemplate.definition ? collectionMethodTemplate.definition : [])"
+            :key="fieldIndex"
+          >
+            <div class="q-mb-sm">
+              <span class="text-bold q-mr-md">{{ fieldTemplate.label }}</span>
+              <span style="opacity: .6">
+                (&nbsp;<span class="fixed-font">{{ fieldTemplate.name }}</span>&nbsp;)
+                <span class="text-italic" v-if="fieldTemplate.required">&nbsp;- 🟧 Required</span>
+                <span class="text-italic" v-if="fieldTemplate.readonly">&nbsp;- ⬛ Read Only</span>
+              </span>
+            </div>
+            <!-- <div class="text-bold">collectionConfig[fieldTemplate.name] // collectionConfig[{{ fieldTemplate.name }}] // {{ collectionConfig[fieldTemplate.name] }}</div> -->
+            <FieldEditor
+              :template="fieldTemplate"
+              v-model="collectionConfig[fieldTemplate.name]"
+            />
+          </q-card-section>
+        </div>
+      </q-card>
+      <q-separator color="green" size="2px" v-if="showCollectionConfig"/>
+      <q-card v-if="showCollectionConfig">
         <q-card-section>
-          ...
+          <pre>{{ collectionConfig }}</pre>
+        </q-card-section>
+      </q-card>
+      <q-separator color="purple" size="2px"  v-if="showCollectionMethodTemplate"/>
+      <q-card v-if="showCollectionMethodTemplate">
+        <q-card-section>
+          <pre>{{ collectionMethodTemplate }}</pre>
         </q-card-section>
       </q-card>
     </div>
@@ -140,28 +172,74 @@
 </template>
 
 <script>
+import { mapState, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
+import FieldEditor from 'components/Pipelines/Collection/FieldEditor.vue'
 
 export default {
   mixins: [
     mixinSharedLoadCollectorsAndPipelines // Shared functions to load the Collectors and Pipelines
   ],
+  components: { FieldEditor },
 
   data () {
     return {
       pipelineUid: '',
       collectionConfig: {},
       needsSaving: false,
-      collectionMethod: ''
+      collectionMethod: '',
+      activeCollectionMethod: '',
+      showCollectionConfig: false,
+      showCollectionConfigYml: false,
+      showCollectionMethodTemplate: false
+    }
+  },
+
+  computed: {
+    ...mapState('mainStore', ['collectionMethodTemplates']),
+    pipeline () {
+      const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
+      return (pipeline || {
+        uid: '',
+        name: '',
+        status: 'New', // New, Dev, Ready
+        primaryOpenCollector: '', // UID of the main OC
+        fieldsMapping: [],
+        collectionConfig: {}
+      })
+    },
+    collectionMethodTemplate () {
+      return this.collectionMethodTemplates.find(template => template.collectionMethod === this.activeCollectionMethod)
     }
   },
 
   methods: {
+    ...mapActions('mainStore', ['upsertPipeline']),
+    reverseToLastSavedPrompt () {
+      // Ask to confirm
+      this.$q.dialog({
+        title: 'Confirm',
+        message: 'Do you REALLY want to lose all your un-saved changes and revert to the last Saved version?',
+        ok: {
+          push: true,
+          color: 'negative'
+        },
+        cancel: {
+          push: true,
+          color: 'positive'
+        },
+        persistent: true
+      }).onOk(() => {
+        this.reverseToLastSaved()
+      }) // }).onOk(() => {
+    },
     reverseToLastSaved () {
       try {
-        // Bring back mapping from the store
+        // Bring back config from the store
         const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
         this.collectionConfig = (pipeline && pipeline.collectionConfig ? JSON.parse(JSON.stringify(pipeline.collectionConfig)) : [])
+        this.activeCollectionMethod = this.collectionConfig.collectionMethod
+        this.collectionMethod = this.activeCollectionMethod
 
         // Flag down the need to Save as data is fresh from last save now
         this.needsSaving = false
@@ -169,8 +247,63 @@ export default {
         console.log('Can\'t parse JSON')
       }
     },
+    save () {
+      this.needsSaving = false
+      this.upsertPipeline(
+        {
+          caller: this,
+          pushToApi: true,
+          pipeline:
+          {
+            uid: this.pipelineUid,
+            collectionConfig: JSON.parse(JSON.stringify(this.collectionConfig))
+          }
+        }
+      )
+    },
+    switchCollectionMethodPrompt () {
+      console.log(this.collectionConfig)
+      if (this.collectionConfig && this.collectionConfig.collectionMethod && this.collectionConfig.collectionMethod.length) {
+        // Ask to confirm
+        this.$q.dialog({
+          title: 'Confirm',
+          message: 'You will lose any un-saved changes and start fresh with the new Collection Method. Are you sure?',
+          ok: {
+            push: true,
+            color: 'negative'
+          },
+          cancel: {
+            push: true,
+            color: 'positive'
+          },
+          persistent: true
+        }).onOk(() => {
+          this.switchCollectionMethod()
+        }) // }).onOk(() => {
+      } else {
+        this.switchCollectionMethod()
+      }
+    },
     switchCollectionMethod () {
-      //
+      this.activeCollectionMethod = (this.collectionMethod && this.collectionMethod.value ? this.collectionMethod.value : this.collectionMethod)
+
+      // If it's different than before, wipe the current config, and start fresh
+      if (!this.collectionConfig.collectionMethod || (this.collectionConfig.collectionMethod !== this.activeCollectionMethod)) {
+        // this.collectionConfig.collectionMethod = this.activeCollectionMethod
+        const newConf = {
+          collectionMethod: this.activeCollectionMethod,
+          enabled: true,
+          fields: {
+            stream_id: this.pipelineUid,
+            stream_name: this.pipeline.name
+          }
+        }
+        if (this.activeCollectionMethod === 'log') {
+          newConf.paths = ['"/var/log/' + this.pipeline.name + '_' + this.pipeline.uid + '/*.log"']
+        }
+        this.collectionConfig = newConf
+        this.needsSaving = true
+      }
     }
   },
 
@@ -181,12 +314,25 @@ export default {
       }
     }
 
-    // Load the Mapping, if any
+    // Load the Collection configuration, if any
     this.reverseToLastSaved()
+
+    this.switchCollectionMethod()
+  },
+
+  watch: {
+    collectionConfig: {
+      handler () {
+        this.needsSaving = true
+      },
+      deep: true
+    }
   }
 }
 </script>
 
-<style>
-
+<style scoped>
+.fixed-font {
+    font-family: monospace;
+}
 </style>
