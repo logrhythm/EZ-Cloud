@@ -134,31 +134,53 @@
             Collection Parameters
         </q-card-section>
         <q-separator />
-        <div class="q-gutter-y-md">
+        <div class="">
           <q-card-section
-            v-for="(fieldTemplate, fieldIndex) in (collectionMethodTemplate && collectionMethodTemplate.definition ? collectionMethodTemplate.definition : [])"
-            :key="fieldIndex"
+            v-for="(group, groupIndex) in templateGroups"
+            :key="groupIndex"
+            class="q-gutter-x-sm row"
           >
-            <div class="q-mb-sm">
-              <span class="text-bold q-mr-md">{{ fieldTemplate.label }}</span>
-              <span style="opacity: .6">
-                (&nbsp;<span class="fixed-font">{{ fieldTemplate.name }}</span>&nbsp;)
-                <span class="text-italic" v-if="fieldTemplate.required">&nbsp;- 🟧 Required</span>
-                <span class="text-italic" v-if="fieldTemplate.readonly">&nbsp;- ⬛ Read Only</span>
-              </span>
-            </div>
-            <!-- <div class="text-bold">collectionConfig[fieldTemplate.name] // collectionConfig[{{ fieldTemplate.name }}] // {{ collectionConfig[fieldTemplate.name] }}</div> -->
-            <FieldEditor
-              :template="fieldTemplate"
-              v-model="collectionConfig[fieldTemplate.name]"
-            />
+            <q-separator vertical color="blue-9" size="1px" />
+            <q-expansion-item
+              :default-opened="groupIndex === 0"
+              :label="group"
+              header-class="text-bold text-blue-4"
+              class="q-gutter-y-md col"
+            >
+              <q-card-section
+                v-for="(fieldTemplate, fieldIndex) in (collectionMethodTemplate && collectionMethodTemplate.definition ? collectionMethodTemplate.definition : []).filter(template => template.group && template.group === group)"
+                :key="fieldIndex"
+              >
+                <div class="q-mb-sm">
+                  <span class="text-bold q-mr-md">{{ fieldTemplate.label }}</span>
+                  <span style="opacity: .6">
+                    (&nbsp;<span class="fixed-font">{{ fieldTemplate.name }}</span>&nbsp;)
+                    <span class="text-italic" v-if="fieldTemplate.required">&nbsp;- 🟧 Required</span>
+                    <span class="text-italic" v-if="fieldTemplate.readonly">&nbsp;- ⬛ Read Only</span>
+                  </span>
+                </div>
+                <FieldEditor
+                  :template="fieldTemplate"
+                  v-model="collectionConfig[fieldTemplate.name]"
+                />
+              </q-card-section>
+            </q-expansion-item>
           </q-card-section>
         </div>
       </q-card>
       <q-separator color="green" size="2px" v-if="showCollectionConfig"/>
       <q-card v-if="showCollectionConfig">
         <q-card-section>
-          <pre>{{ collectionConfig }}</pre>
+          <div class="row q-gutter-x-lg">
+            <div class="col">
+              <span class="text-bold">Collection Params (JSON):</span><pre>{{ collectionConfig }}</pre>
+            </div>
+            <q-separator vertical color="green" />
+            <div class="col">
+              <span class="text-bold">Collection Params (Yaml):</span><pre>{{ collectionConfigYml }}</pre>
+            </div>
+          </div>
+
         </q-card-section>
       </q-card>
       <q-separator color="purple" size="2px"  v-if="showCollectionMethodTemplate"/>
@@ -175,10 +197,13 @@
 import { mapState, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import FieldEditor from 'components/Pipelines/Collection/FieldEditor.vue'
+import { dump } from 'js-yaml'
+import Vue2Filters from 'vue2-filters'
 
 export default {
   mixins: [
-    mixinSharedLoadCollectorsAndPipelines // Shared functions to load the Collectors and Pipelines
+    mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
+    Vue2Filters.mixin
   ],
   components: { FieldEditor },
 
@@ -210,6 +235,27 @@ export default {
     },
     collectionMethodTemplate () {
       return this.collectionMethodTemplates.find(template => template.collectionMethod === this.activeCollectionMethod)
+    },
+    collectionConfigYml () {
+      try {
+        return dump(this.collectionConfig)
+      } catch (error) {
+        return error
+      }
+    },
+    templateGroups () {
+      // Go through each template definition and extract the Groups
+      const templates = (this.collectionMethodTemplate && this.collectionMethodTemplate.definition ? this.collectionMethodTemplate.definition : [])
+        .filter(template => template.group && template.group.length)
+
+      return (templates.length
+        ? templates.reduce((groups, template) => {
+          if (!groups.includes(template.group)) {
+            groups.push(template.group)
+          }
+          return groups
+        }, [])
+        : [])
     }
   },
 
@@ -298,9 +344,29 @@ export default {
             stream_name: this.pipeline.name
           }
         }
+        // For Flat files:
         if (this.activeCollectionMethod === 'log') {
-          newConf.paths = ['"/var/log/' + this.pipeline.name + '_' + this.pipeline.uid + '/*.log"']
+          newConf.paths = ['/var/log/' + this.pipeline.name + '_' + this.pipeline.uid + '/*.log']
         }
+
+        // For Syslog:
+        if (this.activeCollectionMethod === 'syslog') {
+          newConf['protocol.udp.host'] = '0.0.0.0:514'
+
+          newConf['protocol.tcp.host'] = '0.0.0.0:514'
+
+          newConf['protocol.udp'] = {
+          }
+
+          newConf['protocol.tcp.ssl.enabled'] = false
+          newConf['protocol.tcp.ssl.certificate'] = '/etc/filebeat/certificates/ez_stream_' + this.pipeline.uid + '.crt'
+          newConf['protocol.tcp.ssl.key'] = '/etc/filebeat/certificates/ez_stream_' + this.pipeline.uid + '.key'
+          newConf['protocol.tcp.ssl.supported_protocols'] = ['TLSv1.1', 'TLSv1.2', 'TLSv1.3']
+
+          newConf['protocol.tcp.ssl'] = {
+          }
+        }
+
         this.collectionConfig = newConf
         this.needsSaving = true
       }

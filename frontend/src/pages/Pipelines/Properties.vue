@@ -19,7 +19,14 @@
                 Collection Method: {{ collectionMethod }}
             </q-card-section>
             <q-card-section>
-                Collection Params: <pre>{{ pipeline.collectionConfig }}</pre>
+              <div class="row">
+                <div class="col-6">
+                  Collection Params (JSON): <pre>{{ pipeline.collectionConfig }}</pre>
+                </div>
+                <div class="col-6">
+                  Collection Params (YML): <pre>{{ collectionConfigYml }}</pre>
+                </div>
+              </div>
             </q-card-section>
           </q-card-section>
 
@@ -93,6 +100,7 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
+import { dump } from 'js-yaml'
 
 export default {
   name: 'PagePipelineProperties',
@@ -127,6 +135,13 @@ export default {
     },
     collectionMethod () {
       return (this.pipeline.collectionConfig && this.pipeline.collectionConfig.collectionMethod ? this.pipeline.collectionConfig.collectionMethod : 'N/A')
+    },
+    collectionConfigYml () {
+      try {
+        return dump(this.pipeline.collectionConfig)
+      } catch (error) {
+        return error
+      }
     }
   },
   methods: {
