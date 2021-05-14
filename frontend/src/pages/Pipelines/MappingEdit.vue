@@ -41,7 +41,7 @@
         <q-btn no-caps flat dense icon="visibility" label="Show JQ" v-if="!showJqOutput" @click="buildJqFilter(); buildJqTransform(); showJqOutput = true" />
         <q-btn no-caps flat dense icon="visibility_off" label="Hide JQ output" v-else @click="showJqOutput = false" />
 
-        <q-toolbar-title style="opacity:.4" class="text-center">Pipeline Builder</q-toolbar-title>
+        <q-toolbar-title style="opacity:.4" class="text-center">Mapping Builder<span v-if="pipelineName && pipelineName.length">:  {{ pipelineName }}</span></q-toolbar-title>
 
         <q-btn no-caps flat dense icon="pending" label="Advanced">
           <q-menu>
