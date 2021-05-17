@@ -393,6 +393,13 @@ export default {
           // }
         }
 
+        // For HTTP / REST API:
+        if (this.activeCollectionMethod === 'httpjson') {
+          newConf.config_version = 2
+          newConf['request.url'] = 'https://xxxxxxxxxx'
+          // newConf['request.method'] = 'GET'
+        }
+
         this.collectionConfig = newConf
         this.needsSaving = true
       }

@@ -246,6 +246,15 @@ def transform:
 ;
 `,
     collectionMethodTemplates: [
+
+      //     ######## ##          ###    ########       ######## #### ##       ########
+      //     ##       ##         ## ##      ##          ##        ##  ##       ##
+      //     ##       ##        ##   ##     ##          ##        ##  ##       ##
+      //     ######   ##       ##     ##    ##          ######    ##  ##       ######
+      //     ##       ##       #########    ##          ##        ##  ##       ##
+      //     ##       ##       ##     ##    ##          ##        ##  ##       ##
+      //     ##       ######## ##     ##    ##          ##       #### ######## ########
+
       {
         collectionMethod: 'log',
         definition: [
@@ -273,30 +282,6 @@ def transform:
             required: true,
             group: 'Required'
           },
-          // {
-          //   name: 'pathsXXX',
-          //   label: 'File PathsXXX',
-          //   type: {
-          //     name: 'array', // array, object, boolean, string, number, regex, option
-          //     of: { // for array and object
-          //       type: {
-          //         name: 'string'
-          //       },
-          //       quotes: {
-          //         required: true,
-          //         options: [{ value: '\'', label: 'Single quote: \'' }, { value: '"', label: 'Double quote: "' }], // ' or " on nothing
-          //         default: '"'
-          //       },
-          //       default: '',
-          //       description: 'A single glob-based path that will be crawled and fetched. For example: /path/to/file.log',
-          //       required: true
-          //     }
-          //   },
-          //   // default: '',
-          //   description: 'A list of glob-based paths that will be crawled and fetched. All patterns supported by Go Glob are also supported here. For example, to fetch all files from a predefined level of subdirectories, the following pattern can be used: /var/log/*/*.log. This fetches all .log files from the subfolders of /var/log. It does not fetch log files from the /var/log folder itself. It is possible to recursively fetch all files in all subdirectories of a directory using the optional recursive_glob settings.',
-          //   required: true,
-          //   group: 'Required'
-          // },
           // Advanced
           {
             name: 'encoding',
@@ -540,6 +525,15 @@ def transform:
           }
         ] // definition
       }, // log
+
+      //      ######  ##    ##  ######  ##        #######   ######
+      //     ##    ##  ##  ##  ##    ## ##       ##     ## ##    ##
+      //     ##         ####   ##       ##       ##     ## ##
+      //      ######     ##     ######  ##       ##     ## ##   ####
+      //           ##    ##          ## ##       ##     ## ##    ##
+      //     ##    ##    ##    ##    ## ##       ##     ## ##    ##
+      //      ######     ##     ######  ########  #######   ######
+
       {
         collectionMethod: 'syslog',
         definition: [
@@ -890,8 +884,188 @@ def transform:
             group: 'EZ Internal'
           }
         ] // definition
-      } // syslog
-    ],
+      }, // syslog
+      {
+        collectionMethod: 'httpjson',
+        definition: [
+          // Required
+          {
+            name: 'request.url',
+            label: 'Request URL',
+            type: {
+              name: 'string'
+            },
+            description: 'The URL of the HTTP API.',
+            default: '',
+            required: true,
+            group: 'Required'
+          },
+          {
+            name: 'request.method',
+            label: 'Request Method',
+            type: {
+              name: 'option'
+            },
+            options: [{ value: 'GET', label: 'HTTP GET' }, { value: 'POST', label: 'HTTP POST' }],
+            description: 'HTTP method to use when making requests.',
+            default: 'GET',
+            required: false,
+            group: 'Required'
+          },
+          {
+            name: 'EZ_Auth_Basic_Pass',
+            label: 'Password for Basic authentication',
+            type: {
+              name: 'password'
+            },
+            description: 'Non encoded password for Basic authentication.',
+            default: '',
+            required: true,
+            group: 'Authentication - Basic'
+          },
+          {
+            name: 'auth.oauth2.enabled',
+            label: 'Enabled',
+            type: {
+              name: 'boolean'
+            },
+            description: 'When set to false, disables the oauth2 configuration.',
+            default: false,
+            required: true,
+            group: 'Authentication - OAuth2'
+          },
+          {
+            name: 'auth.oauth2.provider',
+            label: 'OAuth2 Provider',
+            type: {
+              name: 'option'
+            },
+            options: [{ value: 'default', label: 'Default' }, { value: 'azure', label: 'Azure' }, { value: 'google', label: 'Google' }],
+            description: 'Used to configure supported oauth2 providers. Each supported provider will require specific settings. It is not set by default. Supported providers are: azure, google.',
+            default: 'default',
+            required: false,
+            group: 'Authentication - OAuth2'
+          },
+          {
+            name: 'auth.oauth2.client.id',
+            label: 'Client ID',
+            type: {
+              name: 'string'
+            },
+            description: 'The client ID used as part of the authentication flow. It is always required except if using Google as provider. Required for providers: Default, Azure.',
+            default: '',
+            required: false,
+            group: 'Authentication - OAuth2'
+          },
+          {
+            name: 'auth.oauth2.client.secret',
+            label: 'Client Secret',
+            type: {
+              name: 'password'
+            },
+            description: 'The client secret used as part of the authentication flow. It is always required except if using Google as provider. Required for providers: Default, Azure.',
+            default: '',
+            required: false,
+            group: 'Authentication - OAuth2'
+          },
+          {
+            name: 'auth.oauth2.scopes',
+            label: 'Scopes',
+            type: {
+              name: 'array',
+              of: {
+                type: {
+                  name: 'string'
+                },
+                default: '',
+                required: true
+              }
+            },
+            description: 'A list of scopes that will be requested during the OAuth2 flow. It is optional for all providers.',
+            required: false,
+            group: 'Authentication - OAuth2'
+          },
+          {
+            name: 'auth.oauth2.token_url',
+            label: 'Token URL',
+            type: {
+              name: 'string'
+            },
+            description: 'The endpoint that will be used to generate the tokens during the OAuth2 flow. It is required if no provider is specified. NOTE: For Azure provider either Token URL or Azure Tenant ID is required.',
+            default: '',
+            required: false,
+            group: 'Authentication - OAuth2'
+          },
+          {
+            name: 'auth.oauth2.endpoint_params',
+            label: 'Endpoint Parameters',
+            type: {
+              name: 'object',
+              of: {
+                type: {
+                  name: 'array',
+                  of: {
+                    type: {
+                      name: 'string'
+                    },
+                    default: '',
+                    required: true
+                  }
+                },
+                required: true
+              }
+            },
+            description: 'Set of values that will be sent on each request to the Token URL. Each param key can have multiple values. Can be set for all providers except Google.',
+            required: false,
+            group: 'Authentication - OAuth2'
+          },
+          {
+            name: 'config_version',
+            label: 'Configuration version',
+            type: {
+              name: 'number'
+            },
+            min: 1,
+            max: 2,
+            description: 'Defines the configuration version. V1 configuration is deprecated and will be unsupported in future releases. Any new configuration should use config_version: 2.',
+            default: 2,
+            required: true,
+            group: 'Advanced'
+          },
+          // EZ Internal
+          {
+            name: 'enabled',
+            label: 'Enabled',
+            type: {
+              name: 'boolean'
+            },
+            default: true,
+            description: 'Is this Collection Method enabled?',
+            required: true,
+            readonly: true,
+            group: 'EZ Internal'
+          },
+          {
+            name: 'fields',
+            label: 'Identification Fields',
+            type: {
+              name: 'object',
+              of: {
+                type: {
+                  name: 'string'
+                },
+                default: '',
+                description: '',
+                required: true
+              }
+            },
+            description: 'In addition to stream_id and stream_name fields that are automatically added, and cannot be removed or changed, you can add optional fields that you can specify to add additional information to the output. For example, you might add fields that you can use for filtering log data. Fields can be scalar values, arrays, dictionaries, or any nested combination of these. By default, the fields that you specify here will be grouped under a fields sub-dictionary in the output document. To store the custom fields as top-level fields, set the fields_under_root option to true. If a duplicate field is declared in the general configuration, then its value will be overwritten by the value declared here.',
+            required: true,
+            group: 'EZ Internal'
+          }
+        ] // definition
+      } // httpjson
+    ], // collectionMethodTemplates
     collectionMethodsOptions: [
       {
         value: 'log',
