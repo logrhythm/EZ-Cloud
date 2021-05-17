@@ -1,5 +1,14 @@
 <template>
   <div class="row q-gutter-x-sm">
+    <!-- Object leaf name, if part of an Object -->
+    <q-input
+      v-if="isPartOfObject"
+      style="width: 20rem;"
+      standout
+      v-model="leafName"
+      :readonly="true"
+      class="col-auto"
+    />
     <q-separator vertical color="orange" size="3px" v-if="template.required && !isPartOfArray && !isPartOfObject" />
     <div class="col">
       <div v-if="template.type && template.type.name && template.type.name === 'array'" class="q-gutter-y-sm">
@@ -12,7 +21,7 @@
           v-model="internalValue[subFieldIndex]"
           @deleteSubField="deleteSubFieldEvent"
         />
-        <q-btn no-caps flat dense icon="add" label="Add" color="primary" @click="addValueToArray()" />
+        <q-btn no-caps flat dense icon="add" label="Add Item" color="primary" @click="addValueToArray()" />
       </div>
       <div v-if="template.type && template.type.name && template.type.name === 'object'" class="q-gutter-y-sm">
         <FieldEditor
@@ -24,7 +33,7 @@
           v-model="internalValue[subFieldLeafName]"
           @deleteSubField="deleteSubFieldEvent"
         />
-        <q-btn no-caps flat dense icon="add" label="Add" color="primary" @click="addValueToObject()" />
+        <q-btn no-caps flat dense icon="add" label="Add Item" color="primary" @click="addValueToObject()" />
       </div>
       <q-select
         v-if="template.type && template.type.name && (template.type.name === 'boolean' || template.type.name === 'option')"
@@ -36,14 +45,6 @@
         :readonly="(template.readonly ? template.readonly : false)"
       />
       <div class="row q-gutter-x-md">
-        <!-- Object leaf name, if part of an Object -->
-        <q-input
-          v-if="isPartOfObject"
-          style="width: 20rem;"
-          standout
-          v-model="leafName"
-          :readonly="true"
-        />
         <!-- Prefix, if any -->
         <q-select
           v-if="template.prefix"
@@ -57,7 +58,7 @@
         />
         <!-- Text input -->
         <q-input
-          v-if="template.type && template.type.name && (template.type.name === 'string' || template.type.name === 'regex' || template.type.name === 'number')"
+          v-if="template.type && template.type.name && (template.type.name === 'string' || template.type.name === 'regex' || template.type.name === 'number' || template.type.name === 'password')"
           class="col"
           standout
           v-model="internalValue"
@@ -348,11 +349,22 @@ export default {
       return value
     },
     addValueToArray () {
+      // Prep the new value based on the type of the sub-type. Defaulting to ''
+      let newItem = ''
+      if (this.template && this.template.type && this.template.type.name && this.template.type.of && this.template.type.of.type && this.template.type.of.type.name) {
+        if (this.template.type.of.type.name === 'array') {
+          newItem = []
+        }
+        if (this.template.type.of.type.name === 'object') {
+          newItem = {}
+        }
+      }
+
       if (Array.isArray(this.internalValue)) {
-        this.internalValue.push('')
+        this.internalValue.push(newItem)
         this.internalValue = JSON.parse(JSON.stringify(this.internalValue))
       } else {
-        this.internalValue = JSON.parse(JSON.stringify(['']))
+        this.internalValue = JSON.parse(JSON.stringify([newItem]))
       }
     },
     addValueToObject () {
@@ -377,12 +389,24 @@ export default {
         persistent: true
       }).onOk((newItemName) => {
         const newItem = {}
-        newItem[(newItemName && newItemName.length ? newItemName : uid())] = ''
+        const newItemNameOrUid = (newItemName && newItemName.length ? newItemName : uid())
+
+        // Prep the new value based on the type of the sub-type. Defaulting to ''
+        newItem[newItemNameOrUid] = ''
+        if (this.template && this.template.type && this.template.type.name && this.template.type.of && this.template.type.of.type && this.template.type.of.type.name) {
+          if (this.template.type.of.type.name === 'array') {
+            newItem[newItemNameOrUid] = []
+          }
+          if (this.template.type.of.type.name === 'object') {
+            newItem[newItemNameOrUid] = {}
+          }
+        }
+
+        // And add it to the pile
         if (typeof this.internalValue === 'object' && !Array.isArray(this.internalValue)) {
           this.internalValue = Object.assign(this.internalValue, newItem)
           this.internalValue = JSON.parse(JSON.stringify(this.internalValue))
         } else {
-          // this.internalValue = Object.assign({}, newItem)
           this.internalValue = JSON.parse(JSON.stringify(newItem))
         }
       }) // }).onOk((newItemName) => {
