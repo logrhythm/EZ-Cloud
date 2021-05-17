@@ -110,9 +110,10 @@
                   v-model="collectionMethod"
                   emit-value
                   map-options
-                  :options="[{value: 'log', label: 'Flat File'}, {value: 'httpjson', label: 'HTTP / REST API'}, {value: 'http_endpoint', label: 'HTTP / Web Hook Endpoint'}, {value: 'syslog', label: 'Syslog'}]"
+                  :options="collectionMethodsOptions"
                   style="min-width: 20rem;"
                   class="q-mx-sm q-my-xs"
+                  popup-content-class="bg-grey-9"
                 />
             </q-card-section>
           </q-card-section>
@@ -128,9 +129,18 @@
           </q-card-actions>
         </q-card-section>
       </q-card>
-      <q-card>
-        <q-card-section class="text-h6">
+      <q-card v-if="activeCollectionMethod && activeCollectionMethod.length">
+        <q-card-section class="text-h6 row">
             Collection Parameters
+            <q-space />
+            <div class="text-teal-4">
+              {{ currentCollectionMethodOption.label }}
+            </div>
+            <q-icon :name="currentCollectionMethodOption.icon" size="md" color="teal-4" class="q-ml-md">
+              <q-tooltip content-style="font-size: 1rem;">
+                {{ currentCollectionMethodOption.label }}
+              </q-tooltip>
+            </q-icon>
         </q-card-section>
         <q-separator />
         <div class="">
@@ -219,7 +229,7 @@ export default {
   },
 
   computed: {
-    ...mapState('mainStore', ['collectionMethodTemplates']),
+    ...mapState('mainStore', ['collectionMethodTemplates', 'collectionMethodsOptions']),
     pipeline () {
       const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
       return (pipeline || {
@@ -235,10 +245,20 @@ export default {
       return this.collectionMethodTemplates.find(template => template.collectionMethod === this.activeCollectionMethod)
     },
     collectionConfigYml () {
-      try {
-        return dump(this.collectionConfig)
-      } catch (error) {
-        return error
+      if (this.activeCollectionMethod && this.activeCollectionMethod.length) {
+        try {
+          const jsonConfig = Object.assign({}, this.pipeline.collectionConfig)
+
+          // trash our own stuff, as it has nothing to do in the file Yaml
+          delete jsonConfig.activeCollectionMethod
+
+          // and push it out as Yaml
+          return dump([{ type: this.activeCollectionMethod, ...jsonConfig }])
+        } catch (error) {
+          return error
+        }
+      } else {
+        return '# No Collection Method configured.'
       }
     },
     templateGroups () {
@@ -254,6 +274,13 @@ export default {
           return groups
         }, [])
         : [])
+    },
+    currentCollectionMethodOption () {
+      if (this.activeCollectionMethod && this.activeCollectionMethod.length) {
+        return this.collectionMethodsOptions.find(cmo => cmo.value && cmo.value === this.activeCollectionMethod) || { value: 'unknown', label: 'Unknown', icon: 'help_center' }
+      } else {
+        return { value: 'unknown', label: 'Unknown', icon: 'help_center' }
+      }
     }
   },
 

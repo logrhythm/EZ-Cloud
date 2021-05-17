@@ -15,8 +15,12 @@
             <q-card-section class="text-h4">
                 Collection
             </q-card-section>
-            <q-card-section>
-                <span class="text-bold">Collection Method: </span>{{ collectionMethod }}
+            <q-card-section class="row items-center">
+                <span class="text-bold">Collection Method: </span>
+                <div class="q-ml-md text-center text-teal-4">
+                  <q-icon :name="collectionMethodOption.icon" size="md" />
+                  <div>{{ collectionMethodOption.label }}</div>
+                </div>
             </q-card-section>
             <q-card-section>
               <!-- <div class="row">
@@ -46,9 +50,14 @@
                   Edit Collection
                 </q-tooltip>
               </q-btn>
-              <q-btn icon="download" disable>
+              <q-btn icon="download" @click="downloadFilbeatInputConfigFile()">
                 <q-tooltip content-style="font-size: 1rem;">
                   Download Filebeat input configuration as YML file
+                </q-tooltip>
+              </q-btn>
+              <q-btn icon="content_copy" @click="copyFilbeatInputConfigFileToClipboard()">
+                <q-tooltip content-style="font-size: 1rem;">
+                  Copy Filebeat input configuration to Clipboard
                 </q-tooltip>
               </q-btn>
               <q-btn icon="highlight_off" disable>
@@ -87,7 +96,7 @@
                   Edit Mapping
                 </q-tooltip>
               </q-btn>
-              <q-btn icon="download">
+              <q-btn icon="download" disable>
                 <q-tooltip content-style="font-size: 1rem;">
                   Download Mapping as JQ Pipeline
                 </q-tooltip>
@@ -105,9 +114,10 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex'
+import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import { dump } from 'js-yaml'
+import { exportFile, copyToClipboard } from 'quasar'
 
 export default {
   name: 'PagePipelineProperties',
@@ -123,6 +133,7 @@ export default {
   },
   computed: {
     ...mapGetters('mainStore', ['openCollectors', 'pipelines']),
+    ...mapState('mainStore', ['collectionMethodsOptions']),
     pipeline () {
       const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
       return (pipeline || {
@@ -141,13 +152,32 @@ export default {
       return (this.pipeline.fieldsMapping && Array.isArray(this.pipeline.fieldsMapping) ? this.pipeline.fieldsMapping.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0) : 0)
     },
     collectionMethod () {
-      return (this.pipeline.collectionConfig && this.pipeline.collectionConfig.collectionMethod ? this.pipeline.collectionConfig.collectionMethod : 'N/A')
+      return (this.pipeline.collectionConfig && this.pipeline.collectionConfig.collectionMethod ? this.pipeline.collectionConfig.collectionMethod : '')
+    },
+    collectionMethodOption () {
+      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'help_center' }
+      if (this.collectionMethod && this.collectionMethod.length) {
+        return this.collectionMethodsOptions.find(cmo => cmo.value && cmo.value === this.collectionMethod) || fallbackValue
+      } else {
+        return fallbackValue
+      }
     },
     collectionConfigYml () {
-      try {
-        return dump(this.pipeline.collectionConfig)
-      } catch (error) {
-        return error
+      // Transform the JSON config into Yaml
+      if (this.collectionMethod && this.collectionMethod.length) {
+        try {
+          const jsonConfig = Object.assign({}, this.pipeline.collectionConfig)
+
+          // trash our own stuff, as it has nothing to do in the file Yaml
+          delete jsonConfig.collectionMethod
+
+          // and push it out as Yaml
+          return dump([{ type: this.collectionMethod, ...jsonConfig }])
+        } catch (error) {
+          return error
+        }
+      } else {
+        return '# No Collection Method configured.'
       }
     }
   },
@@ -232,7 +262,56 @@ export default {
           }
         )
       }
-    } // deleteCollection
+    }, // deleteCollection
+    downloadFilbeatInputConfigFile () {
+      const fileName = 'input.' + this.pipeline.name + '_' + this.pipeline.uid + '.yml'
+      const notificationPopupId = this.$q.notify({
+        icon: 'cloud_download',
+        message: this.$t('Downloading Input Configuration file...'),
+        caption: fileName,
+        type: 'ongoing'
+      })
+
+      const status = exportFile(fileName, this.collectionConfigYml, 'text/yaml')
+
+      if (status === true) {
+        notificationPopupId({
+          type: 'positive',
+          color: 'positive',
+          icon: 'check',
+          message: this.$t('Input Configuration file downloaded'),
+          caption: fileName
+        })
+      } else {
+        notificationPopupId({
+          type: 'negative',
+          color: 'negative',
+          icon: 'report_problem',
+          message: this.$t('Problem while downloading Input Configuration file:'),
+          caption: status
+        })
+        console.log('Error: ' + status)
+      }
+    },
+    copyFilbeatInputConfigFileToClipboard () {
+      copyToClipboard(this.collectionConfigYml)
+        .then(() => {
+          this.$q.notify({
+            type: 'positive',
+            color: 'positive',
+            icon: 'check',
+            message: this.$t('Input Configuration copied to Clipboard')
+          })
+        })
+        .catch(() => {
+          this.$q.notify({
+            type: 'negative',
+            color: 'negative',
+            icon: 'report_problem',
+            message: this.$t('Problem while copying Input Configuration file to Clipboard')
+          })
+        })
+    }
   },
   mounted () {
     if (this.$route.params.pipelineUid && this.$route.params.pipelineUid.length) {

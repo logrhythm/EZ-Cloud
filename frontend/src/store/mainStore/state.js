@@ -891,7 +891,29 @@ def transform:
           }
         ] // definition
       } // syslog
-    ]
+    ],
+    collectionMethodsOptions: [
+      {
+        value: 'log',
+        label: 'Flat File',
+        icon: 'description'
+      },
+      {
+        value: 'httpjson',
+        label: 'HTTP / REST API',
+        icon: 'language'
+      },
+      {
+        value: 'http_endpoint',
+        label: 'HTTP / Web Hook Endpoint',
+        icon: 'cloud_upload'
+      },
+      {
+        value: 'syslog',
+        label: 'Syslog',
+        icon: 'input'
+      }
+    ] // collectionMethodsOptions
   }
 }
 /*
@@ -917,6 +939,7 @@ definition
 - required
 
 [
+
   {
     name: '',
     type: {
