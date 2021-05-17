@@ -328,6 +328,7 @@
                 stack-label
                 style="width: 18rem;"
                 class="q-mx-sm q-my-xs"
+                popup-content-class="bg-grey-9"
 
                 use-input
                 input-debounce="0"
@@ -363,6 +364,7 @@
                 :options="['Parse JSON', 'Stringify JSON', 'Fan out', 'Sub Rule selector']"
                 style="width: 20rem;"
                 class="q-mx-sm q-my-xs"
+                popup-content-class="bg-grey-9"
                 label="Modifiers"
                 stack-label
                 multiple
