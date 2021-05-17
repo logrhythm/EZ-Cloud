@@ -918,7 +918,7 @@ def transform:
             type: {
               name: 'password'
             },
-            description: 'Non encoded password for Basic authentication.',
+            description: 'Non-encoded password for Basic authentication.',
             default: '',
             required: true,
             group: 'Authentication - Basic'
