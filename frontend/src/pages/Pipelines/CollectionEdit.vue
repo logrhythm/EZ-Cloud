@@ -24,8 +24,7 @@
             <div class="row no-wrap q-pa-md">
               <div class="column">
                 <div class="text-h6 q-mb-md">Advanced</div>
-                <q-toggle v-model="showCollectionConfig" label="Show Collection Configuration (JSON)" />
-                <q-toggle v-model="showCollectionConfigYml" :disable="true" label="Show Collection Configuration (YML)" />
+                <q-toggle v-model="showCollectionConfig" label="Show Collection Configuration" />
                 <q-toggle v-model="showCollectionMethodTemplate" label="Show Collection Method Template" />
               </div>
             </div>
@@ -215,7 +214,6 @@ export default {
       collectionMethod: '',
       activeCollectionMethod: '',
       showCollectionConfig: false,
-      showCollectionConfigYml: false,
       showCollectionMethodTemplate: false
     }
   },
@@ -355,16 +353,17 @@ export default {
 
           newConf['protocol.tcp.host'] = '0.0.0.0:514'
 
-          newConf['protocol.udp'] = {
-          }
-
           newConf['protocol.tcp.ssl.enabled'] = false
           newConf['protocol.tcp.ssl.certificate'] = '/etc/filebeat/certificates/ez_stream_' + this.pipeline.uid + '.crt'
           newConf['protocol.tcp.ssl.key'] = '/etc/filebeat/certificates/ez_stream_' + this.pipeline.uid + '.key'
           newConf['protocol.tcp.ssl.supported_protocols'] = ['TLSv1.1', 'TLSv1.2', 'TLSv1.3']
 
-          newConf['protocol.tcp.ssl'] = {
-          }
+          // newConf['protocol.tcp.ssl'] = {
+          // }
+          // newConf['protocol.tcp'] = {
+          // }
+          // newConf['protocol.udp'] = {
+          // }
         }
 
         this.collectionConfig = newConf

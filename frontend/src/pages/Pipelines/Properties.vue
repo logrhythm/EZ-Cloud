@@ -16,16 +16,23 @@
                 Collection
             </q-card-section>
             <q-card-section>
-                Collection Method: {{ collectionMethod }}
+                <span class="text-bold">Collection Method: </span>{{ collectionMethod }}
             </q-card-section>
             <q-card-section>
-              <div class="row">
+              <!-- <div class="row">
                 <div class="col-6">
                   Collection Params (JSON): <pre>{{ pipeline.collectionConfig }}</pre>
                 </div>
                 <div class="col-6">
                   Collection Params (YML): <pre>{{ collectionConfigYml }}</pre>
                 </div>
+              </div> -->
+              <div class="">
+                  <div class="text-bold">Collection Configuration:</div>
+                  <div class="row q-my-sm">
+                    <q-separator vertical size="2px" color="teal" />
+                    <div class="q-ml-sm"><pre>{{ collectionConfigYml }}</pre></div>
+                  </div>
               </div>
             </q-card-section>
           </q-card-section>
@@ -51,7 +58,7 @@
               </q-btn>
               <q-btn icon="delete" text-color="negative" @click="deleteCollectionPrompt()">
                 <q-tooltip content-style="font-size: 1rem;">
-                  Delete Mapping
+                  Delete Collection Configuration
                 </q-tooltip>
               </q-btn>
           </q-card-actions>
@@ -64,10 +71,10 @@
                 Mapping
             </q-card-section>
             <q-card-section>
-                Fields detected: {{ detectedFields }}
+                <span class="text-bold">Fields detected: </span>{{ detectedFields }}
             </q-card-section>
             <q-card-section>
-                Fields mapped: {{ mappedFields }}
+                <span class="text-bold">Fields mapped: </span>{{ mappedFields }}
             </q-card-section>
           </q-card-section>
 

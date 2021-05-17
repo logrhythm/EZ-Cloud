@@ -297,6 +297,7 @@ def transform:
           //   required: true,
           //   group: 'Required'
           // },
+          // Advanced
           {
             name: 'encoding',
             label: 'Text encoding',
@@ -360,7 +361,7 @@ def transform:
             default: 'utf-8',
             description: 'The file encoding to use for reading data that contains international characters. The plain encoding is special, because it does not validate or transform any input.',
             required: false,
-            group: 'Advanced - Misc'
+            group: 'Advanced'
           },
           {
             name: 'include_lines',
@@ -382,7 +383,7 @@ def transform:
             },
             description: 'A list of regular expressions to match the lines that you want Filebeat to include. Filebeat exports only the lines that match a regular expression in the list. By default, all lines are exported. Empty lines are ignored. If multiline settings also specified, each multiline message is combined into a single line before the lines are filtered by include_lines.',
             required: false,
-            group: 'Advanced - Misc'
+            group: 'Advanced'
           },
           {
             name: 'exclude_lines',
@@ -404,7 +405,7 @@ def transform:
             },
             description: 'A list of regular expressions to match the lines that you want Filebeat to exclude. Filebeat drops any lines that match a regular expression in the list. By default, no lines are dropped. Empty lines are ignored. If multiline settings are also specified, each multiline message is combined into a single line before the lines are filtered by exclude_lines.',
             required: false,
-            group: 'Advanced - Misc'
+            group: 'Advanced'
           },
           {
             name: 'exclude_files',
@@ -426,7 +427,7 @@ def transform:
             },
             description: 'A list of regular expressions to match the files that you want Filebeat to ignore. By default no files are excluded.',
             required: false,
-            group: 'Advanced - Misc'
+            group: 'Advanced'
           },
           {
             name: 'ignore_older',
@@ -444,7 +445,7 @@ def transform:
             max: 3600,
             description: 'If this option is enabled, Filebeat ignores any files that were modified before the specified timespan. Configuring ignore_older can be especially useful if you keep log files for a long time. For example, if you want to start Filebeat, but only want to send the newest files and files from last week, you can configure this option. You can use time like 2 hours and 5 minutes. The default is 0, which disables the setting. Excluding out the config has the same effect as setting it to 0. IMPORTANT: You must set ignore_older to be greater than close_inactive.',
             required: false,
-            group: 'Advanced - Misc'
+            group: 'Advanced'
           },
           {
             name: 'close_inactive',
@@ -462,7 +463,7 @@ def transform:
             max: 3600,
             description: 'When this option is enabled, Filebeat closes the file handle if a file has not been harvested for the specified duration. The counter for the defined period starts when the last log line was read by the harvester. It is not based on the modification time of the file. If the closed file changes again, a new harvester is started and the latest changes will be picked up after scan_frequency has elapsed. We recommended that you set close_inactive to a value that is larger than the least frequent updates to your log files.For example, if your log files get updated every few seconds, you can safely set close_inactive to 1m.If there are log files with very different update rates, you can use multiple configurations with different values. Setting close_inactive to a lower value means that file handles are closed sooner.However this has the side effect that new log lines are not sent in near real time if the harvester is closed. The timestamp for closing a file does not depend on the modification time of the file.Instead, Filebeat uses an internal timestamp that reflects when the file was last harvested.For example, if close_inactive is set to 5 minutes, the countdown for the 5 minutes starts after the harvester reads the last line of the file. You can use time like 2 hours and 5 minutes.The default is 5 minutes. WARNING: Only use this option if you understand that data loss is a potential side effect.',
             required: false,
-            group: 'Advanced - Misc'
+            group: 'Advanced'
           },
           {
             name: 'scan_frequency',
@@ -480,7 +481,7 @@ def transform:
             max: 3600,
             description: 'How often Filebeat checks for new files in the paths that are specified for harvesting. For example, if you specify a glob like /var/log/*, the directory is scanned for files using the frequency specified by scan_frequency. Specify 1s to scan the directory as frequently as possible without causing Filebeat to scan too frequently. We do not recommend to set this value < 1 second. If you require log lines to be sent in near real time do not use a very low scan_frequency but adjust close_inactive so the file handler stays open and constantly polls your files. The default setting is 10 seconds.',
             required: false,
-            group: 'Advanced - Misc'
+            group: 'Advanced'
           },
           {
             name: 'max_bytes',
@@ -493,7 +494,7 @@ def transform:
             max: 52428800, // 50 MB
             description: 'The maximum number of bytes that a single log message can have. All bytes after max_bytes are discarded and not sent. This setting is especially useful for multiline log messages, which can get large. The default is 10MB (10485760).',
             required: false,
-            group: 'Advanced - Misc'
+            group: 'Advanced'
           },
           {
             name: 'keep_null',
@@ -504,7 +505,7 @@ def transform:
             description: 'If this option is set to true, fields with null values will be published in the output document. By default, keep_null is set to false.',
             default: false,
             required: false,
-            group: 'Advanced - Misc'
+            group: 'Advanced'
           },
           {
             name: 'enabled',
