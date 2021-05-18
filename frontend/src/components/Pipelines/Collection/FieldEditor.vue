@@ -64,6 +64,7 @@
           v-model="internalValue"
           :readonly="(template.readonly ? template.readonly : false || (isPartOfObject && leafInObject && (leafInObject === 'stream_id' || leafInObject === 'stream_name')))"
           :type="template.type && template.type.name && template.type.name === 'password' ? 'password' : 'text'"
+          :autogrow="template.type && template.type.multilines && template.type.multilines === true"
         />
         <!-- Suffix, if any -->
         <q-select

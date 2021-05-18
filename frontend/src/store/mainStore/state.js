@@ -347,7 +347,8 @@ For example, to fetch all files from a predefined level of subdirectories, the f
             ],
             default: 'utf-8',
             description: `The file encoding to use for reading data that contains international characters. 
-> NOTE: The plain encoding is special, because it does not validate or transform any input.`,
+> NOTE
+> The plain encoding is special, because it does not validate or transform any input.`,
             required: false,
             group: 'Advanced'
           },
@@ -386,7 +387,8 @@ on. If enabled it expands a single \`** \` into a 8-level deep \` *\` pattern.`,
             },
             description: `A list of regular expressions to match the lines that you want Filebeat to include. Filebeat exports only the lines that match a regular expression in the list. By default, all lines are exported. Empty lines are ignored.
 If multiline settings also specified, each multiline message is combined into a single line before the lines are filtered by \`Include Lines\`.
-> NOTE: If both \`Include Lines\` and \`Exclude Lines\` are defined, Filebeat executes \`Include Lines\` first and then executes \`Exclude Lines\`. The order in which the two options are defined doesn’t matter.`,
+> NOTE
+> If both \`Include Lines\` and \`Exclude Lines\` are defined, Filebeat executes \`Include Lines\` first and then executes \`Exclude Lines\`. The order in which the two options are defined doesn’t matter.`,
             required: false,
             group: 'Advanced'
           },
@@ -410,7 +412,8 @@ If multiline settings also specified, each multiline message is combined into a 
             },
             description: `A list of regular expressions to match the lines that you want Filebeat to exclude. Filebeat drops any lines that match a regular expression in the list. By default, no lines are dropped. Empty lines are ignored.
 If multiline settings are also specified, each multiline message is combined into a single line before the lines are filtered by \`Exclude Lines\`.
-> NOTE: If both \`Include Lines\` and \`Exclude Lines\` are defined, Filebeat executes \`Include Lines\` first and then executes \`Exclude Lines\`. The order in which the two options are defined doesn’t matter.`,
+> NOTE
+> If both \`Include Lines\` and \`Exclude Lines\` are defined, Filebeat executes \`Include Lines\` first and then executes \`Exclude Lines\`. The order in which the two options are defined doesn’t matter.`,
             required: false,
             group: 'Advanced'
           },
@@ -657,7 +660,7 @@ To store the custom fields as top-level fields, set the \`fields_under_root opti
             name: 'protocol.tcp.ssl.key_passphrase',
             label: 'Pass phrase for SSL Key',
             type: {
-              name: 'string'
+              name: 'password'
             },
             default: '',
             description: 'The passphrase is used to decrypt an encrypted key stored in the configured key file.',
@@ -995,6 +998,9 @@ To store the custom fields as top-level fields, set the \`fields_under_root opti
             required: true,
             group: 'Authentication - Basic'
           },
+
+          // OAuth2
+
           {
             name: 'auth.oauth2.enabled',
             label: 'Enabled',
@@ -1060,18 +1066,6 @@ It is optional for all providers.`,
             group: 'Authentication - OAuth2'
           },
           {
-            name: 'auth.oauth2.token_url',
-            label: 'Token URL',
-            type: {
-              name: 'string'
-            },
-            description: `The endpoint that will be used to generate the tokens during the OAuth2 flow. It is required if no provider is specified.
-> NOTE: For \`Azure\` provider either \`Token URL\` or Azure \`Tenant ID\` is required.`,
-            default: '',
-            required: false,
-            group: 'Authentication - OAuth2'
-          },
-          {
             name: 'auth.oauth2.endpoint_params',
             label: 'Endpoint Parameters',
             type: {
@@ -1095,6 +1089,270 @@ It is optional for all providers.`,
             group: 'Authentication - OAuth2'
           },
           {
+            name: 'auth.oauth2.token_url',
+            label: 'Token URL',
+            type: {
+              name: 'string'
+            },
+            description: `The endpoint that will be used to generate the tokens during the OAuth2 flow. It is required if no provider is specified.
+> NOTE
+> For \`Azure\` provider either \`Token URL\` or Azure \`Tenant ID\` is required.`,
+            default: '',
+            required: false,
+            group: 'Authentication - OAuth2'
+          },
+          {
+            name: 'auth.oauth2.azure.tenant_id',
+            label: 'Azure - Tenant ID',
+            type: {
+              name: 'string'
+            },
+            description: `Used for authentication when using \`Azure\` provider.
+> NOTE
+> Since it is used in the process to generate the \`Token URL\`, it can't be used in combination with it.
+
+It is not required.
+
+For information about where to find it, you can refer to
+https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal.`,
+            default: '',
+            required: false,
+            group: 'Authentication - OAuth2'
+          },
+          {
+            name: 'auth.oauth2.azure.resource',
+            label: 'Azure - WebAPI Resource',
+            type: {
+              name: 'string'
+            },
+            description: `The accessed WebAPI resource when using \`Azure\` provider.
+It is not required.`,
+            default: '',
+            required: false,
+            group: 'Authentication - OAuth2'
+          },
+          {
+            name: 'auth.oauth2.google.credentials_file',
+            label: 'Google - Credentials File',
+            type: {
+              name: 'string'
+            },
+            description: `The credentials file for \`Google\`.
+
+> NOTE
+> Only one of the credentials settings can be set at once. If none is provided, loading default credentials from the environment will be attempted via ADC. 
+
+For more information about how to provide Google credentials, please refer to https://cloud.google.com/docs/authentication.`,
+            default: '',
+            required: false,
+            group: 'Authentication - OAuth2'
+          },
+          {
+            name: 'auth.oauth2.google.credentials_json',
+            label: 'Google - JSON Credentials File',
+            type: {
+              name: 'string'
+            },
+            description: `Your credentials information as raw JSON.
+
+> NOTE
+> Only one of the credentials settings can be set at once. If none is provided, loading default credentials from the environment will be attempted via ADC.
+
+For more information about how to provide Google credentials, please refer to https://cloud.google.com/docs/authentication.`,
+            default: '',
+            required: false,
+            group: 'Authentication - OAuth2'
+          },
+          {
+            name: 'auth.oauth2.google.jwt_file',
+            label: 'Google - JWT Account Key File',
+            type: {
+              name: 'string'
+            },
+            description: `The JWT Account Key file for Google.
+
+> NOTE
+> Only one of the credentials settings can be set at once. If none is provided, loading default credentials from the environment will be attempted via ADC.
+
+For more information about how to provide Google credentials, please refer to https://cloud.google.com/docs/authentication.`,
+            default: '',
+            required: false,
+            group: 'Authentication - OAuth2'
+          },
+
+          // SSL Configuration
+
+          {
+            name: 'request.ssl.enabled',
+            label: 'Enabled',
+            type: {
+              name: 'boolean'
+            },
+            default: false,
+            description: 'Is Syslog SSL enabled?',
+            required: false,
+            group: 'SSL Configuration'
+          },
+          {
+            name: 'request.ssl.certificate_authorities',
+            label: 'SSL Certificate Authorities',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: 'Path to the file with the list of root certificates for client verifications is only required if `Client Authentication` is configured. If `Certificate Authorities` is empty or not set, and `Client Authentication` is configured, the system keystore is used. If `Certificate Authorities` is self-signed, the host system needs to trust that CA cert as well.',
+            required: false,
+            group: 'SSL Configuration'
+          },
+          {
+            name: 'request.ssl.certificate',
+            label: 'SSL Certificate',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: 'For server authentication, the path to the SSL authentication certificate must be specified for TLS. If the certificate is not specified, startup will fail. When this option is configured, the key option is also required.',
+            required: false,
+            group: 'SSL Configuration'
+          },
+          {
+            name: 'request.ssl.key',
+            label: 'SSL Key',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: 'The server certificate key used for authentication is required.',
+            required: false,
+            group: 'SSL Configuration'
+          },
+          {
+            name: 'request.ssl.key_passphrase',
+            label: 'Pass phrase for SSL Key',
+            type: {
+              name: 'password'
+            },
+            default: '',
+            description: 'The passphrase is used to decrypt an encrypted key stored in the configured key file.',
+            required: false,
+            group: 'SSL Configuration'
+          },
+          {
+            name: 'request.ssl.verification_mode',
+            label: 'Verification Mode',
+            type: {
+              name: 'option'
+            },
+            options: [{ value: 'full', label: 'Full: Verifies that the provided certificate is signed by a trusted authority (CA) and also verifies that the server’s hostname (or IP address) matches the names identified within the certificate.' }, { value: 'strict', label: 'Strict: Verifies that the provided certificate is signed by a trusted authority (CA) and also verifies that the server’s hostname (or IP address) matches the names identified within the certificate.If the Subject Alternative Name is empty, it returns an error.' }, { value: 'certificate', label: 'Certificate: Verifies that the provided certificate is signed by a trusted authority (CA), but does not perform any hostname verification.' }, { value: 'none', label: 'None: Performs no verification of the server’s certificate.This mode disables many of the security benefits of SSL/ TLS and should only be used after cautious consideration.It is primarily intended as a temporary diagnostic mechanism when attempting to resolve TLS errors; its use in production environments is strongly discouraged.' }],
+            default: 'full',
+            description: 'Controls the verification of client certificates. The default value is `Full`.',
+            required: false,
+            group: 'SSL Configuration'
+          },
+          {
+            name: 'request.ssl.client_authentication',
+            label: 'Client Authentication',
+            type: {
+              name: 'option'
+            },
+            options: [{ value: 'none', label: 'None: Disables client authentication.' }, { value: 'optional', label: 'Optional: When a client certificate is supplied, the server will verify it.' }, { value: 'required', label: 'Required: Will require clients to provide a valid certificate.' }],
+            default: 'none',
+            description: 'The type of client authentication mode. When `SSL Certificate Authorities` is set, it defaults to `Required`. Otherwise, it defaults to `None`.',
+            required: false,
+            group: 'SSL Configuration'
+          },
+          {
+            name: 'request.ssl.renegotiation',
+            label: 'Renegotiation',
+            type: {
+              name: 'option'
+            },
+            options: [{ value: 'never', label: 'Never: Disables renegotiation.' }, { value: 'once', label: 'Once: Allows a remote server to request renegotiation once per connection.' }, { value: 'freely', label: 'Freely: Allows a remote server to request renegotiation repeatedly.' }],
+            default: 'never',
+            description: 'This configures what types of TLS renegotiation are supported. The default value is `Never`.',
+            required: false,
+            group: 'SSL Configuration'
+          },
+          {
+            name: 'request.ssl.supported_protocols',
+            label: 'Supported Protocols',
+            type: {
+              name: 'array',
+              of: {
+                type: {
+                  name: 'string'
+                },
+                default: '',
+                required: false
+              }
+            },
+            description: 'List of allowed SSL/TLS versions. If SSL/TLS server decides for protocol versions not configured, the connection will be dropped during or after the handshake. The setting is a list of allowed protocol versions: SSLv3, TLSv1 for TLS version 1.0, TLSv1.0, TLSv1.1, TLSv1.2, and TLSv1.3. The default value is [TLSv1.1, TLSv1.2, TLSv1.3].',
+            required: false,
+            group: 'SSL Configuration'
+          },
+
+          // Advanced
+
+          {
+            name: 'request.encode_as',
+            label: 'Request Body Encoding',
+            type: {
+              name: 'option'
+            },
+            options: [
+              { value: null, label: '** Not set ** <hr>' },
+              { value: 'application/json', label: 'JSON (application/json)' },
+              { value: 'application/x-www-form-urlencoded', label: 'Web Form URL Encoded (application/x-www-form-urlencoded)' }
+            ],
+            description: `ContentType used for encoding the request body. If set it will force the encoding in the specified format regardless of the \`Content- Type\` header value, otherwise it will honor it if possible or fallback to \`application / json\`.
+By default the requests are sent with \`Content - Type: application / json\`.
+> NOTE
+> \`Web Form URL Encoded\` will url encode the \`url.params\` and set them as the body.`,
+            default: null,
+            required: false,
+            group: 'Advanced'
+          },
+          {
+            name: 'request.body',
+            label: 'Request Body',
+            type: {
+              name: 'string',
+              multilines: true
+            },
+            description: `An optional HTTP POST body.
+This is only valid when \`Request Method\` is \`POST\`. Defaults to \`null\` (no HTTP body).
+::: danger
+The configuration value must be a valid JSON object.
+:::`,
+            default: '',
+            required: false,
+            group: 'Advanced'
+          },
+          {
+            name: 'request.timeout',
+            label: 'Request Timeout',
+            type: {
+              name: 'number'
+            },
+            suffix: {
+              options: [
+                { value: 'ns', label: 'NanoSeconds' },
+                { value: 'us', label: 'MicroSeconds' },
+                { value: 'ms', label: 'MilliSeconds' },
+                { value: 's', label: 'Seconds' },
+                { value: 'm', label: 'Minutes' },
+                { value: 'h', label: 'Hours' }
+              ],
+              default: 's'
+            },
+            min: 1,
+            max: 1000,
+            default: '30s',
+            description: 'Duration before declaring that the HTTP client connection has timed out. The default is 30 seconds.',
+            required: false,
+            group: 'Advanced'
+          },
+          {
             name: 'config_version',
             label: 'Configuration version',
             type: {
@@ -1109,7 +1367,80 @@ V1 configuration is deprecated and will be unsupported in future releases.
             required: true,
             group: 'Advanced'
           },
+          {
+            name: 'request.retry.max_attempts',
+            label: 'Request Maximum Retry Attempts',
+            type: {
+              name: 'number'
+            },
+            min: 1,
+            max: 100,
+            default: 5,
+            description: 'The maximum number of retries for the HTTP client. The default is 5.',
+            required: false,
+            group: 'Advanced'
+          },
+          {
+            name: 'request.retry.wait_min',
+            label: 'Request Minimum Wait Before Retry',
+            type: {
+              name: 'number'
+            },
+            suffix: {
+              options: [
+                { value: 's', label: 'Seconds' },
+                { value: 'm', label: 'Minutes' },
+                { value: 'h', label: 'Hours' }
+              ],
+              default: 's'
+            },
+            min: 1,
+            max: 60,
+            default: '1s',
+            description: 'The minimum time to wait before a retry is attempted. The default is 1 second.',
+            required: false,
+            group: 'Advanced'
+          },
+          {
+            name: 'request.retry.wait_max',
+            label: 'Request Maximum Wait Before Retry',
+            type: {
+              name: 'number'
+            },
+            suffix: {
+              options: [
+                { value: 's', label: 'Seconds' },
+                { value: 'm', label: 'Minutes' },
+                { value: 'h', label: 'Hours' }
+              ],
+              default: 's'
+            },
+            min: 1,
+            max: 60,
+            default: '60s',
+            description: 'The maximum time to wait before a retry is attempted. The default is 60 seconds.',
+            required: false,
+            group: 'Advanced'
+          },
+          // XXXXX request.redirect.forward_headers
+          {
+            name: 'config_version',
+            label: 'Configuration version',
+            type: {
+              name: 'number'
+            },
+            min: 1,
+            max: 2,
+            description: `Defines the configuration version.
+V1 configuration is deprecated and will be unsupported in future releases.
+> Any new configuration should use \`Configuration version\` \`2\`.`,
+            default: 2,
+            required: true,
+            group: 'Advanced'
+          },
+
           // EZ Internal
+
           {
             name: 'enabled',
             label: 'Enabled',
@@ -1202,6 +1533,7 @@ definition
       of: { // for array and object
         type: {
           name: '', // array, object, boolean, string, number, regex, option
+          multilines: false // for string and regex
           of: ...
         },
         options: [{ value: '', label: '' }, { value: '', label: '' }],

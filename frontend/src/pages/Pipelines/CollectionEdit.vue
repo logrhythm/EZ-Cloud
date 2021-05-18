@@ -249,8 +249,18 @@ export default {
         try {
           const jsonConfig = Object.assign({}, this.pipeline.collectionConfig)
 
+          // Deal with httpjson / _EZ_Auth_Basic.enable & _EZ_Auth_Basic.password
+          // XXXXXX
+
+          // Deal with httpjson / request.body
+          // Check for proper JSON and if yes, transform into YML
+          // XXXXXX
+
           // trash our own stuff, as it has nothing to do in the file Yaml
           delete jsonConfig.activeCollectionMethod
+
+          // Remove any leafs set to null
+          // XXXXXX
 
           // and push it out as Yaml
           return dump([{ type: this.activeCollectionMethod, ...jsonConfig }])
