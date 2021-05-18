@@ -477,5 +477,9 @@ export default {
 </script>
 
 <style>
+/* To force the colour of the links inside of Mardown widgets (for the Description of the field we are displaying) */
+.q-markdown a {
+  color: aqua;
+}
 
 </style>
