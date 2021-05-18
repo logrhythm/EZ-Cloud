@@ -86,9 +86,16 @@
         :label-value="(internalPrefixLong && internalPrefixLong.length ? internalPrefixLong + ' ' : '') + formatNumber(internalValue) + (internalSuffixLong && internalSuffixLong.length ? ' ' + internalSuffixLong : '')"
       />
       <!-- Description, if any -->
-      <div v-if="template.description && template.description.length" class="q-mt-xs" style="opacity: .7">
-        <q-icon name="info" size="xs" color="blue" />
-        {{ template.description }}
+      <div v-if="template.description && template.description.length" class="q-mt-xs row" style="opacity: .7">
+        <q-icon name="info" size="xs" color="blue" class="col-auto q-mr-sm" />
+        <!-- {{ template.description }} -->
+        <q-markdown
+          class="col"
+          :src="template.description"
+          no-heading-anchor-links
+        />
+          <!-- class="full-width q-pa-sm bg-white" -->
+          <!-- style="height: 600px;" -->
       </div>
     </div>
 
