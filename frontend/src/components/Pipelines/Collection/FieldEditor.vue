@@ -37,7 +37,7 @@
       </div>
       <q-select
         v-if="template.type && template.type.name && (template.type.name === 'boolean' || template.type.name === 'option')"
-        standout="bg-blue-8 text-white"
+        standout="bg-blue-4 text-white"
         v-model="internalValue"
         emit-value
         map-options
@@ -48,7 +48,7 @@
         <!-- Prefix, if any -->
         <q-select
           v-if="template.prefix"
-          standout="bg-blue-8 text-white"
+          standout="bg-blue-4 text-white"
           v-model="internalPrefix"
           emit-value
           map-options
@@ -60,14 +60,15 @@
         <q-input
           v-if="template.type && template.type.name && (template.type.name === 'string' || template.type.name === 'regex' || template.type.name === 'number' || template.type.name === 'password')"
           class="col"
-          standout
+          standout="bg-blue-4 text-white"
           v-model="internalValue"
           :readonly="(template.readonly ? template.readonly : false || (isPartOfObject && leafInObject && (leafInObject === 'stream_id' || leafInObject === 'stream_name')))"
+          :type="template.type && template.type.name && template.type.name === 'password' ? 'password' : 'text'"
         />
         <!-- Suffix, if any -->
         <q-select
           v-if="template.suffix"
-          standout="bg-blue-8 text-white"
+          standout="bg-blue-4 text-white"
           v-model="internalSuffix"
           emit-value
           map-options

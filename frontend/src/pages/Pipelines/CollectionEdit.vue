@@ -106,7 +106,7 @@
             <q-card-section>
                 <q-select
                   dense
-                  standout="bg-blue-8 text-white"
+                  standout="bg-blue-5 text-white"
                   v-model="collectionMethod"
                   emit-value
                   map-options
@@ -396,7 +396,7 @@ export default {
         // For HTTP / REST API:
         if (this.activeCollectionMethod === 'httpjson') {
           newConf.config_version = 2
-          newConf['request.url'] = 'https://xxxxxxxxxx'
+          newConf['request.url'] = 'https://CHANGE_THIS'
           // newConf['request.method'] = 'GET'
         }
 
