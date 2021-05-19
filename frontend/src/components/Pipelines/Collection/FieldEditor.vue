@@ -274,7 +274,7 @@ export default {
         // Try then to extract it from internalValueRaw (based on all the possible options)
         if (prefix === '' && this.template.prefix && this.template.prefix.options && Array.isArray(this.template.prefix.options)) {
           this.template.prefix.options.forEach(option => {
-            if (option.value && option.value.length && prefix === '' && String(this.internalValueRaw).match(RegExp(option.value + '$'))) {
+            if (option.value && option.value.length && prefix === '' && String(this.internalValueRaw).match(RegExp('^' + option.value))) {
               prefix = option.value
             }
           })
