@@ -1302,11 +1302,11 @@ For more information about how to provide Google credentials, please refer to ht
             group: 'SSL Configuration'
           },
 
-          // Advanced
+          // Advanced - Request Body
 
           {
             name: 'request.encode_as',
-            label: 'Request Body Encoding',
+            label: 'Encoding',
             type: {
               name: 'option'
             },
@@ -1321,11 +1321,11 @@ By default the requests are sent with \`Content - Type: application / json\`.
 > \`Web Form URL Encoded\` will url encode the \`url.params\` and set them as the body.`,
             default: null,
             required: false,
-            group: 'Advanced'
+            group: 'Advanced - Request Body'
           },
           {
             name: 'request.body',
-            label: 'Request Body',
+            label: 'Body Content',
             type: {
               name: 'string',
               multilines: true,
@@ -1338,8 +1338,276 @@ The configuration value must be a valid JSON object.
 :::`,
             default: '',
             required: false,
-            group: 'Advanced'
+            group: 'Advanced - Request Body'
           },
+
+          // Advanced - Retries
+
+          {
+            name: 'request.retry.max_attempts',
+            label: 'Request Maximum Retry Attempts',
+            type: {
+              name: 'number'
+            },
+            min: 1,
+            max: 100,
+            default: 5,
+            description: 'The maximum number of retries for the HTTP client. The default is 5.',
+            required: false,
+            group: 'Advanced - Retries'
+          },
+          {
+            name: 'request.retry.wait_min',
+            label: 'Request Minimum Wait Before Retry',
+            type: {
+              name: 'number'
+            },
+            suffix: {
+              options: [
+                { value: 's', label: 'Seconds' },
+                { value: 'm', label: 'Minutes' },
+                { value: 'h', label: 'Hours' }
+              ],
+              default: 's'
+            },
+            min: 1,
+            max: 60,
+            default: '1s',
+            description: 'The minimum time to wait before a retry is attempted. The default is 1 second.',
+            required: false,
+            group: 'Advanced - Retries'
+          },
+          {
+            name: 'request.retry.wait_max',
+            label: 'Request Maximum Wait Before Retry',
+            type: {
+              name: 'number'
+            },
+            suffix: {
+              options: [
+                { value: 's', label: 'Seconds' },
+                { value: 'm', label: 'Minutes' },
+                { value: 'h', label: 'Hours' }
+              ],
+              default: 's'
+            },
+            min: 1,
+            max: 60,
+            default: '60s',
+            description: 'The maximum time to wait before a retry is attempted. The default is 60 seconds.',
+            required: false,
+            group: 'Advanced - Retries'
+          },
+          {
+            name: 'request.redirect.forward_headers',
+            label: 'Redirect Forward Headers',
+            type: {
+              name: 'boolean'
+            },
+            default: false,
+            description: 'When set to `True` request headers are forwarded in case of a redirect. Default: `False`.',
+            required: false,
+            group: 'Advanced - Redirects'
+          },
+          {
+            name: 'request.redirect.headers_ban_list',
+            label: 'Redirect Forward Headers - Ban List',
+            type: {
+              name: 'array',
+              of: {
+                type: {
+                  name: 'string'
+                },
+                default: '',
+                required: false
+              }
+            },
+            description: 'When `Redirect Forward Headers` is set to `True`, all headers __except__ the ones defined in this list will be forwarded.',
+            required: false,
+            group: 'Advanced - Redirects'
+          },
+          {
+            name: 'request.redirect.max_redirects',
+            label: 'Maximum Redirects',
+            type: {
+              name: 'number'
+            },
+            min: 0,
+            max: 50,
+            default: 10,
+            description: 'The maximum number of redirects to follow for a request. The default is 10.',
+            required: false,
+            group: 'Advanced - Redirects'
+          },
+
+          // Advanced - Rate Limit
+
+          {
+            name: 'request.rate_limit.limit',
+            label: 'Total Requests Limit',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `The value of the response that specifies the total limit. It is defined with a Go template value.
+> NOTE
+> Can read state from: [.last_response.header]
+
+::: tip Examples
+- 1500
+- \`[[.last_response.header.X-RateLimit-Limit]]\`
+:::
+`,
+            required: false,
+            group: 'Advanced - Rate Limit'
+          },
+          {
+            name: 'request.rate_limit.remaining',
+            label: 'Remaining Requests',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `The value of the response that specifies the remaining quota of the rate limit. It is defined with a Go template value.
+> NOTE
+> Can read state from: [.last_response.header]
+
+::: tip Example
+\`[[.last_response.header.X-RateLimit-Remaining]]\`
+:::
+`,
+            required: false,
+            group: 'Advanced - Rate Limit'
+          },
+          {
+            name: 'request.rate_limit.reset',
+            label: 'Reset Time',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `The value of the response that specifies the epoch time when the rate limit will reset. It is defined with a Go template value.
+> NOTE
+> Can read state from: [.last_response.header]
+
+::: tip Example
+\`[[.last_response.header.X-RateLimit-Reset]]\`
+:::
+`,
+            required: false,
+            group: 'Advanced - Rate Limit'
+          },
+
+          // Advanced - Request Transforms
+
+          {
+            name: 'request.transforms',
+            label: 'Transforms List',
+            type: {
+              name: 'object',
+              of: {
+                type: {
+                  name: 'string'
+                },
+                prefix: {
+                  options: [
+                    { value: '___set___👉', label: 'Set to' },
+                    { value: '___append___👉', label: 'Append' },
+                    { value: '___delete___👉', label: 'Delete' }
+                  ],
+                  default: '___set___👉'
+                },
+                default: '',
+                required: true
+              },
+              required: true
+            },
+            description: `List of transforms to apply to the __request__ before each execution.
+
+Available transforms for request: \`Append\`, \`Delete\` and \`Set\`.
+
+> NOTE
+> Can __read__ state from:
+> - \`.last_response.* \`
+> - \`.last_event.* \`
+> - \`.cursor.* \`]
+>
+> Can __write__ state to:
+> - \`header.* \`
+> - \`url.params.* \`
+> - \`body.*\`
+
+::: tip Examples
+
+| Target | Transform | Value |
+| ------ |:---------:| ----- |
+|  body.from  | __Set to__ | \`[[now (parseDuration "-1h")]]\` |
+|  body.variable_abc  | __Set to__ | \`AUTO\` |
+|  header.variable_xyz  | __Set to__ | \`[[.last_response.header.X-Var-XYZ]]\` |
+|  body.useless_token  | __Delete__ |  |
+:::
+`,
+            required: false,
+            group: 'Advanced - Request Transforms'
+          },
+
+          // Advanced - Response Transforms
+
+          {
+            name: 'response.transforms',
+            label: 'Transforms List',
+            type: {
+              name: 'object',
+              of: {
+                type: {
+                  name: 'string'
+                },
+                prefix: {
+                  options: [
+                    { value: '___set___👉', label: 'Set to' },
+                    { value: '___append___👉', label: 'Append' },
+                    { value: '___delete___👉', label: 'Delete' }
+                  ],
+                  default: '___set___👉'
+                },
+                default: '',
+                required: true
+              },
+              required: true
+            },
+            description: `List of transforms to apply to the __response__ once it is received.
+
+Available transforms for response: \`Append\`, \`Delete\` and \`Set\`.
+
+> NOTE
+> Can __read__ state from:
+> - \`.last_response.* \`
+> - \`.last_event.* \`
+> - \`.cursor.* \`]
+> - \`.header.* \`]
+> - \`.url.* \`]
+>
+> Can __write__ state to:
+> - \`body.*\`
+
+::: tip Examples
+
+| Target | Transform | Value |
+| ------ |:---------:| ----- |
+|  body.very_confidential  | __Delete__ |  |
+|  body.from_url  | __Set to__ | \`[[.url.value]]\` |
+|  body.variable_abc  | __Set to__ | \`Static ABC value\` |
+|  header.variable_xyz  | __Set to__ | \`[[.last_response.header.X-Var-XYZ]]\` |
+:::
+`,
+            required: false,
+            group: 'Advanced - Response Transforms'
+          },
+
+          // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+          // Advanced - Miscellaneous
+
           {
             name: 'request.timeout',
             label: 'Request Timeout',
@@ -1362,7 +1630,7 @@ The configuration value must be a valid JSON object.
             default: '30s',
             description: 'Duration before declaring that the HTTP client connection has timed out. The default is 30 seconds.',
             required: false,
-            group: 'Advanced'
+            group: 'Advanced - Miscellaneous'
           },
           {
             name: 'config_version',
@@ -1377,78 +1645,7 @@ V1 configuration is deprecated and will be unsupported in future releases.
 > Any new configuration should use \`Configuration version\` \`2\`.`,
             default: 2,
             required: true,
-            group: 'Advanced'
-          },
-          {
-            name: 'request.retry.max_attempts',
-            label: 'Request Maximum Retry Attempts',
-            type: {
-              name: 'number'
-            },
-            min: 1,
-            max: 100,
-            default: 5,
-            description: 'The maximum number of retries for the HTTP client. The default is 5.',
-            required: false,
-            group: 'Advanced'
-          },
-          {
-            name: 'request.retry.wait_min',
-            label: 'Request Minimum Wait Before Retry',
-            type: {
-              name: 'number'
-            },
-            suffix: {
-              options: [
-                { value: 's', label: 'Seconds' },
-                { value: 'm', label: 'Minutes' },
-                { value: 'h', label: 'Hours' }
-              ],
-              default: 's'
-            },
-            min: 1,
-            max: 60,
-            default: '1s',
-            description: 'The minimum time to wait before a retry is attempted. The default is 1 second.',
-            required: false,
-            group: 'Advanced'
-          },
-          {
-            name: 'request.retry.wait_max',
-            label: 'Request Maximum Wait Before Retry',
-            type: {
-              name: 'number'
-            },
-            suffix: {
-              options: [
-                { value: 's', label: 'Seconds' },
-                { value: 'm', label: 'Minutes' },
-                { value: 'h', label: 'Hours' }
-              ],
-              default: 's'
-            },
-            min: 1,
-            max: 60,
-            default: '60s',
-            description: 'The maximum time to wait before a retry is attempted. The default is 60 seconds.',
-            required: false,
-            group: 'Advanced'
-          },
-          // XXXXX request.redirect.forward_headers
-          {
-            name: 'config_version',
-            label: 'Configuration version',
-            type: {
-              name: 'number'
-            },
-            min: 1,
-            max: 2,
-            description: `Defines the configuration version.
-V1 configuration is deprecated and will be unsupported in future releases.
-> Any new configuration should use \`Configuration version\` \`2\`.`,
-            default: 2,
-            required: true,
-            group: 'Advanced'
+            group: 'Advanced - Miscellaneous'
           },
 
           // EZ Internal
