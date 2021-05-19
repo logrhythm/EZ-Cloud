@@ -273,12 +273,14 @@ def transform:
                   default: '"'
                 },
                 default: '',
-                description: 'A single glob-based path that will be crawled and fetched. For example: /path/to/file.log',
+                description: 'A single glob-based path that will be crawled and fetched. For example: `/path/to/file.log`',
                 required: true
               }
             },
             // default: '',
-            description: 'A list of glob-based paths that will be crawled and fetched. All patterns supported by Go Glob are also supported here. For example, to fetch all files from a predefined level of subdirectories, the following pattern can be used: /var/log/*/*.log. This fetches all .log files from the subfolders of /var/log. It does not fetch log files from the /var/log folder itself. It is possible to recursively fetch all files in all subdirectories of a directory using the optional recursive_glob settings.',
+            description: `A list of glob-based paths that will be crawled and fetched. All patterns supported by Go Glob are also supported here. 
+For example, to fetch all files from a predefined level of subdirectories, the following pattern can be used: \`/var/log/*/*.log\`. This fetches all \`.log\` files from the subfolders of \`/var/log\`. It does not fetch log files from the \`/var/log\` folder itself.
+> It is possible to recursively fetch all files in all subdirectories of a directory using the optional \`Recursive Glob\` settings under **Advanced**.`,
             required: true,
             group: 'Required'
           },
@@ -344,7 +346,24 @@ def transform:
               { value: 'utf-16le-bom', label: 'little endian UTF-16 with required BOM' }
             ],
             default: 'utf-8',
-            description: 'The file encoding to use for reading data that contains international characters. The plain encoding is special, because it does not validate or transform any input.',
+            description: `The file encoding to use for reading data that contains international characters. 
+> NOTE
+> The plain encoding is special, because it does not validate or transform any input.`,
+            required: false,
+            group: 'Advanced'
+          },
+          {
+            name: 'recursive_glob.enabled',
+            label: 'Recursive Glob',
+            type: {
+              name: 'boolean'
+            },
+            default: true,
+            description: `Is this Recursive Glob enabled?
+Enable expanding \`** \` into recursive glob patterns. With this feature enabled,
+the rightmost \`** \` in each path is expanded into a fixed number of glob
+patterns. For example: \`/ foo/**\` expands to \`/foo\`, \`/foo/*\`, \`/foo/*/ * \`, and so
+on. If enabled it expands a single \`** \` into a 8-level deep \` *\` pattern.`,
             required: false,
             group: 'Advanced'
           },
@@ -366,7 +385,10 @@ def transform:
                 required: false
               }
             },
-            description: 'A list of regular expressions to match the lines that you want Filebeat to include. Filebeat exports only the lines that match a regular expression in the list. By default, all lines are exported. Empty lines are ignored. If multiline settings also specified, each multiline message is combined into a single line before the lines are filtered by include_lines.',
+            description: `A list of regular expressions to match the lines that you want Filebeat to include. Filebeat exports only the lines that match a regular expression in the list. By default, all lines are exported. Empty lines are ignored.
+If multiline settings also specified, each multiline message is combined into a single line before the lines are filtered by \`Include Lines\`.
+> NOTE
+> If both \`Include Lines\` and \`Exclude Lines\` are defined, Filebeat executes \`Include Lines\` first and then executes \`Exclude Lines\`. The order in which the two options are defined doesn’t matter.`,
             required: false,
             group: 'Advanced'
           },
@@ -374,10 +396,10 @@ def transform:
             name: 'exclude_lines',
             label: 'Exclude Lines',
             type: {
-              name: 'array', // array, object, boolean, string, number, regex, option
-              of: { // for array and object
+              name: 'array',
+              of: {
                 type: {
-                  name: 'regex' // array, object, boolean, string, number, regex, option
+                  name: 'regex'
                 },
                 quotes: {
                   required: true,
@@ -388,7 +410,10 @@ def transform:
                 required: false
               }
             },
-            description: 'A list of regular expressions to match the lines that you want Filebeat to exclude. Filebeat drops any lines that match a regular expression in the list. By default, no lines are dropped. Empty lines are ignored. If multiline settings are also specified, each multiline message is combined into a single line before the lines are filtered by exclude_lines.',
+            description: `A list of regular expressions to match the lines that you want Filebeat to exclude. Filebeat drops any lines that match a regular expression in the list. By default, no lines are dropped. Empty lines are ignored.
+If multiline settings are also specified, each multiline message is combined into a single line before the lines are filtered by \`Exclude Lines\`.
+> NOTE
+> If both \`Include Lines\` and \`Exclude Lines\` are defined, Filebeat executes \`Include Lines\` first and then executes \`Exclude Lines\`. The order in which the two options are defined doesn’t matter.`,
             required: false,
             group: 'Advanced'
           },
@@ -396,10 +421,10 @@ def transform:
             name: 'exclude_files',
             label: 'Exclude Files',
             type: {
-              name: 'array', // array, object, boolean, string, number, regex, option
-              of: { // for array and object
+              name: 'array',
+              of: {
                 type: {
-                  name: 'regex' // array, object, boolean, string, number, regex, option
+                  name: 'regex'
                 },
                 quotes: {
                   required: true,
@@ -428,7 +453,12 @@ def transform:
             default: '0',
             min: 0,
             max: 3600,
-            description: 'If this option is enabled, Filebeat ignores any files that were modified before the specified timespan. Configuring ignore_older can be especially useful if you keep log files for a long time. For example, if you want to start Filebeat, but only want to send the newest files and files from last week, you can configure this option. You can use time like 2 hours and 5 minutes. The default is 0, which disables the setting. Excluding out the config has the same effect as setting it to 0. IMPORTANT: You must set ignore_older to be greater than close_inactive.',
+            description: `If this option is enabled, Filebeat ignores any files that were modified before the specified timespan. 
+Configuring \`Ignore Older\` can be especially useful if you keep log files for a long time. For example, if you want to start Filebeat, but only want to send the newest files and files from last week, you can configure this option.
+You can use time like 2 hours and 5 minutes. The default is 0, which disables the setting. Excluding out the config has the same effect as setting it to 0.
+::: danger
+You must set \`Ignore Older\` to be greater than \`Close Inactive\`.
+:::`,
             required: false,
             group: 'Advanced'
           },
@@ -446,7 +476,20 @@ def transform:
             default: '5m',
             min: 0,
             max: 3600,
-            description: 'When this option is enabled, Filebeat closes the file handle if a file has not been harvested for the specified duration. The counter for the defined period starts when the last log line was read by the harvester. It is not based on the modification time of the file. If the closed file changes again, a new harvester is started and the latest changes will be picked up after scan_frequency has elapsed. We recommended that you set close_inactive to a value that is larger than the least frequent updates to your log files.For example, if your log files get updated every few seconds, you can safely set close_inactive to 1m.If there are log files with very different update rates, you can use multiple configurations with different values. Setting close_inactive to a lower value means that file handles are closed sooner.However this has the side effect that new log lines are not sent in near real time if the harvester is closed. The timestamp for closing a file does not depend on the modification time of the file.Instead, Filebeat uses an internal timestamp that reflects when the file was last harvested.For example, if close_inactive is set to 5 minutes, the countdown for the 5 minutes starts after the harvester reads the last line of the file. You can use time like 2 hours and 5 minutes.The default is 5 minutes. WARNING: Only use this option if you understand that data loss is a potential side effect.',
+            description: `When this option is enabled, Filebeat closes the file handle if a file has not been harvested for the specified duration.
+> NOTE
+> The counter for the defined period starts when the last log line was read by the harvester. It is not based on the modification time of the file. If the closed file changes again, a new harvester is started and the latest changes will be picked up after \`Scan Frequency\` has elapsed.
+
+::: tip
+We recommended that you set \`Close Inactive\` to a value that is larger than the least frequent updates to your log files. For example, if your log files get updated every few seconds, you can safely set \`Close Inactive\` to 1 Minute. If there are log files with very different update rates, you can use multiple configurations with different values. Setting \`Close Inactive\` to a lower value means that file handles are closed sooner. However this has the side effect that new log lines are not sent in near real time if the harvester is closed. The timestamp for closing a file does not depend on the modification time of the file. Instead, Filebeat uses an internal timestamp that reflects when the file was last harvested.
+For example, if \`Close Inactive\` is set to 5 minutes, the countdown for the 5 minutes starts after the harvester reads the last line of the file.
+:::
+
+You can use time like 2 hours and 5 minutes. The default is 5 minutes.
+
+::: warning
+Only use this option if you understand that data loss is a potential side effect.
+:::`,
             required: false,
             group: 'Advanced'
           },
@@ -464,7 +507,11 @@ def transform:
             default: 10,
             min: 1,
             max: 3600,
-            description: 'How often Filebeat checks for new files in the paths that are specified for harvesting. For example, if you specify a glob like /var/log/*, the directory is scanned for files using the frequency specified by scan_frequency. Specify 1s to scan the directory as frequently as possible without causing Filebeat to scan too frequently. We do not recommend to set this value < 1 second. If you require log lines to be sent in near real time do not use a very low scan_frequency but adjust close_inactive so the file handler stays open and constantly polls your files. The default setting is 10 seconds.',
+            description: `How often Filebeat checks for new files in the paths that are specified for harvesting. For example, if you specify a glob like \`/var/log/*\`, the directory is scanned for files using the frequency specified by \`Scan Frequency\`. Specify 1 second to scan the directory as frequently as possible without causing Filebeat to scan too frequently.
+::: tip
+We do not recommend to set this value < 1 second. If you require log lines to be sent in near real time do not use a very low \`Scan Frequency\` but adjust \`Close Inactive\` so the file handler stays open and constantly polls your files.
+:::
+The default setting is 10 Seconds.`,
             required: false,
             group: 'Advanced'
           },
@@ -477,7 +524,7 @@ def transform:
             default: '10485760',
             min: 0,
             max: 52428800, // 50 MB
-            description: 'The maximum number of bytes that a single log message can have. All bytes after max_bytes are discarded and not sent. This setting is especially useful for multiline log messages, which can get large. The default is 10MB (10485760).',
+            description: 'The maximum number of bytes that a single log message can have. All bytes after `Max Bytes` are discarded and not sent. This setting is especially useful for multiline log messages, which can get large. The default is 10MB (10,485,760 Bytes).',
             required: false,
             group: 'Advanced'
           },
@@ -487,7 +534,7 @@ def transform:
             type: {
               name: 'boolean'
             },
-            description: 'If this option is set to true, fields with null values will be published in the output document. By default, keep_null is set to false.',
+            description: 'If this option is set to true, fields with null values will be published in the output document. By default, `Keep Null` is set to false.',
             default: false,
             required: false,
             group: 'Advanced'
@@ -519,7 +566,11 @@ def transform:
                 required: true
               }
             },
-            description: 'In addition to stream_id and stream_name fields that are automatically added, and cannot be removed or changed, you can add optional fields that you can specify to add additional information to the output. For example, you might add fields that you can use for filtering log data. Fields can be scalar values, arrays, dictionaries, or any nested combination of these. By default, the fields that you specify here will be grouped under a fields sub-dictionary in the output document. To store the custom fields as top-level fields, set the fields_under_root option to true. If a duplicate field is declared in the general configuration, then its value will be overwritten by the value declared here.',
+            description: `In addition to \`stream_id\` and \`stream_name\` fields that are automatically added, and cannot be removed or changed, you can add optional fields that you can specify to add additional information to the output.
+For example, you might add fields that you can use for filtering log data.
+Fields can be scalar values, arrays, dictionaries, or any nested combination of these.
+By default, the fields that you specify here will be grouped under a fields sub-dictionary in the output document.
+To store the custom fields as top-level fields, set the \`fields_under_root option\` to true. If a duplicate field is declared in the general configuration, then its value will be overwritten by the value declared here.`,
             required: true,
             group: 'EZ Internal'
           }
@@ -579,7 +630,7 @@ def transform:
               name: 'string'
             },
             default: '',
-            description: 'Path to the file with the list of root certificates for client verifications is only required if client_authentication is configured. If certificate_authorities is empty or not set, and client_authentication is configured, the system keystore is used. If certificate_authorities is self- signed, the host system needs to trust that CA cert as well.',
+            description: 'Path to the file with the list of root certificates for client verifications is only required if `Client Authentication` is configured. If `Certificate Authorities` is empty or not set, and `Client Authentication` is configured, the system keystore is used. If `Certificate Authorities` is self-signed, the host system needs to trust that CA cert as well.',
             required: false,
             group: 'SSL Configuration'
           },
@@ -609,7 +660,7 @@ def transform:
             name: 'protocol.tcp.ssl.key_passphrase',
             label: 'Pass phrase for SSL Key',
             type: {
-              name: 'string'
+              name: 'password'
             },
             default: '',
             description: 'The passphrase is used to decrypt an encrypted key stored in the configured key file.',
@@ -624,7 +675,7 @@ def transform:
             },
             options: [{ value: 'full', label: 'Full: Verifies that the provided certificate is signed by a trusted authority (CA) and also verifies that the server’s hostname (or IP address) matches the names identified within the certificate.' }, { value: 'strict', label: 'Strict: Verifies that the provided certificate is signed by a trusted authority (CA) and also verifies that the server’s hostname (or IP address) matches the names identified within the certificate.If the Subject Alternative Name is empty, it returns an error.' }, { value: 'certificate', label: 'Certificate: Verifies that the provided certificate is signed by a trusted authority (CA), but does not perform any hostname verification.' }, { value: 'none', label: 'None: Performs no verification of the server’s certificate.This mode disables many of the security benefits of SSL/ TLS and should only be used after cautious consideration.It is primarily intended as a temporary diagnostic mechanism when attempting to resolve TLS errors; its use in production environments is strongly discouraged.' }],
             default: 'full',
-            description: 'Controls the verification of client certificates. The default value is Full.',
+            description: 'Controls the verification of client certificates. The default value is `Full`.',
             required: false,
             group: 'SSL Configuration'
           },
@@ -636,7 +687,7 @@ def transform:
             },
             options: [{ value: 'none', label: 'None: Disables client authentication.' }, { value: 'optional', label: 'Optional: When a client certificate is supplied, the server will verify it.' }, { value: 'required', label: 'Required: Will require clients to provide a valid certificate.' }],
             default: 'none',
-            description: 'The type of client authentication mode. When certificate_authorities is set, it defaults to Required. Otherwise, it defaults to None.',
+            description: 'The type of client authentication mode. When `SSL Certificate Authorities` is set, it defaults to `Required`. Otherwise, it defaults to `None`.',
             required: false,
             group: 'SSL Configuration'
           },
@@ -648,7 +699,7 @@ def transform:
             },
             options: [{ value: 'never', label: 'Never: Disables renegotiation.' }, { value: 'once', label: 'Once: Allows a remote server to request renegotiation once per connection.' }, { value: 'freely', label: 'Freely: Allows a remote server to request renegotiation repeatedly.' }],
             default: 'never',
-            description: 'This configures what types of TLS renegotiation are supported. The default value is Never.',
+            description: 'This configures what types of TLS renegotiation are supported. The default value is `Never`.',
             required: false,
             group: 'SSL Configuration'
           },
@@ -683,7 +734,7 @@ def transform:
             default: '20MiB',
             min: 1,
             max: 50,
-            description: 'The maximum size of the message received over TCP. The default is 20 Mega Bytes.',
+            description: 'The maximum size of the message received over TCP. The default is 20 MegaBytes.',
             required: false,
             group: 'Advanced - Syslog over TCP'
           },
@@ -693,9 +744,9 @@ def transform:
             type: {
               name: 'option'
             },
-            options: [{ value: 'delimiter', label: 'Delimiter: Uses the characters specified in line_delimiter to split the incoming events.' }, { value: 'rfc6587', label: 'RFC6587: supports octet counting and non-transparent framing as described in RFC6587. line_delimiter is used to split the events in non-transparent framing.' }],
+            options: [{ value: 'delimiter', label: 'Delimiter: Uses the characters specified in Line Delimiter to split the incoming events.' }, { value: 'rfc6587', label: 'RFC6587: supports octet counting and non-transparent framing as described in RFC6587. Line Delimiter is used to split the events in non-transparent framing.' }],
             default: 'delimiter',
-            description: 'Specify the framing used to split incoming events. The default is Delimiter.',
+            description: 'Specify the framing used to split incoming events. The default is `Delimiter`.',
             required: false,
             group: 'Advanced - Syslog over TCP'
           },
@@ -754,7 +805,7 @@ def transform:
             default: '20MiB',
             min: 1,
             max: 50,
-            description: 'The maximum size of the message received over UDP. The default is 20 Mega Bytes.',
+            description: 'The maximum size of the message received over UDP. The default is 20 MegaBytes.',
             required: false,
             group: 'Advanced - Syslog over UDP'
           },
@@ -847,7 +898,7 @@ def transform:
             type: {
               name: 'boolean'
             },
-            description: 'If this option is set to true, fields with null values will be published in the output document. By default, keep_null is set to false.',
+            description: 'If this option is set to true, fields with null values will be published in the output document. By default, `Keep Null` is set to false.',
             default: false,
             required: false,
             group: 'Advanced - Miscellaneous'
@@ -879,12 +930,25 @@ def transform:
                 required: true
               }
             },
-            description: 'In addition to stream_id and stream_name fields that are automatically added, and cannot be removed or changed, you can add optional fields that you can specify to add additional information to the output. For example, you might add fields that you can use for filtering log data. Fields can be scalar values, arrays, dictionaries, or any nested combination of these. By default, the fields that you specify here will be grouped under a fields sub-dictionary in the output document. To store the custom fields as top-level fields, set the fields_under_root option to true. If a duplicate field is declared in the general configuration, then its value will be overwritten by the value declared here.',
+            description: `In addition to \`stream_id\` and \`stream_name\` fields that are automatically added, and cannot be removed or changed, you can add optional fields that you can specify to add additional information to the output.
+For example, you might add fields that you can use for filtering log data.
+Fields can be scalar values, arrays, dictionaries, or any nested combination of these.
+By default, the fields that you specify here will be grouped under a fields sub-dictionary in the output document.
+To store the custom fields as top-level fields, set the \`fields_under_root option\` to true. If a duplicate field is declared in the general configuration, then its value will be overwritten by the value declared here.`,
             required: true,
             group: 'EZ Internal'
           }
         ] // definition
       }, // syslog
+
+      //     ##     ## ######## ######## ########              ##  ######   #######  ##    ##
+      //     ##     ##    ##       ##    ##     ##             ## ##    ## ##     ## ###   ##
+      //     ##     ##    ##       ##    ##     ##             ## ##       ##     ## ####  ##
+      //     #########    ##       ##    ########              ##  ######  ##     ## ## ## ##
+      //     ##     ##    ##       ##    ##              ##    ##       ## ##     ## ##  ####
+      //     ##     ##    ##       ##    ##              ##    ## ##    ## ##     ## ##   ###
+      //     ##     ##    ##       ##    ##               ######   ######   #######  ##    ##
+
       {
         collectionMethod: 'httpjson',
         definition: [
@@ -907,29 +971,43 @@ def transform:
               name: 'option'
             },
             options: [{ value: 'GET', label: 'HTTP GET' }, { value: 'POST', label: 'HTTP POST' }],
-            description: 'HTTP method to use when making requests.',
+            description: 'HTTP method to use when making requests. Default: `GET`.',
             default: 'GET',
             required: false,
             group: 'Required'
           },
           {
-            name: 'EZ_Auth_Basic_Pass',
+            name: '_EZ_Auth_Basic.enable',
+            label: 'Enable',
+            type: {
+              name: 'boolean'
+            },
+            description: 'Using Basic authentication?',
+            default: false,
+            required: true,
+            group: 'Authentication - Basic'
+          },
+          {
+            name: '_EZ_Auth_Basic.password',
             label: 'Password for Basic authentication',
             type: {
               name: 'password'
             },
-            description: 'Non-encoded password for Basic authentication.',
+            description: 'Password for Basic authentication. It will be URL-encoded automatically.',
             default: '',
             required: true,
             group: 'Authentication - Basic'
           },
+
+          // OAuth2
+
           {
             name: 'auth.oauth2.enabled',
             label: 'Enabled',
             type: {
               name: 'boolean'
             },
-            description: 'When set to false, disables the oauth2 configuration.',
+            description: 'When set to false, disables the OAuth2 configuration.',
             default: false,
             required: true,
             group: 'Authentication - OAuth2'
@@ -941,7 +1019,8 @@ def transform:
               name: 'option'
             },
             options: [{ value: 'default', label: 'Default' }, { value: 'azure', label: 'Azure' }, { value: 'google', label: 'Google' }],
-            description: 'Used to configure supported oauth2 providers. Each supported provider will require specific settings. It is not set by default. Supported providers are: azure, google.',
+            description: `Used to configure supported OAuth2 providers.
+Each supported provider will require specific settings. It is not set by default. Supported providers are: \`Default\`, \`Azure\` and \`Google\`.`,
             default: 'default',
             required: false,
             group: 'Authentication - OAuth2'
@@ -952,7 +1031,7 @@ def transform:
             type: {
               name: 'string'
             },
-            description: 'The client ID used as part of the authentication flow. It is always required except if using Google as provider. Required for providers: Default, Azure.',
+            description: 'The Client ID used as part of the authentication flow. It is always required except if using `Google` as provider. Required for providers: `Default`, `Azure`.',
             default: '',
             required: false,
             group: 'Authentication - OAuth2'
@@ -963,7 +1042,7 @@ def transform:
             type: {
               name: 'password'
             },
-            description: 'The client secret used as part of the authentication flow. It is always required except if using Google as provider. Required for providers: Default, Azure.',
+            description: 'The client secret used as part of the authentication flow. It is always required except if using `Google` as provider. Required for providers: `Default`, `Azure`.',
             default: '',
             required: false,
             group: 'Authentication - OAuth2'
@@ -981,18 +1060,8 @@ def transform:
                 required: true
               }
             },
-            description: 'A list of scopes that will be requested during the OAuth2 flow. It is optional for all providers.',
-            required: false,
-            group: 'Authentication - OAuth2'
-          },
-          {
-            name: 'auth.oauth2.token_url',
-            label: 'Token URL',
-            type: {
-              name: 'string'
-            },
-            description: 'The endpoint that will be used to generate the tokens during the OAuth2 flow. It is required if no provider is specified. NOTE: For Azure provider either Token URL or Azure Tenant ID is required.',
-            default: '',
+            description: `A list of scopes that will be requested during the OAuth2 flow.
+It is optional for all providers.`,
             required: false,
             group: 'Authentication - OAuth2'
           },
@@ -1015,9 +1084,273 @@ def transform:
                 required: true
               }
             },
-            description: 'Set of values that will be sent on each request to the Token URL. Each param key can have multiple values. Can be set for all providers except Google.',
+            description: 'Set of values that will be sent on each request to the `Token URL`. Each param key can have multiple values. Can be set for all providers except `Google`.',
             required: false,
             group: 'Authentication - OAuth2'
+          },
+          {
+            name: 'auth.oauth2.token_url',
+            label: 'Token URL',
+            type: {
+              name: 'string'
+            },
+            description: `The endpoint that will be used to generate the tokens during the OAuth2 flow. It is required if no provider is specified.
+> NOTE
+> For \`Azure\` provider either \`Token URL\` or Azure \`Tenant ID\` is required.`,
+            default: '',
+            required: false,
+            group: 'Authentication - OAuth2'
+          },
+          {
+            name: 'auth.oauth2.azure.tenant_id',
+            label: 'Azure - Tenant ID',
+            type: {
+              name: 'string'
+            },
+            description: `Used for authentication when using \`Azure\` provider.
+> NOTE
+> Since it is used in the process to generate the \`Token URL\`, it can't be used in combination with it.
+
+It is not required.
+
+For information about where to find it, you can refer to
+https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal.`,
+            default: '',
+            required: false,
+            group: 'Authentication - OAuth2'
+          },
+          {
+            name: 'auth.oauth2.azure.resource',
+            label: 'Azure - WebAPI Resource',
+            type: {
+              name: 'string'
+            },
+            description: `The accessed WebAPI resource when using \`Azure\` provider.
+It is not required.`,
+            default: '',
+            required: false,
+            group: 'Authentication - OAuth2'
+          },
+          {
+            name: 'auth.oauth2.google.credentials_file',
+            label: 'Google - Credentials File',
+            type: {
+              name: 'string'
+            },
+            description: `The credentials file for \`Google\`.
+
+> NOTE
+> Only one of the credentials settings can be set at once. If none is provided, loading default credentials from the environment will be attempted via ADC. 
+
+For more information about how to provide Google credentials, please refer to https://cloud.google.com/docs/authentication.`,
+            default: '',
+            required: false,
+            group: 'Authentication - OAuth2'
+          },
+          {
+            name: 'auth.oauth2.google.credentials_json',
+            label: 'Google - JSON Credentials File',
+            type: {
+              name: 'string'
+            },
+            description: `Your credentials information as raw JSON.
+
+> NOTE
+> Only one of the credentials settings can be set at once. If none is provided, loading default credentials from the environment will be attempted via ADC.
+
+For more information about how to provide Google credentials, please refer to https://cloud.google.com/docs/authentication.`,
+            default: '',
+            required: false,
+            group: 'Authentication - OAuth2'
+          },
+          {
+            name: 'auth.oauth2.google.jwt_file',
+            label: 'Google - JWT Account Key File',
+            type: {
+              name: 'string'
+            },
+            description: `The JWT Account Key file for Google.
+
+> NOTE
+> Only one of the credentials settings can be set at once. If none is provided, loading default credentials from the environment will be attempted via ADC.
+
+For more information about how to provide Google credentials, please refer to https://cloud.google.com/docs/authentication.`,
+            default: '',
+            required: false,
+            group: 'Authentication - OAuth2'
+          },
+
+          // SSL Configuration
+
+          {
+            name: 'request.ssl.enabled',
+            label: 'Enabled',
+            type: {
+              name: 'boolean'
+            },
+            default: false,
+            description: 'Is Syslog SSL enabled?',
+            required: false,
+            group: 'SSL Configuration'
+          },
+          {
+            name: 'request.ssl.certificate_authorities',
+            label: 'SSL Certificate Authorities',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: 'Path to the file with the list of root certificates for client verifications is only required if `Client Authentication` is configured. If `Certificate Authorities` is empty or not set, and `Client Authentication` is configured, the system keystore is used. If `Certificate Authorities` is self-signed, the host system needs to trust that CA cert as well.',
+            required: false,
+            group: 'SSL Configuration'
+          },
+          {
+            name: 'request.ssl.certificate',
+            label: 'SSL Certificate',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: 'For server authentication, the path to the SSL authentication certificate must be specified for TLS. If the certificate is not specified, startup will fail. When this option is configured, the key option is also required.',
+            required: false,
+            group: 'SSL Configuration'
+          },
+          {
+            name: 'request.ssl.key',
+            label: 'SSL Key',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: 'The server certificate key used for authentication is required.',
+            required: false,
+            group: 'SSL Configuration'
+          },
+          {
+            name: 'request.ssl.key_passphrase',
+            label: 'Pass phrase for SSL Key',
+            type: {
+              name: 'password'
+            },
+            default: '',
+            description: 'The passphrase is used to decrypt an encrypted key stored in the configured key file.',
+            required: false,
+            group: 'SSL Configuration'
+          },
+          {
+            name: 'request.ssl.verification_mode',
+            label: 'Verification Mode',
+            type: {
+              name: 'option'
+            },
+            options: [{ value: 'full', label: 'Full: Verifies that the provided certificate is signed by a trusted authority (CA) and also verifies that the server’s hostname (or IP address) matches the names identified within the certificate.' }, { value: 'strict', label: 'Strict: Verifies that the provided certificate is signed by a trusted authority (CA) and also verifies that the server’s hostname (or IP address) matches the names identified within the certificate.If the Subject Alternative Name is empty, it returns an error.' }, { value: 'certificate', label: 'Certificate: Verifies that the provided certificate is signed by a trusted authority (CA), but does not perform any hostname verification.' }, { value: 'none', label: 'None: Performs no verification of the server’s certificate.This mode disables many of the security benefits of SSL/ TLS and should only be used after cautious consideration.It is primarily intended as a temporary diagnostic mechanism when attempting to resolve TLS errors; its use in production environments is strongly discouraged.' }],
+            default: 'full',
+            description: 'Controls the verification of client certificates. The default value is `Full`.',
+            required: false,
+            group: 'SSL Configuration'
+          },
+          {
+            name: 'request.ssl.client_authentication',
+            label: 'Client Authentication',
+            type: {
+              name: 'option'
+            },
+            options: [{ value: 'none', label: 'None: Disables client authentication.' }, { value: 'optional', label: 'Optional: When a client certificate is supplied, the server will verify it.' }, { value: 'required', label: 'Required: Will require clients to provide a valid certificate.' }],
+            default: 'none',
+            description: 'The type of client authentication mode. When `SSL Certificate Authorities` is set, it defaults to `Required`. Otherwise, it defaults to `None`.',
+            required: false,
+            group: 'SSL Configuration'
+          },
+          {
+            name: 'request.ssl.renegotiation',
+            label: 'Renegotiation',
+            type: {
+              name: 'option'
+            },
+            options: [{ value: 'never', label: 'Never: Disables renegotiation.' }, { value: 'once', label: 'Once: Allows a remote server to request renegotiation once per connection.' }, { value: 'freely', label: 'Freely: Allows a remote server to request renegotiation repeatedly.' }],
+            default: 'never',
+            description: 'This configures what types of TLS renegotiation are supported. The default value is `Never`.',
+            required: false,
+            group: 'SSL Configuration'
+          },
+          {
+            name: 'request.ssl.supported_protocols',
+            label: 'Supported Protocols',
+            type: {
+              name: 'array',
+              of: {
+                type: {
+                  name: 'string'
+                },
+                default: '',
+                required: false
+              }
+            },
+            description: 'List of allowed SSL/TLS versions. If SSL/TLS server decides for protocol versions not configured, the connection will be dropped during or after the handshake. The setting is a list of allowed protocol versions: SSLv3, TLSv1 for TLS version 1.0, TLSv1.0, TLSv1.1, TLSv1.2, and TLSv1.3. The default value is [TLSv1.1, TLSv1.2, TLSv1.3].',
+            required: false,
+            group: 'SSL Configuration'
+          },
+
+          // Advanced
+
+          {
+            name: 'request.encode_as',
+            label: 'Request Body Encoding',
+            type: {
+              name: 'option'
+            },
+            options: [
+              { value: null, label: '** Not set ** <hr>' },
+              { value: 'application/json', label: 'JSON (application/json)' },
+              { value: 'application/x-www-form-urlencoded', label: 'Web Form URL Encoded (application/x-www-form-urlencoded)' }
+            ],
+            description: `ContentType used for encoding the request body. If set it will force the encoding in the specified format regardless of the \`Content- Type\` header value, otherwise it will honor it if possible or fallback to \`application / json\`.
+By default the requests are sent with \`Content - Type: application / json\`.
+> NOTE
+> \`Web Form URL Encoded\` will url encode the \`url.params\` and set them as the body.`,
+            default: null,
+            required: false,
+            group: 'Advanced'
+          },
+          {
+            name: 'request.body',
+            label: 'Request Body',
+            type: {
+              name: 'string',
+              multilines: true
+            },
+            description: `An optional HTTP POST body.
+This is only valid when \`Request Method\` is \`POST\`. Defaults to \`null\` (no HTTP body).
+::: danger
+The configuration value must be a valid JSON object.
+:::`,
+            default: '',
+            required: false,
+            group: 'Advanced'
+          },
+          {
+            name: 'request.timeout',
+            label: 'Request Timeout',
+            type: {
+              name: 'number'
+            },
+            suffix: {
+              options: [
+                { value: 'ns', label: 'NanoSeconds' },
+                { value: 'us', label: 'MicroSeconds' },
+                { value: 'ms', label: 'MilliSeconds' },
+                { value: 's', label: 'Seconds' },
+                { value: 'm', label: 'Minutes' },
+                { value: 'h', label: 'Hours' }
+              ],
+              default: 's'
+            },
+            min: 1,
+            max: 1000,
+            default: '30s',
+            description: 'Duration before declaring that the HTTP client connection has timed out. The default is 30 seconds.',
+            required: false,
+            group: 'Advanced'
           },
           {
             name: 'config_version',
@@ -1027,12 +1360,87 @@ def transform:
             },
             min: 1,
             max: 2,
-            description: 'Defines the configuration version. V1 configuration is deprecated and will be unsupported in future releases. Any new configuration should use config_version: 2.',
+            description: `Defines the configuration version.
+V1 configuration is deprecated and will be unsupported in future releases.
+> Any new configuration should use \`Configuration version\` \`2\`.`,
             default: 2,
             required: true,
             group: 'Advanced'
           },
+          {
+            name: 'request.retry.max_attempts',
+            label: 'Request Maximum Retry Attempts',
+            type: {
+              name: 'number'
+            },
+            min: 1,
+            max: 100,
+            default: 5,
+            description: 'The maximum number of retries for the HTTP client. The default is 5.',
+            required: false,
+            group: 'Advanced'
+          },
+          {
+            name: 'request.retry.wait_min',
+            label: 'Request Minimum Wait Before Retry',
+            type: {
+              name: 'number'
+            },
+            suffix: {
+              options: [
+                { value: 's', label: 'Seconds' },
+                { value: 'm', label: 'Minutes' },
+                { value: 'h', label: 'Hours' }
+              ],
+              default: 's'
+            },
+            min: 1,
+            max: 60,
+            default: '1s',
+            description: 'The minimum time to wait before a retry is attempted. The default is 1 second.',
+            required: false,
+            group: 'Advanced'
+          },
+          {
+            name: 'request.retry.wait_max',
+            label: 'Request Maximum Wait Before Retry',
+            type: {
+              name: 'number'
+            },
+            suffix: {
+              options: [
+                { value: 's', label: 'Seconds' },
+                { value: 'm', label: 'Minutes' },
+                { value: 'h', label: 'Hours' }
+              ],
+              default: 's'
+            },
+            min: 1,
+            max: 60,
+            default: '60s',
+            description: 'The maximum time to wait before a retry is attempted. The default is 60 seconds.',
+            required: false,
+            group: 'Advanced'
+          },
+          // XXXXX request.redirect.forward_headers
+          {
+            name: 'config_version',
+            label: 'Configuration version',
+            type: {
+              name: 'number'
+            },
+            min: 1,
+            max: 2,
+            description: `Defines the configuration version.
+V1 configuration is deprecated and will be unsupported in future releases.
+> Any new configuration should use \`Configuration version\` \`2\`.`,
+            default: 2,
+            required: true,
+            group: 'Advanced'
+          },
+
           // EZ Internal
+
           {
             name: 'enabled',
             label: 'Enabled',
@@ -1059,7 +1467,11 @@ def transform:
                 required: true
               }
             },
-            description: 'In addition to stream_id and stream_name fields that are automatically added, and cannot be removed or changed, you can add optional fields that you can specify to add additional information to the output. For example, you might add fields that you can use for filtering log data. Fields can be scalar values, arrays, dictionaries, or any nested combination of these. By default, the fields that you specify here will be grouped under a fields sub-dictionary in the output document. To store the custom fields as top-level fields, set the fields_under_root option to true. If a duplicate field is declared in the general configuration, then its value will be overwritten by the value declared here.',
+            description: `In addition to \`stream_id\` and \`stream_name\` fields that are automatically added, and cannot be removed or changed, you can add optional fields that you can specify to add additional information to the output.
+For example, you might add fields that you can use for filtering log data.
+Fields can be scalar values, arrays, dictionaries, or any nested combination of these.
+By default, the fields that you specify here will be grouped under a fields sub-dictionary in the output document.
+To store the custom fields as top-level fields, set the \`fields_under_root option\` to true. If a duplicate field is declared in the general configuration, then its value will be overwritten by the value declared here.`,
             required: true,
             group: 'EZ Internal'
           }
@@ -1121,6 +1533,7 @@ definition
       of: { // for array and object
         type: {
           name: '', // array, object, boolean, string, number, regex, option
+          multilines: false // for string and regex
           of: ...
         },
         options: [{ value: '', label: '' }, { value: '', label: '' }],

@@ -37,7 +37,7 @@
       </div>
       <q-select
         v-if="template.type && template.type.name && (template.type.name === 'boolean' || template.type.name === 'option')"
-        standout="bg-blue-8 text-white"
+        standout="bg-blue-4 text-white"
         v-model="internalValue"
         emit-value
         map-options
@@ -48,7 +48,7 @@
         <!-- Prefix, if any -->
         <q-select
           v-if="template.prefix"
-          standout="bg-blue-8 text-white"
+          standout="bg-blue-4 text-white"
           v-model="internalPrefix"
           emit-value
           map-options
@@ -60,14 +60,16 @@
         <q-input
           v-if="template.type && template.type.name && (template.type.name === 'string' || template.type.name === 'regex' || template.type.name === 'number' || template.type.name === 'password')"
           class="col"
-          standout
+          standout="bg-blue-4 text-white"
           v-model="internalValue"
           :readonly="(template.readonly ? template.readonly : false || (isPartOfObject && leafInObject && (leafInObject === 'stream_id' || leafInObject === 'stream_name')))"
+          :type="template.type && template.type.name && template.type.name === 'password' ? 'password' : 'text'"
+          :autogrow="template.type && template.type.multilines && template.type.multilines === true"
         />
         <!-- Suffix, if any -->
         <q-select
           v-if="template.suffix"
-          standout="bg-blue-8 text-white"
+          standout="bg-blue-4 text-white"
           v-model="internalSuffix"
           emit-value
           map-options
@@ -86,9 +88,16 @@
         :label-value="(internalPrefixLong && internalPrefixLong.length ? internalPrefixLong + ' ' : '') + formatNumber(internalValue) + (internalSuffixLong && internalSuffixLong.length ? ' ' + internalSuffixLong : '')"
       />
       <!-- Description, if any -->
-      <div v-if="template.description && template.description.length" class="q-mt-xs" style="opacity: .7">
-        <q-icon name="info" size="xs" color="blue" />
-        {{ template.description }}
+      <div v-if="template.description && template.description.length" class="q-mt-xs row" style="opacity: .7">
+        <q-icon name="info" size="xs" color="blue" class="col-auto q-mr-sm" />
+        <!-- {{ template.description }} -->
+        <q-markdown
+          class="col"
+          :src="template.description"
+          no-heading-anchor-links
+        />
+          <!-- class="full-width q-pa-sm bg-white" -->
+          <!-- style="height: 600px;" -->
       </div>
     </div>
 
@@ -468,5 +477,9 @@ export default {
 </script>
 
 <style>
+/* To force the colour of the links inside of Mardown widgets (for the Description of the field we are displaying) */
+.q-markdown a {
+  color: aqua;
+}
 
 </style>
