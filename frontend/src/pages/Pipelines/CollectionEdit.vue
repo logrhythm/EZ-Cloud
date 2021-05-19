@@ -206,8 +206,9 @@
 import { mapState, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import FieldEditor from 'components/Pipelines/Collection/FieldEditor.vue'
-import { dump } from 'js-yaml'
+// import { dump } from 'js-yaml'
 import Vue2Filters from 'vue2-filters'
+import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml'
 
 export default {
   mixins: [
@@ -246,27 +247,7 @@ export default {
     },
     collectionConfigYml () {
       if (this.activeCollectionMethod && this.activeCollectionMethod.length) {
-        try {
-          const jsonConfig = Object.assign({}, this.pipeline.collectionConfig)
-
-          // Deal with httpjson / _EZ_Auth_Basic.enable & _EZ_Auth_Basic.password
-          // XXXXXX
-
-          // Deal with httpjson / request.body
-          // Check for proper JSON and if yes, transform into YML
-          // XXXXXX
-
-          // trash our own stuff, as it has nothing to do in the file Yaml
-          delete jsonConfig.activeCollectionMethod
-
-          // Remove any leafs set to null
-          // XXXXXX
-
-          // and push it out as Yaml
-          return dump([{ type: this.activeCollectionMethod, ...jsonConfig }])
-        } catch (error) {
-          return error
-        }
+        return collectionConfigToYml(this.pipeline.collectionConfig)
       } else {
         return '# No Collection Method configured.'
       }

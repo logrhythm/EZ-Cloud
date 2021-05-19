@@ -977,7 +977,7 @@ To store the custom fields as top-level fields, set the \`fields_under_root opti
             group: 'Required'
           },
           {
-            name: '_EZ_Auth_Basic.enable',
+            name: 'EZ__Auth_Basic__enable',
             label: 'Enable',
             type: {
               name: 'boolean'
@@ -988,12 +988,23 @@ To store the custom fields as top-level fields, set the \`fields_under_root opti
             group: 'Authentication - Basic'
           },
           {
-            name: '_EZ_Auth_Basic.password',
-            label: 'Password for Basic authentication',
+            name: 'EZ__Auth_Basic__username',
+            label: 'Username',
+            type: {
+              name: 'string'
+            },
+            description: 'Username for Basic authentication. It will be URL-encoded automatically with its password.',
+            default: '',
+            required: true,
+            group: 'Authentication - Basic'
+          },
+          {
+            name: 'EZ__Auth_Basic__password',
+            label: 'Password',
             type: {
               name: 'password'
             },
-            description: 'Password for Basic authentication. It will be URL-encoded automatically.',
+            description: 'Password for Basic authentication. It will be URL-encoded automatically with its username.',
             default: '',
             required: true,
             group: 'Authentication - Basic'

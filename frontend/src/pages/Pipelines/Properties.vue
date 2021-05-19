@@ -116,8 +116,9 @@
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
-import { dump } from 'js-yaml'
+// import { dump } from 'js-yaml'
 import { exportFile, copyToClipboard } from 'quasar'
+import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml'
 
 export default {
   name: 'PagePipelineProperties',
@@ -165,17 +166,7 @@ export default {
     collectionConfigYml () {
       // Transform the JSON config into Yaml
       if (this.collectionMethod && this.collectionMethod.length) {
-        try {
-          const jsonConfig = Object.assign({}, this.pipeline.collectionConfig)
-
-          // trash our own stuff, as it has nothing to do in the file Yaml
-          delete jsonConfig.collectionMethod
-
-          // and push it out as Yaml
-          return dump([{ type: this.collectionMethod, ...jsonConfig }])
-        } catch (error) {
-          return error
-        }
+        return collectionConfigToYml(this.pipeline.collectionConfig)
       } else {
         return '# No Collection Method configured.'
       }
