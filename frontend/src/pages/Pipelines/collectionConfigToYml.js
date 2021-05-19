@@ -54,10 +54,12 @@ function collectionConfigToYml (collectionConfig) {
     delete jsonConfig.EZ__Auth_Basic__password
 
     // Remove any leafs set to null
-    // XXXXXX
+    const jsonConfigClean = JSON.parse(JSON.stringify(jsonConfig, (key, value) => {
+      return (value === null ? undefined : value)
+    }))
 
     // and push it out as Yaml
-    return dump([{ type: collectionMethod, ...jsonConfig }])
+    return dump([{ type: collectionMethod, ...jsonConfigClean }])
   } catch (error) {
     return error
   }
