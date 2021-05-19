@@ -39,7 +39,13 @@ function collectionConfigToYml (collectionConfig) {
 
     // Deal with httpjson / request.body
     // Check for proper JSON and if yes, transform into YML
-    // XXXXXX
+    if (jsonConfig['request.body'] && jsonConfig['request.body'].length) {
+      try {
+        jsonConfig['request.body'] = JSON.parse(jsonConfig['request.body'])
+      } catch {
+        delete jsonConfig['request.body']
+      }
+    }
 
     // trash our own stuff, as it has nothing to do in the file Yaml
     delete jsonConfig.collectionMethod
