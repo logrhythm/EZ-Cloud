@@ -1328,7 +1328,8 @@ By default the requests are sent with \`Content - Type: application / json\`.
             label: 'Request Body',
             type: {
               name: 'string',
-              multilines: true
+              multilines: true,
+              textType: 'json'
             },
             description: `An optional HTTP POST body.
 This is only valid when \`Request Method\` is \`POST\`. Defaults to \`null\` (no HTTP body).
