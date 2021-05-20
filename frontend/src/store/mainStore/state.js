@@ -1517,6 +1517,31 @@ The configuration value must be a valid JSON object.
                   ],
                   default: '___set___👉'
                 },
+                suffix: {
+                  options: [
+                    { value: '👈___default___🚫', label: 'No Default' },
+                    { value: '👈___default___', label: 'Empty string' },
+                    { value: '👈___default___0', label: '0' },
+                    { value: '👈___default___[[now]]', label: '[[now]]' },
+                    { value: '👈___default___[[now (parseDuration "-1m")]]', label: '[[now (parseDuration "-1m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-5m")]]', label: '[[now (parseDuration "-5m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-10m")]]', label: '[[now (parseDuration "-10m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-15m")]]', label: '[[now (parseDuration "-15m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-30m")]]', label: '[[now (parseDuration "-30m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-45m")]]', label: '[[now (parseDuration "-45m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-1h")]]', label: '[[now (parseDuration "-1h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-2h")]]', label: '[[now (parseDuration "-2h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-3h")]]', label: '[[now (parseDuration "-3h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-5h")]]', label: '[[now (parseDuration "-5h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-6h")]]', label: '[[now (parseDuration "-6h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-12h")]]', label: '[[now (parseDuration "-12h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-24h")]]', label: '[[now (parseDuration "-24h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-36h")]]', label: '[[now (parseDuration "-36h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-48h")]]', label: '[[now (parseDuration "-48h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-72h")]]', label: '[[now (parseDuration "-72h")]]' }
+                  ],
+                  default: '👈___default___🚫'
+                },
                 default: '',
                 required: true
               },
@@ -1539,12 +1564,33 @@ Available transforms for request: \`Append\`, \`Delete\` and \`Set\`.
 
 ::: tip Examples
 
-| Target | Transform | Value |
-| ------ |:---------:| ----- |
-|  body.from  | __Set to__ | \`[[now (parseDuration "-1h")]]\` |
-|  body.variable_abc  | __Set to__ | \`AUTO\` |
-|  header.variable_xyz  | __Set to__ | \`[[.last_response.header.X-Var-XYZ]]\` |
-|  body.useless_token  | __Delete__ |  |
+| Target | Transform | Value | Default to |
+| ------ |:---------:| ----- | ---------- |
+|  body.from  | __Set to__ | \`[[now (parseDuration "-1h")]]\` | __[[now]]__ |
+|  body.variable_abc  | __Set to__ | \`AUTO\` |  |
+|  header.variable_xyz  | __Set to__ | \`[[.last_response.header.X-Var-XYZ]]\` | __0__ |
+|  body.my_array_of_names  | __Append__ | \`Bill\` |  |
+|  body.my_array_of_names  | __Append__ | \`Bob\` |  |
+|  body.useless_token  | __Delete__ |  |  |
+:::
+
+::: tip Creating an array of values
+
+Use __Append__, and use it several times with the same Target name.
+For example, to create and \`event_types\` array in the \`body\` with the following 4 values:
+- \`Auth Failure\`
+- \`Auth Success\`
+- \`Remote Connection\`
+- \`User Created\`
+
+Add these entries:
+
+| Target | Transform | Value | Default to |
+| ------ |:---------:| ----- | ---------- |
+|  body.event_types  | __Append__ | \`Auth Failure\` |  |
+|  body.event_types  | __Append__ | \`Auth Success\` |  |
+|  body.event_types  | __Append__ | \`Remote Connection\` |  |
+|  body.event_types  | __Append__ | \`User Created\` |  |
 :::
 `,
             required: false,
@@ -1570,6 +1616,31 @@ Available transforms for request: \`Append\`, \`Delete\` and \`Set\`.
                   ],
                   default: '___set___👉'
                 },
+                suffix: {
+                  options: [
+                    { value: '👈___default___🚫', label: 'No Default' },
+                    { value: '👈___default___', label: 'Empty string' },
+                    { value: '👈___default___0', label: '0' },
+                    { value: '👈___default___[[now]]', label: '[[now]]' },
+                    { value: '👈___default___[[now (parseDuration "-1m")]]', label: '[[now (parseDuration "-1m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-5m")]]', label: '[[now (parseDuration "-5m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-10m")]]', label: '[[now (parseDuration "-10m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-15m")]]', label: '[[now (parseDuration "-15m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-30m")]]', label: '[[now (parseDuration "-30m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-45m")]]', label: '[[now (parseDuration "-45m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-1h")]]', label: '[[now (parseDuration "-1h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-2h")]]', label: '[[now (parseDuration "-2h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-3h")]]', label: '[[now (parseDuration "-3h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-5h")]]', label: '[[now (parseDuration "-5h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-6h")]]', label: '[[now (parseDuration "-6h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-12h")]]', label: '[[now (parseDuration "-12h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-24h")]]', label: '[[now (parseDuration "-24h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-36h")]]', label: '[[now (parseDuration "-36h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-48h")]]', label: '[[now (parseDuration "-48h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-72h")]]', label: '[[now (parseDuration "-72h")]]' }
+                  ],
+                  default: '👈___default___🚫'
+                },
                 default: '',
                 required: true
               },
@@ -1592,19 +1663,289 @@ Available transforms for response: \`Append\`, \`Delete\` and \`Set\`.
 
 ::: tip Examples
 
-| Target | Transform | Value |
-| ------ |:---------:| ----- |
-|  body.very_confidential  | __Delete__ |  |
-|  body.from_url  | __Set to__ | \`[[.url.value]]\` |
-|  body.variable_abc  | __Set to__ | \`Static ABC value\` |
-|  header.variable_xyz  | __Set to__ | \`[[.last_response.header.X-Var-XYZ]]\` |
+| Target | Transform | Value | Default to |
+| ------ |:---------:| ----- | ---------- |
+|  body.very_confidential  | __Delete__ |  |  |
+|  body.from_url  | __Set to__ | \`[[.url.value]]\` | __Empty string__ |
+|  body.variable_abc  | __Set to__ | \`Static ABC value\` |  |
+|  body.variable_xyz  | __Set to__ | \`[[.last_response.header.X-Var-XYZ]]\` |
+|  body.my_array_of_name  | __Append__ | \`Bill\` |  |
+|  body.my_array_of_name  | __Append__ | \`Bob\` |  |
 :::
+
+::: tip Creating an array of values
+Use __Append__, and use it several times with the same Target name.
+For example, to create and \`event_types\` array with the following 4 values:
+- \`Auth Failure\`
+- \`Auth Success\`
+- \`Remote Connection\`
+- \`User Created\`
+
+Add these entries:
+
+| Target | Transform | Value | Default to |
+| ------ |:---------:| ----- | ---------- |
+ __[[now]]__ |  |
+|  body.event_types  | __Append__ | \`Auth Failure\` |  |
+|  body.event_types  | __Append__ | \`Auth Success\` |  |
+|  body.event_types  | __Append__ | \`Remote Connection\` |  |
+|  body.event_types  | __Append__ | \`User Created\` |  |
+
+If the array or entry might already exist in the response, some use case might require for it to be deleted first.
+Like so:
+
+| Target | Transform | Value | Default to |
+| ------ |:---------:| ----- | ---------- |
+ __[[now]]__ |  |
+|  body.event_types  | __Delete__ |  |  |
+|  body.event_types  | __Append__ | \`Auth Failure\` |  |
+|  body.event_types  | __Append__ | \`Auth Success\` |  |
+|  body.event_types  | __Append__ | \`Remote Connection\` |  |
+|  body.event_types  | __Append__ | \`User Created\` |  |
+:::
+
 `,
             required: false,
             group: 'Advanced - Response Transforms'
           },
 
-          // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+          // Advanced - Response Splits
+
+          // I decided NOT to implement this one, as it was too complicated
+          // (it would have required to develop new widgets / logic to deal with it)
+          // and a duplicate of the Fan Out option of the Open Collector
+
+          // {
+          //   name: 'response.split',
+          //   label: 'Splits List',
+          //   type: {
+          //     name: 'object',
+          //     of: {
+          //       type: {
+          //         name: 'object',
+          //         of: {
+          //           type: {
+          //             name: 'string'
+          //           },
+          //           prefix: {
+          //             options: [
+          //               { value: '___set___👉', label: 'Set to' },
+          //               { value: '___append___👉', label: 'Append' },
+          //               { value: '___delete___👉', label: 'Delete' }
+          //             ],
+          //             default: '___set___👉'
+          //           },
+          //           default: '',
+          //           required: true
+          //         },
+          //         required: true
+          //       },
+          //       prefix: {
+          //         options: [
+          //           { value: '___array___👉', label: 'Array' },
+          //           { value: '___map___👉', label: 'Map' },
+          //           { value: '___string___👉', label: 'String' }
+          //         ],
+          //         default: '___array___👉'
+          //       }
+          //     }
+          //   },
+          //   description: '',
+          //   required: true,
+          //   group: 'Advanced - Splits'
+          // },
+
+          {
+            name: 'response.split',
+            label: 'Splits List',
+            type: {
+              name: 'not implemented'
+            },
+            default: '** NOT IMPLEMENTED **',
+            description: `::: danger
+__NOT IMPLEMENTED__
+:::
+
+The __split__ feature of Filebeat is a duplicate of the __Fan Out__ feature of the Open Collector.
+As such, it is not necessary to implement it here.
+
+::: tip
+While building the __Field Mapping__, under __Modifier__ select: __Fan Out__.
+:::`,
+            required: false,
+            readonly: true,
+            group: 'Advanced - Splits'
+          },
+
+          // Advanced - Response Pagination Transforms
+
+          {
+            name: 'response.pagination',
+            label: 'Transforms List',
+            type: {
+              name: 'object',
+              of: {
+                type: {
+                  name: 'string'
+                },
+                prefix: {
+                  options: [
+                    { value: '___set___👉', label: 'Set to' },
+                    { value: '___append___👉', label: 'Append' },
+                    { value: '___delete___👉', label: 'Delete' }
+                  ],
+                  default: '___set___👉'
+                },
+                suffix: {
+                  options: [
+                    { value: '👈___default___🚫', label: 'No Default' },
+                    { value: '👈___default___', label: 'Empty string' },
+                    { value: '👈___default___0', label: '0' },
+                    { value: '👈___default___[[now]]', label: '[[now]]' },
+                    { value: '👈___default___[[now (parseDuration "-1m")]]', label: '[[now (parseDuration "-1m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-5m")]]', label: '[[now (parseDuration "-5m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-10m")]]', label: '[[now (parseDuration "-10m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-15m")]]', label: '[[now (parseDuration "-15m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-30m")]]', label: '[[now (parseDuration "-30m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-45m")]]', label: '[[now (parseDuration "-45m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-1h")]]', label: '[[now (parseDuration "-1h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-2h")]]', label: '[[now (parseDuration "-2h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-3h")]]', label: '[[now (parseDuration "-3h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-5h")]]', label: '[[now (parseDuration "-5h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-6h")]]', label: '[[now (parseDuration "-6h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-12h")]]', label: '[[now (parseDuration "-12h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-24h")]]', label: '[[now (parseDuration "-24h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-36h")]]', label: '[[now (parseDuration "-36h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-48h")]]', label: '[[now (parseDuration "-48h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-72h")]]', label: '[[now (parseDuration "-72h")]]' }
+                  ],
+                  default: '👈___default___🚫'
+                },
+                default: '',
+                required: true
+              },
+              required: true
+            },
+            description: `List of transforms that will be applied to the __response__ to every new page request. All the transforms from \`Request Transforms\` will be executed and then \`Response Pagination Transforms\` will be added to modify the next request as needed. For subsequent responses, the usual \`Response Transforms\` and \`Response Split\` will be executed normally.
+
+Available transforms for response: \`Append\`, \`Delete\` and \`Set\`.
+
+> NOTE
+> Can __read__ state from:
+> - \`.last_response.* \`
+> - \`.first_event.* \`
+> - \`.last_event.* \`
+> - \`.cursor.* \`]
+>
+> Can __write__ state to:
+> - \`body.*\`
+> - \`.header.* \`]
+> - \`.url.* \`]
+
+::: tip Examples
+
+| Target | Transform | Value | Default to |
+| ------ |:---------:| ----- | ---------- |
+|  url.value  | __Set to__ | \`http://localhost:9200/_search/scroll\` |  |
+|  url.params.scroll_id  | __Set to__ | \`[[.last_response.body._scroll_id]]\` | __0__ |
+|  body.scroll  | __Set to__ | \`5m\` |  |
+:::
+
+::: tip Creating an array of values
+Use __Append__, and use it several times with the same Target name.
+For example, to create and \`event_types\` array with the following 4 values:
+- \`Auth Failure\`
+- \`Auth Success\`
+- \`Remote Connection\`
+- \`User Created\`
+
+Add these entries:
+
+| Target | Transform | Value | Default to |
+| ------ |:---------:| ----- | ---------- |
+|  body.event_types  | __Append__ | \`Auth Failure\` | |
+|  body.event_types  | __Append__ | \`Auth Success\` | |
+|  body.event_types  | __Append__ | \`Remote Connection\` | |
+|  body.event_types  | __Append__ | \`User Created\` | |
+
+If the array or entry might already exist in the response, some use case might require for it to be deleted first.
+Like so:
+
+| Target | Transform | Value | Default to |
+| ------ |:---------:| ----- | ---------- |
+|  body.event_types  | __Delete__ |  | |
+|  body.event_types  | __Append__ | \`Auth Failure\` | |
+|  body.event_types  | __Append__ | \`Auth Success\` | |
+|  body.event_types  | __Append__ | \`Remote Connection\` | |
+|  body.event_types  | __Append__ | \`User Created\` | |
+:::
+
+`,
+            required: false,
+            group: 'Advanced - Response Pagination Transforms'
+          },
+
+          {
+            name: 'cursor',
+            label: 'Cursors List',
+            type: {
+              name: 'object',
+              of: {
+                type: {
+                  name: 'string'
+                },
+                default: '',
+                required: true,
+                suffix: {
+                  options: [
+                    { value: '👈___default___🚫', label: 'No Default' },
+                    { value: '👈___default___', label: 'Empty string' },
+                    { value: '👈___default___0', label: '0' },
+                    { value: '👈___default___[[now]]', label: '[[now]]' },
+                    { value: '👈___default___[[now (parseDuration "-1m")]]', label: '[[now (parseDuration "-1m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-5m")]]', label: '[[now (parseDuration "-5m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-10m")]]', label: '[[now (parseDuration "-10m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-15m")]]', label: '[[now (parseDuration "-15m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-30m")]]', label: '[[now (parseDuration "-30m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-45m")]]', label: '[[now (parseDuration "-45m")]]' },
+                    { value: '👈___default___[[now (parseDuration "-1h")]]', label: '[[now (parseDuration "-1h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-2h")]]', label: '[[now (parseDuration "-2h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-3h")]]', label: '[[now (parseDuration "-3h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-5h")]]', label: '[[now (parseDuration "-5h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-6h")]]', label: '[[now (parseDuration "-6h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-12h")]]', label: '[[now (parseDuration "-12h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-24h")]]', label: '[[now (parseDuration "-24h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-36h")]]', label: '[[now (parseDuration "-36h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-48h")]]', label: '[[now (parseDuration "-48h")]]' },
+                    { value: '👈___default___[[now (parseDuration "-72h")]]', label: '[[now (parseDuration "-72h")]]' }
+                  ],
+                  default: '👈___default___🚫'
+                }
+              }
+            },
+            description: `Cursor is a list of key value objects where arbitrary values are defined. 
+The values are interpreted as [value templates](https://github.com/elastic/beats/blob/7.12/x-pack/filebeat/docs/inputs/input-httpjson.asciidoc#value-templates) and a default template can be set.
+Cursor state is kept between input restarts and updated once all the events for a request are published.
+
+> NOTE
+> Default templates do not have access to any state, only to functions.
+>
+> Can __read__ state from:
+> - \`.last_response.* \`
+> - \`.first_event.* \`
+> - \`.last_event.* \`
+>
+::: tip Examples
+
+| Key | Value | Default to |
+| --- | ----- | ---------- |
+| last_requested_at | \`[[now]]\` | __Empty String__ |
+| last_log_id | \`[[.last_event._id]]\` | __0__ |
+:::
+`,
+            required: true,
+            group: 'Advanced - Cursors'
+          },
 
           // Advanced - Miscellaneous
 

@@ -9,20 +9,39 @@ function extractTransforms (sourceTransformsObject, transformOptions, targetTran
     targetTransformsObject &&
     typeof targetTransformsObject === 'object'
   ) {
-    for (const [target, transformAndValue] of Object.entries(sourceTransformsObject)) {
-      // Extract the Transforma and the Value from transformAndValue
+    for (const [target, transformAndValueAndDefault] of Object.entries(sourceTransformsObject)) {
+      // Extract the Transform, the Value and the Default from transformAndValueAndDefault
       let transform = ''
       let value = ''
+      let defaultValue // Leaving it undefined as we want to differentiate later between not set and set to empty
 
-      const transformAndValueArray = String(transformAndValue).split('👉', 2)
-      if (transformAndValueArray && transformAndValueArray.length >= 2) {
-        transform = transformAndValueArray.shift()
-        value = transformAndValueArray.join('👉')
+      // First pass to extract the Transform
+      const transformAndValueAndDefaultArray = String(transformAndValueAndDefault).split('👉')
+      if (transformAndValueAndDefaultArray && transformAndValueAndDefaultArray.length >= 2) {
+        transform = transformAndValueAndDefaultArray.shift()
+        value = transformAndValueAndDefaultArray.join('👉')
+      }
+
+      // Second pass to extract the Value and Default
+      const valueAndDefaultArray = String(value).split('👈___default___')
+      if (valueAndDefaultArray && valueAndDefaultArray.length >= 2) {
+        defaultValue = valueAndDefaultArray.pop()
+        value = valueAndDefaultArray.join('👈___default___')
       }
 
       // Map the transform tag into a short transform value
       const transformOption = transformOptions.find(to => to.tag === transform)
       transform = (transformOption && transformOption.transform && transformOption.transform.length ? transformOption.transform : '')
+
+      // Map the default tag into a proper default value if flagged to be none
+      if (defaultValue === '🚫') {
+        defaultValue = undefined
+      }
+      // And force the type if it's a number
+      // eslint-disable-next-line no-self-compare
+      if (defaultValue !== null && defaultValue !== '' && +defaultValue === +defaultValue) {
+        defaultValue = Number(defaultValue)
+      }
 
       // Now push it to jsonConfig.request.transforms
       if (target && target.length && transform && transform.length) {
@@ -32,13 +51,15 @@ function extractTransforms (sourceTransformsObject, transformOptions, targetTran
           enumerable: true,
           value: {
             target,
-            value
+            value,
+            default: defaultValue
           }
         })
 
-        // No point keeping the value field if the Transform is to delete
+        // No point keeping the value nor default fields if the Transform is to delete
         if (transform === 'delete') {
           delete newTransformObject[transform].value
+          delete newTransformObject[transform].default
         }
 
         // And push it
@@ -54,15 +75,6 @@ function collectionConfigToYml (collectionConfig) {
     const jsonConfig = Object.assign({}, collectionConfig)
     const collectionMethod = jsonConfig.collectionMethod || ''
 
-    // ***********
-    // Deal with httpjson / EZ__Auth_Basic__enable & EZ__Auth_Basic__password
-
-    // Goal:
-    // request.transforms:
-    //   - set:
-    //       target: header.Authorization
-    //       value: 'Basic aGVsbG86d29ybGQ='
-
     // Make sure we have a Request Transform array
     if (jsonConfig.request === undefined) {
       jsonConfig.request = {}
@@ -71,13 +83,25 @@ function collectionConfigToYml (collectionConfig) {
       jsonConfig.request.transforms = []
     }
 
-    // Make sure we have a Response Transform array
+    // Make sure we have a Response Transform and Pagination arrays
     if (jsonConfig.response === undefined) {
       jsonConfig.response = {}
     }
     if (jsonConfig.response.transforms === undefined) {
       jsonConfig.response.transforms = []
     }
+    if (jsonConfig.response.pagination === undefined) {
+      jsonConfig.response.pagination = []
+    }
+
+    // ***********
+    // Deal with httpjson / EZ__Auth_Basic__enable & EZ__Auth_Basic__password
+
+    // Goal:
+    // request.transforms:
+    //   - set:
+    //       target: header.Authorization
+    //       value: 'Basic aGVsbG86d29ybGQ='
 
     if (jsonConfig.EZ__Auth_Basic__enable && jsonConfig.EZ__Auth_Basic__enable === true) {
       // Encode the creds
@@ -157,6 +181,59 @@ function collectionConfigToYml (collectionConfig) {
     )
 
     // ***********
+    // Deal with pagination.transforms
+
+    extractTransforms(
+      jsonConfig['response.pagination'], // sourceTransformsObject
+      transformOptions, // transformOptions
+      jsonConfig.response.pagination // targetTransformsObject
+    )
+
+    // ***********
+    // Deal with cursor's default
+
+    if (jsonConfig.cursor) {
+      const cursors = {}
+      for (const [cursor, valueAndDefault] of Object.entries(jsonConfig.cursor)) {
+        let value = valueAndDefault
+        let defaultValue // Leaving it undefined as we want to differentiate later between not set and set to empty
+
+        // Separate the value and the default
+        const valueAndDefaultArray = String(value).split('👈___default___')
+        if (valueAndDefaultArray && valueAndDefaultArray.length >= 2) {
+          defaultValue = valueAndDefaultArray.pop()
+          value = valueAndDefaultArray.join('👈___default___')
+        }
+
+        // Map the default tag into a proper default value if flagged to be none
+        if (defaultValue === '🚫') {
+          defaultValue = undefined
+        }
+        // And force the type if it's a number
+        // eslint-disable-next-line no-self-compare
+        if (defaultValue !== null && defaultValue !== '' && +defaultValue === +defaultValue) {
+          defaultValue = Number(defaultValue)
+        }
+
+        // Prep a fresh new cursor, including its value and default
+        const newCursorObject = {}
+        Object.defineProperty(newCursorObject, cursor, {
+          enumerable: true,
+          value: {
+            value,
+            default: defaultValue
+          }
+        })
+
+        // Add newCursorObject to the cursor object
+        Object.assign(cursors, newCursorObject)
+      }
+
+      // And now replace our original with its properly formatted self
+      jsonConfig.cursor = cursors
+    }
+
+    // ***********
     // Trash our own stuff, as it has nothing to do in the file Yaml
     delete jsonConfig.collectionMethod
     delete jsonConfig.EZ__Auth_Basic__enable
@@ -164,6 +241,7 @@ function collectionConfigToYml (collectionConfig) {
     delete jsonConfig.EZ__Auth_Basic__password
     delete jsonConfig['request.transforms']
     delete jsonConfig['response.transforms']
+    delete jsonConfig['response.pagination']
 
     // And trash empty Transforms for Request and Response
     if (jsonConfig.request.transforms.length === 0) {
@@ -171,6 +249,9 @@ function collectionConfigToYml (collectionConfig) {
     }
     if (jsonConfig.response.transforms.length === 0) {
       delete jsonConfig.response.transforms
+    }
+    if (jsonConfig.response.pagination.length === 0) {
+      delete jsonConfig.response.pagination
     }
     // and the Request / Response if now empty too
     if (Object.keys(jsonConfig.request).length === 0) {

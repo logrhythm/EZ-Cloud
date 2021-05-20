@@ -225,7 +225,8 @@ export default {
       collectionMethod: '',
       activeCollectionMethod: '',
       showCollectionConfig: false,
-      showCollectionMethodTemplate: false
+      showCollectionMethodTemplate: false,
+      collectionConfigYml: ''
     }
   },
 
@@ -245,13 +246,13 @@ export default {
     collectionMethodTemplate () {
       return this.collectionMethodTemplates.find(template => template.collectionMethod === this.activeCollectionMethod)
     },
-    collectionConfigYml () {
-      if (this.activeCollectionMethod && this.activeCollectionMethod.length) {
-        return collectionConfigToYml(this.pipeline.collectionConfig)
-      } else {
-        return '# No Collection Method configured.'
-      }
-    },
+    // collectionConfigYml () {
+    //   if (this.activeCollectionMethod && this.activeCollectionMethod.length) {
+    //     return collectionConfigToYml(this.pipeline.collectionConfig)
+    //   } else {
+    //     return '# No Collection Method configured.'
+    //   }
+    // },
     templateGroups () {
       // Go through each template definition and extract the Groups
       const templates = (this.collectionMethodTemplate && this.collectionMethodTemplate.definition ? this.collectionMethodTemplate.definition : [])
@@ -394,6 +395,21 @@ export default {
         this.collectionConfig = newConf
         this.needsSaving = true
       }
+    },
+    buildYmlConfig () {
+      console.log('buildYmlConfig')
+      if (this.activeCollectionMethod && this.activeCollectionMethod.length) {
+        this.collectionConfigYml = collectionConfigToYml(this.pipeline.collectionConfig)
+      } else {
+        this.collectionConfigYml = '# No Collection Method configured.'
+      }
+    },
+    collectionConfigHasChanged () {
+      console.log('collectionConfigHasChanged')
+      this.needsSaving = true
+      if (this.showCollectionConfig) {
+        this.buildYmlConfig()
+      }
     }
   },
 
@@ -413,9 +429,17 @@ export default {
   watch: {
     collectionConfig: {
       handler () {
-        this.needsSaving = true
+        this.collectionConfigHasChanged()
       },
       deep: true
+    },
+    showCollectionConfig: {
+      handler (value) {
+        if (value) {
+          this.buildYmlConfig()
+        }
+      },
+      deep: false
     }
   }
 }

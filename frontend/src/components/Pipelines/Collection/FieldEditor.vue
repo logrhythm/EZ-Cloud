@@ -11,39 +11,6 @@
     />
     <q-separator vertical color="orange" size="3px" v-if="template.required && !isPartOfArray && !isPartOfObject" />
     <div class="col">
-      <div v-if="template.type && template.type.name && template.type.name === 'array'" class="q-gutter-y-sm">
-        <FieldEditor
-          v-for="(subField, subFieldIndex) in (internalValue && Array.isArray(internalValue) ? internalValue : [])"
-          :key="subFieldIndex"
-          :template="(template && template.type && template.type.of ? template.type.of : {})"
-          :isPartOfArray="true"
-          :indexInArray="subFieldIndex"
-          v-model="internalValue[subFieldIndex]"
-          @deleteSubField="deleteSubFieldEvent"
-        />
-        <q-btn no-caps flat dense icon="add" label="Add Item" color="primary" @click="addValueToArray()" />
-      </div>
-      <div v-if="template.type && template.type.name && template.type.name === 'object'" class="q-gutter-y-sm">
-        <FieldEditor
-          v-for="(subField, subFieldLeafName) in (internalValue && typeof internalValue === 'object' ? internalValue : {})"
-          :key="subFieldLeafName"
-          :template="(template && template.type && template.type.of ? template.type.of : {})"
-          :isPartOfObject="true"
-          :leafInObject="subFieldLeafName"
-          v-model="internalValue[subFieldLeafName]"
-          @deleteSubField="deleteSubFieldEvent"
-        />
-        <q-btn no-caps flat dense icon="add" label="Add Item" color="primary" @click="addValueToObject()" />
-      </div>
-      <q-select
-        v-if="template.type && template.type.name && (template.type.name === 'boolean' || template.type.name === 'option')"
-        standout="bg-blue-4 text-white"
-        v-model="internalValue"
-        emit-value
-        map-options
-        :options="(template.options ? template.options : (template.type.name === 'boolean' ? [{ value: true, label: 'True' }, { value: false, label: 'False' }] : []))"
-        :readonly="(template.readonly ? template.readonly : false)"
-      />
       <div class="row q-gutter-x-md">
         <!-- Prefix, if any -->
         <q-select
@@ -66,6 +33,40 @@
           :readonly="(template.readonly ? template.readonly : false || (isPartOfObject && leafInObject && (leafInObject === 'stream_id' || leafInObject === 'stream_name')))"
           :type="template.type && template.type.name && template.type.name === 'password' ? 'password' : 'text'"
           :autogrow="template.type && template.type.multilines && template.type.multilines === true"
+        />
+        <div v-if="template.type && template.type.name && template.type.name === 'array'" class="q-gutter-y-sm col">
+          <FieldEditor
+            v-for="(subField, subFieldIndex) in (internalValue && Array.isArray(internalValue) ? internalValue : [])"
+            :key="subFieldIndex"
+            :template="(template && template.type && template.type.of ? template.type.of : {})"
+            :isPartOfArray="true"
+            :indexInArray="subFieldIndex"
+            v-model="internalValue[subFieldIndex]"
+            @deleteSubField="deleteSubFieldEvent"
+          />
+          <q-btn no-caps flat dense icon="add" label="Add Item" color="primary" @click="addValueToArray()" />
+        </div>
+        <div v-if="template.type && template.type.name && template.type.name === 'object'" class="q-gutter-y-sm col">
+          <FieldEditor
+            v-for="(subField, subFieldLeafName) in (internalValue && typeof internalValue === 'object' ? internalValue : {})"
+            :key="subFieldLeafName"
+            :template="(template && template.type && template.type.of ? template.type.of : {})"
+            :isPartOfObject="true"
+            :leafInObject="subFieldLeafName"
+            v-model="internalValue[subFieldLeafName]"
+            @deleteSubField="deleteSubFieldEvent"
+          />
+          <q-btn no-caps flat dense icon="add" label="Add Item" color="primary" @click="addValueToObject()" />
+        </div>
+        <q-select
+          v-if="template.type && template.type.name && (template.type.name === 'boolean' || template.type.name === 'option')"
+          standout="bg-blue-4 text-white"
+          v-model="internalValue"
+          class="col"
+          emit-value
+          map-options
+          :options="(template.options ? template.options : (template.type.name === 'boolean' ? [{ value: true, label: 'True' }, { value: false, label: 'False' }] : []))"
+          :readonly="(template.readonly ? template.readonly : false)"
         />
         <!-- Suffix, if any -->
         <q-select
@@ -190,9 +191,9 @@ export default {
         // - if not fall back to this.defaultValue (based on Template's type)
         return (
           this.template.type &&
-          this.template.type.name &&
-          this.template.type.name !== 'array' &&
-          this.template.type.name !== 'object'
+          this.template.type.name // &&
+          // this.template.type.name !== 'array' &&
+          // this.template.type.name !== 'object'
             ? (
                 this.value
                   ? this.value
@@ -233,25 +234,34 @@ export default {
       get () {
         let value = this.internalValueRaw
 
-        // Remove any potential Prefix and Suffix
-        if (this.template.prefix && this.template.prefix.options && Array.isArray(this.template.prefix.options)) {
-          this.template.prefix.options.forEach(option => {
-            if (option.value && option.value.length) {
-              value = String(value).replace(RegExp('^' + option.value), '')
-            }
-          })
-        }
-        if (this.template.suffix && this.template.suffix.options && Array.isArray(this.template.suffix.options)) {
-          this.template.suffix.options.forEach(option => {
-            if (option.value && option.value.length) {
-              value = String(value).replace(RegExp(option.value + '$'), '')
-            }
-          })
-        }
-
-        // Force the type of some values to based on their Template type
         if (this.template.type &&
           this.template.type.name) {
+          // Remove any potential Prefix and Suffix from value of non-object and non-array
+          if (
+            this.template.type.name !== 'object' &&
+            this.template.type.name !== 'array'
+          ) {
+            // Prep for Regex escaping, as we will be using it a few times in the 2 loops below
+            // eslint-disable-next-line no-useless-escape
+            const regexCharsToEscape = /[-[\]{}()*+!<=:?.\/\\^$|#\s,]/g
+
+            if (this.template.prefix && this.template.prefix.options && Array.isArray(this.template.prefix.options)) {
+              this.template.prefix.options.forEach(option => {
+                if (option.value && option.value.length) {
+                  value = String(value).replace(RegExp('^' + String(option.value).replace(regexCharsToEscape, '\\$&')), '')
+                }
+              })
+            }
+            if (this.template.suffix && this.template.suffix.options && Array.isArray(this.template.suffix.options)) {
+              this.template.suffix.options.forEach(option => {
+                if (option.value && option.value.length) {
+                  value = String(value).replace(RegExp(String(option.value).replace(regexCharsToEscape, '\\$&') + '$'), '')
+                }
+              })
+            }
+          }
+
+          // Force the type of some values to based on their Template type
           if (this.template.type.name === 'number') {
             value = Number(value)
           }
