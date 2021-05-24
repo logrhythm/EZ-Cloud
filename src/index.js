@@ -5,7 +5,7 @@
  * @author Tony Massé
  *
  * Created at     : 2021-04-07 15:00:00
- * Last modified  : 2021-05-24 18:28:15
+ * Last modified  : 2021-05-24 18:40:41
  */
 
 // import AutoGitUpdate from 'auto-git-update';
@@ -64,10 +64,10 @@ async function checkForNewVersion () {
 
   // eslint-disable-next-line no-console
   console.log('Checking for updates...');
-  // updater.autoUpdate();
-  const versionComparison = await updater.compareVersions();
+  await updater.autoUpdate();
+  // const versionComparison = await updater.compareVersions();
   // eslint-disable-next-line no-console
-  console.log(versionComparison);
+  // console.log(versionComparison);
 }
 
 checkForNewVersion();
