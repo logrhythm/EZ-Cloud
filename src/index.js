@@ -5,7 +5,7 @@
  * @author Tony Massé
  *
  * Created at     : 2021-04-07 15:00:00
- * Last modified  : 2021-05-24 17:57:02
+ * Last modified  : 2021-05-24 18:28:15
  */
 
 // import AutoGitUpdate from 'auto-git-update';
@@ -57,7 +57,7 @@ async function checkForNewVersion () {
       'config/https.keytmp.pem',
       'config/ssh.json'
     ],
-    branch: 'master/backend',
+    branch: 'master',
     // executeOnComplete: 'NET RESTART',
     exitOnComplete: true
   });
