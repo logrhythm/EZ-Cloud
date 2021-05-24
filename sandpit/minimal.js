@@ -4,23 +4,6 @@ var Request = require('tedious').Request;
 const fs = require('fs');
 const config = JSON.parse(fs.readFileSync('../config/database.json', 'utf8')).config;
 
-// var config = {
-//   server: 'localhost',
-//   authentication: {
-//     type: 'default',
-//     options: {
-//       userName: 'sa',
-//       password: 'logrhythm!1'
-//     }
-//   },
-//   options: {
-//     // If you are on Microsoft Azure, you need encryption:
-//     encrypt: false,
-//     database: 'LogRhythmEMDB',  //update me
-//     port: 1433 // Default Port
-//   }
-// };
-
 const connection = new Connection(config);
 
 connection.on('connect', (err) => {
