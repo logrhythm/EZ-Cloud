@@ -6,7 +6,6 @@
 ### Microsoft Windows
 
 ```
-cd backend
 npm install
 npm install -g node-windows
 npm link node-windows
@@ -19,21 +18,18 @@ netsh advfirewall firewall add rule name="EZ-Cloud - Backend server (TCP/8400)" 
 ### Coding
 
 ```
-cd backend
 npm run dev
 ```
 
 ### Lint
 
 ```
-cd backend
 npm run lint
 ```
 
 ### Test
 
 ```
-cd backend
 npm run test
 ```
 
