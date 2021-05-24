@@ -29,21 +29,6 @@ var Connection = require('tedious').Connection;
 const fs = require('fs');
 const config = JSON.parse(fs.readFileSync('../config/database.json', 'utf8')).config;
 
-// var config = {  
-//     server: '127.0.0.1',  //update me
-//     authentication: {
-//         type: 'default',
-//         options: {
-//             userName: 'sa', //update me
-//             password: 'logrhythm!1'  //update me
-//         }
-//     },
-//     options: {
-//         // If you are on Microsoft Azure, you need encryption:
-//         encrypt: false,
-//         database: 'LogRhythmEMDB'  //update me
-//     }
-// }; 
 var connection = new Connection(config);  
 
 function connected(err) {
