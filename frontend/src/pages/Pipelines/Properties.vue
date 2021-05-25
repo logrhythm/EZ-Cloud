@@ -118,7 +118,7 @@ import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 // import { dump } from 'js-yaml'
 import { exportFile, copyToClipboard } from 'quasar'
-import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml'
+import { collectionConfigToYml } from 'src/shared/Pipelines/collectionConfigToYml'
 
 export default {
   name: 'PagePipelineProperties',

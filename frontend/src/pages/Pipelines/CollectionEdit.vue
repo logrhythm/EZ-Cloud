@@ -208,7 +208,7 @@ import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadC
 import FieldEditor from 'components/Pipelines/Collection/FieldEditor.vue'
 // import { dump } from 'js-yaml'
 import Vue2Filters from 'vue2-filters'
-import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml'
+import { collectionConfigToYml } from 'src/shared/Pipelines/collectionConfigToYml'
 
 export default {
   mixins: [
