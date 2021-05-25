@@ -1,11 +1,12 @@
 // Get SSH config
 const fs = require('fs');
 const path = require('path');
+
 const configSsh = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'config', 'ssh.json'), 'utf8')).config;
 // Create SSH object
-var SSH = require('simple-ssh');
+const SSH = require('simple-ssh');
 
-let tails = [];
+const tails = [];
 
 function socketConnect(socket) {
   // eslint-disable-next-line no-console
@@ -53,6 +54,7 @@ function socketConnect(socket) {
                 }
                 return false;
               }
+              return true;
             }
           })
           .exec(`rm -rf /tmp/ez-${payload.tailId}`, {})
