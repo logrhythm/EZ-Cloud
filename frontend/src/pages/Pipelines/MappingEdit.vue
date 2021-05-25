@@ -610,6 +610,9 @@ export default {
   computed: {
     ...mapState('mainStore', ['loggedInUser', 'jqFilterTemplate', 'jqTransformTemplate']),
     ...mapGetters('mainStore', ['pipelines']),
+    pipeline () {
+      return this.pipelines.find(p => p.uid === this.pipelineUid)
+    },
     pipelineName () {
       const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
       return (pipeline && pipeline.name && pipeline.name.length ? pipeline.name : '')
@@ -996,7 +999,7 @@ export default {
 
     initTail () {
       if (this.socket.connected) {
-        this.socket.emit('tail.init', { tailId: this.pipelineUid, path: '/tmp/mistnet.log' })
+        this.socket.emit('tail.init', { tailId: this.pipelineUid, collectionConfig: this.pipeline.collectionConfig })
       }
     },
 
