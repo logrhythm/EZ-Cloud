@@ -361,7 +361,7 @@
                 dense
                 standout="bg-blue-4 text-white"
                 v-model="item.modifiers"
-                :options="['Parse JSON', 'Stringify JSON', 'Fan out', 'Sub Rule selector']"
+                :options="['Parse JSON', 'Stringify JSON', 'Fan out', 'Sub Rule selector', 'Timestamp selector']"
                 style="width: 20rem;"
                 class="q-mx-sm q-my-xs"
                 popup-content-class="bg-grey-9"
@@ -1065,6 +1065,10 @@ export default {
       const flattenArrayAddFieldPlaceholderTemplate = '    add_field({{EZ_flatten_array_name_placeholder}}{{EZ_flatten_array_field_doted_path_placeholder}}; .output.{{EZ_mdi_field_placeholder}}) |'
       const flattenArrayAddFieldPlaceholder = [] // multiple strings
 
+      // Mapping of the Timestamp field(s)
+      const timestampAddFieldPlaceholderTemplate = '    add_field(({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}} | fromdate); .output.normal_msg_date) |'
+      const timestampAddFieldPlaceholder = [] // multiple strings
+
       // Mapping of the fields
       const addFieldPlaceholderTemplate = '    add_field({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}; .output.{{EZ_mdi_field_placeholder}}) |'
       const addFieldPlaceholder = [] // multiple strings
@@ -1105,11 +1109,10 @@ export default {
       })
 
       this.jsonPathes.forEach(path => {
-        // Mapping of the fields
-        if (path.mappedField && path.mappedField.length) {
-          // First check if the field is part (sub branch) of a Fanned out branch
-          let isSubFannedOutBranch = false
-          let flattenArrayPathName = ''
+        // First check if the field is part (sub branch) of a Fanned out branch
+        let isSubFannedOutBranch = false
+        let flattenArrayPathName = ''
+        if ((path.mappedField && path.mappedField.length) || (path.modifiers && path.modifiers.length)) {
           flattenArrays.forEach(fa => {
             if (
               path.name &&
@@ -1120,7 +1123,10 @@ export default {
               isSubFannedOutBranch = true
             }
           })
+        }
 
+        // Mapping of the fields
+        if (path.mappedField && path.mappedField.length) {
           if (isSubFannedOutBranch) {
             // Field is a Sub of a Fanned out branch
             flattenArrayAddFieldPlaceholder.push(
@@ -1146,6 +1152,38 @@ export default {
                 .replace(/{{EZ_mdi_field_placeholder}}/g, path.mappedField)
             )
           }
+        }
+
+        // Mapping the Timestamp field(s)
+        if (path.modifiers && path.modifiers.length) {
+          path.modifiers.forEach(pm => {
+            if (pm === 'Timestamp selector') {
+              if (isSubFannedOutBranch) {
+                // Field is a Sub of a Fanned out branch
+                timestampAddFieldPlaceholder.push(
+                  // const timestampAddFieldPlaceholderTemplate = '    add_field(({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}} | fromdate); .output.normal_msg_date) |'
+                  timestampAddFieldPlaceholderTemplate
+                    .replace(
+                      /{{EZ_message_placeholder}}/g,
+                      'flatten_array_' + flattenArrayPathName.replace(/[^a-zA-Z0-9]/g, '_') // rebuild the flatten array ID
+                    )
+                    .replace(
+                      /{{EZ_field_doted_path_placeholder}}/g,
+                      path.name
+                        .replace(flattenArrayPathName, '') // Remove the part of the path that is the flatten array's own path
+                        .replace(/\[\d+\]/, '') // remove any array numerical ID (like [0], [1], etc...)
+                    )
+                )
+              } else {
+                // Standard field
+                timestampAddFieldPlaceholder.push(
+                  timestampAddFieldPlaceholderTemplate
+                    .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
+                    .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+                )
+              }
+            }
+          })
         }
 
         // // MDI Sub-rules
@@ -1192,6 +1230,7 @@ export default {
       jqTransform = jqTransform
         .replace(/{{EZ_flatten_array_placeholder}}/g, flattenArrayPlaceholder.join('\r'))
         .replace(/{{EZ_original_message_placeholder}}/g, originalMessagePlaceholder)
+        .replace(/{{EZ_timestamp__add_field_placeholder}}/g, timestampAddFieldPlaceholder.join('\r'))
         .replace(/{{EZ_flatten_array__add_field_placeholder}}/g, flattenArrayAddFieldPlaceholder.join('\r'))
         .replace(/{{EZ_add_field_placeholder}}/g, addFieldPlaceholder.join('\r'))
         .replace(/{{EZ_sub_rules__add_field_placeholder}}/g, subRulesAddFieldPlaceholder.join('\r'))

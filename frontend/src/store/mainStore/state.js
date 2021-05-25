@@ -228,6 +228,10 @@ def transform:
     add_field("{{EZ_stream_id_placeholder}}"; .output.stream_id) |
     add_field("{{EZ_stream_name_placeholder}}"; .output.stream_name) |
 
+    # If required, the Timestamp field(s)
+
+{{EZ_timestamp__add_field_placeholder}}
+
     # If required, the Fanned out fields
 
 {{EZ_flatten_array__add_field_placeholder}}
