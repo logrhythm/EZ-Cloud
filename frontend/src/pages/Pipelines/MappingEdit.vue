@@ -361,7 +361,7 @@
                 dense
                 standout="bg-blue-4 text-white"
                 v-model="item.modifiers"
-                :options="['Parse JSON', 'Stringify JSON', 'Fan out', 'Sub Rule selector', 'Sub Rule qualifier 1', 'Sub Rule qualifier 2', 'Sub Rule qualifier 3', 'Sub Rule qualifier 4', 'Timestamp selector']"
+                :options="['Parse JSON', 'Stringify JSON', 'Fan out', 'Sub Rule selector', 'Sub Rule qualifier 1', 'Sub Rule qualifier 2', 'Sub Rule qualifier 3', 'Sub Rule qualifier 4', 'Timestamp selector - ISO8601 format', 'Timestamp selector - Unix Timestamp format']"
                 style="width: 20rem;"
                 class="q-mx-sm q-my-xs"
                 popup-content-class="bg-grey-9"
@@ -1066,7 +1066,8 @@ export default {
       const flattenArrayAddFieldPlaceholder = [] // multiple strings
 
       // Mapping of the Timestamp field(s)
-      const timestampAddFieldPlaceholderTemplate = '    add_field(({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}} | fromdate); .output.normal_msg_date) |'
+      const timestampAddFieldPlaceholderTemplate = '    add_field(({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}{{EZ_date_parser_placeholder}}); .output.normal_msg_date) |'
+      const dateParserIso8601Template = ' | fromdate' // Used for Timestamp - ISO8601 format
       const timestampAddFieldPlaceholder = [] // multiple strings
 
       // Mapping of the fields
@@ -1185,11 +1186,21 @@ export default {
         // Mapping the Timestamp field(s)
         if (path.modifiers && path.modifiers.length) {
           path.modifiers.forEach(pm => {
-            if (pm === 'Timestamp selector') {
+            if (
+              (pm === 'Timestamp selector - ISO8601 format') ||
+              (pm === 'Timestamp selector - Unix Timestamp format')
+            ) {
+              // Setup the date/time parser first
+              let dateParser = ''
+              if (
+                (pm === 'Timestamp selector - ISO8601 format')
+              ) {
+                dateParser = dateParserIso8601Template
+              }
+
               if (isSubFannedOutBranch) {
                 // Field is a Sub of a Fanned out branch
                 timestampAddFieldPlaceholder.push(
-                  // const timestampAddFieldPlaceholderTemplate = '    add_field(({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}} | fromdate); .output.normal_msg_date) |'
                   timestampAddFieldPlaceholderTemplate
                     .replace(
                       /{{EZ_message_placeholder}}/g,
@@ -1201,6 +1212,10 @@ export default {
                         .replace(flattenArrayPathName, '') // Remove the part of the path that is the flatten array's own path
                         .replace(/\[\d+\]/, '') // remove any array numerical ID (like [0], [1], etc...)
                     )
+                    .replace(
+                      /{{EZ_date_parser_placeholder}}/g,
+                      dateParser
+                    )
                 )
               } else {
                 // Standard field
@@ -1208,6 +1223,7 @@ export default {
                   timestampAddFieldPlaceholderTemplate
                     .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
                     .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+                    .replace(/{{EZ_date_parser_placeholder}}/g, dateParser)
                 )
               }
             }
