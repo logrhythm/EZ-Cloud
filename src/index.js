@@ -5,7 +5,7 @@
  * @author Tony Massé
  *
  * Created at     : 2021-04-07 15:00:00
- * Last modified  : 2021-05-24 18:40:41
+ * Last modified  : 2021-05-25 12:55:56
  */
 
 // import AutoGitUpdate from 'auto-git-update';
@@ -46,7 +46,7 @@ process.env.VERSION = process.env.npm_package_version;
 console.log(`${process.env.NAME} - Version: ${process.env.VERSION} - Started`);
 log.info(`${process.env.NAME} - Version: ${process.env.VERSION} - Started`);
 
-async function checkForNewVersion () {
+async function checkForNewVersion() {
   const updater = new AutoGitUpdate({
     repository: 'https://github.com/TonyMasse/EZ-Cloud',
     tempLocation: path.join(process.env.TEMP, 'EZ_Cloud-Upgrade'),
