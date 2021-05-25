@@ -6,6 +6,9 @@ const configSsh = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'c
 // Create SSH object
 const SSH = require('simple-ssh');
 
+// Import shared collectionConfigToYml library
+const collectionConfigToYml = require('../shared/collectionConfigToYml');
+
 const tails = [];
 
 function socketConnect(socket) {
@@ -29,9 +32,10 @@ function socketConnect(socket) {
 
     if (
       payload
-      && payload.path
       && payload.tailId
-      && payload.path.length > 0
+      && payload.collectionConfig
+      && payload.collectionConfig.collectionMethod
+      && payload.collectionConfig.collectionMethod.length > 0
       && payload.tailId.length > 0
     ) {
       // Check the tailId doesn't already exist
@@ -40,7 +44,10 @@ function socketConnect(socket) {
         // eslint-disable-next-line quotes
         // eslint-disable-next-line max-len
         // const filebeatConfig = "filebeat.inputs:\n- type: log\n  enabled: true\n  paths:\n    - /var/log/*.log\noutput.console:\n  enabled: true\n  pretty: false\nlogging.level: error\n";
-        const filebeatConfig = `filebeat.inputs:\n- type: log\n  enabled: true\n  paths:\n    - ${payload.path}\noutput.console:\n  enabled: true\n  pretty: false\nlogging.level: error\n`;
+        // eslint-disable-next-line max-len
+        // const filebeatConfig = `filebeat.inputs:\n- type: log\n  enabled: true\n  paths:\n    - ${payload.path}\noutput.console:\n  enabled: true\n  pretty: false\nlogging.level: error\n`;
+        const inputYml = collectionConfigToYml(payload.collectionConfig);
+        const filebeatConfig = `filebeat.inputs:\n${inputYml}\n\noutput.console:\n  enabled: true\n  pretty: false\nlogging.level: error\n`;
 
         tails[payload.tailId]
           .exec(`if [ -d "/tmp/ez-${payload.tailId}" ]; then ps auxwww | grep \`cat /tmp/ez-${payload.tailId}/running.pid\` | grep -v "grep" -q && exit 42; fi;`, {
