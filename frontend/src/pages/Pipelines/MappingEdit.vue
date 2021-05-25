@@ -361,7 +361,7 @@
                 dense
                 standout="bg-blue-4 text-white"
                 v-model="item.modifiers"
-                :options="['Parse JSON', 'Stringify JSON', 'Fan out', 'Sub Rule selector', 'Timestamp selector']"
+                :options="['Parse JSON', 'Stringify JSON', 'Fan out', 'Sub Rule selector', 'Sub Rule qualifier 1', 'Sub Rule qualifier 2', 'Sub Rule qualifier 3', 'Sub Rule qualifier 4', 'Timestamp selector']"
                 style="width: 20rem;"
                 class="q-mx-sm q-my-xs"
                 popup-content-class="bg-grey-9"
@@ -1082,7 +1082,7 @@ export default {
         messageRoot = '.message | fromjson | '
       }
 
-      // Fanning out the log
+      // Fanning out the log and Sub Rules
       this.jsonPathes.forEach(path => {
         if (path.modifiers && path.modifiers.length) {
           path.modifiers.forEach(pm => {
@@ -1102,6 +1102,34 @@ export default {
                   .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
                   .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
                   .replace(/{{EZ_mdi_tag_placeholder}}/g, 'tag1')
+              )
+            } else if (pm === 'Sub Rule qualifier 1') {
+              subRulesAddFieldPlaceholder.push(
+                subRulesAddFieldPlaceholderTemplate
+                  .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
+                  .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+                  .replace(/{{EZ_mdi_tag_placeholder}}/g, 'tag2')
+              )
+            } else if (pm === 'Sub Rule qualifier 2') {
+              subRulesAddFieldPlaceholder.push(
+                subRulesAddFieldPlaceholderTemplate
+                  .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
+                  .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+                  .replace(/{{EZ_mdi_tag_placeholder}}/g, 'tag3')
+              )
+            } else if (pm === 'Sub Rule qualifier 3') {
+              subRulesAddFieldPlaceholder.push(
+                subRulesAddFieldPlaceholderTemplate
+                  .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
+                  .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+                  .replace(/{{EZ_mdi_tag_placeholder}}/g, 'tag4')
+              )
+            } else if (pm === 'Sub Rule qualifier 4') {
+              subRulesAddFieldPlaceholder.push(
+                subRulesAddFieldPlaceholderTemplate
+                  .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
+                  .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+                  .replace(/{{EZ_mdi_tag_placeholder}}/g, 'tag5')
               )
             }
           })
