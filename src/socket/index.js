@@ -7,7 +7,7 @@ const configSsh = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'c
 const SSH = require('simple-ssh');
 
 // Import shared collectionConfigToYml library
-const collectionConfigToYml = require('../shared/collectionConfigToYml');
+const { collectionConfigToYml } = require('../shared/collectionConfigToYml');
 
 const tails = [];
 
@@ -25,10 +25,10 @@ function socketConnect(socket) {
 
   // A new tail is requested
   socket.on('tail.init', (payload) => {
-    // eslint-disable-next-line no-console
-    console.log('tail.init');
-    // eslint-disable-next-line no-console
-    console.log(payload);
+    // // eslint-disable-next-line no-console
+    // console.log('tail.init');
+    // // eslint-disable-next-line no-console
+    // console.log(payload);
 
     if (
       payload
@@ -47,8 +47,10 @@ function socketConnect(socket) {
         // eslint-disable-next-line max-len
         // const filebeatConfig = `filebeat.inputs:\n- type: log\n  enabled: true\n  paths:\n    - ${payload.path}\noutput.console:\n  enabled: true\n  pretty: false\nlogging.level: error\n`;
         const inputYml = collectionConfigToYml(payload.collectionConfig);
-        const filebeatConfig = `filebeat.inputs:\n${inputYml}\n\noutput.console:\n  enabled: true\n  pretty: false\nlogging.level: error\n`;
 
+        const filebeatConfig = `filebeat.inputs:\n${inputYml}\n\noutput.console:\n  enabled: true\n  pretty: false\nlogging.level: error\n`;
+console.log(`/usr/share/filebeat/bin/filebeat -c config.yml --path.home /usr/share/filebeat --path.config /tmp/ez-${payload.tailId} --path.data /tmp/ez-${payload.tailId}/lib -e & echo -e $! > /tmp/ez-${payload.tailId}/running.pid`);
+console.log(' ');
         tails[payload.tailId]
           .exec(`if [ -d "/tmp/ez-${payload.tailId}" ]; then ps auxwww | grep \`cat /tmp/ez-${payload.tailId}/running.pid\` | grep -v "grep" -q && exit 42; fi;`, {
             exit(code) {
@@ -73,22 +75,26 @@ function socketConnect(socket) {
           // .exec(`tail -n 0 -F ${payload.path}`, {
           .exec(`/usr/share/filebeat/bin/filebeat -c config.yml --path.home /usr/share/filebeat --path.config /tmp/ez-${payload.tailId} --path.data /tmp/ez-${payload.tailId}/lib -e & echo -e $! > /tmp/ez-${payload.tailId}/running.pid`, {
             err(stderr) {
+              console.log('STDERR:::' + stderr);
               if (socket.connected) {
                 socket.emit('tail.log', { tailId: payload.tailId, code: 'ERROR', payload: stderr });
               }
             },
             exit(code) {
+              console.log('CODE:::' + code);
               if (socket.connected) {
                 socket.emit('tail.log', { tailId: payload.tailId, code: 'EXIT', payload: code });
               }
             },
             out(stdout) {
+              console.log('STDOUT:::' + stdout);
               if (socket.connected) {
                 socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
               }
             }
           })
           .on('end', (err) => {
+            console.log('END:::' + err);
             if (socket.connected) {
               socket.emit('tail.log', { tailId: payload.tailId, code: 'END', payload: err });
             }
@@ -96,6 +102,7 @@ function socketConnect(socket) {
           // .exec(`echo 123 > /tmp/ez-${payload.tailId}/running.pid`, {})
           .start({
             failure() {
+              console.log('FAILURE:::' + err);
               if (socket.connected) {
                 socket.emit('tail.log', { tailId: payload.tailId, code: 'FAILURE' });
               }
