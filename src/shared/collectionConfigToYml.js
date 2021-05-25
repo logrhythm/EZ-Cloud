@@ -1,4 +1,4 @@
-const dump = require('js-yaml')
+const { dump } = require('js-yaml')
 
 function extractTransforms (sourceTransformsObject, transformOptions, targetTransformsObject) {
   if (
@@ -70,7 +70,7 @@ function extractTransforms (sourceTransformsObject, transformOptions, targetTran
   }
 }
 
-function collectionConfigToYml (collectionConfig) {
+exports.collectionConfigToYml = (collectionConfig) => {
   try {
     const jsonConfig = Object.assign({}, collectionConfig)
     const collectionMethod = jsonConfig.collectionMethod || ''
@@ -275,4 +275,4 @@ function collectionConfigToYml (collectionConfig) {
   }
 }
 
-module.export = collectionConfigToYml
+// module.export = collectionConfigToYml();
