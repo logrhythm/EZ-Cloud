@@ -19,11 +19,13 @@
   },
   "dependencies": {
     "auto-git-update": "^2.0.1",
+    "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
     "dotenv": "^8.6.0",
     "express": "^4.17.1",
     "helmet": "^4.6.0",
     "js-yaml": "^3.14.1",
+    "jsonwebtoken": "^8.5.1",
     "morgan": "^1.10.0",
     "node-windows": "^1.0.0-beta.5",
     "simple-ssh": "^1.0.0",
