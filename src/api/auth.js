@@ -42,7 +42,7 @@ router.get('/', (req, res) => {
   res.json({ options: ['Login', 'Logout'] });
 });
 
-router.post('/Login', (req, res, next) => {
+router.post('/Login', async (req, res, next) => {
   // Check Creds are valid and can login
   // If YES
   //   Create JWT token
@@ -51,21 +51,23 @@ router.post('/Login', (req, res, next) => {
   //   Return error
 
   // Check Creds are valid and can login
-  if (checkCredentials({
+  checkCredentials({
     login: (req.body && req.body.username ? req.body.username : ''),
     password: (req.body && req.body.password ? req.body.password : '')
-  })) {
-    // If YES
-    //   Create JWT token
-    //   Return token
-    createTokenSendResponse(req.user, res, next);
-  } else {
-    // If NO
-    //   Return error
-    res.status(401);
-    const error = Error('Unable to login');
-    next(error);
-  }
+  }).then((areCredsValid) => {
+    if (areCredsValid === true) {
+      // If YES
+      //   Create JWT token
+      //   Return token
+      createTokenSendResponse(req.user, res, next);
+    } else {
+      // If NO
+      //   Return error
+      res.status(401);
+      const error = Error('Unable to login');
+      next(error);
+    }
+  });
 });
 
 module.exports = router;
