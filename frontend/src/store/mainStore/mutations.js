@@ -121,3 +121,12 @@ export function getPipelines (state, payload) {
     state.pipelines = payload
   }
 }
+
+// Authentication
+export function updateJwtToken (state, payload) {
+  console.log('updateJwtToken:')
+  console.log(payload)
+  if (payload && payload.token && payload.token.length) {
+    state.jwtToken = payload.token
+  }
+}

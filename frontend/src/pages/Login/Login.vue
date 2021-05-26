@@ -21,25 +21,57 @@
       </q-card-section>
 
       <q-card-actions align="right" class="text-primary">
-        <q-btn flat label="Login" @click="checkCredentials()" />
+        <q-btn flat label="Login" @click="checkCredentials()" :loading="waitingOnServer" />
       </q-card-actions>
+
+      <q-card-section class="q-pt-none text-negative row items-center" v-if="lastAttemptFailed">
+        <q-icon name="block" size="md" />
+        <dir class="col text-bold">
+          Authentication failed.
+        </dir>
+        <q-icon name="block" size="md" />
+      </q-card-section>
     </q-card>
   </q-page>
 </template>
 
 <script>
+import { mapState, mapActions } from 'vuex'
+
 export default {
   name: 'PageLogin',
   data () {
     return {
-      prompt: true,
       username: '',
-      password: ''
+      password: '',
+      waitingOnServer: false,
+      lastAttemptFailed: false
     }
   }, // data
+  computed: {
+    ...mapState('mainStore', ['jwtToken'])
+  }, // computed
   methods: {
+    ...mapActions('mainStore', ['signIn']),
     checkCredentials () {
-      this.$router.push('/Welcome')
+      this.signIn({
+        loadingVariableName: 'waitingOnServer',
+        caller: this,
+        apiCallParams: {
+          username: this.username,
+          password: this.password
+        },
+        onSuccessCallBack: this.storeTokenAndMoveOn,
+        onErrorCallBack: this.storeTokenAndMoveOn,
+        debug: true
+      })
+    },
+    storeTokenAndMoveOn () {
+      if (this.jwtToken && this.jwtToken.length) {
+        this.$router.push('/Welcome')
+      } else {
+        this.lastAttemptFailed = true
+      }
     }
   }
 }
