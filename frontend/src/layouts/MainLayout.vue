@@ -20,6 +20,11 @@
           :key="link.title"
           v-bind="link"
         />
+        <q-separator class="q-my-md"/>
+        <EssentialLink
+          v-bind="logOut"
+        />
+        <q-separator class="q-my-md" v-if="!socket.connected"/>
         <q-item v-if="!socket.connected">
           <q-tooltip content-style="font-size: 1rem;">
             Live connection with server has been lost.<br>
@@ -84,6 +89,11 @@ export default {
           link: '#/Settings'
         }
       ],
+      logOut: {
+        title: 'Log Out',
+        icon: 'logout',
+        link: '#/Logout'
+      },
       socket: this.$socket
     }
   }

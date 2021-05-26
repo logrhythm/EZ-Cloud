@@ -40,7 +40,7 @@ const routes = [
     path: '/Logout',
     component: () => import('layouts/PlainLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/Login/Login.vue') }
+      { path: '', component: () => import('pages/Login/Logout.vue') }
     ]
   },
 

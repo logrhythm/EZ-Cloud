@@ -52,7 +52,7 @@ export default {
     ...mapState('mainStore', ['jwtToken'])
   }, // computed
   methods: {
-    ...mapActions('mainStore', ['signIn']),
+    ...mapActions('mainStore', ['signIn', 'signOut']),
     checkCredentials () {
       this.signIn({
         loadingVariableName: 'waitingOnServer',
@@ -73,6 +73,10 @@ export default {
         this.lastAttemptFailed = true
       }
     }
+  }, // methods
+  mounted () {
+    // First remove any token from previous Login
+    this.signOut()
   }
 }
 </script>

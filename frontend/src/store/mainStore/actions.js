@@ -20,6 +20,10 @@ export function signIn ({ commit }, payload) {
   })
 }
 
+export function signOut ({ commit }, payload) {
+  commit('updateJwtToken', { token: '' })
+}
+
 // ######################################################################
 // COLLECTORS
 // ######################################################################
