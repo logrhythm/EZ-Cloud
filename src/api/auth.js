@@ -62,7 +62,7 @@ router.post('/Login', (req, res, next) => {
   } else {
     // If NO
     //   Return error
-    res.status(422);
+    res.status(401);
     const error = Error('Unable to login');
     next(error);
   }
