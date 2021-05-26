@@ -78,7 +78,6 @@ export default {
       } else {
         this.lastAttemptFailed = true
         this.shakyClass = true
-        // setTimeout(this.stopShaking(), 1000)
         this.shakyClassTimer = setTimeout(() => {
           this.shakyClass = false
         }, 1000)
@@ -86,9 +85,6 @@ export default {
           this.lastAttemptFailed = false
         }, 4800)
       }
-    // },
-    // stopShaking() {
-    //   this.shakyClass = false
     }
   }, // methods
   mounted () {
@@ -104,19 +100,18 @@ export default {
   animation-name: shakeLogin;
   animation-duration: 5s;
   animation-iteration-count: infinite;
-  /* animation-timing-function: ease-in; */
   animation-timing-function: cubic-bezier(.36, .07, .19, .97);
 }
 
 @keyframes shakeLogin {
   0% {left: 0}
-  1% {left: -3px}
-  2% {left: 5px}
-  3% {left: -8px}
-  4% {left: 8px}
-  5% {left: -5px}
-  6% {left: 3px}
-  7% {left: 0}
+  2% {left: -6px}
+  4% {left: 10px}
+  6% {left: -16px}
+  8% {left: 16px}
+  10% {left: -10px}
+  10% {left: 6px}
+  14% {left: 0}
 }
 
 .fadeOut {
