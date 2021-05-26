@@ -1,6 +1,8 @@
 const express = require('express');
 
+const middlewares = require('../middlewares');
 const test = require('./test');
+const auth = require('./auth');
 const openCollector = require('./openCollector');
 const config = require('./config');
 
@@ -13,7 +15,8 @@ router.get('/', (req, res) => {
 });
 
 router.use('/test', test);
-router.use('/oc', openCollector);
-router.use('/config', config);
+router.use('/auth', auth);
+router.use('/oc', middlewares.isLoggedIn, openCollector);
+router.use('/config', middlewares.isLoggedIn, config);
 
 module.exports = router;

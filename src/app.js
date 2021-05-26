@@ -57,6 +57,9 @@ io.on('connection', socketConnect);
 //   });
 // });
 
+// Check for JWT token in the headers, and if found populate the req object accordingly
+app.use(middlewares.checkJwTokenAndSetUser);
+
 app.get('/test', (req, res) => {
   res.json({
     message: '👋 All good mate'
