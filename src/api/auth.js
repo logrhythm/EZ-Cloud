@@ -54,7 +54,7 @@ router.post('/Login', (req, res, next) => {
   if (checkCredentials({
     login: (req.body && req.body.username ? req.body.username : ''),
     password: (req.body && req.body.password ? req.body.password : '')
-  })) {
+  }) === true) {
     // If YES
     //   Create JWT token
     //   Return token
