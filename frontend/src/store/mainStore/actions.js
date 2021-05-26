@@ -16,17 +16,28 @@ export function signIn ({ commit }, payload) {
     apiCallParams: (payload && payload.apiCallParams ? payload.apiCallParams : undefined),
     onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
     onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
-    debug: true
+    debug: false
   })
 }
 
 export function signOut ({ commit }, payload) {
+  // Blank any previous JWT token
   commit('updateJwtToken', { token: '' })
+
+  // Empty the list of Collectors and Pipelines
+  commit('getOpenCollectors', [])
+  commit('getPipelines', [])
 }
 
 // ######################################################################
 // COLLECTORS
 // ######################################################################
+
+export function forgetOpenCollectors ({ state, commit }) {
+  // Usefull when login out, for example
+  // Update the Store with an empty array
+  commit('getOpenCollectors', [])
+}
 
 export function getOpenCollectors ({ state, commit }, payload) {
   getDataFromSite({
@@ -116,6 +127,12 @@ export function deleteOpenCollector ({ state, commit }, payload) {
 // ######################################################################
 // PIPELINES
 // ######################################################################
+
+export function forgetPipelines ({ state, commit }) {
+  // Usefull when login out, for example
+  // Update the Store with an empty array
+  commit('getPipelines', [])
+}
 
 export function getPipelines ({ state, commit }, payload) {
   getDataFromSite({
