@@ -5,16 +5,18 @@ import mainStore from './mainStore'
 
 Vue.use(Vuex)
 
+const Store = new Vuex.Store({
+  modules: {
+    mainStore
+  },
+
+  // enable strict mode (adds overhead!)
+  // for dev mode only
+  strict: process.env.DEBUGGING
+})
+
 export default function (/* { ssrContext } */) {
-  const Store = new Vuex.Store({
-    modules: {
-      mainStore
-    },
-
-    // enable strict mode (adds overhead!)
-    // for dev mode only
-    strict: process.env.DEBUGGING
-  })
-
   return Store
 }
+
+export { Store }

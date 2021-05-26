@@ -1,3 +1,14 @@
+import { Store } from '../store/index.js'
+
+// Check if we have a JWT token, and redirect to /Login if not
+function isLoggedIn (to, from, next) {
+  const token = (Store && Store.state && Store.state.mainStore && Store.state.mainStore.jwtToken ? Store.state.mainStore.jwtToken : '')
+  if (token && token.length) {
+    next()
+  } else {
+    next('/Login')
+  }
+}
 
 const routes = [
   {
@@ -13,7 +24,8 @@ const routes = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/Index.vue') }
-    ]
+    ],
+    beforeEnter: isLoggedIn
   },
 
   {
@@ -46,7 +58,8 @@ const routes = [
     children: [
       { path: '', component: () => import('pages/OpenCollectors/List.vue') },
       { path: ':openCollectorUid/View', component: () => import('pages/OpenCollectors/View.vue') }
-    ]
+    ],
+    beforeEnter: isLoggedIn
   },
 
   {
@@ -57,7 +70,8 @@ const routes = [
       { path: ':pipelineUid/Properties', component: () => import('src/pages/Pipelines/Properties.vue') },
       { path: ':pipelineUid/Collection/Edit', component: () => import('src/pages/Pipelines/CollectionEdit.vue') },
       { path: ':pipelineUid/Mapping/Edit', component: () => import('src/pages/Pipelines/MappingEdit.vue') }
-    ]
+    ],
+    beforeEnter: isLoggedIn
   },
 
   // Always leave this as last one,
@@ -67,7 +81,8 @@ const routes = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/Error404.vue') }
-    ]
+    ],
+    beforeEnter: isLoggedIn
   }
 ]
 
