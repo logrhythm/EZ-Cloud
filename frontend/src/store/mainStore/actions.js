@@ -1,14 +1,39 @@
 import { uid } from 'quasar'
+import { i18n } from 'boot/i18n'
+
+// ######################################################################
+// AUTHENTICATION
+// ######################################################################
+
+export function signIn ({ commit }, payload) {
+  postDataToSite({
+    apiUrl: '/auth/Login',
+    commit: commit,
+    targetCommitName: 'updateJwtToken',
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    silent: true,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    apiCallParams: (payload && payload.apiCallParams ? payload.apiCallParams : undefined),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: true
+  })
+}
 
 // ######################################################################
 // COLLECTORS
 // ######################################################################
 
-export function getOpenCollectors ({ commit }, payload) {
+export function getOpenCollectors ({ state, commit }, payload) {
   getDataFromSite({
     apiUrl: '/config/GetCollectors',
     dataLabel: 'Collectors',
     countDataLabel: true,
+    apiHeaders: {
+      headers: {
+        authorization: 'Bearer' + state.jwtToken,
+      }
+    },
     commit: commit,
     targetCommitName: 'getOpenCollectors',
     loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
@@ -170,9 +195,7 @@ export function deletePipeline ({ state, commit }, payload) {
 //        ##     ## ##         ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
 //        ##     ## ##        ####        #######     ##    #### ######## ####    ##    #### ########  ######
 
-import { i18n } from 'boot/i18n'
-
-function getDataFromSite (params = {
+export function getDataFromSite (params = {
   apiUrl: '',
   dataLabel: '',
   countDataLabel: false,
@@ -181,6 +204,7 @@ function getDataFromSite (params = {
   targetCommitName: '',
   loadingVariableName: '',
   apiCallParams: {},
+  apiHeaders: {},
   silent: false,
   logToConsole: true,
   caller: this,
@@ -201,6 +225,7 @@ function getDataFromSite (params = {
   if (typeof params.targetCommitName === 'undefined') { params.targetCommitName = '' }
   if (typeof params.loadingVariableName === 'undefined') { params.loadingVariableName = '' }
   if (typeof params.apiCallParams === 'undefined') { params.apiCallParams = {} }
+  if (typeof params.apiHeaders === 'undefined') { params.apiHeaders = {} }
   if (typeof params.silent === 'undefined') { params.silent = false }
   if (typeof params.logToConsole === 'undefined') { params.logToConsole = true }
   if (typeof params.caller === 'undefined') { params.caller = this }
@@ -212,7 +237,7 @@ function getDataFromSite (params = {
     console.log('getDataFromSite -- BEGIN')
   }
 
-  if (!params.silent) {
+  if (!params.silent && params.caller && params.caller.$q) {
     notificationPopupId = params.caller.$q.notify({
       icon: 'cloud_download',
       message: i18n.t('Downloading') + ' ' + params.dataLabel + '...',
@@ -233,7 +258,7 @@ function getDataFromSite (params = {
   }
   params.caller.$axios.get(params.caller.globalConstants.baseUrl.api + params.apiUrl, {
     params: params.apiCallParams
-  })
+  }, params.apiHeaders)
     .then(function (response) {
       if (params.debug) {
         console.log('getDataFromSite -- Then')
@@ -286,7 +311,7 @@ function getDataFromSite (params = {
         if (params.logToConsole) {
           console.log('⚠️ ' + i18n.t('[API ERROR]') + ' ' + messageForLogAndPopup)
         }
-        if (!params.silent) {
+        if (!params.silent && notificationPopupId) {
           notificationPopupId({
             type: 'negative',
             color: 'negative',
@@ -303,7 +328,7 @@ function getDataFromSite (params = {
         if (params.logToConsole) {
           console.log('✔️ ' + i18n.t('[API SUCCESS]') + ' ' + messageForLogAndPopup)
         }
-        if (!params.silent) {
+        if (!params.silent && notificationPopupId) {
           notificationPopupId({
             type: 'positive',
             color: 'positive',
@@ -328,7 +353,7 @@ function getDataFromSite (params = {
 } // getDataFromSite
 
 // postDataToSite: Call API endpoint to post data to it, and optionally get data from it
-function postDataToSite (params = {
+export function postDataToSite (params = {
   apiUrl: '',
   dataLabel: '',
   countDataLabel: false,
@@ -337,6 +362,7 @@ function postDataToSite (params = {
   targetCommitName: '',
   loadingVariableName: '',
   apiCallParams: {},
+  apiHeaders: {},
   silent: false,
   logToConsole: true,
   caller: this,
@@ -357,6 +383,7 @@ function postDataToSite (params = {
   if (typeof params.targetCommitName === 'undefined') { params.targetCommitName = '' }
   if (typeof params.loadingVariableName === 'undefined') { params.loadingVariableName = '' }
   if (typeof params.apiCallParams === 'undefined') { params.apiCallParams = {} }
+  if (typeof params.apiHeaders === 'undefined') { params.apiHeaders = {} }
   if (typeof params.silent === 'undefined') { params.silent = false }
   if (typeof params.logToConsole === 'undefined') { params.logToConsole = true }
   if (typeof params.caller === 'undefined') { params.caller = this }
@@ -368,7 +395,7 @@ function postDataToSite (params = {
     console.log('postDataToSite -- BEGIN')
   }
 
-  if (!params.silent) {
+  if (!params.silent && params.caller && params.caller.$q) {
     notificationPopupId = params.caller.$q.notify({
       icon: 'cloud_upload',
       message: i18n.t('Uploading') + ' ' + params.dataLabel + '...',
@@ -387,7 +414,7 @@ function postDataToSite (params = {
   if (params.debug) {
     console.log('postDataToSite -- POST')
   }
-  params.caller.$axios.post(params.caller.globalConstants.baseUrl.api + params.apiUrl, params.apiCallParams)
+  params.caller.$axios.post(params.caller.globalConstants.baseUrl.api + params.apiUrl, params.apiCallParams, params.apiHeaders)
     .then(function (response) {
       if (params.debug) {
         console.log('postDataToSite -- Then')
@@ -406,6 +433,11 @@ function postDataToSite (params = {
           } else {
             captionForLogAndPopup = i18n.t('Succesfully loaded') + ' ' + params.dataLabel + '.'
           }
+        }
+
+        // Commit to targetCommitName
+        if (typeof params.commit === 'function' && params.targetCommitName.length) {
+          params.commit(params.targetCommitName, response.data.payload)
         }
 
         if (response.data.errors && Array.isArray(response.data.errors) && response.data.errors.length > 0) {
@@ -438,7 +470,7 @@ function postDataToSite (params = {
         if (params.logToConsole) {
           console.log('⚠️ ' + i18n.t('[API ERROR]') + ' ' + messageForLogAndPopup + ' // ' + captionForLogAndPopup)
         }
-        if (!params.silent) {
+        if (!params.silent && notificationPopupId) {
           notificationPopupId({
             type: 'negative',
             color: 'negative',
@@ -458,7 +490,7 @@ function postDataToSite (params = {
         if (params.logToConsole) {
           console.log('✔️ ' + i18n.t('[API SUCCESS]') + ' ' + messageForLogAndPopup + ' // ' + captionForLogAndPopup)
         }
-        if (!params.silent) {
+        if (!params.silent && notificationPopupId) {
           notificationPopupId({
             type: 'positive',
             color: 'positive',

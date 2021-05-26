@@ -1,7 +1,7 @@
 export default function () {
   return {
     loggedInUser: 'tmasse',
-    authToken: '',
+    jwtToken: '',
     openCollectors: [
       // // {
       // //   uid: ';,

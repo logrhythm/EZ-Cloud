@@ -17,6 +17,14 @@ const routes = [
   },
 
   {
+    path: '/Login',
+    component: () => import('layouts/PlainLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/Login/Login.vue') }
+    ]
+  },
+
+  {
     path: '/Logout',
     component: () => import('layouts/PlainLayout.vue'),
     children: [
