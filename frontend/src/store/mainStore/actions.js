@@ -30,9 +30,7 @@ export function getOpenCollectors ({ state, commit }, payload) {
     dataLabel: 'Collectors',
     countDataLabel: true,
     apiHeaders: {
-      headers: {
-        authorization: 'Bearer' + state.jwtToken,
-      }
+      authorization: 'Bearer ' + state.jwtToken
     },
     commit: commit,
     targetCommitName: 'getOpenCollectors',
@@ -67,6 +65,9 @@ export function upsertOpenCollector ({ state, commit }, payload) {
         apiUrl: '/config/UpdateCollector',
         dataLabel: 'Collector',
         apiCallParams: state.openCollectors.find(oc => oc.uid === openCollectorPayload.uid),
+        apiHeaders: {
+          authorization: 'Bearer ' + state.jwtToken
+        },
         loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
         silent: false,
         caller: (payload && payload.caller ? payload.caller : this._vm),
@@ -96,6 +97,9 @@ export function deleteOpenCollector ({ state, commit }, payload) {
         apiUrl: '/config/DeleteCollector',
         dataLabel: 'Collector',
         apiCallParams: { uid: openCollectorPayload.uid },
+        apiHeaders: {
+          authorization: 'Bearer ' + state.jwtToken
+        },
         loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
         silent: false,
         caller: (payload && payload.caller ? payload.caller : this._vm),
@@ -109,13 +113,16 @@ export function deleteOpenCollector ({ state, commit }, payload) {
 // PIPELINES
 // ######################################################################
 
-export function getPipelines ({ commit }, payload) {
+export function getPipelines ({ state, commit }, payload) {
   getDataFromSite({
     apiUrl: '/config/GetPipelines',
     dataLabel: 'Pipelines',
     countDataLabel: true,
     commit: commit,
     targetCommitName: 'getPipelines',
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
     loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
     silent: false,
     caller: (payload && payload.caller ? payload.caller : this._vm),
@@ -148,6 +155,9 @@ export function upsertPipeline ({ state, commit }, payload) {
           apiUrl: '/config/UpdatePipeline',
           dataLabel: 'Pipeline',
           apiCallParams: state.pipelines.find(p => p.uid === pipelinePayload.uid),
+          apiHeaders: {
+            authorization: 'Bearer ' + state.jwtToken
+          },
           loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
           silent: false,
           caller: (payload && payload.caller ? payload.caller : this._vm),
@@ -178,6 +188,9 @@ export function deletePipeline ({ state, commit }, payload) {
         apiUrl: '/config/DeletePipeline',
         dataLabel: 'Pipeline',
         apiCallParams: { uid: pipelinePayload.uid },
+        apiHeaders: {
+          authorization: 'Bearer ' + state.jwtToken
+        },
         loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
         silent: false,
         caller: (payload && payload.caller ? payload.caller : this._vm),
@@ -257,8 +270,9 @@ export function getDataFromSite (params = {
     console.log('getDataFromSite -- GET')
   }
   params.caller.$axios.get(params.caller.globalConstants.baseUrl.api + params.apiUrl, {
-    params: params.apiCallParams
-  }, params.apiHeaders)
+    params: params.apiCallParams,
+    headers: params.apiHeaders
+  })
     .then(function (response) {
       if (params.debug) {
         console.log('getDataFromSite -- Then')
@@ -414,7 +428,13 @@ export function postDataToSite (params = {
   if (params.debug) {
     console.log('postDataToSite -- POST')
   }
-  params.caller.$axios.post(params.caller.globalConstants.baseUrl.api + params.apiUrl, params.apiCallParams, params.apiHeaders)
+  params.caller.$axios.post(
+    params.caller.globalConstants.baseUrl.api + params.apiUrl,
+    params.apiCallParams,
+    {
+      headers: params.apiHeaders
+    }
+  )
     .then(function (response) {
       if (params.debug) {
         console.log('postDataToSite -- Then')
