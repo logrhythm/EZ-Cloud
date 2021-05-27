@@ -65,9 +65,6 @@ function checkOSVersion(osVersion, uid) {
   /* eslint-disable no-param-reassign */
   if (uid && uid.length) {
     getSshConfigForCollector({ uid }).then((sshConfig) => {
-      // console.log(`sshConfig: ${JSON.stringify(sshConfig)}`);
-      // console.log(sshConfig);
-
       const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
       osVersion.stillChecking = true;
@@ -79,20 +76,16 @@ function checkOSVersion(osVersion, uid) {
         .exec('uname -r | awk -F. -v OFS= \'{print "{\\"version\\":{\\"detailed\\":{\\"major\\":\\""$1,"\\", \\"minor\\":\\""$2,"\\", \\"build\\":\\""$3,"\\"}, \\"full\\":\\""$1,"."$2,"."$3,"."$4,"."$5,"\\"}}"}\'', {
           err(stderr) {
             osVersion.errors.push(stderr);
-            // console.log(`stderr: ${stderr}`);
           },
           exit(code) {
             osVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
-            // console.log(`code: ${code}`);
           },
           out(stdout) {
-            // console.log(`stdout: ${stdout}`);
             try {
               osVersion.payload = JSON.parse(stdout);
             }
             catch (error) {
               osVersion.payload = null;
-              // osVersion.errors.push(error);
             }
 
             osVersion.outputs.push(stdout);
@@ -100,12 +93,10 @@ function checkOSVersion(osVersion, uid) {
           }
         })
         .on('end', (err) => {
-          // console.log(`end: ${err}`);
           osVersion.stillChecking = false;
         })
         .start({
           failure() {
-            // console.log('start - failure');
             osVersion.stillChecking = false;
           }
         });
@@ -118,12 +109,9 @@ router.get('/CheckOSVersion', async (req, res) => {
   if (req && req.query && req.query.uid && req.query.uid.length) {
     const { uid } = req.query;
 
-    // console.log('osVersionArray:');
-    // console.log(osVersionArray);
     if (!osVersionArray[uid]) {
       osVersionArray[uid] = Object.assign({}, osVersionTemplate);
     }
-    // console.log(osVersionArray);
 
     if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
       // Waiting - Sync
@@ -133,12 +121,10 @@ router.get('/CheckOSVersion', async (req, res) => {
       }
       const loopEndTime = Date.now() / 1000 + maxCheckInterval;
 
-      // console.log(osVersionArray[uid].stillChecking);
       while (osVersionArray[uid].stillChecking && (loopEndTime > (Date.now() / 1000))) {
         // Wait for 50 ms
         // eslint-disable-next-line no-await-in-loop
         await waitMilliseconds(50);
-        // console.log(osVersionArray[uid].stillChecking);
       }
     } else {
       // No waiting - Async
@@ -150,8 +136,6 @@ router.get('/CheckOSVersion', async (req, res) => {
         checkOSVersion(osVersionArray[uid], uid);
       }
     }
-
-    // console.log(osVersionArray);
 
     if (osVersionArray[uid].payload) {
       osVersionArray[uid].payload.uid = uid;

@@ -488,7 +488,7 @@ async function getSshConfigForCollector(params) {
   const queryResult = {};
 
   if (params && params.uid && params.uid.length) {
-    console.log('**** getDataFromSql - GO...');
+    // console.log('**** getDataFromSql - GO...');
     await getDataFromSql({
       targetVariable: queryResult,
       query: `
@@ -516,9 +516,9 @@ async function getSshConfigForCollector(params) {
       )
     });
 
-    console.log('**** getDataFromSql - DONE.');
-    console.log('**** queryResult:');
-    console.log(queryResult);
+    // console.log('**** getDataFromSql - DONE.');
+    // console.log('**** queryResult:');
+    // console.log(queryResult);
 
     // {
     //   stillChecking: false,
@@ -545,8 +545,8 @@ async function getSshConfigForCollector(params) {
         : null
     );
 
-    console.log('**** collectorRecord:');
-    console.log(collectorRecord);
+    // console.log('**** collectorRecord:');
+    // console.log(collectorRecord);
 
     if (
       collectorRecord
@@ -569,7 +569,7 @@ async function getSshConfigForCollector(params) {
       )
     ) {
       // Valid record
-      console.log('****    --> Valid record');
+      // console.log('****    --> Valid record');
       sshConfig.host = collectorRecord.hostname;
       sshConfig.port = collectorRecord.port;
       sshConfig.user = (
