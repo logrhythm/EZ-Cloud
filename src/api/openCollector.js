@@ -1,25 +1,19 @@
 const express = require('express');
+
 const router = express.Router();
 // Get SSH config
 const fs = require('fs');
 const path = require('path');
-// const configSsh = JSON.parse(fs.readFileSync(__dirname + '\\..\\..\\config\\' + 'ssh.json', 'utf8')).config;
+
 const configSsh = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'config', 'ssh.json'), 'utf8')).config;
 // Create SSH object
-var SSH = require('simple-ssh');
+const SSH = require('simple-ssh');
 
 // Lib to get the SSH config for a given OpenCollector
 const { getSshConfigForCollector } = require('./config');
 
-// getSshConfigForCollector({ uid: 'dd666d77-c301-4717-b62a-059accbf7b37' }).then((r) => {
-// getSshConfigForCollector({ uid: 'd25e3226-a90d-11eb-bcbc-0242ac130002' }).then((r) => {
-getSshConfigForCollector({ uid: '5c23be18-a90e-11eb-bcbc-0242ac130002' }).then((r) => {
-  console.log('r: ' + JSON.stringify(r));
-  console.log(r);
-})
-
 function waitMilliseconds(delay = 250) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     setTimeout(() => {
       resolve();
     }, delay);
@@ -57,74 +51,115 @@ router.get('/CheckOCHelperVersion', (req, res) => {
 // CheckOSVersion
 // #############################################
 
-var osVersion = {
+const osVersionTemplate = {
   stillChecking: false,
   lastSuccessfulCheckTimeStampUtc: 0,
   payload: null, // null (unchecked) or object with version
   errors: [], // array of all the errors
   outputs: [] // array of all the outputs
-}
+};
 
-function checkOSVersion () {
-  var ssh = new SSH(configSsh);
+const osVersionArray = {};
 
-  osVersion.stillChecking = true;
-  osVersion.errors = [];
-  osVersion.outputs = [];
-  osVersion.payload = null;
+function checkOSVersion(osVersion, uid) {
+  /* eslint-disable no-param-reassign */
+  if (uid && uid.length) {
+    getSshConfigForCollector({ uid }).then((sshConfig) => {
+      // console.log(`sshConfig: ${JSON.stringify(sshConfig)}`);
+      // console.log(sshConfig);
 
-  ssh
-    .exec('uname -r | awk -F. -v OFS= \'{print "{\\"version\\":{\\"detailed\\":{\\"major\\":\\""$1,"\\", \\"minor\\":\\""$2,"\\", \\"build\\":\\""$3,"\\"}, \\"full\\":\\""$1,"."$2,"."$3,"."$4,"."$5,"\\"}}"}\'', {
-      err: function(stderr) {
-        osVersion.errors.push(stderr);
-      },
-      exit: function(code) {
-        osVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
-      },
-      out: function(stdout) {
-        try {
-          osVersion.payload = JSON.parse(stdout);
-        } 
-        catch {
-          osVersion.payload = null;
-          // osVersion.errors.push(error);
-        }
+      const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
-        osVersion.outputs.push(stdout);
-        osVersion.stillChecking = false;
-      }
-    })
-    .on('end', function(err) {
-      osVersion.stillChecking = false;
-    })
-    .start({
-      failure: function () {
-        osVersion.stillChecking = false;
-      }
+      osVersion.stillChecking = true;
+      osVersion.errors = [];
+      osVersion.outputs = [];
+      osVersion.payload = null;
+
+      ssh
+        .exec('uname -r | awk -F. -v OFS= \'{print "{\\"version\\":{\\"detailed\\":{\\"major\\":\\""$1,"\\", \\"minor\\":\\""$2,"\\", \\"build\\":\\""$3,"\\"}, \\"full\\":\\""$1,"."$2,"."$3,"."$4,"."$5,"\\"}}"}\'', {
+          err(stderr) {
+            osVersion.errors.push(stderr);
+            // console.log(`stderr: ${stderr}`);
+          },
+          exit(code) {
+            osVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
+            // console.log(`code: ${code}`);
+          },
+          out(stdout) {
+            // console.log(`stdout: ${stdout}`);
+            try {
+              osVersion.payload = JSON.parse(stdout);
+            }
+            catch (error) {
+              osVersion.payload = null;
+              // osVersion.errors.push(error);
+            }
+
+            osVersion.outputs.push(stdout);
+            osVersion.stillChecking = false;
+          }
+        })
+        .on('end', (err) => {
+          // console.log(`end: ${err}`);
+          osVersion.stillChecking = false;
+        })
+        .start({
+          failure() {
+            // console.log('start - failure');
+            osVersion.stillChecking = false;
+          }
+        });
     });
+  }
+  /* eslint-enable no-param-reassign */
 }
 
 router.get('/CheckOSVersion', async (req, res) => {
-  if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
-    // Waiting - Sync
-    if (!osVersion.stillChecking) {
-      checkOSVersion();
-    }
-    const loopEndTime = Date.now() / 1000 + maxCheckInterval
+  if (req && req.query && req.query.uid && req.query.uid.length) {
+    const { uid } = req.query;
 
-    while (osVersion.stillChecking && (loopEndTime > (Date.now() / 1000))) {
-      // Wait for 50 ms
-      await waitMilliseconds(50);
+    // console.log('osVersionArray:');
+    // console.log(osVersionArray);
+    if (!osVersionArray[uid]) {
+      osVersionArray[uid] = Object.assign({}, osVersionTemplate);
     }
+    // console.log(osVersionArray);
+
+    if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
+      // Waiting - Sync
+      if (!osVersionArray[uid].stillChecking) {
+        osVersionArray[uid].stillChecking = true;
+        checkOSVersion(osVersionArray[uid], uid);
+      }
+      const loopEndTime = Date.now() / 1000 + maxCheckInterval;
+
+      // console.log(osVersionArray[uid].stillChecking);
+      while (osVersionArray[uid].stillChecking && (loopEndTime > (Date.now() / 1000))) {
+        // Wait for 50 ms
+        // eslint-disable-next-line no-await-in-loop
+        await waitMilliseconds(50);
+        // console.log(osVersionArray[uid].stillChecking);
+      }
+    } else {
+      // No waiting - Async
+      // eslint-disable-next-line no-lonely-if
+      if (
+        !osVersionArray[uid].stillChecking
+        && (osVersionArray[uid].lastSuccessfulCheckTimeStampUtc + maxCheckInterval) <= (Date.now() / 1000)
+      ) {
+        checkOSVersion(osVersionArray[uid], uid);
+      }
+    }
+
+    // console.log(osVersionArray);
+
+    if (osVersionArray[uid].payload) {
+      osVersionArray[uid].payload.uid = uid;
+    }
+    res.json(osVersionArray[uid]);
   } else {
-    // No waiting - Async
-    if (!osVersion.stillChecking && (osVersion.lastSuccessfulCheckTimeStampUtc + maxCheckInterval) <= (Date.now() / 1000)) {
-      checkOSVersion();
-    }
+    res.json(Object.assign(Object.assign({}, osVersionTemplate), { errors: ['Missing UID in Query.']}));
   }
-  
-  res.json(osVersion);
-
 });
 
 // #############################################
