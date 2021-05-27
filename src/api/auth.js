@@ -14,11 +14,9 @@ const jwtSecret = (jwtConfig && jwtConfig.secret ? jwtConfig.secret : '');
 const jwtTtl = (jwtConfig && jwtConfig.ttl ? jwtConfig.ttl : '1h');
 
 const createTokenSendResponse = (user, res, next) => {
-  console.log(user);
   const payload = {
     username: user || ''
   };
-  console.log(payload);
 
   jwt.sign(
     payload,
