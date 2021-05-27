@@ -32,9 +32,13 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
+import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 
 export default {
   name: 'PageLogin',
+  mixins: [
+    mixinSharedSocket // Shared function and state to access the Socket.io
+  ],
   data () {
     return {
       username: '',
@@ -74,6 +78,9 @@ export default {
     },
     checkTokenAndMoveOn () {
       if (this.jwtToken && this.jwtToken.length) {
+        // Connect Socket.io
+        this.connectSocket()
+        // And move to Welcome page
         this.$router.push('/Welcome')
       } else {
         this.lastAttemptFailed = true

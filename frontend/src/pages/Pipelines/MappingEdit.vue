@@ -447,17 +447,18 @@
 import { copyToClipboard } from 'quasar'
 import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
+import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import Vue2Filters from 'vue2-filters'
 
 export default {
   name: 'PagePipelineBuilder',
   mixins: [
     mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
+    mixinSharedSocket, // Shared function and state to access the Socket.io
     Vue2Filters.mixin
   ],
   data () {
     return {
-      socket: this.$socket,
       pipelineUid: '', // UUID of the pipeline, used as the UUID of the tail too. Needed to be able to kill it on the server
       search: '',
       showTypesInMainList: false,
@@ -998,19 +999,19 @@ export default {
     //           ##    ##     ## #### ########
 
     initTail () {
-      if (this.socket.connected) {
+      if (this.socket && this.socket.connected) {
         this.socket.emit('tail.init', { tailId: this.pipelineUid, collectionConfig: this.pipeline.collectionConfig })
       }
     },
 
     killTail () {
-      if (this.socket.connected) {
+      if (this.socket && this.socket.connected) {
         this.socket.emit('tail.kill', { tailId: this.pipelineUid })
       }
     },
 
     listTails () {
-      if (this.socket.connected) {
+      if (this.socket && this.socket.connected) {
         this.socket.emit('tail.showtaillist')
       }
     },

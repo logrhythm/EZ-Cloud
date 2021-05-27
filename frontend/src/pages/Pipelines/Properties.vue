@@ -116,6 +116,7 @@
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
+import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 // import { dump } from 'js-yaml'
 import { exportFile, copyToClipboard } from 'quasar'
 import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml'
@@ -123,11 +124,11 @@ import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml
 export default {
   name: 'PagePipelineProperties',
   mixins: [
-    mixinSharedLoadCollectorsAndPipelines // Shared functions to load the Collectors and Pipelines
+    mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
+    mixinSharedSocket // Shared function and state to access the Socket.io
   ],
   data () {
     return {
-      socket: this.$socket,
       // pipelineUid: '7dc7d568-a90e-11eb-bcbc-0242ac130002'
       pipelineUid: ''
     }
