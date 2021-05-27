@@ -19,6 +19,12 @@ function waitMilliseconds(delay = 250) {
 
 const maxCheckInterval = 10; // Check once every X seconds max, and/or timeout after X seconds
 
+// For passwords and tokens cyphering
+const secretPlaceholder = '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **';
+const { aesEncrypt /* , aesDecrypt */ } = require('../shared/crypto');
+
+// console.log(aesEncrypt('Hello world'));
+
 router.get('/', (req, res) => {
   res.json({
     message: 'API - Config - All good'
@@ -310,6 +316,17 @@ router.get('/GetPipelines', async (req, res) => {
 const collectorToUpdate = {};
 
 router.post('/UpdateCollector', async (req, res) => {
+  // Make a safe copy (so our changes don't mess up the original req object)
+  const myReq = {
+    body: JSON.parse(JSON.stringify(req.body || {}))
+  };
+  if (myReq.body.password && myReq.body.password !== secretPlaceholder) {
+    myReq.body.password = aesEncrypt(myReq.body.password);
+  }
+  if (myReq.body.privateKey && myReq.body.privateKey !== secretPlaceholder) {
+    myReq.body.privateKey = aesEncrypt(myReq.body.privateKey);
+  }
+
   await getDataFromSql({
     targetVariable: collectorToUpdate,
     query: `
@@ -330,7 +347,7 @@ router.post('/UpdateCollector', async (req, res) => {
       ;
     `,
     variables: createSqlVariables(
-      req,
+      myReq,
       [
         { name: 'uid', type: 'NVarChar' },
         { name: 'name', type: 'NVarChar' },
