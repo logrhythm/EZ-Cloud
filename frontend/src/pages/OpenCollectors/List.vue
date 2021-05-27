@@ -46,11 +46,11 @@
         </template>
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
-            <q-btn flat dense icon="launch" @click="openOpenCollector(props.row)">
+            <!-- <q-btn flat dense icon="launch" @click="openOpenCollector(props.row)" >
               <q-tooltip content-style="font-size: 1em">
                 {{ $t('Open this OpenCollector') }}
               </q-tooltip>
-            </q-btn>
+            </q-btn> -->
             <q-btn flat dense icon="refresh" @click="refreshOpenCollector(props.row)">
               <q-tooltip content-style="font-size: 1em">
                 {{ $t('Refresh stats for this OpenCollector') }}
@@ -160,8 +160,8 @@ export default {
         { name: 'authenticationMethod', align: 'center', label: 'Authentication Method', field: 'authenticationMethod', sortable: true },
         { name: 'ocVersion', align: 'center', label: 'OpenCollector version', field: 'ocVersion', sortable: true },
         { name: 'osVersion', align: 'center', label: 'OS version', field: 'osVersion', sortable: true },
-        { name: 'fbVersion', align: 'center', label: 'Filebeat version', field: 'fbVersion', sortable: true },
-        { name: 'pipelinesCount', align: 'center', label: 'Log Sources', field: 'pipelinesCount', sortable: true }
+        { name: 'fbVersion', align: 'center', label: 'Filebeat version', field: 'fbVersion', sortable: true }
+        // { name: 'pipelinesCount', align: 'center', label: 'Log Sources', field: 'pipelinesCount', sortable: true }
       ],
       pagination: {
         sortBy: 'name',
