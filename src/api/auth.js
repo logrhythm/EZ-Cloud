@@ -8,8 +8,10 @@ const express = require('express');
 const router = express.Router();
 const checkCredentials = require('../shared/checkCredentials');
 
-// Get JWT Secret
-const jwtSecret = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'config', 'jwt.json'), 'utf8')).secret;
+// Get JWT Secret and TTL
+const jwtConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'config', 'jwt.json'), 'utf8'));
+const jwtSecret = (jwtConfig && jwtConfig.secret ? jwtConfig.secret : '');
+const jwtTtl = (jwtConfig && jwtConfig.ttl ? jwtConfig.ttl : '1h');
 
 const createTokenSendResponse = (user, res, next) => {
   const payload = {
@@ -19,7 +21,7 @@ const createTokenSendResponse = (user, res, next) => {
   jwt.sign(
     payload,
     jwtSecret, {
-      expiresIn: '1h'
+      expiresIn: jwtTtl
     }, (err, token) => {
       if (err) {
         res.status(422);
@@ -54,12 +56,12 @@ router.post('/Login', async (req, res, next) => {
   checkCredentials({
     login: (req.body && req.body.username ? req.body.username : ''),
     password: (req.body && req.body.password ? req.body.password : '')
-  }).then((areCredsValid) => {
-    if (areCredsValid === true) {
+  }).then((checkedCreds) => {
+    if (checkedCreds.valid === true) {
       // If YES
       //   Create JWT token
       //   Return token
-      createTokenSendResponse(req.user, res, next);
+      createTokenSendResponse(checkedCreds.username, res, next);
     } else {
       // If NO
       //   Return error

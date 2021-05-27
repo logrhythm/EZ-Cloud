@@ -43,7 +43,10 @@ const timeoutSeconds = 5; // Timeout after X seconds
 
 // Check if the Creds are valid, by trying to authenticate against the SQL server
 async function checkCredentials(creds) {
-  let valid = false;
+  const response = {
+    username: '',
+    valid: false
+  };
   let stillChecking = true;
   if (creds && creds.login && creds.password) {
     try {
@@ -57,7 +60,8 @@ async function checkCredentials(creds) {
       // Connection event handler
       connection.on('connect', (connectionError) => {
         if (!connectionError) {
-          valid = true;
+          response.username = creds.login;
+          response.valid = true;
         }
         try {
           connection.close();
@@ -85,7 +89,7 @@ async function checkCredentials(creds) {
       //
     }
   }
-  return valid;
+  return response;
 }
 
 module.exports = checkCredentials;

@@ -22,7 +22,13 @@ const io = require('socket.io')(httpsServer, {
   cors: {
     origin: ['http://localhost:8080', 'https://localhost:8080', 'http://localhost:8400', 'https://localhost:8400'],
     methods: ['GET', 'POST']
-  }});
+  }
+});
+
+const { isValidAuth, socketConnect } = require('./socket');
+
+io.use(isValidAuth);
+io.on('connection', socketConnect);
 
 app.use(morgan('dev'));
 app.use(helmet());
@@ -38,9 +44,6 @@ const middlewares = require('./middlewares');
 const api = require('./api');
 
 // process.socket = { io: {} };
-const socketConnect = require('./socket');
-
-io.on('connection', socketConnect);
 
 // io.on('connection', (socket) => {
 //   // eslint-disable-next-line no-console
