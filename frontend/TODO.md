@@ -13,5 +13,5 @@
 - [ ] Create Logging shared Lib to push logs to Console and Windows Journal
 
 ## TO FIX
-- [ ] OC password not updated in Store
+- [x] OC password not updated in Store
 - [x] OC Load tries to update TableLoading read only computed
