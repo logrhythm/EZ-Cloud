@@ -4,7 +4,7 @@ const middlewares = require('../middlewares');
 const test = require('./test');
 const auth = require('./auth');
 const openCollector = require('./openCollector');
-const config = require('./config');
+const { config } = require('./config');
 
 const router = express.Router();
 
