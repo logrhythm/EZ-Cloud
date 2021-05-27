@@ -14,4 +14,4 @@
 
 ## TO FIX
 - [ ] OC password not updated in Store
-- [ ] OC Load tries to update TableLoading read only computed
+- [x] OC Load tries to update TableLoading read only computed

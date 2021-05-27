@@ -218,14 +218,6 @@ export default {
     openOpenCollector (row) {
       this.$router.push({ path: '/OpenCollectors/' + row.uid + '/View' })
     }, // openOpenCollector
-    loadOpenCollectors () {
-      this.getOpenCollectors(
-        {
-          loadingVariableName: 'tableLoading',
-          caller: this
-        }
-      )
-    }, // loadOpenCollectors
     refreshOpenCollector (row) {
       //
     }, // refreshOpenCollector
