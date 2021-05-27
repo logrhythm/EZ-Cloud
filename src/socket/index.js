@@ -1,3 +1,4 @@
+const { isValidAuth } = require('./middleware');
 const { tailInit, tailKill } = require('./controller');
 
 function socketConnect(socket) {
@@ -23,3 +24,7 @@ function socketConnect(socket) {
   }); // On: tail.showtaillist
 }
 
+module.exports = {
+  socketConnect,
+  isValidAuth
+};
