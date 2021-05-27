@@ -8,6 +8,16 @@ const configSsh = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'c
 // Create SSH object
 var SSH = require('simple-ssh');
 
+// Lib to get the SSH config for a given OpenCollector
+const { getSshConfigForCollector } = require('./config');
+
+// getSshConfigForCollector({ uid: 'dd666d77-c301-4717-b62a-059accbf7b37' }).then((r) => {
+// getSshConfigForCollector({ uid: 'd25e3226-a90d-11eb-bcbc-0242ac130002' }).then((r) => {
+getSshConfigForCollector({ uid: '5c23be18-a90e-11eb-bcbc-0242ac130002' }).then((r) => {
+  console.log('r: ' + JSON.stringify(r));
+  console.log(r);
+})
+
 function waitMilliseconds(delay = 250) {
   return new Promise(resolve => {
     setTimeout(() => {

@@ -19,11 +19,25 @@ function waitMilliseconds(delay = 250) {
 
 const maxCheckInterval = 10; // Check once every X seconds max, and/or timeout after X seconds
 
+// For passwords and tokens cyphering
+const secretPlaceholder = '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **';
+const { aesEncrypt, aesDecrypt } = require('../shared/crypto');
+
+// console.log(aesEncrypt('Hello world'));
+
 router.get('/', (req, res) => {
   res.json({
     message: 'API - Config - All good'
   });
 });
+
+//        ##     ## ######## #### ##       #### ######## #### ########  ######
+//        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
+//        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##
+//        ##     ##    ##     ##  ##        ##     ##     ##  ######    ######
+//        ##     ##    ##     ##  ##        ##     ##     ##  ##             ##
+//        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
+//         #######     ##    #### ######## ####    ##    #### ########  ######
 
 // ##########################################################################################
 // getDataFromSql
@@ -173,6 +187,14 @@ function createSqlVariables(req, definitions) {
   return variables;
 }
 
+//        ########   #######  ##     ## ######## ########  ######
+//        ##     ## ##     ## ##     ##    ##    ##       ##    ##
+//        ##     ## ##     ## ##     ##    ##    ##       ##
+//        ########  ##     ## ##     ##    ##    ######    ######
+//        ##   ##   ##     ## ##     ##    ##    ##             ##
+//        ##    ##  ##     ## ##     ##    ##    ##       ##    ##
+//        ##     ##  #######   #######     ##    ########  ######
+
 // ##########################################################################################
 // GetCollectors
 // ##########################################################################################
@@ -310,6 +332,17 @@ router.get('/GetPipelines', async (req, res) => {
 const collectorToUpdate = {};
 
 router.post('/UpdateCollector', async (req, res) => {
+  // Make a safe copy (so our changes don't mess up the original req object)
+  const myReq = {
+    body: JSON.parse(JSON.stringify(req.body || {}))
+  };
+  if (myReq.body.password && myReq.body.password !== secretPlaceholder) {
+    myReq.body.password = aesEncrypt(myReq.body.password);
+  }
+  if (myReq.body.privateKey && myReq.body.privateKey !== secretPlaceholder) {
+    myReq.body.privateKey = aesEncrypt(myReq.body.privateKey);
+  }
+
   await getDataFromSql({
     targetVariable: collectorToUpdate,
     query: `
@@ -330,7 +363,7 @@ router.post('/UpdateCollector', async (req, res) => {
       ;
     `,
     variables: createSqlVariables(
-      req,
+      myReq,
       [
         { name: 'uid', type: 'NVarChar' },
         { name: 'name', type: 'NVarChar' },
@@ -439,4 +472,133 @@ router.post('/DeletePipeline', async (req, res) => {
   res.json(pipelineToDelete);
 });
 
-module.exports = router;
+//        ######## ##     ## ########   #######  ########  ########  ######
+//        ##        ##   ##  ##     ## ##     ## ##     ##    ##    ##    ##
+//        ##         ## ##   ##     ## ##     ## ##     ##    ##    ##
+//        ######      ###    ########  ##     ## ########     ##     ######
+//        ##         ## ##   ##        ##     ## ##   ##      ##          ##
+//        ##        ##   ##  ##        ##     ## ##    ##     ##    ##    ##
+//        ######## ##     ## ##         #######  ##     ##    ##     ######
+
+async function getSshConfigForCollector(params) {
+  const sshConfig = {
+    host: '',
+    port: 22
+  };
+  const queryResult = {};
+
+  if (params && params.uid && params.uid.length) {
+    console.log('**** getDataFromSql - GO...');
+    await getDataFromSql({
+      targetVariable: queryResult,
+      query: `
+      SELECT TOP 1
+        [uid]
+        ,[hostname]
+        ,[port]
+        ,[authenticationMethod]
+        ,[username]
+        ,[password]
+        ,[privateKey]
+      FROM [dbo].[openCollectors]
+      WHERE [uid] = @uid
+      ;
+      `,
+      variables: createSqlVariables(
+        {
+          body: {
+            uid: params.uid
+          }
+        },
+        [
+          { name: 'uid', type: 'NVarChar' }
+        ]
+      )
+    });
+
+    console.log('**** getDataFromSql - DONE.');
+    console.log('**** queryResult:');
+    console.log(queryResult);
+
+    // {
+    //   stillChecking: false,
+    //   errors: [],
+    //   outputs: [ '1 row(s) returned' ],
+    //   payload: [
+    //     {
+    //       uid: 'dd666d77-c301-4717-b62a-059accbf7b37',
+    //       hostname: 'pass',
+    //       port: 22,
+    //       authenticationMethod: 'password',
+    //       username: 'sa',
+    //       password: 'U2FsdGVkX19tHAMWZl15RqL5IuuFk0dIMDK5rE7rAPg=',
+    //       privateKey: 'null'
+    //     }
+    //   ]
+    // }
+
+    const collectorRecord = (
+      queryResult
+      && Array.isArray(queryResult.payload)
+      && queryResult.payload.length
+        ? queryResult.payload[0]
+        : null
+    );
+
+    console.log('**** collectorRecord:');
+    console.log(collectorRecord);
+
+    if (
+      collectorRecord
+      && collectorRecord.hostname
+      && collectorRecord.hostname.length
+      && collectorRecord.port
+      && collectorRecord.port > 0
+      && collectorRecord.port < 65536
+      && collectorRecord.authenticationMethod
+      && collectorRecord.authenticationMethod.length
+      && (
+        (
+          collectorRecord.password
+          && collectorRecord.password.length
+        )
+        || (
+          collectorRecord.privateKey
+          && collectorRecord.privateKey.length
+        )
+      )
+    ) {
+      // Valid record
+      console.log('****    --> Valid record');
+      sshConfig.host = collectorRecord.hostname;
+      sshConfig.port = collectorRecord.port;
+      sshConfig.user = (
+        collectorRecord.username
+        && collectorRecord.username.length
+        && collectorRecord.username !== null
+          ? collectorRecord.username
+          : undefined
+      );
+      sshConfig.pass = (
+        collectorRecord.password
+        && collectorRecord.password.length
+        && collectorRecord.password !== null
+          ? aesDecrypt(collectorRecord.password)
+          : undefined
+      );
+      sshConfig.key = (
+        collectorRecord.privateKey
+        && collectorRecord.privateKey.length
+        && collectorRecord.privateKey !== null
+          ? aesDecrypt(collectorRecord.privateKey)
+          : undefined
+      );
+    }
+  }
+  return sshConfig;
+}
+
+module.exports = {
+  config: router,
+  getSshConfigForCollector
+};
