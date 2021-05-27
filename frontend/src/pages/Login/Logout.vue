@@ -12,15 +12,20 @@
 
 <script>
 import { mapActions } from 'vuex'
+import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 
 export default {
-  name: 'PageLogin',
+  name: 'PageLogout',
+  mixins: [
+    mixinSharedSocket // Shared function and state to access the Socket.io
+  ],
   methods: {
     ...mapActions('mainStore', ['signOut'])
   }, // methods
   mounted () {
     // First remove any token from previous Login
     this.signOut()
+    this.disconnectSocket()
   }
 }
 </script>

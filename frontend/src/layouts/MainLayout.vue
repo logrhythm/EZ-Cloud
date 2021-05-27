@@ -54,10 +54,14 @@
 
 <script>
 import EssentialLink from 'components/EssentialLink.vue'
+import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 
 export default {
   name: 'MainLayout',
   components: { EssentialLink },
+  mixins: [
+    mixinSharedSocket // Shared function and state to access the Socket.io
+  ],
   data () {
     return {
       drawerMenuOpen: false,
@@ -93,8 +97,7 @@ export default {
         title: 'Log Out',
         icon: 'logout',
         link: '#/Logout'
-      },
-      socket: this.$socket
+      }
     }
   }
 }
