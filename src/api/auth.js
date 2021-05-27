@@ -28,8 +28,7 @@ const createTokenSendResponse = (user, res, next) => {
         const error = Error('Unable to login');
         next(error);
       } else {
-      // login all good
-        // res.json({ token });
+        // login all good
         res.json({
           payload: { token }, // null (unchecked) or object with token
           errors: [], // array of all the errors

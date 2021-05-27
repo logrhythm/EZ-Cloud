@@ -12,11 +12,6 @@ const { collectionConfigToYml } = require('../shared/collectionConfigToYml');
 const tails = [];
 
 function tailInit (socket, payload) {
-  // // eslint-disable-next-line no-console
-  // console.log('tail.init');
-  // // eslint-disable-next-line no-console
-  // console.log(payload);
-
   if (
     payload
     && payload.tailId
@@ -28,17 +23,9 @@ function tailInit (socket, payload) {
     // Check the tailId doesn't already exist
     if (!tails[payload.tailId]) {
       tails[payload.tailId] = new SSH(configSsh);
-      // eslint-disable-next-line quotes
-      // eslint-disable-next-line max-len
-      // const filebeatConfig = "filebeat.inputs:\n- type: log\n  enabled: true\n  paths:\n    - /var/log/*.log\noutput.console:\n  enabled: true\n  pretty: false\nlogging.level: error\n";
-      // eslint-disable-next-line max-len
-      // const filebeatConfig = `filebeat.inputs:\n- type: log\n  enabled: true\n  paths:\n    - ${payload.path}\noutput.console:\n  enabled: true\n  pretty: false\nlogging.level: error\n`;
       const inputYml = collectionConfigToYml(payload.collectionConfig);
 
       const filebeatConfig = `filebeat.inputs:\n${inputYml}\n\noutput.console:\n  enabled: true\n  pretty: false\nlogging.level: error\n`;
-      // eslint-disable-next-line max-len
-      // console.log(`/usr/share/filebeat/bin/filebeat -c config.yml --path.home /usr/share/filebeat --path.config /tmp/ez-${payload.tailId} --path.data /tmp/ez-${payload.tailId}/lib -e & echo -e $! > /tmp/ez-${payload.tailId}/running.pid`);
-      // console.log(' ');
       tails[payload.tailId]
         .exec(`if [ -d "/tmp/ez-${payload.tailId}" ]; then ps auxwww | grep \`cat /tmp/ez-${payload.tailId}/running.pid\` | grep -v "grep" -q && exit 42; fi;`, {
           exit(code) {
@@ -60,37 +47,35 @@ function tailInit (socket, payload) {
         .exec(`chmod 700 /tmp/ez-${payload.tailId}/lib`, {})
         .exec(`cat > /tmp/ez-${payload.tailId}/config.yml`, { in: filebeatConfig })
         .exec(`chmod 700 /tmp/ez-${payload.tailId}/config.yml`, {})
-        // .exec(`tail -n 0 -F ${payload.path}`, {
         .exec(`/usr/share/filebeat/bin/filebeat -c config.yml --path.home /usr/share/filebeat --path.config /tmp/ez-${payload.tailId} --path.data /tmp/ez-${payload.tailId}/lib -e & echo -e $! > /tmp/ez-${payload.tailId}/running.pid`, {
           err(stderr) {
-            console.log('STDERR:::' + stderr);
+            // console.log('STDERR:::' + stderr);
             if (socket.connected) {
               socket.emit('tail.log', { tailId: payload.tailId, code: 'ERROR', payload: stderr });
             }
           },
           exit(code) {
-            console.log('CODE:::' + code);
+            // console.log('CODE:::' + code);
             if (socket.connected) {
               socket.emit('tail.log', { tailId: payload.tailId, code: 'EXIT', payload: code });
             }
           },
           out(stdout) {
-            console.log('STDOUT:::' + stdout);
+            // console.log('STDOUT:::' + stdout);
             if (socket.connected) {
               socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
             }
           }
         })
         .on('end', (err) => {
-          console.log('END:::' + err);
+          // console.log('END:::' + err);
           if (socket.connected) {
             socket.emit('tail.log', { tailId: payload.tailId, code: 'END', payload: err });
           }
         })
-        // .exec(`echo 123 > /tmp/ez-${payload.tailId}/running.pid`, {})
         .start({
           failure() {
-            console.log('FAILURE:::' + err);
+            // console.log('FAILURE:::' + err);
             if (socket.connected) {
               socket.emit('tail.log', { tailId: payload.tailId, code: 'FAILURE' });
             }
@@ -101,11 +86,6 @@ function tailInit (socket, payload) {
 } // tailInit
 
 function tailKill(socket, payload) {
-  // eslint-disable-next-line no-console
-  console.log('tail.kill');
-  // eslint-disable-next-line no-console
-  console.log(payload);
-
   if (
     payload
     && payload.tailId
