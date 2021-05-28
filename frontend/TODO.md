@@ -31,6 +31,7 @@
 ## TO FIX
 - [x] OC password not updated in Store
 - [x] OC Load tries to update TableLoading read only computed
+- [ ] Damn Tedious saving NULL as 'null' in OC list
 
 ## TO TEST
 - [ ] SSH via Token
