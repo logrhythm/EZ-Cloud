@@ -2,11 +2,12 @@
 
 ## TO DO
 - OpenCollectors list
-  - [ ] Call API to check OC host / OC / FB
+  - [x] Get API to check OC host for OC / OS / FB versions, and display it in OC List (Frontend and Backend)
     - [x] Get SSH config for a given OC UID (BACKEND)
   - [x] Hide LS columns in OC list
   - [x] Hide Open OC button in OC list
   - [ ] Load SSH Token from file instead of copy/paste in field
+  - [ ] Install Filebeat when click on INSTALL button (BACKEND)
 - Pipeline list
   - [ ] Ability to rename Pipeline in Pipeline list
   - [ ] Add Collection Type in Pipeline list

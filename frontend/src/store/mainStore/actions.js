@@ -16,7 +16,7 @@ export function signIn ({ commit }, payload) {
     apiCallParams: (payload && payload.apiCallParams ? payload.apiCallParams : undefined),
     onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
     onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
-    debug: false
+    debug: (payload && payload.debug ? payload.debug : false)
   })
 }
 
@@ -122,6 +122,57 @@ export function deleteOpenCollector ({ state, commit }, payload) {
       })
     }
   }
+}
+
+export function getOpenCollectorsOcVersion ({ state }, payload) {
+  getDataFromSite({
+    apiUrl: '/oc/CheckOCVersion',
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    targetObjectName: (payload && payload.targetObjectName ? payload.targetObjectName : ''),
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    apiCallParams: (payload && payload.apiCallParams ? payload.apiCallParams : undefined),
+    silent: true,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: (payload && payload.debug ? payload.debug : false)
+  })
+}
+
+export function getOpenCollectorsOsVersion ({ state }, payload) {
+  getDataFromSite({
+    apiUrl: '/oc/CheckOSVersion',
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    targetObjectName: (payload && payload.targetObjectName ? payload.targetObjectName : ''),
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    apiCallParams: (payload && payload.apiCallParams ? payload.apiCallParams : undefined),
+    silent: true,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: (payload && payload.debug ? payload.debug : false)
+  })
+}
+
+export function getOpenCollectorsFilebeatVersion ({ state }, payload) {
+  getDataFromSite({
+    apiUrl: '/oc/CheckFilebeatVersion',
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    targetObjectName: (payload && payload.targetObjectName ? payload.targetObjectName : ''),
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    apiCallParams: (payload && payload.apiCallParams ? payload.apiCallParams : undefined),
+    silent: true,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: (payload && payload.debug ? payload.debug : false)
+  })
 }
 
 // ######################################################################
@@ -243,13 +294,14 @@ export function getDataFromSite (params = {
   logToConsole: true,
   caller: this,
   debug: false,
-  onSuccessLoadCallBack: null,
+  onSuccessCallBack: null,
   onErrorCallBack: null
 }) {
   let messageForLogAndPopup = ''
   let captionForLogAndPopup = ''
   let queryResultedInError = false
   let notificationPopupId = null
+  let apiResponse = {}
 
   if (typeof params.apiUrl === 'undefined') { params.apiUrl = '' }
   if (typeof params.dataLabel === 'undefined') { params.dataLabel = '' }
@@ -264,7 +316,7 @@ export function getDataFromSite (params = {
   if (typeof params.logToConsole === 'undefined') { params.logToConsole = true }
   if (typeof params.caller === 'undefined') { params.caller = this }
   if (typeof params.debug === 'undefined') { params.debug = false }
-  if (typeof params.onSuccessLoadCallBack === 'undefined') { params.onSuccessLoadCallBack = null }
+  if (typeof params.onSuccessCallBack === 'undefined') { params.onSuccessCallBack = null }
   if (typeof params.onErrorCallBack === 'undefined') { params.onErrorCallBack = null }
 
   if (params.debug) {
@@ -301,6 +353,7 @@ export function getDataFromSite (params = {
       if (params.debug) {
         console.log(response)
       }
+      apiResponse = response
       if (response.data && response.data.payload) {
         // Assign to targetObject
         if (params.targetObjectName.length) {
@@ -357,7 +410,14 @@ export function getDataFromSite (params = {
           })
         }
         if (typeof params.onErrorCallBack === 'function') {
-          params.onErrorCallBack()
+          if (params.debug) {
+            console.log('getDataFromSite -- onErrorCallBack')
+          }
+          params.onErrorCallBack({
+            data: (apiResponse && apiResponse.data ? apiResponse.data : undefined),
+            success: false,
+            params
+          })
         }
       } else {
         if (params.logToConsole) {
@@ -372,8 +432,15 @@ export function getDataFromSite (params = {
             caption: captionForLogAndPopup
           })
         }
-        if (typeof params.onSuccessLoadCallBack === 'function') {
-          params.onSuccessLoadCallBack()
+        if (typeof params.onSuccessCallBack === 'function') {
+          if (params.debug) {
+            console.log('getDataFromSite -- onSuccessCallBack')
+          }
+          params.onSuccessCallBack({
+            data: (apiResponse && apiResponse.data ? apiResponse.data : undefined),
+            success: true,
+            params
+          })
         }
       }
       // If a loadingVariableName is provided, set it to false
@@ -409,6 +476,7 @@ export function postDataToSite (params = {
   let captionForLogAndPopup = ''
   let queryResultedInError = false
   let notificationPopupId = null
+  let apiResponse = {}
 
   if (typeof params.apiUrl === 'undefined') { params.apiUrl = '' }
   if (typeof params.dataLabel === 'undefined') { params.dataLabel = '' }
@@ -464,6 +532,7 @@ export function postDataToSite (params = {
         console.log(response)
       }
 
+      apiResponse = response
       if (response.data && response.data.payload) {
         if (params.targetObjectName.length) {
           // Assign to targetObject
@@ -525,7 +594,11 @@ export function postDataToSite (params = {
           if (params.debug) {
             console.log('postDataToSite -- onErrorCallBack')
           }
-          params.onErrorCallBack()
+          params.onErrorCallBack({
+            data: (apiResponse && apiResponse.data ? apiResponse.data : undefined),
+            success: false,
+            params
+          })
         }
       } else {
         if (params.logToConsole) {
@@ -544,7 +617,11 @@ export function postDataToSite (params = {
           if (params.debug) {
             console.log('postDataToSite -- onSuccessCallBack')
           }
-          params.onSuccessCallBack()
+          params.onSuccessCallBack({
+            data: (apiResponse && apiResponse.data ? apiResponse.data : undefined),
+            success: true,
+            params
+          })
         }
       }
       // If a loadingVariableName is provided, set it to false

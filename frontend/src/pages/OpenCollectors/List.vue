@@ -51,7 +51,7 @@
                 {{ $t('Open this OpenCollector') }}
               </q-tooltip>
             </q-btn> -->
-            <q-btn flat dense icon="refresh" @click="refreshOpenCollector(props.row)">
+            <q-btn flat dense icon="refresh" @click="refreshOpenCollector(props.row.uid)">
               <q-tooltip content-style="font-size: 1em">
                 {{ $t('Refresh stats for this OpenCollector') }}
               </q-tooltip>
@@ -76,6 +76,40 @@
             <q-tooltip content-style="font-size: 1em">
               {{ props.value }}
             </q-tooltip>
+          </q-td>
+        </template>
+        <template v-slot:body-cell-ocVersion="props">
+          <q-td :props="props">
+            {{ props.value }}
+            <q-spinner-dots
+              color="primary"
+              size="2em"
+              v-if="ocVersionCheck && ocVersionCheck[props.row.uid] && ocVersionCheck[props.row.uid].checking"
+              class="q-ml-sm"
+            />
+          </q-td>
+        </template>
+        <template v-slot:body-cell-osVersion="props">
+          <q-td :props="props">
+            {{ props.value }}
+            <q-spinner-dots
+              color="primary"
+              size="2em"
+              v-if="osVersionCheck && osVersionCheck[props.row.uid] && osVersionCheck[props.row.uid].checking"
+              class="q-ml-sm"
+            />
+          </q-td>
+        </template>
+        <template v-slot:body-cell-fbVersion="props">
+          <q-td :props="props">
+            <span v-if="props.value !== 'Not Installed'" >{{ props.value }}</span>
+            <q-btn v-else label="Install" dense color="primary" flat class="q-px-sm" @click="installFilebeat(props.row.uid)" />
+            <q-spinner-dots
+              color="primary"
+              size="2em"
+              v-if="fbVersionCheck && fbVersionCheck[props.row.uid] && fbVersionCheck[props.row.uid].checking"
+              class="q-ml-sm"
+            />
           </q-td>
         </template>
       </q-table>
@@ -144,6 +178,8 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
+import { uid } from 'quasar'
+// import { debounce } from 'quasar'
 
 export default {
   name: 'PageOpenCollectorsList',
@@ -183,7 +219,10 @@ export default {
       newOpenCollectorOcInstalled: false,
       newOpenCollectorOcVersion: '',
       newOpenCollectorFbInstalled: false,
-      newOpenCollectorFbVersion: ''
+      newOpenCollectorFbVersion: '',
+      osVersionCheck: {},
+      ocVersionCheck: {},
+      fbVersionCheck: {}
     } // return
   },
   computed: {
@@ -214,13 +253,150 @@ export default {
     }
   },
   methods: {
-    ...mapActions('mainStore', ['upsertOpenCollector', 'deleteOpenCollector', 'getOpenCollectors']),
+    ...mapActions('mainStore', ['upsertOpenCollector', 'deleteOpenCollector']),
+    ...mapActions('mainStore', ['getOpenCollectorsOsVersion', 'getOpenCollectorsOcVersion', 'getOpenCollectorsFilebeatVersion']),
     openOpenCollector (row) {
       this.$router.push({ path: '/OpenCollectors/' + row.uid + '/View' })
     }, // openOpenCollector
-    refreshOpenCollector (row) {
-      //
+    refreshOpenCollector (uid) {
+      if (uid && uid.length) {
+        if (!this.ocVersionCheck[uid]) {
+          this.ocVersionCheck[uid] = {
+            apiData: {},
+            error: false
+          }
+        }
+        this.ocVersionCheck[uid].checking = true
+        this.ocVersionCheck = JSON.parse(JSON.stringify(this.ocVersionCheck))
+        this.getOpenCollectorsOcVersion({
+          caller: this,
+          apiCallParams: { uid: uid },
+          onSuccessCallBack: this.ocVersionReceive,
+          onErrorCallBack: this.ocVersionReceive,
+          debug: false
+        })
+
+        if (!this.osVersionCheck[uid]) {
+          this.osVersionCheck[uid] = {
+            apiData: {}
+          }
+        }
+        this.osVersionCheck[uid].checking = true
+        this.osVersionCheck = JSON.parse(JSON.stringify(this.osVersionCheck))
+        this.getOpenCollectorsOsVersion({
+          caller: this,
+          apiCallParams: { uid: uid },
+          onSuccessCallBack: this.osVersionReceive,
+          onErrorCallBack: this.osVersionReceive,
+          debug: false
+        })
+
+        if (!this.fbVersionCheck[uid]) {
+          this.fbVersionCheck[uid] = {
+            apiData: {}
+          }
+        }
+        this.fbVersionCheck[uid].checking = true
+        this.fbVersionCheck = JSON.parse(JSON.stringify(this.fbVersionCheck))
+        this.getOpenCollectorsFilebeatVersion({
+          caller: this,
+          apiCallParams: { uid: uid },
+          onSuccessCallBack: this.fbVersionReceive,
+          onErrorCallBack: this.fbVersionReceive,
+          debug: false
+        })
+      }
     }, // refreshOpenCollector
+    ocVersionReceive (response) {
+      if (response) {
+        const uid = (response.params && response.params.apiCallParams && response.params.apiCallParams.uid ? response.params.apiCallParams.uid : null)
+        if (uid && this.ocVersionCheck && this.ocVersionCheck[uid]) {
+          this.ocVersionCheck[uid].checking = false
+          if (response.success) {
+            this.ocVersionCheck[uid].error = false
+            // this.ocVersionCheck[uid].apiData = (response.data && response.data.payload ? response.data.payload : {})
+
+            const newOcInfo = JSON.parse(JSON.stringify(this.openCollectors.find((oc) => oc.uid === uid)))
+            newOcInfo.ocVersion = (response.data && response.data.payload && response.data.payload.version && response.data.payload.version.full ? response.data.payload.version.full : newOcInfo.ocVersion)
+            newOcInfo.ocVersion = newOcInfo.ocVersion || ''
+            this.upsertOpenCollector(
+              {
+                pushToApi: true,
+                caller: this,
+                openCollector: newOcInfo
+              }
+            )
+          } else {
+            this.ocVersionCheck[uid].error = true
+            this.ocVersionCheck[uid].apiData = {}
+          }
+          this.ocVersionCheck = JSON.parse(JSON.stringify(this.ocVersionCheck))
+        }
+      }
+    },
+    osVersionReceive (response) {
+      if (response) {
+        const uid = (response.params && response.params.apiCallParams && response.params.apiCallParams.uid ? response.params.apiCallParams.uid : null)
+        if (uid && this.osVersionCheck && this.osVersionCheck[uid]) {
+          this.osVersionCheck[uid].checking = false
+          if (response.success) {
+            this.osVersionCheck[uid].error = false
+
+            const newOcInfo = JSON.parse(JSON.stringify(this.openCollectors.find((oc) => oc.uid === uid)))
+            newOcInfo.osVersion = (response.data && response.data.payload && response.data.payload.version && response.data.payload.version.full ? response.data.payload.version.full : newOcInfo.osVersion)
+            newOcInfo.osVersion = newOcInfo.osVersion || ''
+            this.upsertOpenCollector(
+              {
+                pushToApi: true,
+                caller: this,
+                openCollector: newOcInfo
+              }
+            )
+          } else {
+            this.osVersionCheck[uid].error = true
+            this.osVersionCheck[uid].apiData = {}
+          }
+          this.osVersionCheck = JSON.parse(JSON.stringify(this.osVersionCheck))
+        }
+      }
+    },
+    fbVersionReceive (response) {
+      if (response) {
+        const uid = (response.params && response.params.apiCallParams && response.params.apiCallParams.uid ? response.params.apiCallParams.uid : null)
+        if (uid && this.fbVersionCheck && this.fbVersionCheck[uid]) {
+          this.fbVersionCheck[uid].checking = false
+          const newOcInfo = JSON.parse(JSON.stringify(this.openCollectors.find((oc) => oc.uid === uid)))
+
+          if (response.success) {
+            this.fbVersionCheck[uid].error = false
+            newOcInfo.fbVersion = (response.data && response.data.payload && response.data.payload.version && response.data.payload.version.full ? response.data.payload.version.full : newOcInfo.fbVersion)
+          } else {
+            this.fbVersionCheck[uid].error = true
+            // Only set to 'Not Installed' if something responded with 'bash: filebeat: command not found' or something similar
+            // Any other error (host not responding, or SSH failed) will simply return no version information
+            newOcInfo.fbVersion = ''
+            if (response.data.errors && Array.isArray(response.data.errors)) {
+              response.data.errors.forEach((err) => {
+                if (String(err).includes('command not found')) {
+                  newOcInfo.fbVersion = 'Not Installed'
+                }
+              })
+            }
+            this.fbVersionCheck[uid].apiData = {}
+          }
+
+          this.upsertOpenCollector(
+            {
+              pushToApi: true,
+              caller: this,
+              openCollector: newOcInfo
+            }
+          )
+
+          this.fbVersionCheck = JSON.parse(JSON.stringify(this.fbVersionCheck))
+        }
+      }
+    },
     deleteOpenCollectorPrompt (row) {
       if (typeof row !== 'undefined') {
         // ask to confirm
@@ -265,13 +441,15 @@ export default {
     }, // doPromptForOpenCollectorDetails
     addNewOrUpdateOpenCollector () {
       this.promptForNewOpenCollectorDetails = false
+      const openCollectoruid = this.newOpenCollectorUid || uid()
       this.upsertOpenCollector(
         {
           pushToApi: true,
           caller: this,
           openCollector:
           {
-            uid: this.newOpenCollectorUid,
+            // uid: this.newOpenCollectorUid,
+            uid: openCollectoruid,
             name: this.newOpenCollectorName,
             hostname: this.newOpenCollectorHostname,
             port: this.newOpenCollectorPort,
@@ -288,6 +466,13 @@ export default {
           }
         }
       )
+      setTimeout(() => {
+        console.log('timeout - refreshOpenCollector - ' + openCollectoruid)
+        this.refreshOpenCollector(openCollectoruid)
+      }, 1000)
+    },
+    installFilebeat (uid) {
+      //
     }
   }, // methods
   mounted () {
@@ -295,6 +480,10 @@ export default {
     //   this.loadOpenCollectors()
     // }
   }
+  // created () {
+  //   // Debounce upsertOpenCollector
+  //   this.upsertOpenCollector = debounce(this.upsertOpenCollector, 1000)
+  // }
 }
 
 </script>
