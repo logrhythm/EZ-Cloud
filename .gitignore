@@ -6,11 +6,11 @@ private/
 config/
 
 # Dist/Built front end
-src/public_web_root/js/*
-src/public_web_root/icons/*
-src/public_web_root/fonts/*
-src/public_web_root/css/*
-src/public_web_root/index.html
+# src/public_web_root/js/*
+# src/public_web_root/icons/*
+# src/public_web_root/fonts/*
+# src/public_web_root/css/*
+# src/public_web_root/index.html
 .vscode/settings.json
 
 # Windows Service deamon
