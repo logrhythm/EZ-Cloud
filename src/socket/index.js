@@ -1,5 +1,6 @@
 const { isValidAuth } = require('./middleware');
 const { tailInit, tailKill } = require('./controllers/tail');
+const { installShipper } = require('./controllers/installShipper');
 
 function socketConnect(socket) {
   // eslint-disable-next-line no-console
@@ -13,6 +14,9 @@ function socketConnect(socket) {
     console.log('Sokect.on(connect)');
   });
 
+  // -------------------------------
+  // Tails
+
   // A new tail is requested
   socket.on('tail.init', (payload) => {
     tailInit(socket, payload);
@@ -22,6 +26,14 @@ function socketConnect(socket) {
   socket.on('tail.kill', (payload) => {
     tailKill(socket, payload);
   }); // On: tail.showtaillist
+
+  // -------------------------------
+  // Shiper installation
+
+  // A new Shipper Install is requested
+  socket.on('shipper.install', (payload) => {
+    installShipper(socket, payload);
+  }); // On: shipper.install
 }
 
 module.exports = {

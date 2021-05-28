@@ -4,6 +4,7 @@
         "name": "RPM 64 bits",
         "url": "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.13.0-x86_64.rpm",
         "filename": "filebeat-7.13.0-x86_64.rpm",
+        "installer": "RPM",
         "sha": {
             "url": "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.13.0-x86_64.rpm.sha512",
             "filename": "filebeat-7.13.0-x86_64.rpm.sha512",
@@ -15,6 +16,7 @@
         "name": "DEB 64 bits",
         "url": "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.13.0-amd64.deb",
         "filename": "filebeat-7.13.0-amd64.deb",
+        "installer": "DEB",
         "sha": {
             "url": "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.13.0-amd64.deb.sha512",
             "filename": "filebeat-7.13.0-amd64.deb.sha512",
@@ -26,6 +28,7 @@
         "name": "RPM 64 bits",
         "url": "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.12.1-x86_64.rpm",
         "filename": "filebeat-7.12.1-x86_64.rpm",
+        "installer": "RPM",
         "sha": {
             "url": "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.12.1-x86_64.rpm.sha512",
             "filename": "filebeat-7.12.1-x86_64.rpm.sha512",
@@ -37,6 +40,7 @@
         "name": "DEB 64 bits",
         "url": "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.12.1-amd64.deb",
         "filename": "filebeat-7.12.1-amd64.deb",
+        "installer": "DEB",
         "sha": {
             "url": "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.12.1-amd64.deb.sha512",
             "filename": "filebeat-7.12.1-amd64.deb.sha512",
