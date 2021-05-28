@@ -73,7 +73,7 @@ export default {
         },
         onSuccessCallBack: this.checkTokenAndMoveOn,
         onErrorCallBack: this.checkTokenAndMoveOn,
-        debug: true
+        debug: false
       })
     },
     checkTokenAndMoveOn () {
