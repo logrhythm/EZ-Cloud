@@ -26,7 +26,7 @@
 - [ ] Hide Settings page for Prod
 - [ ] Create Logging shared Lib to push logs to Console and Windows Journal
 - [ ] Prevent user from using Tail for Pipeline set to HTTP-JSON collection
-- [ ] Hide empty dashboard (or put something in it)
+- [x] Hide empty dashboard (or put something in it)
 
 ## TO FIX
 - [x] OC password not updated in Store

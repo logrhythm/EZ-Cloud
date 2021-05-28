@@ -41,6 +41,14 @@
             <q-item-label class="text-orange">Disconnected</q-item-label>
           </q-item-section>
         </q-item>
+        <q-item>
+          <q-item-section
+            avatar
+          >
+            <span style="opacity:.4">v{{version}}</span>
+            <!-- <span style="opacity:.4">v0.5-rc1</span> -->
+          </q-item-section>
+        </q-item>
       </q-list>
     </q-scroll-area>
   </q-drawer>
@@ -55,6 +63,7 @@
 <script>
 import EssentialLink from 'components/EssentialLink.vue'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
+import { version } from '../../package.json'
 
 export default {
   name: 'MainLayout',
@@ -72,11 +81,11 @@ export default {
           icon: 'home',
           link: '#/Welcome'
         },
-        {
-          title: 'Status',
-          icon: 'dashboard',
-          link: '#/Status'
-        },
+        // {
+        //   title: 'Status',
+        //   icon: 'dashboard',
+        //   link: '#/Status'
+        // },
         {
           title: 'Open Collectors',
           icon: 'mediation',
@@ -97,7 +106,8 @@ export default {
         title: 'Log Out',
         icon: 'logout',
         link: '#/Logout'
-      }
+      },
+      version: version
     }
   }
 }
