@@ -131,7 +131,8 @@ router.get('/CheckOSVersion', async (req, res) => {
       // eslint-disable-next-line no-lonely-if
       if (
         !osVersionArray[uid].stillChecking
-        && (osVersionArray[uid].lastSuccessfulCheckTimeStampUtc + maxCheckInterval) <= (Date.now() / 1000)
+        && (osVersionArray[uid].lastSuccessfulCheckTimeStampUtc + maxCheckInterval)
+        <= (Date.now() / 1000)
       ) {
         checkOSVersion(osVersionArray[uid], uid);
       }
@@ -143,6 +144,106 @@ router.get('/CheckOSVersion', async (req, res) => {
     res.json(osVersionArray[uid]);
   } else {
     res.json(Object.assign(Object.assign({}, osVersionTemplate), { errors: ['Missing UID in Query.']}));
+  }
+});
+
+// #############################################
+// CheckFilebeatVersion
+// #############################################
+
+const fbVersionTemplate = {
+  stillChecking: false,
+  lastSuccessfulCheckTimeStampUtc: 0,
+  payload: null, // null (unchecked) or object with version
+  errors: [], // array of all the errors
+  outputs: [] // array of all the outputs
+};
+
+const fbVersionArray = {};
+
+function checkfbVersion(fbVersion, uid) {
+  /* eslint-disable no-param-reassign */
+  if (uid && uid.length) {
+    getSshConfigForCollector({ uid }).then((sshConfig) => {
+      const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
+
+      fbVersion.stillChecking = true;
+      fbVersion.errors = [];
+      fbVersion.outputs = [];
+      fbVersion.payload = null;
+
+      ssh
+        .exec('filebeat version | sed \'s/^.*[^0-9]\\([0-9]*\\.[0-9]*\\.[0-9]*\\).*$/\\1/\' | awk -F- \'{print "{\\"version\\":{\\"full\\":\\""$1"\\"}}"}\'', {
+          err(stderr) {
+            fbVersion.errors.push(stderr);
+          },
+          exit(code) {
+            fbVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
+          },
+          out(stdout) {
+            try {
+              fbVersion.payload = JSON.parse(stdout);
+            }
+            catch (error) {
+              fbVersion.payload = null;
+            }
+
+            fbVersion.outputs.push(stdout);
+            fbVersion.stillChecking = false;
+          }
+        })
+        .on('end', (err) => {
+          fbVersion.stillChecking = false;
+        })
+        .start({
+          failure() {
+            fbVersion.stillChecking = false;
+          }
+        });
+    });
+  }
+  /* eslint-enable no-param-reassign */
+}
+
+router.get('/CheckFilebeatVersion', async (req, res) => {
+  if (req && req.query && req.query.uid && req.query.uid.length) {
+    const { uid } = req.query;
+
+    if (!fbVersionArray[uid]) {
+      fbVersionArray[uid] = Object.assign({}, fbVersionTemplate);
+    }
+
+    if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
+      // Waiting - Sync
+      if (!fbVersionArray[uid].stillChecking) {
+        fbVersionArray[uid].stillChecking = true;
+        checkfbVersion(fbVersionArray[uid], uid);
+      }
+      const loopEndTime = Date.now() / 1000 + maxCheckInterval;
+
+      while (fbVersionArray[uid].stillChecking && (loopEndTime > (Date.now() / 1000))) {
+        // Wait for 50 ms
+        // eslint-disable-next-line no-await-in-loop
+        await waitMilliseconds(50);
+      }
+    } else {
+      // No waiting - Async
+      // eslint-disable-next-line no-lonely-if
+      if (
+        !fbVersionArray[uid].stillChecking
+        && (fbVersionArray[uid].lastSuccessfulCheckTimeStampUtc + maxCheckInterval)
+        <= (Date.now() / 1000)
+      ) {
+        checkfbVersion(fbVersionArray[uid], uid);
+      }
+    }
+
+    if (fbVersionArray[uid].payload) {
+      fbVersionArray[uid].payload.uid = uid;
+    }
+    res.json(fbVersionArray[uid]);
+  } else {
+    res.json(Object.assign(Object.assign({}, fbVersionTemplate), { errors: ['Missing UID in Query.']}));
   }
 });
 
@@ -383,72 +484,104 @@ router.get('/CheckOCPresence', async (req, res) => {
 // CheckOCVersion
 // #############################################
 
-var ocVersion = {
+const ocVersionTemplate = {
   stillChecking: false,
   lastSuccessfulCheckTimeStampUtc: 0,
   payload: { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } }, // object with version
   errors: [], // array of all the errors
   outputs: [] // array of all the outputs
-}
+};
 
-function checkOCVersion () {
-  var ssh = new SSH(configSsh);
+const ocVersionArray = {};
 
-  ocVersion.stillChecking = true;
-  ocVersion.errors = [];
-  ocVersion.outputs = [];
-  ocVersion.payload = { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } };
+function checkOCVersion(ocVersion, uid) {
+  /* eslint-disable no-param-reassign */
+  if (uid && uid.length) {
+    getSshConfigForCollector({ uid }).then((sshConfig) => {
+      const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
-  ssh
-    .exec('./lrctl status 2>/dev/null | grep -i open_collector 2>/dev/null', {
-      err: function(stderr) {
-        ocVersion.errors.push(stderr);
-      },
-      exit: function(code) {
-        ocVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
-      },
-      out: function(stdout) {
-        version = stdout.match(/open_collector *(([0-9]+)\.([0-9]+)\.([0-9]+))/);
-        if (version.length > 0) {
-          ocVersion.payload = { version: { detailed: { major: version[2], minor: version[3], build: version[4] }, Full: version[1] } };
-        } else
-        {
-          ocVersion.payload = { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } };
-        }
-        ocVersion.outputs.push(stdout);
-      }
-    })
-    .on('end', function(err) {
-      ocVersion.stillChecking = false;
-    })
-    .start({
-      failure: function () {
-        ocVersion.stillChecking = false;
-      }
+      ocVersion.stillChecking = true;
+      ocVersion.errors = [];
+      ocVersion.outputs = [];
+      ocVersion.payload = { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } };
+
+      ssh
+        .exec('./lrctl status 2>/dev/null | grep -i open_collector 2>/dev/null', {
+          err(stderr) {
+            ocVersion.errors.push(stderr);
+          },
+          exit(code) {
+            ocVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
+          },
+          out(stdout) {
+            const version = stdout.match(/open_collector *(([0-9]+)\.([0-9]+)\.([0-9]+))/);
+            if (version.length > 0) {
+              ocVersion.payload = {
+                version: {
+                  detailed: { major: version[2], minor: version[3], build: version[4] },
+                  full: version[1]
+                }
+              };
+            } else
+            {
+              ocVersion.payload = { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } };
+            }
+            ocVersion.outputs.push(stdout);
+          }
+        })
+        .on('end', (err) => {
+          ocVersion.stillChecking = false;
+        })
+        .start({
+          failure() {
+            ocVersion.stillChecking = false;
+          }
+        });
     });
+  }
+  /* eslint-enable no-param-reassign */
 }
 
 router.get('/CheckOCVersion', async (req, res) => {
-  if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
-    // Waiting - Sync
-    if (!ocVersion.stillChecking) {
-      checkOCVersion();
-    }
-    const loopEndTime = Date.now() / 1000 + maxCheckInterval
+  if (req && req.query && req.query.uid && req.query.uid.length) {
+    const { uid } = req.query;
 
-    while (ocVersion.stillChecking && (loopEndTime > (Date.now() / 1000))) {
-      // Wait for 50 ms
-      await waitMilliseconds(50);
+    if (!ocVersionArray[uid]) {
+      ocVersionArray[uid] = Object.assign({}, ocVersionTemplate);
     }
+
+    if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
+      // Waiting - Sync
+      if (!ocVersionArray[uid].stillChecking) {
+        ocVersionArray[uid].stillChecking = true;
+        checkOCVersion(ocVersionArray[uid], uid);
+      }
+      const loopEndTime = Date.now() / 1000 + maxCheckInterval;
+
+      while (ocVersionArray[uid].stillChecking && (loopEndTime > (Date.now() / 1000))) {
+        // Wait for 50 ms
+        // eslint-disable-next-line no-await-in-loop
+        await waitMilliseconds(50);
+      }
+    } else {
+      // No waiting - Async
+      // eslint-disable-next-line no-lonely-if
+      if (
+        !ocVersionArray[uid].stillChecking
+        && (ocVersionArray[uid].lastSuccessfulCheckTimeStampUtc + maxCheckInterval)
+        <= (Date.now() / 1000)
+      ) {
+        checkOCVersion(ocVersionArray[uid], uid);
+      }
+    }
+
+    if (ocVersionArray[uid].payload) {
+      ocVersionArray[uid].payload.uid = uid;
+    }
+    res.json(ocVersionArray[uid]);
   } else {
-    // No waiting - Async
-    if (!ocVersion.stillChecking && (ocVersion.lastSuccessfulCheckTimeStampUtc + maxCheckInterval) <= (Date.now() / 1000)) {
-      checkOCVersion();
-    }
+    res.json(Object.assign(Object.assign({}, ocVersionTemplate), { errors: ['Missing UID in Query.']}));
   }
-  
-  res.json(ocVersion);
-
 });
 
 // #############################################
