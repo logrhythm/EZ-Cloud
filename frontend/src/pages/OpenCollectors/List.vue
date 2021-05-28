@@ -103,7 +103,44 @@
         <template v-slot:body-cell-fbVersion="props">
           <q-td :props="props">
             <span v-if="props.value !== 'Not Installed'" >{{ props.value }}</span>
-            <q-btn v-else label="Install" dense color="primary" flat class="q-px-sm" @click="installFilebeat(props.row.uid)" />
+            <q-btn-dropdown
+              v-else
+              label="Install Default"
+              dense
+              color="primary"
+              flat
+              split
+              class="q-px-sm"
+              @click="installFilebeat(props.row.uid, shippersUrls[0])"
+            >
+              <!-- <q-tooltip content-style="font-size: 1em;" >Install default version</q-tooltip> -->
+              <q-list>
+                <q-item
+                  v-for="(shipperUrl, index) in shippersUrls"
+                  :key="index"
+                  clickable
+                  v-close-popup
+                  @click="installFilebeat(props.row.uid, shipperUrl)"
+                >
+                  <q-item-section side>
+                    <q-badge color="primary">v{{ shipperUrl.version }}</q-badge>
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>{{ shipperUrl.name }}</q-item-label>
+                    <q-item-label caption>{{ shipperUrl.filename }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <!-- <q-item clickable v-close-popup @click="installFilebeat(props.row.uid)">
+                  <q-item-section side>
+                    <q-badge color="primary">v7.13.0</q-badge>
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>RPM 64 bits</q-item-label>
+                    <q-item-label caption>filebeat-7.13.0-x86_64.rpm</q-item-label>
+                  </q-item-section>
+                </q-item> -->
+              </q-list>
+            </q-btn-dropdown>
             <q-spinner-dots
               color="primary"
               size="2em"
@@ -172,19 +209,64 @@
           </q-card-actions>
         </q-card>
       </q-dialog>
+      <q-card class="q-mt-sm" v-if="Object.keys(shipperInstall).length">
+        <q-card-section>
+          <div class="text-h6">Installation Logs</div>
+        </q-card-section>
+        <q-card-section v-for="(job, jobIndex) in shipperInstall" :key="jobIndex">
+          <div class="row q-gutter-x-md items-center" v-if="job.collector">
+            <q-spinner-gears size="2em" color="teal" v-show="job.onGoing === true" />
+            <q-icon name="thumb_up" size="2em" color="positive" v-show="job.onGoing === false && job.failed === false" >
+              <q-tooltip content-style="font-size: 1em;" >Job completed successfuly</q-tooltip>
+            </q-icon>
+            <q-icon name="thumb_down" size="2em" color="negative" v-show="job.onGoing === false && job.failed === true" >
+              <q-tooltip content-style="font-size: 1em;" >Job failed to complete</q-tooltip>
+            </q-icon>
+            <q-separator vertical />
+            <div class="text-bold">{{ job.collector.name }}</div>
+            <q-separator vertical />
+            <div class="text-italic">{{ job.collector.hostname }}:{{ job.collector.port }}</div>
+            <q-separator vertical />
+            <q-linear-progress rounded size="1em" :value="(job.step > 0 ? job.totalSteps / job.step : 0)" class="col" :color="(job.onGoing === false ? (job.failed === false ? 'green-8' : 'deep-orange-8') : '')" >
+              <q-tooltip content-style="font-size: 1em;" >Completed steps: {{ job.step }} / {{ job.totalSteps }}</q-tooltip>
+            </q-linear-progress>
+          </div>
+          <div class="row q-my-sm">
+            <q-separator vertical size="2px" color="teal" />
+            <div class="q-ml-sm col">
+              <div v-for="(log, logIndex) in job.console" :key="logIndex">
+                <q-icon name="subdirectory_arrow_right" class="q-mr-sm" color="primary" v-if="log.type === 'finished'"/>
+                <q-icon name="error" class="q-mr-sm" color="orange" v-if="log.type === 'error' && log.msgCode === 'ERROR'"/>
+                <q-icon name="error" class="q-mr-sm" color="orange" v-if="log.type === 'error' && log.msgCode === 'EXIT'"/>
+                <span
+                  :class="(log.type === 'stdout' ? 'fixed-font' : '') + ' '
+                    + (log.type === 'finished' ? 'text-positive' : '')
+                    + (log.type === 'error' ? 'text-negative' : '')"
+                >{{ log.value }}</span>
+                <q-separator color="" v-if="log.type === 'finished'" />
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+      <!-- shipperInstall:
+      <pre>{{shipperInstall}}</pre> -->
     </q-page>
 </template>
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
+import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import { uid } from 'quasar'
-// import { debounce } from 'quasar'
+
+import shippersFallbackUrls from 'src/pages/OpenCollectors/shippers_fallback_urls.json'
 
 export default {
   name: 'PageOpenCollectorsList',
   mixins: [
-    mixinSharedLoadCollectorsAndPipelines // Shared functions to load the Collectors and Pipelines
+    mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
+    mixinSharedSocket // Shared function and state to access the Socket.io
   ],
   data () {
     return {
@@ -222,7 +304,9 @@ export default {
       newOpenCollectorFbVersion: '',
       osVersionCheck: {},
       ocVersionCheck: {},
-      fbVersionCheck: {}
+      fbVersionCheck: {},
+      shipperInstall: {},
+      shippersUrlsInternal: {}
     } // return
   },
   computed: {
@@ -250,6 +334,16 @@ export default {
     },
     tableLoading () {
       return this.dataLoading // Coming from the Mixin: mixinSharedLoadCollectorsAndPipelines
+    },
+    shippersUrls: {
+      get () {
+        // Use the downloaded ones, otherwise, fallback to pre-recorded list
+        return (
+          Object.keys(this.shippersUrlsInternal).length
+            ? this.shippersUrlsInternal
+            : shippersFallbackUrls
+        )
+      }
     }
   },
   methods: {
@@ -471,19 +565,186 @@ export default {
         this.refreshOpenCollector(openCollectoruid)
       }, 1000)
     },
-    installFilebeat (uid) {
-      //
+
+    installFilebeat (uid, shipperSource) {
+      console.log('installFilebeat:')
+      console.log(uid)
+      console.log(shipperSource)
+
+      this.shipperInstall[uid] = {
+        collector: this.tableData.find(c => c.uid === uid),
+        onGoing: true,
+        console: [],
+        bufferStdOut: '',
+        failed: false,
+        step: 0,
+        totalSteps: 1
+      }
+      this.shipperInstall = JSON.parse(JSON.stringify(this.shipperInstall))
+
+      if (this.socket && this.socket.connected) {
+        this.socket.emit('shipper.install', {
+          jobId: uid,
+          uid,
+          installerSource: shipperSource
+        })
+      }
+    },
+
+    addLineToShipperInstallConsole (payload, type = 'stdout') {
+      if (payload && payload.jobId && payload.payload) {
+        // Make sure we have an Arrar to add to
+        if (!Array.isArray(this.shipperInstall[payload.jobId].console)) {
+          this.shipperInstall[payload.jobId].console = []
+        }
+
+        // Dump the string or strings (if multiline) into new line(s) in the console array
+        if (typeof payload.payload === 'string') {
+          // eslint-disable-next-line quotes
+          payload.payload.split("\n").forEach(line => {
+            this.shipperInstall[payload.jobId].console.push({
+              type: type,
+              value: line,
+              msgCode: payload.code || ''
+            })
+          })
+        } else {
+          this.shipperInstall[payload.jobId].console.push({
+            type: type,
+            value: JSON.stringify(payload.payload),
+            msgCode: payload.code || ''
+          })
+        }
+        // Refresh object
+        this.shipperInstall = JSON.parse(JSON.stringify(this.shipperInstall))
+      }
+    },
+
+    handleSocketOnTailLog (payload) {
+      console.log(payload)
+
+      if (
+        payload.payload &&
+        payload.jobId &&
+        payload.jobId.length > 0 &&
+        payload.code
+      ) {
+        // In case, re-build a fresh shipperInstall sub-object
+        if (!this.shipperInstall[payload.jobId]) {
+          this.shipperInstall[payload.jobId] = {
+            collector: this.tableData.find(c => c.uid === payload.jobId),
+            onGoing: true,
+            console: [],
+            bufferStdOut: '',
+            failed: false,
+            step: 0,
+            totalSteps: 1
+          }
+        }
+
+        // If we are getting data from the remote job, breack it in multiple lines (if \n is found in it) and push it in the job's console
+        if (payload.code === 'STDOUT') {
+          if (typeof payload.payload === 'string') {
+            // Add new data to end of buffer
+            this.shipperInstall[payload.jobId].bufferStdOut += payload.payload
+
+            // eslint-disable-next-line quotes
+            if (this.shipperInstall[payload.jobId].bufferStdOut.indexOf("\n") > -1) {
+              const newPayload = []
+              // eslint-disable-next-line quotes
+              this.shipperInstall[payload.jobId].bufferStdOut.split("\n").forEach(line => {
+                newPayload.push(line)
+              })
+
+              // Empty the buffer
+              this.shipperInstall[payload.jobId].bufferStdOut = ''
+
+              // Check if the last element of the array is not empty (denoting a string not terminated with a carriage return)
+              // If found, put it back inthis.shipperInstall[payload.jobId] bufferStdOut, as it's most likely the beginning of a truncated line
+              if (newPayload.length > 0) {
+                if (newPayload[newPayload.length - 1].length !== 0) {
+                  this.shipperInstall[payload.jobId].bufferStdOut = newPayload.pop()
+                }
+              }
+
+              newPayload.forEach((line) => {
+                this.addLineToShipperInstallConsole({
+                  jobId: payload.jobId,
+                  code: payload.code,
+                  payload: line
+                }, 'stdout')
+              })
+            }
+          } else {
+            this.addLineToShipperInstallConsole(payload, 'stdout')
+          }
+        }
+
+        // Moving along?
+        if (payload.code === 'FINISHED') {
+          // this.shipperInstall[payload.jobId].onGoing = true
+          this.shipperInstall[payload.jobId].step = payload.step || this.shipperInstall[payload.jobId].step
+          this.shipperInstall[payload.jobId].totalSteps = payload.totalSteps || this.shipperInstall[payload.jobId].totalSteps
+          this.addLineToShipperInstallConsole(payload, 'finished')
+        }
+
+        // If we are getting STDERR data from the remote job, breack it in multiple lines (if \n is found in it) and log it to the console
+        if (
+          payload.code === 'STDERR' ||
+          payload.code === 'ERROR'
+        ) {
+          this.addLineToShipperInstallConsole(payload, 'error')
+        }
+
+        // If the remote job failed, flag the jobs as off here too
+        if (
+          payload.code === 'EXIT' ||
+          payload.code === 'FAILURE'
+        ) {
+          this.addLineToShipperInstallConsole(payload, 'error')
+          this.shipperInstall[payload.jobId].failed = true
+          this.shipperInstall[payload.jobId].onGoing = false
+          setTimeout(() => {
+            this.refreshOpenCollector(payload.jobId)
+          }, 1000)
+        }
+
+        // If the remote job died, flag the jobs as off here too
+        if (payload.code === 'END') {
+          if (payload.payload && payload.payload !== 'SUCCESS') {
+            this.addLineToShipperInstallConsole(payload, 'error')
+          }
+          this.shipperInstall[payload.jobId].onGoing = false
+          setTimeout(() => {
+            this.refreshOpenCollector(payload.jobId)
+          }, 1000)
+          console.log('*** END ***')
+        }
+
+        // Refresh object
+        this.shipperInstall = JSON.parse(JSON.stringify(this.shipperInstall))
+      }
     }
   }, // methods
   mounted () {
     // if (this.openCollectors.length === 0) {
     //   this.loadOpenCollectors()
     // }
+    // Event when Server sends output or updates from an Install/Uninstall job
+    this.socket.on('shipper.install', this.handleSocketOnTailLog)
+  },
+  beforeDestroy () {
+    this.socket.offAny(this.handleSocketOnTailLog)
   }
-  // created () {
-  //   // Debounce upsertOpenCollector
-  //   this.upsertOpenCollector = debounce(this.upsertOpenCollector, 1000)
-  // }
 }
 
 </script>
+
+<style>
+.fixed-font {
+  display: block;
+  unicode-bidi: embed;
+  font-family: monospace;
+  white-space: pre;
+}
+</style>

@@ -8,15 +8,15 @@
   - [x] Hide LS columns in OC list
   - [x] Hide Open OC button in OC list
   - [ ] Load SSH Token from file instead of copy/paste in field
-  - [ ] Install Filebeat when click on INSTALL button (BACKEND)
+  - [x] Install Filebeat when click on INSTALL button (BACKEND)
     - [x] Store Filebeat download URL on GitHub
     - [ ] Gather Filebeat URL from GitHub
-    - [ ] Offer choice to user to select package/version, fall back to URL to 7.13
-    - [ ] Download Filebeat
+    - [x] Offer choice to user to select package/version, fall back to URL to 7.13
+    - [x] Download Filebeat
     - [ ] Run checksum
-    - [ ] Install
-    - [ ] Communicate each step to Frontend
-    - [ ] Display Install progress in Frontend
+    - [x] Install
+    - [x] Communicate each step to Frontend
+    - [x] Display Install progress in Frontend
 - Pipeline list
   - [ ] Ability to rename Pipeline in Pipeline list
   - [ ] Add Collection Type in Pipeline list
@@ -35,4 +35,4 @@
 
 ## TO TEST
 - [ ] SSH via Token
-- [ ] Filebeat on-demand deployment
+- [x] Filebeat on-demand deployment

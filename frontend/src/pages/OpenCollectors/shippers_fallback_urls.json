@@ -1,0 +1,50 @@
+[
+    {
+        "version": "7.13.0",
+        "name": "RPM 64 bits",
+        "url": "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.13.0-x86_64.rpm",
+        "filename": "filebeat-7.13.0-x86_64.rpm",
+        "installer": "RPM",
+        "sha": {
+            "url": "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.13.0-x86_64.rpm.sha512",
+            "filename": "filebeat-7.13.0-x86_64.rpm.sha512",
+            "hash": "067554e54c366c7dc35bfb3526fa982cf6cc4db6f59e517ee71ae2993184b41015eaaf509aaf2826b28001259fca98d6e86d6b023302223648662b70e84b849b"
+        }
+    },
+    {
+        "version": "7.13.0",
+        "name": "DEB 64 bits",
+        "url": "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.13.0-amd64.deb",
+        "filename": "filebeat-7.13.0-amd64.deb",
+        "installer": "DEB",
+        "sha": {
+            "url": "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.13.0-amd64.deb.sha512",
+            "filename": "filebeat-7.13.0-amd64.deb.sha512",
+            "hash": "2073e6a01dc4dc2dbb11fba957ef82a8aa39c9582a06fcbb8a21adb215512d2963b82a7a369b4bdf65a63a7655e0045d45cf598f8f5a86750f6cba3df6341f6f"
+        }
+    },
+    {
+        "version": "7.12.1",
+        "name": "RPM 64 bits",
+        "url": "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.12.1-x86_64.rpm",
+        "filename": "filebeat-7.12.1-x86_64.rpm",
+        "installer": "RPM",
+        "sha": {
+            "url": "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.12.1-x86_64.rpm.sha512",
+            "filename": "filebeat-7.12.1-x86_64.rpm.sha512",
+            "hash": "96f8e8e80ad97d63782264f66a55630dfee883a31e8a716d1f5da281ec8445b4d3e541d053d96e1ee890e15e83b4d88fc8bb0865e7beea70dd52de061c572ed5"
+        }
+    },
+    {
+        "version": "7.12.1",
+        "name": "DEB 64 bits",
+        "url": "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.12.1-amd64.deb",
+        "filename": "filebeat-7.12.1-amd64.deb",
+        "installer": "DEB",
+        "sha": {
+            "url": "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.12.1-amd64.deb.sha512",
+            "filename": "filebeat-7.12.1-amd64.deb.sha512",
+            "hash": "ec2745e6b1aae388d73e7231e48c247afd8570c5ea3c8fd4bec4f4c389c8c5f855f6168138ed2e16f8921150115d08d7f096a43f607c1163bbd03e009ef7d5b6"
+        }
+    }
+]
