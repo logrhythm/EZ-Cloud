@@ -1,5 +1,5 @@
 const { isValidAuth } = require('./middleware');
-const { tailInit, tailKill } = require('./controller');
+const { tailInit, tailKill } = require('./controllers/tail');
 
 function socketConnect(socket) {
   // eslint-disable-next-line no-console

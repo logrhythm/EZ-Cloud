@@ -2,12 +2,12 @@
 const fs = require('fs');
 const path = require('path');
 
-const configSsh = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'config', 'ssh.json'), 'utf8')).config;
+const configSsh = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', '..', 'config', 'ssh.json'), 'utf8')).config;
 // Create SSH object
 const SSH = require('simple-ssh');
 
 // Import shared collectionConfigToYml library
-const { collectionConfigToYml } = require('../shared/collectionConfigToYml');
+const { collectionConfigToYml } = require('../../shared/collectionConfigToYml');
 
 const tails = [];
 
