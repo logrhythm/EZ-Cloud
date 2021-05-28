@@ -1,4 +1,5 @@
 # TODO - Frontend
+### Target: v0.5-rc1
 
 ## TO DO
 - OpenCollectors list
