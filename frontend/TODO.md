@@ -9,6 +9,14 @@
   - [x] Hide Open OC button in OC list
   - [ ] Load SSH Token from file instead of copy/paste in field
   - [ ] Install Filebeat when click on INSTALL button (BACKEND)
+    - [x] Store Filebeat download URL on GitHub
+    - [ ] Gather Filebeat URL from GitHub
+    - [ ] Offer choice to user to select package/version, fall back to URL to 7.13
+    - [ ] Download Filebeat
+    - [ ] Run checksum
+    - [ ] Install
+    - [ ] Communicate each step to Frontend
+    - [ ] Display Install progress in Frontend
 - Pipeline list
   - [ ] Ability to rename Pipeline in Pipeline list
   - [ ] Add Collection Type in Pipeline list
