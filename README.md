@@ -4,7 +4,7 @@
 # EZ-Cloud
  EZ-Cloud for Legacy SIEM
 
-Check [Releases](/releases) for version specific instructions.
+Check [Releases](https://github.com/TonyMasse/EZ-Cloud/releases) for version specific instructions.
 
 # Backend:
 
