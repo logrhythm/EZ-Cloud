@@ -367,9 +367,14 @@ export default {
         }
 
         // For Syslog:
-        if (this.activeCollectionMethod === 'syslog') {
+        if (this.activeCollectionMethod === 'syslog_udp') {
           newConf['protocol.udp.host'] = '0.0.0.0:514'
 
+          // newConf['protocol.udp'] = {
+          // }
+        }
+
+        if (this.activeCollectionMethod === 'syslog_tcp') {
           newConf['protocol.tcp.host'] = '0.0.0.0:514'
 
           newConf['protocol.tcp.ssl.enabled'] = false
@@ -380,8 +385,6 @@ export default {
           // newConf['protocol.tcp.ssl'] = {
           // }
           // newConf['protocol.tcp'] = {
-          // }
-          // newConf['protocol.udp'] = {
           // }
         }
 
