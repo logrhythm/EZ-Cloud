@@ -239,7 +239,7 @@
                 <q-icon name="error" class="q-mr-sm" color="orange" v-if="log.type === 'error' && log.msgCode === 'ERROR'"/>
                 <q-icon name="error" class="q-mr-sm" color="orange" v-if="log.type === 'error' && log.msgCode === 'EXIT'"/>
                 <span
-                  :class="(log.type === 'stdout' ? 'fixed-font' : '') + ' '
+                  :class="(log.type === 'stdout' ? 'fixed-font-console' : '') + ' '
                     + (log.type === 'finished' ? 'text-positive' : '')
                     + (log.type === 'error' ? 'text-negative' : '')"
                 >{{ log.value }}</span>
@@ -741,7 +741,7 @@ export default {
 </script>
 
 <style>
-.fixed-font {
+.fixed-font-console {
   display: block;
   unicode-bidi: embed;
   font-family: monospace;
