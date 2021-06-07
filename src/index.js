@@ -70,7 +70,8 @@ async function checkForNewVersion() {
   // console.log(versionComparison);
 }
 
-checkForNewVersion();
+// Disabling, as not really working
+// checkForNewVersion();
 
 // app.listen(port, host, () => {
 httpsServer.listen(port, host, () => {
