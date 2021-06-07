@@ -39,153 +39,155 @@ router.get('/', (req, res) => {
 //        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
 //         #######     ##    #### ######## ####    ##    #### ########  ######
 
-// ##########################################################################################
-// getDataFromSql
-// #########
-// Utilitarian function to get the data from
-// SQL using parameters.query and dump it in the
-// parameters.targetVariable
-// ##########################################################################################
+const { getDataFromSql, createSqlVariables } = require('../shared/sqlUtils');
 
-async function getDataFromSql(parameters) {
-  let stillChecking = true;
-  if (parameters && parameters.query && parameters.query.length && parameters.targetVariable) {
-    const { targetVariable, query, variables } = parameters;
-    targetVariable.stillChecking = true;
-    targetVariable.errors = [];
-    targetVariable.outputs = [];
-    targetVariable.payload = [];
+// // ##########################################################################################
+// // getDataFromSql
+// // #########
+// // Utilitarian function to get the data from
+// // SQL using parameters.query and dump it in the
+// // parameters.targetVariable
+// // ##########################################################################################
 
-    // Connect
-    const connection = new Connection(configSql);
+// async function getDataFromSql(parameters) {
+//   let stillChecking = true;
+//   if (parameters && parameters.query && parameters.query.length && parameters.targetVariable) {
+//     const { targetVariable, query, variables } = parameters;
+//     targetVariable.stillChecking = true;
+//     targetVariable.errors = [];
+//     targetVariable.outputs = [];
+//     targetVariable.payload = [];
 
-    // Connection event handler
-    connection.on('connect', (connectionError) => {
-      if (connectionError) {
-        targetVariable.errors.push('Connection to database failed');
-        targetVariable.stillChecking = false;
-        stillChecking = false;
-        // throw connectionError;
-      }
+//     // Connect
+//     const connection = new Connection(configSql);
 
-      // Exec the query
-      const request = new Request(query, (err, rowCount) => {
-        if (err) {
-          targetVariable.errors.push(err);
-        }
-        if (rowCount) {
-          targetVariable.outputs.push(`${rowCount} row(s) returned`);
-        }
-        targetVariable.stillChecking = false;
-        stillChecking = false;
-      });
+//     // Connection event handler
+//     connection.on('connect', (connectionError) => {
+//       if (connectionError) {
+//         targetVariable.errors.push('Connection to database failed');
+//         targetVariable.stillChecking = false;
+//         stillChecking = false;
+//         // throw connectionError;
+//       }
 
-      if (variables && Array.isArray(variables)) {
-        variables.forEach((variable) => {
-          if (variable.name && variable.name.length > 0) {
-            // request.addParameter(variable.name, TYPES[variable.type], (variable.value || null));
-            request.addParameter(
-              variable.name,
-              TYPES[variable.type],
-              (
-                // eslint-disable-next-line no-nested-ternary
-                variable.value !== undefined
-                  ? (
-                    typeof variable.value === 'object'
-                      ? JSON.stringify(variable.value)
-                      : variable.value
-                  )
-                  : null
-              )
-            );
-            // if (typeof variable.value === 'string') {
-            //   request.addParameter(variable.name, TYPES.NVarChar, (variable.value || null));
-            // }
-            // if (typeof variable.value === 'number') {
-            //   request.addParameter(variable.name, TYPES.Int, (variable.value || null));
-            // }
-            // if (typeof variable.value === 'boolean') {
-            //   request.addParameter(variable.name, TYPES.TinyInt, (variable.value > 0));
-            // }
-            // if (variable.value === null) {
-            //   request.addParameter(variable.name, TYPES.Null, null);
-            // }
-          }
-        });
-      }
+//       // Exec the query
+//       const request = new Request(query, (err, rowCount) => {
+//         if (err) {
+//           targetVariable.errors.push(err);
+//         }
+//         if (rowCount) {
+//           targetVariable.outputs.push(`${rowCount} row(s) returned`);
+//         }
+//         targetVariable.stillChecking = false;
+//         stillChecking = false;
+//       });
 
-      request.on('row', (columns) => {
-        // Make sure targetVariable.payload is an array
-        if (!targetVariable.payload || targetVariable.payload === null) {
-          targetVariable.payload = [];
-        }
+//       if (variables && Array.isArray(variables)) {
+//         variables.forEach((variable) => {
+//           if (variable.name && variable.name.length > 0) {
+//             // request.addParameter(variable.name, TYPES[variable.type], (variable.value || null));
+//             request.addParameter(
+//               variable.name,
+//               TYPES[variable.type],
+//               (
+//                 // eslint-disable-next-line no-nested-ternary
+//                 variable.value !== undefined
+//                   ? (
+//                     typeof variable.value === 'object'
+//                       ? JSON.stringify(variable.value)
+//                       : variable.value
+//                   )
+//                   : null
+//               )
+//             );
+//             // if (typeof variable.value === 'string') {
+//             //   request.addParameter(variable.name, TYPES.NVarChar, (variable.value || null));
+//             // }
+//             // if (typeof variable.value === 'number') {
+//             //   request.addParameter(variable.name, TYPES.Int, (variable.value || null));
+//             // }
+//             // if (typeof variable.value === 'boolean') {
+//             //   request.addParameter(variable.name, TYPES.TinyInt, (variable.value > 0));
+//             // }
+//             // if (variable.value === null) {
+//             //   request.addParameter(variable.name, TYPES.Null, null);
+//             // }
+//           }
+//         });
+//       }
 
-        // Compile the row using all its columns
-        const row = {};
-        columns.forEach((column) => {
-          row[column.metadata.colName] = column.value;
-        });
-        targetVariable.payload.push(row);
-      });
+//       request.on('row', (columns) => {
+//         // Make sure targetVariable.payload is an array
+//         if (!targetVariable.payload || targetVariable.payload === null) {
+//           targetVariable.payload = [];
+//         }
 
-      // And run it
-      connection.execSql(request);
-    });
+//         // Compile the row using all its columns
+//         const row = {};
+//         columns.forEach((column) => {
+//           row[column.metadata.colName] = column.value;
+//         });
+//         targetVariable.payload.push(row);
+//       });
 
-    // Kick it all off!
-    connection.connect();
+//       // And run it
+//       connection.execSql(request);
+//     });
 
-    // Wait, by default, for the query to happen (or fail) before returning to caller
-    if (!parameters.noWait) {
-      const loopEndTime = Date.now() / 1000 + maxCheckInterval;
+//     // Kick it all off!
+//     connection.connect();
 
-      // Waiting - Sync
-      while (targetVariable.stillChecking && (loopEndTime > (Date.now() / 1000))) {
-        // Wait for 50 ms
-        // eslint-disable-next-line no-await-in-loop
-        await waitMilliseconds(50);
-      }
-      if (stillChecking || targetVariable.stillChecking) {
-        targetVariable.errors.push('Timeout');
-      }
-      targetVariable.stillChecking = false;
-      stillChecking = false;
-    }
-  }
-}
+//     // Wait, by default, for the query to happen (or fail) before returning to caller
+//     if (!parameters.noWait) {
+//       const loopEndTime = Date.now() / 1000 + maxCheckInterval;
 
-// ##########################################################################################
-// createSqlVariables
-// #########
-// Utilitarian function to create the array of
-// fields type mapping to be provided to
-// getDataFromSql as parameters.targetVariable
-// ##########################################################################################
+//       // Waiting - Sync
+//       while (targetVariable.stillChecking && (loopEndTime > (Date.now() / 1000))) {
+//         // Wait for 50 ms
+//         // eslint-disable-next-line no-await-in-loop
+//         await waitMilliseconds(50);
+//       }
+//       if (stillChecking || targetVariable.stillChecking) {
+//         targetVariable.errors.push('Timeout');
+//       }
+//       targetVariable.stillChecking = false;
+//       stillChecking = false;
+//     }
+//   }
+// }
 
-function createSqlVariables(req, definitions) {
-  const variables = [];
-  if (req && (req.query || req.body) && definitions && Array.isArray(definitions)) {
-    definitions.filter((def) => def.name && def.type && def.name.length && def.type.length)
-      .forEach((def) => {
-        variables.push({
-          name: def.name,
-          type: def.type,
-          /* eslint-disable no-nested-ternary */
-          value: (
-            req.body[def.name] !== undefined
-              ? req.body[def.name]
-              : (
-                req.query[def.name] !== undefined
-                  ? req.query[def.name]
-                  : null
-              )
-          )
-          /* eslint-enable no-nested-ternary */
-        });
-      });
-  }
-  return variables;
-}
+// // ##########################################################################################
+// // createSqlVariables
+// // #########
+// // Utilitarian function to create the array of
+// // fields type mapping to be provided to
+// // getDataFromSql as parameters.targetVariable
+// // ##########################################################################################
+
+// function createSqlVariables(req, definitions) {
+//   const variables = [];
+//   if (req && (req.query || req.body) && definitions && Array.isArray(definitions)) {
+//     definitions.filter((def) => def.name && def.type && def.name.length && def.type.length)
+//       .forEach((def) => {
+//         variables.push({
+//           name: def.name,
+//           type: def.type,
+//           /* eslint-disable no-nested-ternary */
+//           value: (
+//             req.body[def.name] !== undefined
+//               ? req.body[def.name]
+//               : (
+//                 req.query[def.name] !== undefined
+//                   ? req.query[def.name]
+//                   : null
+//               )
+//           )
+//           /* eslint-enable no-nested-ternary */
+//         });
+//       });
+//   }
+//   return variables;
+// }
 
 //        ########   #######  ##     ## ######## ########  ######
 //        ##     ## ##     ## ##     ##    ##    ##       ##    ##
@@ -598,7 +600,53 @@ async function getSshConfigForCollector(params) {
   return sshConfig;
 }
 
+async function getCollectorSshConfigForPipeline(params) {
+  const queryResult = {};
+  let collectorUid = '';
+
+  if (params && params.uid && params.uid.length) {
+    await getDataFromSql({
+      targetVariable: queryResult,
+      query: `
+      SELECT TOP 1 [primaryOpenCollector]
+      FROM [dbo].[pipelines]
+      WHERE [uid] = @uid
+      ;
+      `,
+      variables: createSqlVariables(
+        {
+          body: {
+            uid: params.uid
+          }
+        },
+        [
+          { name: 'uid', type: 'NVarChar' }
+        ]
+      )
+    });
+
+    const pipelineRecord = (
+      queryResult
+      && Array.isArray(queryResult.payload)
+      && queryResult.payload.length
+        ? queryResult.payload[0]
+        : null
+    );
+
+    if (
+      pipelineRecord
+      && pipelineRecord.primaryOpenCollector
+      && pipelineRecord.primaryOpenCollector.length
+    ) {
+      // Valid record
+      collectorUid = pipelineRecord.primaryOpenCollector;
+    }
+  }
+  return getSshConfigForCollector({ uid: collectorUid });
+}
+
 module.exports = {
   config: router,
-  getSshConfigForCollector
+  getSshConfigForCollector,
+  getCollectorSshConfigForPipeline
 };
