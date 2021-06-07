@@ -1,5 +1,5 @@
 # TODO - Frontend
-### Target: v0.5-rc1
+### Target: v0.5-rc2
 
 ## TO DO
 - OpenCollectors list
@@ -32,6 +32,10 @@
 - [x] OC password not updated in Store
 - [x] OC Load tries to update TableLoading read only computed
 - [ ] Damn Tedious saving NULL as 'null' in OC list
+- [ ] `v0.5-rc1` limitations
+  - [x] Split Syslog collection into `Syslog over TCP` and `Syslog over UDP`
+  - [ ] Stop using SSH details from `/src/config/ssh.json` on tail, and use the Collection configuration instead
+- [ ] Clear collection config after clicking on Delete Configuration (Pipeline Property page)
 
 ## TO TEST
 - [ ] SSH via Token
