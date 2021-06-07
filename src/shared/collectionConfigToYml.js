@@ -73,7 +73,13 @@ function extractTransforms (sourceTransformsObject, transformOptions, targetTran
 exports.collectionConfigToYml = (collectionConfig) => {
   try {
     const jsonConfig = Object.assign({}, collectionConfig)
-    const collectionMethod = jsonConfig.collectionMethod || ''
+    let collectionMethod = jsonConfig.collectionMethod || ''
+    if (collectionMethod === 'syslog_udp') {
+      collectionMethod = 'syslog'
+    }
+    if (collectionMethod === 'syslog_tcp') {
+      collectionMethod = 'syslog'
+    }
 
     // Make sure we have a Request Transform array
     if (jsonConfig.request === undefined) {
