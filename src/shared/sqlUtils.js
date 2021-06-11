@@ -18,7 +18,6 @@ const maxCheckInterval = 10; // Check once every X seconds max, and/or timeout a
 
 // For passwords and tokens cyphering
 const secretPlaceholder = '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **';
-const { aesEncrypt, aesDecrypt } = require('../shared/crypto');
 
 //        ##     ## ######## #### ##       #### ######## #### ########  ######
 //        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##

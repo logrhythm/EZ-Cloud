@@ -2,7 +2,8 @@
 const SSH = require('simple-ssh');
 
 // Lib to get the SSH config for a given OpenCollector
-const { getSshConfigForCollector } = require('../../api/config');
+// const { getSshConfigForCollector } = require('../../api/config');
+const { getSshConfigForCollector } = require('../../shared/collectorSshConfig');
 
 const installs = [];
 
