@@ -1,8 +1,3 @@
-// // Get SSH config
-// const fs = require('fs');
-// const path = require('path');
-//
-// const configSsh = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', '..', 'config', 'ssh.json'), 'utf8')).config;
 // Create SSH object
 const SSH = require('simple-ssh');
 
@@ -26,7 +21,7 @@ async function tailInit (socket, payload) {
     // Check the tailId doesn't already exist
     if (!tails[payload.tailId]) {
       const configSsh = await getCollectorSshConfigForPipeline( { uid: payload.pipelineUid } );
-      console.log(configSsh);
+
       tails[payload.tailId] = new SSH(configSsh);
       const inputYml = collectionConfigToYml(payload.collectionConfig);
 
