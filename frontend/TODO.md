@@ -34,7 +34,7 @@
 - [ ] Damn Tedious saving NULL as 'null' in OC list
 - [ ] `v0.5-rc1` limitations
   - [x] Split Syslog collection into `Syslog over TCP` and `Syslog over UDP`
-  - [ ] Stop using SSH details from `/src/config/ssh.json` on tail, and use the Collection configuration instead
+  - [x] Stop using SSH details from `/src/config/ssh.json` on tail, and use the specified Pipeline default Collector instead
 - [ ] Clear collection config after clicking on Delete Configuration (Pipeline Property page)
 
 ## TO TEST

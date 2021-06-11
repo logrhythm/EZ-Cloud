@@ -1000,13 +1000,13 @@ export default {
 
     initTail () {
       if (this.socket && this.socket.connected) {
-        this.socket.emit('tail.init', { tailId: this.pipelineUid, collectionConfig: this.pipeline.collectionConfig })
+        this.socket.emit('tail.init', { pipelineUid: this.pipelineUid, tailId: this.pipelineUid, collectionConfig: this.pipeline.collectionConfig })
       }
     },
 
     killTail () {
       if (this.socket && this.socket.connected) {
-        this.socket.emit('tail.kill', { tailId: this.pipelineUid })
+        this.socket.emit('tail.kill', { pipelineUid: this.pipelineUid, tailId: this.pipelineUid })
       }
     },
 
