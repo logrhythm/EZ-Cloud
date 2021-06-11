@@ -41,5 +41,5 @@
 - [x] Clear collection config after clicking on Delete Configuration (Pipeline Property page)
 
 ## TO TEST
-- [ ] SSH via Token
+- [x] SSH via Token
 - [x] Filebeat on-demand deployment
