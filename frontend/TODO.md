@@ -27,7 +27,10 @@
 - [ ] Create Logging shared Lib to push logs to Console and Windows Journal
 - [ ] Prevent user from using Tail for Pipeline set to HTTP-JSON collection
 - [x] Hide empty dashboard (or put something in it)
-
+- Day mode
+  - [x] Add Dark/Day mode switch under Settings
+  - [x] Save user preference in web browser's localStorage
+  - [ ] Polish CSS / Styling to get good color scheme in Day mode too
 ## TO FIX
 - [x] OC password not updated in Store
 - [x] OC Load tries to update TableLoading read only computed
