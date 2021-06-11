@@ -11,7 +11,6 @@ async function getSshConfigForCollector (params) {
     const queryResult = {};
 
     if (params && params.uid && params.uid.length) {
-        // console.log('**** getDataFromSql - GO...');
         await getDataFromSql({
             targetVariable: queryResult,
             query: `
@@ -39,27 +38,6 @@ async function getSshConfigForCollector (params) {
             )
         });
 
-        // console.log('**** getDataFromSql - DONE.');
-        // console.log('**** queryResult:');
-        // console.log(queryResult);
-
-        // {
-        //   stillChecking: false,
-        //   errors: [],
-        //   outputs: [ '1 row(s) returned' ],
-        //   payload: [
-        //     {
-        //       uid: 'dd666d77-c301-4717-b62a-059accbf7b37',
-        //       hostname: 'pass',
-        //       port: 22,
-        //       authenticationMethod: 'password',
-        //       username: 'sa',
-        //       password: 'U2FsdGVkX19tHAMWZl15RqL5IuuFk0dIMDK5rE7rAPg=',
-        //       privateKey: 'null'
-        //     }
-        //   ]
-        // }
-
         const collectorRecord = (
             queryResult
                 && Array.isArray(queryResult.payload)
@@ -67,9 +45,6 @@ async function getSshConfigForCollector (params) {
                 ? queryResult.payload[0]
                 : null
         );
-
-        // console.log('**** collectorRecord:');
-        // console.log(collectorRecord);
 
         if (
             collectorRecord
@@ -92,7 +67,6 @@ async function getSshConfigForCollector (params) {
             )
         ) {
             // Valid record
-            // console.log('****    --> Valid record');
             sshConfig.host = collectorRecord.hostname;
             sshConfig.port = collectorRecord.port;
             sshConfig.user = (
