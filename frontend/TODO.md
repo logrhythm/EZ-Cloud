@@ -35,7 +35,7 @@
 - [ ] `v0.5-rc1` limitations
   - [x] Split Syslog collection into `Syslog over TCP` and `Syslog over UDP`
   - [x] Stop using SSH details from `/src/config/ssh.json` on tail, and use the specified Pipeline default Collector instead
-- [ ] Clear collection config after clicking on Delete Configuration (Pipeline Property page)
+- [x] Clear collection config after clicking on Delete Configuration (Pipeline Property page)
 
 ## TO TEST
 - [ ] SSH via Token
