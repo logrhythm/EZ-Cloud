@@ -176,7 +176,10 @@
           <q-separator />
 
           <q-card-section class="q-pt-none">
-            <div class="text-overline">Authentication Method</div>
+            <div class="text-overline">Authentication</div>
+
+            <q-input dense v-model="newOpenCollectorUsername" label="SSH User name" hint="" @keyup.esc="promptForNewOpenCollectorDetails = false" />
+
             <q-tabs
               v-model="newOpenCollectorAuthMethod"
               active-color="primary"
@@ -184,7 +187,7 @@
               align="justify"
               narrow-indicator
             >
-              <q-tab name="password" label="Login / Password" />
+              <q-tab name="password" label="Password" />
               <q-tab name="private_key" label="Private Key" />
             </q-tabs>
 
@@ -192,7 +195,6 @@
 
             <q-tab-panels v-model="newOpenCollectorAuthMethod" animated>
               <q-tab-panel name="password">
-                <q-input dense v-model="newOpenCollectorUsername" label="SSH User name" hint="" @keyup.esc="promptForNewOpenCollectorDetails = false" />
                 <q-input dense v-model="newOpenCollectorPassword" type="password" label="SSH Password" hint="" @keyup.esc="promptForNewOpenCollectorDetails = false" />
               </q-tab-panel>
 
@@ -204,8 +206,8 @@
 
           <q-card-actions align="right" class="text-primary">
             <q-btn flat :label="$t('Cancel')" v-close-popup />
-            <q-btn flat :label="$t('Update OpenCollector')" v-close-popup v-if="newOpenCollectorUid && newOpenCollectorUid.length" :disabled="!newOpenCollectorName || !newOpenCollectorName.length || !newOpenCollectorHostname || !newOpenCollectorHostname.length || !newOpenCollectorPort || newOpenCollectorPort < 0 || newOpenCollectorPort > 65535 || ((!newOpenCollectorUsername || !newOpenCollectorUsername.length) && (!newOpenCollectorPrivateKey || !newOpenCollectorPrivateKey.length))" @click="addNewOrUpdateOpenCollector()" />
-            <q-btn flat :label="$t('Add new OpenCollector')" v-close-popup v-else :disabled="!newOpenCollectorName || !newOpenCollectorName.length || !newOpenCollectorHostname || !newOpenCollectorHostname.length || !newOpenCollectorPort || newOpenCollectorPort < 0 || newOpenCollectorPort > 65535 || ((!newOpenCollectorUsername || !newOpenCollectorUsername.length) && (!newOpenCollectorPrivateKey || !newOpenCollectorPrivateKey.length))" @click="addNewOrUpdateOpenCollector()" />
+            <q-btn flat :label="$t('Update OpenCollector')" v-close-popup v-if="newOpenCollectorUid && newOpenCollectorUid.length" :disabled="!newOpenCollectorName || !newOpenCollectorName.length || !newOpenCollectorHostname || !newOpenCollectorHostname.length || !newOpenCollectorPort || newOpenCollectorPort < 0 || newOpenCollectorPort > 65535 || !newOpenCollectorUsername || !newOpenCollectorUsername.length || ((!newOpenCollectorPassword || !newOpenCollectorPassword.length) && (!newOpenCollectorPrivateKey || !newOpenCollectorPrivateKey.length))" @click="addNewOrUpdateOpenCollector()" />
+            <q-btn flat :label="$t('Add new OpenCollector')" v-close-popup v-else :disabled="!newOpenCollectorName || !newOpenCollectorName.length || !newOpenCollectorHostname || !newOpenCollectorHostname.length || !newOpenCollectorPort || newOpenCollectorPort < 0 || newOpenCollectorPort > 65535 || !newOpenCollectorUsername || !newOpenCollectorUsername.length || ((!newOpenCollectorPassword || !newOpenCollectorPassword.length) && (!newOpenCollectorPrivateKey || !newOpenCollectorPrivateKey.length))" @click="addNewOrUpdateOpenCollector()" />
           </q-card-actions>
         </q-card>
       </q-dialog>

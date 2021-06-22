@@ -10,7 +10,8 @@ const configSsh = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'c
 const SSH = require('simple-ssh');
 
 // Lib to get the SSH config for a given OpenCollector
-const { getSshConfigForCollector } = require('./config');
+// const { getSshConfigForCollector } = require('./config');
+const { getSshConfigForCollector } = require('../shared/collectorSshConfig');
 
 function waitMilliseconds(delay = 250) {
   return new Promise((resolve) => {
