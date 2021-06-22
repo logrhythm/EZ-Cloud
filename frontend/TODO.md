@@ -1,6 +1,6 @@
 # TODO - Frontend
 
-### Target: current version
+### Target: v0.6
 
 ## TO DO
 - OpenCollectors list
