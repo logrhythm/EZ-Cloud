@@ -12,19 +12,26 @@
       :width="200"
       :breakpoint="500"
       bordered
+
+      class="column"
     >
-    <q-scroll-area class="fit">
-      <q-list padding class="">
-        <EssentialLink
-          v-for="link in essentialLinks"
-          :key="link.title"
-          v-bind="link"
-        />
-        <q-separator class="q-my-md"/>
-        <EssentialLink
-          v-bind="logOut"
-        />
-        <q-separator class="q-my-md" v-if="!socket.connected"/>
+    <div class="yep fit column">
+      <div
+        class="col"
+      >
+        <q-scroll-area
+          class="fit"
+        >
+          <q-list padding class="">
+            <EssentialLink
+              v-for="link in mainLinks"
+              :key="link.title"
+              v-bind="link"
+            />
+          </q-list>
+        </q-scroll-area>
+      </div>
+      <q-list class="col-auto">
         <q-item v-if="!socket.connected">
           <q-tooltip content-style="font-size: 1rem;">
             Live connection with server has been lost.<br>
@@ -41,16 +48,17 @@
             <q-item-label class="text-orange">Disconnected</q-item-label>
           </q-item-section>
         </q-item>
-        <q-item>
-          <q-item-section
-            avatar
-          >
-            <span style="opacity:.4">v{{version}}</span>
-            <!-- <span style="opacity:.4">v0.5-rc1</span> -->
-          </q-item-section>
-        </q-item>
+        <q-separator class="q-my-md" v-if="!socket.connected"/>
+        <EssentialLink
+          v-for="link in lowLinks"
+          :key="link.title"
+          v-bind="link"
+        />
       </q-list>
-    </q-scroll-area>
+      <div class="text-center">
+        <span style="opacity:.4; font-size:.75em">v{{version}}</span>
+      </div>
+    </div>
   </q-drawer>
 
     <q-page-container>
@@ -75,7 +83,7 @@ export default {
     return {
       drawerMenuOpen: false,
       miniState: true,
-      essentialLinks: [
+      mainLinks: [
         {
           title: '',
           icon: 'home',
@@ -95,18 +103,20 @@ export default {
           title: 'Pipelines',
           icon: 'account_tree',
           link: '#/Pipelines'
-        },
+        }
+      ],
+      lowLinks: [
         {
           title: 'Settings',
           icon: 'settings',
           link: '#/Settings'
+        },
+        {
+          title: 'Log Out',
+          icon: 'logout',
+          link: '#/Logout'
         }
       ],
-      logOut: {
-        title: 'Log Out',
-        icon: 'logout',
-        link: '#/Logout'
-      },
       version: version
     }
   }
