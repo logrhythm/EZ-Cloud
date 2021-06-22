@@ -1,6 +1,6 @@
 <template>
   <q-page class="q-gutter-sm q-pa-xl">
-    <q-card class="q-pa-md q-ma-none">
+    <q-card class="q-pa-md q-mx-none">
       <q-card-section horizontal>
         <q-card-section class="col">
           <div class="text-h4">EZ Backend Base URLs</div>
@@ -18,6 +18,19 @@
             </q-tooltip>
           </q-btn>
         </q-card-actions>
+      </q-card-section>
+    </q-card>
+    <q-card class="q-pa-md q-mx-none">
+      <q-card-section class="col">
+        <div class="text-h4">Theme</div>
+        <q-toggle
+          v-model="darkMode"
+          checked-icon="dark_mode"
+          unchecked-icon="light_mode"
+          color="grey"
+          size="4rem"
+          keep-color
+        />
       </q-card-section>
     </q-card>
   </q-page>
@@ -42,6 +55,17 @@ export default {
       localStorage.setItem('settings.ezBackend.url.api', this.ezBackendBaseUrlApi)
       this.globalConstants.baseUrl.socket = this.ezBackendBaseUrlSocket
       localStorage.setItem('settings.ezBackend.url.socket', this.ezBackendBaseUrlSocket)
+    }
+  },
+  computed: {
+    darkMode: {
+      get () {
+        return this.$q.dark.isActive
+      },
+      set (value) {
+        this.$q.dark.set(value)
+        localStorage.setItem('settings.darkMode', value)
+      }
     }
   },
   mounted () {
