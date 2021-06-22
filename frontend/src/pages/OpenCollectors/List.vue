@@ -122,7 +122,7 @@
                   v-close-popup
                   @click="installFilebeat(props.row.uid, shipperUrl)"
                 >
-                  <q-item-section side>
+                  <q-item-section side style="min-width: 5em;" class="items-center">
                     <q-badge color="primary">v{{ shipperUrl.version }}</q-badge>
                   </q-item-section>
                   <q-item-section>
