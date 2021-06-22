@@ -1,5 +1,45 @@
 # TODO - Frontend
 
+### Target: current version
+
+## TO DO
+- OpenCollectors list
+  - [ ] Load SSH Token from file instead of copy/paste in field
+  - [ ] Use alternative to Filebeat
+    - [ ] [jsBeat](https://github.com/TonyMasse/jsBeat/releases)
+      - [ ] Create jsBeat configuration
+      - [ ] Use jsBeat / FlatFile for Tail
+      - [ ] Install NodeJS
+        - [ ] Store NodeJS download URL on GitHub
+      - [ ] Install jsBeat
+        - [ ] Store jsBeat download URL on GitHub
+      - [ ] Communicate each step to Frontend
+      - [ ] Display Install progress in Frontend
+    - [ ] LR Rest Beat
+      - [ ] Create LR Rest Beat configuration
+      - [ ] Use LR Rest Beat for Tail
+      - [ ] Install LR Rest
+      - [ ] Communicate each step to Frontend
+      - [ ] Display Install progress in Frontend
+- Pipeline list
+  - [ ] Ability to rename Pipeline in Pipeline list
+  - [ ] Add Collection Type in Pipeline list
+  - [ ] Add Mapping stats in Pipeline list
+  - [ ] Change status of Pipeline when adding Collection or Mapping
+- [ ] Hide Settings page for Prod
+- [ ] Create Logging shared Lib to push logs to Console and Windows Journal
+- [ ] Prevent user from using Tail for Pipeline set to HTTP-JSON collection
+- Day mode
+  - [ ] Polish CSS / Styling to get good color scheme in Day mode too
+## TO FIX
+- [ ] Damn Tedious saving NULL as 'null' in OC list
+
+## TO TEST
+- [ ] Tail with jsBeat
+- [ ] Collection with jsBeat
+
+---
+
 ### Target: v0.5-rc2
 
 ## TO DO
