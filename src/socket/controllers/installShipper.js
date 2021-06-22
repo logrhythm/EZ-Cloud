@@ -31,19 +31,34 @@ function installShipper(socket, payload) {
         payload.uid // UID of the Collector
         && payload.uid.length > 0
         && payload.installerSource // Source information as to where to downlad the Shipper from
-        && payload.installerSource.url
-        && payload.installerSource.url.length > 0
-        && payload.installerSource.filename
-        && payload.installerSource.filename.length > 0
-        && payload.installerSource.installer
-        && payload.installerSource.installer.length > 0
-        && payload.installerSource.sha
-        && payload.installerSource.sha.url
-        && payload.installerSource.sha.url.length > 0
-        && payload.installerSource.sha.filename
-        && payload.installerSource.sha.filename.length > 0
-        && payload.installerSource.sha.hash
-        && payload.installerSource.sha.hash.length > 0
+        &&
+        (
+          (
+            payload.installerSource.url
+            && payload.installerSource.url.length > 0
+            && payload.installerSource.filename
+            && payload.installerSource.filename.length > 0
+            && payload.installerSource.installer
+            && payload.installerSource.installer.length > 0
+            && payload.installerSource.sha
+            && payload.installerSource.sha.url
+            && payload.installerSource.sha.url.length > 0
+            && payload.installerSource.sha.filename
+            && payload.installerSource.sha.filename.length > 0
+            && payload.installerSource.sha.hash
+            && payload.installerSource.sha.hash.length > 0
+          )
+          ||
+          (
+            payload.installerSource.jsBeat
+            && payload.installerSource.jsBeat.url
+            && payload.installerSource.jsBeat.url.length > 0
+            && payload.installerSource.jsBeat.folderName
+            && payload.installerSource.jsBeat.folderName.length > 0
+            && payload.installerSource.jsBeat.sha256
+            && payload.installerSource.jsBeat.sha256.length > 0
+          )
+        )
       ) {
         // Sanitise the UID as we use it to touch the file system
         // eslint-disable-next-line no-param-reassign
@@ -54,110 +69,216 @@ function installShipper(socket, payload) {
           getSshConfigForCollector({ uid: payload.uid }).then((sshConfig) => {
             installs[payload.jobId] = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
-            // New main Filebeat configuration
-            // eslint-disable-next-line no-template-curly-in-string
-            const filebeatConfig = 'filebeat.config.inputs:\n  enabled: true\n  path: ${path.config}/inputs.d/*.yml\n  reload.enabled: true\n  reload.period: 10s\noutput.logstash:\n  hosts: ["localhost:5044"]\nprocessors:\n  - add_host_metadata:\n      when.not.contains.tags: forwarded\n  - add_cloud_metadata: ~\n  - add_docker_metadata: ~\n  - add_kubernetes_metadata: ~\n\n';
+            const steps = [];
 
-            // Build the list of steps
-            const steps = [
-              {
-                action: 'Clean up directories left by any previous attemp',
-                command: `if [ -d "/tmp/ez-shipper-install-${payload.jobId}" ]; then rm -rf /tmp/ez-shipper-install-${payload.jobId}; fi;`
-              },
-              {
-                action: 'Create fresh temporary folder to download installer into',
-                command: `mkdir /tmp/ez-shipper-install-${payload.jobId}`
-              },
-              {
-                action: 'Download package to install // ' + `curl -o /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.filename} -L ${payload.installerSource.url}`,
-                command: `curl -o /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.filename} -L ${payload.installerSource.url}`
-              },
-              {
-                action: 'Use the package manager to install the package',
-                command: (
-                  // eslint-disable-next-line no-nested-ternary
-                  payload.installerSource.installer === 'DEB'
-                    ? `sudo dpkg -i /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.filename}`
-                    : (
-                      payload.installerSource.installer === 'RPM'
-                        ? `sudo rpm -vi /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.filename}`
-                        : `echo -e "Unknown Package Manager (${payload.installerSource.installer}). Exiting."; exit 42;`
-                    )
-                )
-              },
-              {
-                action: 'Create new Input folder to drop dynamic input files into',
-                command: 'sudo mkdir -p /etc/filebeat/inputs.d'
-              },
-              {
-                action: 'Backup default configuration file',
-                command: 'sudo -- sh -c \'[ -f "/etc/filebeat/filebeat.yml" ] && mv -f /etc/filebeat/filebeat.yml /etc/filebeat/filebeat.original.yml\'',
-                continueOnFailure: true
-              },
-              {
-                action: 'Create configuration file',
-                command: `cat > /tmp/ez-shipper-install-${payload.jobId}/filebeat.yml`,
-                stdin: filebeatConfig
-              },
-              {
-                action: 'Move configuration file into place',
-                command: `sudo cp -f /tmp/ez-shipper-install-${payload.jobId}/filebeat.yml /etc/filebeat/filebeat.yml`
-              },
-              {
-                action: 'Set configuration file the correct access rights',
-                command: 'sudo chmod 700 /etc/filebeat/filebeat.yml'
-              },
-              {
-                action: 'List the files of the temporary directory',
-                command: `ls -la /tmp/ez-shipper-install-${payload.jobId}/`
-              },
-              {
-                action: 'List the files of the Shipper configuration directory',
-                command: 'ls -la /etc/filebeat/'
-              },
-              {
-                action: 'Dump Shipper\'s configuration file',
-                command: 'sudo cat /etc/filebeat/filebeat.yml'
-              },
-              {
-                action: 'Start Shipper service',
-                command: 'sudo service filebeat start',
-                continueOnFailure: true
-              },
-              {
-                action: 'Clean up. Remove the temporary directory and its content',
-                command: `rm -rf /tmp/ez-shipper-install-${payload.jobId}/`
-              // },
-              // {
-              //   action: 'Try to add some more text to the file in the temporary directory. This will fail.',
-              //   command: `echo "Tony" > /tmp/ez-shipper-install-${payload.jobId}/test.txt`
-              // },
-              // {
-              //   action: '',
-              //   command: ``
-              }
-            ];
+            if (payload.installerSource.url) {
+              // New main Filebeat configuration
+              // eslint-disable-next-line no-template-curly-in-string
+              const filebeatConfig = 'filebeat.config.inputs:\n  enabled: true\n  path: ${path.config}/inputs.d/*.yml\n  reload.enabled: true\n  reload.period: 10s\noutput.logstash:\n  hosts: ["localhost:5044"]\nprocessors:\n  - add_host_metadata:\n      when.not.contains.tags: forwarded\n  - add_cloud_metadata: ~\n  - add_docker_metadata: ~\n  - add_kubernetes_metadata: ~\n\n';
 
-            // DEB:
-            // curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.13.0-amd64.deb
-            // sudo dpkg -i filebeat-7.13.0-amd64.deb
+              // Build the list of steps
+              steps.push(
+                {
+                  action: 'Clean up directories left by any previous attemp',
+                  command: `if [ -d "/tmp/ez-shipper-install-${payload.jobId}" ]; then rm -rf /tmp/ez-shipper-install-${payload.jobId}; fi;`
+                },
+                {
+                  action: 'Create fresh temporary folder to download installer into',
+                  command: `mkdir /tmp/ez-shipper-install-${payload.jobId}`
+                },
+                {
+                  action: 'Download package to install // ' + `curl -o /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.filename} -L ${payload.installerSource.url}`,
+                  command: `curl -o /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.filename} -L ${payload.installerSource.url}`
+                },
+                {
+                  action: 'Use the package manager to install the package',
+                  command: (
+                    // eslint-disable-next-line no-nested-ternary
+                    payload.installerSource.installer === 'DEB'
+                      ? `sudo dpkg -i /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.filename}`
+                      : (
+                        payload.installerSource.installer === 'RPM'
+                          ? `sudo rpm -vi /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.filename}`
+                          : `echo -e "Unknown Package Manager (${payload.installerSource.installer}). Exiting."; exit 42;`
+                      )
+                  )
+                },
+                {
+                  action: 'Create new Input folder to drop dynamic input files into',
+                  command: 'sudo mkdir -p /etc/filebeat/inputs.d'
+                },
+                {
+                  action: 'Backup default configuration file',
+                  command: 'sudo -- sh -c \'[ -f "/etc/filebeat/filebeat.yml" ] && mv -f /etc/filebeat/filebeat.yml /etc/filebeat/filebeat.original.yml\'',
+                  continueOnFailure: true
+                },
+                {
+                  action: 'Create configuration file',
+                  command: `cat > /tmp/ez-shipper-install-${payload.jobId}/filebeat.yml`,
+                  stdin: filebeatConfig
+                },
+                {
+                  action: 'Move configuration file into place',
+                  command: `sudo cp -f /tmp/ez-shipper-install-${payload.jobId}/filebeat.yml /etc/filebeat/filebeat.yml`
+                },
+                {
+                  action: 'Set configuration file the correct access rights',
+                  command: 'sudo chmod 700 /etc/filebeat/filebeat.yml'
+                },
+                {
+                  action: 'List the files of the temporary directory',
+                  command: `ls -la /tmp/ez-shipper-install-${payload.jobId}/`
+                },
+                {
+                  action: 'List the files of the Shipper configuration directory',
+                  command: 'ls -la /etc/filebeat/'
+                },
+                {
+                  action: 'Dump Shipper\'s configuration file',
+                  command: 'sudo cat /etc/filebeat/filebeat.yml'
+                },
+                {
+                  action: 'Start Shipper service',
+                  command: 'sudo service filebeat start',
+                  continueOnFailure: true
+                },
+                {
+                  action: 'Clean up. Remove the temporary directory and its content',
+                  command: `rm -rf /tmp/ez-shipper-install-${payload.jobId}/`
+                  // },
+                  // {
+                  //   action: 'Try to add some more text to the file in the temporary directory. This will fail.',
+                  //   command: `echo "Tony" > /tmp/ez-shipper-install-${payload.jobId}/test.txt`
+                  // },
+                  // {
+                  //   action: '',
+                  //   command: ``
+                }
+              );
+            } // Backward ocmpatibility : if (payload.installerSource.url)
 
-            // RPM
-            // curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.13.0-x86_64.rpm
-            // sudo rpm -vi filebeat-7.13.0-x86_64.rpm
+            if (payload.installerSource.jsBeat) {
+              // New main Filebeat configuration
+              const jsbeatConfig = '[]';
 
-            // .exec(`if [ -d "/tmp/ez-${payload.tailId}" ]; then ps auxwww | grep \`cat /tmp/ez-${payload.tailId}/running.pid\` | grep -v "grep" -q && exit 42; fi;`, {
+              // Build the list of steps
+              steps.push(
+                {
+                  action: 'Check if jsBeat is not already installed',
+                  command: `if [ -e "/opt/jsBeat/bin/start.sh" ]; then echo -e "jsBeat already installed. Exiting."; exit 42; fi;`
+                },
+                {
+                  action: 'Clean up directories left by any previous attemp',
+                  command: `if [ -d "/tmp/ez-shipper-install-${payload.jobId}" ]; then rm -rf /tmp/ez-shipper-install-${payload.jobId}; fi;`
+                },
+                {
+                  action: 'Create fresh temporary folder to download installer into',
+                  command: `mkdir /tmp/ez-shipper-install-${payload.jobId}`
+                },
+                {
+                  action: 'Download package to install // ' + `curl -o /tmp/ez-shipper-install-${payload.jobId}/jsBeat.tgz -L ${payload.installerSource.jsBeat.url}`,
+                  command: `curl -o /tmp/ez-shipper-install-${payload.jobId}/jsBeat.tgz -L ${payload.installerSource.jsBeat.url}`
+                },
+                {
+                  action: 'Decompress the package',
+                  command: `tar xfz /tmp/ez-shipper-install-${payload.jobId}/jsBeat.tgz --directory=/tmp/ez-shipper-install-${payload.jobId}/`
+                },
+                {
+                  action: 'Move jsBeat to /opt/',
+                  command: `sudo mv /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.jsBeat.folderName} /opt/`
+                },
+                {
+                  action: 'Create a symbolic link to this version',
+                  command: `sudo ln --symbolic ${payload.installerSource.jsBeat.folderName} /opt/jsBeat`
+                },
+                {
+                  action: 'Create configuration file',
+                  command: 'cat > /opt/jsBeat/config/log_sources.json',
+                  stdin: jsbeatConfig
+                },
+                {
+                  action: 'List the files of the Shipper root directory',
+                  command: 'ls -la /opt/jsBeat/'
+                },
+                {
+                  action: 'List the files of the Shipper configuration directory',
+                  command: 'ls -la /opt/jsBeat/config/'
+                },
+                {
+                  action: 'Run the Shipper post-install script',
+                  command: 'sudo /usr/bin/env bash /opt/jsBeat/bin/post_install.sh'
+                },
+                {
+                  action: 'Clean up. Remove the temporary directory and its content',
+                  command: `rm -rf /tmp/ez-shipper-install-${payload.jobId}/`
+                }
+              );
+            } // if (payload.installerSource.jsBeat)
+            
+            if (
+              payload.installerSource.nodeJs
+              && payload.installerSource.nodeJs.url
+              && payload.installerSource.nodeJs.url.length > 0
+              && payload.installerSource.nodeJs.folderName
+              && payload.installerSource.nodeJs.folderName.length > 0
+              && payload.installerSource.nodeJs.sha256
+              && payload.installerSource.nodeJs.sha256.length > 0
+            ) {
+              steps.push(
+                {
+                  action: 'Clean up directories left by any previous attemp',
+                  command: `if [ -d "/tmp/ez-shipper-install-${payload.jobId}" ]; then rm -rf /tmp/ez-shipper-install-${payload.jobId}; fi;`
+                },
+                {
+                  action: 'Create fresh temporary folder to download installer into',
+                  command: `mkdir /tmp/ez-shipper-install-${payload.jobId}`
+                },
+                {
+                  action: 'Download package to install // ' + `curl -o /tmp/ez-shipper-install-${payload.jobId}/node.tar.gz -L ${payload.installerSource.nodeJs.url}`,
+                  command: `curl -o /tmp/ez-shipper-install-${payload.jobId}/node.tar.gz -L ${payload.installerSource.nodeJs.url}`
+                },
+                {
+                  action: 'Verify checksum',
+                  command: `sha256sum /tmp/ez-shipper-install-${payload.jobId}/node.tar.gz | grep "4781b162129b19bdb3a7010cab12d06fc7c89421ea3fda03346ed17f09ceacd6"`
+                },
+                {
+                  action: 'Decompress the package',
+                  command: `tar xfz /tmp/ez-shipper-install-${payload.jobId}/node.tar.gz --directory=/tmp/ez-shipper-install-${payload.jobId}/`
+                },
+                {
+                  action: 'Prepare Lib directory',
+                  command: 'mkdir --parents /opt/jsBeat/lib'
+                },
+                {
+                  action: 'Move NodeJS to /opt/jsBeat/lib/',
+                  command: `mv /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.nodeJs.folderName} /opt/jsBeat/lib/`
+                },
+                {
+                  action: 'Create a symbolic link to this version',
+                  command: `sudo ln --symbolic ${payload.installerSource.nodeJs.folderName} /opt/jsBeat/lib/node`
+                },
+                {
+                  action: 'List the files of the Shipper Lib directory',
+                  command: 'ls -la /opt/jsBeat/lib/'
+                },
+                {
+                  action: 'Clean up. Remove the temporary directory and its content',
+                  command: `rm -rf /tmp/ez-shipper-install-${payload.jobId}/`
+                }
+              )
+            } // if (payload.installerSource.nodeJs && ...)
 
-            // installs[payload.jobId]
-            //   .exec(`mkdir /tmp/ez-shipper-install-${payload.jobId}`, {))
-            //   .exec(`rm -rf /tmp/ez-${payload.jobId}`, {})
-            //   .exec(`mkdir /tmp/ez-${payload.jobId}`, {})
-            //   .exec(`mkdir /tmp/ez-${payload.jobId}/lib`, {})
-            //   .exec(`chmod 700 /tmp/ez-${payload.jobId}/lib`, {})
-            //   .exec(`cat > /tmp/ez-${payload.jobId}/config.yml`, { in: filebeatConfig })
-            //   .exec(`chmod 700 /tmp/ez-${payload.jobId}/config.yml`, {})
-            // eslint-disable-next-line max-len
-            //   .exec(`/usr/share/filebeat/bin/filebeat -c config.yml --path.home /usr/share/filebeat --path.config /tmp/ez-${payload.jobId} --path.data /tmp/ez-${payload.jobId}/lib -e & echo -e $! > /tmp/ez-${payload.jobId}/running.pid`, {
+            // Now add the Service start
+            if (payload.installerSource.jsBeat) {
+              steps.push(
+                {
+                  action: 'Start Shipper service',
+                  command: 'sudo service jsbeat start',
+                  continueOnFailure: true
+                }
+              )
+            } // if (payload.installerSource.jsBeat)
+
 
             // Add the Steps to the Exec stack
             steps.forEach((step, stepCounter) => {
