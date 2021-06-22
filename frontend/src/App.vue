@@ -8,7 +8,9 @@ export default {
   name: 'App',
   mounted () {
     // set to Dark Mode
-    this.$q.dark.set(true)
+    this.$q.dark.set(
+      localStorage.getItem('settings.darkMode') || true
+    )
   }
 }
 </script>
