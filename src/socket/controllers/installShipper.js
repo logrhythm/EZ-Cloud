@@ -180,6 +180,10 @@ function installShipper(socket, payload) {
                   command: `curl -o /tmp/ez-shipper-install-${payload.jobId}/jsBeat.tgz -L ${payload.installerSource.jsBeat.url} -sS -w "Downloaded from: %{url_effective}\nDownloaded to: %{filename_effective}\nResponse Code: %{response_code}\nDownloaded (bytes): %{size_download}\nTotal time taken (seconds): %{time_total}\nAverage download speed (bytes/sec): %{speed_download}\n"`
                 },
                 {
+                  action: `Verify checksum (Good SHA256 is: ${payload.installerSource.jsBeat.sha256})`,
+                  command: `sha256sum /tmp/ez-shipper-install-${payload.jobId}/jsBeat.tgz | grep "${payload.installerSource.jsBeat.sha256}"`
+                },
+                {
                   action: 'Decompress the package',
                   command: `tar xfz /tmp/ez-shipper-install-${payload.jobId}/jsBeat.tgz --directory=/tmp/ez-shipper-install-${payload.jobId}/`
                 },
@@ -195,6 +199,10 @@ function installShipper(socket, payload) {
                   action: 'Create configuration file',
                   command: 'cat > /opt/jsBeat/config/log_sources.json',
                   stdin: jsbeatConfig
+                },
+                {
+                  action: 'List the Shipper version(s) from /opt directory',
+                  command: 'ls -lda /opt/jsBeat*'
                 },
                 {
                   action: 'List the files of the Shipper root directory',
@@ -238,8 +246,8 @@ function installShipper(socket, payload) {
                   command: `curl -o /tmp/ez-shipper-install-${payload.jobId}/node.tar.gz -L ${payload.installerSource.nodeJs.url} -sS -w "Downloaded from: %{url_effective}\nDownloaded to: %{filename_effective}\nResponse Code: %{response_code}\nDownloaded (bytes): %{size_download}\nTotal time taken (seconds): %{time_total}\nAverage download speed (bytes/sec): %{speed_download}\n"`
                 },
                 {
-                  action: 'Verify checksum',
-                  command: `sha256sum /tmp/ez-shipper-install-${payload.jobId}/node.tar.gz | grep "4781b162129b19bdb3a7010cab12d06fc7c89421ea3fda03346ed17f09ceacd6"`
+                  action: `Verify checksum (Good SHA256 is: ${payload.installerSource.nodeJs.sha256})`,
+                  command: `sha256sum /tmp/ez-shipper-install-${payload.jobId}/node.tar.gz | grep "${payload.installerSource.nodeJs.sha256}"`
                 },
                 {
                   action: 'Decompress the package',
