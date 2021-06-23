@@ -176,8 +176,8 @@ function installShipper(socket, payload) {
                   command: `mkdir /tmp/ez-shipper-install-${payload.jobId}`
                 },
                 {
-                  action: 'Download package to install // ' + `curl -o /tmp/ez-shipper-install-${payload.jobId}/jsBeat.tgz -L ${payload.installerSource.jsBeat.url}`,
-                  command: `curl -o /tmp/ez-shipper-install-${payload.jobId}/jsBeat.tgz -L ${payload.installerSource.jsBeat.url}`
+                  action: `Download package to install (curl -L ${payload.installerSource.jsBeat.url} ...)`,
+                  command: `curl -o /tmp/ez-shipper-install-${payload.jobId}/jsBeat.tgz -L ${payload.installerSource.jsBeat.url} -sS -w "Downloaded from: %{url_effective}\nDownloaded to: %{filename_effective}\nResponse Code: %{response_code}\nDownloaded (bytes): %{size_download}\nTotal time taken (seconds): %{time_total}\nAverage download speed (bytes/sec): %{speed_download}\n"`
                 },
                 {
                   action: 'Decompress the package',
@@ -234,8 +234,8 @@ function installShipper(socket, payload) {
                   command: `mkdir /tmp/ez-shipper-install-${payload.jobId}`
                 },
                 {
-                  action: 'Download package to install // ' + `curl -o /tmp/ez-shipper-install-${payload.jobId}/node.tar.gz -L ${payload.installerSource.nodeJs.url}`,
-                  command: `curl -o /tmp/ez-shipper-install-${payload.jobId}/node.tar.gz -L ${payload.installerSource.nodeJs.url}`
+                  action: `Download package to install (curl -L ${payload.installerSource.nodeJs.url} ...)`,
+                  command: `curl -o /tmp/ez-shipper-install-${payload.jobId}/node.tar.gz -L ${payload.installerSource.nodeJs.url} -sS -w "Downloaded from: %{url_effective}\nDownloaded to: %{filename_effective}\nResponse Code: %{response_code}\nDownloaded (bytes): %{size_download}\nTotal time taken (seconds): %{time_total}\nAverage download speed (bytes/sec): %{speed_download}\n"`
                 },
                 {
                   action: 'Verify checksum',
@@ -274,6 +274,11 @@ function installShipper(socket, payload) {
                 {
                   action: 'Start Shipper service',
                   command: 'sudo service jsbeat start',
+                  continueOnFailure: true
+                },
+                {
+                  action: 'Check Shipper service Status',
+                  command: 'sudo service jsbeat status',
                   continueOnFailure: true
                 }
               )
