@@ -33,6 +33,7 @@
   - [ ] Polish CSS / Styling to get good color scheme in Day mode too
 ## TO FIX
 - [ ] Damn Tedious saving NULL as 'null' in OC list
+- [ ] Open Collector List - Installation progress bar showing always full, even when progress is not yet 100%
 
 ## TO TEST
 - [ ] Tail with jsBeat
