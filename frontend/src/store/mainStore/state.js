@@ -249,6 +249,7 @@ def transform:
     .output
 ;
 `,
+    shippersUrlsInternal: {},
     collectionMethodTemplates: [
 
       //     ######## ##          ###    ########       ######## #### ##       ########

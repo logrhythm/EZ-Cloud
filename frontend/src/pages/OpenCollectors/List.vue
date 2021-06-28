@@ -262,7 +262,7 @@ import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadC
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import { uid } from 'quasar'
 
-import shippersFallbackUrls from 'src/pages/OpenCollectors/shippers_fallback_urls.json'
+// import shippersFallbackUrls from 'src/pages/OpenCollectors/shippers_fallback_urls.json'
 
 export default {
   name: 'PageOpenCollectorsList',
@@ -307,12 +307,11 @@ export default {
       osVersionCheck: {},
       ocVersionCheck: {},
       fbVersionCheck: {},
-      shipperInstall: {},
-      shippersUrlsInternal: {}
+      shipperInstall: {}
     } // return
   },
   computed: {
-    ...mapGetters('mainStore', ['openCollectors', 'pipelines']),
+    ...mapGetters('mainStore', ['openCollectors', 'pipelines', 'shippersUrls']),
     tableData () {
       const list = []
       this.openCollectors.forEach(oc => {
@@ -336,20 +335,20 @@ export default {
     },
     tableLoading () {
       return this.dataLoading // Coming from the Mixin: mixinSharedLoadCollectorsAndPipelines
-    },
-    shippersUrls: {
-      get () {
-        // Use the downloaded ones, otherwise, fallback to pre-recorded list
-        return (
-          Object.keys(this.shippersUrlsInternal).length
-            ? this.shippersUrlsInternal
-            : shippersFallbackUrls
-        )
-      }
     }
+    // shippersUrls: {
+    //   get () {
+    //     // Use the downloaded ones, otherwise, fallback to pre-recorded list
+    //     return (
+    //       Object.keys(this.shippersUrlsInternal).length
+    //         ? this.shippersUrlsInternal
+    //         : shippersFallbackUrls
+    //     )
+    //   }
+    // }
   },
   methods: {
-    ...mapActions('mainStore', ['upsertOpenCollector', 'deleteOpenCollector']),
+    ...mapActions('mainStore', ['upsertOpenCollector', 'deleteOpenCollector', 'loadShippersUrls']),
     ...mapActions('mainStore', ['getOpenCollectorsOsVersion', 'getOpenCollectorsOcVersion', 'getOpenCollectorsFilebeatVersion']),
     openOpenCollector (row) {
       this.$router.push({ path: '/OpenCollectors/' + row.uid + '/View' })
@@ -726,12 +725,19 @@ export default {
         // Refresh object
         this.shipperInstall = JSON.parse(JSON.stringify(this.shipperInstall))
       }
+    },
+    loadShippersUrls () {
+      this.shippersUrlsInternal = {}
     }
   }, // methods
   mounted () {
     // if (this.openCollectors.length === 0) {
     //   this.loadOpenCollectors()
     // }
+    // Get the list of Shippers and their URLs from the cloud
+    if (this.shippersUrls.length === 0) {
+      this.loadShippersUrls()
+    }
     // Event when Server sends output or updates from an Install/Uninstall job
     this.socket.on('shipper.install', this.handleSocketOnTailLog)
   },
