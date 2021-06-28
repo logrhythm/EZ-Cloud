@@ -725,19 +725,16 @@ export default {
         // Refresh object
         this.shipperInstall = JSON.parse(JSON.stringify(this.shipperInstall))
       }
-    },
-    loadShippersUrls () {
-      this.shippersUrlsInternal = {}
     }
   }, // methods
   mounted () {
     // if (this.openCollectors.length === 0) {
     //   this.loadOpenCollectors()
     // }
+
     // Get the list of Shippers and their URLs from the cloud
-    if (this.shippersUrls.length === 0) {
-      this.loadShippersUrls()
-    }
+    this.loadShippersUrls({ caller: this })
+
     // Event when Server sends output or updates from an Install/Uninstall job
     this.socket.on('shipper.install', this.handleSocketOnTailLog)
   },

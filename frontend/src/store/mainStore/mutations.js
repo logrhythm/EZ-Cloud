@@ -130,3 +130,9 @@ export function updateJwtToken (state, payload) {
     state.jwtToken = payload.token
   }
 }
+
+export function loadShippersUrls (state, payload) {
+  if (payload && Array.isArray(payload)) {
+    state.shippersUrlsInternal = payload
+  }
+}

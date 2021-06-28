@@ -8,9 +8,9 @@
   - [ ] Use alternative to Filebeat
     - [ ] [jsBeat](https://github.com/TonyMasse/jsBeat/releases)
       - [x] Install NodeJS
-        - [ ] Store NodeJS download URL on GitHub
+        - [x] Store NodeJS download URL on GitHub
       - [x] Install jsBeat
-        - [ ] Store jsBeat download URL on GitHub
+        - [x] Store jsBeat download URL on GitHub
       - [x] Communicate each step to Frontend
       - [x] Display Install progress in Frontend
       - [ ] Create jsBeat configuration

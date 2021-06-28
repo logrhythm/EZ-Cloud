@@ -249,7 +249,7 @@ def transform:
     .output
 ;
 `,
-    shippersUrlsInternal: {},
+    shippersUrlsInternal: [], // Array of URLs and details for the different Shippers we can install on remote Open Collector hosts
     collectionMethodTemplates: [
 
       //     ######## ##          ###    ########       ######## #### ##       ########
