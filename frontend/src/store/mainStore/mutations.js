@@ -128,6 +128,15 @@ export function getPipelines (state, payload) {
 export function updateJwtToken (state, payload) {
   if (payload) {
     state.jwtToken = payload.token
+    try {
+      // Quick trick to save time while developping.
+      // Avoids from having to login all the time when modifying the code
+      if (process.env.DEV) {
+        localStorage.setItem('jwtToken', payload.token)
+      }
+    } catch (err) {
+      //
+    }
   }
 }
 

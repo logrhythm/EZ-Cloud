@@ -241,6 +241,7 @@ function collectionConfigToYml (collectionConfig) {
 
     // ***********
     // Trash our own stuff, as it has nothing to do in the file Yaml
+    delete jsonConfig.collectionShipper
     delete jsonConfig.collectionMethod
     delete jsonConfig.EZ__Auth_Basic__enable
     delete jsonConfig.EZ__Auth_Basic__username
