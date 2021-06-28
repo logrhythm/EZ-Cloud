@@ -272,6 +272,35 @@ export function deletePipeline ({ state, commit }, payload) {
   }
 }
 
+export function loadShippersUrls ({ state, commit }, payload) {
+  if (state.shippersUrlsInternal.length === 0) {
+    console.log('☁️ Downloading Shippers\' details and URLs...')
+
+    // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+    fetch(this._vm.globalConstants.baseUrl.shippersUrls, {
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer'
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok.')
+        }
+        return response.json()
+      })
+      .then(data => {
+        if (data && Array.isArray(data)) {
+          commit('loadShippersUrls', data)
+          console.log('✔️ [API SUCCESS] Succesfully loaded ' + data.length + ' Shippers\' details and URLs.')
+        } else {
+          throw new Error('Returned data wasn\'t a proper JSON array.')
+        }
+      })
+      .catch(error => {
+        console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+      })
+  }
+}
+
 //           ###    ########  ####       ##     ## ######## #### ##       #### ######## #### ########  ######
 //          ## ##   ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
 //         ##   ##  ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##
@@ -637,32 +666,3 @@ export function postDataToSite (params = {
       }
     })
 } // postDataToSite
-
-export function loadShippersUrls ({ state, commit }, payload) {
-  if (state.shippersUrlsInternal.length === 0) {
-    console.log('☁️ Downloading Shippers\' details and URLs...')
-
-    // Using Fetch here, instead of getDataFromSite to avoid CORS problems
-    fetch(this._vm.globalConstants.baseUrl.shippersUrls, {
-      credentials: 'omit',
-      referrerPolicy: 'no-referrer'
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok.')
-        }
-        return response.json()
-      })
-      .then(data => {
-        if (data && Array.isArray(data)) {
-          commit('loadShippersUrls', data)
-          console.log('✔️ [API SUCCESS] Succesfully loaded ' + data.length + ' Shippers\' details and URLs.')
-        } else {
-          throw new Error('Returned data wasn\'t a proper JSON array.')
-        }
-      })
-      .catch(error => {
-        console.log('⚠️ [API ERROR] Loading error: ' + error.message)
-      })
-  }
-}
