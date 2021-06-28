@@ -7,20 +7,20 @@
   - [ ] Load SSH Token from file instead of copy/paste in field
   - [ ] Use alternative to Filebeat
     - [ ] [jsBeat](https://github.com/TonyMasse/jsBeat/releases)
+      - [x] Install NodeJS
+        - [ ] Store NodeJS download URL on GitHub
+      - [x] Install jsBeat
+        - [ ] Store jsBeat download URL on GitHub
+      - [x] Communicate each step to Frontend
+      - [x] Display Install progress in Frontend
       - [ ] Create jsBeat configuration
       - [ ] Use jsBeat / FlatFile for Tail
-      - [ ] Install NodeJS
-        - [ ] Store NodeJS download URL on GitHub
-      - [ ] Install jsBeat
-        - [ ] Store jsBeat download URL on GitHub
-      - [ ] Communicate each step to Frontend
-      - [ ] Display Install progress in Frontend
     - [ ] LR Rest Beat
-      - [ ] Create LR Rest Beat configuration
-      - [ ] Use LR Rest Beat for Tail
       - [ ] Install LR Rest
       - [ ] Communicate each step to Frontend
       - [ ] Display Install progress in Frontend
+      - [ ] Create LR Rest Beat configuration
+      - [ ] Use LR Rest Beat for Tail
 - Pipeline list
   - [ ] Ability to rename Pipeline in Pipeline list
   - [ ] Add Collection Type in Pipeline list
@@ -31,9 +31,24 @@
 - [ ] Prevent user from using Tail for Pipeline set to HTTP-JSON collection
 - Day mode
   - [ ] Polish CSS / Styling to get good color scheme in Day mode too
+- [ ] Add a simple Wizard from landing page
+  - [ ] Ask for name for Log Source
+  - [ ] Create collection configuation
+    - [ ] Pick type of collection (Flat File, Syslog, REST, etc...)
+    - [ ] Configure it
+  - [ ] Pick up Open Collector
+    - [ ] Add one if none in the list
+  - [ ] Create field mapping
+    - [ ] Run pre-configured Tail
+  - [ ] Recap page
+    - [ ] Ability to rename Log Source
+    - [ ] Ability to assing Log Source to other Open Collectors
+    - [ ] Ability to Enable / Commit the Log Source creation
+
 ## TO FIX
 - [ ] Damn Tedious saving NULL as 'null' in OC list
 - [ ] Open Collector List - Installation progress bar showing always full, even when progress is not yet 100%
+- [x] Dark / Day mode - Not loading from Local Storage correctly
 
 ## TO TEST
 - [ ] Tail with jsBeat
