@@ -174,7 +174,7 @@ export default {
     },
     collectionShipperOption () {
       const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'unknown', outputFormat: 'json' }
-      if (this.collectionMethod && this.collectionMethod.length) {
+      if (this.collectionShipper && this.collectionShipper.length) {
         return this.collectionShippersOptions.find(cso => cso.value && cso.value === this.collectionShipper) || fallbackValue
       } else {
         return fallbackValue
