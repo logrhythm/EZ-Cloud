@@ -272,7 +272,25 @@ def transform:
             },
             default: '',
             description: `Full Base directory path to crawl to find the files matching \`Inclusion Filter\`.
-Must be non-empty.`,
+::: danger
+Must be non-empty.
+:::
+
+::: tip Examples
+To collect files under the directory \`/var/log/myApp/\`, one can use either of the following notations with the same effect:
+- \`/var/log/myApp\`
+- \`/var/log/myApp/\`
+
+More specific examples:
+
+| I want to collect | \`Full Base directory path\` | \`Inclusion Filter\` | \`Recursion Depth\` |
+|-------------------|------------------------------|----------------------|:-------------------:|
+| \`/var/log/messages\` | \`/var/log\` | \`messages\` | \`0\` |
+| \`/var/log/myApp.log\` | \`/var/log\` | \`myApp.log\` | \`0\` |
+| \`/var/log/myApp/*log\` | \`/var/log/myApp\` | \`*.log\` | \`0\` |
+| - \`/var/log/myApp/January/*.log\`<br>- \`/var/log/myApp/February/*.log\`<br>- \`/var/log/myApp/March/*.log\`<br>- *etc...*<br>In other words:<br>\`/var/log/myApp/*/*.log\` | \`/var/log/myApp\` | \`*.log\` | \`1\` |
+| - \`/var/log/Snap!/1992/01/01/Log.RhythmIsADancer.log\`<br>- \`/var/log/snap/1992/05/24/Log.RhythmIsADancer.log\`<br>- *etc...*<br>In other words:<br>\`/var/log/snap/*/*/*/Log.RhythmIsADancer.log\` | \`/var/log/snap\` | \`Log.RhythmIsADancer.log\` | \`3\` |
+:::`,
             required: true,
             group: 'Required'
           },
@@ -284,7 +302,17 @@ Must be non-empty.`,
             },
             default: '',
             description: `If prefixed with \`Regex::\` then regex filter, otherwise file system type filter.
-Must be non-empty.`,
+::: danger
+Must be non-empty.
+:::
+
+::: tip Examples
+- \`myLogFile\`
+- \`myLogFile.log\`
+- \`myLogFile-Audit.log\`
+- \`myLogFile-Audit-*.log\`
+- \`Regex::myLogFile-Audit-\\d+\\.log\`
+:::`,
             required: true,
             group: 'Required'
           },
@@ -382,8 +410,13 @@ This setting only affect the very first Collection Cycle. Any subsequent Collect
             ],
             default: 'none',
             description: `The compression method used to decompress the files. 
-> NOTE
-> 🚧 NOT YET IMPLEMENTED.`,
+::: danger
+__NOT IMPLEMENTED__
+:::
+
+::: tip
+Note: This does __not__ affect the \`includeFilter\`. Only the way to handle the content of the file.
+:::`,
             required: false,
             group: 'Advanced'
           },
@@ -425,7 +458,24 @@ The default setting is 30 Seconds.`,
               name: 'string' // array, object, boolean, string, number, regex, option
             },
             default: '',
-            description: 'The name of the Device Type, to pass onto the Open Collector Pipeline.',
+            description: `The name of the Device Type, to pass onto the Open Collector Pipeline for the Log Source Virtualisation to work.
+::: tip
+The Log Source Virtualisation will expect it to be the same as the Pipeline name, but with all the non alphanumerical characters replaced by an underscore.
+For example:
+- \`my log source\` :arrow_right: \`my_log_source\`
+- \`my - log source\` :arrow_right: \`my___log_source\`
+- \`my-log/185\\source\` :arrow_right: \`my_log_185_source\`
+
+FYI: This is how the JQ Pipeline Transform would normaly create it too.
+:::
+
+::: danger
+Modifying the value provided by default here is very likely to break the Log Source Virtualisation later, as both __MUST__ match.
+:::
+
+::: tip
+Long story short, don't touch this *(unless you really know what you are doing)*.
+:::`,
             required: true,
             group: 'EZ Internal'
           },

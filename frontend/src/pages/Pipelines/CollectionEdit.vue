@@ -425,13 +425,24 @@ export default {
         }
 
         // For jsBeat:
-        if (this.activeCollectionShipper === 'jsbeat') {
+        if (this.activeCollectionShipper === 'jsBeat') {
           newConf.uid = this.pipelineUid
           newConf.name = this.pipeline.name
+          newConf.deviceType = this.pipeline.name.replace(/[^a-zA-Z0-9]/g, '_')
           newConf.active = true
-          newConf.filter_helpers = {
+          newConf.filterHelpers = {
             stream_id: this.pipelineUid,
             stream_name: this.pipeline.name
+          }
+
+          if (this.activeCollectionMethod === 'flatFile') {
+            newConf.baseDirectoryPath = '/var/log/' + String(this.pipeline.name).replace(/\s/g, '_') + '_' + this.pipeline.uid + '/'
+            newConf.inclusionFilter = '*.log'
+            newConf.multiLines = {
+              msgStartRegex: '',
+              msgStopRegex: '',
+              msgDelimiterRegex: ''
+            }
           }
         }
 
