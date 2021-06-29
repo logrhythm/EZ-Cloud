@@ -14,6 +14,9 @@
       - [x] Communicate each step to Frontend
       - [x] Display Install progress in Frontend
       - [ ] Create jsBeat configuration
+        - [x] Create configuration template
+        - [x] Update function that create fresh config
+        - [ ] Update function that create output config (ready for Beat to use)
       - [ ] Use jsBeat / FlatFile for Tail
     - [ ] LR Rest Beat
       - [ ] Install LR Rest
