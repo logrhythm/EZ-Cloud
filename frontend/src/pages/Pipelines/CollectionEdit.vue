@@ -323,7 +323,9 @@ export default {
         // Bring back config from the store
         const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
         this.collectionConfig = (pipeline && pipeline.collectionConfig ? JSON.parse(JSON.stringify(pipeline.collectionConfig)) : [])
+        this.activeCollectionShipper = this.collectionConfig.collectionShipper
         this.activeCollectionMethod = this.collectionConfig.collectionMethod
+        this.collectionShipper = this.activeCollectionShipper
         this.collectionMethod = this.activeCollectionMethod
 
         // Flag down the need to Save as data is fresh from last save now
@@ -341,6 +343,7 @@ export default {
           pipeline:
           {
             uid: this.pipelineUid,
+            status: 'Dev',
             collectionConfig: JSON.parse(JSON.stringify(this.collectionConfig))
           }
         }
@@ -460,7 +463,6 @@ export default {
     },
     collectionShipperHasChanged () {
       console.log('collectionShipperHasChanged')
-      this.collectionConfig = ''
       this.needsSaving = true
       if (this.showCollectionConfig) {
         this.buildYmlConfig()

@@ -13,10 +13,10 @@
         - [x] Store jsBeat download URL on GitHub
       - [x] Communicate each step to Frontend
       - [x] Display Install progress in Frontend
-      - [ ] Create jsBeat configuration
+      - [x] Create jsBeat configuration
         - [x] Create configuration template
         - [x] Update function that create fresh config
-        - [ ] Update function that create output config (ready for Beat to use)
+        - [x] Update function that create output config (ready for Beat to use)
       - [ ] Use jsBeat / FlatFile for Tail
     - [ ] LR Rest Beat
       - [ ] Install LR Rest
@@ -24,6 +24,10 @@
       - [ ] Display Install progress in Frontend
       - [ ] Create LR Rest Beat configuration
       - [ ] Use LR Rest Beat for Tail
+    - [x] Update UI to not be Filebeat centric
+      - [x] Download button and function
+      - [x] Copy to Clipboard button and function
+      - [x] Add icons for Shippers
 - Pipeline list
   - [ ] Ability to rename Pipeline in Pipeline list
   - [ ] Add Collection Type in Pipeline list

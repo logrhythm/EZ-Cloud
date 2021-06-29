@@ -79,30 +79,21 @@ export function addPipeline (state, payload) {
 export function updatePipeline (state, payload) {
   if (payload && payload.uid && payload.uid.length) {
     const pipelineToUpdate = state.pipelines.find(p => p.uid === payload.uid)
-    Array([
+
+    const branches = [
       'status',
-      'primaryOpenCollector'
-    ]).forEach((branch) => {
+      'primaryOpenCollector',
+      'collectionConfig'
+    ]
+    branches.forEach((branch) => {
       if (payload[branch]) {
         pipelineToUpdate[branch] = payload[branch]
       }
     })
 
-    // Array([
-    //   'fieldsMapping',
-    //   'collectionConfig'
-    // ]).forEach((branch) => {
-    //   if (payload[branch]) {
-    //     pipelineToUpdate[branch] = [].concat(payload[branch])
-    //   }
-    // })
-
+    // Mapping is a tad special, so we do it on its own
     if (payload.fieldsMapping) {
       pipelineToUpdate.fieldsMapping = [].concat(payload.fieldsMapping)
-    }
-    console.log('COMMIT - updatePipeline')
-    if (payload.collectionConfig) {
-      pipelineToUpdate.collectionConfig = payload.collectionConfig
     }
   }
 }

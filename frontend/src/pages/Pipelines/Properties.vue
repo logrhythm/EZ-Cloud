@@ -16,9 +16,13 @@
                 Collection
             </q-card-section>
             <q-card-section class="row items-center">
-                <span class="text-bold">Collection Method: </span>
-                <div class="q-ml-md text-center text-teal-4">
-                  <q-icon :name="collectionMethodOption.icon" size="md" />
+                <span class="text-bold">Shipper and Method: </span>
+                <div class="q-ml-md text-center">
+                  <img v-if="collectionShipperOption.icon && collectionShipperOption.icon.length" :src="'/shippers/' + collectionShipperOption.icon + '.svg'" width="64px">
+                  <div>{{ collectionShipperOption.label }}</div>
+                </div>
+                <div class="q-ml-xl text-center">
+                  <q-icon :name="collectionMethodOption.icon" size="64px" />
                   <div>{{ collectionMethodOption.label }}</div>
                 </div>
             </q-card-section>
@@ -28,14 +32,14 @@
                   Collection Params (JSON): <pre>{{ pipeline.collectionConfig }}</pre>
                 </div>
                 <div class="col-6">
-                  Collection Params (YML): <pre>{{ collectionConfigYml }}</pre>
+                  Collection Params (YML): <pre>{{ collectionConfigOutput }}</pre>
                 </div>
               </div> -->
               <div class="">
                   <div class="text-bold">Collection Configuration:</div>
                   <div class="row q-my-sm">
                     <q-separator vertical size="2px" color="teal" />
-                    <div class="q-ml-sm"><pre>{{ collectionConfigYml }}</pre></div>
+                    <div class="q-ml-sm"><pre>{{ collectionConfigOutput }}</pre></div>
                   </div>
               </div>
             </q-card-section>
@@ -50,21 +54,21 @@
                   Edit Collection
                 </q-tooltip>
               </q-btn>
-              <q-btn icon="download" @click="downloadFilbeatInputConfigFile()">
+              <q-btn icon="download" @click="downloadCollectionAsShipperConfigFile()">
                 <q-tooltip content-style="font-size: 1rem;">
-                  Download Filebeat input configuration as YML file
+                  Download Collection configuration as a Shipper configuration file
                 </q-tooltip>
               </q-btn>
-              <q-btn icon="content_copy" @click="copyFilbeatInputConfigFileToClipboard()">
+              <q-btn icon="content_copy" @click="copyCollectionConfigAsShipperFileToClipboard()">
                 <q-tooltip content-style="font-size: 1rem;">
-                  Copy Filebeat input configuration to Clipboard
+                  Copy Collection configuration in Shipper's format to Clipboard
                 </q-tooltip>
               </q-btn>
-              <q-btn icon="highlight_off" disable>
+              <!-- <q-btn icon="highlight_off" disable>
                 <q-tooltip content-style="font-size: 1rem;">
                   Stop collection
                 </q-tooltip>
-              </q-btn>
+              </q-btn> -->
               <q-btn icon="delete" text-color="negative" @click="deleteCollectionPrompt()">
                 <q-tooltip content-style="font-size: 1rem;">
                   Delete Collection Configuration
@@ -120,6 +124,7 @@ import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 // import { dump } from 'js-yaml'
 import { exportFile, copyToClipboard } from 'quasar'
 import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml'
+import { collectionConfigToJson } from 'src/pages/Pipelines/collectionConfigToJson'
 
 export default {
   name: 'PagePipelineProperties',
@@ -135,7 +140,7 @@ export default {
   },
   computed: {
     ...mapGetters('mainStore', ['openCollectors', 'pipelines']),
-    ...mapState('mainStore', ['collectionMethodsOptions']),
+    ...mapState('mainStore', ['collectionMethodsOptions', 'collectionShippersOptions']),
     pipeline () {
       const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
       return (pipeline || {
@@ -156,6 +161,9 @@ export default {
     collectionMethod () {
       return (this.pipeline.collectionConfig && this.pipeline.collectionConfig.collectionMethod ? this.pipeline.collectionConfig.collectionMethod : '')
     },
+    collectionShipper () {
+      return (this.pipeline.collectionConfig && this.pipeline.collectionConfig.collectionShipper ? this.pipeline.collectionConfig.collectionShipper : '')
+    },
     collectionMethodOption () {
       const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'help_center' }
       if (this.collectionMethod && this.collectionMethod.length) {
@@ -164,13 +172,35 @@ export default {
         return fallbackValue
       }
     },
-    collectionConfigYml () {
-      // Transform the JSON config into Yaml
+    collectionShipperOption () {
+      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'unknown', outputFormat: 'json' }
       if (this.collectionMethod && this.collectionMethod.length) {
-        return collectionConfigToYml(this.pipeline.collectionConfig)
+        return this.collectionShippersOptions.find(cso => cso.value && cso.value === this.collectionShipper) || fallbackValue
       } else {
-        return '# No Collection Method configured.'
+        return fallbackValue
       }
+    },
+    collectionConfigOutput () {
+      let output = ''
+      // Transform the JSON config into Yaml
+      if (this.collectionShipper && this.collectionShipper.length) {
+        if (this.collectionShipperOption && this.collectionShipperOption.outputFormat && this.collectionShipperOption.outputFormat.length) {
+          if (this.collectionMethod && this.collectionMethod.length) {
+            if (this.collectionShipperOption.outputFormat === 'yaml' || this.collectionShipperOption.outputFormat === 'yml') {
+              output = collectionConfigToYml(this.pipeline.collectionConfig)
+            } else if (this.collectionShipperOption.outputFormat === 'json') {
+              output = collectionConfigToJson(this.pipeline.collectionConfig)
+            }
+          } else {
+            output = '# No Collection Method configured.'
+          }
+        } else {
+          output = '# Unknown output format.'
+        }
+      } else {
+        output = '# No Collecting Shipper configured.'
+      }
+      return output
     }
   },
   methods: {
@@ -255,23 +285,40 @@ export default {
         )
       }
     }, // deleteCollection
-    downloadFilbeatInputConfigFile () {
-      const fileName = 'input.' + this.pipeline.name + '_' + this.pipeline.uid + '.yml'
+    downloadCollectionAsShipperConfigFile () {
+      // Fallback file extension and Mime type (if not possible to assign a better one based on Shipper)
+      let fileExtension = '.txt'
+      let fileMimeType = 'text/plain'
+
+      // Set the file extension and Mime type based on teh outputFormat of the Shipper
+      if (this.collectionShipperOption && this.collectionShipperOption.outputFormat && this.collectionShipperOption.outputFormat.length) {
+        if (this.collectionShipperOption.outputFormat === 'yaml' || this.collectionShipperOption.outputFormat === 'yml') {
+          fileExtension = '.yml'
+          fileMimeType = 'text/yaml'
+        } else if (this.collectionShipperOption.outputFormat === 'json') {
+          fileExtension = '.json'
+          fileMimeType = 'application/json'
+        }
+      }
+
+      const fileName = 'input.' + this.pipeline.name + '_' + this.pipeline.uid + fileExtension
+
       const notificationPopupId = this.$q.notify({
         icon: 'cloud_download',
-        message: this.$t('Downloading Input Configuration file...'),
+        message: this.$t('Downloading Collection Configuration file...'),
         caption: fileName,
         type: 'ongoing'
       })
 
-      const status = exportFile(fileName, this.collectionConfigYml, 'text/yaml')
+      // Push file out
+      const status = exportFile(fileName, this.collectionConfigOutput, fileMimeType)
 
       if (status === true) {
         notificationPopupId({
           type: 'positive',
           color: 'positive',
           icon: 'check',
-          message: this.$t('Input Configuration file downloaded'),
+          message: this.$t('Collection Configuration file downloaded'),
           caption: fileName
         })
       } else {
@@ -279,20 +326,20 @@ export default {
           type: 'negative',
           color: 'negative',
           icon: 'report_problem',
-          message: this.$t('Problem while downloading Input Configuration file:'),
+          message: this.$t('Problem while downloading Collection Configuration file:'),
           caption: status
         })
         console.log('Error: ' + status)
       }
     },
-    copyFilbeatInputConfigFileToClipboard () {
-      copyToClipboard(this.collectionConfigYml)
+    copyCollectionConfigAsShipperFileToClipboard () {
+      copyToClipboard(this.collectionConfigOutput)
         .then(() => {
           this.$q.notify({
             type: 'positive',
             color: 'positive',
             icon: 'check',
-            message: this.$t('Input Configuration copied to Clipboard')
+            message: this.$t('Collection Configuration copied to Clipboard')
           })
         })
         .catch(() => {
@@ -300,7 +347,7 @@ export default {
             type: 'negative',
             color: 'negative',
             icon: 'report_problem',
-            message: this.$t('Problem while copying Input Configuration file to Clipboard')
+            message: this.$t('Problem while copying Collection Configuration file to Clipboard')
           })
         })
     }

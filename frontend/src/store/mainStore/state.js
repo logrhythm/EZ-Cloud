@@ -2344,17 +2344,20 @@ To store the custom fields as top-level fields, set the \`fields_under_root opti
       {
         value: 'filebeat',
         label: 'Filebeat',
-        icon: ''
+        icon: 'filebeat',
+        outputFormat: 'yaml'
       },
       {
         value: 'jsBeat',
         label: 'jsBeat',
-        icon: ''
+        icon: 'jsBeat',
+        outputFormat: 'json'
       },
       {
         value: 'lrHttpRest',
         label: 'LogRhythm HTTP Rest Beat',
-        icon: ''
+        icon: 'logrhythm',
+        outputFormat: 'yaml'
       }
     ], // collectionShippersOptions
     collectionMethodsOptions: [
@@ -2366,14 +2369,8 @@ To store the custom fields as top-level fields, set the \`fields_under_root opti
       },
       {
         shipper: 'jsBeat',
-        value: 'syslog_tcp',
-        label: 'Syslog over TCP',
-        icon: 'input'
-      },
-      {
-        shipper: 'jsBeat',
-        value: 'syslog_udp',
-        label: 'Syslog over UDP',
+        value: 'syslog',
+        label: 'Syslog',
         icon: 'input'
       },
       {
