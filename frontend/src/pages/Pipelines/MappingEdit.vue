@@ -1296,6 +1296,7 @@ export default {
           pipeline:
           {
             uid: this.pipelineUid,
+            status: (this.pipeline && this.pipeline.status && this.pipeline.status === 'Ready' ? this.pipeline.status : 'Dev'),
             fieldsMapping: this.jsonPathes
           }
         }

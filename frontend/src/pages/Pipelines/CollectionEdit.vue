@@ -343,7 +343,7 @@ export default {
           pipeline:
           {
             uid: this.pipelineUid,
-            status: 'Dev',
+            status: (this.pipeline && this.pipeline.status && this.pipeline.status === 'Ready' ? this.pipeline.status : 'Dev'),
             collectionConfig: JSON.parse(JSON.stringify(this.collectionConfig))
           }
         }

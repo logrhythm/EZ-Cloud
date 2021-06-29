@@ -30,17 +30,27 @@
       - [x] Add icons for Shippers
 - Pipeline list
   - [ ] Ability to rename Pipeline in Pipeline list
-  - [ ] Add Collection Type in Pipeline list
-  - [ ] Add Mapping stats in Pipeline list
-  - [ ] Change status of Pipeline when adding Collection or Mapping
+  - [x] Add Collection Shipper in Pipeline list
+  - [x] Add Collection Method in Pipeline list
+  - [x] Add Mapping stats in Pipeline list
+  - [x] Change status of Pipeline when adding Collection or Mapping
+    - [x] when adding Collection
+    - [x] when adding Mapping
+  - [x] Make Sorting by Status to make sense (Ready > Dev > New)
 - [ ] Hide Settings page for Prod
 - [ ] Create Logging shared Lib to push logs to Console and Windows Journal
-- [ ] Prevent user from using Tail for Pipeline set to HTTP-JSON collection
+- [ ] ~~Prevent user from using Tail for Pipeline set to HTTP-JSON collection~~ (👈 irrelevant as we are moving away from Filebeat)
 - Day mode
   - [ ] Polish CSS / Styling to get good color scheme in Day mode too
+    - [ ] Header bar background
+    - [ ] Roll over line in Mapping
+    - [ ] Drop down list background
+    - [ ] Text colour
+    - [ ] Navigation icons colour
 - [ ] Add a simple Wizard from landing page
   - [ ] Ask for name for Log Source
   - [ ] Create collection configuation
+    - [ ] Pick Shipper
     - [ ] Pick type of collection (Flat File, Syslog, REST, etc...)
     - [ ] Configure it
   - [ ] Pick up Open Collector
@@ -49,7 +59,7 @@
     - [ ] Run pre-configured Tail
   - [ ] Recap page
     - [ ] Ability to rename Log Source
-    - [ ] Ability to assing Log Source to other Open Collectors
+    - [ ] Ability to assign Log Source to other Open Collectors
     - [ ] Ability to Enable / Commit the Log Source creation
 
 ## TO FIX
