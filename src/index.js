@@ -9,13 +9,20 @@
  */
 
 const path = require('path');
+require('dotenv').config();
+
+// Storing the base directory name of the process, to be used elsewere while loading configuration and other files
+// The reason for this is that once packed, all these calls are made from the very same file, so __dirname of source 
+// files in sub-directories don't reflect the __dirname once packed.
+// Define the base directory name of the process
+process.env.baseDirname = process.env.baseDirname || path.join(__dirname, '..');
 
 // Load the System Logging functions
 const { getLevelToInt, logToSystem } = require('./shared/systemLogging');
 
 // Bring in the Log Level as an integer
-process.env.logLevel = getLevelToInt('Debug'); // XXXX
-process.env.logForceToConsole = true; // XXXX
+process.env.logLevel = getLevelToInt(process.env.LOGLEVEL || 'Information');
+process.env.logForceToConsole = process.env.LOGFORCETOCONSOLE || false;
 
 // Error handling
 // Push a log to the Windows Application logs
@@ -23,8 +30,10 @@ function exitOnUncaughtException(err) {
   try {
     logToSystem('Critical', `There was an uncaught error: (${err.code ? err.code : '__NO_CODE__'}) ${err.message ? err.message : '__NO_MESSAGE__'}`, true);
   } catch (error) {
+    // Last resort
     // eslint-disable-next-line no-console
     console.error('There was an uncaught error', err);
+    console.error('Could not log it on the system\'s journal', error);
   }
   process.exit(1);
 }

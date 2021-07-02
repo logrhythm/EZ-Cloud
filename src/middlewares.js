@@ -8,7 +8,7 @@ const { logToSystem } = require('./shared/systemLogging');
 const fs = require('fs');
 const path = require('path');
 
-const configJwt = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'config', 'jwt.json'), 'utf8'));
+const configJwt = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'jwt.json'), 'utf8'));
 
 // Returns the Access Denied error
 function accessDenied(res, next) {

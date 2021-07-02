@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const configSql = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'config', 'database.json'), 'utf8')).config;
+const configSql = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'database.json'), 'utf8')).config;
 // Create SQL object
 const { Connection, Request, TYPES } = require('tedious');
 

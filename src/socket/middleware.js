@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Get JWT Secret and TTL
-const jwtSecret = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'config', 'jwt.json'), 'utf8')).secret;
+const jwtSecret = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'jwt.json'), 'utf8')).secret;
 
 function isValidAuth(socket, next) {
   const { token } = socket.handshake.auth;

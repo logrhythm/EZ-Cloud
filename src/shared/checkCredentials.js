@@ -12,7 +12,7 @@ function waitMilliseconds(delay = 250) {
 // Get SQL config
 const configSql = JSON.parse(
   fs.readFileSync(
-    path.join(__dirname, '..', '..', 'config', 'database.json'), 'utf8'
+    path.join(process.env.baseDirname, 'config', 'database.json'), 'utf8'
   )
 ).config;
 
