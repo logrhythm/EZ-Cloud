@@ -48,6 +48,12 @@ function isLoggedIn(req, res, next) {
   }
 }
 
+// Log the Web requests / responses to the System Journal
+function logHttpToSystem(req, res, next) {
+  logToSystem('Verbose', `HTTP Request | client_ip: ${(req.socket && req.socket._peername && req.socket._peername.address ? req.socket._peername.address : '-')} | client_port: ${(req.socket && req.socket._peername && req.socket._peername.port ? req.socket._peername.port : '-')} | username: ${(req.user && req.user.username ? req.user.username : '-')} | method: ${(req.method ? req.method : '-')} | path: ${(req.url ? req.url : '-')}`);
+  next();
+}
+
 function notFound(req, res, next) {
   res.status(404);
   const error = new Error(`Not Found - ${req.originalUrl}`);
@@ -67,6 +73,7 @@ function errorHandler(err, req, res, next) {
 module.exports = {
   checkJwTokenAndSetUser,
   isLoggedIn,
+  logHttpToSystem,
   notFound,
   errorHandler
 };

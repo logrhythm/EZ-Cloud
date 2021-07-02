@@ -37,6 +37,8 @@ const api = require('./api');
 
 // Check for JWT token in the headers, and if found populate the req object accordingly
 app.use(middlewares.checkJwTokenAndSetUser);
+// Log the Web requests / responses to the System Journal
+app.use(middlewares.logHttpToSystem);
 
 app.get('/test', (req, res) => {
   res.json({
