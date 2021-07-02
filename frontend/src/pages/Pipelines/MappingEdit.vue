@@ -50,6 +50,7 @@
                 <div class="text-h6 q-mb-md">Advanced</div>
                 <q-toggle v-model="showExtraDetails" label="Show extra details" />
                 <q-toggle v-model="showQueues" label="Show Queues" />
+                <q-toggle v-model="showCommunicationLog" label="Show Communication &amp; Shipper's Logs" />
               </div>
             </div>
           </q-menu>
@@ -186,7 +187,7 @@
             <template v-slot:after>
               <div class="column">
                 <q-btn round dense flat icon="input" @click="queueProcessAdd({ fromArray: queueIn })" :disable="Object.keys(queueProcess).length > 0" />
-                <q-btn round dense flat icon="close" @click="queueIn=[]" :disable="queueIn.length == 0" color="red" />
+                <q-btn round dense flat icon="clear" @click="queueIn=[]" :disable="queueIn.length == 0" color="red" />
               </div>
             </template>
           </q-input>
@@ -431,6 +432,45 @@
         </q-card-section>
 
       </q-card>
+      <q-card
+        id="communicationLogsTextField"
+        ref="communicationLogsTextField"
+        class="q-mt-md"
+        v-show="showCommunicationLog"
+      >
+        <q-card-section class="text-h6" style="opacity:.6">
+          Communication &amp; Shipper Logs
+        </q-card-section>
+        <q-card-section>
+          <q-input
+            v-model="communicationLogsOutput"
+            type="textarea"
+            filled
+            readonly
+            style="min-height: 10rem;"
+            rows="21"
+            class="fixed-font"
+          >
+            <template v-slot:after>
+              <div class="column full-height">
+                <div class="column q-gutter-y-lg">
+                  <q-btn round dense flat icon="content_copy" @click="copyToClipboard(communicationLogsOutput)" :disable="!communicationLogsOutput || (communicationLogsOutput && communicationLogsOutput.length === 0)">
+                    <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                      Copy to Clipboad
+                    </q-tooltip>
+                  </q-btn>
+                  <q-separator />
+                  <q-btn round dense flat icon="clear" @click="communicationLogsOutput=''" color="red" :disable="!communicationLogsOutput || (communicationLogsOutput && communicationLogsOutput.length === 0)">
+                    <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                      Clear
+                    </q-tooltip>
+                  </q-btn>
+                </div>
+              </div>
+            </template>
+          </q-input>
+        </q-card-section>
+      </q-card>
     </div>
   </q-page>
 </template>
@@ -600,12 +640,14 @@ export default {
       queueInMaxSize: 200, // Maximum number of log messages in queueIn
       processedLogsMaxSize: 200, // Maximum number of log messages in processedLogs
       bufferStdOut: '', // Buffer to concatenate incoming STDOUT data until we find a carriage return
-      extractMessageFieldOnly: true,
-      showJqOutput: false,
-      jqFilterOutput: '',
-      jqTransformOutput: '',
-      needsSaving: false,
-      saving: false
+      extractMessageFieldOnly: true, // Only extract the content of the .message field
+      showJqOutput: false, // Collapse / Hide the JQ panel
+      jqFilterOutput: '', // The automacically built JQ Filter output
+      jqTransformOutput: '', // The automacically built JQ Transform output
+      needsSaving: false, // Are there any un-saved changes
+      saving: false, // Saving is still ongoing
+      showCommunicationLog: false, // Collapse / Hide the logs about the Socket communication with the server
+      communicationLogsOutput: '' // The logs about the Socket communication, as text
     }
   },
   computed: {
@@ -665,6 +707,55 @@ export default {
       }
     }, // filterMdiTagsOptions
 
+    addLineToCommunicationLog (payload) {
+      if (payload !== undefined) {
+        // Dump the string or strings (if multiline) into new line(s) in the console
+        if (typeof payload === 'string') {
+          // eslint-disable-next-line quotes
+          this.communicationLogsOutput += payload + (payload.endsWith("\n") ? '' : "\n")
+          // // eslint-disable-next-line quotes
+          // payload.split("\n").forEach(line => {
+          //   this.communicationLogsOutput += `${line}\n`
+          // })
+        } else {
+          this.communicationLogsOutput += `${JSON.stringify(payload, null, '  ')}\n`
+        }
+      }
+    },
+
+    showCommunicationLogAndScrollToIt () {
+      // Display the logs area
+      this.showCommunicationLog = true
+      // And jump to it
+      this.$nextTick(function () {
+        this.scrollTo('communicationLogsTextField')
+      })
+    }, // showCommunicationLogAndScrollToIt
+
+    scrollTo (elementName) {
+      const communicationAndShipperLogsElement = this.$refs[elementName].$el
+      setTimeout(() => {
+        // window.scrollTo(0, offset)
+        window.scrollTo({
+          top: communicationAndShipperLogsElement.offsetTop,
+          left: 0,
+          behavior: 'smooth'
+        })
+      }, 250)
+    }, // showCommunicationLogAndScrollToIt
+
+    showNotificationWithActionToLogs (message, type = 'negative') {
+      this.$q.notify({
+        message: message,
+        type,
+        progress: true,
+        timeout: (type === 'negative' ? 10000 : 2500),
+        actions: [
+          { label: 'See Logs', color: 'white', handler: this.showCommunicationLogAndScrollToIt }
+        ]
+      })
+    },
+
     //        ##     ##    ###    ##    ## ########  ##       ########  ######   #######   ######  ##    ## ######## ########  #######  ##    ## ########    ###    #### ##       ##        #######   ######
     //        ##     ##   ## ##   ###   ## ##     ## ##       ##       ##    ## ##     ## ##    ## ##   ##  ##          ##    ##     ## ###   ##    ##      ## ##    ##  ##       ##       ##     ## ##    ##
     //        ##     ##  ##   ##  ####  ## ##     ## ##       ##       ##       ##     ## ##       ##  ##   ##          ##    ##     ## ####  ##    ##     ##   ##   ##  ##       ##       ##     ## ##
@@ -674,6 +765,8 @@ export default {
     //        ##     ## ##     ## ##    ## ########  ######## ########  ######   #######   ######  ##    ## ########    ##     #######  ##    ##    ##    ##     ## #### ######## ########  #######   ######
 
     handleSocketOnTailLog (payload) {
+      // this.addLineToCommunicationLog('handleSocketOnTailLog')
+      // this.addLineToCommunicationLog(payload)
       // console.log(payload)
       // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "STDOUT", payload: "Apr 26 14:44:21 oc-ez containerd: time="2021-04-26… systemd-logind: New session 44703 of user root.↵"}
       // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "END"}
@@ -729,31 +822,119 @@ export default {
         payload.tailId &&
         payload.tailId === this.pipelineUid
       ) {
-        if (typeof payload.payload === 'string') {
-          console.log(payload.payload)
-          // const newPayload = []
-          // // eslint-disable-next-line quotes
-          // payload.payload.split("\n").forEach(lr => {
-          //   console.log(lr)
-          // })
-          // this.queueInAdd({ values: newPayload })
-        } else {
-          console.log(payload.payload)
-          // this.queueInAdd({ values: payload.payload })
-        }
+        // this.addLineToCommunicationLog(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
+        this.addLineToCommunicationLog(payload.payload)
+        // if (typeof payload.payload === 'string') {
+        //   console.log(payload.payload)
+        //   // const newPayload = []
+        //   // // eslint-disable-next-line quotes
+        //   // payload.payload.split("\n").forEach(lr => {
+        //   //   console.log(lr)
+        //   // })
+        //   // this.queueInAdd({ values: newPayload })
+        // } else {
+        //   console.log(payload.payload)
+        //   // this.queueInAdd({ values: payload.payload })
+        // }
       }
 
-      // If the remote job died, turn the Tail off here too
+      // If we are getting ERROR data from the remote job, log it to the console as error
       if (
         payload.code &&
-        (
-          payload.code === 'END' ||
-          payload.code === 'EXIT'
-        ) &&
+        payload.code === 'ERROR' &&
+        payload.payload &&
+        payload.tailId &&
+        payload.tailId === this.pipelineUid
+      ) {
+        console.error(payload.payload)
+        this.addLineToCommunicationLog(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
+        this.showNotificationWithActionToLogs(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
+      }
+
+      // // If the remote job died, turn the Tail off here too
+      // if (
+      //   payload.code &&
+      //   (
+      //     payload.code === 'END' ||
+      //     payload.code === 'EXIT'
+      //   ) &&
+      //   payload.tailId &&
+      //   payload.tailId === this.pipelineUid
+      // ) {
+      //   this.tailEnabled = false
+      //   this.addLineToCommunicationLog(`${payload.code} | Closing this Tail. | ${(payload.payload !== undefined ? payload.payload : '')}`)
+      //   this.showNotificationWithActionToLogs(`${payload.code} | Closing this Tail. (${(payload.payload !== undefined ? payload.payload : '')})`, 'info')
+      // }
+      // // If the remote job died, push it to the Comm Log
+      if (
+        payload.code === 'END' &&
         payload.tailId &&
         payload.tailId === this.pipelineUid
       ) {
         this.tailEnabled = false
+        this.addLineToCommunicationLog(`${payload.code} | Closing this Tail. | ${(payload.payload !== undefined ? payload.payload : '🏁')}`)
+        this.showNotificationWithActionToLogs(`${payload.code} | Closing this Tail. (${(payload.payload !== undefined ? payload.payload : '🏁')})`, 'info')
+      }
+
+      // If the remote job died, push it to the Comm Log
+      if (
+        payload.code === 'EXIT' &&
+        payload.tailId &&
+        payload.tailId === this.pipelineUid
+      ) {
+        this.tailEnabled = false
+        this.addLineToCommunicationLog(`${payload.code} | Tailjob exited. | ${(payload.payload !== undefined ? payload.payload : '🏁')}`)
+      }
+    },
+
+    handleSocketOnTailKill (payload) {
+      // this.addLineToCommunicationLog('handleSocketOnTailKill')
+      // this.addLineToCommunicationLog(payload)
+
+      // If we are getting STDOUT or STDERR data from the remote job push it to the Comm Log
+      if (
+        payload.code &&
+        (
+          payload.code === 'STDOUT' ||
+          payload.code === 'STDERR'
+        ) &&
+        payload.payload &&
+        payload.tailId &&
+        payload.tailId === this.pipelineUid
+      ) {
+        this.addLineToCommunicationLog(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
+      }
+
+      // If we are getting ERROR data from the remote job, push it to the Comm Log
+      if (
+        payload.code &&
+        payload.code === 'ERROR' &&
+        payload.payload &&
+        payload.tailId &&
+        payload.tailId === this.pipelineUid
+      ) {
+        this.addLineToCommunicationLog(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
+        console.error(payload.payload)
+        this.showNotificationWithActionToLogs(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`, 'info')
+      }
+
+      // If the remote job died, push it to the Comm Log
+      if (
+        payload.code === 'END' &&
+        payload.tailId &&
+        payload.tailId === this.pipelineUid
+      ) {
+        this.addLineToCommunicationLog(`${payload.code} | Post-Tail killing/cleaning job finished. | ${(payload.payload !== undefined ? payload.payload : '🏁')}`)
+        this.showNotificationWithActionToLogs(`${payload.code} | Post-Tail killing/cleaning job finished. (${(payload.payload !== undefined ? payload.payload : '🏁')})`, 'info')
+      }
+
+      // If the remote job died, push it to the Comm Log
+      if (
+        payload.code === 'EXIT' &&
+        payload.tailId &&
+        payload.tailId === this.pipelineUid
+      ) {
+        this.addLineToCommunicationLog(`${payload.code} | Post-Tail killing/cleaning job exited. | ${(payload.payload !== undefined ? payload.payload : '🏁')}`)
       }
     },
 
@@ -1335,6 +1516,8 @@ export default {
 
     // Event when Server sends a new log via Tail
     this.socket.on('tail.log', this.handleSocketOnTailLog)
+    // Event when Server sends a message while killing a Tail
+    this.socket.on('tail.kill', this.handleSocketOnTailKill)
   },
 
   watch: {
@@ -1391,7 +1574,12 @@ export default {
   },
 
   destroyed () {
+    // Close any ongoing Tail
     this.killTail()
+    // Unsubscribe from Socket.io events about new log via Tail
+    this.socket.off('tail.log')
+    // Unsubscribe from Socket.io events about message while killing a Tail
+    this.socket.off('tail.kill')
   }
 }
 </script>

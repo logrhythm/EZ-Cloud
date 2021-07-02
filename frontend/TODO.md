@@ -6,7 +6,7 @@
 - OpenCollectors list
   - [ ] Load SSH Token from file instead of copy/paste in field
   - [ ] Use alternative to Filebeat
-    - [ ] [jsBeat](https://github.com/TonyMasse/jsBeat/releases)
+    - [x] [jsBeat](https://github.com/TonyMasse/jsBeat/releases)
       - [x] Install NodeJS
         - [x] Store NodeJS download URL on GitHub
       - [x] Install jsBeat
@@ -17,7 +17,7 @@
         - [x] Create configuration template
         - [x] Update function that create fresh config
         - [x] Update function that create output config (ready for Beat to use)
-      - [ ] Use jsBeat / FlatFile for Tail
+      - [x] Use jsBeat / FlatFile for Tail
     - [ ] LR Rest Beat
       - [ ] Install LR Rest
       - [ ] Communicate each step to Frontend
@@ -61,6 +61,10 @@
     - [ ] Ability to rename Log Source
     - [ ] Ability to assign Log Source to other Open Collectors
     - [ ] Ability to Enable / Commit the Log Source creation
+- Field Mapping
+  - [x] Show popup for ERROR messages
+  - [x] Add "Console" view, and display STDERR messages there
+  - [x] Add "Console" view, and display STDOUT messages there
 
 ## TO FIX
 - [ ] Damn Tedious saving NULL as 'null' in OC list
@@ -68,8 +72,8 @@
 - [x] Dark / Day mode - Not loading from Local Storage correctly
 
 ## TO TEST
-- [ ] Tail with jsBeat
-- [ ] Collection with jsBeat
+- [x] Tail with jsBeat
+- [x] Collection with jsBeat
 
 ---
 
