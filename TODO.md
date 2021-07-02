@@ -5,9 +5,9 @@
 ## TO DO
 - [ ] Build packaged version
   - [x] Install and configure webpack
-  - [ ] Create and use global enviromnent variable to store the root path of the app
-    - [ ] Detect it at startup
-    - [ ] Use it to load any configuration file or web file
+  - [x] Create and use global enviromnent variable to store the root path of the app
+    - [x] Detect it at startup
+    - [x] Use it to load any configuration file or web file
   - [ ] Create build sequence / script to:
     - [ ] Run webpack
     - [ ] Prep config file / samples
