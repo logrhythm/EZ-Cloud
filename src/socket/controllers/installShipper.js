@@ -192,6 +192,11 @@ function installShipper(socket, payload) {
                   command: `sudo mv /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.jsBeat.folderName} /opt/`
                 },
                 {
+                  action: 'Remove previous symbolic link to older version, if any',
+                  command: `sudo rm -f /opt/jsBeat`,
+                  continueOnFailure: true
+                },
+                {
                   action: 'Create a symbolic link to this version',
                   command: `sudo ln --symbolic ${payload.installerSource.jsBeat.folderName} /opt/jsBeat`
                 },
@@ -260,6 +265,11 @@ function installShipper(socket, payload) {
                 {
                   action: 'Move NodeJS to /opt/jsBeat/lib/',
                   command: `mv /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.nodeJs.folderName} /opt/jsBeat/lib/`
+                },
+                {
+                  action: 'Remove previous symbolic link to older version, if any',
+                  command: `sudo rm -f /opt/jsBeat/lib/node`,
+                  continueOnFailure: true
                 },
                 {
                   action: 'Create a symbolic link to this version',
