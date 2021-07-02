@@ -5,6 +5,10 @@ private/
 # See config.sample/ for example of config files
 config/
 
+# Build from webpack
+dist/bin/main.js*
+dist/config/
+
 # Dist/Built front end
 # src/public_web_root/js/*
 # src/public_web_root/icons/*
