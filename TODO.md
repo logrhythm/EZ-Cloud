@@ -15,7 +15,7 @@
       - [ ] Build Frontend (? not sure)
 - [x] Build central logging lib
   - [x] Use lib to log to Windows Journal System
-  - [ ] Log Web access to Windows Journal System
+  - [x] Log Web access to Windows Journal System
 
 ## TO FIX
 
