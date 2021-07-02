@@ -1,1 +1,9 @@
 // app global css in SCSS form
+
+// For Install Logs and other Console messages
+.fixed-font-console {
+  display: block;
+  unicode-bidi: embed;
+  font-family: monospace;
+  white-space: pre;
+}

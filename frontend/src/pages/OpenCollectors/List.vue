@@ -621,7 +621,7 @@ export default {
       }
     },
 
-    handleSocketOnTailLog (payload) {
+    handleSocketOnShipperInstall (payload) {
       console.log(payload)
 
       if (
@@ -736,20 +736,14 @@ export default {
     this.loadShippersUrls({ caller: this })
 
     // Event when Server sends output or updates from an Install/Uninstall job
-    this.socket.on('shipper.install', this.handleSocketOnTailLog)
+    this.socket.on('shipper.install', this.handleSocketOnShipperInstall)
   },
   beforeDestroy () {
-    this.socket.offAny(this.handleSocketOnTailLog)
+    this.socket.offAny(this.handleSocketOnShipperInstall)
   }
 }
 
 </script>
 
 <style>
-.fixed-font-console {
-  display: block;
-  unicode-bidi: embed;
-  font-family: monospace;
-  white-space: pre;
-}
 </style>
