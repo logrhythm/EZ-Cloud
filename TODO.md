@@ -9,10 +9,11 @@
     - [x] Detect it at startup
     - [x] Use it to load any configuration file or web file
   - [ ] Create build sequence / script to:
-    - [ ] Run webpack
+    - [x] Run webpack
     - [ ] Prep config file / samples
     - [ ] Prep web file for Frontend
       - [ ] Build Frontend (? not sure)
+    - [ ] Compress into a versionned archive
 - [x] Build central logging lib
   - [x] Use lib to log to Windows Journal System
   - [x] Log Web access to Windows Journal System
