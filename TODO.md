@@ -13,8 +13,8 @@
     - [ ] Prep config file / samples
     - [ ] Prep web file for Frontend
       - [ ] Build Frontend (? not sure)
-- [ ] Build central logging lib
-  - [ ] Use lib to log to Windows Journal System
+- [x] Build central logging lib
+  - [x] Use lib to log to Windows Journal System
 
 ## TO FIX
 

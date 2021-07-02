@@ -1,4 +1,8 @@
+// To manage the JWT Token
 const jwt = require('jsonwebtoken');
+
+// Load the System Logging functions
+const { logToSystem } = require('./shared/systemLogging');
 
 // Get SQL config
 const fs = require('fs');
@@ -22,8 +26,7 @@ function checkJwTokenAndSetUser(req, res, next) {
       // use jwt lib to decode
       jwt.verify(token, configJwt.secret, (error, user) => {
         if (error) {
-          // eslint-disable-next-line no-console
-          console.log(error);
+          logToSystem('Error', error);
         }
         req.user = user;
         next();

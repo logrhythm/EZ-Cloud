@@ -5,6 +5,9 @@ const SSH = require('simple-ssh');
 // const { getSshConfigForCollector } = require('../../api/config');
 const { getSshConfigForCollector } = require('../../shared/collectorSshConfig');
 
+// Load the System Logging functions
+const { logToSystem } = require('../../shared/systemLogging');
+
 const installs = [];
 
 function getInstallerUrls(socket, payload) {
@@ -306,7 +309,8 @@ function installShipper(socket, payload) {
             // Add the Steps to the Exec stack
             steps.forEach((step, stepCounter) => {
               // eslint-disable-next-line no-console
-              console.log(`installShipper - Adding step: (${stepCounter}) ${step.action}...`);
+              // console.log(`installShipper - Adding step: (${stepCounter}) ${step.action}...`);
+              logToSystem('Debug', `installShipper - Adding step: (${stepCounter}) ${step.action}...`);
               installs[payload.jobId]
                 .exec(step.command, {
                   in: step.stdin || '',

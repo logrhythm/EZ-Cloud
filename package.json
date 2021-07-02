@@ -19,7 +19,6 @@
     "url": "https://github.com/TonyMasse/EZ-Cloud.git"
   },
   "dependencies": {
-    "auto-git-update": "^2.0.1",
     "cors": "^2.8.5",
     "crypto-js": "^4.0.0",
     "dotenv": "^8.6.0",
