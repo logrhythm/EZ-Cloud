@@ -1,12 +1,15 @@
 const CopyPlugin = require('copy-webpack-plugin');
+// const ZipPlugin = require('zip-webpack-plugin');
 const path = require('path');
+const PACKAGE = require('./package.json');
+const version = PACKAGE.version;
 
 module.exports = {
     entry: {
         service: './src/index.js'
     },
     output: {
-        path: path.join(__dirname, 'dist', 'ez-cloud-server', 'bin'),
+        path: path.join(__dirname, 'dist', `ez-cloud-server-${version}`, 'bin'),
         filename: '[name].js'
     },
     mode: 'production',
@@ -20,6 +23,10 @@ module.exports = {
                 { from: '.env.sample', to: path.join('..', '.env.sample'), toType: 'file' },
                 { from: '.env.dist', to: path.join('..', '.env'), toType: 'file' }
             ],
-        }),
+        })
+        // ,
+        // new ZipPlugin({
+        //     path: path.join('..')
+        // })
     ]
 }
