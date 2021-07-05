@@ -8,15 +8,16 @@
   - [x] Create and use global enviromnent variable to store the root path of the app
     - [x] Detect it at startup
     - [x] Use it to load any configuration file or web file
-  - [ ] Create build sequence / script to:
+  - [x] Create build sequence / script to:
     - [x] Run webpack
-    - [ ] Prep config file / samples
-    - [ ] Prep web file for Frontend
+    - [x] Prep config file / samples
+    - [x] Prep web file for Frontend
       - [ ] Build Frontend (? not sure)
     - [ ] Compress into a versionned archive
 - [x] Build central logging lib
   - [x] Use lib to log to Windows Journal System
   - [x] Log Web access to Windows Journal System
+- [ ] Remove dependance to config/ssh.json
 
 ## TO FIX
 

@@ -1,0 +1,7 @@
+{
+    "config": {
+        "host":"CHANGE_ME",
+        "user":"root",
+        "pass":"CHANGE_ME"
+        }
+}
