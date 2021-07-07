@@ -6,8 +6,7 @@ private/
 config/
 
 # Build from webpack
-dist/bin/main.js*
-dist/config/
+dist/
 
 # Dist/Built front end
 # src/public_web_root/js/*
