@@ -9,7 +9,7 @@ module.exports = {
         service: './src/index.js'
     },
     output: {
-        path: path.join(__dirname, 'dist', `EZ-Cloud.Server.v${version}`, 'bin'),
+        path: path.join(__dirname, 'dist', `EZ-Cloud.v${version}`, 'bin'),
         filename: '[name].js'
     },
     mode: 'production',
@@ -21,7 +21,8 @@ module.exports = {
                 { from: 'config.sample', to: path.join('..', 'config.sample'), toType: 'dir' },
                 { from: 'public_web_root', to: path.join('..', 'public_web_root'), toType: 'dir' },
                 { from: '.env.sample', to: path.join('..', '.env.sample'), toType: 'file' },
-                { from: '.env.dist', to: path.join('..', '.env'), toType: 'file' }
+                { from: '.env.dist', to: path.join('..', '.env'), toType: 'file' },
+                { from: 'database', to: path.join('..', 'database'), toType: 'dir' }
             ],
         })
         // ,
