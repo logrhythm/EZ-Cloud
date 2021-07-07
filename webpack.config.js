@@ -9,7 +9,7 @@ module.exports = {
         service: './src/index.js'
     },
     output: {
-        path: path.join(__dirname, 'dist', `ez-cloud-server-${version}`, 'bin'),
+        path: path.join(__dirname, 'dist', `EZ-Cloud.Server.v${version}`, 'bin'),
         filename: '[name].js'
     },
     mode: 'production',
