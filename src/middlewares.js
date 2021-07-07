@@ -1,10 +1,14 @@
+// To manage the JWT Token
 const jwt = require('jsonwebtoken');
+
+// Load the System Logging functions
+const { logToSystem } = require('./shared/systemLogging');
 
 // Get SQL config
 const fs = require('fs');
 const path = require('path');
 
-const configJwt = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'config', 'jwt.json'), 'utf8'));
+const configJwt = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'jwt.json'), 'utf8'));
 
 // Returns the Access Denied error
 function accessDenied(res, next) {
@@ -22,8 +26,7 @@ function checkJwTokenAndSetUser(req, res, next) {
       // use jwt lib to decode
       jwt.verify(token, configJwt.secret, (error, user) => {
         if (error) {
-          // eslint-disable-next-line no-console
-          console.log(error);
+          logToSystem('Error', error);
         }
         req.user = user;
         next();
@@ -45,6 +48,12 @@ function isLoggedIn(req, res, next) {
   }
 }
 
+// Log the Web requests / responses to the System Journal
+function logHttpToSystem(req, res, next) {
+  logToSystem('Verbose', `HTTP Request | client_ip: ${(req.socket && req.socket._peername && req.socket._peername.address ? req.socket._peername.address : '-')} | client_port: ${(req.socket && req.socket._peername && req.socket._peername.port ? req.socket._peername.port : '-')} | username: ${(req.user && req.user.username ? req.user.username : '-')} | method: ${(req.method ? req.method : '-')} | path: ${(req.url ? req.url : '-')}`);
+  next();
+}
+
 function notFound(req, res, next) {
   res.status(404);
   const error = new Error(`Not Found - ${req.originalUrl}`);
@@ -64,6 +73,7 @@ function errorHandler(err, req, res, next) {
 module.exports = {
   checkJwTokenAndSetUser,
   isLoggedIn,
+  logHttpToSystem,
   notFound,
   errorHandler
 };

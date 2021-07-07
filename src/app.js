@@ -8,8 +8,8 @@ const fs = require('fs');
 
 require('dotenv').config();
 
-const httpsKey = fs.readFileSync(path.join(__dirname, '..', 'config', 'https.key.pem'));
-const httpsCert = fs.readFileSync(path.join(__dirname, '..', 'config', 'https.cert.pem'));
+const httpsKey = fs.readFileSync(path.join(process.env.baseDirname, 'config', 'https.key.pem'));
+const httpsCert = fs.readFileSync(path.join(process.env.baseDirname, 'config', 'https.cert.pem'));
 
 const app = express();
 
@@ -37,6 +37,8 @@ const api = require('./api');
 
 // Check for JWT token in the headers, and if found populate the req object accordingly
 app.use(middlewares.checkJwTokenAndSetUser);
+// Log the Web requests / responses to the System Journal
+app.use(middlewares.logHttpToSystem);
 
 app.get('/test', (req, res) => {
   res.json({
@@ -49,11 +51,11 @@ app.use('/api/v1', api);
 // Static web site hosting:
 // - First, the home page
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public_web_root', 'index.html'));
+  res.sendFile(path.join(process.env.baseDirname, 'public_web_root', 'index.html'));
 });
 // - Second, all the other files/pages
 app.get('/:file(*)', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public_web_root', req.params.file));
+  res.sendFile(path.join(process.env.baseDirname, 'public_web_root', req.params.file));
 });
 
 app.use(middlewares.notFound);

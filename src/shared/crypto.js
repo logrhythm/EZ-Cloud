@@ -2,7 +2,7 @@ const CryptoJS = require('crypto-js');
 const fs = require('fs');
 const path = require('path');
 
-const secret = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'config', 'secure.json'), 'utf8')).aes_secret;
+const secret = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'secure.json'), 'utf8')).aes_secret;
 
 if (!(secret && secret.length)) {
   // eslint-disable-next-line no-console

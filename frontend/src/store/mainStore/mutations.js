@@ -79,30 +79,21 @@ export function addPipeline (state, payload) {
 export function updatePipeline (state, payload) {
   if (payload && payload.uid && payload.uid.length) {
     const pipelineToUpdate = state.pipelines.find(p => p.uid === payload.uid)
-    Array([
+
+    const branches = [
       'status',
-      'primaryOpenCollector'
-    ]).forEach((branch) => {
+      'primaryOpenCollector',
+      'collectionConfig'
+    ]
+    branches.forEach((branch) => {
       if (payload[branch]) {
         pipelineToUpdate[branch] = payload[branch]
       }
     })
 
-    // Array([
-    //   'fieldsMapping',
-    //   'collectionConfig'
-    // ]).forEach((branch) => {
-    //   if (payload[branch]) {
-    //     pipelineToUpdate[branch] = [].concat(payload[branch])
-    //   }
-    // })
-
+    // Mapping is a tad special, so we do it on its own
     if (payload.fieldsMapping) {
       pipelineToUpdate.fieldsMapping = [].concat(payload.fieldsMapping)
-    }
-    console.log('COMMIT - updatePipeline')
-    if (payload.collectionConfig) {
-      pipelineToUpdate.collectionConfig = payload.collectionConfig
     }
   }
 }
@@ -128,5 +119,20 @@ export function getPipelines (state, payload) {
 export function updateJwtToken (state, payload) {
   if (payload) {
     state.jwtToken = payload.token
+    try {
+      // Quick trick to save time while developping.
+      // Avoids from having to login all the time when modifying the code
+      if (process.env.DEV) {
+        localStorage.setItem('jwtToken', payload.token)
+      }
+    } catch (err) {
+      //
+    }
+  }
+}
+
+export function loadShippersUrls (state, payload) {
+  if (payload && Array.isArray(payload)) {
+    state.shippersUrlsInternal = payload
   }
 }

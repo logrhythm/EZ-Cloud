@@ -9,7 +9,7 @@ const router = express.Router();
 const checkCredentials = require('../shared/checkCredentials');
 
 // Get JWT Secret and TTL
-const jwtConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'config', 'jwt.json'), 'utf8'));
+const jwtConfig = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'jwt.json'), 'utf8'));
 const jwtSecret = (jwtConfig && jwtConfig.secret ? jwtConfig.secret : '');
 const jwtTtl = (jwtConfig && jwtConfig.ttl ? jwtConfig.ttl : '1h');
 

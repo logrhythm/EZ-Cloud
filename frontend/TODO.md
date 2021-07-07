@@ -6,37 +6,74 @@
 - OpenCollectors list
   - [ ] Load SSH Token from file instead of copy/paste in field
   - [ ] Use alternative to Filebeat
-    - [ ] [jsBeat](https://github.com/TonyMasse/jsBeat/releases)
-      - [ ] Create jsBeat configuration
-      - [ ] Use jsBeat / FlatFile for Tail
-      - [ ] Install NodeJS
-        - [ ] Store NodeJS download URL on GitHub
-      - [ ] Install jsBeat
-        - [ ] Store jsBeat download URL on GitHub
-      - [ ] Communicate each step to Frontend
-      - [ ] Display Install progress in Frontend
+    - [x] [jsBeat](https://github.com/TonyMasse/jsBeat/releases)
+      - [x] Install NodeJS
+        - [x] Store NodeJS download URL on GitHub
+      - [x] Install jsBeat
+        - [x] Store jsBeat download URL on GitHub
+      - [x] Communicate each step to Frontend
+      - [x] Display Install progress in Frontend
+      - [x] Create jsBeat configuration
+        - [x] Create configuration template
+        - [x] Update function that create fresh config
+        - [x] Update function that create output config (ready for Beat to use)
+      - [x] Use jsBeat / FlatFile for Tail
     - [ ] LR Rest Beat
-      - [ ] Create LR Rest Beat configuration
-      - [ ] Use LR Rest Beat for Tail
       - [ ] Install LR Rest
       - [ ] Communicate each step to Frontend
       - [ ] Display Install progress in Frontend
+      - [ ] Create LR Rest Beat configuration
+      - [ ] Use LR Rest Beat for Tail
+    - [x] Update UI to not be Filebeat centric
+      - [x] Download button and function
+      - [x] Copy to Clipboard button and function
+      - [x] Add icons for Shippers
 - Pipeline list
   - [ ] Ability to rename Pipeline in Pipeline list
-  - [ ] Add Collection Type in Pipeline list
-  - [ ] Add Mapping stats in Pipeline list
-  - [ ] Change status of Pipeline when adding Collection or Mapping
+  - [x] Add Collection Shipper in Pipeline list
+  - [x] Add Collection Method in Pipeline list
+  - [x] Add Mapping stats in Pipeline list
+  - [x] Change status of Pipeline when adding Collection or Mapping
+    - [x] when adding Collection
+    - [x] when adding Mapping
+  - [x] Make Sorting by Status to make sense (Ready > Dev > New)
 - [ ] Hide Settings page for Prod
 - [ ] Create Logging shared Lib to push logs to Console and Windows Journal
-- [ ] Prevent user from using Tail for Pipeline set to HTTP-JSON collection
+- [ ] ~~Prevent user from using Tail for Pipeline set to HTTP-JSON collection~~ (👈 irrelevant as we are moving away from Filebeat)
 - Day mode
   - [ ] Polish CSS / Styling to get good color scheme in Day mode too
+    - [ ] Header bar background
+    - [ ] Roll over line in Mapping
+    - [ ] Drop down list background
+    - [ ] Text colour
+    - [ ] Navigation icons colour
+- [ ] Add a simple Wizard from landing page
+  - [ ] Ask for name for Log Source
+  - [ ] Create collection configuation
+    - [ ] Pick Shipper
+    - [ ] Pick type of collection (Flat File, Syslog, REST, etc...)
+    - [ ] Configure it
+  - [ ] Pick up Open Collector
+    - [ ] Add one if none in the list
+  - [ ] Create field mapping
+    - [ ] Run pre-configured Tail
+  - [ ] Recap page
+    - [ ] Ability to rename Log Source
+    - [ ] Ability to assign Log Source to other Open Collectors
+    - [ ] Ability to Enable / Commit the Log Source creation
+- Field Mapping
+  - [x] Show popup for ERROR messages
+  - [x] Add "Console" view, and display STDERR messages there
+  - [x] Add "Console" view, and display STDOUT messages there
+
 ## TO FIX
 - [ ] Damn Tedious saving NULL as 'null' in OC list
+- [ ] Open Collector List - Installation progress bar showing always full, even when progress is not yet 100%
+- [x] Dark / Day mode - Not loading from Local Storage correctly
 
 ## TO TEST
-- [ ] Tail with jsBeat
-- [ ] Collection with jsBeat
+- [x] Tail with jsBeat
+- [x] Collection with jsBeat
 
 ---
 

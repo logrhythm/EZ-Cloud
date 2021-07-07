@@ -272,6 +272,35 @@ export function deletePipeline ({ state, commit }, payload) {
   }
 }
 
+export function loadShippersUrls ({ state, commit }, payload) {
+  if (state.shippersUrlsInternal.length === 0) {
+    console.log('☁️ Downloading Shippers\' details and URLs...')
+
+    // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+    fetch(this._vm.globalConstants.baseUrl.shippersUrls, {
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer'
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok.')
+        }
+        return response.json()
+      })
+      .then(data => {
+        if (data && Array.isArray(data)) {
+          commit('loadShippersUrls', data)
+          console.log('✔️ [API SUCCESS] Succesfully loaded ' + data.length + ' Shippers\' details and URLs.')
+        } else {
+          throw new Error('Returned data wasn\'t a proper JSON array.')
+        }
+      })
+      .catch(error => {
+        console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+      })
+  }
+}
+
 //           ###    ########  ####       ##     ## ######## #### ##       #### ######## #### ########  ######
 //          ## ##   ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
 //         ##   ##  ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##
@@ -282,6 +311,7 @@ export function deletePipeline ({ state, commit }, payload) {
 
 export function getDataFromSite (params = {
   apiUrl: '',
+  isUrlExternal: false,
   dataLabel: '',
   countDataLabel: false,
   targetObjectName: '',
@@ -304,6 +334,7 @@ export function getDataFromSite (params = {
   let apiResponse = {}
 
   if (typeof params.apiUrl === 'undefined') { params.apiUrl = '' }
+  if (typeof params.isUrlExternal === 'undefined') { params.isUrlExternal = false }
   if (typeof params.dataLabel === 'undefined') { params.dataLabel = '' }
   if (typeof params.countDataLabel === 'undefined') { params.countDataLabel = false }
   if (typeof params.targetObjectName === 'undefined') { params.targetObjectName = '' }
@@ -342,7 +373,7 @@ export function getDataFromSite (params = {
   if (params.debug) {
     console.log('getDataFromSite -- GET')
   }
-  params.caller.$axios.get(params.caller.globalConstants.baseUrl.api + params.apiUrl, {
+  params.caller.$axios.get((params.isUrlExternal ? params.apiUrl : params.caller.globalConstants.baseUrl.api + params.apiUrl), {
     params: params.apiCallParams,
     headers: params.apiHeaders
   })
@@ -457,6 +488,7 @@ export function getDataFromSite (params = {
 // postDataToSite: Call API endpoint to post data to it, and optionally get data from it
 export function postDataToSite (params = {
   apiUrl: '',
+  isUrlExternal: false,
   dataLabel: '',
   countDataLabel: false,
   targetObjectName: '',
@@ -479,6 +511,7 @@ export function postDataToSite (params = {
   let apiResponse = {}
 
   if (typeof params.apiUrl === 'undefined') { params.apiUrl = '' }
+  if (typeof params.isUrlExternal === 'undefined') { params.isUrlExternal = false }
   if (typeof params.dataLabel === 'undefined') { params.dataLabel = '' }
   if (typeof params.countDataLabel === 'undefined') { params.countDataLabel = false }
   if (typeof params.targetObjectName === 'undefined') { params.targetObjectName = '' }
@@ -518,7 +551,7 @@ export function postDataToSite (params = {
     console.log('postDataToSite -- POST')
   }
   params.caller.$axios.post(
-    params.caller.globalConstants.baseUrl.api + params.apiUrl,
+    (params.isUrlExternal ? params.apiUrl : params.caller.globalConstants.baseUrl.api + params.apiUrl),
     params.apiCallParams,
     {
       headers: params.apiHeaders

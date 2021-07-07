@@ -100,6 +100,26 @@
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
             <q-card-section class="text-h6">
+                Collecting Shipper
+            </q-card-section>
+            <q-separator />
+            <q-card-section>
+                <q-select
+                  dense
+                  standout="bg-blue-5 text-white"
+                  v-model="collectionShipper"
+                  emit-value
+                  map-options
+                  :options="collectionShippersOptions"
+                  style="min-width: 20rem;"
+                  class="q-mx-sm q-my-xs"
+                  popup-content-class="bg-grey-9"
+                />
+            </q-card-section>
+          </q-card-section>
+
+          <q-card-section class="col q-ma-none q-pa-none">
+            <q-card-section class="text-h6">
                 Collection Method
             </q-card-section>
             <q-separator />
@@ -110,7 +130,7 @@
                   v-model="collectionMethod"
                   emit-value
                   map-options
-                  :options="collectionMethodsOptions"
+                  :options="collectionMethodsOptions.filter(cmo => cmo.shipper == collectionShipper)"
                   style="min-width: 20rem;"
                   class="q-mx-sm q-my-xs"
                   popup-content-class="bg-grey-9"
@@ -222,7 +242,9 @@ export default {
       pipelineUid: '',
       collectionConfig: {},
       needsSaving: false,
+      collectionShipper: '',
       collectionMethod: '',
+      activeCollectionShipper: '',
       activeCollectionMethod: '',
       showCollectionConfig: false,
       showCollectionMethodTemplate: false,
@@ -231,7 +253,7 @@ export default {
   },
 
   computed: {
-    ...mapState('mainStore', ['collectionMethodTemplates', 'collectionMethodsOptions']),
+    ...mapState('mainStore', ['collectionMethodTemplates', 'collectionMethodsOptions', 'collectionShippersOptions']),
     pipeline () {
       const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
       return (pipeline || {
@@ -301,7 +323,9 @@ export default {
         // Bring back config from the store
         const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
         this.collectionConfig = (pipeline && pipeline.collectionConfig ? JSON.parse(JSON.stringify(pipeline.collectionConfig)) : [])
+        this.activeCollectionShipper = this.collectionConfig.collectionShipper
         this.activeCollectionMethod = this.collectionConfig.collectionMethod
+        this.collectionShipper = this.activeCollectionShipper
         this.collectionMethod = this.activeCollectionMethod
 
         // Flag down the need to Save as data is fresh from last save now
@@ -319,6 +343,7 @@ export default {
           pipeline:
           {
             uid: this.pipelineUid,
+            status: (this.pipeline && this.pipeline.status && this.pipeline.status === 'Ready' ? this.pipeline.status : 'Dev'),
             collectionConfig: JSON.parse(JSON.stringify(this.collectionConfig))
           }
         }
@@ -348,51 +373,80 @@ export default {
       }
     },
     switchCollectionMethod () {
+      this.activeCollectionShipper = (this.collectionShipper && this.collectionShipper.value ? this.collectionShipper.value : this.collectionShipper)
       this.activeCollectionMethod = (this.collectionMethod && this.collectionMethod.value ? this.collectionMethod.value : this.collectionMethod)
 
       // If it's different than before, wipe the current config, and start fresh
       if (!this.collectionConfig.collectionMethod || (this.collectionConfig.collectionMethod !== this.activeCollectionMethod)) {
         // this.collectionConfig.collectionMethod = this.activeCollectionMethod
         const newConf = {
-          collectionMethod: this.activeCollectionMethod,
-          enabled: true,
-          fields: {
+          collectionShipper: this.activeCollectionShipper,
+          collectionMethod: this.activeCollectionMethod
+        }
+
+        // For filebeat:
+        if (this.activeCollectionShipper === 'filebeat') {
+          newConf.enabled = true
+          newConf.fields = {
             stream_id: this.pipelineUid,
             stream_name: this.pipeline.name
           }
+
+          // For Flat files:
+          if (this.activeCollectionMethod === 'log') {
+            newConf.paths = ['/var/log/' + this.pipeline.name + '_' + this.pipeline.uid + '/*.log']
+          }
+
+          // For Syslog:
+          if (this.activeCollectionMethod === 'syslog_udp') {
+            newConf['protocol.udp.host'] = '0.0.0.0:514'
+
+            // newConf['protocol.udp'] = {
+            // }
+          }
+
+          if (this.activeCollectionMethod === 'syslog_tcp') {
+            newConf['protocol.tcp.host'] = '0.0.0.0:514'
+
+            newConf['protocol.tcp.ssl.enabled'] = false
+            newConf['protocol.tcp.ssl.certificate'] = '/etc/filebeat/certificates/ez_stream_' + this.pipeline.uid + '.crt'
+            newConf['protocol.tcp.ssl.key'] = '/etc/filebeat/certificates/ez_stream_' + this.pipeline.uid + '.key'
+            newConf['protocol.tcp.ssl.supported_protocols'] = ['TLSv1.1', 'TLSv1.2', 'TLSv1.3']
+
+            // newConf['protocol.tcp.ssl'] = {
+            // }
+            // newConf['protocol.tcp'] = {
+            // }
+          }
+
+          // For HTTP / REST API:
+          if (this.activeCollectionMethod === 'httpjson') {
+            newConf.config_version = 2
+            newConf['request.url'] = 'https://CHANGE_THIS'
+            // newConf['request.method'] = 'GET'
+          }
         }
-        // For Flat files:
-        if (this.activeCollectionMethod === 'log') {
-          newConf.paths = ['/var/log/' + this.pipeline.name + '_' + this.pipeline.uid + '/*.log']
-        }
 
-        // For Syslog:
-        if (this.activeCollectionMethod === 'syslog_udp') {
-          newConf['protocol.udp.host'] = '0.0.0.0:514'
+        // For jsBeat:
+        if (this.activeCollectionShipper === 'jsBeat') {
+          newConf.uid = this.pipelineUid
+          newConf.name = this.pipeline.name
+          newConf.deviceType = this.pipeline.name.replace(/[^a-zA-Z0-9]/g, '_')
+          newConf.active = true
+          newConf.filterHelpers = {
+            stream_id: this.pipelineUid,
+            stream_name: this.pipeline.name
+          }
 
-          // newConf['protocol.udp'] = {
-          // }
-        }
-
-        if (this.activeCollectionMethod === 'syslog_tcp') {
-          newConf['protocol.tcp.host'] = '0.0.0.0:514'
-
-          newConf['protocol.tcp.ssl.enabled'] = false
-          newConf['protocol.tcp.ssl.certificate'] = '/etc/filebeat/certificates/ez_stream_' + this.pipeline.uid + '.crt'
-          newConf['protocol.tcp.ssl.key'] = '/etc/filebeat/certificates/ez_stream_' + this.pipeline.uid + '.key'
-          newConf['protocol.tcp.ssl.supported_protocols'] = ['TLSv1.1', 'TLSv1.2', 'TLSv1.3']
-
-          // newConf['protocol.tcp.ssl'] = {
-          // }
-          // newConf['protocol.tcp'] = {
-          // }
-        }
-
-        // For HTTP / REST API:
-        if (this.activeCollectionMethod === 'httpjson') {
-          newConf.config_version = 2
-          newConf['request.url'] = 'https://CHANGE_THIS'
-          // newConf['request.method'] = 'GET'
+          if (this.activeCollectionMethod === 'flatFile') {
+            newConf.baseDirectoryPath = '/var/log/' + String(this.pipeline.name).replace(/\s/g, '_') + '_' + this.pipeline.uid + '/'
+            newConf.inclusionFilter = '*.log'
+            newConf.multiLines = {
+              msgStartRegex: '',
+              msgStopRegex: '',
+              msgDelimiterRegex: ''
+            }
+          }
         }
 
         this.collectionConfig = newConf
@@ -405,6 +459,13 @@ export default {
         this.collectionConfigYml = collectionConfigToYml(this.pipeline.collectionConfig)
       } else {
         this.collectionConfigYml = '# No Collection Method configured.'
+      }
+    },
+    collectionShipperHasChanged () {
+      console.log('collectionShipperHasChanged')
+      this.needsSaving = true
+      if (this.showCollectionConfig) {
+        this.buildYmlConfig()
       }
     },
     collectionConfigHasChanged () {
@@ -430,6 +491,12 @@ export default {
   },
 
   watch: {
+    collectionShipper: {
+      handler () {
+        this.collectionShipperHasChanged()
+      },
+      deep: true
+    },
     collectionConfig: {
       handler () {
         this.collectionConfigHasChanged()

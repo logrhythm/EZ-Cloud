@@ -47,6 +47,9 @@ npm run test
 npm run build
 ```
 
+### TODO
+Check Backend [TODO](TODO.md) list.
+
 # Frontend:
 
 See [Frontend](frontend/) for more information.
@@ -66,3 +69,6 @@ npm install
 cd frontend
 quasar dev --modern
 ```
+### TODO
+
+Check Frontend [TODO](frontend/TODO.md) list.
