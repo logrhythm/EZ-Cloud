@@ -1,5 +1,51 @@
 # TODO - Frontend
 
+### Target: v0.7
+
+## TO DO
+- OpenCollectors list
+  - [ ] Load SSH Token from file instead of copy/paste in field
+  - [ ] Use alternative to Filebeat
+    - [ ] LR Rest Beat
+      - [ ] Install LR Rest
+      - [ ] Communicate each step to Frontend
+      - [ ] Display Install progress in Frontend
+      - [ ] Create LR Rest Beat configuration
+      - [ ] Use LR Rest Beat for Tail
+- Pipeline list
+  - [ ] Ability to rename Pipeline in Pipeline list
+- [ ] Hide Settings page for Prod
+- [ ] Create Logging shared Lib to push logs to Console and Windows Journal
+- Day mode
+  - [ ] Polish CSS / Styling to get good color scheme in Day mode too
+    - [ ] Header bar background
+    - [ ] Roll over line in Mapping
+    - [ ] Drop down list background
+    - [ ] Text colour
+    - [ ] Navigation icons colour
+- [ ] Add a simple Wizard from landing page
+  - [ ] Ask for name for Log Source
+  - [ ] Create collection configuation
+    - [ ] Pick Shipper
+    - [ ] Pick type of collection (Flat File, Syslog, REST, etc...)
+    - [ ] Configure it
+  - [ ] Pick up Open Collector
+    - [ ] Add one if none in the list
+  - [ ] Create field mapping
+    - [ ] Run pre-configured Tail
+  - [ ] Recap page
+    - [ ] Ability to rename Log Source
+    - [ ] Ability to assign Log Source to other Open Collectors
+    - [ ] Ability to Enable / Commit the Log Source creation
+
+## TO FIX
+- [ ] Damn Tedious saving NULL as 'null' in OC list
+- [ ] Open Collector List - Installation progress bar showing always full, even when progress is not yet 100%
+
+## TO TEST
+
+---
+
 ### Target: v0.6
 
 ## TO DO
