@@ -33,8 +33,15 @@
     - [x] Add LS Virtualisation to LS
     - [x] Update LS Virtualisation to LS
 - [ ] Build SQL functions to
-  - [ ] Create LS Type
-  - [ ] Create MPE Rules
+  - [x] Upsert LS Type
+    - Param: UID
+    - Param: Name
+  - [x] Clone MPE Rules
+    - Param: UID
+    - Param: Name
+    - Param: SourceMsgSourceTypeID (default 1000772 // "BETA : Syslog - Open Collector - Azure Event Hub")
+    - Param: TargetCommonEventID (default 1029941 // Information // Generic Record)
+    - Param: @TargetRuleStatus (default 2 // Test)
   - [ ] Create MPE Sub-Rules
   - [ ] Create Processing Policy
   - [ ] Create LS Virtualisation
