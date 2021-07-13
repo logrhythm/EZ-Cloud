@@ -41,8 +41,15 @@
     - Param: Name
     - Param: SourceMsgSourceTypeID (default 1000772 // "BETA : Syslog - Open Collector - Azure Event Hub")
     - Param: TargetCommonEventID (default 1029941 // Information // Generic Record)
-    - Param: @TargetRuleStatus (default 2 // Test)
-  - [ ] Create MPE Sub-Rules
+    - Param: TargetRuleStatus (default 2 // Test)
+  - [x] Upsert MPE Sub-Rules
+    - Param: UID
+    - Param: SubRuleUid
+    - Param: SubRuleName
+    - Param: TargetCommonEventID (default 1029941 // Information // Generic Record)
+    - Param: TargetRuleStatus (default 2 // Test)
+    - Param: ForwardAsEvent (default 0 // 0 Not an Event, 1 Is an event)
+    - Param: Tag1 .. Tag10 (default '*')
   - [ ] Create Processing Policy
   - [ ] Create LS Virtualisation
   - [ ] List Open Collector LS
