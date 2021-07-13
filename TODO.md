@@ -50,7 +50,10 @@
     - Param: TargetRuleStatus (default 2 // Test)
     - Param: ForwardAsEvent (default 0 // 0 Not an Event, 1 Is an event)
     - Param: Tag1 .. Tag10 (default '*')
-  - [ ] Create Processing Policy
+  - [x] Upsert Processing Policy
+    - Param: UID
+    - Param: Name
+    - Param: MPEPolicy_Name
   - [ ] Create LS Virtualisation
   - [ ] List Open Collector LS
   - [ ] Add LS Virtualisation to LS
