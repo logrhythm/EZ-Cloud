@@ -54,7 +54,13 @@
     - Param: UID
     - Param: Name
     - Param: MPEPolicy_Name
-  - [ ] Create LS Virtualisation
+  - [x] Upsert LS Virtualisation Template
+    - Param: Virt_Template_UID (default '0d7544aa-5760-4c5e-be62-26262f3cd1db', UID of the EZ Cloud Template)
+    - Param: Virt_Template_Name (default 'EZ CLoud', Name of the new Template)
+    - Param: ItemToInsert_ID (default NULL, ID of Template Item to insert, or NULL if none)
+    - Param: ItemToInsert_SortOrder (default NULL, SortOrder of the Template Item to insert, or NULL if none or happy to get the Max +1)
+    - Param: ItemToDelete_ID (default NULL, ID of Template Item to delete, or NULL if none)
+  - [ ] Upsert LS Virtualisation Template Item
   - [ ] List Open Collector LS
   - [ ] Add LS Virtualisation to LS
 - [ ] Build API endpoint to
@@ -75,6 +81,7 @@
       - Based on Field Mapping / Sub Rules ID
     - Create Processing Policy
     - Create LS Virtualisation
+    - Create new LS Virtualisation Item and associate it to LS Virtualisation
     - Search related Open Collector LS
     - Add LS Virtualisation to Open Collector LS
   - Exisiting Log Source / Update of field mapping
@@ -82,7 +89,7 @@
     - Re-import JQ to OC
     - Modify MPE Sub-Rule(s)
     - Modify Processing Policy
-    - Modify LS Virtualisation
+    - Modify LS Virtualisation Item
 
 ## TO FIX
 
