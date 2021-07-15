@@ -60,7 +60,11 @@
     - Param: ItemToInsert_ID (default NULL, ID of Template Item to insert, or NULL if none)
     - Param: ItemToInsert_SortOrder (default NULL, SortOrder of the Template Item to insert, or NULL if none or happy to get the Max +1)
     - Param: ItemToDelete_ID (default NULL, ID of Template Item to delete, or NULL if none)
-  - [ ] Upsert LS Virtualisation Template Item
+  - [x] Upsert LS Virtualisation Template Item
+    - Param: UID // UID of the Log Source
+    - Param: Name // Name of Log Source
+    - Param: RegexFilter (default NULL, If not provided, we build it up from UID and Name)
+    - Param: MPEProcessingPolicyID (default NULL, If not provided, we look for it. If none found, it will error and do nothing)
   - [ ] List Open Collector LS
   - [ ] Add LS Virtualisation to LS
 - [ ] Build API endpoint to
