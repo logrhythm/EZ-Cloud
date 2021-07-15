@@ -41,6 +41,7 @@
 ## TO FIX
 - [ ] Damn Tedious saving NULL as 'null' in OC list
 - [ ] Open Collector List - Installation progress bar showing always full, even when progress is not yet 100%
+- [ ] Field Mapping - JQ Transform - Put the Pipeline name in .output.device_name, and the Beat name in .output.beatname, so to comply with LS Virtualisation templates
 
 ## TO TEST
 
