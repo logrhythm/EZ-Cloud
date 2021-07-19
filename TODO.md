@@ -65,7 +65,9 @@
     - Param: Name // Name of Log Source
     - Param: RegexFilter (default NULL, If not provided, we build it up from UID and Name)
     - Param: MPEProcessingPolicyID (default NULL, If not provided, we look for it. If none found, it will error and do nothing)
-  - [ ] List Open Collector LS
+  - [x] List Open Collector LS
+    - Get Log Sources
+    - Get Host Identifiers as JSON object
   - [ ] Add LS Virtualisation to LS
 - [ ] Build API endpoint to
   - [ ] Create LS Type
