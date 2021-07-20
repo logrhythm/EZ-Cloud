@@ -32,7 +32,7 @@
     - [x] List Log Sources
     - [x] Add LS Virtualisation to LS
     - [x] Update LS Virtualisation to LS
-- [ ] Build SQL functions to
+- [x] Build SQL functions to
   - [x] Upsert LS Type
     - Param: UID
     - Param: Name
