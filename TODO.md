@@ -68,7 +68,11 @@
   - [x] List Open Collector LS
     - Get Log Sources
     - Get Host Identifiers as JSON object
-  - [ ] Add LS Virtualisation to LS
+  - [x] Add LS Virtualisation to LS
+    - Param: UID // UID of the Log Source
+    - Param: OpenCollectorMotherLogSourceID // Log Source ID of the Open Collector
+    - Param: Virt_Template_UID (default '0d7544aa-5760-4c5e-be62-26262f3cd1db', UID of the EZ Cloud Template)
+    - Param: OpenCollectorLogSourceTypeID (default 1000759, ID of the Open collector Log Source Type)
 - [ ] Build API endpoint to
   - [ ] Create LS Type
   - [ ] Create MPE Rules
