@@ -6,7 +6,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 -- =============================================
--- Author:		  Tony Massé
+-- Author:		  Tony Massï¿½
 -- Create date: 2021-07-20
 -- =============================================
 
@@ -447,6 +447,11 @@ ___________  DO NOT MODIFY THE LINE BELOW  __________
 			EXEC [LogRhythmEMDB].[dbo].[LogRhythm_EMDB_SystemMonitorComponentServiceRequest_Insert] @SystemMonitorID=@SystemMonitorID,@ComponentType=3,@RequestType=0,@Status=0,@Message=N'The service request is waiting to be delivered to the Agent.',@DataLength=0,@UserID=-100,@ComponentID=@NewCommentID output
 
 			-- Output results
+
+			-- SET NOCOUNT ON added to prevent extra result sets from
+			-- interfering with SELECT statements.
+			SET NOCOUNT ON;
+
 			SELECT p.DummyMsgSourceID AS 'UpdatedOpenCollectorLogSourceID', @UpsertedMsgSourceID AS 'UpsertedVirtualLogSourceID', @NewCommentID AS 'NewCommentID' FROM @PleaseStayQuiet p
 		END
 	END
