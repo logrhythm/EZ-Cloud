@@ -245,6 +245,47 @@ router.post('/UpdateLogSourceVirtualisationTemplateItem', async (req, res) => {
   res.json(updatedLogSourceVirtualisationTemplateItem);
 });
 
+// ##########################################################################################
+// GetOpenCollectorLogSourcesList
+// ##########################################################################################
+
+
+router.get('/GetOpenCollectorLogSourcesList', async (req, res) => {
+  const openCollectorLogSourcesList = {};
+  await getDataFromSql({
+    targetVariable: openCollectorLogSourcesList,
+    query: `
+    SELECT TOP (1000) [MsgSourceID] AS 'msgSourceID'
+      ,[SystemMonitorID] AS 'systemMonitorID'
+      ,[Status] AS 'status'
+      ,[MsgSourceTypeID] AS 'msgSourceTypeID'
+      ,[Name] AS 'name'
+      ,[ShortDesc] AS 'shortDesc'
+      ,[LongDesc] AS 'longDesc'
+      ,[IsVirtual] AS 'isVirtual'
+      ,[DateUpdated] AS 'dateUpdated'
+      ,[HostID] AS 'hostID'
+      ,[HostName] AS 'hostName'
+      ,[HostIdentifiers_JSON] AS 'hostIdentifiers_JSON'
+    FROM [EZ].[dbo].[list_OpenCollector_Log_Sources]
+  `
+  });
+
+  if (openCollectorLogSourcesList && openCollectorLogSourcesList.payload && Array.isArray(openCollectorLogSourcesList.payload)) {
+    openCollectorLogSourcesList.payload.forEach((openCollectorLogSource) => {
+      /* eslint-disable no-param-reassign */
+      try {
+        openCollectorLogSource.hostIdentifiers = JSON.parse((openCollectorLogSource.hostIdentifiers_JSON && openCollectorLogSource.hostIdentifiers_JSON.length > 0 ? openCollectorLogSource.hostIdentifiers_JSON : '[]'));
+        delete openCollectorLogSource.hostIdentifiers_JSON;
+      } catch (error) {
+        openCollectorLogSource.hostIdentifiers = {};
+      }
+      /* eslint-enable no-param-reassign */
+    });
+  }
+  res.json(openCollectorLogSourcesList);
+});
+
 //        ######## ##     ## ########   #######  ########  ########  ######
 //        ##        ##   ##  ##     ## ##     ## ##     ##    ##    ##    ##
 //        ##         ## ##   ##     ## ##     ## ##     ##    ##    ##
