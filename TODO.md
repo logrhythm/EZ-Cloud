@@ -6,6 +6,7 @@
 - [ ] Build packaged version
   - [ ] Compress into a versionned archive
 - [ ] Remove dependance to config/ssh.json
+- [ ] Collect different Shippers versions for the Frontend
 - [x] Reverse engineer Log Source creation and Virtualisation process
   - [x] LS Type
     - [x] List LS Types
@@ -83,24 +84,24 @@
   - [x] List Open Collector LS
   - [x] Add LS Virtualisation Item to LS
 - Process of onboarding a LS from JQ
-  - New Log Source
-    - Drop Beat configuration in right location
-    - Import JQ to OC
-    - Create LS Type
-    - Create MPE Rule
-    - Create MPE Sub-Rule(s)
-      - Based on Field Mapping / Sub Rules ID
-    - Create Processing Policy
-    - Create LS Virtualisation
-    - Create new LS Virtualisation Item and associate it to LS Virtualisation
-    - Search related Open Collector LS
-    - Add LS Virtualisation to Open Collector LS
-  - Exisiting Log Source / Update of field mapping
-    - Update Beat configuration in right location
-    - Re-import JQ to OC
-    - Modify MPE Sub-Rule(s)
-    - Modify Processing Policy
-    - Modify LS Virtualisation Item
+  - [ ] New Log Source
+    - [ ] Drop Beat configuration in right location
+    - [ ] Import JQ to OC
+    - [ ] Create LS Type
+    - [ ] Create MPE Rule
+    - [ ] Create MPE Sub-Rule(s)
+      - [ ] Based on Field Mapping / Sub Rules ID
+    - [ ] Create Processing Policy
+    - [ ] Create LS Virtualisation
+    - [ ] Create new LS Virtualisation Item and associate it to LS Virtualisation
+    - [ ] Search related Open Collector LS
+    - [ ] Add LS Virtualisation to Open Collector LS
+  - [ ] Exisiting Log Source / Update of field mapping
+    - [ ] Update Beat configuration in right location
+    - [ ] Re-import JQ to OC
+    - [ ] Modify MPE Sub-Rule(s)
+    - [ ] Modify Processing Policy
+    - [ ] Modify LS Virtualisation Item
 
 ## TO FIX
 - Refactor: upsert_Log_Source_Virtualisation_Template to not need to add a SP to EMDB
