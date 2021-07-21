@@ -76,7 +76,7 @@
 - [ ] Build API endpoint to
   - [x] Create LS Type
   - [x] Create MPE Rules
-  - [ ] Create MPE Sub-Rules
+  - [x] Create MPE Sub-Rules
   - [ ] Create Processing Policy
   - [ ] Create LS Virtualisation
   - [ ] List Open Collector LS
