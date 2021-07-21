@@ -6,15 +6,16 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 -- =============================================
--- Author:		  Tony Mass�
+-- Author:		  Tony Massé
 -- Create date: 2021-07-20
+-- Update date: 2021-07-21 - Remove unnecessary parameter (@OpenCollectorLogSourceTypeID)
+-- Update date: 2021-07-21 - Change separator between OC Log Source and Virtual LS (adding spaces around the dash: '-' -> ' - ')
 -- =============================================
 
 CREATE PROCEDURE [dbo].[upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource] 
 	@uid varchar(40), -- UID of the Log Source
 	@OpenCollectorMotherLogSourceID int, -- Log Source ID of the Open Collector
-	@Virt_Template_UID varchar(40) = '0d7544aa-5760-4c5e-be62-26262f3cd1db', -- UID of the EZ Cloud Template
-	@OpenCollectorLogSourceTypeID int = 1000759 -- ID of the Open collector Log Source Type
+	@Virt_Template_UID varchar(40) = '0d7544aa-5760-4c5e-be62-26262f3cd1db' -- UID of the EZ Cloud Template
 AS
 BEGIN
 
@@ -262,7 +263,7 @@ BEGIN
 
 		DECLARE @UpsertedVirtualLogSourceName nvarchar(100) = '';
 		SET @UpsertedVirtualLogSourceName = @UpsertedVirtualLogSourceName + @Name
-		SET @UpsertedVirtualLogSourceName = @UpsertedVirtualLogSourceName + '-' 
+		SET @UpsertedVirtualLogSourceName = @UpsertedVirtualLogSourceName + ' - ' 
 		SET @UpsertedVirtualLogSourceName = @UpsertedVirtualLogSourceName + @VirtualSourceTemplateItemName
 
 		-- Check the LS doens't already exist:

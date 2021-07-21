@@ -73,7 +73,7 @@
     - Param: OpenCollectorMotherLogSourceID // Log Source ID of the Open Collector
     - Param: Virt_Template_UID (default '0d7544aa-5760-4c5e-be62-26262f3cd1db', UID of the EZ Cloud Template)
     - Param: OpenCollectorLogSourceTypeID (default 1000759, ID of the Open collector Log Source Type)
-- [ ] Build API endpoints to
+- [x] Build API endpoints to
   - [x] Create LS Type
   - [x] Create MPE Rules
   - [x] Create MPE Sub-Rules
@@ -81,7 +81,7 @@
   - [x] Create LS Virtualisation
   - [x] Create LS Virtualisation Item
   - [x] List Open Collector LS
-  - [ ] Add LS Virtualisation Item to LS
+  - [x] Add LS Virtualisation Item to LS
 - Process of onboarding a LS from JQ
   - New Log Source
     - Drop Beat configuration in right location
