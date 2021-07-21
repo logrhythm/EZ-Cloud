@@ -6,7 +6,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 -- =============================================
--- Author:		  Tony Massé
+-- Author:		  Tony MassÃ©
 -- Create date: 2021-07-15
 -- =============================================
 

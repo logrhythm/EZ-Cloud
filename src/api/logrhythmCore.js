@@ -213,37 +213,36 @@ router.post('/UpdateLogSourceVirtualisationTemplate', async (req, res) => {
 });
 
 // ##########################################################################################
-// UpdateLogSourceVirtualisationTemplate
+// UpdateLogSourceVirtualisationTemplateItem
 // ##########################################################################################
 
-router.post('/UpdateLogSourceVirtualisationTemplate', async (req, res) => {
-  const updatedProcessingPolicy = {};
+router.post('/UpdateLogSourceVirtualisationTemplateItem', async (req, res) => {
+  const updatedLogSourceVirtualisationTemplateItem = {};
 
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
   const [ sqlVariables, storedProcedureParams ] = createSqlVariablesAndStoredProcParams(
     req,
     [
-      { name: 'Virt_Template_UID', type: 'NVarChar' }, // (40) Default to '0d7544aa-5760-4c5e-be62-26262f3cd1db', --UID of the EZ Cloud Template
-      { name: 'Virt_Template_Name', type: 'NVarChar' }, // (50) Default to 'EZ Cloud', --Name of the new Template
-      { name: 'ItemToInsert_ID', type: 'Int' }, // NULL, --ID of Template Item to insert, or NULL if none
-      { name: 'ItemToInsert_SortOrder', type: 'Int' }, // Default to NULL, --SortOrder of the Template Item to insert, or NULL if none or happy to get the Max + 1
-      { name: 'ItemToDelete_ID', type: 'Int' } // Default to NULL -- ID of Template Item to delete, or NULL if none
+      { name: 'uid', type: 'NVarChar' }, // (40) UID of the Log Source
+      { name: 'name', type: 'NVarChar' }, // (50) Name of Log Source
+      { name: 'RegexFilter', type: 'NVarChar' }, // Default to NULL, If not provided, we build it up from UID and Name
+      { name: 'MPEProcessingPolicyID', type: 'Int' } // Default to NULL, If not provided, we look for it
     ],
     true // Weed stuff out
   )
 
   // Ship it to SQL
   await getDataFromSql({
-    targetVariable: updatedProcessingPolicy,
+    targetVariable: updatedLogSourceVirtualisationTemplateItem,
     query: `
-    EXECUTE [dbo].[upsert_Log_Source_Virtualisation_Template]
+    EXECUTE [dbo].[upsert_Log_Source_Virtualisation_Template_Item]
        ${storedProcedureParams.join(', ')}
       ;
     `,
     variables: sqlVariables
   });
 
-  res.json(updatedProcessingPolicy);
+  res.json(updatedLogSourceVirtualisationTemplateItem);
 });
 
 //        ######## ##     ## ########   #######  ########  ########  ######

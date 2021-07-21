@@ -79,7 +79,7 @@
   - [x] Create MPE Sub-Rules
   - [x] Create Processing Policy
   - [x] Create LS Virtualisation
-  - [ ] Create LS Virtualisation Item
+  - [x] Create LS Virtualisation Item
   - [ ] List Open Collector LS
   - [ ] Add LS Virtualisation Item to LS
 - Process of onboarding a LS from JQ
