@@ -12,8 +12,8 @@
       - [ ] Display Install progress in Frontend
       - [ ] Create LR Rest Beat configuration
       - [ ] Use LR Rest Beat for Tail
-  - [ ] Move `OS version` to the left of `Open Collector Version`
-  - [ ] Change `Filebeat version` to `Shippers version`
+  - [x] Move `OS version` to the left of `Open Collector Version`
+  - [x] Change `Filebeat version` to `Shippers version`
   - [ ] Collect different Shippers versions from Backend
   - [ ] Add action button to `Shippers version` column, when empty
     - [ ] Install

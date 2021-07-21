@@ -102,7 +102,7 @@
         </template>
         <template v-slot:body-cell-fbVersion="props">
           <q-td :props="props">
-            <span v-if="props.value !== 'Not Installed'" >{{ props.value }}</span>
+            <span v-if="props.value !== 'Not Installed'" >{{ (props.value && props.value.length ? 'Filebeat ' + props.value : '') }}</span>
             <q-btn-dropdown
               v-else
               label="Install Default"
@@ -278,9 +278,10 @@ export default {
         { name: 'name', align: 'center', label: 'Name', field: 'name', sortable: true },
         { name: 'hostname', align: 'center', label: 'Hostname', field: 'hostname', sortable: true },
         { name: 'authenticationMethod', align: 'center', label: 'Authentication Method', field: 'authenticationMethod', sortable: true },
-        { name: 'ocVersion', align: 'center', label: 'OpenCollector version', field: 'ocVersion', sortable: true },
         { name: 'osVersion', align: 'center', label: 'OS version', field: 'osVersion', sortable: true },
-        { name: 'fbVersion', align: 'center', label: 'Filebeat version', field: 'fbVersion', sortable: true }
+        { name: 'ocVersion', align: 'center', label: 'OpenCollector version', field: 'ocVersion', sortable: true },
+        { name: 'fbVersion', align: 'center', label: 'Shippers version', field: 'fbVersion', sortable: true }
+        // { name: 'shippersVersion', align: 'center', label: 'Shippers version', field: 'shippersVersion', sortable: true }
         // { name: 'pipelinesCount', align: 'center', label: 'Log Sources', field: 'pipelinesCount', sortable: true }
       ],
       pagination: {
