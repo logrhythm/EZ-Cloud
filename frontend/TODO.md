@@ -27,8 +27,11 @@
   - [ ] Ability to deploy Log Source to Open Collectors for Production
     - [ ] Add `Deployed` status
 - Pipeline properties page
-  - [ ] Ability to assign Log Source to Open Collectors for Production
-- [ ] Assign Log Source to Open Collectors for Production
+  - [x] List Deployments
+  - [x] Delete Deployment
+  - [x] Ability to assign Log Source to Open Collectors for Production
+- [ ] Assign Log Source to Open Collectors for Production page
+  - [x] Create new Edit Deployment page
   - [ ] Get list of OC Log Sources from Backend
   - [ ] Try to map EZ OCs with OC Log Sources
   - [ ] Flag EZ OCs that do not have the right Shipper for the Pipeline
