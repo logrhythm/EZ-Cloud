@@ -53,6 +53,11 @@
                 {{ $t('Open this Pipeline') }}
               </q-tooltip>
             </q-btn>
+            <q-btn flat dense icon="edit" @click="doPromptForPipelineDetails(props.row)">
+              <q-tooltip content-style="font-size: 1em">
+                {{ $t('Edit Pipeline details') }}
+              </q-tooltip>
+            </q-btn>
             <q-btn flat dense icon="delete" color="negative" @click="deletePipelinePrompt(props.row)">
               <q-tooltip content-style="font-size: 1em">
                 {{ $t('Delete Pipeline') }}
@@ -110,6 +115,7 @@
           </q-td>
         </template>
       </q-table>
+      <pre>{{ tableData }}</pre>
 
       <q-dialog v-model="promptForNewPipelineDetails" persistent>
         <q-card style="min-width: 350px">
@@ -122,12 +128,17 @@
           </q-card-section>
 
           <q-card-section class="q-pt-none">
-            <q-select dense v-model="newPipelineOpenCollector" :options="openCollectorsOptions" label="Primary Open Collector" />
+            <q-select dense v-model="newPipelineOpenCollector" :options="openCollectorsOptions" label="Primary Open Collector" emit-value map-options />
+          </q-card-section>
+
+          <q-card-section class="q-pt-none" v-if="newPipelineStatus">
+            <q-select dense v-model="newPipelineStatus" :options="statusOptions" label="Status" />
           </q-card-section>
 
           <q-card-actions align="right" class="text-primary">
             <q-btn flat :label="$t('Cancel')" v-close-popup />
-            <q-btn flat :label="$t('Add new Pipeline')" v-close-popup :disabled="!newPipelineName.length" @click="addNewPipeline()" />
+            <q-btn flat :label="$t('Update Pipeline')" v-if="newPipelineUid && newPipelineUid.length" v-close-popup :disabled="!newPipelineName.length" @click="updatePipeline()" />
+            <q-btn flat :label="$t('Add new Pipeline')" v-else v-close-popup :disabled="!newPipelineName.length" @click="updatePipeline()" />
           </q-card-actions>
         </q-card>
       </q-dialog>
@@ -164,7 +175,10 @@ export default {
       // collectorsLoading: false,
       promptForNewPipelineDetails: false,
       newPipelineName: '',
-      newPipelineOpenCollector: null
+      newPipelineOpenCollector: null,
+      newPipelineUid: '',
+      newPipelineStatus: null,
+      statusOptions: ['New', 'Dev', 'Ready']
     } // return
   },
   computed: {
@@ -228,12 +242,17 @@ export default {
         }) // }).onOk(() => {
       }
     }, // deletePipelinePrompt
-    doPromptForPipelineDetails () {
-      this.newPipelineName = ''
-      this.newPipelineOpenCollector = null
+    doPromptForPipelineDetails (existing) {
+      this.newPipelineUid = (existing && existing.uid ? existing.uid : null)
+      this.newPipelineName = (existing && existing.name ? existing.name : '')
+      this.newPipelineOpenCollector = (existing && existing.primaryOpenCollector ? existing.primaryOpenCollector : null)
+      this.newPipelineStatus = (existing && existing.status ? existing.status : null)
+
+      // this.newPipelineName = ''
+      // this.newPipelineOpenCollector = null
       this.promptForNewPipelineDetails = true
     }, // doPromptForPipelineDetails
-    addNewPipeline () {
+    updatePipeline () {
       this.promptForNewPipelineDetails = false
       this.upsertPipeline(
         {
@@ -241,9 +260,10 @@ export default {
           caller: this,
           pipeline:
           {
+            uid: this.newPipelineUid,
             name: this.newPipelineName,
-            status: 'New',
-            primaryOpenCollector: (this.newPipelineOpenCollector && this.newPipelineOpenCollector.value && this.newPipelineOpenCollector.value.length ? this.newPipelineOpenCollector.value : null)
+            status: (this.newPipelineStatus && this.newPipelineStatus.length ? this.newPipelineStatus : 'New'),
+            primaryOpenCollector: (this.newPipelineOpenCollector && this.newPipelineOpenCollector.length ? this.newPipelineOpenCollector : null)
           }
         }
       )

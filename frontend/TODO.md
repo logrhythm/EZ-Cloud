@@ -22,8 +22,9 @@
     - [ ] Upgrade Shipper
     - [ ] Uninstall Shipper
 - Pipeline list
-  - [ ] Ability to rename Pipeline in Pipeline list
-  - [ ] Ability to assign Log Source to Open Collectors for Production
+  - [x] Ability to rename Pipeline in Pipeline list
+  - [x] Ability to change Status Pipeline in Pipeline list
+  - [ ] Ability to deploy Log Source to Open Collectors for Production
     - [ ] Add `Deployed` status
 - Pipeline properties page
   - [ ] Ability to assign Log Source to Open Collectors for Production

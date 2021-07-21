@@ -37,5 +37,7 @@
   "Switch to this Collection Method.": "Switch to this Collection Method.",
   "Downloading Input Configuration file...": "Downloading Input Configuration file...",
   "Input Configuration file downloaded": "Input Configuration file downloaded",
-  "Problem while downloading Input Configuration file:": "Problem while downloading Input Configuration file:"
+  "Problem while downloading Input Configuration file:": "Problem while downloading Input Configuration file:",
+  "Edit Pipeline details": "Edit Pipeline details",
+  "Update Pipeline": "Update Pipeline"
 }
