@@ -12,8 +12,26 @@
       - [ ] Display Install progress in Frontend
       - [ ] Create LR Rest Beat configuration
       - [ ] Use LR Rest Beat for Tail
+  - [ ] Move `OS version` to the left of `Open Collector Version`
+  - [ ] Change `Filebeat version` to `Shippers version`
+  - [ ] Collect different Shippers versions from Backend
+  - [ ] Add action button to `Shippers version` column, when empty
+    - [ ] Install
+  - [ ] Add action buttons to `Actions` column
+    - [ ] Install Shipper
+    - [ ] Upgrade Shipper
+    - [ ] Uninstall Shipper
 - Pipeline list
   - [ ] Ability to rename Pipeline in Pipeline list
+  - [ ] Ability to assign Log Source to Open Collectors for Production
+    - [ ] Add `Deployed` status
+- Pipeline properties page
+  - [ ] Ability to assign Log Source to Open Collectors for Production
+- [ ] Assign Log Source to Open Collectors for Production
+  - [ ] Get list of OC Log Sources from Backend
+  - [ ] Try to map EZ OCs with OC Log Sources
+  - [ ] Flag EZ OCs that do not have the right Shipper for the Pipeline
+  - [ ] Capture user selection of OC Log Source
 - [ ] Hide Settings page for Prod
 - [ ] Create Logging shared Lib to push logs to Console and Windows Journal
 - Day mode
