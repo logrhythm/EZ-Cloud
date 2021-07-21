@@ -13,13 +13,13 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 -- =============================================
--- Author:		  Tony Massé
+-- Author:		  Tony MassÃ©
 -- Create date: 2021-07-14 -- Discovery and POC, Bring POC into Store Procedure
 -- =============================================
 
 CREATE PROCEDURE [dbo].[EZ_Upsert_Log_Source_Virtualisation_Template] 
 	@Virt_Template_UID varchar(40) = '0d7544aa-5760-4c5e-be62-26262f3cd1db', -- UID of the EZ Cloud Template
-	@Virt_Template_Name varchar(50) = 'EZ CLoud', -- Name of the new Template
+	@Virt_Template_Name varchar(50) = 'EZ Cloud', -- Name of the new Template
 	@ItemToInsert_ID int = NULL, -- ID of Template Item to insert, or NULL if none
 	@ItemToInsert_SortOrder int = NULL, -- SortOrder of the Template Item to insert, or NULL if none or happy to get the Max +1
 	@ItemToDelete_ID int = NULL -- ID of Template Item to delete, or NULL if none
@@ -97,13 +97,13 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 -- =============================================
--- Author:		  Tony Massé
+-- Author:		  Tony MassÃ©
 -- Create date: 2021-07-14 -- Discovery and POC, Bring POC into Store Procedure
 -- =============================================
 
 CREATE PROCEDURE [dbo].[upsert_Log_Source_Virtualisation_Template] 
 	@Virt_Template_UID varchar(40) = '0d7544aa-5760-4c5e-be62-26262f3cd1db', -- UID of the EZ Cloud Template
-	@Virt_Template_Name varchar(50) = 'EZ CLoud', -- Name of the new Template
+	@Virt_Template_Name varchar(50) = 'EZ Cloud', -- Name of the new Template
 	@ItemToInsert_ID int = NULL, -- ID of Template Item to insert, or NULL if none
 	@ItemToInsert_SortOrder int = NULL, -- SortOrder of the Template Item to insert, or NULL if none or happy to get the Max +1
 	@ItemToDelete_ID int = NULL -- ID of Template Item to delete, or NULL if none
