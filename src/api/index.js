@@ -19,7 +19,6 @@ router.use('/test', test);
 router.use('/auth', auth);
 router.use('/oc', middlewares.isLoggedIn, openCollector);
 router.use('/config', middlewares.isLoggedIn, config);
-// router.use('/logrhythmCore', middlewares.isLoggedIn, logrhythmCore);
-router.use('/logrhythmCore', logrhythmCore);
+router.use('/logrhythmCore', middlewares.isLoggedIn, logrhythmCore);
 
 module.exports = router;
