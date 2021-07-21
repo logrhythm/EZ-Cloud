@@ -69,7 +69,11 @@ const routes = [
       { path: '', component: () => import('pages/Pipelines/List.vue') },
       { path: ':pipelineUid/Properties', component: () => import('src/pages/Pipelines/Properties.vue') },
       { path: ':pipelineUid/Collection/Edit', component: () => import('src/pages/Pipelines/CollectionEdit.vue') },
-      { path: ':pipelineUid/Mapping/Edit', component: () => import('src/pages/Pipelines/MappingEdit.vue') }
+      { path: ':pipelineUid/Mapping/Edit', component: () => import('src/pages/Pipelines/MappingEdit.vue') },
+      // { path: ':pipelineUid/Deployments', component: () => import('src/pages/Pipelines/DeploymentsList.vue') },
+      { path: ':pipelineUid/Deployments/:openCollectorUid/Edit', component: () => import('src/pages/Pipelines/DeploymentEdit.vue') },
+      { path: ':pipelineUid/Deployments/Edit', component: () => import('src/pages/Pipelines/DeploymentEdit.vue') },
+      { path: ':pipelineUid/Deployments/New', component: () => import('src/pages/Pipelines/DeploymentEdit.vue') }
     ],
     beforeEnter: isLoggedIn
   },

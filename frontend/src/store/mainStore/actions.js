@@ -301,6 +301,25 @@ export function loadShippersUrls ({ state, commit }, payload) {
   }
 }
 
+export function deleteDeployment ({ state, dispatch }, payload) {
+  if (payload && payload.openCollector && payload.openCollector.pipelines && Array.isArray(payload.openCollector.pipelines) && payload.pipelineUid && payload.pipelineUid.length) {
+    const newOpenCollector = Object.assign(
+      {},
+      payload.openCollector,
+      { pipelines: payload.openCollector.pipelines.filter(p => p.uid !== payload.pipelineUid) }
+    )
+
+    const newPayload = {
+      pushToApi: payload.pushToApi,
+      caller: payload.caller,
+      openCollector: newOpenCollector
+    }
+
+    // And push it out for Update
+    return dispatch('upsertOpenCollector', newPayload)
+  }
+}
+
 //           ###    ########  ####       ##     ## ######## #### ##       #### ######## #### ########  ######
 //          ## ##   ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
 //         ##   ##  ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##

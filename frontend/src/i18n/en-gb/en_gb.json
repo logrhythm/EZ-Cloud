@@ -40,5 +40,7 @@
   "Problem while downloading Input Configuration file:": "Problem while downloading Input Configuration file:",
   "Edit Pipeline details": "Edit Pipeline details",
   "Update Pipeline": "Update Pipeline",
-  "Pipeline name cannot be empty": "Pipeline name cannot be empty"
+  "Pipeline name cannot be empty": "Pipeline name cannot be empty",
+  "Edit Deployment details": "Edit Deployment details",
+  "Delete Deployment": "Delete Deployment"
 }
