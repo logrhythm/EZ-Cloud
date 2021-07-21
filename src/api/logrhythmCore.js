@@ -179,19 +179,21 @@ router.post('/UpdateProcessingPolicy', async (req, res) => {
 });
 
 // ##########################################################################################
-// UpdateProcessingPolicy
+// UpdateLogSourceVirtualisationTemplate
 // ##########################################################################################
 
-router.post('/UpdateProcessingPolicy', async (req, res) => {
+router.post('/UpdateLogSourceVirtualisationTemplate', async (req, res) => {
   const updatedProcessingPolicy = {};
 
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
   const [ sqlVariables, storedProcedureParams ] = createSqlVariablesAndStoredProcParams(
     req,
     [
-      { name: 'uid', type: 'NVarChar' }, // (40)
-      { name: 'name', type: 'NVarChar' }, // (50)
-      { name: 'MPEPolicy_Name', type: 'NVarChar' } // (50) -- 'LogRhythm Default' -- Name of the new Policy (if Policy already exists, old name is kept)
+      { name: 'Virt_Template_UID', type: 'NVarChar' }, // (40) Default to '0d7544aa-5760-4c5e-be62-26262f3cd1db', --UID of the EZ Cloud Template
+      { name: 'Virt_Template_Name', type: 'NVarChar' }, // (50) Default to 'EZ Cloud', --Name of the new Template
+      { name: 'ItemToInsert_ID', type: 'Int' }, // NULL, --ID of Template Item to insert, or NULL if none
+      { name: 'ItemToInsert_SortOrder', type: 'Int' }, // Default to NULL, --SortOrder of the Template Item to insert, or NULL if none or happy to get the Max + 1
+      { name: 'ItemToDelete_ID', type: 'Int' } // Default to NULL -- ID of Template Item to delete, or NULL if none
     ],
     true // Weed stuff out
   )
@@ -200,7 +202,7 @@ router.post('/UpdateProcessingPolicy', async (req, res) => {
   await getDataFromSql({
     targetVariable: updatedProcessingPolicy,
     query: `
-    EXECUTE [dbo].[upsert_Processing_Policy]
+    EXECUTE [dbo].[upsert_Log_Source_Virtualisation_Template]
        ${storedProcedureParams.join(', ')}
       ;
     `,

@@ -78,9 +78,10 @@
   - [x] Create MPE Rules
   - [x] Create MPE Sub-Rules
   - [x] Create Processing Policy
-  - [ ] Create LS Virtualisation
+  - [x] Create LS Virtualisation
+  - [ ] Create LS Virtualisation Item
   - [ ] List Open Collector LS
-  - [ ] Add LS Virtualisation to LS
+  - [ ] Add LS Virtualisation Item to LS
 - Process of onboarding a LS from JQ
   - New Log Source
     - Drop Beat configuration in right location
