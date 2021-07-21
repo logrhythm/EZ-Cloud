@@ -29,7 +29,7 @@
 - Pipeline properties page
   - [x] List Deployments
   - [x] Delete Deployment
-  - [ ] Ability to assign Log Source to Open Collectors for Production
+  - [x] Ability to assign Log Source to Open Collectors for Production
 - [ ] Assign Log Source to Open Collectors for Production page
   - [x] Create new Edit Deployment page
   - [ ] Get list of OC Log Sources from Backend
