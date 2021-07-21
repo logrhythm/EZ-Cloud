@@ -77,7 +77,7 @@
   - [x] Create LS Type
   - [x] Create MPE Rules
   - [x] Create MPE Sub-Rules
-  - [ ] Create Processing Policy
+  - [x] Create Processing Policy
   - [ ] Create LS Virtualisation
   - [ ] List Open Collector LS
   - [ ] Add LS Virtualisation to LS

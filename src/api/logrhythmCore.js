@@ -129,7 +129,7 @@ router.post('/UpdateMpeSubRule', async (req, res) => {
       { name: 'Tag9', type: 'NVarChar' }, // (200) = '*',
       { name: 'Tag10', type: 'NVarChar' } // (200) = '*'
     ],
-    true
+    true // Weed stuff out
   )
 
   // Ship it to SQL
@@ -144,6 +144,38 @@ router.post('/UpdateMpeSubRule', async (req, res) => {
   });
 
   res.json(updatedMpeSubRule);
+});
+
+// ##########################################################################################
+// UpdateProcessingPolicy
+// ##########################################################################################
+
+router.post('/UpdateProcessingPolicy', async (req, res) => {
+  const updatedProcessingPolicy = {};
+
+  // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
+  const [ sqlVariables, storedProcedureParams ] = createSqlVariablesAndStoredProcParams(
+    req,
+    [
+      { name: 'uid', type: 'NVarChar' }, // (40)
+      { name: 'name', type: 'NVarChar' }, // (50)
+      { name: 'MPEPolicy_Name', type: 'NVarChar' } // (50) -- 'LogRhythm Default' -- Name of the new Policy (if Policy already exists, old name is kept)
+    ],
+    true // Weed stuff out
+  )
+
+  // Ship it to SQL
+  await getDataFromSql({
+    targetVariable: updatedProcessingPolicy,
+    query: `
+    EXECUTE [dbo].[upsert_Processing_Policy]
+       ${storedProcedureParams.join(', ')}
+      ;
+    `,
+    variables: sqlVariables
+  });
+
+  res.json(updatedProcessingPolicy);
 });
 
 //        ######## ##     ## ########   #######  ########  ########  ######
