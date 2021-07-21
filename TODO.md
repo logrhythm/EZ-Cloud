@@ -74,8 +74,8 @@
     - Param: Virt_Template_UID (default '0d7544aa-5760-4c5e-be62-26262f3cd1db', UID of the EZ Cloud Template)
     - Param: OpenCollectorLogSourceTypeID (default 1000759, ID of the Open collector Log Source Type)
 - [ ] Build API endpoint to
-  - [ ] Create LS Type
-  - [ ] Create MPE Rules
+  - [x] Create LS Type
+  - [x] Create MPE Rules
   - [ ] Create MPE Sub-Rules
   - [ ] Create Processing Policy
   - [ ] Create LS Virtualisation
