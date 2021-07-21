@@ -70,6 +70,33 @@ router.post('/UpdateLogSourceType', async (req, res) => {
   res.json(updatedLogSourceType);
 });
 
+// ##########################################################################################
+// UpdateMpeRule
+// ##########################################################################################
+
+router.post('/UpdateMpeRule', async (req, res) => {
+  const updatedMpeRule = {};
+
+  await getDataFromSql({
+    targetVariable: updatedMpeRule,
+    query: `
+    EXECUTE [dbo].[clone_MPE_Rule]
+       @uid
+      ,@name
+      ;
+    `,
+    variables: createSqlVariables(
+      req,
+      [
+        { name: 'uid', type: 'NVarChar' },
+        { name: 'name', type: 'NVarChar' }
+      ]
+    )
+  });
+
+  res.json(updatedMpeRule);
+});
+
 
 //        ######## ##     ## ########   #######  ########  ########  ######
 //        ##        ##   ##  ##     ## ##     ## ##     ##    ##    ##    ##
