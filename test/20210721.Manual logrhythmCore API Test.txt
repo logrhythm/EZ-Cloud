@@ -1,0 +1,326 @@
+##### https://169.254.109.150:8400/api/v1/logrhythmCore/UpdateLogSourceType
+
+{
+  "stillChecking": false,
+  "errors": [],
+  "outputs": [
+    "3 row(s) returned"
+  ],
+  "payload": [
+    {
+      "MsgSourceTypeID": 1000000003,
+      "Name": "Test API",
+      "FullName": "Test API",
+      "ParentFullName": "User",
+      "Abbreviation": "Test API",
+      "ShortDesc": "",
+      "LongDesc": "\r\n\r\n_______ DO NOT MODIFY ANYTHING BELOW THIS LINE _______\r\n*** EZ_UID:uid_test:DIU_ZE ***",
+      "IsMST": 1,
+      "MsgSourceFormat": 1,
+      "ParentMsgSourceTypeID": 1000000000,
+      "DateUpdated": "2021-07-20T17:35:38.190Z",
+      "HostWizDefaults": {
+        "type": "Buffer",
+        "data": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    }
+  ]
+}
+
+##### https://169.254.109.150:8400/api/v1/logrhythmCore/UpdateMpeRule
+
+{
+  "stillChecking": false,
+  "errors": [],
+  "outputs": [
+    "7 row(s) returned"
+  ],
+  "payload": [
+    {
+      "LS_Type_ID": 1000000003,
+      "New_Regex_ID": 1000000006,
+      "New_MPE_RULE_ID": 1000000015
+    }
+  ]
+}
+
+
+##### https://169.254.109.150:8400/api/v1/logrhythmCore/UpdateMpeSubRule
+#### Providing all the fields/params
+
+{
+"uid":"uid_test",
+"SubRuleUid": "7bfa6d07-6905-4461-89d4-32ba2b775613",
+"SubRuleName": "Sub Rule Name",
+      "TargetCommonEventID" : 1029940,
+      "TargetRuleStatus" : 2,
+      "ForwardAsEvent" : 1,
+      "Tag1" : "=SubRule_1",
+      "Tag2" : "*",
+      "Tag3" : "*",
+      "Tag4" : "*",
+      "Tag5" : "*",
+      "Tag6" : "*",
+      "Tag7" : "*",
+      "Tag8" : "*",
+      "Tag9" : "*",
+      "Tag10" : "*"
+}
+###
+{
+  "stillChecking": false,
+  "errors": [],
+  "outputs": [
+    "6 row(s) returned"
+  ],
+  "payload": [
+    {
+      "LS_Type_ID": 1000000003,
+      "MPE_Regex_ID": 1000000006,
+      "MPE_SortOrder": 1,
+      "Upserted_MPE_SubRule_ID": 1000000016,
+      "EMDB_SP_Return_Code": 0
+    }
+  ]
+}
+
+##### https://169.254.109.150:8400/api/v1/logrhythmCore/UpdateMpeSubRule
+#### Providing only the relevant fields/params
+{
+"uid":"uid_test",
+"SubRuleUid": "bc5e4b2e-91cc-4f6f-b43f-2ca01ffcbcd3",
+"SubRuleName": "Sub Rule Name _2",
+      "Tag1" : "=SubRule_2",
+      "Tag2" : "=SubRule_2.2"
+}
+###
+{
+  "stillChecking": false,
+  "errors": [],
+  "outputs": [
+    "6 row(s) returned"
+  ],
+  "payload": [
+    {
+      "LS_Type_ID": 1000000003,
+      "MPE_Regex_ID": 1000000006,
+      "MPE_SortOrder": 2,
+      "Upserted_MPE_SubRule_ID": 1000000017,
+      "EMDB_SP_Return_Code": 0
+    }
+  ]
+}
+##### https://169.254.109.150:8400/api/v1/logrhythmCore/UpdateMpeSubRule
+#### Missing "SubRuleName", expect error
+{
+"uid":"uid_test",
+"SubRuleUid": "bc5e4b2e-91cc-4f6f-b43f-2ca01ffcbcd3",
+      "Tag1" : "=SubRule_2",
+      "Tag2" : "=SubRule_2.2"
+}
+###
+{
+  "stillChecking": false,
+  "errors": [
+    {
+      "message": "Procedure or function 'upsert_MPE_SubRule' expects parameter '@SubRuleName', which was not supplied.",
+      "code": "EREQUEST",
+      "number": 201,
+      "state": 4,
+      "class": 16,
+      "serverName": "LRVM6",
+      "procName": "upsert_MPE_SubRule",
+      "lineNumber": 0
+    }
+  ],
+  "outputs": [],
+  "payload": []
+}
+##### https://169.254.109.150:8400/api/v1/logrhythmCore/UpdateProcessingPolicy
+{
+"uid":"uid_test",
+"name": "Test API",
+"MPEPolicy_Name" : "Fancy Policy Name"
+}
+###
+{
+  "stillChecking": false,
+  "errors": [],
+  "outputs": [
+    "14 row(s) returned"
+  ],
+  "payload": [
+    {
+      "": 8
+    },
+    {
+      "LS_Type_ID": 1000000003,
+      "Related_Regex_ID": 1000000006,
+      "New_MPE_Policy_ID": 8,
+      "New_MPE_Policy_Name": "Fancy Policy Name",
+      "EMDB_SP_Return_Code": 0
+    }
+  ]
+}
+
+##### https://169.254.109.150:8400/api/v1/logrhythmCore/UpdateLogSourceVirtualisationTemplate
+
+{
+}
+###
+{
+  "stillChecking": false,
+  "errors": [],
+  "outputs": [
+    "2 row(s) returned"
+  ],
+  "payload": [
+    {
+      "New_Virtual_Source_Template_ID": 6,
+      "EMDB_SP_Return_Code": 0
+    }
+  ]
+}
+
+##### https://169.254.109.150:8400/api/v1/logrhythmCore/UpdateLogSourceVirtualisationTemplateItem
+{
+"uid":"uid_test",
+"name": "Test API"
+}
+###
+{
+  "stillChecking": false,
+  "errors": [],
+  "outputs": [
+    "11 row(s) returned"
+  ],
+  "payload": [
+    {
+      "New_Virtual_Source_Template_ID": 6,
+      "EMDB_SP_Return_Code": 0
+    },
+    {
+      "LS_Type_ID": 1000000003,
+      "Related_Processing_Policy_ID": 8,
+      "New_Virtualisation_Template_Item_ID": 4
+    }
+  ]
+}
+
+##### GET https://169.254.109.150:8400/api/v1/logrhythmCore/GetOpenCollectorLogSourcesList
+-- NO HEADER --
+###
+{
+  "stillChecking": false,
+  "errors": [],
+  "outputs": [
+    "2 row(s) returned"
+  ],
+  "payload": [
+    {
+      "msgSourceID": 13,
+      "systemMonitorID": 1,
+      "status": 1,
+      "msgSourceTypeID": 1000759,
+      "name": "LRVM6 Open Collector",
+      "shortDesc": "",
+      "longDesc": "",
+      "isVirtual": 0,
+      "dateUpdated": "2021-07-20T12:02:09.440Z",
+      "hostID": 1,
+      "hostName": "LRVM6",
+      "hostIdentifiers": [
+        {
+          "value": "192.168.0.222",
+          "type": 1
+        },
+        {
+          "value": "lrvm6",
+          "type": 3
+        }
+      ]
+    },
+    {
+      "msgSourceID": 15,
+      "systemMonitorID": 1,
+      "status": 1,
+      "msgSourceTypeID": 1000759,
+      "name": "LRVM6 Open Collector _ 2",
+      "shortDesc": "",
+      "longDesc": "",
+      "isVirtual": 0,
+      "dateUpdated": "2021-07-19T17:58:04.540Z",
+      "hostID": 1,
+      "hostName": "LRVM6",
+      "hostIdentifiers": [
+        {
+          "value": "192.168.0.222",
+          "type": 1
+        },
+        {
+          "value": "lrvm6",
+          "type": 3
+        }
+      ]
+    }
+  ]
+}
+##### https://169.254.109.150:8400/api/v1/logrhythmCore/UpdateOpenCollectorLogSourceWithLogSourceVirtualisation
+#### First run
+{
+"uid":"uid_test",
+"OpenCollectorMotherLogSourceID": 15
+}
+###
+{
+  "stillChecking": false,
+  "errors": [],
+  "outputs": [
+    "54 row(s) returned"
+  ],
+  "payload": [
+    {
+      "UpdatedOpenCollectorLogSourceID": 15,
+      "UpsertedVirtualLogSourceID": 29,
+      "NewCommentID": 52
+    }
+  ]
+}
+
+##### https://169.254.109.150:8400/api/v1/logrhythmCore/UpdateOpenCollectorLogSourceWithLogSourceVirtualisation
+#### Second run, expecting error
+{
+"uid":"uid_test",
+"OpenCollectorMotherLogSourceID": 15
+}
+###
+{
+  "stillChecking": false,
+  "errors": [],
+  "outputs": [
+    "51 row(s) returned"
+  ],
+  "payload": [
+    {
+      "Error": "Virtualised Log Source named \"LRVM6 Open Collector _ 2 - Test API\" already defined for UID: \"uid_test\". Doing nothing."
+    }
+  ]
+}
