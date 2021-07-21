@@ -35,6 +35,41 @@ router.get('/', (req, res) => {
 
 const { getDataFromSql, createSqlVariables } = require('../shared/sqlUtils');
 
+//        ########   #######  ##     ## ######## ########  ######
+//        ##     ## ##     ## ##     ##    ##    ##       ##    ##
+//        ##     ## ##     ## ##     ##    ##    ##       ##
+//        ########  ##     ## ##     ##    ##    ######    ######
+//        ##   ##   ##     ## ##     ##    ##    ##             ##
+//        ##    ##  ##     ## ##     ##    ##    ##       ##    ##
+//        ##     ##  #######   #######     ##    ########  ######
+
+// ##########################################################################################
+// UpdateLogSourceType
+// ##########################################################################################
+
+router.post('/UpdateLogSourceType', async (req, res) => {
+  const updatedLogSourceType = {};
+
+  await getDataFromSql({
+    targetVariable: updatedLogSourceType,
+    query: `
+    EXECUTE [dbo].[upsert_LogSource_Type]
+       @uid
+      ,@name
+      ;
+    `,
+    variables: createSqlVariables(
+      req,
+      [
+        { name: 'uid', type: 'NVarChar' },
+        { name: 'name', type: 'NVarChar' }
+      ]
+    )
+  });
+
+  res.json(updatedLogSourceType);
+});
+
 
 //        ######## ##     ## ########   #######  ########  ########  ######
 //        ##        ##   ##  ##     ## ##     ## ##     ##    ##    ##    ##
