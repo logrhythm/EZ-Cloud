@@ -83,6 +83,7 @@
   - [x] Create LS Virtualisation Item
   - [x] List Open Collector LS
   - [x] Add LS Virtualisation Item to LS
+- [ ] Update UpdateCollector API to persist `.pipelines` into TABLE `openCollectorsPipelines`
 - Process of onboarding a LS from JQ
   - [ ] New Log Source
     - [ ] Drop Beat configuration in right location
