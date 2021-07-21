@@ -33,7 +33,11 @@ router.get('/', (req, res) => {
 //        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
 //         #######     ##    #### ######## ####    ##    #### ########  ######
 
-const { getDataFromSql, createSqlVariables } = require('../shared/sqlUtils');
+const {
+  getDataFromSql,
+  createSqlVariables,
+  createSqlVariablesAndStoredProcParams
+} = require('../shared/sqlUtils');
 
 //        ########   #######  ##     ## ######## ########  ######
 //        ##     ## ##     ## ##     ##    ##    ##       ##    ##
@@ -103,8 +107,9 @@ router.post('/UpdateMpeRule', async (req, res) => {
 
 router.post('/UpdateMpeSubRule', async (req, res) => {
   const updatedMpeSubRule = {};
-  // Prep SQL Variabled
-  const sqlVariablesRaw = createSqlVariables(
+
+  // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
+  const [ sqlVariables, storedProcedureParams ] = createSqlVariablesAndStoredProcParams(
     req,
     [
       { name: 'uid', type: 'NVarChar' },
@@ -123,22 +128,9 @@ router.post('/UpdateMpeSubRule', async (req, res) => {
       { name: 'Tag8', type: 'NVarChar' }, // (200) = '*',
       { name: 'Tag9', type: 'NVarChar' }, // (200) = '*',
       { name: 'Tag10', type: 'NVarChar' } // (200) = '*'
-    ]
-  );
-
-  // Weed out all the ones with NULL or Undefined
-  // This is done as the SQL Stored Procedure will use default values if a param is not provided
-  // But by default, createSqlVariables() puts NULL, and that's no good
-
-  const storedProcedureParams = [];
-  const sqlVariables = []
-
-  sqlVariablesRaw.forEach((variable) => {
-    if (variable.value !== undefined && variable.value !== null) {
-      sqlVariables.push(variable);
-      storedProcedureParams.push(`@${variable.name} = @${variable.name}`)
-    }
-  })
+    ],
+    true
+  )
 
   // Ship it to SQL
   await getDataFromSql({

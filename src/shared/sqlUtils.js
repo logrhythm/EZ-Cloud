@@ -175,7 +175,29 @@ function createSqlVariables (req, definitions) {
     return variables;
 }
 
+function createSqlVariablesAndStoredProcParams (req, definitions, weedOut = true) {
+    // Prep SQL Variables
+    const sqlVariablesRaw = createSqlVariables(req, definitions);
+
+    // Weed out all the ones with NULL or Undefined
+    // This is done as the SQL Stored Procedure will use default values if a param is not provided
+    // But by default, createSqlVariables() puts NULL, and that's no good
+
+    const storedProcedureParams = [];
+    const sqlVariables = []
+
+    sqlVariablesRaw.forEach((variable) => {
+        if ((variable.value !== undefined && variable.value !== null) || weedOut === false) {
+            sqlVariables.push(variable);
+            storedProcedureParams.push(`@${variable.name} = @${variable.name}`)
+        }
+    })
+
+    return [ sqlVariables, storedProcedureParams ];
+}
+
 module.exports = {
     getDataFromSql,
-    createSqlVariables
+    createSqlVariables,
+    createSqlVariablesAndStoredProcParams
 };
