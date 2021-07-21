@@ -131,11 +131,11 @@
             <q-select dense v-model="newPipelineOpenCollector" :options="openCollectorsOptions" label="Primary Open Collector" emit-value map-options />
           </q-card-section>
 
-          <q-card-section class="q-pt-none" v-if="newPipelineStatus">
+          <q-card-section class="q-pt-none q-mt-md" v-if="newPipelineStatus">
             <q-select dense v-model="newPipelineStatus" :options="statusOptions" label="Status" />
           </q-card-section>
 
-          <q-card-actions align="right" class="text-primary">
+          <q-card-actions align="right" class="text-primary q-mt-md">
             <q-btn flat :label="$t('Cancel')" v-close-popup />
             <q-btn flat :label="$t('Update Pipeline')" v-if="newPipelineUid && newPipelineUid.length" v-close-popup :disabled="!newPipelineName.length" @click="updatePipeline()" />
             <q-btn flat :label="$t('Add new Pipeline')" v-else v-close-popup :disabled="!newPipelineName.length" @click="updatePipeline()" />
