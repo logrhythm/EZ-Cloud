@@ -4,8 +4,6 @@
       <q-toolbar class="q-gutter-x-sm">
         <q-btn no-caps flat dense icon="arrow_back" label="Return to Properties" :to="'/Pipelines/' + this.pipelineUid + '/Properties'" />
         <q-separator vertical />
-        <q-btn no-caps flat dense icon="save" label="Save" color="primary" :disabled="!needsSaving" @click="save()" />
-        <!-- <q-btn no-caps flat dense icon="restore" label="Reverse to last saved" @click="reverseToLastSavedPrompt()" /> -->
         <q-toolbar-title style="opacity:.4" class="text-center">Edit Deployment<span v-if="pipeline && pipeline.name && pipeline.name.length">:  {{ pipeline.name }}</span></q-toolbar-title>
       </q-toolbar>
     </q-header>
@@ -162,7 +160,6 @@ export default {
     return {
       pipelineUid: '',
       openCollectorUid: '',
-      needsSaving: false,
       searchFilter: '',
       columns: [
         { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
@@ -323,9 +320,6 @@ export default {
     loadOpenCollectorsPipelinesAndLogSources () {
       this.loadOpenCollectorsAndPipelines()
       this.loadOpenCollectorLogSources()
-    },
-    save () {
-      //
     },
     selectOpenCollector (selectedRow) {
       console.log('selectOpenCollector', selectedRow)
