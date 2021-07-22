@@ -36,6 +36,7 @@
   - [x] Try to map EZ OCs with OC Log Sources
   - [ ] Flag EZ OCs that do not have the right Shipper for the Pipeline
   - [ ] Capture user selection of OC Log Source
+  - [ ] Kick off deployment of Stream on OC and creation of LogSource and all the chain in EMDB
 - [ ] Hide Settings page for Prod
 - [ ] Create Logging shared Lib to push logs to Console and Windows Journal
 - Day mode
