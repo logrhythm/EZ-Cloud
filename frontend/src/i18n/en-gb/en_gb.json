@@ -42,5 +42,6 @@
   "Update Pipeline": "Update Pipeline",
   "Pipeline name cannot be empty": "Pipeline name cannot be empty",
   "Edit Deployment details": "Edit Deployment details",
-  "Delete Deployment": "Delete Deployment"
+  "Delete Deployment": "Delete Deployment",
+  "Deploy": "Deploy"
 }

@@ -115,7 +115,6 @@
           </q-td>
         </template>
       </q-table>
-      <pre>{{ tableData }}</pre>
 
       <q-dialog v-model="promptForNewPipelineDetails" persistent>
         <q-card style="min-width: 350px">

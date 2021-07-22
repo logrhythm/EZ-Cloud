@@ -136,7 +136,7 @@
                 <template v-slot:top>
                   <div class="full-width row wrap justify-between">
                     <div class="q-table__title">
-                      Deployments
+                      Current Deployments
                     </div>
                     <div class="row q-gutter-md">
                       <div class="col" >
@@ -195,14 +195,14 @@
                 </template>
               </q-table>
             </q-card-section>
-            <q-card-section>
+            <!-- <q-card-section>
                 <span class="text-bold">Table Data: </span>
                 <pre>{{ tableData }}</pre>
-            </q-card-section>
-            <q-card-section>
+            </q-card-section> -->
+            <!-- <q-card-section>
                 <span class="text-bold">Deployments: </span>
                 <pre>{{ deployments }}</pre>
-            </q-card-section>
+            </q-card-section> -->
           </q-card-section>
 
           <q-separator vertical />

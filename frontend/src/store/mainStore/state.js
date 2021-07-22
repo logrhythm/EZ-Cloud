@@ -2409,7 +2409,8 @@ To store the custom fields as top-level fields, set the \`fields_under_root opti
         label: 'Syslog over UDP',
         icon: 'input'
       }
-    ] // collectionMethodsOptions
+    ], // collectionMethodsOptions
+    openCollectorLogSources: []
   }
 }
 /*
