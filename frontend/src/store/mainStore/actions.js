@@ -272,6 +272,10 @@ export function deletePipeline ({ state, commit }, payload) {
   }
 }
 
+// ######################################################################
+// SHIPPERS URLS
+// ######################################################################
+
 export function loadShippersUrls ({ state, commit }, payload) {
   if (state.shippersUrlsInternal.length === 0) {
     console.log('☁️ Downloading Shippers\' details and URLs...')
@@ -300,6 +304,37 @@ export function loadShippersUrls ({ state, commit }, payload) {
       })
   }
 }
+
+// ######################################################################
+// COLLECTOR LOG SOURCES
+// ######################################################################
+
+export function forgetOpenCollectorLogSources ({ state, commit }) {
+  // Usefull when login out, for example
+  // Update the Store with an empty array
+  commit('getOpenCollectorLogSources', [])
+}
+
+export function getOpenCollectorLogSources ({ state, commit }, payload) {
+  getDataFromSite({
+    apiUrl: '/logrhythmCore/GetOpenCollectorLogSourcesList',
+    dataLabel: 'Open Collector Log Sources',
+    countDataLabel: true,
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    commit: commit,
+    targetCommitName: 'getOpenCollectorLogSources',
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    silent: false,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    debug: false
+  })
+}
+
+// ######################################################################
+// DEPLOYMENTS
+// ######################################################################
 
 export function deleteDeployment ({ state, dispatch }, payload) {
   if (payload && payload.openCollector && payload.openCollector.pipelines && Array.isArray(payload.openCollector.pipelines) && payload.pipelineUid && payload.pipelineUid.length) {

@@ -16,3 +16,7 @@ export function shippersUrls (state) {
       : shippersFallbackUrls
   )
 }
+
+export function openCollectorLogSources (state) {
+  return state.openCollectorLogSources
+}

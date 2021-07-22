@@ -32,8 +32,8 @@
   - [x] Ability to assign Log Source to Open Collectors for Production
 - [ ] Assign Log Source to Open Collectors for Production page
   - [x] Create new Edit Deployment page
-  - [ ] Get list of OC Log Sources from Backend
-  - [ ] Try to map EZ OCs with OC Log Sources
+  - [x] Get list of OC Log Sources from Backend
+  - [x] Try to map EZ OCs with OC Log Sources
   - [ ] Flag EZ OCs that do not have the right Shipper for the Pipeline
   - [ ] Capture user selection of OC Log Source
 - [ ] Hide Settings page for Prod

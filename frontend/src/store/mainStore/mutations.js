@@ -136,3 +136,9 @@ export function loadShippersUrls (state, payload) {
     state.shippersUrlsInternal = payload
   }
 }
+
+export function getOpenCollectorLogSources (state, payload) {
+  if (payload && Array.isArray(payload)) {
+    state.openCollectorLogSources = payload
+  }
+}
