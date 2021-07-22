@@ -1,4 +1,4 @@
-DROP PROCEDURE [dbo].[upsert_openCollector]
+DROP PROCEDURE IF EXISTS [dbo].[upsert_openCollector]
 GO
 
 SET ANSI_NULLS ON
@@ -8,6 +8,7 @@ GO
 -- =============================================
 -- Author:		  Tony Massé
 -- Create date: 2021-05-10
+-- Update date: 2021-07-22 - To deal with Pipelines
 -- =============================================
 CREATE PROCEDURE upsert_openCollector 
 	@uid varchar(50),
@@ -22,7 +23,8 @@ CREATE PROCEDURE upsert_openCollector
 	@ocInstalled tinyint,
 	@ocVersion nvarchar(100),
 	@fbInstalled tinyint,
-	@fbVersion nvarchar(100)
+	@fbVersion nvarchar(100),
+	@pipelines nvarchar(max)
 AS
 BEGIN
 	-- SET NOCOUNT ON added to prevent extra result sets from
@@ -30,27 +32,10 @@ BEGIN
 	SET NOCOUNT ON;
 
     -- Insert statements for procedure here
-  IF EXISTS (SELECT *
-    FROM openCollectors
-    WHERE uid = @uid)
-	  IF @password = N'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' AND @privateKey = N'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **'
-		  UPDATE [dbo].[openCollectors]
-			SET 
-			  [name] = @name
-			  ,[hostname] = @hostname
-			  ,[port] = @port
-			  ,[authenticationMethod] = @authenticationMethod
-			  ,[username] = @username
-			  --,[password] = @password
-			  --,[privateKey] = @privateKey
-			  ,[osVersion] = @osVersion
-			  ,[ocInstalled] = @ocInstalled
-			  ,[ocVersion] = @ocVersion
-			  ,[fbInstalled] = @fbInstalled
-			  ,[fbVersion] = @fbVersion
-		  WHERE uid = @uid;
-		ELSE
-			IF @password = N'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **'
+	IF EXISTS (SELECT *
+		FROM openCollectors
+		WHERE uid = @uid)
+		  IF @password = N'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' AND @privateKey = N'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **'
 			  UPDATE [dbo].[openCollectors]
 				SET 
 				  [name] = @name
@@ -59,7 +44,7 @@ BEGIN
 				  ,[authenticationMethod] = @authenticationMethod
 				  ,[username] = @username
 				  --,[password] = @password
-				  ,[privateKey] = @privateKey
+				  --,[privateKey] = @privateKey
 				  ,[osVersion] = @osVersion
 				  ,[ocInstalled] = @ocInstalled
 				  ,[ocVersion] = @ocVersion
@@ -67,7 +52,7 @@ BEGIN
 				  ,[fbVersion] = @fbVersion
 			  WHERE uid = @uid;
 			ELSE
-				IF @privateKey = N'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **'
+				IF @password = N'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **'
 				  UPDATE [dbo].[openCollectors]
 					SET 
 					  [name] = @name
@@ -75,23 +60,7 @@ BEGIN
 					  ,[port] = @port
 					  ,[authenticationMethod] = @authenticationMethod
 					  ,[username] = @username
-					  ,[password] = @password
-					  --,[privateKey] = @privateKey
-					  ,[osVersion] = @osVersion
-					  ,[ocInstalled] = @ocInstalled
-					  ,[ocVersion] = @ocVersion
-					  ,[fbInstalled] = @fbInstalled
-					  ,[fbVersion] = @fbVersion
-				  WHERE uid = @uid;
-				ELSE
-				  UPDATE [dbo].[openCollectors]
-					SET 
-					  [name] = @name
-					  ,[hostname] = @hostname
-					  ,[port] = @port
-					  ,[authenticationMethod] = @authenticationMethod
-					  ,[username] = @username
-					  ,[password] = @password
+					  --,[password] = @password
 					  ,[privateKey] = @privateKey
 					  ,[osVersion] = @osVersion
 					  ,[ocInstalled] = @ocInstalled
@@ -99,34 +68,90 @@ BEGIN
 					  ,[fbInstalled] = @fbInstalled
 					  ,[fbVersion] = @fbVersion
 				  WHERE uid = @uid;
-  ELSE
-    INSERT INTO [dbo].[openCollectors]
-      ([uid]
-      ,[name]
-      ,[hostname]
-      ,[port]
-      ,[authenticationMethod]
-      ,[username]
-      ,[password]
-      ,[privateKey]
-      ,[osVersion]
-      ,[ocInstalled]
-      ,[ocVersion]
-      ,[fbInstalled]
-      ,[fbVersion])
-    VALUES
-      (@uid
-      ,@name
-      ,@hostname
-      ,@port
-      ,@authenticationMethod
-      ,@username
-      ,@password
-      ,@privateKey
-      ,@osVersion
-      ,@ocInstalled
-      ,@ocVersion
-      ,@fbInstalled
-      ,@fbVersion);
+				ELSE
+					IF @privateKey = N'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **'
+					  UPDATE [dbo].[openCollectors]
+						SET 
+						  [name] = @name
+						  ,[hostname] = @hostname
+						  ,[port] = @port
+						  ,[authenticationMethod] = @authenticationMethod
+						  ,[username] = @username
+						  ,[password] = @password
+						  --,[privateKey] = @privateKey
+						  ,[osVersion] = @osVersion
+						  ,[ocInstalled] = @ocInstalled
+						  ,[ocVersion] = @ocVersion
+						  ,[fbInstalled] = @fbInstalled
+						  ,[fbVersion] = @fbVersion
+					  WHERE uid = @uid;
+					ELSE
+					  UPDATE [dbo].[openCollectors]
+						SET 
+						  [name] = @name
+						  ,[hostname] = @hostname
+						  ,[port] = @port
+						  ,[authenticationMethod] = @authenticationMethod
+						  ,[username] = @username
+						  ,[password] = @password
+						  ,[privateKey] = @privateKey
+						  ,[osVersion] = @osVersion
+						  ,[ocInstalled] = @ocInstalled
+						  ,[ocVersion] = @ocVersion
+						  ,[fbInstalled] = @fbInstalled
+						  ,[fbVersion] = @fbVersion
+					  WHERE uid = @uid;
+	ELSE
+		INSERT INTO [dbo].[openCollectors]
+			([uid]
+			,[name]
+			,[hostname]
+			,[port]
+			,[authenticationMethod]
+			,[username]
+			,[password]
+			,[privateKey]
+			,[osVersion]
+			,[ocInstalled]
+			,[ocVersion]
+			,[fbInstalled]
+			,[fbVersion])
+		VALUES
+			(@uid
+			,@name
+			,@hostname
+			,@port
+			,@authenticationMethod
+			,@username
+			,@password
+			,@privateKey
+			,@osVersion
+			,@ocInstalled
+			,@ocVersion
+			,@fbInstalled
+			,@fbVersion);
+
+	-- Sort the Pipelines out (which should be provided as a JSON array)
+	IF (ISJSON(@pipelines) > 0)
+	BEGIN
+		BEGIN TRANSACTION;
+		-- Clean Up
+		DELETE FROM [dbo].[openCollectorsPipelines]
+			WHERE [openCollectorUid] = @uid
+		-- Inject back in
+		INSERT INTO [dbo].[openCollectorsPipelines]
+			SELECT
+				@uid AS [openCollectorUid],
+				uid AS [pipelineUid],
+				enabled AS [state]
+			FROM OPENJSON(@pipelines)
+				WITH(
+						uid nvarchar(40),
+						enabled bit
+					)
+		-- BOOM!
+		COMMIT TRANSACTION; 
+	END
+  
 END;
 GO
