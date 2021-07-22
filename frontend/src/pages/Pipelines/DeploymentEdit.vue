@@ -287,15 +287,14 @@ export default {
 
       // Quickly build a short list of the OC already in the List
       const openCollectorsAlreadyInTheList = list.reduce((uidsArray, item) => {
-        if (item && item.oc && item.oc.uid && item.oc.uid.length) {
-          uidsArray.push(item.oc.uid)
+        if (item && item.openCollector && item.openCollector.uid && item.openCollector.uid.length) {
+          uidsArray.push(item.openCollector.uid)
         }
         return uidsArray
       }, [])
 
       // Go through the OC and add to the list the ones that are not already in it
       this.openCollectors.forEach(oc => {
-        // Look for matching Log Sources
         if (!openCollectorsAlreadyInTheList.includes(oc.uid)) {
           list.push({
             openCollector: oc,
