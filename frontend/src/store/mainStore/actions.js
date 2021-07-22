@@ -437,7 +437,7 @@ export function getDataFromSite (params = {
       if (params.debug) {
         console.log('getDataFromSite -- Catch')
       }
-      messageForLogAndPopup = i18n.t('Loading error') + ': ' + errorMessage
+      messageForLogAndPopup = i18n.t('Loading error') + ': ' + (typeof errorMessage !== 'object' ? errorMessage : JSON.stringify(errorMessage))
       queryResultedInError = true
     })
     .finally(() => {
@@ -606,7 +606,10 @@ export function postDataToSite (params = {
           queryResultedInError = true
           messageForLogAndPopup = i18n.t('Error updating persistance layer.')
           if (process.env.DEV) {
-            captionForLogAndPopup = response.data.errors.join(' / ')
+            captionForLogAndPopup = response.data.errors.reduce((errorsAccumulatorArray, errorMessage) => {
+              errorsAccumulatorArray.push(typeof errorMessage !== 'object' ? errorMessage : JSON.stringify(errorMessage))
+              return errorsAccumulatorArray
+            }, []).join(' / ')
           }
         } else {
           queryResultedInError = false
@@ -621,7 +624,7 @@ export function postDataToSite (params = {
       if (params.debug) {
         console.log('postDataToSite -- Catch')
       }
-      messageForLogAndPopup = i18n.t('Update error') + ': ' + errorMessage
+      messageForLogAndPopup = i18n.t('Update error') + ': ' + (typeof errorMessage !== 'object' ? errorMessage : JSON.stringify(errorMessage))
       queryResultedInError = true
     })
     .finally(() => {
