@@ -212,6 +212,7 @@ router.post('/UpdateCollector', async (req, res) => {
       ,@ocVersion
       ,@fbInstalled
       ,@fbVersion
+      ,@pipelines
       ;
     `,
     variables: createSqlVariables(
@@ -229,7 +230,8 @@ router.post('/UpdateCollector', async (req, res) => {
         { name: 'ocInstalled', type: 'TinyInt' },
         { name: 'ocVersion', type: 'NVarChar' },
         { name: 'fbInstalled', type: 'TinyInt' },
-        { name: 'fbVersion', type: 'NVarChar' }
+        { name: 'fbVersion', type: 'NVarChar' },
+        { name: 'pipelines', type: 'NVarChar' }
       ]
     )
   });
