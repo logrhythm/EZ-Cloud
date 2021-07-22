@@ -51,7 +51,7 @@
                       </q-input>
                     </div>
                     <!-- <q-separator vertical dark color="orange" /> -->
-                    <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadOpenCollectorsAndPipelines()">
+                    <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadOpenCollectorsPipelinesAndLogSources()">
                       <q-tooltip content-style="font-size: 1em">
                         Reload the list of Pipelines.
                       </q-tooltip>
@@ -319,6 +319,10 @@ export default {
           caller: this
         }
       )
+    },
+    loadOpenCollectorsPipelinesAndLogSources () {
+      this.loadOpenCollectorsAndPipelines()
+      this.loadOpenCollectorLogSources()
     },
     save () {
       //
