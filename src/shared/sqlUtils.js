@@ -175,6 +175,20 @@ function createSqlVariables (req, definitions) {
     return variables;
 }
 
+// ##########################################################################################
+// createSqlVariablesAndStoredProcParams
+// #########
+// Utilitarian function to create the array of
+// fields type mapping to be provided to
+// getDataFromSql as parameters.targetVariable
+// using createSqlVariables() and trimming any
+// entry with a NULL or Undefined value.
+//
+// Useful when calling Stored Procedures that
+// expect missing parameters to fall back on
+// default values.
+// ##########################################################################################
+
 function createSqlVariablesAndStoredProcParams (req, definitions, weedOut = true) {
     // Prep SQL Variables
     const sqlVariablesRaw = createSqlVariables(req, definitions);
