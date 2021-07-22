@@ -10,7 +10,7 @@ Check [Releases](https://github.com/TonyMasse/EZ-Cloud/releases) for version spe
 
 ## Requirements
 - NodeJS (v12.16 or above)
-- MS SQL (v2012 or above)
+- MS SQL (v2016 or above)
 
 ## Setup
 See [Releases](https://github.com/TonyMasse/EZ-Cloud/releases) for version specific installation instructions
