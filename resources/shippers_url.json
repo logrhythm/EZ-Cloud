@@ -16,7 +16,6 @@
         }
     },
     {
-        {
         "version": "7.13.0",
         "name": "RPM 64 bits",
         "url": "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.13.0-x86_64.rpm",
