@@ -77,7 +77,7 @@ async function getDataFromSql (parameters) {
                             TYPES[variable.type],
                             (
                                 // eslint-disable-next-line no-nested-ternary
-                                variable.value !== undefined
+                                (variable.value !== undefined) && (variable.value !== null)
                                     ? (
                                         typeof variable.value === 'object'
                                             ? JSON.stringify(variable.value)
