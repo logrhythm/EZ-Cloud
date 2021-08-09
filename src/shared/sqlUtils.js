@@ -160,10 +160,10 @@ function createSqlVariables (req, definitions) {
                     type: def.type,
                     /* eslint-disable no-nested-ternary */
                     value: (
-                        req.body[def.name] !== undefined
+                        req.body && (req.body[def.name] !== undefined)
                             ? req.body[def.name]
                             : (
-                                req.query[def.name] !== undefined
+                                req.query && (req.query[def.name] !== undefined)
                                     ? req.query[def.name]
                                     : null
                             )
