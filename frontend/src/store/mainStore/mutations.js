@@ -33,9 +33,15 @@ export function updateOpenCollector (state, payload) {
       }
     })
 
-    if (payload.pipelines) {
-      openCollectorToUpdate.pipelines = [].concat(payload.pipelines)
-    }
+    const arrayBranches = [
+      'pipelines',
+      'installedShippers'
+    ]
+    arrayBranches.forEach((branch) => {
+      if (payload[branch]) {
+        openCollectorToUpdate[branch] = [].concat(payload[branch])
+      }
+    })
   }
 }
 

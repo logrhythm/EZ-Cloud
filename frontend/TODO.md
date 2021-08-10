@@ -15,6 +15,7 @@
   - [x] Move `OS version` to the left of `Open Collector Version`
   - [x] Change `Filebeat version` to `Shippers version`
   - [ ] Collect different Shippers versions from Backend
+  - [x] Load and display different Shippers and versions
   - [ ] Add action button to `Shippers version` column, when empty
     - [ ] Install
   - [ ] Add action buttons to `Actions` column
@@ -62,7 +63,6 @@
     - [ ] Ability to Enable / Commit the Log Source creation
 
 ## TO FIX
-- [ ] Damn Tedious saving NULL as 'null' in OC list
 - [ ] Open Collector List - Installation progress bar showing always full, even when progress is not yet 100%
 - [ ] Field Mapping - JQ Transform - Put the Pipeline name in .output.device_name, and the Beat name in .output.beatname, so to comply with LS Virtualisation templates
 

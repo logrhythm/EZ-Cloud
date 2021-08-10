@@ -100,7 +100,7 @@
             />
           </q-td>
         </template>
-        <template v-slot:body-cell-fbVersion="props">
+        <!-- <template v-slot:body-cell-fbVersion="props">
           <q-td :props="props">
             <span v-if="props.value !== 'Not Installed'" >{{ (props.value && props.value.length ? 'Filebeat ' + props.value : '') }}</span>
             <q-btn-dropdown
@@ -113,7 +113,6 @@
               class="q-px-sm"
               @click="installFilebeat(props.row.uid, shippersUrls[0])"
             >
-              <!-- <q-tooltip content-style="font-size: 1em;" >Install default version</q-tooltip> -->
               <q-list>
                 <q-item
                   v-for="(shipperUrl, index) in shippersUrls"
@@ -130,23 +129,66 @@
                     <q-item-label caption>{{ shipperUrl.filename }}</q-item-label>
                   </q-item-section>
                 </q-item>
-                <!-- <q-item clickable v-close-popup @click="installFilebeat(props.row.uid)">
-                  <q-item-section side>
-                    <q-badge color="primary">v7.13.0</q-badge>
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label>RPM 64 bits</q-item-label>
-                    <q-item-label caption>filebeat-7.13.0-x86_64.rpm</q-item-label>
-                  </q-item-section>
-                </q-item> -->
               </q-list>
             </q-btn-dropdown>
             <q-spinner-dots
               color="primary"
               size="2em"
-              v-if="fbVersionCheck && fbVersionCheck[props.row.uid] && fbVersionCheck[props.row.uid].checking"
+              v-if="installedShippersVersionCheck && installedShippersVersionCheck[props.row.uid] && installedShippersVersionCheck[props.row.uid].checking"
               class="q-ml-sm"
             />
+          </q-td>
+        </template> -->
+        <template v-slot:body-cell-installedShippers="props">
+          <q-td :props="props">
+            <div
+                v-for="(shipper, index) in props.value"
+                :key="index"
+            >
+              <q-tooltip content-style="font-size: 1em;" >{{ shipper.name }}</q-tooltip>
+              <q-avatar square  size="24px" class="q-mr-xs">
+                <img :src="'/shippers/' + collectionShipperDetails(shipper.name).icon + '.svg'" />
+                <!-- <q-badge floating transparent color="primary">v{{ shipper.version }}</q-badge> -->
+              </q-avatar>
+              <q-badge outline color="grey">v{{ shipper.version }}</q-badge>
+            </div>
+
+            <q-spinner-dots
+              color="primary"
+              size="2em"
+              v-if="installedShippersVersionCheck && installedShippersVersionCheck[props.row.uid] && installedShippersVersionCheck[props.row.uid].checking"
+              class="q-ml-sm"
+            />
+
+            <div>
+              <q-btn
+                dense
+                icon="add"
+                color="primary"
+                flat
+              >
+                <q-tooltip content-style="font-size: 1em;" >Add another Shipper</q-tooltip>
+                <q-menu>
+                  <q-list>
+                    <q-item
+                      v-for="(shipperUrl, index) in shippersUrls"
+                      :key="index"
+                      clickable
+                      v-close-popup
+                      @click="installFilebeat(props.row.uid, shipperUrl)"
+                    >
+                      <q-item-section side style="min-width: 5em;" class="items-center">
+                        <q-badge color="primary">v{{ shipperUrl.version }}</q-badge>
+                      </q-item-section>
+                      <q-item-section>
+                        <q-item-label>{{ shipperUrl.name }}</q-item-label>
+                        <q-item-label caption>{{ shipperUrl.filename }}</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-menu>
+              </q-btn>
+            </div>
           </q-td>
         </template>
       </q-table>
@@ -253,11 +295,12 @@
       </q-card>
       <!-- shipperInstall:
       <pre>{{shipperInstall}}</pre> -->
+      <!-- <pre>{{tableData}}</pre> -->
     </q-page>
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex'
+import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import { uid } from 'quasar'
@@ -280,8 +323,8 @@ export default {
         { name: 'authenticationMethod', align: 'center', label: 'Authentication Method', field: 'authenticationMethod', sortable: true },
         { name: 'osVersion', align: 'center', label: 'OS version', field: 'osVersion', sortable: true },
         { name: 'ocVersion', align: 'center', label: 'OpenCollector version', field: 'ocVersion', sortable: true },
-        { name: 'fbVersion', align: 'center', label: 'Shippers version', field: 'fbVersion', sortable: true }
-        // { name: 'shippersVersion', align: 'center', label: 'Shippers version', field: 'shippersVersion', sortable: true }
+        // { name: 'fbVersion', align: 'center', label: 'Shippers version', field: 'fbVersion', sortable: true },
+        { name: 'installedShippers', align: 'center', label: 'Installed Shippers', field: 'installedShippers', sortable: true }
         // { name: 'pipelinesCount', align: 'center', label: 'Log Sources', field: 'pipelinesCount', sortable: true }
       ],
       pagination: {
@@ -307,11 +350,12 @@ export default {
       newOpenCollectorFbVersion: '',
       osVersionCheck: {},
       ocVersionCheck: {},
-      fbVersionCheck: {},
+      installedShippersVersionCheck: {},
       shipperInstall: {}
     } // return
   },
   computed: {
+    ...mapState('mainStore', ['collectionShippersOptions']),
     ...mapGetters('mainStore', ['openCollectors', 'pipelines', 'shippersUrls']),
     tableData () {
       const list = []
@@ -387,13 +431,13 @@ export default {
           debug: false
         })
 
-        if (!this.fbVersionCheck[uid]) {
-          this.fbVersionCheck[uid] = {
+        if (!this.installedShippersVersionCheck[uid]) {
+          this.installedShippersVersionCheck[uid] = {
             apiData: {}
           }
         }
-        this.fbVersionCheck[uid].checking = true
-        this.fbVersionCheck = JSON.parse(JSON.stringify(this.fbVersionCheck))
+        this.installedShippersVersionCheck[uid].checking = true
+        this.installedShippersVersionCheck = JSON.parse(JSON.stringify(this.installedShippersVersionCheck))
         this.getOpenCollectorsFilebeatVersion({
           caller: this,
           apiCallParams: { uid: uid },
@@ -459,15 +503,15 @@ export default {
     fbVersionReceive (response) {
       if (response) {
         const uid = (response.params && response.params.apiCallParams && response.params.apiCallParams.uid ? response.params.apiCallParams.uid : null)
-        if (uid && this.fbVersionCheck && this.fbVersionCheck[uid]) {
-          this.fbVersionCheck[uid].checking = false
+        if (uid && this.installedShippersVersionCheck && this.installedShippersVersionCheck[uid]) {
+          this.installedShippersVersionCheck[uid].checking = false
           const newOcInfo = JSON.parse(JSON.stringify(this.openCollectors.find((oc) => oc.uid === uid)))
 
           if (response.success) {
-            this.fbVersionCheck[uid].error = false
+            this.installedShippersVersionCheck[uid].error = false
             newOcInfo.fbVersion = (response.data && response.data.payload && response.data.payload.version && response.data.payload.version.full ? response.data.payload.version.full : newOcInfo.fbVersion)
           } else {
-            this.fbVersionCheck[uid].error = true
+            this.installedShippersVersionCheck[uid].error = true
             // Only set to 'Not Installed' if something responded with 'bash: filebeat: command not found' or something similar
             // Any other error (host not responding, or SSH failed) will simply return no version information
             newOcInfo.fbVersion = ''
@@ -478,7 +522,7 @@ export default {
                 }
               })
             }
-            this.fbVersionCheck[uid].apiData = {}
+            this.installedShippersVersionCheck[uid].apiData = {}
           }
 
           this.upsertOpenCollector(
@@ -489,7 +533,7 @@ export default {
             }
           )
 
-          this.fbVersionCheck = JSON.parse(JSON.stringify(this.fbVersionCheck))
+          this.installedShippersVersionCheck = JSON.parse(JSON.stringify(this.installedShippersVersionCheck))
         }
       }
     },
@@ -725,6 +769,14 @@ export default {
 
         // Refresh object
         this.shipperInstall = JSON.parse(JSON.stringify(this.shipperInstall))
+      }
+    },
+    collectionShipperDetails (shipperName) {
+      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'unknown', outputFormat: 'json' }
+      if (shipperName && shipperName.length) {
+        return this.collectionShippersOptions.find(cso => cso.label && cso.label === shipperName) || fallbackValue
+      } else {
+        return fallbackValue
       }
     }
   }, // methods
