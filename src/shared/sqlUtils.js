@@ -77,7 +77,7 @@ async function getDataFromSql (parameters) {
                             TYPES[variable.type],
                             (
                                 // eslint-disable-next-line no-nested-ternary
-                                variable.value !== undefined
+                                (variable.value !== undefined) && (variable.value !== null)
                                     ? (
                                         typeof variable.value === 'object'
                                             ? JSON.stringify(variable.value)
@@ -160,10 +160,10 @@ function createSqlVariables (req, definitions) {
                     type: def.type,
                     /* eslint-disable no-nested-ternary */
                     value: (
-                        req.body[def.name] !== undefined
+                        req.body && (req.body[def.name] !== undefined)
                             ? req.body[def.name]
                             : (
-                                req.query[def.name] !== undefined
+                                req.query && (req.query[def.name] !== undefined)
                                     ? req.query[def.name]
                                     : null
                             )

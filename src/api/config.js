@@ -82,6 +82,7 @@ router.get('/GetCollectors', async (req, res) => {
         ,[ocVersion]
         ,[fbInstalled]
         ,[fbVersion]
+        ,[installedShippers]
       FROM [dbo].[openCollectors]
       `
   });
@@ -125,6 +126,13 @@ router.get('/GetCollectors', async (req, res) => {
               });
             }
           });
+        }
+
+        // Parse the list of Shippers, falling back to an empty array if things go pear shaped.
+        try {
+          collector.installedShippers = JSON.parse(collector.installedShippers);
+        } catch {
+          collector.installedShippers = [];
         }
       });
   }
@@ -213,6 +221,7 @@ router.post('/UpdateCollector', async (req, res) => {
       ,@fbInstalled
       ,@fbVersion
       ,@pipelines
+      ,@installedShippers
       ;
     `,
     variables: createSqlVariables(
@@ -231,7 +240,8 @@ router.post('/UpdateCollector', async (req, res) => {
         { name: 'ocVersion', type: 'NVarChar' },
         { name: 'fbInstalled', type: 'TinyInt' },
         { name: 'fbVersion', type: 'NVarChar' },
-        { name: 'pipelines', type: 'NVarChar' }
+        { name: 'pipelines', type: 'NVarChar' },
+        { name: 'installedShippers', type: 'NVarChar' }
       ]
     )
   });

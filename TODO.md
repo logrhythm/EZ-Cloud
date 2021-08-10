@@ -7,6 +7,7 @@
   - [ ] Compress into a versionned archive
 - [ ] Remove dependance to config/ssh.json
 - [ ] Collect different Shippers versions for the Frontend
+- [x] Store different Shippers information in EZ DB
 - [x] Reverse engineer Log Source creation and Virtualisation process
   - [x] LS Type
     - [x] List LS Types
@@ -105,6 +106,7 @@
     - [ ] Modify LS Virtualisation Item
 
 ## TO FIX
+- [x] Damn Tedious saving NULL as 'null' in OC list
 - Refactor: upsert_Log_Source_Virtualisation_Template to not need to add a SP to EMDB
 - Refactor: upsert_Processing_Policy to not need to add a SP to EMDB
 

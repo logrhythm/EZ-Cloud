@@ -5,6 +5,11 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
+-- =============================================
+-- Author:		  Tony Massé
+-- Create date: 2021-04-30
+-- Update date: 2021-08-09 - To deal with multiple Shippers and their versions
+-- =============================================
 CREATE TABLE [dbo].[openCollectors](
 	[uid] [varchar](40) NOT NULL,
 	[name] [nvarchar](50) NULL,
@@ -19,6 +24,7 @@ CREATE TABLE [dbo].[openCollectors](
 	[ocVersion] [nvarchar](100) NULL,
 	[fbInstalled] [tinyint] NULL,
 	[fbVersion] [nvarchar](100) NULL,
+	[installedShippers] [nvarchar](max) NOT NULL
  CONSTRAINT [PK_openCollectors] PRIMARY KEY CLUSTERED 
 (
 	[uid] ASC
@@ -31,4 +37,7 @@ ALTER TABLE [dbo].[openCollectors] ADD  CONSTRAINT [DF_openCollectors_ocInstalle
 GO
 
 ALTER TABLE [dbo].[openCollectors] ADD  CONSTRAINT [DF_openCollectors_fbInstalled]  DEFAULT ((0)) FOR [fbInstalled]
+GO
+
+ALTER TABLE [dbo].[openCollectors] ADD  CONSTRAINT [DF_openCollectors_installedShippers]  DEFAULT ('[]') FOR [installedShippers]
 GO
