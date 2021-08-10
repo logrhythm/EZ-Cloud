@@ -9,6 +9,7 @@ GO
 -- Author:		  Tony Massé
 -- Create date: 2021-05-10
 -- Update date: 2021-07-22 - To deal with Pipelines
+-- Update date: 2021-08-09 - To deal with multiple Shippers and their versions
 -- =============================================
 CREATE PROCEDURE upsert_openCollector 
 	@uid varchar(50),
@@ -24,7 +25,8 @@ CREATE PROCEDURE upsert_openCollector
 	@ocVersion nvarchar(100),
 	@fbInstalled tinyint,
 	@fbVersion nvarchar(100),
-	@pipelines nvarchar(max)
+	@pipelines nvarchar(max),
+	@installedShippers nvarchar(max) = '[]'
 AS
 BEGIN
 	-- SET NOCOUNT ON added to prevent extra result sets from
@@ -50,6 +52,7 @@ BEGIN
 				  ,[ocVersion] = @ocVersion
 				  ,[fbInstalled] = @fbInstalled
 				  ,[fbVersion] = @fbVersion
+				  ,[installedShippers] = ISNULL(@installedShippers, '[]')
 			  WHERE uid = @uid;
 			ELSE
 				IF @password = N'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **'
@@ -67,6 +70,7 @@ BEGIN
 					  ,[ocVersion] = @ocVersion
 					  ,[fbInstalled] = @fbInstalled
 					  ,[fbVersion] = @fbVersion
+					  ,[installedShippers] = ISNULL(@installedShippers, '[]')
 				  WHERE uid = @uid;
 				ELSE
 					IF @privateKey = N'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **'
@@ -84,6 +88,7 @@ BEGIN
 						  ,[ocVersion] = @ocVersion
 						  ,[fbInstalled] = @fbInstalled
 						  ,[fbVersion] = @fbVersion
+						  ,[installedShippers] = ISNULL(@installedShippers, '[]')
 					  WHERE uid = @uid;
 					ELSE
 					  UPDATE [dbo].[openCollectors]
@@ -100,6 +105,7 @@ BEGIN
 						  ,[ocVersion] = @ocVersion
 						  ,[fbInstalled] = @fbInstalled
 						  ,[fbVersion] = @fbVersion
+						  ,[installedShippers] = ISNULL(@installedShippers, '[]')
 					  WHERE uid = @uid;
 	ELSE
 		INSERT INTO [dbo].[openCollectors]
@@ -115,7 +121,8 @@ BEGIN
 			,[ocInstalled]
 			,[ocVersion]
 			,[fbInstalled]
-			,[fbVersion])
+			,[fbVersion]
+			,[installedShippers])
 		VALUES
 			(@uid
 			,@name
@@ -129,7 +136,8 @@ BEGIN
 			,@ocInstalled
 			,@ocVersion
 			,@fbInstalled
-			,@fbVersion);
+			,@fbVersion
+			,ISNULL(@installedShippers, '[]'));
 
 	-- Sort the Pipelines out (which should be provided as a JSON array)
 	IF (ISJSON(@pipelines) > 0)
