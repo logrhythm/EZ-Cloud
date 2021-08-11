@@ -7,6 +7,10 @@
   - [ ] Compress into a versionned archive
 - [ ] Remove dependance to config/ssh.json
 - [ ] Collect different Shippers versions for the Frontend
+  - [ ] Collect running OC Beats and their versions
+    - [x] Get active Beats names and version into a JSON
+    - [ ] Merge CheckOpenCollectorBeatsVersions and CheckOCVersion
+  - [ ] Collect jsBeat version
 - [x] Store different Shippers information in EZ DB
 - [x] Reverse engineer Log Source creation and Virtualisation process
   - [x] LS Type
