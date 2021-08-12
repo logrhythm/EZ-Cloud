@@ -46,7 +46,6 @@ export default {
   },
   computed: {
     isPageActive () {
-      console.log(this.link, this.$route)
       if (this.$route.path && this.$route.path.length) {
         const cleanLink = this.link.replace('#/', '/')
         return this.$route.path.startsWith(cleanLink, 0)
