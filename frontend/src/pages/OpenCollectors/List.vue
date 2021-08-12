@@ -134,7 +134,7 @@
             <q-spinner-dots
               color="primary"
               size="2em"
-              v-if="installedShippersVersionCheck && installedShippersVersionCheck[props.row.uid] && installedShippersVersionCheck[props.row.uid].checking"
+              v-if="fbVersionCheck && fbVersionCheck[props.row.uid] && fbVersionCheck[props.row.uid].checking"
               class="q-ml-sm"
             />
           </q-td>
@@ -156,39 +156,44 @@
             <q-spinner-dots
               color="primary"
               size="2em"
-              v-if="installedShippersVersionCheck && installedShippersVersionCheck[props.row.uid] && installedShippersVersionCheck[props.row.uid].checking"
+              v-if="fbVersionCheck && fbVersionCheck[props.row.uid] && fbVersionCheck[props.row.uid].checking"
               class="q-ml-sm"
             />
 
-            <div>
-              <q-btn
-                dense
-                icon="add"
-                color="primary"
-                flat
-              >
-                <q-tooltip content-style="font-size: 1em;" >Add another Shipper</q-tooltip>
-                <q-menu>
-                  <q-list>
-                    <q-item
-                      v-for="(shipperUrl, index) in shippersUrls"
-                      :key="index"
-                      clickable
-                      v-close-popup
-                      @click="installFilebeat(props.row.uid, shipperUrl)"
-                    >
-                      <q-item-section side style="min-width: 5em;" class="items-center">
-                        <q-badge color="primary">v{{ shipperUrl.version }}</q-badge>
-                      </q-item-section>
-                      <q-item-section>
-                        <q-item-label>{{ shipperUrl.name }}</q-item-label>
-                        <q-item-label caption>{{ shipperUrl.filename }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </q-list>
-                </q-menu>
-              </q-btn>
-            </div>
+            <q-spinner-dots
+              color="primary"
+              size="2em"
+              v-if="activeOcBeatsVersionCheck && activeOcBeatsVersionCheck[props.row.uid] && activeOcBeatsVersionCheck[props.row.uid].checking"
+              class="q-ml-sm"
+            />
+
+            <q-btn
+              dense
+              icon="add"
+              color="primary"
+              flat
+            >
+              <q-tooltip content-style="font-size: 1em;" >Add another Shipper</q-tooltip>
+              <q-menu>
+                <q-list>
+                  <q-item
+                    v-for="(shipperUrl, index) in shippersUrls"
+                    :key="index"
+                    clickable
+                    v-close-popup
+                    @click="installFilebeat(props.row.uid, shipperUrl)"
+                  >
+                    <q-item-section side style="min-width: 5em;" class="items-center">
+                      <q-badge color="primary">v{{ shipperUrl.version }}</q-badge>
+                    </q-item-section>
+                    <q-item-section>
+                      <q-item-label>{{ shipperUrl.name }}</q-item-label>
+                      <q-item-label caption>{{ shipperUrl.filename }}</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-menu>
+            </q-btn>
           </q-td>
         </template>
       </q-table>
@@ -350,12 +355,13 @@ export default {
       newOpenCollectorFbVersion: '',
       osVersionCheck: {},
       ocVersionCheck: {},
-      installedShippersVersionCheck: {},
+      fbVersionCheck: {},
+      activeOcBeatsVersionCheck: {},
       shipperInstall: {}
     } // return
   },
   computed: {
-    ...mapState('mainStore', ['collectionShippersOptions']),
+    ...mapState('mainStore', ['collectionShippersOptions', 'openCollectorBeats']),
     ...mapGetters('mainStore', ['openCollectors', 'pipelines', 'shippersUrls']),
     tableData () {
       const list = []
@@ -394,7 +400,7 @@ export default {
   },
   methods: {
     ...mapActions('mainStore', ['upsertOpenCollector', 'deleteOpenCollector', 'loadShippersUrls']),
-    ...mapActions('mainStore', ['getOpenCollectorsOsVersion', 'getOpenCollectorsOcVersion', 'getOpenCollectorsFilebeatVersion']),
+    ...mapActions('mainStore', ['getOpenCollectorsOsVersion', 'getOpenCollectorsOcVersion', 'getOpenCollectorsFilebeatVersion', 'getOpenCollectorsOcAndActiveBeatsVersion']),
     openOpenCollector (row) {
       this.$router.push({ path: '/OpenCollectors/' + row.uid + '/View' })
     }, // openOpenCollector
@@ -408,13 +414,13 @@ export default {
         }
         this.ocVersionCheck[uid].checking = true
         this.ocVersionCheck = JSON.parse(JSON.stringify(this.ocVersionCheck))
-        this.getOpenCollectorsOcVersion({
-          caller: this,
-          apiCallParams: { uid: uid },
-          onSuccessCallBack: this.ocVersionReceive,
-          onErrorCallBack: this.ocVersionReceive,
-          debug: false
-        })
+        // this.getOpenCollectorsOcVersion({
+        //   caller: this,
+        //   apiCallParams: { uid: uid },
+        //   onSuccessCallBack: this.ocVersionReceive,
+        //   onErrorCallBack: this.ocVersionReceive,
+        //   debug: false
+        // })
 
         if (!this.osVersionCheck[uid]) {
           this.osVersionCheck[uid] = {
@@ -431,13 +437,24 @@ export default {
           debug: false
         })
 
-        if (!this.installedShippersVersionCheck[uid]) {
-          this.installedShippersVersionCheck[uid] = {
+        // Clear the list of Shippers for this Collector, but don't save them to the Backend
+        const newOcInfo = JSON.parse(JSON.stringify(this.openCollectors.find((oc) => oc.uid === uid)))
+        newOcInfo.installedShippers = []
+        this.upsertOpenCollector(
+          {
+            pushToApi: false,
+            caller: this,
+            openCollector: newOcInfo
+          }
+        )
+
+        if (!this.fbVersionCheck[uid]) {
+          this.fbVersionCheck[uid] = {
             apiData: {}
           }
         }
-        this.installedShippersVersionCheck[uid].checking = true
-        this.installedShippersVersionCheck = JSON.parse(JSON.stringify(this.installedShippersVersionCheck))
+        this.fbVersionCheck[uid].checking = true
+        this.fbVersionCheck = JSON.parse(JSON.stringify(this.fbVersionCheck))
         this.getOpenCollectorsFilebeatVersion({
           caller: this,
           apiCallParams: { uid: uid },
@@ -445,9 +462,25 @@ export default {
           onErrorCallBack: this.fbVersionReceive,
           debug: false
         })
+
+        if (!this.activeOcBeatsVersionCheck[uid]) {
+          this.activeOcBeatsVersionCheck[uid] = {
+            apiData: {}
+          }
+        }
+        this.activeOcBeatsVersionCheck[uid].checking = true
+        this.activeOcBeatsVersionCheck = JSON.parse(JSON.stringify(this.activeOcBeatsVersionCheck))
+        this.getOpenCollectorsOcAndActiveBeatsVersion({
+          caller: this,
+          apiCallParams: { uid: uid },
+          onSuccessCallBack: this.ocAndBeatsVersionReceive,
+          onErrorCallBack: this.ocAndBeatsVersionReceive,
+          debug: false
+        })
       }
     }, // refreshOpenCollector
     ocVersionReceive (response) {
+      console.log('ocVersionReceive - 🔺- SHOULD NOT BE USED ANYMORE') // XXXXXX
       if (response) {
         const uid = (response.params && response.params.apiCallParams && response.params.apiCallParams.uid ? response.params.apiCallParams.uid : null)
         if (uid && this.ocVersionCheck && this.ocVersionCheck[uid]) {
@@ -503,15 +536,24 @@ export default {
     fbVersionReceive (response) {
       if (response) {
         const uid = (response.params && response.params.apiCallParams && response.params.apiCallParams.uid ? response.params.apiCallParams.uid : null)
-        if (uid && this.installedShippersVersionCheck && this.installedShippersVersionCheck[uid]) {
-          this.installedShippersVersionCheck[uid].checking = false
+        if (uid && this.fbVersionCheck && this.fbVersionCheck[uid]) {
+          this.fbVersionCheck[uid].checking = false
           const newOcInfo = JSON.parse(JSON.stringify(this.openCollectors.find((oc) => oc.uid === uid)))
 
           if (response.success) {
-            this.installedShippersVersionCheck[uid].error = false
-            newOcInfo.fbVersion = (response.data && response.data.payload && response.data.payload.version && response.data.payload.version.full ? response.data.payload.version.full : newOcInfo.fbVersion)
+            this.fbVersionCheck[uid].error = false
+            // newOcInfo.fbVersion = (response.data && response.data.payload && response.data.payload.version && response.data.payload.version.full ? response.data.payload.version.full : newOcInfo.fbVersion)
+            if (response.data && response.data.payload && response.data.payload.version && response.data.payload.version.full) {
+              newOcInfo.fbVersion = response.data.payload.version.full
+              newOcInfo.installedShippers.push(
+                {
+                  name: 'Filebeat',
+                  version: response.data.payload.version.full
+                }
+              )
+            }
           } else {
-            this.installedShippersVersionCheck[uid].error = true
+            this.fbVersionCheck[uid].error = true
             // Only set to 'Not Installed' if something responded with 'bash: filebeat: command not found' or something similar
             // Any other error (host not responding, or SSH failed) will simply return no version information
             newOcInfo.fbVersion = ''
@@ -522,7 +564,7 @@ export default {
                 }
               })
             }
-            this.installedShippersVersionCheck[uid].apiData = {}
+            this.fbVersionCheck[uid].apiData = {}
           }
 
           this.upsertOpenCollector(
@@ -533,7 +575,82 @@ export default {
             }
           )
 
-          this.installedShippersVersionCheck = JSON.parse(JSON.stringify(this.installedShippersVersionCheck))
+          this.fbVersionCheck = JSON.parse(JSON.stringify(this.fbVersionCheck))
+        }
+      }
+    },
+    ocAndBeatsVersionReceive (response) {
+      console.log('ocAndBeatsVersionReceive:', response) // XXXXXX
+      if (response) {
+        const uid = (response.params && response.params.apiCallParams && response.params.apiCallParams.uid ? response.params.apiCallParams.uid : null)
+
+        // Do the Open Collector version
+
+        if (uid) {
+          const newOcInfo = JSON.parse(JSON.stringify(this.openCollectors.find((oc) => oc.uid === uid)))
+
+          if (this.ocVersionCheck && this.ocVersionCheck[uid]) {
+            this.ocVersionCheck[uid].checking = false
+            if (response.success) {
+              this.ocVersionCheck[uid].error = false
+
+              const openCollectorVersionPayload = (response.data && response.data.payload && response.data.payload.length ? response.data.payload.find((p) => p.name === 'open_collector') : null)
+              console.log('openCollectorVersionPayload', openCollectorVersionPayload) // XXXXXXXX
+              newOcInfo.ocVersion = (openCollectorVersionPayload && openCollectorVersionPayload.version && openCollectorVersionPayload.version.full ? openCollectorVersionPayload.version.full : newOcInfo.ocVersion)
+              newOcInfo.ocVersion = newOcInfo.ocVersion || ''
+              this.upsertOpenCollector(
+                {
+                  pushToApi: true,
+                  caller: this,
+                  openCollector: newOcInfo
+                }
+              )
+            } else {
+              this.ocVersionCheck[uid].error = true
+              this.ocVersionCheck[uid].apiData = {}
+            }
+            this.ocVersionCheck = JSON.parse(JSON.stringify(this.ocVersionCheck))
+          }
+
+          // Do the Active Beats version
+
+          if (this.activeOcBeatsVersionCheck && this.activeOcBeatsVersionCheck[uid]) {
+            this.activeOcBeatsVersionCheck[uid].checking = false
+
+            if (response.success) {
+              this.activeOcBeatsVersionCheck[uid].error = false
+
+              const activeBeatsVersionPayload = (response.data && response.data.payload && response.data.payload.length ? response.data.payload.filter((p) => p.name !== 'open_collector') : null)
+              newOcInfo.installedShippers = newOcInfo.installedShippers.concat(
+                (
+                  activeBeatsVersionPayload && Array.isArray(activeBeatsVersionPayload)
+                    ? activeBeatsVersionPayload.reduce((accumulatedPayloads, payload) => {
+                      accumulatedPayloads.push(
+                        {
+                          name: payload.name,
+                          version: (payload && payload.version && payload.version.full ? payload.version.full : null)
+                        }
+                      )
+                      return accumulatedPayloads
+                    }, [])
+                    : []
+                )
+              )
+            } else {
+              this.activeOcBeatsVersionCheck[uid].error = true
+              this.activeOcBeatsVersionCheck[uid].apiData = {}
+            }
+
+            this.upsertOpenCollector(
+              {
+                pushToApi: true,
+                caller: this,
+                openCollector: newOcInfo
+              }
+            )
+
+            this.activeOcBeatsVersionCheck = JSON.parse(JSON.stringify(this.activeOcBeatsVersionCheck))
+          }
         }
       }
     },
@@ -774,7 +891,11 @@ export default {
     collectionShipperDetails (shipperName) {
       const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'unknown', outputFormat: 'json' }
       if (shipperName && shipperName.length) {
-        return this.collectionShippersOptions.find(cso => cso.label && cso.label === shipperName) || fallbackValue
+        return (
+          this.collectionShippersOptions.find(cso => cso.label && cso.label === shipperName) ||
+          this.openCollectorBeats.find(ocb => ocb.label && ocb.label === shipperName) ||
+          fallbackValue
+        )
       } else {
         return fallbackValue
       }
