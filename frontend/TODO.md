@@ -63,7 +63,7 @@
     - [ ] Ability to rename Log Source
     - [ ] Ability to assign Log Source to other Open Collectors
     - [ ] Ability to Enable / Commit the Log Source creation
-
+- [x] Highlight the current active page in the navigation bar
 ## TO FIX
 - [ ] Open Collector List - Installation progress bar showing always full, even when progress is not yet 100%
 - [ ] Field Mapping - JQ Transform - Put the Pipeline name in .output.device_name, and the Beat name in .output.beatname, so to comply with LS Virtualisation templates

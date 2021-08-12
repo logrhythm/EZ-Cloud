@@ -8,11 +8,11 @@
       v-if="icon"
       avatar
     >
-      <q-icon :name="icon" />
+      <q-icon :name="icon" :color="(isPageActive ? 'primary' : '')" />
     </q-item-section>
 
     <q-item-section>
-      <q-item-label>{{ title }}</q-item-label>
+      <q-item-label :class="(isPageActive ? 'text-primary' : '')">{{ title }}</q-item-label>
       <!-- <q-item-label caption>
         {{ caption }}
       </q-item-label> -->
@@ -42,6 +42,17 @@ export default {
     icon: {
       type: String,
       default: ''
+    }
+  },
+  computed: {
+    isPageActive () {
+      console.log(this.link, this.$route)
+      if (this.$route.path && this.$route.path.length) {
+        const cleanLink = this.link.replace('#/', '/')
+        return this.$route.path.startsWith(cleanLink, 0)
+      } else {
+        return false
+      }
     }
   }
 }
