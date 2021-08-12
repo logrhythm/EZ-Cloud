@@ -21,7 +21,7 @@ function waitMilliseconds(delay = 250) {
   });
 }
 
-const maxCheckInterval = 10; // Check once every X seconds max, and/or timeout after X seconds
+const maxCheckInterval = 20; // Check once every X seconds max, and/or timeout after X seconds
 
 router.get('/', (req, res) => {
   res.json({
@@ -249,10 +249,10 @@ router.get('/CheckFilebeatVersion', async (req, res) => {
 });
 
 // #############################################
-// CheckOpenCollectorBeatsVersions
+// CheckOpenCollectorAndBeatsVersions
 // #############################################
 
-const ocBeatsVersionTemplate = {
+const ocAndBeatsVersionTemplate = {
   stillChecking: false,
   lastSuccessfulCheckTimeStampUtc: 0,
   payload: null, // null (unchecked) or object with version
@@ -260,45 +260,46 @@ const ocBeatsVersionTemplate = {
   outputs: [] // array of all the outputs
 };
 
-const ocBeatsVersionArray = {};
+const ocAndBeatsVersionArray = {};
 
-function checkOcBeatsVersion(ocBeatsVersion, uid) {
+function checkOcBeatsVersion(ocAndBeatsVersion, uid) {
   /* eslint-disable no-param-reassign */
   if (uid && uid.length) {
     getSshConfigForCollector({ uid }).then((sshConfig) => {
       const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
-      ocBeatsVersion.stillChecking = true;
-      ocBeatsVersion.errors = [];
-      ocBeatsVersion.outputs = [];
-      ocBeatsVersion.payload = null;
+      ocAndBeatsVersion.stillChecking = true;
+      ocAndBeatsVersion.errors = [];
+      ocAndBeatsVersion.outputs = [];
+      ocAndBeatsVersion.payload = null;
 
       ssh
-        .exec('./lrctl status | grep -i "^.*beat\\\\s\\+[0-9.]\\+" -o | awk \'BEGIN { ORS = ""; print "[" } { print "{\\"name\\":\\""$1"\\"},{\\"version\\":{\\"full\\":\\""$2"\\"}},"} END { ORS = "\\n"; print "]" } \' | sed \'s/},]/}]/\'', {
+        // .exec('./lrctl status | grep -i "^.*beat\\\\s\\+[0-9.]\\+" -o | awk \'BEGIN { ORS = ""; print "[" } { print "{\\"name\\":\\""$1"\\"},{\\"version\\":{\\"full\\":\\""$2"\\"}},"} END { ORS = "\\n"; print "]" } \' | sed \'s/},]/}]/\'', {
+        .exec('./lrctl status | grep -i "^\\(.*beat\\|open_collector\\)\\\\s\\+[0-9.]\\+" -o | awk \'BEGIN { ORS = ""; print "[" } { print "{\\"name\\":\\""$1"\\",\\"version\\":{\\"full\\":\\""$2"\\"}},"} END { ORS = "\\n"; print "]" } \' | sed \'s/},]/}]/\'', {
           err(stderr) {
-            ocBeatsVersion.errors.push(stderr);
+            ocAndBeatsVersion.errors.push(stderr);
           },
           exit(code) {
-            ocBeatsVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
+            ocAndBeatsVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
           },
           out(stdout) {
             try {
-              ocBeatsVersion.payload = JSON.parse(stdout);
+              ocAndBeatsVersion.payload = JSON.parse(stdout);
             }
             catch (error) {
-              ocBeatsVersion.payload = null;
+              ocAndBeatsVersion.payload = null;
             }
 
-            ocBeatsVersion.outputs.push(stdout);
-            ocBeatsVersion.stillChecking = false;
+            ocAndBeatsVersion.outputs.push(stdout);
+            ocAndBeatsVersion.stillChecking = false;
           }
         })
         .on('end', (err) => {
-          ocBeatsVersion.stillChecking = false;
+          ocAndBeatsVersion.stillChecking = false;
         })
         .start({
           failure() {
-            ocBeatsVersion.stillChecking = false;
+            ocAndBeatsVersion.stillChecking = false;
           }
         });
     });
@@ -306,23 +307,23 @@ function checkOcBeatsVersion(ocBeatsVersion, uid) {
   /* eslint-enable no-param-reassign */
 }
 
-router.get('/CheckOpenCollectorBeatsVersions', async (req, res) => {
+router.get('/CheckOpenCollectorAndBeatsVersions', async (req, res) => {
   if (req && req.query && req.query.uid && req.query.uid.length) {
     const { uid } = req.query;
 
-    if (!ocBeatsVersionArray[uid]) {
-      ocBeatsVersionArray[uid] = Object.assign({}, ocBeatsVersionTemplate);
+    if (!ocAndBeatsVersionArray[uid]) {
+      ocAndBeatsVersionArray[uid] = Object.assign({}, ocAndBeatsVersionTemplate);
     }
 
     if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
       // Waiting - Sync
-      if (!ocBeatsVersionArray[uid].stillChecking) {
-        ocBeatsVersionArray[uid].stillChecking = true;
-        checkOcBeatsVersion(ocBeatsVersionArray[uid], uid);
+      if (!ocAndBeatsVersionArray[uid].stillChecking) {
+        ocAndBeatsVersionArray[uid].stillChecking = true;
+        checkOcBeatsVersion(ocAndBeatsVersionArray[uid], uid);
       }
       const loopEndTime = Date.now() / 1000 + maxCheckInterval;
 
-      while (ocBeatsVersionArray[uid].stillChecking && (loopEndTime > (Date.now() / 1000))) {
+      while (ocAndBeatsVersionArray[uid].stillChecking && (loopEndTime > (Date.now() / 1000))) {
         // Wait for 50 ms
         // eslint-disable-next-line no-await-in-loop
         await waitMilliseconds(50);
@@ -331,20 +332,20 @@ router.get('/CheckOpenCollectorBeatsVersions', async (req, res) => {
       // No waiting - Async
       // eslint-disable-next-line no-lonely-if
       if (
-        !ocBeatsVersionArray[uid].stillChecking
-        && (ocBeatsVersionArray[uid].lastSuccessfulCheckTimeStampUtc + maxCheckInterval)
+        !ocAndBeatsVersionArray[uid].stillChecking
+        && (ocAndBeatsVersionArray[uid].lastSuccessfulCheckTimeStampUtc + maxCheckInterval)
         <= (Date.now() / 1000)
       ) {
-        checkOcBeatsVersion(ocBeatsVersionArray[uid], uid);
+        checkOcBeatsVersion(ocAndBeatsVersionArray[uid], uid);
       }
     }
 
-    if (ocBeatsVersionArray[uid].payload) {
-      ocBeatsVersionArray[uid].payload.uid = uid;
+    if (ocAndBeatsVersionArray[uid].payload) {
+      ocAndBeatsVersionArray[uid].payload.uid = uid;
     }
-    res.json(ocBeatsVersionArray[uid]);
+    res.json(ocAndBeatsVersionArray[uid]);
   } else {
-    res.json(Object.assign(Object.assign({}, ocBeatsVersionTemplate), { errors: ['Missing UID in Query.']}));
+    res.json(Object.assign(Object.assign({}, ocAndBeatsVersionTemplate), { errors: ['Missing UID in Query.']}));
   }
 });
 
