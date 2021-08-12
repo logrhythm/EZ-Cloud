@@ -119,7 +119,7 @@
       <q-dialog v-model="promptForNewPipelineDetails" persistent>
         <q-card style="min-width: 350px">
           <q-card-section>
-            <div class="text-h6">{{ $t('New Pipeline Details') }}</div>
+            <div class="text-h6">{{ $t('Pipeline Details') }}</div>
           </q-card-section>
 
           <q-card-section class="q-pt-none">

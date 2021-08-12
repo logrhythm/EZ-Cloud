@@ -15,6 +15,8 @@
   - [x] Move `OS version` to the left of `Open Collector Version`
   - [x] Change `Filebeat version` to `Shippers version`
   - [ ] Collect different Shippers versions from Backend
+    - [ ] Collect active OC Beats versions
+    - [ ] Collect jsBeat version
   - [x] Load and display different Shippers and versions
   - [ ] Add action button to `Shippers version` column, when empty
     - [ ] Install
@@ -65,6 +67,7 @@
 ## TO FIX
 - [ ] Open Collector List - Installation progress bar showing always full, even when progress is not yet 100%
 - [ ] Field Mapping - JQ Transform - Put the Pipeline name in .output.device_name, and the Beat name in .output.beatname, so to comply with LS Virtualisation templates
+- [x] Rename "New Pipeline Details" popup title to "Pipeline Details"
 
 ## TO TEST
 
