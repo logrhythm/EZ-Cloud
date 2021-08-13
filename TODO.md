@@ -6,8 +6,8 @@
 - [ ] Build packaged version
   - [ ] Compress into a versionned archive
 - [ ] Remove dependance to config/ssh.json
-- [ ] Collect different Shippers versions for the Frontend
-  - [ ] Collect running OC Beats and their versions
+- [x] Collect different Shippers versions for the Frontend
+  - [x] Collect running OC Beats and their versions
     - [x] Get active Beats names and version into a JSON
     - [x] Merge CheckOpenCollectorBeatsVersions and CheckOCVersion
   - [x] Collect jsBeat version
