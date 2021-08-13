@@ -648,7 +648,6 @@ export default {
       }
     },
     ocAndBeatsVersionReceive (response) {
-      console.log('ocAndBeatsVersionReceive:', response) // XXXXXX
       if (response) {
         const uid = (response.params && response.params.apiCallParams && response.params.apiCallParams.uid ? response.params.apiCallParams.uid : null)
 
@@ -663,7 +662,6 @@ export default {
               this.ocVersionCheck[uid].error = false
 
               const openCollectorVersionPayload = (response.data && response.data.payload && response.data.payload.length ? response.data.payload.find((p) => p.name === 'open_collector') : null)
-              console.log('openCollectorVersionPayload', openCollectorVersionPayload) // XXXXXXXX
               newOcInfo.ocVersion = (openCollectorVersionPayload && openCollectorVersionPayload.version && openCollectorVersionPayload.version.full ? openCollectorVersionPayload.version.full : newOcInfo.ocVersion)
               newOcInfo.ocVersion = newOcInfo.ocVersion || ''
               this.upsertOpenCollector(
