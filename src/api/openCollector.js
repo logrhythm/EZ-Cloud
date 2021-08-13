@@ -350,6 +350,110 @@ router.get('/CheckOpenCollectorAndBeatsVersions', async (req, res) => {
 });
 
 // #############################################
+// CheckJsBeatVersion
+// #############################################
+
+const jsBeatVersionTemplate = {
+  stillChecking: false,
+  lastSuccessfulCheckTimeStampUtc: 0,
+  payload: { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } }, // object with version
+  errors: [], // array of all the errors
+  outputs: [] // array of all the outputs
+};
+
+const jsBeatVersionArray = {};
+
+function checkjsBeatVersion (jsBeatVersion, uid) {
+  /* eslint-disable no-param-reassign */
+  if (uid && uid.length) {
+    getSshConfigForCollector({ uid }).then((sshConfig) => {
+      const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
+
+      jsBeatVersion.stillChecking = true;
+      jsBeatVersion.errors = [];
+      jsBeatVersion.outputs = [];
+      jsBeatVersion.payload = { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } };
+
+      ssh
+        .exec('/opt/jsBeat/bin/start.sh --version | grep -i jsbeat 2>/dev/null', {
+          err (stderr) {
+            jsBeatVersion.errors.push(stderr);
+          },
+          exit (code) {
+            jsBeatVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
+          },
+          out (stdout) {
+            const version = stdout.match(/js[Bb]eat *(([0-9]+)\.([0-9]+)\.([0-9]+))/);
+            if (version.length > 0) {
+              jsBeatVersion.payload = {
+                name: 'jsBeat',
+                version: {
+                  detailed: { major: version[2], minor: version[3], build: version[4] },
+                  full: version[1]
+                }
+              };
+            } else {
+              jsBeatVersion.payload = { name: 'jsBeat', version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } };
+            }
+            jsBeatVersion.outputs.push(stdout);
+          }
+        })
+        .on('end', (err) => {
+          jsBeatVersion.stillChecking = false;
+        })
+        .start({
+          failure () {
+            jsBeatVersion.stillChecking = false;
+          }
+        });
+    });
+  }
+  /* eslint-enable no-param-reassign */
+}
+
+router.get('/CheckJsBeatVersion', async (req, res) => {
+  if (req && req.query && req.query.uid && req.query.uid.length) {
+    const { uid } = req.query;
+
+    if (!jsBeatVersionArray[uid]) {
+      jsBeatVersionArray[uid] = Object.assign({}, jsBeatVersionTemplate);
+    }
+
+    if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
+      // Waiting - Sync
+      if (!jsBeatVersionArray[uid].stillChecking) {
+        jsBeatVersionArray[uid].stillChecking = true;
+        checkjsBeatVersion(jsBeatVersionArray[uid], uid);
+      }
+      const loopEndTime = Date.now() / 1000 + maxCheckInterval;
+
+      while (jsBeatVersionArray[uid].stillChecking && (loopEndTime > (Date.now() / 1000))) {
+        // Wait for 50 ms
+        // eslint-disable-next-line no-await-in-loop
+        await waitMilliseconds(50);
+      }
+    } else {
+      // No waiting - Async
+      // eslint-disable-next-line no-lonely-if
+      if (
+        !jsBeatVersionArray[uid].stillChecking
+        && (jsBeatVersionArray[uid].lastSuccessfulCheckTimeStampUtc + maxCheckInterval)
+        <= (Date.now() / 1000)
+      ) {
+        checkjsBeatVersion(jsBeatVersionArray[uid], uid);
+      }
+    }
+
+    if (jsBeatVersionArray[uid].payload) {
+      jsBeatVersionArray[uid].payload.uid = uid;
+    }
+    res.json(jsBeatVersionArray[uid]);
+  } else {
+    res.json(Object.assign(Object.assign({}, jsBeatVersionTemplate), { errors: ['Missing UID in Query.'] }));
+  }
+});
+
+// #############################################
 // CheckDockerPresence
 // #############################################
 
