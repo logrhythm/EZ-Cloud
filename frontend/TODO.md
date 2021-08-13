@@ -17,6 +17,7 @@
   - [ ] Collect different Shippers versions from Backend
     - [x] Collect active OC Beats versions
       - [x] Use merged API (CheckOpenCollectorAndBeatsVersions) intead of CheckOCVersion
+      - [x] Create icons for the LogRhythm Beats
     - [ ] Collect jsBeat version
   - [x] Load and display different Shippers and versions
   - [ ] Add action button to `Shippers version` column, when empty
