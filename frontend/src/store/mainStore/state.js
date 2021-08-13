@@ -2356,7 +2356,7 @@ To store the custom fields as top-level fields, set the \`fields_under_root opti
       {
         value: 'lrHttpRest',
         label: 'LogRhythm HTTP Rest Beat',
-        icon: 'logrhythm',
+        icon: 'logrhythm-rest',
         outputFormat: 'yaml'
       }
     ], // collectionShippersOptions
@@ -2364,80 +2364,80 @@ To store the custom fields as top-level fields, set the \`fields_under_root opti
       {
         value: 'carbonblackcloudbeat',
         label: 'carbonblackcloudbeat',
-        // icon: 'logrhythm-carbonblackcloudbeat'
-        icon: 'logrhythm'
+        icon: 'logrhythm-carbonblackcloudbeat'
+        // icon: 'logrhythm'
       },
       {
         value: 'ciscoampbeat',
         label: 'ciscoampbeat',
-        // icon: 'logrhythm-ciscoampbeat'
-        icon: 'logrhythm'
+        icon: 'logrhythm-ciscoampbeat'
+        // icon: 'logrhythm'
       },
       {
         value: 'duobeat',
         label: 'duobeat',
-        // icon: 'logrhythm-duobeat'
-        icon: 'logrhythm'
+        icon: 'logrhythm-duobeat'
+        // icon: 'logrhythm'
       },
       {
         value: 'eventhubbeat',
         label: 'eventhubbeat',
-        // icon: 'logrhythm-eventhubbeat'
-        icon: 'logrhythm'
+        icon: 'logrhythm-eventhubbeat'
+        // icon: 'logrhythm'
       },
       {
         value: 'gmtbeat',
         label: 'gmtbeat',
-        // icon: 'logrhythm-gmtbeat'
-        icon: 'logrhythm'
+        icon: 'logrhythm-gmtbeat'
+        // icon: 'logrhythm'
       },
       {
         value: 'gsbeat',
         label: 'gsbeat',
-        // icon: 'logrhythm-gsbeat'
-        icon: 'logrhythm'
+        icon: 'logrhythm-gsbeat'
+        // icon: 'logrhythm'
       },
       {
         value: 'kafkabeat',
         label: 'kafkabeat',
-        // icon: 'logrhythm-kafkabeat'
-        icon: 'logrhythm'
+        icon: 'logrhythm-kafkabeat'
+        // icon: 'logrhythm'
       },
       {
         value: 'oktabeat',
         label: 'oktabeat',
-        // icon: 'logrhythm-oktabeat'
-        icon: 'logrhythm'
+        icon: 'logrhythm-oktabeat'
+        // icon: 'logrhythm'
       },
       {
         value: 'pubsubbeat',
         label: 'pubsubbeat',
-        // icon: 'logrhythm-pubsubbeat'
-        icon: 'logrhythm'
+        icon: 'logrhythm-pubsubbeat'
+        // icon: 'logrhythm'
       },
       {
         value: 'qualysfimbeat',
         label: 'qualysfimbeat',
-        // icon: 'logrhythm-qualysfimbeat'
-        icon: 'logrhythm'
+        icon: 'logrhythm-qualysfimbeat'
+        // icon: 'logrhythm'
       },
       {
         value: 's3beat',
         label: 's3beat',
-        // icon: 'logrhythm-s3beat'
-        icon: 'logrhythm'
+        icon: 'logrhythm-s3beat'
+        // icon: 'logrhythm'
       },
       {
         value: 'sophoscentralbeat',
         label: 'sophoscentralbeat',
-        // icon: 'logrhythm-sophoscentralbeat'
-        icon: 'logrhythm'
+        icon: 'logrhythm-sophoscentralbeat'
+        // icon: 'logrhythm'
       },
       {
         value: 'webhookbeat',
         label: 'webhookbeat',
-        // icon: 'logrhythm-webhookbeat'
-        icon: 'logrhythm'
+        icon: 'logrhythm-webhookbeat'
+        // icon: 'logrhythm'
       }
     ], // openCollectorBeats
     collectionMethodsOptions: [
