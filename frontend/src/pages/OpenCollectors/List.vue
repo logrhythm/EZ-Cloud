@@ -163,6 +163,13 @@
             <q-spinner-dots
               color="primary"
               size="2em"
+              v-if="jsBeatVersionCheck && jsBeatVersionCheck[props.row.uid] && jsBeatVersionCheck[props.row.uid].checking"
+              class="q-ml-sm"
+            />
+
+            <q-spinner-dots
+              color="primary"
+              size="2em"
               v-if="activeOcBeatsVersionCheck && activeOcBeatsVersionCheck[props.row.uid] && activeOcBeatsVersionCheck[props.row.uid].checking"
               class="q-ml-sm"
             />
@@ -356,6 +363,7 @@ export default {
       osVersionCheck: {},
       ocVersionCheck: {},
       fbVersionCheck: {},
+      jsBeatVersionCheck: {},
       activeOcBeatsVersionCheck: {},
       shipperInstall: {}
     } // return
@@ -400,7 +408,7 @@ export default {
   },
   methods: {
     ...mapActions('mainStore', ['upsertOpenCollector', 'deleteOpenCollector', 'loadShippersUrls']),
-    ...mapActions('mainStore', ['getOpenCollectorsOsVersion', 'getOpenCollectorsOcVersion', 'getOpenCollectorsFilebeatVersion', 'getOpenCollectorsOcAndActiveBeatsVersion']),
+    ...mapActions('mainStore', ['getOpenCollectorsOsVersion', 'getOpenCollectorsOcVersion', 'getOpenCollectorsFilebeatVersion', 'getOpenCollectorsOcAndActiveBeatsVersion', 'getOpenCollectorsjsBeatVersion']),
     openOpenCollector (row) {
       this.$router.push({ path: '/OpenCollectors/' + row.uid + '/View' })
     }, // openOpenCollector
@@ -460,6 +468,21 @@ export default {
           apiCallParams: { uid: uid },
           onSuccessCallBack: this.fbVersionReceive,
           onErrorCallBack: this.fbVersionReceive,
+          debug: false
+        })
+
+        if (!this.jsBeatVersionCheck[uid]) {
+          this.jsBeatVersionCheck[uid] = {
+            apiData: {}
+          }
+        }
+        this.jsBeatVersionCheck[uid].checking = true
+        this.jsBeatVersionCheck = JSON.parse(JSON.stringify(this.jsBeatVersionCheck))
+        this.getOpenCollectorsjsBeatVersion({
+          caller: this,
+          apiCallParams: { uid: uid },
+          onSuccessCallBack: this.jsBeatVersionReceive,
+          onErrorCallBack: this.jsBeatVersionReceive,
           debug: false
         })
 
@@ -576,6 +599,51 @@ export default {
           )
 
           this.fbVersionCheck = JSON.parse(JSON.stringify(this.fbVersionCheck))
+        }
+      }
+    },
+    jsBeatVersionReceive (response) {
+      if (response) {
+        const uid = (response.params && response.params.apiCallParams && response.params.apiCallParams.uid ? response.params.apiCallParams.uid : null)
+        if (uid && this.jsBeatVersionCheck && this.jsBeatVersionCheck[uid]) {
+          this.jsBeatVersionCheck[uid].checking = false
+          const newOcInfo = JSON.parse(JSON.stringify(this.openCollectors.find((oc) => oc.uid === uid)))
+
+          if (response.success) {
+            this.jsBeatVersionCheck[uid].error = false
+            if (response.data && response.data.payload && response.data.payload.version && response.data.payload.version.full) {
+              newOcInfo.jsBeatVersion = response.data.payload.version.full
+              newOcInfo.installedShippers.push(
+                {
+                  name: 'jsBeat',
+                  version: response.data.payload.version.full
+                }
+              )
+            }
+          } else {
+            this.jsBeatVersionCheck[uid].error = true
+            // Only set to 'Not Installed' if something responded with 'bash: filebeat: command not found' or something similar
+            // Any other error (host not responding, or SSH failed) will simply return no version information
+            newOcInfo.jsBeatVersion = ''
+            if (response.data.errors && Array.isArray(response.data.errors)) {
+              response.data.errors.forEach((err) => {
+                if (String(err).includes('command not found')) {
+                  newOcInfo.jsBeatVersion = 'Not Installed'
+                }
+              })
+            }
+            this.jsBeatVersionCheck[uid].apiData = {}
+          }
+
+          this.upsertOpenCollector(
+            {
+              pushToApi: true,
+              caller: this,
+              openCollector: newOcInfo
+            }
+          )
+
+          this.jsBeatVersionCheck = JSON.parse(JSON.stringify(this.jsBeatVersionCheck))
         }
       }
     },
