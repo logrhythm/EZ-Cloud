@@ -14,7 +14,7 @@
       - [ ] Use LR Rest Beat for Tail
   - [x] Move `OS version` to the left of `Open Collector Version`
   - [x] Change `Filebeat version` to `Shippers version`
-  - [ ] Collect different Shippers versions from Backend
+  - [x] Collect different Shippers versions from Backend
     - [x] Collect active OC Beats versions
       - [x] Use merged API (CheckOpenCollectorAndBeatsVersions) intead of CheckOCVersion
       - [x] Create icons for the LogRhythm Beats
