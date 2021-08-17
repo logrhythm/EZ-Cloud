@@ -315,6 +315,7 @@
 import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
+import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 import { uid } from 'quasar'
 
 // import shippersFallbackUrls from 'src/pages/OpenCollectors/shippers_fallback_urls.json'
@@ -323,7 +324,8 @@ export default {
   name: 'PageOpenCollectorsList',
   mixins: [
     mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
-    mixinSharedSocket // Shared function and state to access the Socket.io
+    mixinSharedSocket, // Shared function and state to access the Socket.io
+    mixinSharedShipperAndCollectionsHelpers // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
   ],
   data () {
     return {
@@ -952,18 +954,6 @@ export default {
 
         // Refresh object
         this.shipperInstall = JSON.parse(JSON.stringify(this.shipperInstall))
-      }
-    },
-    collectionShipperDetails (shipperName) {
-      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'unknown', outputFormat: 'json' }
-      if (shipperName && shipperName.length) {
-        return (
-          this.collectionShippersOptions.find(cso => cso.label && cso.label === shipperName) ||
-          this.openCollectorBeats.find(ocb => ocb.label && ocb.label === shipperName) ||
-          fallbackValue
-        )
-      } else {
-        return fallbackValue
       }
     }
   }, // methods

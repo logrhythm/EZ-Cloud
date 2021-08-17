@@ -85,12 +85,53 @@
                   </q-tooltip>
                 </q-td>
               </template>
+
+              <template v-slot:body-cell-installedShippers="props">
+                <q-td :props="props">
+                  <div
+                      v-for="(shipper, index) in props.value"
+                      :key="index"
+                  >
+                    <q-tooltip content-style="font-size: 1em;" >{{ shipper.name }}</q-tooltip>
+                    <q-avatar square  size="24px" class="q-mr-xs">
+                      <img :src="'/shippers/' + collectionShipperDetails(shipper.name).icon + '.svg'" />
+                      <!-- <q-badge floating transparent color="primary">v{{ shipper.version }}</q-badge> -->
+                    </q-avatar>
+                    <q-badge outline color="grey">v{{ shipper.version }}</q-badge>
+                  </div>
+                  <div v-if="props.row.hasNecessaryShipper !== true">
+                    <q-tooltip content-style="font-size: 1em;" >
+                      The necessary Shipper to collect this source is not installed on this collector.<br><br>
+                      Please go to the Collectors page to deploy this Shipper on this Collector.<br><br>
+                      <q-icon
+                        name="info"
+                        size="sm"
+                        color="info"
+                        class="q-mr-sm"
+                      />
+                      <span class="text-bold">Missing:</span> {{ (pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : 'N/A') }}<br>
+                      <img class="q-ml-lg" :src="'/shippers/' + collectionShipperDetails((pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : null)).icon + '.svg'"  width="64px"/>
+                    </q-tooltip>
+                    <q-badge outline color="negative" class="q-gutter-x-sm">
+                      <q-icon
+                        name="warning"
+                        size="sm"
+                        color="orange"
+                      />
+                      <!-- {{ (pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : 'Shipper') }} is not installed -->
+                      <img :src="'/shippers/' + collectionShipperDetails((pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : null)).icon + '.svg'"  width="24px"/>
+                      <span>missing</span>
+                    </q-badge>
+
+                  </div>
+                </q-td>
+              </template>
             </q-table>
           </q-card-section>
-          <!-- <q-card-section>
+          <q-card-section>
               <span class="text-bold">Table Data: </span>
               <pre>{{ tableData }}</pre>
-          </q-card-section> -->
+          </q-card-section>
           <!-- <q-card-section>
               <span class="text-bold">Deployments: </span>
               <pre>{{ deployments }}</pre>
@@ -102,6 +143,7 @@
         </q-card-section>
       </q-card>
     </div>
+    <hr>
     <!-- <div class="">
       <hr>
       pipelineUid: {{ pipelineUid }} <br>
@@ -144,17 +186,21 @@
         </ul>
       </ul>
     </div> -->
+    collectionShipper: {{ pipeline.collectionConfig.collectionShipper }}
+    <pre>{{ pipeline }}</pre>
   </q-page>
 
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex'
+import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
+import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 
 export default {
   mixins: [
-    mixinSharedLoadCollectorsAndPipelines // Shared functions to load the Collectors and Pipelines
+    mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
+    mixinSharedShipperAndCollectionsHelpers // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
   ],
   data () {
     return {
@@ -165,7 +211,7 @@ export default {
         { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
         { name: 'status', align: 'center', label: 'Suitable', field: 'suitable', sortable: true },
         { name: 'openCollector', align: 'center', label: 'Open Collector', field: 'openCollectorHost', sortable: true },
-        { name: 'installedShippers', align: 'center', label: 'Installed Shippers', field: 'installedShippers', sortable: false },
+        { name: 'installedShippers', align: 'center', label: 'Installed Shippers', field: row => (row.openCollector ? row.openCollector.installedShippers : undefined), sortable: true },
         { name: 'name', align: 'center', label: 'Log Source Name', field: 'name', sortable: true },
         { name: 'msgSourceId', align: 'center', label: 'Log Source ID', field: 'msgSourceId', sortable: true },
         { name: 'hostName', align: 'center', label: 'Log Source Host', field: 'hostName', sortable: true },
@@ -205,6 +251,7 @@ export default {
     }
   */
   computed: {
+    ...mapState('mainStore', ['openCollectorBeats']),
     ...mapGetters('mainStore', ['openCollectorLogSources']),
     pipeline () {
       const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
@@ -247,22 +294,27 @@ export default {
             const openCollectorHostNameLowerCase = String(oc.hostname).toLowerCase()
             const f = ls.hostIdentifiers.filter(hi => hi.value && (String(hi.value).toLowerCase() === openCollectorHostNameLowerCase))
             if (f.length) {
+              // Flagging as a good match (has both an OC specified here and a OC Losg Source in the SIEM)
               isAMatch = true
+              // Establishing the list of Identifiers
               const logSourceHostIdentifiers = ls.hostIdentifiers.reduce((valuesArray, hi) => {
                 if (hi.value && hi.value.length) { valuesArray.push(hi.value) }
                 return valuesArray
               }, [])
+              // Flag if the right Shipper is already installed or if included out-of-the-box with the Open Collector
+              const hasNecessaryShipper = this.hasNecessaryShipper(oc)
 
               list.push({
                 openCollector: oc,
                 openCollectorLogSource: ls,
                 pipelineUid: this.pipeline.uid,
-                suitable: isAMatch,
+                suitable: !!(isAMatch & hasNecessaryShipper),
                 openCollectorHost: (oc && oc.name && oc.hostname ? oc.name + ' (' + oc.hostname + ')' : null),
                 name: ls.name,
                 msgSourceId: ls.msgSourceID,
                 hostName: ls.hostName + ' (' + logSourceHostIdentifiers.join(' / ') + ')',
-                hostId: ls.hostID
+                hostId: ls.hostID,
+                hasNecessaryShipper
               })
             }
           }
@@ -277,7 +329,8 @@ export default {
             name: ls.name,
             msgSourceId: ls.msgSourceID,
             hostName: ls.hostName,
-            hostId: ls.hostID
+            hostId: ls.hostID,
+            hasNecessaryShipper: false // No Open Collector: no Shipper. Pas de bras: pas de chocolat.
           })
         }
       })
@@ -298,7 +351,8 @@ export default {
             openCollectorLogSource: null,
             pipelineUid: this.pipeline.uid,
             openCollectorHost: (oc && oc.name && oc.hostname ? oc.name + ' (' + oc.hostname + ')' : null),
-            suitable: false
+            suitable: false,
+            hasNecessaryShipper: this.hasNecessaryShipper(oc)
           })
         }
       })
@@ -323,6 +377,37 @@ export default {
     },
     selectOpenCollector (selectedRow) {
       console.log('selectOpenCollector', selectedRow)
+    },
+    hasNecessaryShipper (oc) {
+      // this.pipeline.collectionConfig.collectionShipper
+      // "filebeat"
+      //
+      // oc.installedShippers
+      // "installedShippers": [
+      //   {
+      //     "name": "Filebeat",
+      //     "version": "7.13.0"
+      //   }
+      // ]
+
+      // Prep a lower case Shipper name
+      const neededShipperLowerCase = (
+        this.pipeline &&
+        this.pipeline.collectionConfig &&
+        this.pipeline.collectionConfig.collectionShipper &&
+        this.pipeline.collectionConfig.collectionShipper.length
+          ? this.pipeline.collectionConfig.collectionShipper.toLowerCase()
+          : null
+      )
+
+      return !!(( // Is this Shipper in the list of the Installed Shipper for this Open Collector
+        oc &&
+        oc.installedShippers &&
+        Array.isArray(oc.installedShippers) &&
+        oc.installedShippers.filter((shipper) => shipper.name && shipper.name.toLowerCase() === neededShipperLowerCase).length
+      ) | ( // Or is is part of the out-of-the-box Open Collector Beats
+        this.openCollectorBeats.filter((beat) => beat.value && beat.value.toLowerCase() === neededShipperLowerCase).length
+      ))
     }
   },
 

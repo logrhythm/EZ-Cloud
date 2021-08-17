@@ -39,7 +39,7 @@
   - [x] Create new Edit Deployment page
   - [x] Get list of OC Log Sources from Backend
   - [x] Try to map EZ OCs with OC Log Sources
-  - [ ] Flag EZ OCs that do not have the right Shipper for the Pipeline
+  - [x] Flag EZ OCs that do not have the right Shipper for the Pipeline
   - [ ] Capture user selection of OC Log Source
   - [ ] Kick off deployment of Stream on OC and creation of LogSource and all the chain in EMDB
 - [ ] Hide Settings page for Prod

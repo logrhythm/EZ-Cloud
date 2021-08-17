@@ -147,11 +147,13 @@
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
+import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 
 export default {
   name: 'PagePipelinesList',
   mixins: [
-    mixinSharedLoadCollectorsAndPipelines // Shared functions to load the Collectors and Pipelines
+    mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
+    mixinSharedShipperAndCollectionsHelpers // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
   ],
   data () {
     return {
@@ -266,14 +268,6 @@ export default {
           }
         }
       )
-    },
-    collectionShipperDetails (shipperId) {
-      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'unknown', outputFormat: 'json' }
-      if (shipperId && shipperId.length) {
-        return this.collectionShippersOptions.find(cso => cso.value && cso.value === shipperId) || fallbackValue
-      } else {
-        return fallbackValue
-      }
     },
     collectionMethodDetails (shipperId, methodId) {
       // console.log('collectionMethodDetails: ', methodId)
