@@ -110,17 +110,42 @@
                         class="q-mr-sm"
                       />
                       <span class="text-bold">Missing:</span> {{ (pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : 'N/A') }}<br>
-                      <img class="q-ml-lg" :src="'/shippers/' + collectionShipperDetails((pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : null)).icon + '.svg'"  width="64px"/>
+                      <img class="q-ml-lg" :src="'/shippers/' + collectionShipperDetails((pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : null)).icon + '.svg'"  width="128px"/>
                     </q-tooltip>
-                    <q-badge outline color="negative" class="q-gutter-x-sm">
+                    <!-- <q-badge outline color="negative" class="q-gutter-x-sm">
                       <q-icon
                         name="warning"
                         size="sm"
                         color="orange"
                       />
-                      <!-- {{ (pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : 'Shipper') }} is not installed -->
                       <img :src="'/shippers/' + collectionShipperDetails((pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : null)).icon + '.svg'"  width="24px"/>
                       <span>missing</span>
+                    </q-badge> -->
+
+                    <q-badge outline color="orange" class="q-gutter-x-sm">
+                      <q-icon
+                        name="warning"
+                        size="sm"
+                        color="orange"
+                      />
+                      <!-- <div class="icon-stack">
+                        <img class="icon-stack-1x" :src="'/shippers/' + collectionShipperDetails((pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : null)).icon + '.svg'"/>
+                        <q-icon
+                          name="block"
+                          size="sm"
+                          color="orange"
+                          class="icon-stack-1x"
+                        />
+                      </div> -->
+                      <!-- <div class="icon-stack">
+                        <img class="icon-stack-1x" :src="'/shippers/' + collectionShipperDetails((pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : null)).icon + '.svg'"/>
+                        <img class="icon-stack-1x" :src="'/shippers/_block_overlay.svg'"/>
+                      </div> -->
+                      <div class="icon-stack">
+                        <img class="img-stack-75" :src="'/shippers/' + collectionShipperDetails((pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : null)).icon + '.svg'"/>
+                        <img class="img-stack-100 img-stack-opacity-50" :src="'/shippers/_block_overlay.svg'"/>
+                      </div>
+                      <!-- <span>missing</span> -->
                     </q-badge>
 
                   </div>
@@ -434,6 +459,46 @@ export default {
 }
 </script>
 
-<style>
-
+<style scoped>
+.icon-stack {
+  position: relative;
+  display: inline-block;
+  width: 2em;
+  height: 2em;
+  line-height: 2em;
+  vertical-align: middle;
+}
+.icon-stack-1x,
+.icon-stack-2x,
+.icon-stack-3x,
+.img-stack-50,
+.img-stack-75,
+.img-stack-100 {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  text-align: center;
+}
+.icon-stack-1x {
+  line-height: inherit;
+}
+.icon-stack-2x {
+  font-size: 1.5em;
+}
+.icon-stack-3x {
+  font-size: 2em;
+}
+.img-stack-50 {
+  top: 0.5em;
+  left: 0.5em;
+  width: 50%;
+}
+.img-stack-75 {
+  top: 0.25em;
+  left: 0.25em;
+  width: 75%;
+}
+.img-stack-opacity-50 {
+  opacity: 0.5;
+}
 </style>
