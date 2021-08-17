@@ -112,40 +112,16 @@
                       <span class="text-bold">Missing:</span> {{ (pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : 'N/A') }}<br>
                       <img class="q-ml-lg" :src="'/shippers/' + collectionShipperDetails((pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : null)).icon + '.svg'"  width="128px"/>
                     </q-tooltip>
-                    <!-- <q-badge outline color="negative" class="q-gutter-x-sm">
-                      <q-icon
-                        name="warning"
-                        size="sm"
-                        color="orange"
-                      />
-                      <img :src="'/shippers/' + collectionShipperDetails((pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : null)).icon + '.svg'"  width="24px"/>
-                      <span>missing</span>
-                    </q-badge> -->
-
                     <q-badge outline color="orange" class="q-gutter-x-sm">
                       <q-icon
                         name="warning"
                         size="sm"
                         color="orange"
                       />
-                      <!-- <div class="icon-stack">
-                        <img class="icon-stack-1x" :src="'/shippers/' + collectionShipperDetails((pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : null)).icon + '.svg'"/>
-                        <q-icon
-                          name="block"
-                          size="sm"
-                          color="orange"
-                          class="icon-stack-1x"
-                        />
-                      </div> -->
-                      <!-- <div class="icon-stack">
-                        <img class="icon-stack-1x" :src="'/shippers/' + collectionShipperDetails((pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : null)).icon + '.svg'"/>
-                        <img class="icon-stack-1x" :src="'/shippers/_block_overlay.svg'"/>
-                      </div> -->
                       <div class="icon-stack">
                         <img class="img-stack-75" :src="'/shippers/' + collectionShipperDetails((pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : null)).icon + '.svg'"/>
                         <img class="img-stack-100 img-stack-opacity-50" :src="'/shippers/_block_overlay.svg'"/>
                       </div>
-                      <!-- <span>missing</span> -->
                     </q-badge>
 
                   </div>
@@ -153,10 +129,10 @@
               </template>
             </q-table>
           </q-card-section>
-          <q-card-section>
+          <!-- <q-card-section>
               <span class="text-bold">Table Data: </span>
               <pre>{{ tableData }}</pre>
-          </q-card-section>
+          </q-card-section> -->
           <!-- <q-card-section>
               <span class="text-bold">Deployments: </span>
               <pre>{{ deployments }}</pre>
@@ -211,8 +187,6 @@
         </ul>
       </ul>
     </div> -->
-    collectionShipper: {{ pipeline.collectionConfig.collectionShipper }}
-    <pre>{{ pipeline }}</pre>
   </q-page>
 
 </template>
