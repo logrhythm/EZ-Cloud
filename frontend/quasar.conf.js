@@ -72,7 +72,18 @@ module.exports = function (/* ctx */) {
       chainWebpack (chain) {
         chain.plugin('eslint-webpack-plugin')
           .use(ESLintPlugin, [{ extensions: ['js', 'vue'] }])
-      }
+      },
+
+      // To help with VS Code Debugging
+      devtool: 'source-map'
+
+      // To get the proxying of the Server:8400 over self signed HTTPS to work
+      // 👉 doesn't work, so commenting out... 😡
+      // env: {
+      //   NODE_TLS_REJECT_UNAUTHORIZED: ctx.dev
+      //     ? 1
+      //     : 0
+      // }
     },
 
     // Full list of options: https://v1.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-devServer
@@ -80,6 +91,18 @@ module.exports = function (/* ctx */) {
       https: false,
       port: 8080,
       open: true // opens browser window automatically
+
+      // To get the proxying of the Server:8400
+      // 👉 doesn't work, so commenting out... 😡
+      // proxy: {
+      //   '/API': {
+      //     target: 'https://127.0.0.1:8400/API',
+      //     changeOrigin: true,
+      //     pathRewrite: {
+      //       '^/API': ''
+      //     }
+      //   }
+      // }
     },
 
     // https://v1.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-framework
