@@ -51,6 +51,7 @@
     - [ ] Drop down list background
     - [ ] Text colour
     - [ ] Navigation icons colour
+  - [x] Add Day/Dark mode switch on Logon page/card
 - [ ] Add a simple Wizard from landing page
   - [ ] Ask for name for Log Source
   - [ ] Create collection configuation

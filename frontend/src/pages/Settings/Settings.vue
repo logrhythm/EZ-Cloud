@@ -30,7 +30,11 @@
           color="grey"
           size="4rem"
           keep-color
-        />
+        >
+          <q-tooltip content-style="font-size: 1em">
+            {{ $t('Switch between Light and Dark mode') }}
+          </q-tooltip>
+        </q-toggle>
       </q-card-section>
     </q-card>
   </q-page>

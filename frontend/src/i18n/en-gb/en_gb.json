@@ -1,4 +1,11 @@
 {
+  "Sign in to EZ Cloud": "Sign in to EZ Cloud",
+  "Switch between Light and Dark mode": "Switch between Light and Dark mode",
+  "Username": "Username",
+  "Username is required": "Username is required",
+  "Password": "Password",
+  "Authentication failed.": "Authentication failed.",
+  "Login": "Login",
   "Save settings to local web browser.": "Save settings to local web browser.",
   "New Pipeline Details": "New Pipeline Details",
   "Pipeline Details": "Pipeline Details",

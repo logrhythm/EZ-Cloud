@@ -1,32 +1,48 @@
 <template>
   <q-page class="flex flex-center">
-    <q-card style="min-width: 350px" :class="(shakyClass ? 'computerSayNo' : '')">
-      <q-card-section>
-        <div class="text-h6">Sign in to EZ Cloud</div>
-      </q-card-section>
+    <form>
+      <q-card style="min-width: 350px" :class="(shakyClass ? 'computerSayNo' : '')">
+        <q-card-section>
+          <div class="text-h6">{{ $t('Sign in to EZ Cloud') }}</div>
+        </q-card-section>
 
-      <q-card-section class="q-pt-none">
-        <q-input
-          dense
-          v-model="username"
-          autofocus
-          hint="Username"
-          :rules="[val => !!val || 'Username is required']"
-          @keyup.enter="checkCredentials()"
-        />
-      </q-card-section>
+        <q-card-section class="q-pt-none">
+          <q-input
+            dense
+            v-model="username"
+            autofocus
+            :hint="$t('Username')"
+            :rules="[val => !!val || $t('Username is required')]"
+            @keyup.enter="checkCredentials()"
+          />
+        </q-card-section>
 
-      <q-card-section class="q-pt-none">
-        <q-input dense v-model="password" type="password" hint="Password" @keyup.enter="checkCredentials()" />
-      </q-card-section>
+        <q-card-section class="q-pt-none">
+          <q-input dense v-model="password" type="password" :hint="$t('Password')" @keyup.enter="checkCredentials()" />
+        </q-card-section>
 
-      <q-card-actions align="right">
-        <dir class="col text-bold text-negative fadeOut" v-show="lastAttemptFailed">
-          Authentication failed.
-        </dir>
-        <q-btn flat class="q-my-sm" label="Login" color="primary" @click="checkCredentials()" :loading="waitingOnServer" />
-      </q-card-actions>
-    </q-card>
+        <q-card-actions align="stretch">
+          <q-toggle
+            v-model="darkMode"
+            checked-icon="dark_mode"
+            unchecked-icon="light_mode"
+            color="grey"
+            keep-color
+            class="q-my-sm"
+          >
+            <q-tooltip content-style="font-size: 1em">
+              {{ $t('Switch between Light and Dark mode') }}
+            </q-tooltip>
+          </q-toggle>
+            <!-- size="4rem" -->
+          <dir class="col text-bold text-negative fadeOut" v-show="lastAttemptFailed">
+            {{ $t('Authentication failed.') }}
+          </dir>
+          <q-space />
+          <q-btn flat class="q-my-sm" :label="$t('Login')" color="primary" @click="checkCredentials()" :loading="waitingOnServer" />
+        </q-card-actions>
+      </q-card>
+    </form>
   </q-page>
 </template>
 
@@ -51,7 +67,16 @@ export default {
     }
   }, // data
   computed: {
-    ...mapState('mainStore', ['jwtToken'])
+    ...mapState('mainStore', ['jwtToken']),
+    darkMode: {
+      get () {
+        return this.$q.dark.isActive
+      },
+      set (value) {
+        this.$q.dark.set(value)
+        localStorage.setItem('settings.darkMode', value)
+      }
+    }
   }, // computed
   methods: {
     ...mapActions('mainStore', ['signIn', 'signOut']),
