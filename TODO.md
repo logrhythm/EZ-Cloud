@@ -113,6 +113,7 @@
 - [x] Damn Tedious saving NULL as 'null' in OC list
 - Refactor: upsert_Log_Source_Virtualisation_Template to not need to add a SP to EMDB
 - Refactor: upsert_Processing_Policy to not need to add a SP to EMDB
+- [ ] Add a KILL SIGTERM to the post Tail cleaning up process
 
 ## TO TEST
 
