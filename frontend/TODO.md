@@ -45,7 +45,7 @@
 - [ ] Hide Settings page for Prod
 - [ ] Create Logging shared Lib to push logs to Console and Windows Journal
 - Day mode
-  - [ ] Polish CSS / Styling to get good color scheme in Day mode too
+  - [x] Polish CSS / Styling to get good color scheme in Day mode too
     - [x] Header bar background
     - [x] Roll over line in Mapping
     - [x] Frequency line graphs in Mapping
