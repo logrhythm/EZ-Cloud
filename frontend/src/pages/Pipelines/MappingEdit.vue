@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pa-sm">
     <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
-      <q-toolbar class="q-gutter-x-sm text-black">
+      <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
 <!--
         - Pipeline Builder - move actions to menu / icon bar (including Settings icon/button)
         -- Return (to list / to Properties)
@@ -256,6 +256,7 @@
             <div
               :key="index"
               class="row items-stretch q-my-none q-py-none json-path-line"
+              :class="(darkMode ? 'dark' : '')"
               style="min-height: 1.5rem;"
             >
               <div class="row content-center q-mr-sm q-gutter-y-none" style="width: 3rem;">
@@ -1660,9 +1661,13 @@ export default {
   background-color: rgb(17, 116, 129);
   color: white;
 }
-.json-path-line:hover {
+.json-path-line.dark:hover {
   /* background-color: rgb(49, 18, 42); */
   background-image: linear-gradient(rgba(49, 18, 42, .75), rgba(49, 18, 42, 1), rgba(49, 18, 42, .75));
+}
+.json-path-line:hover {
+  /* background-color: rgb(148, 45, 124); */
+  background-image: linear-gradient(rgba(148, 45, 124, 0.05), rgba(148, 45, 124, 0.15), rgba(148, 45, 124, 0.05));
 }
 .force-long-text-wrap {
 
