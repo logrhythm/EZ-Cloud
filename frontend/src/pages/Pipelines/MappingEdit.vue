@@ -261,11 +261,11 @@
             >
               <div class="row content-center q-mr-sm q-gutter-y-none" style="width: 3rem;">
                 <q-tooltip content-style="font-size: 1em;">
-                  <q-icon name="stop" color="blue-10" />Relative frequency <span style="font-weight: bold;" v-if="maxSeenInLog != 0">{{ Math.round(item.seenInLogCount / maxSeenInLog * 100) }}%</span> ({{ item.seenInLogCount }}&nbsp;/&nbsp;{{ maxSeenInLog }}).<br>
-                  <q-icon name="stop" color="indigo-10" />Seen in <span v-if="processedLogsCount != 0"><span style="font-weight: bold;" >{{ Math.round(item.seenInLogCount / processedLogsCount * 100) }}%</span> of the logs ({{ item.seenInLogCount }}&nbsp;/&nbsp;{{ processedLogsCount }})</span><span style="font-weight: bold;" v-else>N/A</span>.
+                  <q-icon name="stop" :color="(darkMode ? 'blue-10' : 'blue-7')" />Relative frequency <span style="font-weight: bold;" v-if="maxSeenInLog != 0">{{ Math.round(item.seenInLogCount / maxSeenInLog * 100) }}%</span> ({{ item.seenInLogCount }}&nbsp;/&nbsp;{{ maxSeenInLog }}).<br>
+                  <q-icon name="stop" :color="(darkMode ? 'indigo-10' : 'indigo-7')" />Seen in <span v-if="processedLogsCount != 0"><span style="font-weight: bold;" >{{ Math.round(item.seenInLogCount / processedLogsCount * 100) }}%</span> of the logs ({{ item.seenInLogCount }}&nbsp;/&nbsp;{{ processedLogsCount }})</span><span style="font-weight: bold;" v-else>N/A</span>.
                 </q-tooltip>
-                <q-linear-progress :value="item.seenInLogCount / maxSeenInLog" color="blue-10" />
-                <q-linear-progress :value="item.seenInLogCount / processedLogsCount" color="indigo-10" />
+                <q-linear-progress :value="item.seenInLogCount / maxSeenInLog" :color="(darkMode ? 'blue-10' : 'blue-7')" />
+                <q-linear-progress :value="item.seenInLogCount / processedLogsCount" :color="(darkMode ? 'indigo-10' : 'indigo-7')" />
               </div>
               <div
                 v-for="d in item.depth" :key="d"
