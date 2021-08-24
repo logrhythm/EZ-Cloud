@@ -49,11 +49,13 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
+import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 
 export default {
   name: 'PageLogin',
   mixins: [
-    mixinSharedSocket // Shared function and state to access the Socket.io
+    mixinSharedSocket, // Shared function and state to access the Socket.io
+    mixinSharedDarkMode // Shared computed to access and update the DarkMode
   ],
   data () {
     return {
@@ -67,16 +69,7 @@ export default {
     }
   }, // data
   computed: {
-    ...mapState('mainStore', ['jwtToken']),
-    darkMode: {
-      get () {
-        return this.$q.dark.isActive
-      },
-      set (value) {
-        this.$q.dark.set(value)
-        localStorage.setItem('settings.darkMode', value)
-      }
-    }
+    ...mapState('mainStore', ['jwtToken'])
   }, // computed
   methods: {
     ...mapActions('mainStore', ['signIn', 'signOut']),

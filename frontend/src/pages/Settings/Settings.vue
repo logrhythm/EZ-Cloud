@@ -41,8 +41,13 @@
 </template>
 
 <script>
+import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+
 export default {
   name: 'PageSettings',
+  mixins: [
+    mixinSharedDarkMode // Shared computed to access and update the DarkMode
+  ],
   data () {
     return {
       savingAction: false,
@@ -59,17 +64,6 @@ export default {
       localStorage.setItem('settings.ezBackend.url.api', this.ezBackendBaseUrlApi)
       this.globalConstants.baseUrl.socket = this.ezBackendBaseUrlSocket
       localStorage.setItem('settings.ezBackend.url.socket', this.ezBackendBaseUrlSocket)
-    }
-  },
-  computed: {
-    darkMode: {
-      get () {
-        return this.$q.dark.isActive
-      },
-      set (value) {
-        this.$q.dark.set(value)
-        localStorage.setItem('settings.darkMode', value)
-      }
     }
   },
   mounted () {
