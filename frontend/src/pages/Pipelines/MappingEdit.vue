@@ -251,12 +251,12 @@
           style="height: calc(100vh - (150px)); min-height: 10rem;"
           :items="orderBy(jsonPathes, 'name')"
           virtual-scroll-item-size="48"
+          :class="(darkMode ? 'dark' : '')"
         >
           <template v-slot="{ item, index }">
             <div
               :key="index"
               class="row items-stretch q-my-none q-py-none json-path-line"
-              :class="(darkMode ? 'dark' : '')"
               style="min-height: 1.5rem;"
             >
               <div class="row content-center q-mr-sm q-gutter-y-none" style="width: 3rem;">
@@ -300,7 +300,8 @@
                   </div>
                 </q-tooltip>
                 <div
-                  class="json-style-leaf text-bold text-light-blue-3"
+                  class="json-style-leaf text-bold"
+                  :class="(darkMode ? 'text-light-blue-3' : 'text-light-blue-9')"
                 >
                   {{ item.leaf }}
                 </div>
@@ -1631,12 +1632,31 @@ export default {
   color: rgb(80, 112, 255);
 }
 .json-type-number {
-  color: rgb(21, 173, 66);
+  color: rgb(19, 158, 61);
 }
 .json-type-boolean {
-  color: rgb(32, 227, 253);
+  color: rgb(0, 174, 200);
 }
 .json-type- { /* to catch empty types */
+  color: rgb(117, 115, 1);
+}
+
+.dark .json-type-object {
+  color: rgb(138, 43, 226);
+}
+.dark .json-type-array {
+  color: rgb(148, 14, 41);
+}
+.dark .json-type-string {
+  color: rgb(80, 112, 255);
+}
+.dark .json-type-number {
+  color: rgb(21, 173, 66);
+}
+.dark .json-type-boolean {
+  color: rgb(32, 227, 253);
+}
+.dark .json-type- { /* to catch empty types */
   color: rgb(117, 115, 1);
 }
 

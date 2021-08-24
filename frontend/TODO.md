@@ -49,7 +49,7 @@
     - [x] Header bar background
     - [x] Roll over line in Mapping
     - [ ] Drop down list background
-    - [ ] Text colour
+    - [x] Text colour
     - [x] Navigation icons colour
   - [x] Add Day/Dark mode switch on Logon page/card
 - [ ] Add a simple Wizard from landing page
