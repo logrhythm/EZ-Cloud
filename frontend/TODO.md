@@ -47,7 +47,7 @@
 - Day mode
   - [ ] Polish CSS / Styling to get good color scheme in Day mode too
     - [x] Header bar background
-    - [ ] Roll over line in Mapping
+    - [x] Roll over line in Mapping
     - [ ] Drop down list background
     - [ ] Text colour
     - [x] Navigation icons colour
