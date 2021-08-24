@@ -46,11 +46,11 @@
 - [ ] Create Logging shared Lib to push logs to Console and Windows Journal
 - Day mode
   - [ ] Polish CSS / Styling to get good color scheme in Day mode too
-    - [ ] Header bar background
+    - [x] Header bar background
     - [ ] Roll over line in Mapping
     - [ ] Drop down list background
     - [ ] Text colour
-    - [ ] Navigation icons colour
+    - [x] Navigation icons colour
   - [x] Add Day/Dark mode switch on Logon page/card
 - [ ] Add a simple Wizard from landing page
   - [ ] Ask for name for Log Source

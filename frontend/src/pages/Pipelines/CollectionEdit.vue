@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pa-sm">
-    <q-header elevated style="background: var(--q-color-dark);">
-      <q-toolbar class="q-gutter-x-sm">
+    <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
+      <q-toolbar class="q-gutter-x-sm text-black">
         <q-btn no-caps flat dense icon="arrow_back" label="Return to Properties" :to="'/Pipelines/' + this.pipelineUid + '/Properties'" />
         <q-separator vertical />
         <q-btn no-caps flat dense icon="save" label="Save" color="primary" :disabled="!needsSaving" @click="save()" />
@@ -225,6 +225,7 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
+import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import FieldEditor from 'components/Pipelines/Collection/FieldEditor.vue'
 // import { dump } from 'js-yaml'
 import Vue2Filters from 'vue2-filters'
@@ -233,6 +234,7 @@ import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml
 export default {
   mixins: [
     mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
+    mixinSharedDarkMode, // Shared computed to access and update the DarkMode
     Vue2Filters.mixin
   ],
   components: { FieldEditor },

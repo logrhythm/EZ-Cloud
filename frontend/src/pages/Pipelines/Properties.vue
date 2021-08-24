@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pa-sm">
-    <q-header elevated style="background: var(--q-color-dark);">
-      <q-toolbar class="q-gutter-x-sm">
+    <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
+      <q-toolbar class="q-gutter-x-sm text-black">
         <q-btn no-caps flat dense icon="arrow_back" label="Return to List" :to="'/Pipelines'" />
 
         <q-toolbar-title style="opacity:.4" class="text-center">Pipeline Properties<span v-if="pipeline && pipeline.name && pipeline.name.length">:  {{ pipeline.name }}</span></q-toolbar-title>
@@ -230,6 +230,7 @@
 import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
+import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 // import { dump } from 'js-yaml'
 import { exportFile, copyToClipboard } from 'quasar'
 import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml'
@@ -239,7 +240,8 @@ export default {
   name: 'PagePipelineProperties',
   mixins: [
     mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
-    mixinSharedSocket // Shared function and state to access the Socket.io
+    mixinSharedSocket, // Shared function and state to access the Socket.io
+    mixinSharedDarkMode // Shared computed to access and update the DarkMode
   ],
   data () {
     return {

@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pa-sm">
-    <q-header elevated style="background: var(--q-color-dark);">
-      <q-toolbar class="q-gutter-x-sm">
+    <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
+      <q-toolbar class="q-gutter-x-sm text-black">
 <!--
         - Pipeline Builder - move actions to menu / icon bar (including Settings icon/button)
         -- Return (to list / to Properties)
@@ -488,6 +488,7 @@ import { copyToClipboard } from 'quasar'
 import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
+import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import Vue2Filters from 'vue2-filters'
 
 export default {
@@ -495,6 +496,7 @@ export default {
   mixins: [
     mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
     mixinSharedSocket, // Shared function and state to access the Socket.io
+    mixinSharedDarkMode, // Shared computed to access and update the DarkMode
     Vue2Filters.mixin
   ],
   data () {
