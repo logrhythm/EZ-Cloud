@@ -683,7 +683,7 @@ export default {
           step.status = 'On-going'
 
           // Prepare the parameters
-          const apiUrl = (stepNumber < 6 ? '/test/post' : '/test/doesNotExist')
+          const apiUrl = (stepNumber < 60 ? '/test/post' : '/test/doesNotExist') // XXXX
           const apiCallParams = undefined
 
           // Call the API
@@ -698,11 +698,17 @@ export default {
               stepNumber_ = stepNumber,
               caller_ = caller
             ) => {
-              step_.status = 'Completed'
-
-              // Run the next step
+              // Flag the step as Completed, and run the next step
               console.log('  👉 Run the next step') // XXXX
-              setTimeout(caller_.runDeploymentStep, 50, caller_, selectedRow_, stepNumber_ + 1)
+              setTimeout(
+                () => {
+                  step_.status = 'Completed'
+                  caller_.runDeploymentStep(caller_, selectedRow_, stepNumber_ + 1)
+                },
+                // 250 // Run next step in 250 ms
+                100 + Math.floor(Math.random() * 600) // XXXX
+              )
+              // setTimeout(caller_.runDeploymentStep, 50, caller_, selectedRow_, stepNumber_ + 1)
             },
             onErrorCallBack: (
               apiCallResult, // Param passed to onErrorCallBack by postDataToSite()
