@@ -49,7 +49,7 @@
     - [x] Header bar background
     - [x] Roll over line in Mapping
     - [x] Frequency line graphs in Mapping
-    - [ ] Drop down list background
+    - [x] Drop down list background
     - [x] Text colour
     - [x] Navigation icons colour
   - [x] Add Day/Dark mode switch on Logon page/card

@@ -331,7 +331,7 @@
                 stack-label
                 style="width: 18rem;"
                 class="q-mx-sm q-my-xs"
-                popup-content-class="bg-grey-9"
+                :popup-content-class="(darkMode ? 'bg-grey-9' : undefined)"
 
                 use-input
                 input-debounce="0"
@@ -367,7 +367,7 @@
                 :options="['Parse JSON', 'Stringify JSON', 'Fan out', 'Sub Rule selector', 'Sub Rule qualifier 1', 'Sub Rule qualifier 2', 'Sub Rule qualifier 3', 'Sub Rule qualifier 4', 'Timestamp selector - ISO8601 format', 'Timestamp selector - Unix Timestamp format']"
                 style="width: 20rem;"
                 class="q-mx-sm q-my-xs"
-                popup-content-class="bg-grey-9"
+                :popup-content-class="(darkMode ? 'bg-grey-9' : undefined)"
                 label="Modifiers"
                 stack-label
                 multiple
