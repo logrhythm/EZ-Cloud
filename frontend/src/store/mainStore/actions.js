@@ -389,6 +389,29 @@ export function deleteDeployment ({ state, dispatch }, payload) {
   }
 }
 
+export function callDeploymentStepApi ({ state }, payload) {
+  console.log('callDeploymentStepApi', payload)
+
+  if (
+    payload &&
+    payload.apiUrl &&
+    payload.apiUrl.length
+  ) {
+    postDataToSite({
+      apiUrl: payload.apiUrl,
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      silent: (payload && payload.silent ? payload.silent : true),
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      apiCallParams: (payload && payload.apiCallParams ? payload.apiCallParams : undefined),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: (payload && payload.debug ? payload.debug : false)
+    })
+  }
+}
+
 //           ###    ########  ####       ##     ## ######## #### ##       #### ######## #### ########  ######
 //          ## ##   ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
 //         ##   ##  ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##
@@ -535,7 +558,8 @@ export function getDataFromSite (params = {
           params.onErrorCallBack({
             data: (apiResponse && apiResponse.data ? apiResponse.data : undefined),
             success: false,
-            params
+            params,
+            messageForLogAndPopup
           })
         }
       } else {
@@ -558,7 +582,8 @@ export function getDataFromSite (params = {
           params.onSuccessCallBack({
             data: (apiResponse && apiResponse.data ? apiResponse.data : undefined),
             success: true,
-            params
+            params,
+            messageForLogAndPopup
           })
         }
       }
@@ -721,7 +746,9 @@ export function postDataToSite (params = {
           params.onErrorCallBack({
             data: (apiResponse && apiResponse.data ? apiResponse.data : undefined),
             success: false,
-            params
+            params,
+            messageForLogAndPopup,
+            captionForLogAndPopup
           })
         }
       } else {
@@ -744,7 +771,9 @@ export function postDataToSite (params = {
           params.onSuccessCallBack({
             data: (apiResponse && apiResponse.data ? apiResponse.data : undefined),
             success: true,
-            params
+            params,
+            messageForLogAndPopup,
+            captionForLogAndPopup
           })
         }
       }

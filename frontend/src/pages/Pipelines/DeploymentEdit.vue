@@ -60,11 +60,126 @@
 
               <template v-slot:body-cell-actions="props">
                 <q-td :props="props">
-                  <q-btn flat dense icon="add_circle_outline" :disable="!props.row.suitable" @click="selectOpenCollector(props.row)">
+                  <q-btn
+                    flat
+                    dense
+                    icon="add_circle_outline"
+                    v-if="!(props.row.deploymentStatus && (props.row.deploymentStatus.ongoing === true || props.row.deploymentStatus.completed === true))"
+                    :disable="!props.row.suitable"
+                    @click="selectOpenCollector(props.row)"
+                  >
                     <q-tooltip content-style="font-size: 1em">
                       {{ $t('Deploy') }}
                     </q-tooltip>
                   </q-btn>
+                  <!-- <q-linear-progress rounded size="1em" :value="0.25" class="col" color="green-8" >
+                    <q-tooltip content-style="font-size: 1em;" >Completed steps: 1 / 4</q-tooltip>
+                  </q-linear-progress> -->
+                  <!-- <q-linear-progress rounded size="1em" :value="(job.step > 0 ? job.totalSteps / job.step : 0)" class="col" :color="(job.onGoing === false ? (job.failed === false ? 'green-8' : 'deep-orange-8') : '')" >
+                    <q-tooltip content-style="font-size: 1em;" >Completed steps: {{ job.step }} / {{ job.totalSteps }}</q-tooltip>
+                  </q-linear-progress> -->
+                  <!-- <div v-else>
+                    <q-tooltip content-style="font-size: 1em">
+                      ...
+                    </q-tooltip>
+                    <q-circular-progress
+                      :value="Math.round(25)"
+                      show-value
+                      :font-size="(25 < 100 ? '0.5em' : '0.4em')"
+                      size="2.2em"
+                      :thickness="0.2"
+                      :color="(darkMode ? 'blue-3' : 'blue-10')"
+                      :track-color="(darkMode ? 'grey-9' : 'grey-3')"
+                    />
+                  </div> -->
+                  <q-btn
+                    v-else
+                    flat
+                    dense
+                  >
+                    <q-tooltip content-style="font-size: 1em">
+                      <div>
+                        <div class="row justify-between q-my-sm q-mr-sm">
+                          <div class="row items-center q-gutter-x-sm">
+                            <q-icon name="list" color="blue-3" size="md" />
+                            <div class="text-h6">Deployment Steps</div>
+                          </div>
+                          <div class="q-gutter-x-md">
+                            <q-icon name="warning" color="orange" size="md" v-if="props.row && props.row.deploymentStatus && props.row.deploymentStatus.error === true" />
+                            <q-icon name="task_alt" color="positive" size="md" v-else-if="props.row && props.row.deploymentStatus && props.row.deploymentStatus.completed === true" />
+                            <q-circular-progress
+                              :value="Math.round(deploymentProgressFor(props.row))"
+                              show-value
+                              :font-size="(deploymentProgressFor(props.row) < 100 ? '0.5em' : '0.4em')"
+                              size="2.8em"
+                              :thickness="0.2"
+                              :color="(darkMode ? 'blue-3' : 'blue-10')"
+                              :track-color="(props.row && props.row.deploymentStatus && props.row.deploymentStatus.error === true ? (darkMode ? 'red-10' : 'red') : (darkMode ? 'grey-9' : 'grey-3'))"
+                              :center-color="(props.row && props.row.deploymentStatus && props.row.deploymentStatus.error === true ? (darkMode ? 'orange-10' : 'orange') : undefined)"
+                            />
+                          </div>
+                        </div>
+                        <q-separator />
+                          <!-- v-if="props.row && props.row.deploymentStatus && props.row.deploymentStatus.steps && props.row.deploymentStatus.steps.length" -->
+                        <q-item
+                          v-for="(step, i) in (props.row && props.row.deploymentStatus && props.row.deploymentStatus.steps && props.row.deploymentStatus.steps.length ? props.row.deploymentStatus.steps : [])" :key="i"
+                          style="min-width: 30rem;"
+                          dense
+                        >
+                          <q-item-section>
+                            <q-item-label>
+                              <div class="row items-center no-wrap">
+                                <q-icon name="arrow_right" size="sm" :class="(step.status === 'On-going' || step.status === 'Error' ? '' : 'invisible')" />
+                                <div class="force-long-text-wrap ellipsis-3-lines" :class="(step.status === 'On-going' || step.status === 'Error' ? 'text-bold' : '')" >{{ step.name }}</div>
+                              </div>
+                              <!-- <div class="force-long-text-wrap ellipsis-3-lines">{{ step.status }}</div> -->
+                            </q-item-label>
+                          </q-item-section>
+                          <q-item-section side>
+                            <q-icon v-if="step.status === 'Not started'" name="hourglass_empty" size="sm" color="grey" />
+                            <q-icon v-else-if="step.status === 'Pending'" name="hourglass_top" size="sm" color="grey-3" />
+                            <q-spinner-dots v-else-if="step.status === 'On-going'" color="blue-10" size="2em" />
+                            <q-icon v-else-if="step.status === 'Completed'" name="task_alt" size="sm" color="positive" />
+                            <q-icon v-else-if="step.status === 'Error'" name="error" size="sm" color="orange" />
+                            <q-icon v-else-if="step.status === 'Cancelled'" name="block" size="sm" color="grey" />
+                          </q-item-section>
+                        </q-item>
+                        <div v-if="props.row && props.row.deploymentStatus && props.row.deploymentStatus.error === true"  class="q-mt-sm">
+                          <q-separator />
+                          <div class="row items-center">
+                            <q-icon name="info" color="blue-10" size="md" />
+                            <q-separator vertical class="q-mx-sm"/>
+                            <div class="q-my-sm">
+                              <div class="text-bold" v-if="props.row.deploymentStatus.errorMessage && props.row.deploymentStatus.errorMessage.length">The last step failed with this error message:</div>
+                              <div class="text-bold" v-else>The last step failed with no error message.</div>
+                              <div class="force-long-text-wrap ellipsis-3-lines" style="max-width: 35rem;">{{ props.row.deploymentStatus.errorMessage }}</div>
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
+                    </q-tooltip>
+                    <q-circular-progress
+                      :value="Math.round(deploymentProgressFor(props.row))"
+                      show-value
+                      :font-size="(deploymentProgressFor(props.row) < 100 ? '0.5em' : '0.4em')"
+                      size="1.7em"
+                      :thickness="0.2"
+                      :color="(darkMode ? 'blue-3' : 'blue-10')"
+                      :track-color="(props.row && props.row.deploymentStatus && props.row.deploymentStatus.error === true ? (darkMode ? 'red-10' : 'red') : (darkMode ? 'grey-9' : 'grey-3'))"
+                      :center-color="(props.row && props.row.deploymentStatus && props.row.deploymentStatus.error === true ? (darkMode ? 'orange-10' : 'orange') : undefined)"
+                    />
+                  </q-btn>
+                  <!-- <q-circular-progress
+                    :value="Math.round(props.value)"
+                    show-value
+                    :font-size="(props.value < 100 ? '0.5em' : '0.4em')"
+                    size="2.8em"
+                    :thickness="0.2"
+                    :color="(darkIsEnabled ? 'blue-3' : 'blue-10')"
+                    :track-color="(darkIsEnabled ? 'grey-9' : 'grey-3')"
+                  /> -->
+
                   <!-- <q-btn flat dense icon="remove_circle" color="negative" @click="deleteDeploymentPrompt(props.row)">
                     <q-tooltip content-style="font-size: 1em">
                       {{ $t('Un-deploy') }}
@@ -141,6 +256,10 @@
               <span class="text-bold">openCollectorLogSources: </span>
               <pre>{{ openCollectorLogSources }}</pre>
           </q-card-section> -->
+          <!-- <q-card-section>
+              <span class="text-bold">deploymentStatuses: </span>
+              <pre>{{ deploymentStatuses }}</pre>
+          </q-card-section> -->
         </q-card-section>
       </q-card>
     </div>
@@ -195,11 +314,13 @@
 import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
+import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 
 export default {
   mixins: [
     mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
-    mixinSharedShipperAndCollectionsHelpers // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
+    mixinSharedShipperAndCollectionsHelpers, // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
+    mixinSharedDarkMode // Shared computed to access and update the DarkMode
   ],
   data () {
     return {
@@ -221,7 +342,97 @@ export default {
         descending: true,
         rowsPerPage: 25
       },
-      collectorLogSourcesLoading: false
+      collectorLogSourcesLoading: false,
+      deploymentStatuses: [],
+      // deploymentStatuses: [
+      //   {
+      //     openCollectorUid: '941415a2-1608-4f1e-b32a-b735a29cdbb3',
+      //     // pipelineUid: 'b9f7c85a-a278-11eb-bcbc-0242ac130002',
+      //     msgSourceId: 30,
+      //     ongoing: false,
+      //     steps: [],
+      //     logs: []
+      //   }
+      // ],
+      deploymentStepsNewLogSource: [
+        {
+          uid: 'e745e0e6-60f6-4857-8afa-f8ea0663b6c3',
+          name: 'Create and drop Beat\'s configuration in right location',
+          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+        },
+        {
+          uid: 'd004f165-a028-4183-8e6d-f64534357c5d',
+          name: 'Import JQ Pipeline into Open Collector',
+          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+        },
+        {
+          uid: 'b632b998-cd67-4571-a384-31faf0053d1a',
+          name: 'Create Log Source Type',
+          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+        },
+        {
+          uid: '7e739d98-d427-4fac-9f63-392e8ccb4c94',
+          name: 'Create MPE Rule',
+          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+        },
+        {
+          uid: '04ff4e8c-de73-419a-a48b-944b01bca836',
+          name: 'Create MPE Sub-Rule(s)',
+          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+        },
+        {
+          uid: '6fba3b49-580b-4ceb-b8be-374fc848fe63',
+          name: 'Create Processing Policy',
+          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+        },
+        {
+          uid: 'dd1fae83-10af-40ea-bfe9-20ff668d5141',
+          name: 'Create Log Source (LS) Virtualisation',
+          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+        },
+        {
+          uid: '857787cd-4ec5-4c06-b044-7aaf37de326f',
+          name: 'Create new LS Virtualisation Item and associate it to LS Virtualisation',
+          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+        },
+        {
+          uid: '1246443c-2f50-48af-bd7e-8072ed214e2e',
+          name: 'Search related Open Collector LS',
+          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+        },
+        {
+          uid: '5c0a3a9c-6d01-40e6-acb8-b0763a52bba3',
+          name: 'Add LS Virtualisation to Open Collector Log Source',
+          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+        }
+      ],
+      deploymentStepsExistingLogSource: [
+        {
+          uid: 'd1038519-da8b-4580-91a6-8c34b3001327',
+          name: 'Update Beat configuration',
+          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+        },
+        {
+          uid: 'b0f41342-c758-4453-8381-9be346f25dfe',
+          name: 'Re-import JQ Pipeline into Open Collector',
+          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+        },
+        {
+          uid: '3d0ef0a5-0c65-4b62-a68a-e1422490ffef',
+          name: 'Modify MPE Sub-Rule(s)',
+          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+        },
+        {
+          uid: '32d0bf3c-9e09-4388-9a68-cec7c8b38529',
+          name: 'Modify Processing Policy',
+          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+        },
+        {
+          uid: '72e265cd-9d0d-469c-b1fd-8a319f3971b2',
+          name: 'Modify Log Source Virtualisation',
+          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+        }
+      ]
     }
   },
   /* Open Collector LS:
@@ -313,7 +524,8 @@ export default {
                 msgSourceId: ls.msgSourceID,
                 hostName: ls.hostName + ' (' + logSourceHostIdentifiers.join(' / ') + ')',
                 hostId: ls.hostID,
-                hasNecessaryShipper
+                hasNecessaryShipper,
+                deploymentStatus: this.deploymentStatuses.find(ds => ds && ds.openCollectorUid && oc && oc.uid && ls && ls.msgSourceID && ds.msgSourceId === ls.msgSourceID && ds.openCollectorUid === oc.uid)
               })
             }
           }
@@ -361,7 +573,7 @@ export default {
   },
 
   methods: {
-    ...mapActions('mainStore', ['getOpenCollectorLogSources']),
+    ...mapActions('mainStore', ['getOpenCollectorLogSources', 'callDeploymentStepApi']),
     loadOpenCollectorLogSources () {
       this.getOpenCollectorLogSources(
         {
@@ -375,8 +587,48 @@ export default {
       this.loadOpenCollectorLogSources()
     },
     selectOpenCollector (selectedRow) {
-      console.log('selectOpenCollector', selectedRow)
-    },
+      // Called when user click on the (+) button in the Action column to Deploy the Pipeline to this OC and map to the Log Source (defined on the line clicked on)
+      if (
+        selectedRow &&
+        selectedRow.openCollector &&
+        selectedRow.openCollector.uid &&
+        selectedRow.openCollector.uid.length &&
+        selectedRow.msgSourceId
+      ) {
+        const deploymentStatus = this.deploymentStatuses.find(
+          ds =>
+            ds.openCollectorUid === selectedRow.openCollector.uid &&
+            ds.msgSourceId === selectedRow.msgSourceId
+        )
+        if (deploymentStatus) {
+          deploymentStatus.ongoing = true
+          deploymentStatus.completed = false
+          this.deploymentStatuses = JSON.parse(JSON.stringify(this.deploymentStatuses))
+        } else {
+          this.deploymentStatuses.push(
+            {
+              openCollectorUid: selectedRow.openCollector.uid,
+              msgSourceId: selectedRow.msgSourceId,
+              ongoing: true,
+              completed: false,
+              logs: [],
+              steps: JSON.parse(JSON.stringify(this.deploymentStepsNewLogSource))
+            }
+          )
+        }
+        console.log('selectOpenCollector - deploymentStatus', deploymentStatus) // XXXX
+        // Run the first step
+        setTimeout(this.runDeploymentStep, 500, this, selectedRow, 0)
+      }
+    }, // selectOpenCollector
+    deploymentProgressFor (selectedRow) {
+      // Calculate the percentage of steps that are set to Completed for the deploymentStatus a given Row
+      return (
+        selectedRow && selectedRow.deploymentStatus && selectedRow.deploymentStatus.steps && selectedRow.deploymentStatus.steps.length
+          ? selectedRow.deploymentStatus.steps.filter(s => s.status && s.status.length && s.status.toLowerCase() === 'completed').length / selectedRow.deploymentStatus.steps.length * 100
+          : 0
+      )
+    }, // deploymentProgressFor
     hasNecessaryShipper (oc) {
       // this.pipeline.collectionConfig.collectionShipper
       // "filebeat"
@@ -408,6 +660,77 @@ export default {
       ) | ( // Or is is part of the out-of-the-box Open Collector Beats
         this.openCollectorBeats.filter((beat) => beat.value && beat.value.toLowerCase() === neededShipperLowerCase).length
       ))
+    }, // hasNecessaryShipper
+    runDeploymentStep (caller, selectedRow, stepNumber) {
+      console.log('runDeploymentStep', stepNumber, selectedRow)
+      // if (selectedRow && selectedRow.deploymentStatus && selectedRow.deploymentStatus.steps && selectedRow.deploymentStatus.steps.length > stepNumber) {
+      if (
+        selectedRow &&
+        selectedRow.openCollector &&
+        selectedRow.openCollector.uid &&
+        selectedRow.openCollector.uid.length &&
+        selectedRow.msgSourceId
+      ) {
+        const deploymentStatus = caller.deploymentStatuses.find(
+          ds =>
+            ds.openCollectorUid === selectedRow.openCollector.uid &&
+            ds.msgSourceId === selectedRow.msgSourceId
+        )
+        if (deploymentStatus && deploymentStatus.steps && deploymentStatus.steps.length > stepNumber) {
+          const step = deploymentStatus.steps[stepNumber]
+          console.log(' - Step: ', step.name, JSON.stringify(step))
+          // Do the work for this step
+          step.status = 'On-going'
+
+          // Prepare the parameters
+          const apiUrl = (stepNumber < 6 ? '/test/post' : '/test/doesNotExist')
+          const apiCallParams = undefined
+
+          // Call the API
+          caller.callDeploymentStepApi({
+            apiUrl,
+            caller: caller,
+            apiCallParams,
+            onSuccessCallBack: (
+              apiCallResult, // Param passed to onErrorCallBack by postDataToSite()
+              step_ = step,
+              selectedRow_ = selectedRow,
+              stepNumber_ = stepNumber,
+              caller_ = caller
+            ) => {
+              step_.status = 'Completed'
+
+              // Run the next step
+              console.log('  👉 Run the next step') // XXXX
+              setTimeout(caller_.runDeploymentStep, 50, caller_, selectedRow_, stepNumber_ + 1)
+            },
+            onErrorCallBack: (
+              apiCallResult, // Param passed to onErrorCallBack by postDataToSite()
+              step_ = step,
+              deploymentStatus_ = deploymentStatus
+            ) => {
+              step_.status = 'Error'
+              deploymentStatus_.ongoing = false
+              deploymentStatus_.completed = true
+              deploymentStatus_.error = true
+              deploymentStatus_.errorMessage = (apiCallResult && apiCallResult.messageForLogAndPopup ? apiCallResult.messageForLogAndPopup : '')
+              deploymentStatus_.errorMessage += (apiCallResult && apiCallResult.captionForLogAndPopup ? ` // ${apiCallResult.captionForLogAndPopup}` : '')
+              console.log(apiCallResult)
+
+              // Mark as Cancelled all the steps that were still waiting to run
+              if (deploymentStatus_ && deploymentStatus_.steps && Array.isArray(deploymentStatus_.steps)) {
+                deploymentStatus_.steps.filter(s => s.status && s.status.toLowerCase() === 'not started').forEach(s => { s.status = 'Cancelled' })
+              }
+            },
+            debug: true
+          })
+        } else {
+          // We have run out of Steps. Job done.
+          deploymentStatus.ongoing = false
+          deploymentStatus.completed = true
+          console.log('🏁 We have run out of Steps. Job done.') // XXXX
+        }
+      }
     }
   },
 
