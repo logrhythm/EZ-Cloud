@@ -67,9 +67,9 @@
 #### Providing all the fields/params
 
 {
-"uid":"uid_test",
-"SubRuleUid": "7bfa6d07-6905-4461-89d4-32ba2b775613",
-"SubRuleName": "Sub Rule Name",
+      "uid":"uid_test",
+      "SubRuleUid": "7bfa6d07-6905-4461-89d4-32ba2b775613",
+      "SubRuleName": "Sub Rule Name",
       "TargetCommonEventID" : 1029940,
       "TargetRuleStatus" : 2,
       "ForwardAsEvent" : 1,
@@ -105,9 +105,9 @@
 ##### https://169.254.109.150:8400/api/v1/logrhythmCore/UpdateMpeSubRule
 #### Providing only the relevant fields/params
 {
-"uid":"uid_test",
-"SubRuleUid": "bc5e4b2e-91cc-4f6f-b43f-2ca01ffcbcd3",
-"SubRuleName": "Sub Rule Name _2",
+      "uid":"uid_test",
+      "SubRuleUid": "bc5e4b2e-91cc-4f6f-b43f-2ca01ffcbcd3",
+      "SubRuleName": "Sub Rule Name _2",
       "Tag1" : "=SubRule_2",
       "Tag2" : "=SubRule_2.2"
 }
@@ -131,8 +131,8 @@
 ##### https://169.254.109.150:8400/api/v1/logrhythmCore/UpdateMpeSubRule
 #### Missing "SubRuleName", expect error
 {
-"uid":"uid_test",
-"SubRuleUid": "bc5e4b2e-91cc-4f6f-b43f-2ca01ffcbcd3",
+      "uid":"uid_test",
+      "SubRuleUid": "bc5e4b2e-91cc-4f6f-b43f-2ca01ffcbcd3",
       "Tag1" : "=SubRule_2",
       "Tag2" : "=SubRule_2.2"
 }
@@ -286,8 +286,8 @@
 ##### https://169.254.109.150:8400/api/v1/logrhythmCore/UpdateOpenCollectorLogSourceWithLogSourceVirtualisation
 #### First run
 {
-"uid":"uid_test",
-"OpenCollectorMotherLogSourceID": 15
+  "uid":"uid_test",
+  "OpenCollectorMotherLogSourceID": 15
 }
 ###
 {
@@ -308,8 +308,8 @@
 ##### https://169.254.109.150:8400/api/v1/logrhythmCore/UpdateOpenCollectorLogSourceWithLogSourceVirtualisation
 #### Second run, expecting error
 {
-"uid":"uid_test",
-"OpenCollectorMotherLogSourceID": 15
+  "uid":"uid_test",
+  "OpenCollectorMotherLogSourceID": 15
 }
 ###
 {
