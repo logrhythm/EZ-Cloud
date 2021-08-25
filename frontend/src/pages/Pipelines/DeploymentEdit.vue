@@ -358,79 +358,111 @@ export default {
         {
           uid: 'e745e0e6-60f6-4857-8afa-f8ea0663b6c3',
           name: 'Create and drop Beat\'s configuration in right location',
-          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          apiEndpoint: '/test/post',
+          apiParamNames: ['uid', 'oc_uid_TBC']
         },
         {
           uid: 'd004f165-a028-4183-8e6d-f64534357c5d',
           name: 'Import JQ Pipeline into Open Collector',
-          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          apiEndpoint: '/test/post',
+          apiParamNames: ['uid', 'oc_uid_TBC']
         },
         {
           uid: 'b632b998-cd67-4571-a384-31faf0053d1a',
           name: 'Create Log Source Type',
-          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          apiEndpoint: '/logrhythmCore/UpdateLogSourceType',
+          apiParamNames: ['uid', 'name']
         },
         {
           uid: '7e739d98-d427-4fac-9f63-392e8ccb4c94',
           name: 'Create MPE Rule',
-          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          apiEndpoint: '/logrhythmCore/UpdateMpeRule',
+          apiParamNames: ['uid', 'name']
         },
-        {
-          uid: '04ff4e8c-de73-419a-a48b-944b01bca836',
-          name: 'Create MPE Sub-Rule(s)',
-          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
-        },
+        // { // NOT IMPLEMENTING THIS FOR NOW
+        //   uid: '04ff4e8c-de73-419a-a48b-944b01bca836',
+        //   name: 'Create MPE Sub-Rule(s)',
+        //   status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+        //   apiEndpoint: '/logrhythmCore/UpdateMpeSubRule',
+        //   apiParamNames: ['uid', 'SubRuleUid', 'SubRuleName', 'Tag1'],
+        //   specialTag: ['runForEachSubRule']
+        // },
         {
           uid: '6fba3b49-580b-4ceb-b8be-374fc848fe63',
           name: 'Create Processing Policy',
-          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          apiEndpoint: '/logrhythmCore/UpdateProcessingPolicy',
+          apiParamNames: ['uid', 'name', 'MPEPolicy_Name']
         },
         {
           uid: 'dd1fae83-10af-40ea-bfe9-20ff668d5141',
           name: 'Create Log Source (LS) Virtualisation',
-          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          apiEndpoint: '/logrhythmCore/UpdateLogSourceVirtualisationTemplate',
+          apiParamNames: []
         },
         {
           uid: '857787cd-4ec5-4c06-b044-7aaf37de326f',
           name: 'Create new LS Virtualisation Item and associate it to LS Virtualisation',
-          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          apiEndpoint: '/logrhythmCore/UpdateLogSourceVirtualisationTemplateItem',
+          apiParamNames: ['uid', 'name']
         },
-        {
-          uid: '1246443c-2f50-48af-bd7e-8072ed214e2e',
-          name: 'Search related Open Collector LS',
-          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
-        },
+        // { // NOT NECESSARY AS ALREADY GATHERED AND DISPLAYED TO USER AS TABLE
+        //      USER WILL HAVE PICKED UP THE OpenCollectorMotherLogSourceID FROM TABLE
+        //   uid: '1246443c-2f50-48af-bd7e-8072ed214e2e',
+        //   name: 'Search related Open Collector LS',
+        //   status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+        //   apiEndpoint: '/logrhythmCore/GetOpenCollectorLogSourcesList',
+        //   apiParamNames: ['uid', 'name']
+        // },
         {
           uid: '5c0a3a9c-6d01-40e6-acb8-b0763a52bba3',
           name: 'Add LS Virtualisation to Open Collector Log Source',
-          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          apiEndpoint: '/logrhythmCore/UpdateOpenCollectorLogSourceWithLogSourceVirtualisation',
+          apiParamNames: ['uid', 'OpenCollectorMotherLogSourceID']
         }
       ],
       deploymentStepsExistingLogSource: [
         {
           uid: 'd1038519-da8b-4580-91a6-8c34b3001327',
           name: 'Update Beat configuration',
-          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          apiEndpoint: '/test/post',
+          apiParamNames: ['uid', 'oc_uid_TBC']
         },
         {
           uid: 'b0f41342-c758-4453-8381-9be346f25dfe',
           name: 'Re-import JQ Pipeline into Open Collector',
-          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          apiEndpoint: '/test/post',
+          apiParamNames: ['uid', 'oc_uid_TBC']
         },
         {
           uid: '3d0ef0a5-0c65-4b62-a68a-e1422490ffef',
           name: 'Modify MPE Sub-Rule(s)',
-          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          apiEndpoint: '/logrhythmCore/UpdateMpeSubRule',
+          apiParamNames: ['uid', 'SubRuleUid', 'SubRuleName', 'Tag1', 'Tag2', 'Tag3', 'Tag4', 'Tag5']
         },
         {
           uid: '32d0bf3c-9e09-4388-9a68-cec7c8b38529',
           name: 'Modify Processing Policy',
-          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          apiEndpoint: '/logrhythmCore/UpdateProcessingPolicy',
+          apiParamNames: ['uid', 'name', 'MPEPolicy_Name']
         },
         {
           uid: '72e265cd-9d0d-469c-b1fd-8a319f3971b2',
           name: 'Modify Log Source Virtualisation',
-          status: 'Not started' // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          apiEndpoint: '/logrhythmCore/UpdateLogSourceVirtualisationTemplateItem',
+          apiParamNames: ['uid', 'name']
         }
       ]
     }
@@ -682,9 +714,56 @@ export default {
           // Do the work for this step
           step.status = 'On-going'
 
+          // - Process of onboarding a LS from JQ
+          //   - [ ] New Log Source
+          //     - [ ] Drop Beat configuration in right location
+          //     - [ ] Import JQ to OC
+          //     - [ ] Create LS Type
+          //     - [ ] Create MPE Rule
+          //     - [ ] Create MPE Sub-Rule(s)
+          //       - [ ] Based on Field Mapping / Sub Rules ID
+          //     - [ ] Create Processing Policy
+          //     - [ ] Create LS Virtualisation
+          //     - [ ] Create new LS Virtualisation Item and associate it to LS Virtualisation
+          //     - [ ] Search related Open Collector LS
+          //     - [ ] Add LS Virtualisation to Open Collector LS
+          //   - [ ] Exisiting Log Source / Update of field mapping
+          //     - [ ] Update Beat configuration in right location
+          //     - [ ] Re-import JQ to OC
+          //     - [ ] Modify MPE Sub-Rule(s)
+          //     - [ ] Modify Processing Policy
+          //     - [ ] Modify LS Virtualisation Item
+
           // Prepare the parameters
-          const apiUrl = (stepNumber < 60 ? '/test/post' : '/test/doesNotExist') // XXXX
-          const apiCallParams = undefined
+          const apiUrl = (step.apiEndpoint && step.apiEndpoint.length ? step.apiEndpoint : '/test/doesNotExist')
+          // const apiUrl = (stepNumber < 6 ? (step.apiEndpoint && step.apiEndpoint.length ? step.apiEndpoint : '/test/doesNotExist') : '/test/doesNotExist') // XXXX
+          // const apiUrl = (stepNumber < 60 ? '/test/post' : '/test/doesNotExist') // XXXX
+          console.log(' - apiUrl', apiUrl) // XXXX
+          // const apiUrl_ = (step.apiEndpoint && step.apiEndpoint.length ? step.apiEndpoint : '/test/doesNotExist') // XXXX
+          // console.log(' - apiUrl_', apiUrl_) // XXXX
+
+          const apiCallParamsSource = {
+            uid: (caller && caller.pipeline && caller.pipeline.uid && caller.pipeline.uid.length ? caller.pipeline.uid : undefined),
+            name: (caller && caller.pipeline && caller.pipeline.name && caller.pipeline.name.length ? caller.pipeline.name : undefined),
+            oc_uid_TBC: (deploymentStatus.openCollectorUid && deploymentStatus.openCollectorUid.length ? deploymentStatus.openCollectorUid : undefined),
+            // SubRuleUid: '{{ls_sub_rule_uid}}_',  // NOT IMPLEMENTING THIS FOR NOW, see Step UID 04ff4e8c-de73-419a-a48b-944b01bca836
+            // SubRuleName: '{{ls_sub_rule_name}}_',  // NOT IMPLEMENTING THIS FOR NOW, see Step UID 04ff4e8c-de73-419a-a48b-944b01bca836
+            // Tag1: '{{ls_sub_rule_tag1}}',  // NOT IMPLEMENTING THIS FOR NOW, see Step UID 04ff4e8c-de73-419a-a48b-944b01bca836
+            MPEPolicy_Name: 'LogRhythm Default',
+            OpenCollectorMotherLogSourceID: deploymentStatus.msgSourceId
+          }
+          // console.log(' - apiCallParamsSource', apiCallParamsSource) // XXXX
+
+          const apiCallParams = (
+            step.apiParamNames &&
+            step.apiParamNames.length
+              ? step.apiParamNames.reduce((paramsObject, param) => {
+                paramsObject[param] = (apiCallParamsSource && apiCallParamsSource[param] ? apiCallParamsSource[param] : undefined)
+                return paramsObject
+              }, {})
+              : undefined
+          )
+          console.log(' - apiCallParams', JSON.stringify(apiCallParams)) // XXXX
 
           // Call the API
           caller.callDeploymentStepApi({
@@ -728,7 +807,7 @@ export default {
                 deploymentStatus_.steps.filter(s => s.status && s.status.toLowerCase() === 'not started').forEach(s => { s.status = 'Cancelled' })
               }
             },
-            debug: true
+            debug: false
           })
         } else {
           // We have run out of Steps. Job done.
