@@ -42,6 +42,11 @@
   - [x] Flag EZ OCs that do not have the right Shipper for the Pipeline
   - [x] Capture user selection of OC Log Source
   - [ ] Kick off deployment of Stream on OC and creation of LogSource and all the chain in EMDB
+    - [ ] Deployment of Stream on OC
+    - [x] Creation of LogSource and all the chain in EMDB
+    - [x] Add Skipped step status
+    - [x] Better icon colours
+    - [x] Skipped and Error information panel
 - [ ] Hide Settings page for Prod
 - [ ] Create Logging shared Lib to push logs to Console and Windows Journal
 - Day mode

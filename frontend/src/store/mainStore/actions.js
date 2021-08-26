@@ -390,8 +390,6 @@ export function deleteDeployment ({ state, dispatch }, payload) {
 }
 
 export function callDeploymentStepApi ({ state }, payload) {
-  console.log('callDeploymentStepApi', payload)
-
   if (
     payload &&
     payload.apiUrl &&
@@ -402,6 +400,8 @@ export function callDeploymentStepApi ({ state }, payload) {
       apiHeaders: {
         authorization: 'Bearer ' + state.jwtToken
       },
+      dataLabel: (payload && payload.dataLabel ? payload.dataLabel : undefined),
+      countDataLabel: false,
       silent: (payload && payload.silent ? payload.silent : true),
       caller: (payload && payload.caller ? payload.caller : this._vm),
       apiCallParams: (payload && payload.apiCallParams ? payload.apiCallParams : undefined),

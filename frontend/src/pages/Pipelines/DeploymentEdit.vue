@@ -108,9 +108,9 @@
                             <q-icon name="warning" color="orange" size="md" v-if="props.row && props.row.deploymentStatus && props.row.deploymentStatus.error === true" />
                             <q-icon name="task_alt" color="positive" size="md" v-else-if="props.row && props.row.deploymentStatus && props.row.deploymentStatus.completed === true" />
                             <q-circular-progress
-                              :value="Math.round(deploymentProgressFor(props.row))"
+                              :value="Math.round(deploymentProgressFor(props.row).done)"
                               show-value
-                              :font-size="(deploymentProgressFor(props.row) < 100 ? '0.5em' : '0.4em')"
+                              :font-size="(deploymentProgressFor(props.row).done < 100 ? '0.5em' : '0.4em')"
                               size="2.8em"
                               :thickness="0.2"
                               :color="(darkMode ? 'blue-3' : 'blue-10')"
@@ -120,49 +120,68 @@
                           </div>
                         </div>
                         <q-separator />
-                          <!-- v-if="props.row && props.row.deploymentStatus && props.row.deploymentStatus.steps && props.row.deploymentStatus.steps.length" -->
-                        <q-item
-                          v-for="(step, i) in (props.row && props.row.deploymentStatus && props.row.deploymentStatus.steps && props.row.deploymentStatus.steps.length ? props.row.deploymentStatus.steps : [])" :key="i"
-                          style="min-width: 30rem;"
-                          dense
-                        >
-                          <q-item-section>
-                            <q-item-label>
-                              <div class="row items-center no-wrap">
-                                <q-icon name="arrow_right" size="sm" :class="(step.status === 'On-going' || step.status === 'Error' ? '' : 'invisible')" />
-                                <div class="force-long-text-wrap ellipsis-3-lines" :class="(step.status === 'On-going' || step.status === 'Error' ? 'text-bold' : '')" >{{ step.name }}</div>
-                              </div>
-                              <!-- <div class="force-long-text-wrap ellipsis-3-lines">{{ step.status }}</div> -->
-                            </q-item-label>
-                          </q-item-section>
-                          <q-item-section side>
-                            <q-icon v-if="step.status === 'Not started'" name="hourglass_empty" size="sm" color="grey" />
-                            <q-icon v-else-if="step.status === 'Pending'" name="hourglass_top" size="sm" color="grey-3" />
-                            <q-spinner-dots v-else-if="step.status === 'On-going'" color="blue-10" size="2em" />
-                            <q-icon v-else-if="step.status === 'Completed'" name="task_alt" size="sm" color="positive" />
-                            <q-icon v-else-if="step.status === 'Error'" name="error" size="sm" color="orange" />
-                            <q-icon v-else-if="step.status === 'Cancelled'" name="block" size="sm" color="grey" />
-                          </q-item-section>
-                        </q-item>
-                        <div v-if="props.row && props.row.deploymentStatus && props.row.deploymentStatus.error === true"  class="q-mt-sm">
+                        <!-- v-if="props.row && props.row.deploymentStatus && props.row.deploymentStatus.steps && props.row.deploymentStatus.steps.length" -->
+                        <div class="q-mb-sm">
+                          <q-item
+                            v-for="(step, i) in (props.row && props.row.deploymentStatus && props.row.deploymentStatus.steps && props.row.deploymentStatus.steps.length ? props.row.deploymentStatus.steps : [])" :key="i"
+                            style="min-width: 30rem;"
+                            dense
+                          >
+                            <q-item-section>
+                              <q-item-label>
+                                <div class="row items-center no-wrap">
+                                  <q-icon name="arrow_right" size="sm" :class="(step.status === 'On-going' || step.status === 'Error' ? '' : 'invisible')" />
+                                  <div class="force-long-text-wrap ellipsis-3-lines" :class="(step.status === 'On-going' || step.status === 'Error' ? 'text-bold' : '')" >{{ step.name }}</div>
+                                </div>
+                                <!-- <div class="force-long-text-wrap ellipsis-3-lines">{{ step.status }}</div> -->
+                              </q-item-label>
+                            </q-item-section>
+                            <q-item-section side>
+                              <q-icon v-if="step.status === 'Not started'" name="hourglass_empty" size="sm" color="grey" />
+                              <q-icon v-else-if="step.status === 'To skip'" name="redo" size="sm" color="grey" />
+                              <!-- redo low_priority skip_next -->
+                              <q-icon v-else-if="step.status === 'Pending'" name="hourglass_top" size="sm" color="grey-3" />
+                              <q-spinner-dots v-else-if="step.status === 'On-going'" color="blue-10" size="2em" />
+                              <q-icon v-else-if="step.status === 'Completed'" name="task_alt" size="sm" color="positive" />
+                              <!-- <q-icon v-else-if="step.status === 'Skipped'" name="redo" size="sm" color="positive" style="opacity: .5;" /> -->
+                              <q-icon v-else-if="step.status === 'Skipped'" name="redo" size="sm" color="green-4" style="opacity: .5;" />
+                              <q-icon v-else-if="step.status === 'Error'" name="error" size="sm" color="orange" />
+                              <q-icon v-else-if="step.status === 'Cancelled'" name="block" size="sm" color="grey" />
+                            </q-item-section>
+                          </q-item>
+                        </div>
+                        <div v-if="props.row && deploymentProgressFor(props.row).errorAbsolute">
                           <q-separator />
-                          <div class="row items-center">
-                            <q-icon name="info" color="blue-10" size="md" />
+                          <div class="row items-center col no-wrap">
+                            <q-icon name="warning" color="orange" size="md" />
+                            <!-- <q-icon name="info" color="blue-10" size="md" /> -->
                             <q-separator vertical class="q-mx-sm"/>
+                            <q-separator vertical color="negative" size="0.2rem" class="q-ml-none q-mr-sm"/>
                             <div class="q-my-sm">
-                              <div class="text-bold" v-if="props.row.deploymentStatus.errorMessage && props.row.deploymentStatus.errorMessage.length">The last step failed with this error message:</div>
+                              <div class="text-bold text-orange" v-if="props.row.deploymentStatus.errorMessage && props.row.deploymentStatus.errorMessage.length">The last step failed with this error message:</div>
                               <div class="text-bold" v-else>The last step failed with no error message.</div>
                               <div class="force-long-text-wrap ellipsis-3-lines" style="max-width: 35rem;">{{ props.row.deploymentStatus.errorMessage }}</div>
                             </div>
                           </div>
-
+                        </div>
+                        <div v-if="props.row && deploymentProgressFor(props.row).skippedAbsolute">
+                          <q-separator />
+                          <div class="row items-center col no-wrap">
+                            <q-icon name="redo" color="green-4" size="md" />
+                            <q-separator vertical class="q-mx-sm"/>
+                            <div class="q-my-sm">
+                              <!-- <q-icon name="redo" size="md" color="green-4" style="opacity: .5;" /> -->
+                              <div class="text-bold">{{ Math.round(deploymentProgressFor(props.row).skippedAbsolute) }} steps have been skipped.</div>
+                              <div class="">This is fine. Steps are typically skipped if not necessary for a given deployment.</div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </q-tooltip>
                     <q-circular-progress
-                      :value="Math.round(deploymentProgressFor(props.row))"
+                      :value="Math.round(deploymentProgressFor(props.row).done)"
                       show-value
-                      :font-size="(deploymentProgressFor(props.row) < 100 ? '0.5em' : '0.4em')"
+                      :font-size="(deploymentProgressFor(props.row).done < 100 ? '0.5em' : '0.4em')"
                       size="1.7em"
                       :thickness="0.2"
                       :color="(darkMode ? 'blue-3' : 'blue-10')"
@@ -358,57 +377,57 @@ export default {
         {
           uid: 'e745e0e6-60f6-4857-8afa-f8ea0663b6c3',
           name: 'Create and drop Beat\'s configuration in right location',
-          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/test/post',
           apiParamNames: ['uid', 'oc_uid_TBC']
         },
         {
           uid: 'd004f165-a028-4183-8e6d-f64534357c5d',
           name: 'Import JQ Pipeline into Open Collector',
-          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/test/post',
           apiParamNames: ['uid', 'oc_uid_TBC']
         },
         {
           uid: 'b632b998-cd67-4571-a384-31faf0053d1a',
           name: 'Create Log Source Type',
-          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateLogSourceType',
           apiParamNames: ['uid', 'name']
         },
         {
           uid: '7e739d98-d427-4fac-9f63-392e8ccb4c94',
           name: 'Create MPE Rule',
-          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateMpeRule',
           apiParamNames: ['uid', 'name']
         },
-        // { // NOT IMPLEMENTING THIS FOR NOW
-        //   uid: '04ff4e8c-de73-419a-a48b-944b01bca836',
-        //   name: 'Create MPE Sub-Rule(s)',
-        //   status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
-        //   apiEndpoint: '/logrhythmCore/UpdateMpeSubRule',
-        //   apiParamNames: ['uid', 'SubRuleUid', 'SubRuleName', 'Tag1'],
-        //   specialTag: ['runForEachSubRule']
-        // },
+        { // NOT IMPLEMENTING THIS FOR NOW
+          uid: '04ff4e8c-de73-419a-a48b-944b01bca836',
+          name: 'Create MPE Sub-Rule(s)',
+          status: 'To skip', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
+          apiEndpoint: '/logrhythmCore/UpdateMpeSubRule',
+          apiParamNames: ['uid', 'SubRuleUid', 'SubRuleName', 'Tag1'],
+          specialTag: ['runForEachSubRule']
+        },
         {
           uid: '6fba3b49-580b-4ceb-b8be-374fc848fe63',
           name: 'Create Processing Policy',
-          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateProcessingPolicy',
           apiParamNames: ['uid', 'name', 'MPEPolicy_Name']
         },
         {
           uid: 'dd1fae83-10af-40ea-bfe9-20ff668d5141',
           name: 'Create Log Source (LS) Virtualisation',
-          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateLogSourceVirtualisationTemplate',
           apiParamNames: []
         },
         {
           uid: '857787cd-4ec5-4c06-b044-7aaf37de326f',
           name: 'Create new LS Virtualisation Item and associate it to LS Virtualisation',
-          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateLogSourceVirtualisationTemplateItem',
           apiParamNames: ['uid', 'name']
         },
@@ -416,14 +435,14 @@ export default {
         //      USER WILL HAVE PICKED UP THE OpenCollectorMotherLogSourceID FROM TABLE
         //   uid: '1246443c-2f50-48af-bd7e-8072ed214e2e',
         //   name: 'Search related Open Collector LS',
-        //   status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+        //   status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
         //   apiEndpoint: '/logrhythmCore/GetOpenCollectorLogSourcesList',
         //   apiParamNames: ['uid', 'name']
         // },
         {
           uid: '5c0a3a9c-6d01-40e6-acb8-b0763a52bba3',
           name: 'Add LS Virtualisation to Open Collector Log Source',
-          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateOpenCollectorLogSourceWithLogSourceVirtualisation',
           apiParamNames: ['uid', 'OpenCollectorMotherLogSourceID']
         }
@@ -432,35 +451,35 @@ export default {
         {
           uid: 'd1038519-da8b-4580-91a6-8c34b3001327',
           name: 'Update Beat configuration',
-          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/test/post',
           apiParamNames: ['uid', 'oc_uid_TBC']
         },
         {
           uid: 'b0f41342-c758-4453-8381-9be346f25dfe',
           name: 'Re-import JQ Pipeline into Open Collector',
-          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/test/post',
           apiParamNames: ['uid', 'oc_uid_TBC']
         },
         {
           uid: '3d0ef0a5-0c65-4b62-a68a-e1422490ffef',
           name: 'Modify MPE Sub-Rule(s)',
-          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateMpeSubRule',
           apiParamNames: ['uid', 'SubRuleUid', 'SubRuleName', 'Tag1', 'Tag2', 'Tag3', 'Tag4', 'Tag5']
         },
         {
           uid: '32d0bf3c-9e09-4388-9a68-cec7c8b38529',
           name: 'Modify Processing Policy',
-          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateProcessingPolicy',
           apiParamNames: ['uid', 'name', 'MPEPolicy_Name']
         },
         {
           uid: '72e265cd-9d0d-469c-b1fd-8a319f3971b2',
           name: 'Modify Log Source Virtualisation',
-          status: 'Not started', // Not started, Pending, On-going, Completed, Error, Cancelled
+          status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateLogSourceVirtualisationTemplateItem',
           apiParamNames: ['uid', 'name']
         }
@@ -655,11 +674,54 @@ export default {
     }, // selectOpenCollector
     deploymentProgressFor (selectedRow) {
       // Calculate the percentage of steps that are set to Completed for the deploymentStatus a given Row
-      return (
+      const dividedBy = (
         selectedRow && selectedRow.deploymentStatus && selectedRow.deploymentStatus.steps && selectedRow.deploymentStatus.steps.length
-          ? selectedRow.deploymentStatus.steps.filter(s => s.status && s.status.length && s.status.toLowerCase() === 'completed').length / selectedRow.deploymentStatus.steps.length * 100
+          ? selectedRow.deploymentStatus.steps.length
+          : 1
+      )
+
+      const completedAbsolute = (
+        selectedRow && selectedRow.deploymentStatus && selectedRow.deploymentStatus.steps && selectedRow.deploymentStatus.steps.length
+          ? selectedRow.deploymentStatus.steps.filter(
+            s => s.status &&
+            s.status.length &&
+            s.status.toLowerCase() === 'completed'
+          ).length
           : 0
       )
+      const completed = completedAbsolute / dividedBy * 100
+
+      const skippedAbsolute = (
+        selectedRow && selectedRow.deploymentStatus && selectedRow.deploymentStatus.steps && selectedRow.deploymentStatus.steps.length
+          ? selectedRow.deploymentStatus.steps.filter(
+            s => s.status &&
+            s.status.length &&
+            s.status.toLowerCase() === 'skipped'
+          ).length
+          : 0
+      )
+      const skipped = skippedAbsolute / dividedBy * 100
+
+      const errorAbsolute = (
+        selectedRow && selectedRow.deploymentStatus && selectedRow.deploymentStatus.steps && selectedRow.deploymentStatus.steps.length
+          ? selectedRow.deploymentStatus.steps.filter(
+            s => s.status &&
+            s.status.length &&
+            s.status.toLowerCase() === 'error'
+          ).length
+          : 0
+      )
+      const error = errorAbsolute / dividedBy * 100
+
+      return {
+        done: (completed + skipped),
+        completed,
+        skipped,
+        error,
+        completedAbsolute,
+        skippedAbsolute,
+        errorAbsolute
+      }
     }, // deploymentProgressFor
     hasNecessaryShipper (oc) {
       // this.pipeline.collectionConfig.collectionShipper
@@ -694,7 +756,7 @@ export default {
       ))
     }, // hasNecessaryShipper
     runDeploymentStep (caller, selectedRow, stepNumber) {
-      console.log('runDeploymentStep', stepNumber, selectedRow)
+      // console.log('runDeploymentStep', stepNumber, selectedRow)
       // if (selectedRow && selectedRow.deploymentStatus && selectedRow.deploymentStatus.steps && selectedRow.deploymentStatus.steps.length > stepNumber) {
       if (
         selectedRow &&
@@ -710,105 +772,120 @@ export default {
         )
         if (deploymentStatus && deploymentStatus.steps && deploymentStatus.steps.length > stepNumber) {
           const step = deploymentStatus.steps[stepNumber]
-          console.log(' - Step: ', step.name, JSON.stringify(step))
-          // Do the work for this step
-          step.status = 'On-going'
+          // console.log(' - Step: ', step.name, JSON.stringify(step)) // XXXX
 
-          // - Process of onboarding a LS from JQ
-          //   - [ ] New Log Source
-          //     - [ ] Drop Beat configuration in right location
-          //     - [ ] Import JQ to OC
-          //     - [ ] Create LS Type
-          //     - [ ] Create MPE Rule
-          //     - [ ] Create MPE Sub-Rule(s)
-          //       - [ ] Based on Field Mapping / Sub Rules ID
-          //     - [ ] Create Processing Policy
-          //     - [ ] Create LS Virtualisation
-          //     - [ ] Create new LS Virtualisation Item and associate it to LS Virtualisation
-          //     - [ ] Search related Open Collector LS
-          //     - [ ] Add LS Virtualisation to Open Collector LS
-          //   - [ ] Exisiting Log Source / Update of field mapping
-          //     - [ ] Update Beat configuration in right location
-          //     - [ ] Re-import JQ to OC
-          //     - [ ] Modify MPE Sub-Rule(s)
-          //     - [ ] Modify Processing Policy
-          //     - [ ] Modify LS Virtualisation Item
+          // Check if we need to Skip this step or execute it
+          let skipStep = false
+          skipStep = skipStep | (step.status && step.status === 'To skip')
+          skipStep = skipStep | (step.uid && step.uid === 'e745e0e6-60f6-4857-8afa-f8ea0663b6c3') // Create and drop Beat\'s configuration in right location
+          skipStep = skipStep | (step.uid && step.uid === 'd004f165-a028-4183-8e6d-f64534357c5d') // Import JQ Pipeline into Open Collector
 
-          // Prepare the parameters
-          const apiUrl = (step.apiEndpoint && step.apiEndpoint.length ? step.apiEndpoint : '/test/doesNotExist')
-          // const apiUrl = (stepNumber < 6 ? (step.apiEndpoint && step.apiEndpoint.length ? step.apiEndpoint : '/test/doesNotExist') : '/test/doesNotExist') // XXXX
-          // const apiUrl = (stepNumber < 60 ? '/test/post' : '/test/doesNotExist') // XXXX
-          console.log(' - apiUrl', apiUrl) // XXXX
-          // const apiUrl_ = (step.apiEndpoint && step.apiEndpoint.length ? step.apiEndpoint : '/test/doesNotExist') // XXXX
-          // console.log(' - apiUrl_', apiUrl_) // XXXX
+          if (skipStep) {
+            step.status = 'Skipped'
+            setTimeout(caller.runDeploymentStep, 150, caller, selectedRow, stepNumber + 1)
+          } else {
+            // Do the work for this step
+            step.status = 'On-going'
 
-          const apiCallParamsSource = {
-            uid: (caller && caller.pipeline && caller.pipeline.uid && caller.pipeline.uid.length ? caller.pipeline.uid : undefined),
-            name: (caller && caller.pipeline && caller.pipeline.name && caller.pipeline.name.length ? caller.pipeline.name : undefined),
-            oc_uid_TBC: (deploymentStatus.openCollectorUid && deploymentStatus.openCollectorUid.length ? deploymentStatus.openCollectorUid : undefined),
-            // SubRuleUid: '{{ls_sub_rule_uid}}_',  // NOT IMPLEMENTING THIS FOR NOW, see Step UID 04ff4e8c-de73-419a-a48b-944b01bca836
-            // SubRuleName: '{{ls_sub_rule_name}}_',  // NOT IMPLEMENTING THIS FOR NOW, see Step UID 04ff4e8c-de73-419a-a48b-944b01bca836
-            // Tag1: '{{ls_sub_rule_tag1}}',  // NOT IMPLEMENTING THIS FOR NOW, see Step UID 04ff4e8c-de73-419a-a48b-944b01bca836
-            MPEPolicy_Name: 'LogRhythm Default',
-            OpenCollectorMotherLogSourceID: deploymentStatus.msgSourceId
-          }
-          // console.log(' - apiCallParamsSource', apiCallParamsSource) // XXXX
+            // - Process of onboarding a LS from JQ
+            //   - [ ] New Log Source
+            //     - [ ] Drop Beat configuration in right location
+            //     - [ ] Import JQ to OC
+            //     - [ ] Create LS Type
+            //     - [ ] Create MPE Rule
+            //     - [ ] Create MPE Sub-Rule(s)
+            //       - [ ] Based on Field Mapping / Sub Rules ID
+            //     - [ ] Create Processing Policy
+            //     - [ ] Create LS Virtualisation
+            //     - [ ] Create new LS Virtualisation Item and associate it to LS Virtualisation
+            //     - [ ] Search related Open Collector LS
+            //     - [ ] Add LS Virtualisation to Open Collector LS
+            //   - [ ] Exisiting Log Source / Update of field mapping
+            //     - [ ] Update Beat configuration in right location
+            //     - [ ] Re-import JQ to OC
+            //     - [ ] Modify MPE Sub-Rule(s)
+            //     - [ ] Modify Processing Policy
+            //     - [ ] Modify LS Virtualisation Item
 
-          const apiCallParams = (
-            step.apiParamNames &&
-            step.apiParamNames.length
-              ? step.apiParamNames.reduce((paramsObject, param) => {
-                paramsObject[param] = (apiCallParamsSource && apiCallParamsSource[param] ? apiCallParamsSource[param] : undefined)
-                return paramsObject
-              }, {})
-              : undefined
-          )
-          console.log(' - apiCallParams', JSON.stringify(apiCallParams)) // XXXX
+            // Prepare the parameters
+            const apiUrl = (step.apiEndpoint && step.apiEndpoint.length ? step.apiEndpoint : '/test/doesNotExist/andShouldReturnAnError')
+            // const apiUrl = (stepNumber < 3 ? (step.apiEndpoint && step.apiEndpoint.length ? step.apiEndpoint : '/test/doesNotExist') : '/test/doesNotExist') // XXXX
+            // const apiUrl = (stepNumber < 60 ? '/test/post' : '/test/doesNotExist') // XXXX
+            // console.log(' - apiUrl', apiUrl) // XXXX
+            // const apiUrl_ = (step.apiEndpoint && step.apiEndpoint.length ? step.apiEndpoint : '/test/doesNotExist') // XXXX
+            // console.log(' - apiUrl_', apiUrl_) // XXXX
 
-          // Call the API
-          caller.callDeploymentStepApi({
-            apiUrl,
-            caller: caller,
-            apiCallParams,
-            onSuccessCallBack: (
-              apiCallResult, // Param passed to onErrorCallBack by postDataToSite()
-              step_ = step,
-              selectedRow_ = selectedRow,
-              stepNumber_ = stepNumber,
-              caller_ = caller
-            ) => {
-              // Flag the step as Completed, and run the next step
-              console.log('  👉 Run the next step') // XXXX
-              setTimeout(
-                () => {
-                  step_.status = 'Completed'
-                  caller_.runDeploymentStep(caller_, selectedRow_, stepNumber_ + 1)
-                },
-                // 250 // Run next step in 250 ms
-                100 + Math.floor(Math.random() * 600) // XXXX
-              )
-              // setTimeout(caller_.runDeploymentStep, 50, caller_, selectedRow_, stepNumber_ + 1)
-            },
-            onErrorCallBack: (
-              apiCallResult, // Param passed to onErrorCallBack by postDataToSite()
-              step_ = step,
-              deploymentStatus_ = deploymentStatus
-            ) => {
-              step_.status = 'Error'
-              deploymentStatus_.ongoing = false
-              deploymentStatus_.completed = true
-              deploymentStatus_.error = true
-              deploymentStatus_.errorMessage = (apiCallResult && apiCallResult.messageForLogAndPopup ? apiCallResult.messageForLogAndPopup : '')
-              deploymentStatus_.errorMessage += (apiCallResult && apiCallResult.captionForLogAndPopup ? ` // ${apiCallResult.captionForLogAndPopup}` : '')
-              console.log(apiCallResult)
+            const apiCallParamsSource = {
+              uid: (caller && caller.pipeline && caller.pipeline.uid && caller.pipeline.uid.length ? caller.pipeline.uid : undefined),
+              name: (caller && caller.pipeline && caller.pipeline.name && caller.pipeline.name.length ? caller.pipeline.name : undefined),
+              oc_uid_TBC: (deploymentStatus.openCollectorUid && deploymentStatus.openCollectorUid.length ? deploymentStatus.openCollectorUid : undefined),
+              // SubRuleUid: '{{ls_sub_rule_uid}}_',  // NOT IMPLEMENTING THIS FOR NOW, see Step UID 04ff4e8c-de73-419a-a48b-944b01bca836
+              // SubRuleName: '{{ls_sub_rule_name}}_',  // NOT IMPLEMENTING THIS FOR NOW, see Step UID 04ff4e8c-de73-419a-a48b-944b01bca836
+              // Tag1: '{{ls_sub_rule_tag1}}',  // NOT IMPLEMENTING THIS FOR NOW, see Step UID 04ff4e8c-de73-419a-a48b-944b01bca836
+              MPEPolicy_Name: 'LogRhythm Default',
+              OpenCollectorMotherLogSourceID: deploymentStatus.msgSourceId
+            }
+            // console.log(' - apiCallParamsSource', apiCallParamsSource) // XXXX
 
-              // Mark as Cancelled all the steps that were still waiting to run
-              if (deploymentStatus_ && deploymentStatus_.steps && Array.isArray(deploymentStatus_.steps)) {
-                deploymentStatus_.steps.filter(s => s.status && s.status.toLowerCase() === 'not started').forEach(s => { s.status = 'Cancelled' })
-              }
-            },
-            debug: false
-          })
+            const apiCallParams = (
+              step.apiParamNames &&
+              step.apiParamNames.length
+                ? step.apiParamNames.reduce((paramsObject, param) => {
+                  paramsObject[param] = (apiCallParamsSource && apiCallParamsSource[param] ? apiCallParamsSource[param] : undefined)
+                  return paramsObject
+                }, {})
+                : undefined
+            )
+            // console.log(' - apiCallParams', JSON.stringify(apiCallParams)) // XXXX
+
+            // Call the API
+            caller.callDeploymentStepApi({
+              apiUrl,
+              caller: caller,
+              apiCallParams,
+              dataLabel: `Step name: ${step.name}`,
+              onSuccessCallBack: (
+                apiCallResult, // Param passed to onErrorCallBack by postDataToSite()
+                step_ = step,
+                selectedRow_ = selectedRow,
+                stepNumber_ = stepNumber,
+                caller_ = caller
+              ) => {
+                // Flag the step as Completed, and run the next step
+                // console.log('  👉 Run the next step') // XXXX
+                setTimeout(
+                  () => {
+                    step_.status = 'Completed'
+                    caller_.runDeploymentStep(caller_, selectedRow_, stepNumber_ + 1)
+                  },
+                  // 250 // Run next step in 250 ms
+                  100 + Math.floor(Math.random() * 600) // XXXX
+                )
+                // setTimeout(caller_.runDeploymentStep, 50, caller_, selectedRow_, stepNumber_ + 1)
+              },
+              onErrorCallBack: (
+                apiCallResult, // Param passed to onErrorCallBack by postDataToSite()
+                step_ = step,
+                deploymentStatus_ = deploymentStatus
+              ) => {
+                step_.status = 'Error'
+                deploymentStatus_.ongoing = false
+                deploymentStatus_.completed = true
+                deploymentStatus_.error = true
+                deploymentStatus_.errorMessage = (apiCallResult && apiCallResult.messageForLogAndPopup ? apiCallResult.messageForLogAndPopup : '')
+                deploymentStatus_.errorMessage += (apiCallResult && apiCallResult.captionForLogAndPopup ? ` // ${apiCallResult.captionForLogAndPopup}` : '')
+                console.log(apiCallResult)
+
+                // Mark as Cancelled all the steps that were still waiting to run
+                if (deploymentStatus_ && deploymentStatus_.steps && Array.isArray(deploymentStatus_.steps)) {
+                  deploymentStatus_.steps.filter(
+                    s => s.status && (s.status.toLowerCase() === 'not started' || s.status.toLowerCase() === 'to skip')
+                  ).forEach(s => { s.status = 'Cancelled' })
+                }
+              },
+              debug: false
+            })
+          } // else - if (step.status && step.status === 'To skip')
         } else {
           // We have run out of Steps. Job done.
           deploymentStatus.ongoing = false
