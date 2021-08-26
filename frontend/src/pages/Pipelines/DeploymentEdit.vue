@@ -171,7 +171,8 @@
                             <q-separator vertical class="q-mx-sm"/>
                             <div class="q-my-sm">
                               <!-- <q-icon name="redo" size="md" color="green-4" style="opacity: .5;" /> -->
-                              <div class="text-bold">{{ Math.round(deploymentProgressFor(props.row).skippedAbsolute) }} steps have been skipped.</div>
+                              <div class="text-bold" v-if="deploymentProgressFor(props.row).skippedAbsolute > 1">{{ Math.round(deploymentProgressFor(props.row).skippedAbsolute) }} steps have been skipped.</div>
+                              <div class="text-bold" v-else>One step has been skipped.</div>
                               <div class="">This is fine. Steps are typically skipped if not necessary for a given deployment.</div>
                             </div>
                           </div>
