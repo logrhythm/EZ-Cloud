@@ -129,8 +129,8 @@ export default function () {
 # UID: {{EZ_stream_id_placeholder}}
 # -------------------------------------------
 
-# is_{{EZ_beatname_placeholder}} checks if the data matches the {{EZ_stream_name_placeholder}} criteria
-def is_{{EZ_beatname_placeholder}}:
+# is_{{EZ_compact_stream_name_placeholder}} checks if the data matches the {{EZ_stream_name_placeholder}} criteria
+def is_{{EZ_compact_stream_name_placeholder}}:
     ."@metadata".beat == "filebeat"
     and
     (
@@ -221,11 +221,12 @@ def transform:
     # First, convert to IO format.
     get_io_format |
 
-    # beatname is a required field for Open Collector Regex to work in the SIEM.
+    # "beatname" is a required field for Open Collector Regex to work in the SIEM.
     # We add here more details to help the Log Source Virtualisation
 
-    add_field("{{EZ_beatname_placeholder}}"; .output.beatname) |
-    add_field("{{EZ_stream_id_placeholder}}"; .output.stream_id) |
+    add_field("@metadata".beat; .output.beatname) | # For the Log Source Virtualisation
+    add_field("{{EZ_compact_stream_name_placeholder}}"; .output.device_name) | # For the Log Source Virtualisation
+    add_field("{{EZ_stream_id_placeholder}}"; .output.stream_id) | # For the Log Source Virtualisation (optional)
     add_field("{{EZ_stream_name_placeholder}}"; .output.stream_name) |
 
     # If required, the Timestamp field(s)

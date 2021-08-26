@@ -1222,7 +1222,7 @@ export default {
         .replace(/{{EZ_generation_user}}/g, this.loggedInUser)
         .replace(/{{EZ_stream_name_placeholder}}/g, this.pipelineName)
         .replace(/{{EZ_stream_id_placeholder}}/g, this.pipelineUid)
-        .replace(/{{EZ_beatname_placeholder}}/g, this.beatName)
+        .replace(/{{EZ_compact_stream_name_placeholder}}/g, this.beatName)
 
       // And ship it back
       this.jqFilterOutput = jqFilter
@@ -1237,7 +1237,7 @@ export default {
         .replace(/{{EZ_generation_user}}/g, this.loggedInUser)
         .replace(/{{EZ_stream_name_placeholder}}/g, this.pipelineName)
         .replace(/{{EZ_stream_id_placeholder}}/g, this.pipelineUid)
-        .replace(/{{EZ_beatname_placeholder}}/g, this.beatName)
+        .replace(/{{EZ_compact_stream_name_placeholder}}/g, this.beatName)
 
       // What do we use for original_message?
       let originalMessagePlaceholder = '. | tojson'
