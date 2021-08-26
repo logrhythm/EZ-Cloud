@@ -47,6 +47,7 @@
     - [x] Add Skipped step status
     - [x] Better icon colours
     - [x] Skipped and Error information panel
+    - [ ] Handle Sub Rules
 - [ ] Hide Settings page for Prod
 - [ ] Create Logging shared Lib to push logs to Console and Windows Journal
 - Day mode
