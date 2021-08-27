@@ -1,3 +1,4 @@
+const { exception } = require('console');
 const express = require('express');
 
 const router = express.Router();
@@ -957,14 +958,14 @@ const streamUpdateForBeatStatusArray = {};
 function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollector, beat, stream) {
   // Check we are ship-shape with the params
   const missingOpenCollector = !(openCollector && openCollector.uid && openCollector.uid.length)
-  const missingBeat = !(beat && beat.name && beat.name.length)
+  const missingBeat = !(beat && beat.name && beat.name.length && beat.config && Array.isArray(beat.config))
   const missingStream = !(stream && stream.uid && stream.uid.length)
   if (
     !missingOpenCollector &&
     !missingBeat &&
     !missingStream
     ) {
-    getSshConfigForCollector({ openCollectorUid: openCollector.uid }).then((sshConfig) => {
+    getSshConfigForCollector({ uid: openCollector.uid }).then((sshConfig) => {
       const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
       streamUpdateForBeatStatus.stillUpdating = true;
@@ -972,8 +973,130 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
       streamUpdateForBeatStatus.outputs = [];
       streamUpdateForBeatStatus.payload = {};
 
-      // ADD WORKSLOAD HERE
+      // ####################################################################################################
 
+      try  {
+        const steps = [];
+
+        // ##########
+        // Filebeat
+        // ##########
+        if (beat.name.toLowerCase() === 'filebeat') {
+          // Build the list of steps
+
+          steps.push(
+            {
+              action: 'Create new Input folder to drop dynamic input files into, in case it\'s missing',
+              command: 'if ! [ -d "/etc/filebeat/inputs.d" ]; then sudo mkdir -p /etc/filebeat/inputs.d ; fi;'
+            }
+          );
+
+          // Add the different Configuration file(s)
+          // Let's use file numbering only if there are more than one
+          const multipleFiles = beat.config.length > 1
+
+          beat.config.forEach((config, number) => {
+            const fileNumber = (multipleFiles ? '__' + String(number + 1).padStart(3, '0') : '');
+
+            // Config file name will be escaped (to only letters, numbers, dashes and underscores) to 
+            // not cause issues on the file system. Any non autorised chars will be replaced by "_".
+            // It is built using:
+            // - Stream UID
+            // - "__"
+            // - Stream Name
+            // - "__"
+            // - Filenumber
+            const configFileName = String(`${stream.uid}__${stream.name}${fileNumber}`).replace(/[^a-zA-Z0-9_-]/g, '_');
+
+            steps.push(
+              {
+                action: `Delete and previous backup of the Stream configuration file (${configFileName}.bak)`,
+                command: `if [ -f "/etc/filebeat/inputs.d/${configFileName}.bak" ]; then rm -f /etc/filebeat/inputs.d/${configFileName}.bak ; fi;`,
+                continueOnFailure: true
+              },
+              {
+                action: `Backup previous Stream configuration file (${configFileName}.yml)`,
+                command: `if [ -f "/etc/filebeat/inputs.d/${configFileName}.yml" ]; then mv -f /etc/filebeat/inputs.d/${configFileName}.yml /etc/filebeat/inputs.d/${configFileName}.bak ; fi;`,
+                continueOnFailure: true
+              },
+              {
+                action: `Create Stream configuration file (${configFileName}.yml)`,
+                command: `cat > /etc/filebeat/inputs.d/${configFileName}.yml`,
+                stdin: (typeof config === String ? config : JSON.stringify(config))
+              },
+              {
+                action: 'Set Stream configuration file the correct access rights',
+                command: `sudo chmod 600 /etc/filebeat/inputs.d/${configFileName}.yml`
+              },
+              {
+                action: 'Dump Stream configuration file',
+                command: `sudo cat /etc/filebeat/inputs.d/${configFileName}.yml`
+              }
+            );
+          });
+
+          // Wrap up
+          steps.push(
+            {
+              action: 'List the files of the config directory',
+              command: 'ls -la /etc/filebeat/inputs.d/'
+            }
+          );
+          streamUpdateForBeatStatus.payload.steps = steps;
+        }
+
+        // ##########
+        // jsBeat
+        // ##########
+        if (beat.name.toLowerCase() === 'jsbeat') {
+          //
+        }
+
+        // ##########
+        // lrHttpRest
+        // ##########
+        if (beat.name.toLowerCase() === 'lrhttprest') {
+          //
+        }
+      } catch (errorCaught) {
+        streamUpdateForBeatStatus.errors.push('Exception: ' + errorCaught.message);
+      } finally {
+        //
+      }
+
+      // ####################################################################################################
+      // ssh
+      //   .exec('/opt/jsBeat/bin/start.sh --version | grep -i jsbeat 2>/dev/null', {
+      //     err (stderr) {
+      //       streamUpdateForBeatStatus.errors.push(stderr);
+      //     },
+      //     exit (code) {
+      //       streamUpdateForBeatStatus.lastSuccessfulUpdateTimeStampUtc = Date.now() / 1000;
+      //     },
+      //     out (stdout) {
+      //       const version = stdout.match(/js[Bb]eat *(([0-9]+)\.([0-9]+)\.([0-9]+))/);
+      //       if (version.length > 0) {
+      //         streamUpdateForBeatStatus.payload = {
+      //           name: 'jsBeat',
+      //           version: {
+      //             detailed: { major: version[2], minor: version[3], build: version[4] },
+      //             full: version[1]
+      //           }
+      //         };
+      //       } else {
+      //         streamUpdateForBeatStatus.payload = { name: 'jsBeat', version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } };
+      //       }
+      //       streamUpdateForBeatStatus.outputs.push(stdout);
+      //     }
+      //   })
+      //   .on('end', (err) => {
+      //     streamUpdateForBeatStatus.stillUpdating = false;
+      //   })
+      //   .start({
+      //     failure () {
+      //       streamUpdateForBeatStatus.stillUpdating = false;
+      //     }
+      //   });
       streamUpdateForBeatStatus.stillUpdating = false; // XXXX
     }).catch(() => {
       streamUpdateForBeatStatus.errors.push('Failed to get SSH configuration for OpenCollector (based on provided UID).');
@@ -998,7 +1121,7 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
 router.post('/UpdateStreamConfigurationForBeat', async (req, res) => {
   // Check we are ship-shape with the params
   const missingOpenCollector = !(req && req.body && req.body.openCollector && req.body.openCollector.uid && req.body.openCollector.uid.length)
-  const missingBeat = !(req && req.body && req.body.beat && req.body.beat.name && req.body.beat.name.length)
+  const missingBeat = !(req && req.body && req.body.beat && req.body.beat.name && req.body.beat.name.length && req.body.beat.config && Array.isArray(req.body.beat.config))
   const missingStream = !(req && req.body && req.body.stream && req.body.stream.uid && req.body.stream.uid.length)
   if (
     !missingOpenCollector &&
