@@ -111,7 +111,8 @@ router.get('/CheckOSVersion', async (req, res) => {
     const { uid } = req.query;
 
     if (!osVersionArray[uid]) {
-      osVersionArray[uid] = Object.assign({}, osVersionTemplate);
+      // osVersionArray[uid] = Object.assign({}, osVersionTemplate);
+      osVersionArray[uid] = JSON.parse(JSON.stringify(osVersionTemplate));
     }
 
     if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
@@ -211,7 +212,8 @@ router.get('/CheckFilebeatVersion', async (req, res) => {
     const { uid } = req.query;
 
     if (!fbVersionArray[uid]) {
-      fbVersionArray[uid] = Object.assign({}, fbVersionTemplate);
+      // fbVersionArray[uid] = Object.assign({}, fbVersionTemplate);
+      fbVersionArray[uid] = JSON.parse(JSON.stringify(fbVersionTemplate));
     }
 
     if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
@@ -312,7 +314,8 @@ router.get('/CheckOpenCollectorAndBeatsVersions', async (req, res) => {
     const { uid } = req.query;
 
     if (!ocAndBeatsVersionArray[uid]) {
-      ocAndBeatsVersionArray[uid] = Object.assign({}, ocAndBeatsVersionTemplate);
+      // ocAndBeatsVersionArray[uid] = Object.assign({}, ocAndBeatsVersionTemplate);
+      ocAndBeatsVersionArray[uid] = JSON.parse(JSON.stringify(ocAndBeatsVersionTemplate));
     }
 
     if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
@@ -416,7 +419,8 @@ router.get('/CheckJsBeatVersion', async (req, res) => {
     const { uid } = req.query;
 
     if (!jsBeatVersionArray[uid]) {
-      jsBeatVersionArray[uid] = Object.assign({}, jsBeatVersionTemplate);
+      // jsBeatVersionArray[uid] = Object.assign({}, jsBeatVersionTemplate);
+      jsBeatVersionArray[uid] = JSON.parse(JSON.stringify(jsBeatVersionTemplate));
     }
 
     if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
@@ -753,7 +757,8 @@ router.get('/CheckOCVersion', async (req, res) => {
     const { uid } = req.query;
 
     if (!ocVersionArray[uid]) {
-      ocVersionArray[uid] = Object.assign({}, ocVersionTemplate);
+      // ocVersionArray[uid] = Object.assign({}, ocVersionTemplate);
+      ocVersionArray[uid] = JSON.parse(JSON.stringify(ocVersionTemplate));
     }
 
     if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
@@ -932,6 +937,129 @@ router.get('/ReadOcConfiguration', async (req, res) => {
     res.send(ocConfiguration.payload);
   }
 
+});
+
+
+// #############################################
+// UpdateStreamConfigurationForBeat
+// #############################################
+
+const streamUpdateForBeatStatusTemplate = {
+  stillUpdating: false,
+  lastSuccessfulUpdateTimeStampUtc: 0,
+  payload: {}, // object with result of the operation
+  errors: [], // array of all the errors
+  outputs: [] // array of all the outputs
+};
+
+const streamUpdateForBeatStatusArray = {};
+
+function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollector, beat, stream) {
+  // Check we are ship-shape with the params
+  const missingOpenCollector = !(openCollector && openCollector.uid && openCollector.uid.length)
+  const missingBeat = !(beat && beat.name && beat.name.length)
+  const missingStream = !(stream && stream.uid && stream.uid.length)
+  if (
+    !missingOpenCollector &&
+    !missingBeat &&
+    !missingStream
+    ) {
+    getSshConfigForCollector({ openCollectorUid: openCollector.uid }).then((sshConfig) => {
+      const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
+
+      streamUpdateForBeatStatus.stillUpdating = true;
+      streamUpdateForBeatStatus.errors = [];
+      streamUpdateForBeatStatus.outputs = [];
+      streamUpdateForBeatStatus.payload = {};
+
+      // ADD WORKSLOAD HERE
+
+      streamUpdateForBeatStatus.stillUpdating = false; // XXXX
+    }).catch(() => {
+      streamUpdateForBeatStatus.errors.push('Failed to get SSH configuration for OpenCollector (based on provided UID).');
+      streamUpdateForBeatStatus.stillUpdating = false;
+    });
+  } else {
+    streamUpdateForBeatStatus.errors.push('[updateStreamConfigurationForBeat] Missing parameter(s). See following errors.');
+    if (missingOpenCollector) {
+      streamUpdateForBeatStatus.errors.push('Missing or malformed "opencCollector" object.');
+    }
+    if (missingBeat) {
+      streamUpdateForBeatStatus.errors.push('Missing or malformed "beat" object.');
+    }
+    if (missingStream) {
+      streamUpdateForBeatStatus.errors.push('Missing or malformed "stream" object.');
+    }
+    streamUpdateForBeatStatus.stillUpdating = false;
+  }
+  /* eslint-enable no-param-reassign */
+}
+
+router.post('/UpdateStreamConfigurationForBeat', async (req, res) => {
+  // Check we are ship-shape with the params
+  const missingOpenCollector = !(req && req.body && req.body.openCollector && req.body.openCollector.uid && req.body.openCollector.uid.length)
+  const missingBeat = !(req && req.body && req.body.beat && req.body.beat.name && req.body.beat.name.length)
+  const missingStream = !(req && req.body && req.body.stream && req.body.stream.uid && req.body.stream.uid.length)
+  if (
+    !missingOpenCollector &&
+    !missingBeat &&
+    !missingStream
+  ) {
+    const { openCollector, beat, stream } = req.body;
+
+    if (!streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`]) {
+      // streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`] = Object.assign({}, streamUpdateForBeatStatusTemplate);
+      streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`] = JSON.parse(JSON.stringify(streamUpdateForBeatStatusTemplate));
+    }
+
+    if (req.body.NoWait === undefined || (req.body.NoWait !== undefined && req.body.NoWait.toLowerCase() !== 'true')) {
+      // Waiting - Sync
+      if (!streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].stillUpdating) {
+        streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].stillUpdating = true;
+        updateStreamConfigurationForBeat(streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`], openCollector, beat, stream);
+      }
+      const loopEndTime = Date.now() / 1000 + maxCheckInterval;
+
+      while (streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].stillUpdating && (loopEndTime > (Date.now() / 1000))) {
+        // Wait for 50 ms
+        // eslint-disable-next-line no-await-in-loop
+        await waitMilliseconds(50);
+      }
+    } else {
+      // No waiting - Async
+      // eslint-disable-next-line no-lonely-if
+      if (
+        !streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].stillUpdating
+        && (streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].lastSuccessfulUpdateTimeStampUtc + maxCheckInterval)
+        <= (Date.now() / 1000)
+      ) {
+        updateStreamConfigurationForBeat(streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`], openCollector, beat, stream);
+      }
+    }
+
+    if (streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].payload) {
+      // streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].payload.params = {
+      //   openCollector,
+      //   beat,
+      //   stream
+      // };
+    }
+    res.json(streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`]);
+  } else {
+    const errorMessages = []; //['Missing parameters in Body (Both `openCollector`, `beat` and `stream` objects are compulstory and must be properly populated).. See following errors.']
+    if (missingOpenCollector) {
+      errorMessages.push('Missing or malformed compulstory "opencCollector" object.');
+    }
+    if (missingBeat) {
+      errorMessages.push('Missing or malformed compulstory "beat" object.');
+    }
+    if (missingStream) {
+      errorMessages.push('Missing or malformed compulstory "stream" object.');
+    }
+
+
+    res.json(Object.assign(Object.assign({}, streamUpdateForBeatStatusTemplate), { errors: errorMessages }));
+  }
 });
 
 
