@@ -976,7 +976,24 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
       // ####################################################################################################
 
       try  {
+        // Initialise the empty list of Steps
         const steps = [];
+
+        // Config file name will be escaped (to only letters, numbers, dashes and underscores) to 
+        // not cause issues on the file system. Any non autorised chars will be replaced by "_".
+        // It is built using:
+        // - Stream Name
+        // - "__"
+        // - Stream UID
+        const configFileNameBase = String(`${stream.name}__${stream.uid}`).replace(/[^a-zA-Z0-9_-]/g, '_');
+
+        // To avoid any risk of deleting unrelated files, we bail if the configFileNameBase is empty
+        if (configFileNameBase.length === 0) {
+          throw new Error('configFileNameBase too short (Stream Name and UID must be non-empty)');
+        }
+
+        // Let's use file numbering only if there are more than one configuration file provided
+        const multipleFiles = beat.config.length > 1;
 
         // ##########
         // Filebeat
@@ -988,37 +1005,30 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
             {
               action: 'Create new Input folder to drop dynamic input files into, in case it\'s missing',
               command: 'if ! [ -d "/etc/filebeat/inputs.d" ]; then sudo mkdir -p /etc/filebeat/inputs.d ; fi;'
+            },
+            {
+              action: `Delete any previous backups of the Stream configuration files (${configFileNameBase}*.bak)`,
+              command: `if [ -f "/etc/filebeat/inputs.d/${configFileNameBase}"*.bak ]; then rm -f "/etc/filebeat/inputs.d/${configFileNameBase}"*.bak ; fi;`,
+              continueOnFailure: true
+            },
+            {
+              action: `Backup any previous Stream configuration files (${configFileNameBase}*.yml -> *.bak)`,
+              command: `if [ -f "/etc/filebeat/inputs.d/${configFileNameBase}"*.yml ]; then for f in "/etc/filebeat/inputs.d/${configFileNameBase}"*.yml; do mv -- "$f" "\${f%.yml}.bak" ; done ; fi;`,
+              continueOnFailure: true
             }
           );
 
           // Add the different Configuration file(s)
-          // Let's use file numbering only if there are more than one
-          const multipleFiles = beat.config.length > 1
-
           beat.config.forEach((config, number) => {
             const fileNumber = (multipleFiles ? '__' + String(number + 1).padStart(3, '0') : '');
 
-            // Config file name will be escaped (to only letters, numbers, dashes and underscores) to 
-            // not cause issues on the file system. Any non autorised chars will be replaced by "_".
-            // It is built using:
-            // - Stream UID
-            // - "__"
-            // - Stream Name
+            // Adding file number, if any to the base file name. It is built using:
+            // - configFileNameBase
             // - "__"
             // - Filenumber
-            const configFileName = String(`${stream.uid}__${stream.name}${fileNumber}`).replace(/[^a-zA-Z0-9_-]/g, '_');
+            const configFileName = String(`${configFileNameBase}${fileNumber}`);
 
             steps.push(
-              {
-                action: `Delete and previous backup of the Stream configuration file (${configFileName}.bak)`,
-                command: `if [ -f "/etc/filebeat/inputs.d/${configFileName}.bak" ]; then rm -f /etc/filebeat/inputs.d/${configFileName}.bak ; fi;`,
-                continueOnFailure: true
-              },
-              {
-                action: `Backup previous Stream configuration file (${configFileName}.yml)`,
-                command: `if [ -f "/etc/filebeat/inputs.d/${configFileName}.yml" ]; then mv -f /etc/filebeat/inputs.d/${configFileName}.yml /etc/filebeat/inputs.d/${configFileName}.bak ; fi;`,
-                continueOnFailure: true
-              },
               {
                 action: `Create Stream configuration file (${configFileName}.yml)`,
                 command: `cat > /etc/filebeat/inputs.d/${configFileName}.yml`,
