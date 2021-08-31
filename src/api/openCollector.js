@@ -1074,6 +1074,132 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
         //
       }
 
+      // Add the Steps to the Exec stack
+      steps.forEach((step, stepCounter) => {
+        // eslint-disable-next-line no-console
+        // console.log(`updateStreamConfigurationForBeat - Adding step: (${stepCounter}) ${step.action}...`);
+        logToSystem('Debug', `updateStreamConfigurationForBeat - Adding step: (${stepCounter}) ${step.action}...`);
+        ssh
+          .exec(step.command, {
+            in: step.stdin || '',
+            exit (code) {
+              let continueToNextStep = true;
+
+              if (code !== 0) {
+                // if (socket.connected) {
+                //   socket.emit('shipper.install',
+                //     {
+                //       jobId: payload.jobId,
+                //       code: 'ERROR',
+                //       payload: 'STEP FAILED',
+                //       step: stepCounter + 1,
+                //       totalSteps: steps.length
+                //     });
+                //   socket.emit('shipper.install',
+                //     {
+                //       jobId: payload.jobId,
+                //       code: 'EXIT',
+                //       payload: `Return code: ${code}`,
+                //       step: stepCounter + 1,
+                //       totalSteps: steps.length
+                //     });
+                // }
+
+                continueToNextStep = false;
+              } // if (code !== 0) {
+
+              // if (socket.connected) {
+              //   socket.emit('shipper.install',
+              //     {
+              //       jobId: payload.jobId,
+              //       code: 'FINISHED',
+              //       payload: step.action,
+              //       step: stepCounter + 1,
+              //       totalSteps: steps.length
+              //     });
+              // }
+
+              // Check if need to force Continue
+              if (step.continueOnFailure === true) {
+                continueToNextStep = true;
+              }
+
+              return continueToNextStep;
+            },
+            err (stderr) {
+              streamUpdateForBeatStatus.errors.push(stderr);
+              // if (socket.connected) {
+              //   socket.emit('shipper.install',
+              //     {
+              //       jobId: payload.jobId,
+              //       code: 'STDERR',
+              //       payload: stderr,
+              //       step: stepCounter + 1,
+              //       totalSteps: steps.length
+              //     });
+              // }
+            },
+            out (stdout) {
+              streamUpdateForBeatStatus.outputs.push(stdout);
+              // if (socket.connected) {
+              //   socket.emit('shipper.install',
+              //     {
+              //       jobId: payload.jobId,
+              //       code: 'STDOUT',
+              //       payload: stdout,
+              //       step: stepCounter + 1,
+              //       totalSteps: steps.length
+              //     });
+              // }
+            }
+          });
+      });
+
+      // Add Event handlers and start
+      ssh
+        .on('end', (err) => {
+          if (err) {
+            streamUpdateForBeatStatus.error.push(err);
+          } else {
+            streamUpdateForBeatStatus.payload.push('SUCCESS');
+          }
+          streamUpdateForBeatStatus.stillUpdating = false;
+
+          // Cleanup the sessions
+          // // eslint-disable-next-line no-use-before-define
+          // killInstallShipper(socket, payload);
+          // if (socket.connected) {
+          //   socket.emit('shipper.install',
+          //     {
+          //       jobId: payload.jobId,
+          //       code: 'END',
+          //       payload: err || 'SUCCESS',
+          //       step: null,
+          //       totalSteps: steps.length
+          //     });
+          // }
+        })
+        .start({
+          failure () {
+            streamUpdateForBeatStatus.error.push('FAILURE - Job could not start');
+            streamUpdateForBeatStatus.stillUpdating = false;
+
+            // // Cleanup the sessions
+            // // eslint-disable-next-line no-use-before-define
+            // killInstallShipper(socket, payload);
+            // if (socket.connected) {
+            //   socket.emit('shipper.install',
+            //     {
+            //       jobId: payload.jobId,
+            //       code: 'FAILURE',
+            //       payload: 'Job could not start',
+            //       step: null,
+            //       totalSteps: steps.length
+            //     });
+            // }
+          }
+        });
+
       // ####################################################################################################
       // ssh
       //   .exec('/opt/jsBeat/bin/start.sh --version | grep -i jsbeat 2>/dev/null', {
