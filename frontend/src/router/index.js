@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
-import routes from './routes'
+import { routes, updateTitle } from './routes'
 
 Vue.use(VueRouter)
 
@@ -25,6 +25,9 @@ export default function (/* { store, ssrContext } */) {
     mode: process.env.VUE_ROUTER_MODE,
     base: process.env.VUE_ROUTER_BASE
   })
+
+  // Update the Tab title on page change
+  Router.beforeEach(updateTitle)
 
   return Router
 }
