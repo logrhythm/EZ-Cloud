@@ -10,6 +10,7 @@ module.exports = {
     'no-param-reassign': 'warn',
     'no-return-assign': 'error',
     camelcase: 0,
+    linebreak-style: 0,
     // allow debugger during development only
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'
   }
