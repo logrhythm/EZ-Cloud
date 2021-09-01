@@ -1062,7 +1062,72 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
         // jsBeat
         // ##########
         if (beat.name.toLowerCase() === 'jsbeat') {
-          //
+          // Build a unique path to use a Symbolic link to the installation folder of jsBeat
+          // Most people will deploy it under /opt/jsBeat, but we plan for all the cases
+          const cleanTimestamp = new Date().toISOString().replace(/[^a-zA-Z0-9_-]/g, '_');
+          const tempSymbolicLinkPath = `/tmp/${configFileNameBase}__${cleanTimestamp}`;
+          // Build the list of steps
+          
+          steps.push(
+            {
+              action: 'Create Symbolic link to the installation folder of jsBeat',
+              command: `jsBeatPath=$(systemctl show jsbeat | grep "^ExecStart" | head -n 1 | sed -E 's/\\s+;\\s+/🏁/g' | sed -E 's/(^.*path=([^🏁]+).*)/\\2/' | sed -E 's_/bin/.*__') ; if [ -z "$jsBeatPath" ]; then echo -E "Could not find jsBeat path (using 'systemctl show jsbeat'). Stopping now."; exit 42; else echo -E "jsBeat found at: $jsBeatPath"; ln -s $jsBeatPath ${tempSymbolicLinkPath} ; fi`
+            },
+            {
+              action: 'Create new Input folder to drop dynamic input files into, in case it\'s missing',
+              command: `if ! [ -d "${tempSymbolicLinkPath}/config/inputs.d" ]; then sudo mkdir -p ${tempSymbolicLinkPath}/config/inputs.d ; fi;`
+            },
+            {
+              action: `Delete any previous backups of the Stream configuration files (${configFileNameBase}*.bak)`,
+              command: `for f in "${tempSymbolicLinkPath}/config/inputs.d/${configFileNameBase}"*.bak; do if [ -f "$f" ]; then rm -f "$f" ; fi ; done ;`,
+              continueOnFailure: true
+            },
+            {
+              action: `Backup any previous Stream configuration files (${configFileNameBase}*.json -> *.bak)`,
+              command: `for f in "${tempSymbolicLinkPath}/config/inputs.d/${configFileNameBase}"*.json; do if [ -f "$f" ]; then mv -- "$f" "\${f%.json}.bak" ; fi ; done ;`,
+              continueOnFailure: true
+            }
+          );
+
+          // Add the different Configuration file(s)
+          beat.config.forEach((config, number) => {
+            const fileNumber = (multipleFiles ? '__' + String(number + 1).padStart(3, '0') : '');
+
+            // Adding file number, if any to the base file name. It is built using:
+            // - configFileNameBase
+            // - "__"
+            // - Filenumber
+            const configFileName = String(`${configFileNameBase}${fileNumber}`);
+
+            steps.push(
+              {
+                action: `Create Stream configuration file (${configFileName}.json)`,
+                command: `cat > ${tempSymbolicLinkPath}/config/inputs.d/${configFileName}.json`,
+                stdin: (typeof config === 'string' ? config : JSON.stringify(config))
+              },
+              {
+                action: `Set Stream configuration file the correct access rights (${configFileName}.json)`,
+                command: `sudo chmod 640 ${tempSymbolicLinkPath}/config/inputs.d/${configFileName}.json`
+              },
+              {
+                action: `Dump Stream configuration file (${configFileName}.json)`,
+                command: `sudo cat ${tempSymbolicLinkPath}/config/inputs.d/${configFileName}.json`
+              }
+            );
+          });
+
+          // Wrap up
+          steps.push(
+            {
+              action: 'List the Stream files of the config directory',
+              command: `ls -la "${tempSymbolicLinkPath}/config/inputs.d/${configFileNameBase}"*`
+            },
+            {
+              action: 'Delete the created Symbolic link to the installation folder of jsBeat',
+              command: `rm -f "${tempSymbolicLinkPath}"`
+            }
+          );
+          streamUpdateForBeatStatus.payload.steps = steps;
         }
 
         // ##########
@@ -1115,9 +1180,11 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
                   //     });
                   // }
 
-                  streamUpdateForBeatStatus.errors.push(`Step ${stepCounter} failed iwth return code (${code}) - Command was: ${step.command}`);
+                  streamUpdateForBeatStatus.errors.push(`Step ${stepCounter} failed with return code (${code}) - Command was: ${step.command}`);
                   streamUpdateForBeatStatus.payload.steps[stepCounter].result.failed = true;
                   continueToNextStep = false;
+                  // Set the whole job as failed, except if we are meant to continueOnFailure for this step
+                  streamUpdateForBeatStatus.payload.success = !!(false | step.continueOnFailure)
                 } // if (code !== 0) {
 
                 // if (socket.connected) {
@@ -1178,7 +1245,10 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
             if (err) {
               streamUpdateForBeatStatus.error.push(err);
             } else {
-              streamUpdateForBeatStatus.payload.success = true;
+              //  If Success is not already set to False, then set it to true
+              if (streamUpdateForBeatStatus.payload.success !== false) {
+                streamUpdateForBeatStatus.payload.success = true;
+              }
             }
             streamUpdateForBeatStatus.stillUpdating = false;
 
