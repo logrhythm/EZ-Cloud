@@ -91,6 +91,9 @@
 - [x] Update UpdateCollector API to persist `.pipelines` into TABLE `openCollectorsPipelines`
 - [ ] Build API endpoints to enable stream on OC for production
   - [ ] Drop Beat configuration in right location
+    - [x] For Filebeat
+    - [x] For jsBeat
+    - [ ] For LR Generic REST Beat
   - [ ] Import JQ to OC
 - Process of onboarding a LS from JQ
   - [ ] New Log Source
