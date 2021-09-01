@@ -14,6 +14,9 @@ const SSH = require('simple-ssh');
 // const { getSshConfigForCollector } = require('./config');
 const { getSshConfigForCollector } = require('../shared/collectorSshConfig');
 
+// Load the System Logging functions
+const { logToSystem } = require('../shared/systemLogging');
+
 function waitMilliseconds(delay = 250) {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -1008,12 +1011,12 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
             },
             {
               action: `Delete any previous backups of the Stream configuration files (${configFileNameBase}*.bak)`,
-              command: `if [ -f "/etc/filebeat/inputs.d/${configFileNameBase}"*.bak ]; then rm -f "/etc/filebeat/inputs.d/${configFileNameBase}"*.bak ; fi;`,
+              command: `for f in "/etc/filebeat/inputs.d/${configFileNameBase}"*.bak; do if [ -f "$f" ]; then rm -f "$f" ; fi ; done ;`,
               continueOnFailure: true
             },
             {
               action: `Backup any previous Stream configuration files (${configFileNameBase}*.yml -> *.bak)`,
-              command: `if [ -f "/etc/filebeat/inputs.d/${configFileNameBase}"*.yml ]; then for f in "/etc/filebeat/inputs.d/${configFileNameBase}"*.yml; do mv -- "$f" "\${f%.yml}.bak" ; done ; fi;`,
+              command: `for f in "/etc/filebeat/inputs.d/${configFileNameBase}"*.yml; do if [ -f "$f" ]; then mv -- "$f" "\${f%.yml}.bak" ; fi ; done ;`,
               continueOnFailure: true
             }
           );
@@ -1032,7 +1035,7 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
               {
                 action: `Create Stream configuration file (${configFileName}.yml)`,
                 command: `cat > /etc/filebeat/inputs.d/${configFileName}.yml`,
-                stdin: (typeof config === String ? config : JSON.stringify(config))
+                stdin: (typeof config === 'string' ? config : JSON.stringify(config))
               },
               {
                 action: 'Set Stream configuration file the correct access rights',
@@ -1048,8 +1051,8 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
           // Wrap up
           steps.push(
             {
-              action: 'List the files of the config directory',
-              command: 'ls -la /etc/filebeat/inputs.d/'
+              action: 'List the Stream files of the config directory',
+              command: 'ls -la "/etc/filebeat/inputs.d/${configFileNameBase}"*'
             }
           );
           streamUpdateForBeatStatus.payload.steps = steps;
@@ -1068,174 +1071,159 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
         if (beat.name.toLowerCase() === 'lrhttprest') {
           //
         }
-      } catch (errorCaught) {
-        streamUpdateForBeatStatus.errors.push('Exception: ' + errorCaught.message);
-      } finally {
-        //
-      }
 
-      // Add the Steps to the Exec stack
-      steps.forEach((step, stepCounter) => {
-        // eslint-disable-next-line no-console
-        // console.log(`updateStreamConfigurationForBeat - Adding step: (${stepCounter}) ${step.action}...`);
-        logToSystem('Debug', `updateStreamConfigurationForBeat - Adding step: (${stepCounter}) ${step.action}...`);
-        ssh
-          .exec(step.command, {
-            in: step.stdin || '',
-            exit (code) {
-              let continueToNextStep = true;
+        // Add the Steps to the Exec stack
+        steps.forEach((step, stepCounter) => {
+          // eslint-disable-next-line no-console
+          // console.log(`updateStreamConfigurationForBeat - Adding step: (${stepCounter}) ${step.action}...`);
+          logToSystem('Debug', `updateStreamConfigurationForBeat - Adding step: (${stepCounter}) ${step.action}...`);
 
-              if (code !== 0) {
+          // Add space to record result ofthe action (return code, STDOUT, STDERR, ...)
+          streamUpdateForBeatStatus.payload.steps[stepCounter].result = {
+            errors: [],
+            outputs: [],
+            exitCode: undefined,
+            failed: undefined
+          }
+
+          ssh
+            .exec(step.command, {
+              in: step.stdin || '',
+              exit (code) {
+                let continueToNextStep = true;
+                logToSystem('Debug', `updateStreamConfigurationForBeat - EXEC: (${code}) - ${step.command}`);
+                streamUpdateForBeatStatus.payload.steps[stepCounter].result.exitCode = code;
+                streamUpdateForBeatStatus.payload.steps[stepCounter].result.failed = false;
+
+                if (code !== 0) {
+                  // if (socket.connected) {
+                  //   socket.emit('shipper.install',
+                  //     {
+                  //       jobId: payload.jobId,
+                  //       code: 'ERROR',
+                  //       payload: 'STEP FAILED',
+                  //       step: stepCounter + 1,
+                  //       totalSteps: steps.length
+                  //     });
+                  //   socket.emit('shipper.install',
+                  //     {
+                  //       jobId: payload.jobId,
+                  //       code: 'EXIT',
+                  //       payload: `Return code: ${code}`,
+                  //       step: stepCounter + 1,
+                  //       totalSteps: steps.length
+                  //     });
+                  // }
+
+                  streamUpdateForBeatStatus.errors.push(`Step ${stepCounter} failed iwth return code (${code}) - Command was: ${step.command}`);
+                  streamUpdateForBeatStatus.payload.steps[stepCounter].result.failed = true;
+                  continueToNextStep = false;
+                } // if (code !== 0) {
+
                 // if (socket.connected) {
                 //   socket.emit('shipper.install',
                 //     {
                 //       jobId: payload.jobId,
-                //       code: 'ERROR',
-                //       payload: 'STEP FAILED',
-                //       step: stepCounter + 1,
-                //       totalSteps: steps.length
-                //     });
-                //   socket.emit('shipper.install',
-                //     {
-                //       jobId: payload.jobId,
-                //       code: 'EXIT',
-                //       payload: `Return code: ${code}`,
+                //       code: 'FINISHED',
+                //       payload: step.action,
                 //       step: stepCounter + 1,
                 //       totalSteps: steps.length
                 //     });
                 // }
 
-                continueToNextStep = false;
-              } // if (code !== 0) {
+                // Check if need to force Continue
+                if (step.continueOnFailure === true) {
+                  continueToNextStep = true;
+                }
 
-              // if (socket.connected) {
-              //   socket.emit('shipper.install',
-              //     {
-              //       jobId: payload.jobId,
-              //       code: 'FINISHED',
-              //       payload: step.action,
-              //       step: stepCounter + 1,
-              //       totalSteps: steps.length
-              //     });
-              // }
-
-              // Check if need to force Continue
-              if (step.continueOnFailure === true) {
-                continueToNextStep = true;
+                return continueToNextStep;
+              },
+              err (stderr) {
+                // streamUpdateForBeatStatus.errors.push(stderr);
+                logToSystem('Debug', `updateStreamConfigurationForBeat - STDERR: ${stderr}`);
+                streamUpdateForBeatStatus.payload.steps[stepCounter].result.errors.push(stderr);
+                // if (socket.connected) {
+                //   socket.emit('shipper.install',
+                //     {
+                //       jobId: payload.jobId,
+                //       code: 'STDERR',
+                //       payload: stderr,
+                //       step: stepCounter + 1,
+                //       totalSteps: steps.length
+                //     });
+                // }
+              },
+              out (stdout) {
+                // streamUpdateForBeatStatus.outputs.push(stdout);
+                logToSystem('Debug', `updateStreamConfigurationForBeat - STDOUT: ${stdout}`);
+                streamUpdateForBeatStatus.payload.steps[stepCounter].result.outputs.push(stdout);
+                // if (socket.connected) {
+                //   socket.emit('shipper.install',
+                //     {
+                //       jobId: payload.jobId,
+                //       code: 'STDOUT',
+                //       payload: stdout,
+                //       step: stepCounter + 1,
+                //       totalSteps: steps.length
+                //     });
+                // }
               }
+            });
+        });
 
-              return continueToNextStep;
-            },
-            err (stderr) {
-              streamUpdateForBeatStatus.errors.push(stderr);
-              // if (socket.connected) {
-              //   socket.emit('shipper.install',
-              //     {
-              //       jobId: payload.jobId,
-              //       code: 'STDERR',
-              //       payload: stderr,
-              //       step: stepCounter + 1,
-              //       totalSteps: steps.length
-              //     });
-              // }
-            },
-            out (stdout) {
-              streamUpdateForBeatStatus.outputs.push(stdout);
-              // if (socket.connected) {
-              //   socket.emit('shipper.install',
-              //     {
-              //       jobId: payload.jobId,
-              //       code: 'STDOUT',
-              //       payload: stdout,
-              //       step: stepCounter + 1,
-              //       totalSteps: steps.length
-              //     });
-              // }
+        // Add Event handlers and start
+        ssh
+          .on('end', (err) => {
+            logToSystem('Debug', `updateStreamConfigurationForBeat - END: (${err})`);
+            if (err) {
+              streamUpdateForBeatStatus.error.push(err);
+            } else {
+              streamUpdateForBeatStatus.payload.success = true;
             }
-          });
-      });
-
-      // Add Event handlers and start
-      ssh
-        .on('end', (err) => {
-          if (err) {
-            streamUpdateForBeatStatus.error.push(err);
-          } else {
-            streamUpdateForBeatStatus.payload.push('SUCCESS');
-          }
-          streamUpdateForBeatStatus.stillUpdating = false;
-
-          // Cleanup the sessions
-          // // eslint-disable-next-line no-use-before-define
-          // killInstallShipper(socket, payload);
-          // if (socket.connected) {
-          //   socket.emit('shipper.install',
-          //     {
-          //       jobId: payload.jobId,
-          //       code: 'END',
-          //       payload: err || 'SUCCESS',
-          //       step: null,
-          //       totalSteps: steps.length
-          //     });
-          // }
-        })
-        .start({
-          failure () {
-            streamUpdateForBeatStatus.error.push('FAILURE - Job could not start');
             streamUpdateForBeatStatus.stillUpdating = false;
 
-            // // Cleanup the sessions
+            // Cleanup the sessions
             // // eslint-disable-next-line no-use-before-define
             // killInstallShipper(socket, payload);
             // if (socket.connected) {
             //   socket.emit('shipper.install',
             //     {
             //       jobId: payload.jobId,
-            //       code: 'FAILURE',
-            //       payload: 'Job could not start',
+            //       code: 'END',
+            //       payload: err || 'SUCCESS',
             //       step: null,
             //       totalSteps: steps.length
             //     });
             // }
-          }
-        });
+          })
+          .start({
+            failure () {
+              streamUpdateForBeatStatus.error.push('FAILURE - Job could not start');
+              streamUpdateForBeatStatus.stillUpdating = false;
 
-      // ####################################################################################################
-      // ssh
-      //   .exec('/opt/jsBeat/bin/start.sh --version | grep -i jsbeat 2>/dev/null', {
-      //     err (stderr) {
-      //       streamUpdateForBeatStatus.errors.push(stderr);
-      //     },
-      //     exit (code) {
-      //       streamUpdateForBeatStatus.lastSuccessfulUpdateTimeStampUtc = Date.now() / 1000;
-      //     },
-      //     out (stdout) {
-      //       const version = stdout.match(/js[Bb]eat *(([0-9]+)\.([0-9]+)\.([0-9]+))/);
-      //       if (version.length > 0) {
-      //         streamUpdateForBeatStatus.payload = {
-      //           name: 'jsBeat',
-      //           version: {
-      //             detailed: { major: version[2], minor: version[3], build: version[4] },
-      //             full: version[1]
-      //           }
-      //         };
-      //       } else {
-      //         streamUpdateForBeatStatus.payload = { name: 'jsBeat', version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } };
-      //       }
-      //       streamUpdateForBeatStatus.outputs.push(stdout);
-      //     }
-      //   })
-      //   .on('end', (err) => {
-      //     streamUpdateForBeatStatus.stillUpdating = false;
-      //   })
-      //   .start({
-      //     failure () {
-      //       streamUpdateForBeatStatus.stillUpdating = false;
-      //     }
-      //   });
-      streamUpdateForBeatStatus.stillUpdating = false; // XXXX
+              // // Cleanup the sessions
+              // // eslint-disable-next-line no-use-before-define
+              // killInstallShipper(socket, payload);
+              // if (socket.connected) {
+              //   socket.emit('shipper.install',
+              //     {
+              //       jobId: payload.jobId,
+              //       code: 'FAILURE',
+              //       payload: 'Job could not start',
+              //       step: null,
+              //       totalSteps: steps.length
+              //     });
+              // }
+            }
+          });
+
+      } catch (errorCaught) {
+        streamUpdateForBeatStatus.errors.push('Exception: ' + errorCaught.message);
+      } finally {
+        //
+      }
     }).catch(() => {
-      streamUpdateForBeatStatus.errors.push('Failed to get SSH configuration for OpenCollector (based on provided UID).');
+      streamUpdateForBeatStatus.errors.push(`Failed to get SSH configuration for OpenCollector (based on provided UID: ${openCollector.uid}).`);
       streamUpdateForBeatStatus.stillUpdating = false;
     });
   } else {
@@ -1317,7 +1305,7 @@ router.post('/UpdateStreamConfigurationForBeat', async (req, res) => {
     }
 
 
-    res.json(Object.assign(Object.assign({}, streamUpdateForBeatStatusTemplate), { errors: errorMessages }));
+    res.json(Object.assign(Object.assign({}, streamUpdateForBeatStatusTemplate), { errors: errorMessages }, { requestBody: req.body }));
   }
 });
 
