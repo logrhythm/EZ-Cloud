@@ -1125,6 +1125,10 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
             {
               action: 'Delete the created Symbolic link to the installation folder of jsBeat',
               command: `rm -f "${tempSymbolicLinkPath}"`
+            },
+            {
+              action: 'Restart jsBeat to take new configuration files into account',
+              command: 'sudo systemctl restart jsbeat'
             }
           );
           streamUpdateForBeatStatus.payload.steps = steps;
