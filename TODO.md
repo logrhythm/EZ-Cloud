@@ -90,10 +90,10 @@
   - [x] Add LS Virtualisation Item to LS
 - [x] Update UpdateCollector API to persist `.pipelines` into TABLE `openCollectorsPipelines`
 - [ ] Build API endpoints to enable stream on OC for production
-  - [ ] Drop Beat configuration in right location
+  - [x] Drop Beat configuration in right location
     - [x] For Filebeat
     - [x] For jsBeat
-    - [ ] For LR Generic REST Beat
+    - [⏳] For LR Generic REST Beat (deferred)
   - [ ] Import JQ to OC
 - Process of onboarding a LS from JQ
   - [ ] New Log Source
