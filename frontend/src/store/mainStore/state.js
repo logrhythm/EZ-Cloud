@@ -131,7 +131,7 @@ export default function () {
 
 # is_{{EZ_compact_stream_name_placeholder}} checks if the data matches the {{EZ_stream_name_placeholder}} criteria
 def is_{{EZ_compact_stream_name_placeholder}}:
-    ."@metadata".beat == "filebeat"
+    ."@metadata".beat == "{{EZ_beat_name_placeholder}}"
     and
     (
       .fields.stream_id == "{{EZ_stream_id_placeholder}}"

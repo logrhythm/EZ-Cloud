@@ -74,6 +74,9 @@
     - [ ] Ability to assign Log Source to other Open Collectors
     - [ ] Ability to Enable / Commit the Log Source creation
 - [x] Highlight the current active page in the navigation bar
+- [x] Pipeline Mapping Edit
+  - [x] Use the right beat name, instead of pipeline name in `beatName ()`
+  - [x] Use the real Beat name in the JQ
 
 ## TO FIX
 - [ ] Open Collector List - Installation progress bar showing always full, even when progress is not yet 100%

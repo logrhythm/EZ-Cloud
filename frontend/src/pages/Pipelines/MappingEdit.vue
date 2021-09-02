@@ -37,7 +37,7 @@
         <q-btn no-caps flat dense icon="search" label="Start background processing" color="secondary" @click="processInBackground = true" v-if="!processInBackground" />
         <q-btn no-caps flat dense icon="search_off" label="Stop background processing" @click="processInBackground = false" v-else />
         <q-separator vertical />
-        <q-btn no-caps flat dense icon="file_download" label="Export JQ" />
+        <q-btn no-caps flat dense icon="file_download" label="Export JQ" disable />
         <q-btn no-caps flat dense icon="visibility" label="Show JQ" v-if="!showJqOutput" @click="buildJqFilter(); buildJqTransform(); showJqOutput = true" />
         <q-btn no-caps flat dense icon="visibility_off" label="Hide JQ output" v-else @click="showJqOutput = false" />
 
@@ -665,10 +665,11 @@ export default {
       return (pipeline && pipeline.name && pipeline.name.length ? pipeline.name : '')
     },
     beatName () {
-      // Beat Name will be PipleineName in lower case and without space no double quote
-      return this.pipelineName
-        .replace(/[ "]/g, '_')
-        .toLowerCase()
+      // // Beat Name will be PipleineName in lower case and without space no double quote
+      // return this.pipelineName
+      //   .replace(/[ "]/g, '_')
+      //   .toLowerCase()
+      return (this.pipeline.collectionConfig && this.pipeline.collectionConfig.collectionShipper ? this.pipeline.collectionConfig.collectionShipper : '')
     },
     maxSeenInLog () {
       let max = 0
@@ -1222,7 +1223,8 @@ export default {
         .replace(/{{EZ_generation_user}}/g, this.loggedInUser)
         .replace(/{{EZ_stream_name_placeholder}}/g, this.pipelineName)
         .replace(/{{EZ_stream_id_placeholder}}/g, this.pipelineUid)
-        .replace(/{{EZ_compact_stream_name_placeholder}}/g, this.beatName)
+        .replace(/{{EZ_compact_stream_name_placeholder}}/g, this.pipelineName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase())
+        .replace(/{{EZ_beat_name_placeholder}}/g, this.beatName)
 
       // And ship it back
       this.jqFilterOutput = jqFilter
@@ -1237,7 +1239,8 @@ export default {
         .replace(/{{EZ_generation_user}}/g, this.loggedInUser)
         .replace(/{{EZ_stream_name_placeholder}}/g, this.pipelineName)
         .replace(/{{EZ_stream_id_placeholder}}/g, this.pipelineUid)
-        .replace(/{{EZ_compact_stream_name_placeholder}}/g, this.beatName)
+        .replace(/{{EZ_compact_stream_name_placeholder}}/g, this.pipelineName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase())
+        .replace(/{{EZ_beat_name_placeholder}}/g, this.beatName)
 
       // What do we use for original_message?
       let originalMessagePlaceholder = '. | tojson'
