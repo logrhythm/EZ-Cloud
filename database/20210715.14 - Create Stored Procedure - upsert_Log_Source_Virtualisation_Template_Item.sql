@@ -8,6 +8,7 @@ GO
 -- =============================================
 -- Author:		  Tony Massé
 -- Create date: 2021-07-15
+-- Update date: 2021-09-02 -- To align @DeviceName with what is used in the JQ Transform
 -- =============================================
 
 CREATE PROCEDURE [dbo].[upsert_Log_Source_Virtualisation_Template_Item] 
@@ -51,15 +52,32 @@ BEGIN
 			-- Build the Device Name.
 			-- Mimicking how it's done in teh EZ tool:
 			/*
-			return this.pipelineName
-				.replace(/[ "]/g, '_')
-				.toLowerCase()
+		        .replace(/{{EZ_compact_stream_name_placeholder}}/g, this.pipelineName.replace(/[^a-zA-Z0-9]/g, '_'))
 			*/
 
+			-- Sanitise @name and store in DeviceName
+			-- Replace anything that's not a letter, a number or an underscore by an underscore
 			DECLARE @DeviceName nvarchar(50);
-			SELECT @DeviceName = REPLACE(@name, ' ', '_');       -- Remove Spaces
-			SELECT @DeviceName = REPLACE(@DeviceName, '"', '_'); -- Remove Double quotes
+			-- SELECT @DeviceName = REPLACE(@name, ' ', '_');       -- Remove Spaces
+			-- SELECT @DeviceName = REPLACE(@DeviceName, '"', '_'); -- Remove Double quotes
+			SELECT @DeviceName = @name
+			DECLARE @BadCharIndex int;
+			SELECT @BadCharIndex = 1
+			WHILE @BadCharIndex > 0 BEGIN
+				SELECT @BadCharIndex = PATINDEX('%[^a-zA-Z0-9_]%', @DeviceName)
+				IF @BadCharIndex > 0
+					SELECT @DeviceName = STUFF(@DeviceName, @BadCharIndex, 1, '_')
+			END;
 			SELECT @DeviceName = LOWER(@DeviceName);             -- And bring it down to lowercase
+
+SELECT @DeviceName = @name
+DECLARE @BadCharIndex int;
+SELECT @BadCharIndex = 1
+WHILE @BadCharIndex > 0 BEGIN
+	SELECT @BadCharIndex = PATINDEX('%[^a-zA-Z0-9_]%', @DeviceName)
+	IF @BadCharIndex > 0
+		SELECT @DeviceName = STUFF(@DeviceName, @BadCharIndex, 1, '_')
+END;
 
 			-- Build Regex
 			IF @RegexFilter IS NULL

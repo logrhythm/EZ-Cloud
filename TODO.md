@@ -95,6 +95,9 @@
     - [x] For jsBeat
     - [⏳] For LR Generic REST Beat (deferred)
   - [ ] Import JQ to OC
+    - [x] Create Bash command lines/script
+    - [x] Update `upsert_Log_Source_Virtualisation_Template_Item` SQL SP to use and sanitise the right Beat and Pipeline names
+    - [ ] Create API enpoint
 - Process of onboarding a LS from JQ
   - [ ] New Log Source
     - [ ] Drop Beat configuration in right location
