@@ -93,11 +93,13 @@
   - [x] Drop Beat configuration in right location
     - [x] For Filebeat
     - [x] For jsBeat
+      - [ ] Clean/delete temp symbolic link if it exists at start of the job
     - [⏳] For LR Generic REST Beat (deferred)
-  - [ ] Import JQ to OC
+  - [x] Import JQ to OC
     - [x] Create Bash command lines/script
     - [x] Update `upsert_Log_Source_Virtualisation_Template_Item` SQL SP to use and sanitise the right Beat and Pipeline names
-    - [ ] Create API enpoint
+    - [x] Create Pipeline template
+    - [x] Create API enpoint
 - Process of onboarding a LS from JQ
   - [ ] New Log Source
     - [ ] Drop Beat configuration in right location
