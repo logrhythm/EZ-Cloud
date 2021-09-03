@@ -129,8 +129,8 @@ export default function () {
 # UID: {{EZ_stream_id_placeholder}}
 # -------------------------------------------
 
-# is_{{EZ_compact_stream_name_placeholder}} checks if the data matches the {{EZ_stream_name_placeholder}} criteria
-def is_{{EZ_compact_stream_name_placeholder}}:
+# is_matching checks if the data matches the {{EZ_stream_name_placeholder}} criteria
+def is_matching:
     ."@metadata".beat == "{{EZ_beat_name_placeholder}}"
     and
     (

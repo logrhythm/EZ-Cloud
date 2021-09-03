@@ -1254,7 +1254,7 @@ export default {
       const flattenArrays = [] // array of the IDs
       const flattenArrayPlaceholder = []
       const flattenArrayPlaceholderTemplate = '        "{{EZ_flatten_array_id}}": flatten_array({{EZ_message_root}}{{EZ_flatten_array_field_path}}),'
-      const flattenArrayAddFieldPlaceholderTemplate = '    add_field({{EZ_flatten_array_name_placeholder}}{{EZ_flatten_array_field_doted_path_placeholder}}; .output.{{EZ_mdi_field_placeholder}}) |'
+      const flattenArrayAddFieldPlaceholderTemplate = '    add_field(.{{EZ_flatten_array_name_placeholder}}{{EZ_flatten_array_field_doted_path_placeholder}}; .output.{{EZ_mdi_field_placeholder}}) |'
       const flattenArrayAddFieldPlaceholder = [] // multiple strings
 
       // Mapping of the Timestamp field(s)
