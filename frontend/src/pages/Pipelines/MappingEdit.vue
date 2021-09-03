@@ -391,7 +391,7 @@
             type="textarea"
             filled
             readonly
-            :label="'is_' + beatName + '.jq'"
+            :label="'is_' + pipelineNameSafe + '.jq'"
             style="min-height: 10rem;"
             rows="21"
             class="fixed-font"
@@ -670,6 +670,11 @@ export default {
       //   .replace(/[ "]/g, '_')
       //   .toLowerCase()
       return (this.pipeline.collectionConfig && this.pipeline.collectionConfig.collectionShipper ? this.pipeline.collectionConfig.collectionShipper : '')
+    },
+    pipelineNameSafe () {
+      return this.pipelineName
+        .replace(/[^a-zA-Z0-9_]/g, '_')
+        .toLowerCase()
     },
     maxSeenInLog () {
       let max = 0
