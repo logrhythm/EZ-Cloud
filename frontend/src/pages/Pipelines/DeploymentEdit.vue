@@ -379,15 +379,15 @@ export default {
           uid: 'e745e0e6-60f6-4857-8afa-f8ea0663b6c3',
           name: 'Create and drop Beat\'s configuration in right location',
           status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
-          apiEndpoint: '/test/post',
-          apiParamNames: ['uid', 'oc_uid_TBC']
+          apiEndpoint: '/oc/UpdateStreamConfigurationForBeat',
+          apiParamNames: ['openCollector', 'beat', 'stream']
         },
         {
           uid: 'd004f165-a028-4183-8e6d-f64534357c5d',
           name: 'Import JQ Pipeline into Open Collector',
           status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
-          apiEndpoint: '/test/post',
-          apiParamNames: ['uid', 'oc_uid_TBC']
+          apiEndpoint: '/oc/ImportPipelineForBeat',
+          apiParamNames: ['openCollector', 'beat', 'stream']
         },
         {
           uid: 'b632b998-cd67-4571-a384-31faf0053d1a',
@@ -778,8 +778,8 @@ export default {
           // Check if we need to Skip this step or execute it
           let skipStep = false
           skipStep = skipStep | (step.status && step.status === 'To skip')
-          skipStep = skipStep | (step.uid && step.uid === 'e745e0e6-60f6-4857-8afa-f8ea0663b6c3') // Create and drop Beat\'s configuration in right location
-          skipStep = skipStep | (step.uid && step.uid === 'd004f165-a028-4183-8e6d-f64534357c5d') // Import JQ Pipeline into Open Collector
+          // skipStep = skipStep | (step.uid && step.uid === 'e745e0e6-60f6-4857-8afa-f8ea0663b6c3') // Create and drop Beat\'s configuration in right location
+          // skipStep = skipStep | (step.uid && step.uid === 'd004f165-a028-4183-8e6d-f64534357c5d') // Import JQ Pipeline into Open Collector
 
           if (skipStep) {
             step.status = 'Skipped'
@@ -819,14 +819,62 @@ export default {
             const apiCallParamsSource = {
               uid: (caller && caller.pipeline && caller.pipeline.uid && caller.pipeline.uid.length ? caller.pipeline.uid : undefined),
               name: (caller && caller.pipeline && caller.pipeline.name && caller.pipeline.name.length ? caller.pipeline.name : undefined),
-              oc_uid_TBC: (deploymentStatus.openCollectorUid && deploymentStatus.openCollectorUid.length ? deploymentStatus.openCollectorUid : undefined),
               // SubRuleUid: '{{ls_sub_rule_uid}}_',  // NOT IMPLEMENTING THIS FOR NOW, see Step UID 04ff4e8c-de73-419a-a48b-944b01bca836
               // SubRuleName: '{{ls_sub_rule_name}}_',  // NOT IMPLEMENTING THIS FOR NOW, see Step UID 04ff4e8c-de73-419a-a48b-944b01bca836
               // Tag1: '{{ls_sub_rule_tag1}}',  // NOT IMPLEMENTING THIS FOR NOW, see Step UID 04ff4e8c-de73-419a-a48b-944b01bca836
               MPEPolicy_Name: 'LogRhythm Default',
-              OpenCollectorMotherLogSourceID: deploymentStatus.msgSourceId
+              OpenCollectorMotherLogSourceID: deploymentStatus.msgSourceId,
+              openCollector: {
+                uid: (deploymentStatus.openCollectorUid && deploymentStatus.openCollectorUid.length ? deploymentStatus.openCollectorUid : undefined)
+              },
+              beat: {
+                name: '',
+                config: []
+              },
+              stream: {
+                uid: (caller && caller.pipeline && caller.pipeline.uid && caller.pipeline.uid.length ? caller.pipeline.uid : undefined),
+                name: (caller && caller.pipeline && caller.pipeline.name && caller.pipeline.name.length ? caller.pipeline.name : undefined),
+                sanitisedName: '',
+                jqFilter: '',
+                jqTransform: ''
+              }
             }
             // console.log(' - apiCallParamsSource', apiCallParamsSource) // XXXX
+
+            // For /oc/UpdateStreamConfigurationForBeat
+            // {
+            //     "openCollector": {
+            //         "uid": "{{oc_target_uid}}"
+            //     },
+            //     "beat": {
+            //         "name": "{{beat_name}}",
+            //         "config": [
+            //             "{{beat_config_content}}",
+            //             "{{beat_config_content}}"
+            //         ]
+            //     },
+            //     "stream": {
+            //         "uid": "{{ls_uid}}",
+            //         "name": "{{ls_name}}"
+            //     }
+            // }
+
+            // For /oc/ImportPipelineForBeat
+            // {
+            //     "openCollector": {
+            //         "uid": "{{oc_target_uid}}"
+            //     },
+            //     "beat": {
+            //         "name": "{{beat_name}}"
+            //     },
+            //     "stream": {
+            //         "uid": "{{ls_uid}}",
+            //         "name": "{{ls_name}}",
+            //         "sanitisedName": "{{ls_sanitised_name}}",
+            //         "jqFilter": "{{ls_jq_filter}}",
+            //         "jqTransform": "{{ls_jq_transform}}"
+            //     }
+            // }
 
             const apiCallParams = (
               step.apiParamNames &&

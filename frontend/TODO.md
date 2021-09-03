@@ -43,6 +43,7 @@
   - [x] Capture user selection of OC Log Source
   - [ ] Kick off deployment of Stream on OC and creation of LogSource and all the chain in EMDB
     - [ ] Deployment of Stream on OC
+      - [ ] Finish rigging Front and Back (`openCollector`, `beat` and `stream` parameters)
     - [x] Creation of LogSource and all the chain in EMDB
     - [x] Add Skipped step status
     - [x] Better icon colours
