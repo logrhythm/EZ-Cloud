@@ -1303,7 +1303,7 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
   } else {
     streamUpdateForBeatStatus.errors.push('[updateStreamConfigurationForBeat] Missing parameter(s). See following errors.');
     if (missingOpenCollector) {
-      streamUpdateForBeatStatus.errors.push('Missing or malformed "opencCollector" object.');
+      streamUpdateForBeatStatus.errors.push('Missing or malformed "openCollector" object.');
     }
     if (missingBeat) {
       streamUpdateForBeatStatus.errors.push('Missing or malformed "beat" object.');
@@ -1369,7 +1369,7 @@ router.post('/UpdateStreamConfigurationForBeat', async (req, res) => {
   } else {
     const errorMessages = []; //['Missing parameters in Body (Both `openCollector`, `beat` and `stream` objects are compulstory and must be properly populated).. See following errors.']
     if (missingOpenCollector) {
-      errorMessages.push('Missing or malformed compulstory "opencCollector" object.');
+      errorMessages.push('Missing or malformed compulstory "openCollector" object.');
     }
     if (missingBeat) {
       errorMessages.push('Missing or malformed compulstory "beat" object.');
@@ -1387,23 +1387,6 @@ router.post('/UpdateStreamConfigurationForBeat', async (req, res) => {
 // ImportPipelineForBeat
 // #############################################
 
-// Bash process:
-// rm -rf /tmp/12345
-// mkdir /tmp/12345
-// tar xvfz /root/u/EZ_stream_placeholder.tgz --directory=/tmp/12345/
-// cat ~/NEW_stream_placeholder/is_NEW_stream_placeholder.jq | cat > /tmp/12345/EZ_stream_placeholder/is_NEW_stream_placeholder.jq
-// cat ~/NEW_stream_placeholder/NEW_stream_placeholder.jq | cat > /tmp/12345/EZ_stream_placeholder/NEW_stream_placeholder.jq
-// sed --in-place 's/EZ_stream_placeholder/NEW_stream_placeholder/g' /tmp/12345/EZ_stream_placeholder/include.jq /tmp/12345/EZ_stream_placeholder/ocpipeline.root /tmp/12345/EZ_stream_placeholder/tests/testdata/general.json /tmp/12345/EZ_stream_placeholder/tests/testdata/EZ_stream_placeholder.json /tmp/12345/EZ_stream_placeholder/tests/EZ_stream_placeholder_test.jq /tmp/12345/EZ_stream_placeholder/tests/log_type_test.jq /tmp/12345/EZ_stream_placeholder/tests/is_EZ_stream_placeholder_test.jq /tmp/12345/EZ_stream_placeholder/transform.jq
-// mv /tmp/12345/EZ_stream_placeholder/tests/EZ_stream_placeholder_test.jq /tmp/12345/EZ_stream_placeholder/tests/NEW_stream_placeholder_test.jq
-// mv /tmp/12345/EZ_stream_placeholder/tests/is_EZ_stream_placeholder_test.jq /tmp/12345/EZ_stream_placeholder/tests/is_NEW_stream_placeholder_test.jq
-// mv /tmp/12345/EZ_stream_placeholder/tests/testdata/EZ_stream_placeholder.json /tmp/12345/EZ_stream_placeholder/tests/testdata/NEW_stream_placeholder.json
-// mv /tmp/12345/EZ_stream_placeholder /tmp/12345/NEW_stream_placeholder
-// find /tmp/12345/NEW_stream_placeholder/* -mtime -1 -type f | sed 's_/tmp/12345/__' | tar cvzf /tmp/12345/NEW_stream_placeholder.tgz --directory=/tmp/12345/ --files-from=/dev/stdin --owner=0 --group=0 --mode='666'
-// tar tvfz /tmp/12345/NEW_stream_placeholder.tgz
-// cat /tmp/12345/NEW_stream_placeholder.tgz | ./lrctl oc pipe import
-// rm -rf /tmp/12345
-
-
 const pipelineImportForBeatStatusTemplate = {
   stillUpdating: false,
   lastSuccessfulUpdateTimeStampUtc: 0,
@@ -1417,8 +1400,15 @@ const pipelineImportForBeatStatusArray = {};
 function importPipelineForBeat (pipelineImportForBeatStatus, openCollector, beat, stream) {
   // Check we are ship-shape with the params
   const missingOpenCollector = !(openCollector && openCollector.uid && openCollector.uid.length)
-  const missingBeat = !(beat && beat.name && beat.name.length && beat.config && Array.isArray(beat.config))
-  const missingStream = !(stream && stream.uid && stream.uid.length)
+  const missingBeat = !(beat && beat.name && beat.name.length)
+  const missingStream = !(
+    stream && 
+    stream.uid && stream.uid.length && 
+    stream.name && stream.name.length && 
+    stream.sanitisedName && stream.sanitisedName.length &&
+    stream.jqFilter && stream.jqFilter.length &&
+    stream.jqTransform && stream.jqTransform.length
+    )
   if (
     !missingOpenCollector &&
     !missingBeat &&
@@ -1438,172 +1428,117 @@ function importPipelineForBeat (pipelineImportForBeatStatus, openCollector, beat
         // Initialise the empty list of Steps
         const steps = [];
 
-        // Config file name will be escaped (to only letters, numbers, dashes and underscores) to 
+        // Pipeline file name will be escaped (to only letters, numbers, dashes and underscores) to 
         // not cause issues on the file system. Any non autorised chars will be replaced by "_".
         // It is built using:
-        // - Stream Name
+        // - Beat Name
         // - "__"
-        // - Stream UID
-        const configFileNameBase = String(`${stream.name}__${stream.uid}`).replace(/[^a-zA-Z0-9_-]/g, '_');
+        // - Sanitised Stream Name
+        const pipelineNameBase = String(`${beat.name}--${stream.sanitisedName}`).replace(/[^a-zA-Z0-9_-]/g, '_');
+        const safeSanitisedStreamName = stream.sanitisedName.replace(/[^a-zA-Z0-9_]/g, '_');
 
-        // To avoid any risk of deleting unrelated files, we bail if the configFileNameBase is empty
-        if (configFileNameBase.length === 0) {
-          throw new Error('configFileNameBase too short (Stream Name and UID must be non-empty)');
+        // To avoid any risk of deleting unrelated files, we bail if the pipelineNameBase is empty
+        if (pipelineNameBase.length === 0) {
+          throw new Error('pipelineNameBase too short (Beat and Sanitised Stream Name must be non-empty)');
         }
 
-        // Let's use file numbering only if there are more than one configuration file provided
-        const multipleFiles = beat.config.length > 1;
+        // Load the Pipeline template file
+        const pipelineTemplateFile = fs.readFileSync(path.join(process.env.baseDirname, 'resources', 'EZ_stream_placeholder-template.pipe'));
 
-        // ##########
-        // Filebeat
-        // ##########
-        if (beat.name.toLowerCase() === 'filebeat') {
-          // Build the list of steps
+        // Bash process:
+        // rm -rf /tmp/12345
+        // mkdir /tmp/12345
+        // tar xvfz /root/u/EZ_stream_placeholder-template.pipe --directory=/tmp/12345/
+        // cat ~/NEW_stream_placeholder/is_NEW_stream_placeholder.jq | cat > /tmp/12345/EZ_stream_placeholder/is_NEW_stream_placeholder.jq
+        // cat ~/NEW_stream_placeholder/NEW_stream_placeholder.jq | cat > /tmp/12345/EZ_stream_placeholder/NEW_stream_placeholder.jq
+        // sed --in-place 's/EZ_stream_placeholder/NEW_stream_placeholder/g' /tmp/12345/EZ_stream_placeholder/include.jq /tmp/12345/EZ_stream_placeholder/ocpipeline.root /tmp/12345/EZ_stream_placeholder/tests/testdata/general.json /tmp/12345/EZ_stream_placeholder/tests/testdata/EZ_stream_placeholder.json /tmp/12345/EZ_stream_placeholder/tests/EZ_stream_placeholder_test.jq /tmp/12345/EZ_stream_placeholder/tests/log_type_test.jq /tmp/12345/EZ_stream_placeholder/tests/is_EZ_stream_placeholder_test.jq /tmp/12345/EZ_stream_placeholder/transform.jq
+        // mv /tmp/12345/EZ_stream_placeholder/tests/EZ_stream_placeholder_test.jq /tmp/12345/EZ_stream_placeholder/tests/NEW_stream_placeholder_test.jq
+        // mv /tmp/12345/EZ_stream_placeholder/tests/is_EZ_stream_placeholder_test.jq /tmp/12345/EZ_stream_placeholder/tests/is_NEW_stream_placeholder_test.jq
+        // mv /tmp/12345/EZ_stream_placeholder/tests/testdata/EZ_stream_placeholder.json /tmp/12345/EZ_stream_placeholder/tests/testdata/NEW_stream_placeholder.json
+        // mv /tmp/12345/EZ_stream_placeholder /tmp/12345/NEW_stream_placeholder
+        // find /tmp/12345/NEW_stream_placeholder/* -mtime -1 -type f | sed 's_/tmp/12345/__' | tar cvzf /tmp/12345/NEW_stream_placeholder.tgz --directory=/tmp/12345/ --files-from=/dev/stdin --owner=0 --group=0 --mode='666'
+        // tar tvfz /tmp/12345/NEW_stream_placeholder.tgz
+        // cat /tmp/12345/NEW_stream_placeholder.tgz | ./lrctl oc pipe import
+        // rm -rf /tmp/12345
+        //
+        // Params: Beat_name + stream_name
 
-          steps.push(
-            {
-              action: 'Create new Input folder to drop dynamic input files into, in case it\'s missing',
-              command: 'if ! [ -d "/etc/filebeat/inputs.d" ]; then sudo mkdir -p /etc/filebeat/inputs.d ; fi;'
-            },
-            {
-              action: `Delete any previous backups of the Stream configuration files (${configFileNameBase}*.bak)`,
-              command: `for f in "/etc/filebeat/inputs.d/${configFileNameBase}"*.bak; do if [ -f "$f" ]; then rm -f "$f" ; fi ; done ;`,
-              continueOnFailure: true
-            },
-            {
-              action: `Backup any previous Stream configuration files (${configFileNameBase}*.yml -> *.bak)`,
-              command: `for f in "/etc/filebeat/inputs.d/${configFileNameBase}"*.yml; do if [ -f "$f" ]; then mv -- "$f" "\${f%.yml}.bak" ; fi ; done ;`,
-              continueOnFailure: true
-            }
+        // Build a unique path to use as a temporary space to build the Pipeline file
+        const cleanTimestamp = new Date().toISOString().replace(/[^a-zA-Z0-9_-]/g, '_');
+        const tempWorkingDirectoryPath = `/tmp/ez-pipeline-build.${pipelineNameBase}__${cleanTimestamp}`;
+
+        // Build the list of steps
+        
+        steps.push(
+          {
+            action: 'Clean up directories left by any previous attemp',
+            command: `if [ -d "${tempWorkingDirectoryPath}" ]; then rm -rf ${tempWorkingDirectoryPath}; fi;`
+          },
+          {
+            action: 'Create fresh temporary folder to download installer into',
+            command: `mkdir ${tempWorkingDirectoryPath}`
+          },
+          {
+            action: 'Extract the Pipeline template',
+            command: `tar xvfz - --directory="${tempWorkingDirectoryPath}"`,
+            stdin: pipelineTemplateFile
+          },
+          {
+            action: 'Import Stream JQ Filter into Pipeline',
+            command: `cat > "${tempWorkingDirectoryPath}/EZ_stream_placeholder/is_${safeSanitisedStreamName}.jq"`,
+            stdin: stream.jqFilter
+          },
+          {
+            action: 'Import Stream JQ Transform into Pipeline',
+            command: `cat > "${tempWorkingDirectoryPath}/EZ_stream_placeholder/${safeSanitisedStreamName}.jq"`,
+            stdin: stream.jqTransform
+          },
+          {
+            action: 'Update files from template with the Stream name',
+            command: `sed --in-place 's/EZ_stream_placeholder/${safeSanitisedStreamName}/g' "${tempWorkingDirectoryPath}/EZ_stream_placeholder/include.jq" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/ocpipeline.root" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/testdata/general.json" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/testdata/EZ_stream_placeholder.json" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/EZ_stream_placeholder_test.jq" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/log_type_test.jq" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/is_EZ_stream_placeholder_test.jq" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/transform.jq"`
+          },
+          {
+            action: `Rename files from template to match the Stream name (tests/${safeSanitisedStreamName}_test.jq)`,
+            command: `mv "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/EZ_stream_placeholder_test.jq" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/${safeSanitisedStreamName}_test.jq"`
+          },
+          {
+            action: `Rename files from template to match the Stream name (tests/is_${safeSanitisedStreamName}_test.jq)`,
+            command: `mv "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/is_EZ_stream_placeholder_test.jq" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/is_${safeSanitisedStreamName}_test.jq"`
+          },
+          {
+            action: `Rename files from template to match the Stream name (tests/testdata/${safeSanitisedStreamName}.json)`,
+            command: `mv "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/testdata/EZ_stream_placeholder.json" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/testdata/${safeSanitisedStreamName}.json"`
+          },
+          {
+            action: 'Rename directory to match the Stream name',
+            command: `mv "${tempWorkingDirectoryPath}/EZ_stream_placeholder" "${tempWorkingDirectoryPath}/${safeSanitisedStreamName}"`
+          },
+          {
+            action: 'Package the new Pipeline',
+            command: `find "${tempWorkingDirectoryPath}/${safeSanitisedStreamName}/"* -type f | sed 's~${tempWorkingDirectoryPath}/~~' | tar cvzf "${tempWorkingDirectoryPath}/${safeSanitisedStreamName}.tgz" --directory="${tempWorkingDirectoryPath}/" --files-from=/dev/stdin --owner=0 --group=0 --mode='666'`
+          },
+          {
+            action: 'Test newly packaged Pipeline',
+            command: `tar tvfz "${tempWorkingDirectoryPath}/${safeSanitisedStreamName}.tgz"`
+          },
+          {
+            action: 'Import newly packaged Pipeline into Open Collector',
+            command: `cat "${tempWorkingDirectoryPath}/${safeSanitisedStreamName}.tgz" | ./lrctl oc pipe import`
+          },
+          {
+            action: 'Delete the temporary work directory',
+            command: `rm -rf "${tempWorkingDirectoryPath}"`
+          }
           );
 
-          // Add the different Configuration file(s)
-          beat.config.forEach((config, number) => {
-            const fileNumber = (multipleFiles ? '__' + String(number + 1).padStart(3, '0') : '');
-
-            // Adding file number, if any to the base file name. It is built using:
-            // - configFileNameBase
-            // - "__"
-            // - Filenumber
-            const configFileName = String(`${configFileNameBase}${fileNumber}`);
-
-            steps.push(
-              {
-                action: `Create Stream configuration file (${configFileName}.yml)`,
-                command: `cat > /etc/filebeat/inputs.d/${configFileName}.yml`,
-                stdin: (typeof config === 'string' ? config : JSON.stringify(config))
-              },
-              {
-                action: 'Set Stream configuration file the correct access rights',
-                command: `sudo chmod 600 /etc/filebeat/inputs.d/${configFileName}.yml`
-              },
-              {
-                action: 'Dump Stream configuration file',
-                command: `sudo cat /etc/filebeat/inputs.d/${configFileName}.yml`
-              }
-            );
-          });
-
-          // Wrap up
-          steps.push(
-            {
-              action: 'List the Stream files of the config directory',
-              command: 'ls -la "/etc/filebeat/inputs.d/${configFileNameBase}"*'
-            }
-          );
-          pipelineImportForBeatStatus.payload.steps = steps;
-        }
-
-        // ##########
-        // jsBeat
-        // ##########
-        if (beat.name.toLowerCase() === 'jsbeat') {
-          // Build a unique path to use a Symbolic link to the installation folder of jsBeat
-          // Most people will deploy it under /opt/jsBeat, but we plan for all the cases
-          const cleanTimestamp = new Date().toISOString().replace(/[^a-zA-Z0-9_-]/g, '_');
-          const tempSymbolicLinkPath = `/tmp/${configFileNameBase}__${cleanTimestamp}`;
-          // Build the list of steps
-          
-          steps.push(
-            {
-              action: 'Create Symbolic link to the installation folder of jsBeat',
-              command: `jsBeatPath=$(systemctl show jsbeat | grep "^ExecStart" | head -n 1 | sed -E 's/\\s+;\\s+/🏁/g' | sed -E 's/(^.*path=([^🏁]+).*)/\\2/' | sed -E 's_/bin/.*__') ; if [ -z "$jsBeatPath" ]; then echo -E "Could not find jsBeat path (using 'systemctl show jsbeat'). Stopping now."; exit 42; else echo -E "jsBeat found at: $jsBeatPath"; ln -s $jsBeatPath ${tempSymbolicLinkPath} ; fi`
-            },
-            {
-              action: 'Create new Input folder to drop dynamic input files into, in case it\'s missing',
-              command: `if ! [ -d "${tempSymbolicLinkPath}/config/inputs.d" ]; then sudo mkdir -p ${tempSymbolicLinkPath}/config/inputs.d ; fi;`
-            },
-            {
-              action: `Delete any previous backups of the Stream configuration files (${configFileNameBase}*.bak)`,
-              command: `for f in "${tempSymbolicLinkPath}/config/inputs.d/${configFileNameBase}"*.bak; do if [ -f "$f" ]; then rm -f "$f" ; fi ; done ;`,
-              continueOnFailure: true
-            },
-            {
-              action: `Backup any previous Stream configuration files (${configFileNameBase}*.json -> *.bak)`,
-              command: `for f in "${tempSymbolicLinkPath}/config/inputs.d/${configFileNameBase}"*.json; do if [ -f "$f" ]; then mv -- "$f" "\${f%.json}.bak" ; fi ; done ;`,
-              continueOnFailure: true
-            }
-          );
-
-          // Add the different Configuration file(s)
-          beat.config.forEach((config, number) => {
-            const fileNumber = (multipleFiles ? '__' + String(number + 1).padStart(3, '0') : '');
-
-            // Adding file number, if any to the base file name. It is built using:
-            // - configFileNameBase
-            // - "__"
-            // - Filenumber
-            const configFileName = String(`${configFileNameBase}${fileNumber}`);
-
-            steps.push(
-              {
-                action: `Create Stream configuration file (${configFileName}.json)`,
-                command: `cat > ${tempSymbolicLinkPath}/config/inputs.d/${configFileName}.json`,
-                stdin: (typeof config === 'string' ? config : JSON.stringify(config))
-              },
-              {
-                action: `Set Stream configuration file the correct access rights (${configFileName}.json)`,
-                command: `sudo chmod 640 ${tempSymbolicLinkPath}/config/inputs.d/${configFileName}.json`
-              },
-              {
-                action: `Dump Stream configuration file (${configFileName}.json)`,
-                command: `sudo cat ${tempSymbolicLinkPath}/config/inputs.d/${configFileName}.json`
-              }
-            );
-          });
-
-          // Wrap up
-          steps.push(
-            {
-              action: 'List the Stream files of the config directory',
-              command: `ls -la "${tempSymbolicLinkPath}/config/inputs.d/${configFileNameBase}"*`
-            },
-            {
-              action: 'Delete the created Symbolic link to the installation folder of jsBeat',
-              command: `rm -f "${tempSymbolicLinkPath}"`
-            },
-            {
-              action: 'Restart jsBeat to take new configuration files into account',
-              command: 'sudo systemctl restart jsbeat'
-            }
-          );
-          pipelineImportForBeatStatus.payload.steps = steps;
-        }
-
-        // ##########
-        // lrHttpRest
-        // ##########
-        if (beat.name.toLowerCase() === 'lrhttprest') {
-          //
-        }
+        // Drop a copy of the steps in the Payload.steps of the response
+        pipelineImportForBeatStatus.payload.steps = steps;
 
         // Add the Steps to the Exec stack
         steps.forEach((step, stepCounter) => {
-          // eslint-disable-next-line no-console
-          // console.log(`importPipelineForBeat - Adding step: (${stepCounter}) ${step.action}...`);
           logToSystem('Debug', `importPipelineForBeat - Adding step: (${stepCounter}) ${step.action}...`);
 
-          // Add space to record result ofthe action (return code, STDOUT, STDERR, ...)
+          // Add space to record result of the action (return code, STDOUT, STDERR, ...)
           pipelineImportForBeatStatus.payload.steps[stepCounter].result = {
             errors: [],
             outputs: [],
@@ -1759,7 +1694,7 @@ function importPipelineForBeat (pipelineImportForBeatStatus, openCollector, beat
   } else {
     pipelineImportForBeatStatus.errors.push('[importPipelineForBeat] Missing parameter(s). See following errors.');
     if (missingOpenCollector) {
-      pipelineImportForBeatStatus.errors.push('Missing or malformed "opencCollector" object.');
+      pipelineImportForBeatStatus.errors.push('Missing or malformed "openCollector" object.');
     }
     if (missingBeat) {
       pipelineImportForBeatStatus.errors.push('Missing or malformed "beat" object.');
@@ -1775,8 +1710,16 @@ function importPipelineForBeat (pipelineImportForBeatStatus, openCollector, beat
 router.post('/ImportPipelineForBeat', async (req, res) => {
   // Check we are ship-shape with the params
   const missingOpenCollector = !(req && req.body && req.body.openCollector && req.body.openCollector.uid && req.body.openCollector.uid.length)
-  const missingBeat = !(req && req.body && req.body.beat && req.body.beat.name && req.body.beat.name.length && req.body.beat.config && Array.isArray(req.body.beat.config))
-  const missingStream = !(req && req.body && req.body.stream && req.body.stream.uid && req.body.stream.uid.length)
+  const missingBeat = !(req && req.body && req.body.beat && req.body.beat.name && req.body.beat.name.length)
+  const missingStream = !(
+    req && req.body &&
+    req.body.stream &&
+    req.body.stream.uid && req.body.stream.uid.length &&
+    req.body.stream.name && req.body.stream.name.length &&
+    req.body.stream.sanitisedName && req.body.stream.sanitisedName.length &&
+    req.body.stream.jqFilter && req.body.stream.jqFilter.length &&
+    req.body.stream.jqTransform && req.body.stream.jqTransform.length
+  )
   if (
     !missingOpenCollector &&
     !missingBeat &&
@@ -1785,7 +1728,6 @@ router.post('/ImportPipelineForBeat', async (req, res) => {
     const { openCollector, beat, stream } = req.body;
 
     if (!pipelineImportForBeatStatusArray[`${openCollector.uid}_${stream.uid}`]) {
-      // pipelineImportForBeatStatusArray[`${openCollector.uid}_${stream.uid}`] = Object.assign({}, pipelineImportForBeatStatusTemplate);
       pipelineImportForBeatStatusArray[`${openCollector.uid}_${stream.uid}`] = JSON.parse(JSON.stringify(pipelineImportForBeatStatusTemplate));
     }
 
@@ -1825,7 +1767,7 @@ router.post('/ImportPipelineForBeat', async (req, res) => {
   } else {
     const errorMessages = []; //['Missing parameters in Body (Both `openCollector`, `beat` and `stream` objects are compulstory and must be properly populated).. See following errors.']
     if (missingOpenCollector) {
-      errorMessages.push('Missing or malformed compulstory "opencCollector" object.');
+      errorMessages.push('Missing or malformed compulstory "openCollector" object.');
     }
     if (missingBeat) {
       errorMessages.push('Missing or malformed compulstory "beat" object.');
