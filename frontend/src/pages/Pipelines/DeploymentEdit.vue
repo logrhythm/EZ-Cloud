@@ -335,12 +335,14 @@ import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import mixinSharedBuildJq from 'src/mixins/mixin-Shared-BuildJq'
 
 export default {
   mixins: [
     mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
     mixinSharedShipperAndCollectionsHelpers, // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
-    mixinSharedDarkMode // Shared computed to access and update the DarkMode
+    mixinSharedDarkMode, // Shared computed to access and update the DarkMode
+    mixinSharedBuildJq // Shared JQ Building functions (Filter and Transform)
   ],
   data () {
     return {
@@ -513,7 +515,7 @@ export default {
     }
   */
   computed: {
-    ...mapState('mainStore', ['openCollectorBeats']),
+    ...mapState('mainStore', ['openCollectorBeats', 'loggedInUser']),
     ...mapGetters('mainStore', ['openCollectorLogSources']),
     pipeline () {
       const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
@@ -621,6 +623,12 @@ export default {
       })
 
       return list
+    },
+    beatName () {
+      return (this.pipeline && this.pipeline.collectionConfig && this.pipeline.collectionConfig.collectionShipper ? this.pipeline.collectionConfig.collectionShipper : '')
+    },
+    beatConfig () {
+      return (this.pipeline && this.pipeline.collectionConfig && this.pipeline.collectionConfig.collectionShipper ? this.pipeline.collectionConfig.collectionShipper : '')
     }
   },
 
@@ -828,15 +836,30 @@ export default {
                 uid: (deploymentStatus.openCollectorUid && deploymentStatus.openCollectorUid.length ? deploymentStatus.openCollectorUid : undefined)
               },
               beat: {
-                name: '',
+                name: caller.beatName,
                 config: []
               },
               stream: {
                 uid: (caller && caller.pipeline && caller.pipeline.uid && caller.pipeline.uid.length ? caller.pipeline.uid : undefined),
                 name: (caller && caller.pipeline && caller.pipeline.name && caller.pipeline.name.length ? caller.pipeline.name : undefined),
-                sanitisedName: '',
-                jqFilter: '',
-                jqTransform: ''
+                sanitisedName: (caller && caller.pipeline && caller.pipeline.name && caller.pipeline.name.length ? caller.pipeline.name.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase() : undefined),
+                jqFilter: (
+                  caller && caller.pipeline && caller.pipeline.uid && caller.pipeline.uid.length &&
+                  caller.pipeline.name && caller.pipeline.name.length &&
+                  caller.beatName && caller.beatName.length &&
+                  caller.loggedInUser && caller.loggedInUser.length
+                    ? this.buildJqFilterFromParams(caller.pipeline.uid, caller.pipeline.name, caller.beatName, caller.loggedInUser)
+                    : undefined
+                ),
+                jqTransform: (
+                  caller && caller.pipeline && caller.pipeline.uid && caller.pipeline.uid.length &&
+                  caller.pipeline.name && caller.pipeline.name.length &&
+                  caller.beatName && caller.beatName.length &&
+                  caller.loggedInUser && caller.loggedInUser.length &&
+                  caller.pipeline.fieldsMapping
+                    ? this.buildJqTransformFromParams(caller.pipeline.uid, caller.pipeline.name, caller.beatName, caller.loggedInUser, true /* Hardcoding extractMessageFieldOnly */, caller.pipeline.fieldsMapping)
+                    : undefined
+                )
               }
             }
             // console.log(' - apiCallParamsSource', apiCallParamsSource) // XXXX

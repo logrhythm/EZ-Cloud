@@ -79,6 +79,7 @@
   - [x] Use the right beat name, instead of pipeline name in `beatName ()`
   - [x] Use the real Beat name in the JQ
   - [x] Rename the JQ Filter area to match what the backend names it
+  - [ ] Persist extractMessageFieldOnly (and use it in DeploymentEdit when ready)
 
 ## TO FIX
 - [ ] Open Collector List - Installation progress bar showing always full, even when progress is not yet 100%
