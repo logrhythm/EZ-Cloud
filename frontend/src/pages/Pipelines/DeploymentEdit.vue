@@ -280,6 +280,10 @@
               <span class="text-bold">deploymentStatuses: </span>
               <pre>{{ deploymentStatuses }}</pre>
           </q-card-section> -->
+          <!-- <q-card-section>
+              <span class="text-bold">beatConfigForStream: </span>
+              <pre>{{ beatConfigForStream }}</pre>
+          </q-card-section> -->
         </q-card-section>
       </q-card>
     </div>
@@ -515,7 +519,7 @@ export default {
     }
   */
   computed: {
-    ...mapState('mainStore', ['openCollectorBeats', 'loggedInUser']),
+    ...mapState('mainStore', ['openCollectorBeats', 'loggedInUser', 'collectionShippersOptions']),
     ...mapGetters('mainStore', ['openCollectorLogSources']),
     pipeline () {
       const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
@@ -627,8 +631,14 @@ export default {
     beatName () {
       return (this.pipeline && this.pipeline.collectionConfig && this.pipeline.collectionConfig.collectionShipper ? this.pipeline.collectionConfig.collectionShipper : '')
     },
-    beatConfig () {
-      return (this.pipeline && this.pipeline.collectionConfig && this.pipeline.collectionConfig.collectionShipper ? this.pipeline.collectionConfig.collectionShipper : '')
+    beatConfigForStream () {
+      const collectionShipperOption = this.collectionShippersOptions.find(cso => cso.value && cso.value === this.beatName)
+
+      return (
+        this.pipeline && this.pipeline.collectionConfig && this.pipeline.collectionConfig.collectionShipper && collectionShipperOption
+          ? this.collectionConfigOutputFor(collectionShipperOption.outputFormat, this.pipeline.collectionConfig)
+          : ''
+      )
     }
   },
 
@@ -837,7 +847,9 @@ export default {
               },
               beat: {
                 name: caller.beatName,
-                config: []
+                config: [ // API expect an array of configuration files' content, but we so far only have one to provide
+                  this.beatConfigForStream
+                ]
               },
               stream: {
                 uid: (caller && caller.pipeline && caller.pipeline.uid && caller.pipeline.uid.length ? caller.pipeline.uid : undefined),

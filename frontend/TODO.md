@@ -41,14 +41,15 @@
   - [x] Try to map EZ OCs with OC Log Sources
   - [x] Flag EZ OCs that do not have the right Shipper for the Pipeline
   - [x] Capture user selection of OC Log Source
-  - [ ] Kick off deployment of Stream on OC and creation of LogSource and all the chain in EMDB
-    - [ ] Deployment of Stream on OC
-      - [ ] Finish rigging Front and Back (`openCollector`, `beat` and `stream` parameters)
+  - [x] Kick off deployment of Stream on OC and creation of LogSource and all the chain in EMDB
+    - [x] Deployment of Stream on OC
+      - [x] Finish rigging Front and Back (`openCollector`, `beat` and `stream` parameters)
     - [x] Creation of LogSource and all the chain in EMDB
     - [x] Add Skipped step status
     - [x] Better icon colours
     - [x] Skipped and Error information panel
-    - [ ] Handle Sub Rules
+    - [ ] ~~Handle Sub Rules~~ (👈 irrelevant until FieldMappingEditor allow for better Sub Rule design)
+    - [ ] Add deployment to list and persist
 - [ ] Hide Settings page for Prod
 - [ ] Create Logging shared Lib to push logs to Console and Windows Journal
 - Day mode
