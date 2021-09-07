@@ -231,17 +231,17 @@ import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 // import { dump } from 'js-yaml'
 import { exportFile, copyToClipboard } from 'quasar'
-import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml'
-import { collectionConfigToJson } from 'src/pages/Pipelines/collectionConfigToJson'
 
 export default {
   name: 'PagePipelineProperties',
   mixins: [
     mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
     mixinSharedSocket, // Shared function and state to access the Socket.io
-    mixinSharedDarkMode // Shared computed to access and update the DarkMode
+    mixinSharedDarkMode, // Shared computed to access and update the DarkMode
+    mixinSharedShipperAndCollectionsHelpers // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
   ],
   data () {
     return {
@@ -308,11 +308,8 @@ export default {
       if (this.collectionShipper && this.collectionShipper.length) {
         if (this.collectionShipperOption && this.collectionShipperOption.outputFormat && this.collectionShipperOption.outputFormat.length) {
           if (this.collectionMethod && this.collectionMethod.length) {
-            if (this.collectionShipperOption.outputFormat === 'yaml' || this.collectionShipperOption.outputFormat === 'yml') {
-              output = collectionConfigToYml(this.pipeline.collectionConfig)
-            } else if (this.collectionShipperOption.outputFormat === 'json') {
-              output = collectionConfigToJson(this.pipeline.collectionConfig)
-            }
+            // Calling collectionConfigOutputFor from Mixin mixin-Shared-ShipperAndCollectionsHelpers
+            output = this.collectionConfigOutputFor(this.collectionShipperOption.outputFormat, this.pipeline.collectionConfig)
           } else {
             output = '# No Collection Method configured.'
           }

@@ -1,5 +1,8 @@
-// mixin-Shared-LoadCollectorsAndPipelines.js
+// mixin-Shared-ShipperAndCollectionsHelpers.js
+
 import { mapState } from 'vuex'
+import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml'
+import { collectionConfigToJson } from 'src/pages/Pipelines/collectionConfigToJson'
 
 export default {
   computed: {
@@ -18,6 +21,17 @@ export default {
         )
       } else {
         return fallbackValue
+      }
+    },
+
+    // Return the Collection Configuration (in Yaml or JSON) for a given method and config
+    collectionConfigOutputFor (shipperConfigFormat, pipelineCollectionConfig) {
+      if (shipperConfigFormat === 'yaml' || shipperConfigFormat === 'yml') {
+        return collectionConfigToYml(pipelineCollectionConfig)
+      } else if (shipperConfigFormat === 'json') {
+        return collectionConfigToJson(pipelineCollectionConfig)
+      } else {
+        return ''
       }
     }
   }
