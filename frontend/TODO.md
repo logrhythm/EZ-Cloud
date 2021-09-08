@@ -49,7 +49,8 @@
     - [x] Better icon colours
     - [x] Skipped and Error information panel
     - [ ] ~~Handle Sub Rules~~ (👈 irrelevant until FieldMappingEditor allow for better Sub Rule design)
-    - [ ] Add deployment to list and persist
+    - [x] Add deployment to list and persist
+    - [ ] Add indicator to the Deployment list of already deployed Stream(s)
 - [ ] Hide Settings page for Prod
 - [ ] Create Logging shared Lib to push logs to Console and Windows Journal
 - Day mode

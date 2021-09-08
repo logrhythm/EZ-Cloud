@@ -643,7 +643,7 @@ export default {
   },
 
   methods: {
-    ...mapActions('mainStore', ['getOpenCollectorLogSources', 'callDeploymentStepApi']),
+    ...mapActions('mainStore', ['getOpenCollectorLogSources', 'callDeploymentStepApi', 'upsertOpenCollector']),
     loadOpenCollectorLogSources () {
       this.getOpenCollectorLogSources(
         {
@@ -975,6 +975,44 @@ export default {
           deploymentStatus.ongoing = false
           deploymentStatus.completed = true
           console.log('🏁 We have run out of Steps. Job done.') // XXXX
+          if (deploymentStatus.completed === true && !(deploymentStatus.error === true)) {
+            console.log('💾 Saving Deployment.') // XXXX
+            setTimeout(
+              () => {
+                caller.updateAndPersistDeployment(selectedRow)
+              },
+              // 250 // Run next step in 250 ms
+              250 + Math.floor(Math.random() * 250) // XXXX
+            )
+          }
+        }
+      }
+    },
+    updateAndPersistDeployment (selectedRow) {
+      if (
+        selectedRow &&
+        selectedRow.openCollector &&
+        selectedRow.openCollector.uid &&
+        selectedRow.openCollector.uid.length &&
+        selectedRow.pipelineUid &&
+        selectedRow.pipelineUid.length
+      ) {
+        const openCollector = JSON.parse(JSON.stringify(this.openCollectors.find(oc => oc.uid === selectedRow.openCollector.uid)))
+        if (openCollector && openCollector.uid && openCollector.uid.length) {
+          // Make sure we have a pipelines array under openCollector
+          if (!openCollector.pipelines) {
+            openCollector.pipelines = []
+          }
+          // Add this deployment to this OC
+          openCollector.pipelines.push({
+            enabled: true,
+            uid: selectedRow.pipelineUid
+          })
+          this.upsertOpenCollector({
+            openCollector,
+            pushToApi: true,
+            caller: this
+          })
         }
       }
     }
