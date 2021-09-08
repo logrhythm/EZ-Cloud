@@ -63,8 +63,22 @@
                   <q-btn
                     flat
                     dense
+                    icon="remove_circle_outline"
+                    class="text-red"
+                    v-if="!(props.row.deploymentStatus && (props.row.deploymentStatus.ongoing === true || props.row.deploymentStatus.completed === true)) && (props.row.alreadyDeployed === true)"
+                    @click="selectOpenCollectorForUndeploy(props.row)"
+                  >
+                    <q-tooltip content-style="font-size: 1em">
+                      <div class="text-bold q-mb-sm">{{ $t('Un-deploy') }}</div>
+                      <div class="q-mb-xs">{{ $t('This Stream has already been deployed on this OpenCollector.') }}</div>
+                      <div>{{ $t('This will remove the configuration from the Shipper on the OpenCollector, but will leave the OpenCollector\'s Pipeline and SIEM Log Source as they are.') }}</div>
+                    </q-tooltip>
+                  </q-btn>
+                  <q-btn
+                    flat
+                    dense
                     icon="add_circle_outline"
-                    v-if="!(props.row.deploymentStatus && (props.row.deploymentStatus.ongoing === true || props.row.deploymentStatus.completed === true))"
+                    v-else-if="!(props.row.deploymentStatus && (props.row.deploymentStatus.ongoing === true || props.row.deploymentStatus.completed === true))"
                     :disable="!props.row.suitable"
                     @click="selectOpenCollector(props.row)"
                   >
@@ -355,6 +369,7 @@ export default {
       searchFilter: '',
       columns: [
         { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
+        // { name: 'alreadyDeployed', align: 'center', label: 'alreadyDeployed', field: 'alreadyDeployed', sortable: true },
         { name: 'status', align: 'center', label: 'Suitable', field: 'suitable', sortable: true },
         { name: 'openCollector', align: 'center', label: 'Open Collector', field: 'openCollectorHost', sortable: true },
         { name: 'installedShippers', align: 'center', label: 'Installed Shippers', field: row => (row.openCollector ? row.openCollector.installedShippers : undefined), sortable: true },
@@ -583,7 +598,8 @@ export default {
                 hostName: ls.hostName + ' (' + logSourceHostIdentifiers.join(' / ') + ')',
                 hostId: ls.hostID,
                 hasNecessaryShipper,
-                deploymentStatus: this.deploymentStatuses.find(ds => ds && ds.openCollectorUid && oc && oc.uid && ls && ls.msgSourceID && ds.msgSourceId === ls.msgSourceID && ds.openCollectorUid === oc.uid)
+                deploymentStatus: this.deploymentStatuses.find(ds => ds && ds.openCollectorUid && oc && oc.uid && ls && ls.msgSourceID && ds.msgSourceId === ls.msgSourceID && ds.openCollectorUid === oc.uid),
+                alreadyDeployed: this.isAlreadyDeployed(oc, this.pipeline.uid)
               })
             }
           }
@@ -621,7 +637,8 @@ export default {
             pipelineUid: this.pipeline.uid,
             openCollectorHost: (oc && oc.name && oc.hostname ? oc.name + ' (' + oc.hostname + ')' : null),
             suitable: false,
-            hasNecessaryShipper: this.hasNecessaryShipper(oc)
+            hasNecessaryShipper: this.hasNecessaryShipper(oc),
+            alreadyDeployed: this.isAlreadyDeployed(oc, this.pipeline.uid)
           })
         }
       })
@@ -988,7 +1005,46 @@ export default {
         }
       }
     },
-    updateAndPersistDeployment (selectedRow) {
+    selectOpenCollectorForUndeploy (selectedRow) {
+      // Called when user click on the (-) button in the Action column to Un-Deploy the Shipper configuration for this Stream (defined on the line clicked on)
+      if (
+        selectedRow &&
+        selectedRow.openCollector &&
+        selectedRow.openCollector.uid &&
+        selectedRow.openCollector.uid.length &&
+        selectedRow.msgSourceId
+      ) {
+        console.log('selectOpenCollectorForUndeploy - 💀') // XXXX
+        // Flag the deployment as Disabled in the OpenCollector record and persist to Backend
+        this.updateAndPersistDeployment(selectedRow, false)
+
+        // const deploymentStatus = this.deploymentStatuses.find(
+        //   ds =>
+        //     ds.openCollectorUid === selectedRow.openCollector.uid &&
+        //     ds.msgSourceId === selectedRow.msgSourceId
+        // )
+        // if (deploymentStatus) {
+        //   deploymentStatus.ongoing = true
+        //   deploymentStatus.completed = false
+        //   this.deploymentStatuses = JSON.parse(JSON.stringify(this.deploymentStatuses))
+        // } else {
+        //   this.deploymentStatuses.push(
+        //     {
+        //       openCollectorUid: selectedRow.openCollector.uid,
+        //       msgSourceId: selectedRow.msgSourceId,
+        //       ongoing: true,
+        //       completed: false,
+        //       logs: [],
+        //       steps: JSON.parse(JSON.stringify(this.deploymentStepsNewLogSource))
+        //     }
+        //   )
+        // }
+        // console.log('selectOpenCollectorForUndeploy - deploymentStatus', deploymentStatus) // XXXX
+        // // Run the first step
+        // setTimeout(this.runDeploymentStep, 500, this, selectedRow, 0)
+      }
+    }, // selectOpenCollectorForUndeploy
+    updateAndPersistDeployment (selectedRow, enabled = true) {
       if (
         selectedRow &&
         selectedRow.openCollector &&
@@ -1003,17 +1059,39 @@ export default {
           if (!openCollector.pipelines) {
             openCollector.pipelines = []
           }
-          // Add this deployment to this OC
-          openCollector.pipelines.push({
-            enabled: true,
-            uid: selectedRow.pipelineUid
-          })
+
+          // Go through existing deployments of this Stream on this OC, and change their Enabled status
+          let haveWeChangedAny = false
+          openCollector.pipelines
+            .filter(p => p.uid === selectedRow.pipelineUid)
+            .forEach(p => {
+              p.enabled = enabled
+              haveWeChangedAny = true
+            })
+
+          // In case none were found and changed, just add one
+          if (!haveWeChangedAny) {
+            // Add this deployment to this OC
+            openCollector.pipelines.push({
+              enabled,
+              uid: selectedRow.pipelineUid
+            })
+          }
+          // And persist
           this.upsertOpenCollector({
             openCollector,
             pushToApi: true,
             caller: this
           })
         }
+      }
+    },
+    isAlreadyDeployed (oc, pipelineUid) {
+      // Returns TRUE if this Stream has already been deployed on this OpenCollector
+      if (oc && oc.pipelines && Array.isArray(oc.pipelines) && pipelineUid && pipelineUid.length) {
+        return !!(oc.pipelines.filter(p => (p.enabled === true) && p.uid === pipelineUid).length > 0)
+      } else {
+        return false
       }
     }
   },

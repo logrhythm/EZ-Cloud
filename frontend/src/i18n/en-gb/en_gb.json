@@ -51,5 +51,8 @@
   "Pipeline name cannot be empty": "Pipeline name cannot be empty",
   "Edit Deployment details": "Edit Deployment details",
   "Delete Deployment": "Delete Deployment",
-  "Deploy": "Deploy"
+  "Deploy": "Deploy",
+  "Un-deploy": "Un-deploy",
+  "This Stream has already been deployed on this OpenCollector.": "This Stream has already been deployed on this OpenCollector.",
+  "This will remove the configuration from the Shipper on the OpenCollector, but will leave the OpenCollector's Pipeline and SIEM Log Source as they are.": "This will remove the configuration from the Shipper on the OpenCollector, but will leave the OpenCollector's Pipeline and SIEM Log Source as they are."
 }

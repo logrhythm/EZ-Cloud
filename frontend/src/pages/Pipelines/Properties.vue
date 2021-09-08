@@ -188,7 +188,7 @@
                     <q-icon name="help_center" color="grey" size="md" v-else />
                     <q-tooltip content-style="font-size: 1em">
                       <span v-if="props.value === true">Enabled</span>
-                      <span v-else-if ="props.value === false">Disabled</span>
+                      <span v-else-if ="props.value === false">Disabled / Un-deployed</span>
                       <span v-else>{{ props.value }}</span>
                     </q-tooltip>
                   </q-td>
@@ -507,10 +507,12 @@ export default {
     }, // doPromptForDeploymentDetails
     deleteDeploymentPrompt (row) {
       if (typeof row !== 'undefined') {
+        const unDeployMessage = (row.enabled === false ? '' : ' ⚠️ This will NOT un-deploy it. It will simply delete the database record about this deployment. To un-deploy, click on Edit and un-deploy from there.')
+
         // ask to confirm
         this.$q.dialog({
           title: 'Confirm',
-          message: 'Do you REALLY want to delete this Deployment?',
+          message: 'Do you REALLY want to delete this Deployment?' + unDeployMessage,
           ok: {
             push: true,
             color: 'negative'
