@@ -1,10 +1,20 @@
 # TODO - Frontend
 
+### Target: v?.?
+
+## TO DO
+- Edit Deployment
+  - [ ] Offer action to un-deploy
+    - [ ] Backend API to remove config from Beat
+    - [ ] Button (-) and action
+- Mapping Editor
+  - [ ] Handle Sub Rules
+
 ### Target: v0.7
 
 ## TO DO
 - OpenCollectors list
-  - [ ] Load SSH Token from file instead of copy/paste in field
+  - [ ] ~~Load SSH Token from file instead of copy/paste in field~~ (👈 Keep it as is for now, as LRCloud users won't have access to their local files)
   - [ ] Use alternative to Filebeat
     - [ ] LR Rest Beat
       - [ ] Install LR Rest
@@ -12,6 +22,7 @@
       - [ ] Display Install progress in Frontend
       - [ ] Create LR Rest Beat configuration
       - [ ] Use LR Rest Beat for Tail
+    - [x] jsBeat
   - [x] Move `OS version` to the left of `Open Collector Version`
   - [x] Change `Filebeat version` to `Shippers version`
   - [x] Collect different Shippers versions from Backend
@@ -20,8 +31,8 @@
       - [x] Create icons for the LogRhythm Beats
     - [x] Collect jsBeat version
   - [x] Load and display different Shippers and versions
-  - [ ] Add action button to `Shippers version` column, when empty
-    - [ ] Install
+  - [x] Add action button to `Shippers version` column, when empty
+    - [x] Install
   - [ ] Add action buttons to `Actions` column
     - [ ] Install Shipper
     - [ ] Upgrade Shipper
@@ -52,7 +63,7 @@
     - [x] Add deployment to list and persist
     - [ ] Add indicator to the Deployment list of already deployed Stream(s)
 - [ ] Hide Settings page for Prod
-- [ ] Create Logging shared Lib to push logs to Console and Windows Journal
+- [x] Create Logging shared Lib to push logs to Console and Windows Journal
 - Day mode
   - [x] Polish CSS / Styling to get good color scheme in Day mode too
     - [x] Header bar background
@@ -90,6 +101,8 @@
 - [x] NPM modules with vulnerabilities
 
 ## TO TEST
+- [ ] Trying to deploy on dead/non-existent OC
+- [ ] Trying to deploy on OC with jsBeat
 
 ---
 
