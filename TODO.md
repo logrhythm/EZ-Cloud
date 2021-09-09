@@ -100,25 +100,27 @@
     - [x] Update `upsert_Log_Source_Virtualisation_Template_Item` SQL SP to use and sanitise the right Beat and Pipeline names
     - [x] Create Pipeline template
     - [x] Create API enpoint
-- Process of onboarding a LS from JQ
-  - [ ] New Log Source
-    - [ ] Drop Beat configuration in right location
-    - [ ] Import JQ to OC
-    - [ ] Create LS Type
-    - [ ] Create MPE Rule
-    - [ ] Create MPE Sub-Rule(s)
-      - [ ] Based on Field Mapping / Sub Rules ID
-    - [ ] Create Processing Policy
-    - [ ] Create LS Virtualisation
-    - [ ] Create new LS Virtualisation Item and associate it to LS Virtualisation
-    - [ ] Search related Open Collector LS
-    - [ ] Add LS Virtualisation to Open Collector LS
-  - [ ] Exisiting Log Source / Update of field mapping
-    - [ ] Update Beat configuration in right location
-    - [ ] Re-import JQ to OC
-    - [ ] Modify MPE Sub-Rule(s)
-    - [ ] Modify Processing Policy
-    - [ ] Modify LS Virtualisation Item
+- Process of onboarding a LS (Beat Config, JQ Pipeline and SIEM LogSource)
+  - New Log Source
+    - Drop Beat configuration in right location
+    - Import JQ to OC
+    - Create LS Type
+    - Create MPE Rule
+    - Create MPE Sub-Rule(s)
+      - Based on Field Mapping / Sub Rules ID
+    - Create Processing Policy
+    - Create LS Virtualisation
+    - Create new LS Virtualisation Item and associate it to LS Virtualisation
+    - Search related Open Collector LS
+    - Add LS Virtualisation to Open Collector LS
+  - Exisiting Log Source / Update of field mapping
+    - Update Beat configuration in right location
+    - Re-import JQ to OC
+    - Modify MPE Sub-Rule(s)
+    - Modify Processing Policy
+    - Modify LS Virtualisation Item
+- Process for un-deploying a LS on OC
+  - Delete Beat configuration from OC
 
 ## TO FIX
 - [x] Damn Tedious saving NULL as 'null' in OC list
