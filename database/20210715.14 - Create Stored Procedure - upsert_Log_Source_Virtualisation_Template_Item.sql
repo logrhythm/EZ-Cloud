@@ -70,15 +70,6 @@ BEGIN
 			END;
 			SELECT @DeviceName = LOWER(@DeviceName);             -- And bring it down to lowercase
 
-SELECT @DeviceName = @name
-DECLARE @BadCharIndex int;
-SELECT @BadCharIndex = 1
-WHILE @BadCharIndex > 0 BEGIN
-	SELECT @BadCharIndex = PATINDEX('%[^a-zA-Z0-9_]%', @DeviceName)
-	IF @BadCharIndex > 0
-		SELECT @DeviceName = STUFF(@DeviceName, @BadCharIndex, 1, '_')
-END;
-
 			-- Build Regex
 			IF @RegexFilter IS NULL
 			BEGIN
