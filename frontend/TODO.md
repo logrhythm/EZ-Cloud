@@ -45,7 +45,7 @@
   - [x] List Deployments
   - [x] Delete Deployment
   - [x] Ability to assign Log Source to Open Collectors for Production
-- [ ] Assign Log Source to Open Collectors for Production page
+- [x] Assign Log Source to Open Collectors for Production page
   - [x] Create new Edit Deployment page
   - [x] Get list of OC Log Sources from Backend
   - [x] Try to map EZ OCs with OC Log Sources
