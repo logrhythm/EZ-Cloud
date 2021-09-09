@@ -30,15 +30,6 @@
                   <div class="q-table__title">
                     Available Open Collectors
                   </div>
-                  <!-- <div class="row q-gutter-md">
-                    <div class="col" >
-                      <q-btn rounded dense color="primary" icon="add" label="Add New Deployment" style="min-width:14rem;" @click="addNewDeployment()" >
-                        <q-tooltip content-style="font-size: 1em">
-                          Create a new Deployment.
-                        </q-tooltip>
-                      </q-btn>
-                    </div>
-                  </div> -->
                   <div class="row q-gutter-md">
                     <div style="width:300px;">
                       <q-input outlined dense debounce="300" v-model="searchFilter" placeholder="Search">
@@ -48,7 +39,6 @@
                         </template>
                       </q-input>
                     </div>
-                    <!-- <q-separator vertical dark color="orange" /> -->
                     <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadOpenCollectorsPipelinesAndLogSources()">
                       <q-tooltip content-style="font-size: 1em">
                         Reload the list of Pipelines.
@@ -75,26 +65,6 @@
                       {{ $t('Deploy') }}
                     </q-tooltip>
                   </q-btn>
-                  <!-- <q-linear-progress rounded size="1em" :value="0.25" class="col" color="green-8" >
-                    <q-tooltip content-style="font-size: 1em;" >Completed steps: 1 / 4</q-tooltip>
-                  </q-linear-progress> -->
-                  <!-- <q-linear-progress rounded size="1em" :value="(job.step > 0 ? job.totalSteps / job.step : 0)" class="col" :color="(job.onGoing === false ? (job.failed === false ? 'green-8' : 'deep-orange-8') : '')" >
-                    <q-tooltip content-style="font-size: 1em;" >Completed steps: {{ job.step }} / {{ job.totalSteps }}</q-tooltip>
-                  </q-linear-progress> -->
-                  <!-- <div v-else>
-                    <q-tooltip content-style="font-size: 1em">
-                      ...
-                    </q-tooltip>
-                    <q-circular-progress
-                      :value="Math.round(25)"
-                      show-value
-                      :font-size="(25 < 100 ? '0.5em' : '0.4em')"
-                      size="2.2em"
-                      :thickness="0.2"
-                      :color="(darkMode ? 'blue-3' : 'blue-10')"
-                      :track-color="(darkMode ? 'grey-9' : 'grey-3')"
-                    />
-                  </div> -->
                   <q-btn
                     v-else
                     flat
@@ -123,7 +93,6 @@
                           </div>
                         </div>
                         <q-separator />
-                        <!-- v-if="props.row && props.row.deploymentStatus && props.row.deploymentStatus.steps && props.row.deploymentStatus.steps.length" -->
                         <div class="q-mb-sm">
                           <q-item
                             v-for="(step, i) in (props.row && props.row.deploymentStatus && props.row.deploymentStatus.steps && props.row.deploymentStatus.steps.length ? props.row.deploymentStatus.steps : [])" :key="i"
@@ -136,17 +105,14 @@
                                   <q-icon name="arrow_right" size="sm" :class="(step.status === 'On-going' || step.status === 'Error' ? '' : 'invisible')" />
                                   <div class="force-long-text-wrap ellipsis-3-lines" :class="(step.status === 'On-going' || step.status === 'Error' ? 'text-bold' : '')" >{{ step.name }}</div>
                                 </div>
-                                <!-- <div class="force-long-text-wrap ellipsis-3-lines">{{ step.status }}</div> -->
                               </q-item-label>
                             </q-item-section>
                             <q-item-section side>
                               <q-icon v-if="step.status === 'Not started'" name="hourglass_empty" size="sm" color="grey" />
                               <q-icon v-else-if="step.status === 'To skip'" name="redo" size="sm" color="grey" />
-                              <!-- redo low_priority skip_next -->
                               <q-icon v-else-if="step.status === 'Pending'" name="hourglass_top" size="sm" color="grey-3" />
                               <q-spinner-dots v-else-if="step.status === 'On-going'" color="blue-10" size="2em" />
                               <q-icon v-else-if="step.status === 'Completed'" name="task_alt" size="sm" color="positive" />
-                              <!-- <q-icon v-else-if="step.status === 'Skipped'" name="redo" size="sm" color="positive" style="opacity: .5;" /> -->
                               <q-icon v-else-if="step.status === 'Skipped'" name="redo" size="sm" color="green-4" style="opacity: .5;" />
                               <q-icon v-else-if="step.status === 'Error'" name="error" size="sm" color="orange" />
                               <q-icon v-else-if="step.status === 'Cancelled'" name="block" size="sm" color="grey" />
@@ -157,7 +123,6 @@
                           <q-separator />
                           <div class="row items-center col no-wrap">
                             <q-icon name="warning" color="orange" size="md" />
-                            <!-- <q-icon name="info" color="blue-10" size="md" /> -->
                             <q-separator vertical class="q-mx-sm"/>
                             <q-separator vertical color="negative" size="0.2rem" class="q-ml-none q-mr-sm"/>
                             <div class="q-my-sm">
@@ -173,7 +138,6 @@
                             <q-icon name="redo" color="green-4" size="md" />
                             <q-separator vertical class="q-mx-sm"/>
                             <div class="q-my-sm">
-                              <!-- <q-icon name="redo" size="md" color="green-4" style="opacity: .5;" /> -->
                               <div class="text-bold" v-if="deploymentProgressFor(props.row, 'deploymentStatus').skippedAbsolute > 1">{{ Math.round(deploymentProgressFor(props.row, 'deploymentStatus').skippedAbsolute) }} steps have been skipped.</div>
                               <div class="text-bold" v-else>One step has been skipped.</div>
                               <div class="">This is fine. Steps are typically skipped if not necessary for a given deployment.</div>
@@ -251,17 +215,14 @@
                                   <q-icon name="arrow_right" size="sm" :class="(step.status === 'On-going' || step.status === 'Error' ? '' : 'invisible')" />
                                   <div class="force-long-text-wrap ellipsis-3-lines" :class="(step.status === 'On-going' || step.status === 'Error' ? 'text-bold' : '')" >{{ step.name }}</div>
                                 </div>
-                                <!-- <div class="force-long-text-wrap ellipsis-3-lines">{{ step.status }}</div> -->
                               </q-item-label>
                             </q-item-section>
                             <q-item-section side>
                               <q-icon v-if="step.status === 'Not started'" name="hourglass_empty" size="sm" color="grey" />
                               <q-icon v-else-if="step.status === 'To skip'" name="redo" size="sm" color="grey" />
-                              <!-- redo low_priority skip_next -->
                               <q-icon v-else-if="step.status === 'Pending'" name="hourglass_top" size="sm" color="grey-3" />
                               <q-spinner-dots v-else-if="step.status === 'On-going'" color="blue-10" size="2em" />
                               <q-icon v-else-if="step.status === 'Completed'" name="task_alt" size="sm" color="positive" />
-                              <!-- <q-icon v-else-if="step.status === 'Skipped'" name="redo" size="sm" color="positive" style="opacity: .5;" /> -->
                               <q-icon v-else-if="step.status === 'Skipped'" name="redo" size="sm" color="green-4" style="opacity: .5;" />
                               <q-icon v-else-if="step.status === 'Error'" name="error" size="sm" color="orange" />
                               <q-icon v-else-if="step.status === 'Cancelled'" name="block" size="sm" color="grey" />
@@ -272,7 +233,6 @@
                           <q-separator />
                           <div class="row items-center col no-wrap">
                             <q-icon name="warning" color="orange" size="md" />
-                            <!-- <q-icon name="info" color="blue-10" size="md" /> -->
                             <q-separator vertical class="q-mx-sm"/>
                             <q-separator vertical color="negative" size="0.2rem" class="q-ml-none q-mr-sm"/>
                             <div class="q-my-sm">
@@ -288,7 +248,6 @@
                             <q-icon name="redo" color="green-4" size="md" />
                             <q-separator vertical class="q-mx-sm"/>
                             <div class="q-my-sm">
-                              <!-- <q-icon name="redo" size="md" color="green-4" style="opacity: .5;" /> -->
                               <div class="text-bold" v-if="deploymentProgressFor(props.row, 'unDeployStatus').skippedAbsolute > 1">{{ Math.round(deploymentProgressFor(props.row, 'unDeployStatus').skippedAbsolute) }} steps have been skipped.</div>
                               <div class="text-bold" v-else>One step has been skipped.</div>
                               <div class="">This is fine. Steps are typically skipped if not necessary for a given deployment.</div>
@@ -308,21 +267,6 @@
                       :center-color="(props.row && props.row.unDeployStatus && props.row.unDeployStatus.error === true ? (darkMode ? 'orange-10' : 'orange') : undefined)"
                     />
                   </q-btn>
-                  <!-- <q-circular-progress
-                    :value="Math.round(props.value)"
-                    show-value
-                    :font-size="(props.value < 100 ? '0.5em' : '0.4em')"
-                    size="2.8em"
-                    :thickness="0.2"
-                    :color="(darkIsEnabled ? 'blue-3' : 'blue-10')"
-                    :track-color="(darkIsEnabled ? 'grey-9' : 'grey-3')"
-                  /> -->
-
-                  <!-- <q-btn flat dense icon="remove_circle" color="negative" @click="deleteDeploymentPrompt(props.row)">
-                    <q-tooltip content-style="font-size: 1em">
-                      {{ $t('Un-deploy') }}
-                    </q-tooltip>
-                  </q-btn> -->
                 </q-td>
               </template>
 
@@ -348,7 +292,6 @@
                     <q-tooltip content-style="font-size: 1em;" >{{ shipper.name }}</q-tooltip>
                     <q-avatar square  size="24px" class="q-mr-xs">
                       <img :src="'/shippers/' + collectionShipperDetails(shipper.name).icon + '.svg'" />
-                      <!-- <q-badge floating transparent color="primary">v{{ shipper.version }}</q-badge> -->
                     </q-avatar>
                     <q-badge outline color="grey">v{{ shipper.version }}</q-badge>
                   </div>
@@ -382,72 +325,10 @@
               </template>
             </q-table>
           </q-card-section>
-          <!-- <q-card-section>
-              <span class="text-bold">Table Data: </span>
-              <pre>{{ tableData }}</pre>
-          </q-card-section> -->
-          <!-- <q-card-section>
-              <span class="text-bold">Deployments: </span>
-              <pre>{{ deployments }}</pre>
-          </q-card-section> -->
-          <!-- <q-card-section>
-              <span class="text-bold">openCollectorLogSources: </span>
-              <pre>{{ openCollectorLogSources }}</pre>
-          </q-card-section> -->
-          <!-- <q-card-section>
-              <span class="text-bold">deploymentStatuses: </span>
-              <pre>{{ deploymentStatuses }}</pre>
-          </q-card-section> -->
-          <!-- <q-card-section>
-              <span class="text-bold">beatConfigForStream: </span>
-              <pre>{{ beatConfigForStream }}</pre>
-          </q-card-section> -->
         </q-card-section>
       </q-card>
     </div>
     <hr>
-    <!-- <div class="">
-      <hr>
-      pipelineUid: {{ pipelineUid }} <br>
-      openCollectorUid: {{ openCollectorUid }}
-      <ul>
-        <li>[ ] Get list of OC Log Sources from Backend</li>
-        <li>[ ] Try to map EZ OCs with OC Log Sources</li>
-        <li>[ ] Flag EZ OCs that do not have the right Shipper for the Pipeline</li>
-        <li>[ ] Capture user selection of OC Log Source</li>
-      </ul>
-      <ul>
-        <li>Process of onboarding a LS from JQ</li>
-        <ul>
-          <li>New Log Source</li>
-          <ul>
-            <li>New Log Source</li>
-            <li>Exisiting Log Source / Update of field mapping</li>
-            <li>Drop Beat configuration in right location</li>
-            <li>Import JQ to OC</li>
-            <li>Create LS Type</li>
-            <li>Create MPE Rule</li>
-            <li>Create MPE Sub-Rule(s)</li>
-            <ul>
-              <li>Based on Field Mapping / Sub Rules ID</li>
-            </ul>
-            <li>Create Processing Policy</li>
-            <li>Create LS Virtualisation</li>
-            <li>Create new LS Virtualisation Item and associate it to LS Virtualisation</li>
-            <li>Search related Open Collector LS</li>
-            <li>Add LS Virtualisation to Open Collector LS</li>
-          </ul>
-          <li>Exisiting Log Source / Update of field mapping</li>
-          <ul>
-            <li>Update Beat configuration in right location</li>
-            <li>Re-import JQ to OC</li>
-            <li>Modify MPE Sub-Rule(s)</li>
-            <li>Modify Processing Policy</li>
-            <li>Modify LS Virtualisation Item</li>
-          </ul>
-        </ul>
-      </ul>
-    </div> -->
   </q-page>
 
 </template>
@@ -473,7 +354,6 @@ export default {
       searchFilter: '',
       columns: [
         { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
-        // { name: 'alreadyDeployed', align: 'center', label: 'alreadyDeployed', field: 'alreadyDeployed', sortable: true },
         { name: 'status', align: 'center', label: 'Suitable', field: 'suitable', sortable: true },
         { name: 'openCollector', align: 'center', label: 'Open Collector', field: 'openCollectorHost', sortable: true },
         { name: 'installedShippers', align: 'center', label: 'Installed Shippers', field: row => (row.openCollector ? row.openCollector.installedShippers : undefined), sortable: true },
@@ -490,16 +370,6 @@ export default {
       collectorLogSourcesLoading: false,
       deploymentStatuses: [],
       unDeployStatuses: [],
-      // deploymentStatuses: [
-      //   {
-      //     openCollectorUid: '941415a2-1608-4f1e-b32a-b735a29cdbb3',
-      //     // pipelineUid: 'b9f7c85a-a278-11eb-bcbc-0242ac130002',
-      //     msgSourceId: 30,
-      //     ongoing: false,
-      //     steps: [],
-      //     logs: []
-      //   }
-      // ],
       deploymentStepsNewLogSource: [
         {
           uid: 'e745e0e6-60f6-4857-8afa-f8ea0663b6c3',
@@ -622,31 +492,6 @@ export default {
       ]
     }
   },
-  /* Open Collector LS:
-    {
-      "msgSourceID": 13,
-      "systemMonitorID": 1,
-      "status": 1,
-      "msgSourceTypeID": 1000759,
-      "name": "LRVM6 Open Collector",
-      "shortDesc": "",
-      "longDesc": "",
-      "isVirtual": 0,
-      "dateUpdated": "2021-07-20T12:02:09.440Z",
-      "hostID": 1,
-      "hostName": "LRVM6",
-      "hostIdentifiers": [
-        {
-          "value": "192.168.0.222",
-          "type": 1
-        },
-        {
-          "value": "lrvm6",
-          "type": 3
-        }
-      ]
-    }
-  */
   computed: {
     ...mapState('mainStore', ['openCollectorBeats', 'loggedInUser', 'collectionShippersOptions']),
     ...mapGetters('mainStore', ['openCollectorLogSources']),
@@ -679,9 +524,11 @@ export default {
       return deployments
     },
     tableData () {
-      // List of OC
-      // List of OC LS
-      // Merge them by Host
+      // Steps to build the table:
+      // - List of OC
+      // - List of OC LS
+      // - Merge them by Host identifiers
+
       const list = []
       // Go through the Log Sources and map their OC pair, if possible
       this.openCollectorLogSources.forEach(ls => {
@@ -830,7 +677,6 @@ export default {
             }
           )
         }
-        console.log('kickOffDeployment - deploymentStatus', deploymentStatus) // XXXX
         // Run the first step
         setTimeout(this.runDeploymentStep, 500, this, deploymentStatuses, selectedRow, 0)
       }
@@ -887,18 +733,6 @@ export default {
       }
     }, // deploymentProgressFor
     hasNecessaryShipper (oc) {
-      // this.pipeline.collectionConfig.collectionShipper
-      // "filebeat"
-      //
-      // oc.installedShippers
-      // "installedShippers": [
-      //   {
-      //     "name": "Filebeat",
-      //     "version": "7.13.0"
-      //   }
-      // ]
-      // debugger
-
       // Prep a lower case Shipper name
       const neededShipperLowerCase = (
         this.pipeline &&
@@ -919,8 +753,28 @@ export default {
       ))
     }, // hasNecessaryShipper
     runDeploymentStep (caller, deploymentStatuses, selectedRow, stepNumber) {
-      // console.log('runDeploymentStep', stepNumber, selectedRow)
-      // if (selectedRow && selectedRow.deploymentStatus && selectedRow.deploymentStatus.steps && selectedRow.deploymentStatus.steps.length > stepNumber) {
+      // - Process of onboarding a LS (Beat Config, JQ Pipeline and SIEM LogSource)
+      //   - New Log Source
+      //     - Drop Beat configuration in right location
+      //     - Import JQ to OC
+      //     - Create LS Type
+      //     - Create MPE Rule
+      //     - Create MPE Sub-Rule(s)
+      //       - Based on Field Mapping / Sub Rules ID
+      //     - Create Processing Policy
+      //     - Create LS Virtualisation
+      //     - Create new LS Virtualisation Item and associate it to LS Virtualisation
+      //     - Search related Open Collector LS
+      //     - Add LS Virtualisation to Open Collector LS
+      //   - Exisiting Log Source / Update of field mapping
+      //     - Update Beat configuration in right location
+      //     - Re-import JQ to OC
+      //     - Modify MPE Sub-Rule(s)
+      //     - Modify Processing Policy
+      //     - Modify LS Virtualisation Item
+      // - Process for un-deploying a LS on OC
+      //   - Delete Beat configuration from OC
+
       if (
         selectedRow &&
         selectedRow.openCollector &&
@@ -935,13 +789,10 @@ export default {
         )
         if (deploymentStatus && deploymentStatus.steps && deploymentStatus.steps.length > stepNumber) {
           const step = deploymentStatus.steps[stepNumber]
-          // console.log(' - Step: ', step.name, JSON.stringify(step)) // XXXX
 
           // Check if we need to Skip this step or execute it
           let skipStep = false
           skipStep = skipStep | (step.status && step.status === 'To skip')
-          // skipStep = skipStep | (step.uid && step.uid === 'e745e0e6-60f6-4857-8afa-f8ea0663b6c3') // Create and drop Beat\'s configuration in right location
-          // skipStep = skipStep | (step.uid && step.uid === 'd004f165-a028-4183-8e6d-f64534357c5d') // Import JQ Pipeline into Open Collector
 
           if (skipStep) {
             step.status = 'Skipped'
@@ -950,35 +801,8 @@ export default {
             // Do the work for this step
             step.status = 'On-going'
 
-            // - Process of onboarding a LS from JQ
-            //   - [ ] New Log Source
-            //     - [ ] Drop Beat configuration in right location
-            //     - [ ] Import JQ to OC
-            //     - [ ] Create LS Type
-            //     - [ ] Create MPE Rule
-            //     - [ ] Create MPE Sub-Rule(s)
-            //       - [ ] Based on Field Mapping / Sub Rules ID
-            //     - [ ] Create Processing Policy
-            //     - [ ] Create LS Virtualisation
-            //     - [ ] Create new LS Virtualisation Item and associate it to LS Virtualisation
-            //     - [ ] Search related Open Collector LS
-            //     - [ ] Add LS Virtualisation to Open Collector LS
-            //   - [ ] Exisiting Log Source / Update of field mapping
-            //     - [ ] Update Beat configuration in right location
-            //     - [ ] Re-import JQ to OC
-            //     - [ ] Modify MPE Sub-Rule(s)
-            //     - [ ] Modify Processing Policy
-            //     - [ ] Modify LS Virtualisation Item
-            // - Process for un-deploying a LS on OC
-            //   - [ ] Delete Beat configuration from OC
-
             // Prepare the parameters
             const apiUrl = (step.apiEndpoint && step.apiEndpoint.length ? step.apiEndpoint : '/test/doesNotExist/andShouldReturnAnError')
-            // const apiUrl = (stepNumber < 3 ? (step.apiEndpoint && step.apiEndpoint.length ? step.apiEndpoint : '/test/doesNotExist') : '/test/doesNotExist') // XXXX
-            // const apiUrl = (stepNumber < 60 ? '/test/post' : '/test/doesNotExist') // XXXX
-            // console.log(' - apiUrl', apiUrl) // XXXX
-            // const apiUrl_ = (step.apiEndpoint && step.apiEndpoint.length ? step.apiEndpoint : '/test/doesNotExist') // XXXX
-            // console.log(' - apiUrl_', apiUrl_) // XXXX
 
             const apiCallParamsSource = {
               uid: (caller && caller.pipeline && caller.pipeline.uid && caller.pipeline.uid.length ? caller.pipeline.uid : undefined),
@@ -1020,42 +844,6 @@ export default {
                 )
               }
             }
-            // console.log(' - apiCallParamsSource', apiCallParamsSource) // XXXX
-
-            // For /oc/UpdateStreamConfigurationForBeat
-            // {
-            //     "openCollector": {
-            //         "uid": "{{oc_target_uid}}"
-            //     },
-            //     "beat": {
-            //         "name": "{{beat_name}}",
-            //         "config": [
-            //             "{{beat_config_content}}",
-            //             "{{beat_config_content}}"
-            //         ]
-            //     },
-            //     "stream": {
-            //         "uid": "{{ls_uid}}",
-            //         "name": "{{ls_name}}"
-            //     }
-            // }
-
-            // For /oc/ImportPipelineForBeat
-            // {
-            //     "openCollector": {
-            //         "uid": "{{oc_target_uid}}"
-            //     },
-            //     "beat": {
-            //         "name": "{{beat_name}}"
-            //     },
-            //     "stream": {
-            //         "uid": "{{ls_uid}}",
-            //         "name": "{{ls_name}}",
-            //         "sanitisedName": "{{ls_sanitised_name}}",
-            //         "jqFilter": "{{ls_jq_filter}}",
-            //         "jqTransform": "{{ls_jq_transform}}"
-            //     }
-            // }
 
             const apiCallParams = (
               step.apiParamNames &&
@@ -1066,7 +854,6 @@ export default {
                 }, {})
                 : undefined
             )
-            // console.log(' - apiCallParams', JSON.stringify(apiCallParams)) // XXXX
 
             // Call the API
             caller.callDeploymentStepApi({
@@ -1083,16 +870,14 @@ export default {
                 deploymentStatuses_ = deploymentStatuses
               ) => {
                 // Flag the step as Completed, and run the next step
-                // console.log('  👉 Run the next step') // XXXX
                 setTimeout(
                   () => {
                     step_.status = 'Completed'
                     caller_.runDeploymentStep(caller_, deploymentStatuses_, selectedRow_, stepNumber_ + 1)
                   },
-                  // 250 // Run next step in 250 ms
-                  100 + Math.floor(Math.random() * 600) // XXXX
+                  // Run next step in 100 ms + up to 600 ms delay
+                  100 + Math.floor(Math.random() * 600) // Add temporisation and randomisation to avoid blasting the API server off
                 )
-                // setTimeout(caller_.runDeploymentStep, 50, caller_, selectedRow_, stepNumber_ + 1)
               },
               onErrorCallBack: (
                 apiCallResult, // Param passed to onErrorCallBack by postDataToSite()
@@ -1105,7 +890,6 @@ export default {
                 deploymentStatus_.error = true
                 deploymentStatus_.errorMessage = (apiCallResult && apiCallResult.messageForLogAndPopup ? apiCallResult.messageForLogAndPopup : '')
                 deploymentStatus_.errorMessage += (apiCallResult && apiCallResult.captionForLogAndPopup ? ` // ${apiCallResult.captionForLogAndPopup}` : '')
-                console.log(apiCallResult) // XXXX
 
                 // Mark as Cancelled all the steps that were still waiting to run
                 if (deploymentStatus_ && deploymentStatus_.steps && Array.isArray(deploymentStatus_.steps)) {
@@ -1121,15 +905,15 @@ export default {
           // We have run out of Steps. Job done.
           deploymentStatus.ongoing = false
           deploymentStatus.completed = true
-          console.log('🏁 We have run out of Steps. Job done.') // XXXX
+          console.log('🏁 We have run out of Steps. Job done.')
           if (deploymentStatus.completed === true && !(deploymentStatus.error === true)) {
-            console.log('💾 Saving Deployment.') // XXXX
+            console.log('💾 Saving Deployment.')
             setTimeout(
               () => {
                 caller.updateAndPersistDeployment(selectedRow, deploymentStatus.isDeployment)
               },
-              // 250 // Run next step in 250 ms
-              250 + Math.floor(Math.random() * 250) // XXXX
+              // Run next step in 100 ms + up to 250 ms delay
+              100 + Math.floor(Math.random() * 250) // Add temporisation and randomisation to avoid blasting the API server off
             )
           }
         }
