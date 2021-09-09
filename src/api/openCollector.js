@@ -11,7 +11,6 @@ const configSsh = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 
 const SSH = require('simple-ssh');
 
 // Lib to get the SSH config for a given OpenCollector
-// const { getSshConfigForCollector } = require('./config');
 const { getSshConfigForCollector } = require('../shared/collectorSshConfig');
 
 // Load the System Logging functions
@@ -280,7 +279,6 @@ function checkOcBeatsVersion(ocAndBeatsVersion, uid) {
       ocAndBeatsVersion.payload = null;
 
       ssh
-        // .exec('./lrctl status | grep -i "^.*beat\\\\s\\+[0-9.]\\+" -o | awk \'BEGIN { ORS = ""; print "[" } { print "{\\"name\\":\\""$1"\\"},{\\"version\\":{\\"full\\":\\""$2"\\"}},"} END { ORS = "\\n"; print "]" } \' | sed \'s/},]/}]/\'', {
         .exec('./lrctl status | grep -i "^\\(.*beat\\|open_collector\\)\\\\s\\+[0-9.]\\+" -o | awk \'BEGIN { ORS = ""; print "[" } { print "{\\"name\\":\\""$1"\\",\\"version\\":{\\"full\\":\\""$2"\\"}},"} END { ORS = "\\n"; print "]" } \' | sed \'s/},]/}]/\'', {
           err(stderr) {
             ocAndBeatsVersion.errors.push(stderr);
@@ -318,7 +316,6 @@ router.get('/CheckOpenCollectorAndBeatsVersions', async (req, res) => {
     const { uid } = req.query;
 
     if (!ocAndBeatsVersionArray[uid]) {
-      // ocAndBeatsVersionArray[uid] = Object.assign({}, ocAndBeatsVersionTemplate);
       ocAndBeatsVersionArray[uid] = JSON.parse(JSON.stringify(ocAndBeatsVersionTemplate));
     }
 
@@ -423,7 +420,6 @@ router.get('/CheckJsBeatVersion', async (req, res) => {
     const { uid } = req.query;
 
     if (!jsBeatVersionArray[uid]) {
-      // jsBeatVersionArray[uid] = Object.assign({}, jsBeatVersionTemplate);
       jsBeatVersionArray[uid] = JSON.parse(JSON.stringify(jsBeatVersionTemplate));
     }
 
@@ -761,7 +757,6 @@ router.get('/CheckOCVersion', async (req, res) => {
     const { uid } = req.query;
 
     if (!ocVersionArray[uid]) {
-      // ocVersionArray[uid] = Object.assign({}, ocVersionTemplate);
       ocVersionArray[uid] = JSON.parse(JSON.stringify(ocVersionTemplate));
     }
 
@@ -1143,8 +1138,6 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
 
         // Add the Steps to the Exec stack
         steps.forEach((step, stepCounter) => {
-          // eslint-disable-next-line no-console
-          // console.log(`updateStreamConfigurationForBeat - Adding step: (${stepCounter}) ${step.action}...`);
           logToSystem('Debug', `updateStreamConfigurationForBeat - Adding step: (${stepCounter}) ${step.action}...`);
 
           // Add space to record result ofthe action (return code, STDOUT, STDERR, ...)
@@ -1165,42 +1158,12 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
                 streamUpdateForBeatStatus.payload.steps[stepCounter].result.failed = false;
 
                 if (code !== 0) {
-                  // if (socket.connected) {
-                  //   socket.emit('shipper.install',
-                  //     {
-                  //       jobId: payload.jobId,
-                  //       code: 'ERROR',
-                  //       payload: 'STEP FAILED',
-                  //       step: stepCounter + 1,
-                  //       totalSteps: steps.length
-                  //     });
-                  //   socket.emit('shipper.install',
-                  //     {
-                  //       jobId: payload.jobId,
-                  //       code: 'EXIT',
-                  //       payload: `Return code: ${code}`,
-                  //       step: stepCounter + 1,
-                  //       totalSteps: steps.length
-                  //     });
-                  // }
-
                   streamUpdateForBeatStatus.errors.push(`Step ${stepCounter} failed with return code (${code}) - Command was: ${step.command}`);
                   streamUpdateForBeatStatus.payload.steps[stepCounter].result.failed = true;
                   continueToNextStep = false;
                   // Set the whole job as failed, except if we are meant to continueOnFailure for this step
                   streamUpdateForBeatStatus.payload.success = !!(false | step.continueOnFailure)
                 } // if (code !== 0) {
-
-                // if (socket.connected) {
-                //   socket.emit('shipper.install',
-                //     {
-                //       jobId: payload.jobId,
-                //       code: 'FINISHED',
-                //       payload: step.action,
-                //       step: stepCounter + 1,
-                //       totalSteps: steps.length
-                //     });
-                // }
 
                 // Check if need to force Continue
                 if (step.continueOnFailure === true) {
@@ -1210,34 +1173,13 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
                 return continueToNextStep;
               },
               err (stderr) {
-                // streamUpdateForBeatStatus.errors.push(stderr);
                 logToSystem('Debug', `updateStreamConfigurationForBeat - STDERR: ${stderr}`);
                 streamUpdateForBeatStatus.payload.steps[stepCounter].result.errors.push(stderr);
-                // if (socket.connected) {
-                //   socket.emit('shipper.install',
-                //     {
-                //       jobId: payload.jobId,
-                //       code: 'STDERR',
-                //       payload: stderr,
-                //       step: stepCounter + 1,
-                //       totalSteps: steps.length
-                //     });
-                // }
+
               },
               out (stdout) {
-                // streamUpdateForBeatStatus.outputs.push(stdout);
                 logToSystem('Debug', `updateStreamConfigurationForBeat - STDOUT: ${stdout}`);
                 streamUpdateForBeatStatus.payload.steps[stepCounter].result.outputs.push(stdout);
-                // if (socket.connected) {
-                //   socket.emit('shipper.install',
-                //     {
-                //       jobId: payload.jobId,
-                //       code: 'STDOUT',
-                //       payload: stdout,
-                //       step: stepCounter + 1,
-                //       totalSteps: steps.length
-                //     });
-                // }
               }
             });
         });
@@ -1255,46 +1197,16 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
               }
             }
             streamUpdateForBeatStatus.stillUpdating = false;
-
-            // Cleanup the sessions
-            // // eslint-disable-next-line no-use-before-define
-            // killInstallShipper(socket, payload);
-            // if (socket.connected) {
-            //   socket.emit('shipper.install',
-            //     {
-            //       jobId: payload.jobId,
-            //       code: 'END',
-            //       payload: err || 'SUCCESS',
-            //       step: null,
-            //       totalSteps: steps.length
-            //     });
-            // }
           })
           .start({
             failure () {
               streamUpdateForBeatStatus.error.push('FAILURE - Job could not start');
               streamUpdateForBeatStatus.stillUpdating = false;
-
-              // // Cleanup the sessions
-              // // eslint-disable-next-line no-use-before-define
-              // killInstallShipper(socket, payload);
-              // if (socket.connected) {
-              //   socket.emit('shipper.install',
-              //     {
-              //       jobId: payload.jobId,
-              //       code: 'FAILURE',
-              //       payload: 'Job could not start',
-              //       step: null,
-              //       totalSteps: steps.length
-              //     });
-              // }
             }
           });
 
       } catch (errorCaught) {
         streamUpdateForBeatStatus.errors.push('Exception: ' + errorCaught.message);
-      } finally {
-        //
       }
     }).catch(() => {
       streamUpdateForBeatStatus.errors.push(`Failed to get SSH configuration for OpenCollector (based on provided UID: ${openCollector.uid}).`);
@@ -1328,7 +1240,6 @@ router.post('/UpdateStreamConfigurationForBeat', async (req, res) => {
     const { openCollector, beat, stream } = req.body;
 
     if (!streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`]) {
-      // streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`] = Object.assign({}, streamUpdateForBeatStatusTemplate);
       streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`] = JSON.parse(JSON.stringify(streamUpdateForBeatStatusTemplate));
     }
 
@@ -1357,16 +1268,9 @@ router.post('/UpdateStreamConfigurationForBeat', async (req, res) => {
       }
     }
 
-    if (streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].payload) {
-      // streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].payload.params = {
-      //   openCollector,
-      //   beat,
-      //   stream
-      // };
-    }
     res.json(streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`]);
   } else {
-    const errorMessages = []; //['Missing parameters in Body (Both `openCollector`, `beat` and `stream` objects are compulstory and must be properly populated).. See following errors.']
+    const errorMessages = [];
     if (missingOpenCollector) {
       errorMessages.push('Missing or malformed compulstory "openCollector" object.');
     }
@@ -1413,8 +1317,6 @@ function deleteStreamConfigurationForBeat (streamConfigDeleteForBeatStatus, open
       streamConfigDeleteForBeatStatus.errors = [];
       streamConfigDeleteForBeatStatus.outputs = [];
       streamConfigDeleteForBeatStatus.payload = {};
-
-      // ####################################################################################################
 
       try {
         // Initialise the empty list of Steps
@@ -1532,42 +1434,12 @@ function deleteStreamConfigurationForBeat (streamConfigDeleteForBeatStatus, open
                 streamConfigDeleteForBeatStatus.payload.steps[stepCounter].result.failed = false;
 
                 if (code !== 0) {
-                  // if (socket.connected) {
-                  //   socket.emit('shipper.install',
-                  //     {
-                  //       jobId: payload.jobId,
-                  //       code: 'ERROR',
-                  //       payload: 'STEP FAILED',
-                  //       step: stepCounter + 1,
-                  //       totalSteps: steps.length
-                  //     });
-                  //   socket.emit('shipper.install',
-                  //     {
-                  //       jobId: payload.jobId,
-                  //       code: 'EXIT',
-                  //       payload: `Return code: ${code}`,
-                  //       step: stepCounter + 1,
-                  //       totalSteps: steps.length
-                  //     });
-                  // }
-
                   streamConfigDeleteForBeatStatus.errors.push(`Step ${stepCounter} failed with return code (${code}) - Command was: ${step.command}`);
                   streamConfigDeleteForBeatStatus.payload.steps[stepCounter].result.failed = true;
                   continueToNextStep = false;
                   // Set the whole job as failed, except if we are meant to continueOnFailure for this step
                   streamConfigDeleteForBeatStatus.payload.success = !!(false | step.continueOnFailure)
                 } // if (code !== 0) {
-
-                // if (socket.connected) {
-                //   socket.emit('shipper.install',
-                //     {
-                //       jobId: payload.jobId,
-                //       code: 'FINISHED',
-                //       payload: step.action,
-                //       step: stepCounter + 1,
-                //       totalSteps: steps.length
-                //     });
-                // }
 
                 // Check if need to force Continue
                 if (step.continueOnFailure === true) {
@@ -1577,34 +1449,12 @@ function deleteStreamConfigurationForBeat (streamConfigDeleteForBeatStatus, open
                 return continueToNextStep;
               },
               err (stderr) {
-                // streamConfigDeleteForBeatStatus.errors.push(stderr);
                 logToSystem('Debug', `deleteStreamConfigurationForBeat - STDERR: ${stderr}`);
                 streamConfigDeleteForBeatStatus.payload.steps[stepCounter].result.errors.push(stderr);
-                // if (socket.connected) {
-                //   socket.emit('shipper.install',
-                //     {
-                //       jobId: payload.jobId,
-                //       code: 'STDERR',
-                //       payload: stderr,
-                //       step: stepCounter + 1,
-                //       totalSteps: steps.length
-                //     });
-                // }
               },
               out (stdout) {
-                // streamConfigDeleteForBeatStatus.outputs.push(stdout);
                 logToSystem('Debug', `deleteStreamConfigurationForBeat - STDOUT: ${stdout}`);
                 streamConfigDeleteForBeatStatus.payload.steps[stepCounter].result.outputs.push(stdout);
-                // if (socket.connected) {
-                //   socket.emit('shipper.install',
-                //     {
-                //       jobId: payload.jobId,
-                //       code: 'STDOUT',
-                //       payload: stdout,
-                //       step: stepCounter + 1,
-                //       totalSteps: steps.length
-                //     });
-                // }
               }
             });
         });
@@ -1622,46 +1472,16 @@ function deleteStreamConfigurationForBeat (streamConfigDeleteForBeatStatus, open
               }
             }
             streamConfigDeleteForBeatStatus.stillUpdating = false;
-
-            // Cleanup the sessions
-            // // eslint-disable-next-line no-use-before-define
-            // killInstallShipper(socket, payload);
-            // if (socket.connected) {
-            //   socket.emit('shipper.install',
-            //     {
-            //       jobId: payload.jobId,
-            //       code: 'END',
-            //       payload: err || 'SUCCESS',
-            //       step: null,
-            //       totalSteps: steps.length
-            //     });
-            // }
           })
           .start({
             failure () {
               streamConfigDeleteForBeatStatus.error.push('FAILURE - Job could not start');
               streamConfigDeleteForBeatStatus.stillUpdating = false;
-
-              // // Cleanup the sessions
-              // // eslint-disable-next-line no-use-before-define
-              // killInstallShipper(socket, payload);
-              // if (socket.connected) {
-              //   socket.emit('shipper.install',
-              //     {
-              //       jobId: payload.jobId,
-              //       code: 'FAILURE',
-              //       payload: 'Job could not start',
-              //       step: null,
-              //       totalSteps: steps.length
-              //     });
-              // }
             }
           });
 
       } catch (errorCaught) {
         streamConfigDeleteForBeatStatus.errors.push('Exception: ' + errorCaught.message);
-      } finally {
-        //
       }
     }).catch(() => {
       streamConfigDeleteForBeatStatus.errors.push(`Failed to get SSH configuration for OpenCollector (based on provided UID: ${openCollector.uid}).`);
@@ -1723,16 +1543,9 @@ router.post('/DeleteStreamConfigurationForBeat', async (req, res) => {
       }
     }
 
-    if (streamConfigDeleteForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].payload) {
-      // streamConfigDeleteForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].payload.params = {
-      //   openCollector,
-      //   beat,
-      //   stream
-      // };
-    }
     res.json(streamConfigDeleteForBeatStatusArray[`${openCollector.uid}_${stream.uid}`]);
   } else {
-    const errorMessages = []; //['Missing parameters in Body (Both `openCollector`, `beat` and `stream` objects are compulstory and must be properly populated).. See following errors.']
+    const errorMessages = [];
     if (missingOpenCollector) {
       errorMessages.push('Missing or malformed compulstory "openCollector" object.');
     }
@@ -1742,7 +1555,6 @@ router.post('/DeleteStreamConfigurationForBeat', async (req, res) => {
     if (missingStream) {
       errorMessages.push('Missing or malformed compulstory "stream" object.');
     }
-
 
     res.json(Object.assign(Object.assign({}, streamConfigDeleteForBeatStatusTemplate), { errors: errorMessages }, { requestBody: req.body }));
   }
@@ -1787,8 +1599,6 @@ function importPipelineForBeat (pipelineImportForBeatStatus, openCollector, beat
       pipelineImportForBeatStatus.outputs = [];
       pipelineImportForBeatStatus.payload = {};
 
-      // ####################################################################################################
-
       try  {
         // Initialise the empty list of Steps
         const steps = [];
@@ -1809,24 +1619,6 @@ function importPipelineForBeat (pipelineImportForBeatStatus, openCollector, beat
 
         // Load the Pipeline template file
         const pipelineTemplateFile = fs.readFileSync(path.join(process.env.baseDirname, 'resources', 'EZ_stream_placeholder-template.pipe'));
-
-        // Bash process:
-        // rm -rf /tmp/12345
-        // mkdir /tmp/12345
-        // tar xvfz /root/u/EZ_stream_placeholder-template.pipe --directory=/tmp/12345/
-        // cat ~/NEW_stream_placeholder/is_NEW_stream_placeholder.jq | cat > /tmp/12345/EZ_stream_placeholder/is_NEW_stream_placeholder.jq
-        // cat ~/NEW_stream_placeholder/NEW_stream_placeholder.jq | cat > /tmp/12345/EZ_stream_placeholder/NEW_stream_placeholder.jq
-        // sed --in-place 's/EZ_stream_placeholder/NEW_stream_placeholder/g' /tmp/12345/EZ_stream_placeholder/include.jq /tmp/12345/EZ_stream_placeholder/ocpipeline.root /tmp/12345/EZ_stream_placeholder/tests/testdata/general.json /tmp/12345/EZ_stream_placeholder/tests/testdata/EZ_stream_placeholder.json /tmp/12345/EZ_stream_placeholder/tests/EZ_stream_placeholder_test.jq /tmp/12345/EZ_stream_placeholder/tests/log_type_test.jq /tmp/12345/EZ_stream_placeholder/tests/is_EZ_stream_placeholder_test.jq /tmp/12345/EZ_stream_placeholder/transform.jq
-        // mv /tmp/12345/EZ_stream_placeholder/tests/EZ_stream_placeholder_test.jq /tmp/12345/EZ_stream_placeholder/tests/NEW_stream_placeholder_test.jq
-        // mv /tmp/12345/EZ_stream_placeholder/tests/is_EZ_stream_placeholder_test.jq /tmp/12345/EZ_stream_placeholder/tests/is_NEW_stream_placeholder_test.jq
-        // mv /tmp/12345/EZ_stream_placeholder/tests/testdata/EZ_stream_placeholder.json /tmp/12345/EZ_stream_placeholder/tests/testdata/NEW_stream_placeholder.json
-        // mv /tmp/12345/EZ_stream_placeholder /tmp/12345/NEW_stream_placeholder
-        // find /tmp/12345/NEW_stream_placeholder/* -mtime -1 -type f | sed 's_/tmp/12345/__' | tar cvzf /tmp/12345/NEW_stream_placeholder.tgz --directory=/tmp/12345/ --files-from=/dev/stdin --owner=0 --group=0 --mode='666'
-        // tar tvfz /tmp/12345/NEW_stream_placeholder.tgz
-        // cat /tmp/12345/NEW_stream_placeholder.tgz | ./lrctl oc pipe import
-        // rm -rf /tmp/12345
-        //
-        // Params: Beat_name + stream_name
 
         // Build a unique path to use as a temporary space to build the Pipeline file
         const cleanTimestamp = new Date().toISOString().replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -1921,42 +1713,12 @@ function importPipelineForBeat (pipelineImportForBeatStatus, openCollector, beat
                 pipelineImportForBeatStatus.payload.steps[stepCounter].result.failed = false;
 
                 if (code !== 0) {
-                  // if (socket.connected) {
-                  //   socket.emit('shipper.install',
-                  //     {
-                  //       jobId: payload.jobId,
-                  //       code: 'ERROR',
-                  //       payload: 'STEP FAILED',
-                  //       step: stepCounter + 1,
-                  //       totalSteps: steps.length
-                  //     });
-                  //   socket.emit('shipper.install',
-                  //     {
-                  //       jobId: payload.jobId,
-                  //       code: 'EXIT',
-                  //       payload: `Return code: ${code}`,
-                  //       step: stepCounter + 1,
-                  //       totalSteps: steps.length
-                  //     });
-                  // }
-
                   pipelineImportForBeatStatus.errors.push(`Step ${stepCounter} failed with return code (${code}) - Command was: ${step.command}`);
                   pipelineImportForBeatStatus.payload.steps[stepCounter].result.failed = true;
                   continueToNextStep = false;
                   // Set the whole job as failed, except if we are meant to continueOnFailure for this step
                   pipelineImportForBeatStatus.payload.success = !!(false | step.continueOnFailure)
                 } // if (code !== 0) {
-
-                // if (socket.connected) {
-                //   socket.emit('shipper.install',
-                //     {
-                //       jobId: payload.jobId,
-                //       code: 'FINISHED',
-                //       payload: step.action,
-                //       step: stepCounter + 1,
-                //       totalSteps: steps.length
-                //     });
-                // }
 
                 // Check if need to force Continue
                 if (step.continueOnFailure === true) {
@@ -1969,31 +1731,11 @@ function importPipelineForBeat (pipelineImportForBeatStatus, openCollector, beat
                 // pipelineImportForBeatStatus.errors.push(stderr);
                 logToSystem('Debug', `importPipelineForBeat - STDERR: ${stderr}`);
                 pipelineImportForBeatStatus.payload.steps[stepCounter].result.errors.push(stderr);
-                // if (socket.connected) {
-                //   socket.emit('shipper.install',
-                //     {
-                //       jobId: payload.jobId,
-                //       code: 'STDERR',
-                //       payload: stderr,
-                //       step: stepCounter + 1,
-                //       totalSteps: steps.length
-                //     });
-                // }
               },
               out (stdout) {
                 // pipelineImportForBeatStatus.outputs.push(stdout);
                 logToSystem('Debug', `importPipelineForBeat - STDOUT: ${stdout}`);
                 pipelineImportForBeatStatus.payload.steps[stepCounter].result.outputs.push(stdout);
-                // if (socket.connected) {
-                //   socket.emit('shipper.install',
-                //     {
-                //       jobId: payload.jobId,
-                //       code: 'STDOUT',
-                //       payload: stdout,
-                //       step: stepCounter + 1,
-                //       totalSteps: steps.length
-                //     });
-                // }
               }
             });
         });
@@ -2011,46 +1753,16 @@ function importPipelineForBeat (pipelineImportForBeatStatus, openCollector, beat
               }
             }
             pipelineImportForBeatStatus.stillUpdating = false;
-
-            // Cleanup the sessions
-            // // eslint-disable-next-line no-use-before-define
-            // killInstallShipper(socket, payload);
-            // if (socket.connected) {
-            //   socket.emit('shipper.install',
-            //     {
-            //       jobId: payload.jobId,
-            //       code: 'END',
-            //       payload: err || 'SUCCESS',
-            //       step: null,
-            //       totalSteps: steps.length
-            //     });
-            // }
           })
           .start({
             failure () {
               pipelineImportForBeatStatus.error.push('FAILURE - Job could not start');
               pipelineImportForBeatStatus.stillUpdating = false;
-
-              // // Cleanup the sessions
-              // // eslint-disable-next-line no-use-before-define
-              // killInstallShipper(socket, payload);
-              // if (socket.connected) {
-              //   socket.emit('shipper.install',
-              //     {
-              //       jobId: payload.jobId,
-              //       code: 'FAILURE',
-              //       payload: 'Job could not start',
-              //       step: null,
-              //       totalSteps: steps.length
-              //     });
-              // }
             }
           });
 
       } catch (errorCaught) {
         pipelineImportForBeatStatus.errors.push('Exception: ' + errorCaught.message);
-      } finally {
-        //
       }
     }).catch(() => {
       pipelineImportForBeatStatus.errors.push(`Failed to get SSH configuration for OpenCollector (based on provided UID: ${openCollector.uid}).`);
@@ -2120,13 +1832,6 @@ router.post('/ImportPipelineForBeat', async (req, res) => {
       }
     }
 
-    if (pipelineImportForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].payload) {
-      // pipelineImportForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].payload.params = {
-      //   openCollector,
-      //   beat,
-      //   stream
-      // };
-    }
     res.json(pipelineImportForBeatStatusArray[`${openCollector.uid}_${stream.uid}`]);
   } else {
     const errorMessages = []; //['Missing parameters in Body (Both `openCollector`, `beat` and `stream` objects are compulstory and must be properly populated).. See following errors.']
