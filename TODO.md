@@ -89,12 +89,12 @@
   - [x] List Open Collector LS
   - [x] Add LS Virtualisation Item to LS
 - [x] Update UpdateCollector API to persist `.pipelines` into TABLE `openCollectorsPipelines`
-- [ ] Build API endpoints to enable stream on OC for production
+- [x] Build API endpoints to enable stream on OC for production
   - [x] Drop Beat configuration in right location
     - [x] For Filebeat
     - [x] For jsBeat
-      - [ ] Clean/delete temp symbolic link if it exists at start of the job
     - [⏳] For LR Generic REST Beat (deferred)
+  - [x] Create `/oc/DeleteStreamConfigurationForBeat` API endpoint to remove/disable the Beat configuration
   - [x] Import JQ to OC
     - [x] Create Bash command lines/script
     - [x] Update `upsert_Log_Source_Virtualisation_Template_Item` SQL SP to use and sanitise the right Beat and Pipeline names
@@ -122,8 +122,8 @@
 
 ## TO FIX
 - [x] Damn Tedious saving NULL as 'null' in OC list
-- Refactor: upsert_Log_Source_Virtualisation_Template to not need to add a SP to EMDB
-- Refactor: upsert_Processing_Policy to not need to add a SP to EMDB
+- [ ] Refactor: upsert_Log_Source_Virtualisation_Template to not need to add a SP to EMDB
+- [ ] Refactor: upsert_Processing_Policy to not need to add a SP to EMDB
 - [ ] Add a KILL SIGTERM to the post Tail cleaning up process
 - [x] NPM modules with vulnerabilities
 
