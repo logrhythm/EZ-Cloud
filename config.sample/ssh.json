@@ -1,7 +1,0 @@
-{
-    "config": {
-        "host":"10.1.2.3",
-        "user":"root",
-        "pass":"**whoopsy**"
-        }
-}

@@ -6,7 +6,6 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 
-const configSsh = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'ssh.json'), 'utf8')).config;
 // Create SSH object
 const SSH = require('simple-ssh');
 
@@ -470,34 +469,36 @@ var dockerPresence = {
 }
 
 function checkDockerPresence () {
-  var ssh = new SSH(configSsh);
+  getSshConfigForCollector({ uid }).then((sshConfig) => {
+    const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
-  dockerPresence.stillChecking = true;
-  dockerPresence.errors = [];
-  dockerPresence.outputs = [];
-  dockerPresence.payload = { presence: false };
+    dockerPresence.stillChecking = true;
+    dockerPresence.errors = [];
+    dockerPresence.outputs = [];
+    dockerPresence.payload = { presence: false };
 
-  ssh
-    .exec('docker -v >/dev/null 2>/dev/null || exit 1', {
-      err: function(stderr) {
-        dockerPresence.errors.push(stderr);
-      },
-      exit: function(code) {
-        dockerPresence.payload.presence = (code === 1 ? false : true);
-        dockerPresence.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
-      },
-      out: function(stdout) {
-        dockerPresence.outputs.push(stdout);
-      }
-    })
-    .on('end', function(err) {
-      dockerPresence.stillChecking = false;
-    })
-    .start({
-      failure: function () {
+    ssh
+      .exec('docker -v >/dev/null 2>/dev/null || exit 1', {
+        err: function(stderr) {
+          dockerPresence.errors.push(stderr);
+        },
+        exit: function(code) {
+          dockerPresence.payload.presence = (code === 1 ? false : true);
+          dockerPresence.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
+        },
+        out: function(stdout) {
+          dockerPresence.outputs.push(stdout);
+        }
+      })
+      .on('end', function(err) {
         dockerPresence.stillChecking = false;
-      }
-    });
+      })
+      .start({
+        failure: function () {
+          dockerPresence.stillChecking = false;
+        }
+      });
+  });
 }
 
 router.get('/CheckDockerPresence', async (req, res) => {
@@ -536,40 +537,42 @@ var dockerVersion = {
 }
 
 function checkDockerVersion () {
-  var ssh = new SSH(configSsh);
+  getSshConfigForCollector({ uid }).then((sshConfig) => {
+    const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
-  dockerVersion.stillChecking = true;
-  dockerVersion.errors = [];
-  dockerVersion.outputs = [];
-  dockerVersion.payload = { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } };
+    dockerVersion.stillChecking = true;
+    dockerVersion.errors = [];
+    dockerVersion.outputs = [];
+    dockerVersion.payload = { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } };
 
-  ssh
-    .exec('docker -v 2>/dev/null || exit 1', {
-      err: function(stderr) {
-        dockerVersion.errors.push(stderr);
-      },
-      exit: function(code) {
-        dockerVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
-      },
-      out: function(stdout) {
-        version = stdout.match(/.*?\s+(([0-9]+)\.([0-9]+)\.([0-9]+))/);
-        if (version.length > 0) {
-          dockerVersion.payload = { version: { detailed: { major: version[2], minor: version[3], build: version[4] }, Full: version[1] } };
-        } else
-        {
-          dockerVersion.payload = { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } };
+    ssh
+      .exec('docker -v 2>/dev/null || exit 1', {
+        err: function(stderr) {
+          dockerVersion.errors.push(stderr);
+        },
+        exit: function(code) {
+          dockerVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
+        },
+        out: function(stdout) {
+          version = stdout.match(/.*?\s+(([0-9]+)\.([0-9]+)\.([0-9]+))/);
+          if (version.length > 0) {
+            dockerVersion.payload = { version: { detailed: { major: version[2], minor: version[3], build: version[4] }, Full: version[1] } };
+          } else
+          {
+            dockerVersion.payload = { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } };
+          }
+          dockerVersion.outputs.push(stdout);
         }
-        dockerVersion.outputs.push(stdout);
-      }
-    })
-    .on('end', function(err) {
-      dockerVersion.stillChecking = false;
-    })
-    .start({
-      failure: function () {
+      })
+      .on('end', function(err) {
         dockerVersion.stillChecking = false;
-      }
-    });
+      })
+      .start({
+        failure: function () {
+          dockerVersion.stillChecking = false;
+        }
+      });
+  });
 }
 
 router.get('/CheckDockerVersion', async (req, res) => {
@@ -613,59 +616,61 @@ var ocPresence = {
 }
 
 function checkOCPresence () {
-  var ssh = new SSH(configSsh);
-  ocPresence.stillChecking = true;
-  ocPresence.errors = [];
-  ocPresence.outputs = [];
-  ocPresence.payload.presence = false;
+  getSshConfigForCollector({ uid }).then((sshConfig) => {
+    const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
+    ocPresence.stillChecking = true;
+    ocPresence.errors = [];
+    ocPresence.outputs = [];
+    ocPresence.payload.presence = false;
 
-  ssh
-    .exec('ls lrctl >/dev/null 2>/dev/null || exit 1', {
-      err: function(stderr) {
-        ocPresence.errors.push(stderr);
-      },
-      exit: function(code) {
-        ocPresence.lrtclPresent = (code === 1 ? false : true);
-        return ocPresence.lrtclPresent;
-      },
-      out: function(stdout) {
-        ocPresence.outputs.push(stdout);
-      }
-    })
-    .exec('./lrctl --help >/dev/null 2>/dev/null || exit 1', {
-      err: function(stderr) {
-        ocPresence.errors.push(stderr);
-      },
-      exit: function(code) {
-        ocPresence.lrtclCanRun = (code === 1 ? false : true);
-        return ocPresence.lrtclCanRun;
-      },
-      out: function(stdout) {
-        ocPresence.outputs.push(stdout);
-      }
-    })
-    .exec('./lrctl status | grep -c -i open_collector 2>/dev/null || exit 1', {
-      err: function(stderr) {
-        ocPresence.errors.push(stderr);
-      },
-      exit: function(code) {
-        ocPresence.ocPresent = (code === 1 ? false : true);
-        ocPresence.payload.presence = ocPresence.ocPresent;
-        return ocPresence.ocPresent;
-      },
-      out: function(stdout) {
-        ocPresence.outputs.push(stdout);
-      }
-    })
-    .on('end', function(err) {
-      ocPresence.stillChecking = false;
-      ocPresence.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
-    })
-    .start({
-      failure: function () {
+    ssh
+      .exec('ls lrctl >/dev/null 2>/dev/null || exit 1', {
+        err: function(stderr) {
+          ocPresence.errors.push(stderr);
+        },
+        exit: function(code) {
+          ocPresence.lrtclPresent = (code === 1 ? false : true);
+          return ocPresence.lrtclPresent;
+        },
+        out: function(stdout) {
+          ocPresence.outputs.push(stdout);
+        }
+      })
+      .exec('./lrctl --help >/dev/null 2>/dev/null || exit 1', {
+        err: function(stderr) {
+          ocPresence.errors.push(stderr);
+        },
+        exit: function(code) {
+          ocPresence.lrtclCanRun = (code === 1 ? false : true);
+          return ocPresence.lrtclCanRun;
+        },
+        out: function(stdout) {
+          ocPresence.outputs.push(stdout);
+        }
+      })
+      .exec('./lrctl status | grep -c -i open_collector 2>/dev/null || exit 1', {
+        err: function(stderr) {
+          ocPresence.errors.push(stderr);
+        },
+        exit: function(code) {
+          ocPresence.ocPresent = (code === 1 ? false : true);
+          ocPresence.payload.presence = ocPresence.ocPresent;
+          return ocPresence.ocPresent;
+        },
+        out: function(stdout) {
+          ocPresence.outputs.push(stdout);
+        }
+      })
+      .on('end', function(err) {
         ocPresence.stillChecking = false;
-      }
-    });
+        ocPresence.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
+      })
+      .start({
+        failure: function () {
+          ocPresence.stillChecking = false;
+        }
+      });
+  });
 }
 
 router.get('/CheckOCPresence', async (req, res) => {
@@ -807,40 +812,42 @@ var ocHealth = {
 }
 
 function checkOCHealth () {
-  var ssh = new SSH(configSsh);
+  getSshConfigForCollector({ uid }).then((sshConfig) => {
+    const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
-  ocHealth.stillChecking = true;
-  ocHealth.errors = [];
-  ocHealth.outputs = [];
-  ocHealth.payload = { health: '' };
+    ocHealth.stillChecking = true;
+    ocHealth.errors = [];
+    ocHealth.outputs = [];
+    ocHealth.payload = { health: '' };
 
-  ssh
-    .exec('./lrctl status 2>/dev/null | grep -i open_collector 2>/dev/null', {
-      err: function(stderr) {
-        ocHealth.errors.push(stderr);
-      },
-      exit: function(code) {
-        ocHealth.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
-      },
-      out: function(stdout) {
-        health = stdout.match(/open_collector *[0-9]+\.[0-9]+\.[0-9]+ *[0-9]+-[0-9]+-[0-9]+ +[0-9]+:[0-9]+:[0-9]+ +\+[0-9]+ +UTC +(\w*)/);
-        if (health.length > 0) {
-          ocHealth.payload = { health: health[1] };
-        } else
-        {
-          ocHealth.payload = { health: '' };
+    ssh
+      .exec('./lrctl status 2>/dev/null | grep -i open_collector 2>/dev/null', {
+        err: function(stderr) {
+          ocHealth.errors.push(stderr);
+        },
+        exit: function(code) {
+          ocHealth.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
+        },
+        out: function(stdout) {
+          health = stdout.match(/open_collector *[0-9]+\.[0-9]+\.[0-9]+ *[0-9]+-[0-9]+-[0-9]+ +[0-9]+:[0-9]+:[0-9]+ +\+[0-9]+ +UTC +(\w*)/);
+          if (health.length > 0) {
+            ocHealth.payload = { health: health[1] };
+          } else
+          {
+            ocHealth.payload = { health: '' };
+          }
+          ocHealth.outputs.push(stdout);
         }
-        ocHealth.outputs.push(stdout);
-      }
-    })
-    .on('end', function(err) {
-      ocHealth.stillChecking = false;
-    })
-    .start({
-      failure: function () {
+      })
+      .on('end', function(err) {
         ocHealth.stillChecking = false;
-      }
-    });
+      })
+      .start({
+        failure: function () {
+          ocHealth.stillChecking = false;
+        }
+      });
+  });
 }
 
 router.get('/CheckOCHealth', async (req, res) => {
@@ -879,34 +886,36 @@ var ocConfiguration = {
 }
 
 function readOcConfiguration () {
-  var ssh = new SSH(configSsh);
+  getSshConfigForCollector({ uid }).then((sshConfig) => {
+    const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
-  ocConfiguration.stillChecking = true;
-  ocConfiguration.errors = [];
-  ocConfiguration.outputs = [];
-  ocConfiguration.payload = '';
+    ocConfiguration.stillChecking = true;
+    ocConfiguration.errors = [];
+    ocConfiguration.outputs = [];
+    ocConfiguration.payload = '';
 
-  ssh
-    .exec('./lrctl open-collector config export 2>/dev/null', {
-      err: function(stderr) {
-        ocConfiguration.errors.push(stderr);
-      },
-      exit: function(code) {
-        ocConfiguration.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
-      },
-      out: function(stdout) {
-        ocConfiguration.payload = stdout;
-        ocConfiguration.outputs.push(stdout);
-      }
-    })
-    .on('end', function(err) {
-      ocConfiguration.stillChecking = false;
-    })
-    .start({
-      failure: function () {
+    ssh
+      .exec('./lrctl open-collector config export 2>/dev/null', {
+        err: function(stderr) {
+          ocConfiguration.errors.push(stderr);
+        },
+        exit: function(code) {
+          ocConfiguration.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
+        },
+        out: function(stdout) {
+          ocConfiguration.payload = stdout;
+          ocConfiguration.outputs.push(stdout);
+        }
+      })
+      .on('end', function(err) {
         ocConfiguration.stillChecking = false;
-      }
-    });
+      })
+      .start({
+        failure: function () {
+          ocConfiguration.stillChecking = false;
+        }
+      });
+  });
 }
 
 router.get('/ReadOcConfiguration', async (req, res) => {
