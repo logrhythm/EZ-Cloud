@@ -1313,7 +1313,6 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
     }
     streamUpdateForBeatStatus.stillUpdating = false;
   }
-  /* eslint-enable no-param-reassign */
 }
 
 router.post('/UpdateStreamConfigurationForBeat', async (req, res) => {
@@ -1380,6 +1379,369 @@ router.post('/UpdateStreamConfigurationForBeat', async (req, res) => {
 
 
     res.json(Object.assign(Object.assign({}, streamUpdateForBeatStatusTemplate), { errors: errorMessages }, { requestBody: req.body }));
+  }
+});
+
+// #############################################
+// DeleteStreamConfigurationForBeat
+// #############################################
+
+const streamConfigDeleteForBeatStatusTemplate = {
+  stillUpdating: false,
+  lastSuccessfulUpdateTimeStampUtc: 0,
+  payload: {}, // object with result of the operation
+  errors: [], // array of all the errors
+  outputs: [] // array of all the outputs
+};
+
+const streamConfigDeleteForBeatStatusArray = {};
+
+function deleteStreamConfigurationForBeat (streamConfigDeleteForBeatStatus, openCollector, beat, stream) {
+  // Check we are ship-shape with the params
+  const missingOpenCollector = !(openCollector && openCollector.uid && openCollector.uid.length)
+  const missingBeat = !(beat && beat.name && beat.name.length)
+  const missingStream = !(stream && stream.uid && stream.uid.length)
+  if (
+    !missingOpenCollector &&
+    !missingBeat &&
+    !missingStream
+  ) {
+    getSshConfigForCollector({ uid: openCollector.uid }).then((sshConfig) => {
+      const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
+
+      streamConfigDeleteForBeatStatus.stillUpdating = true;
+      streamConfigDeleteForBeatStatus.errors = [];
+      streamConfigDeleteForBeatStatus.outputs = [];
+      streamConfigDeleteForBeatStatus.payload = {};
+
+      // ####################################################################################################
+
+      try {
+        // Initialise the empty list of Steps
+        const steps = [];
+
+        // Config file name will be escaped (to only letters, numbers, dashes and underscores) to 
+        // not cause issues on the file system. Any non autorised chars will be replaced by "_".
+        // It is built using:
+        // - Stream Name
+        // - "__"
+        // - Stream UID
+        const configFileNameBase = String(`${stream.name}__${stream.uid}`).replace(/[^a-zA-Z0-9_-]/g, '_');
+
+        // To avoid any risk of deleting unrelated files, we bail if the configFileNameBase is empty
+        if (configFileNameBase.length === 0) {
+          throw new Error('configFileNameBase too short (Stream Name and UID must be non-empty)');
+        }
+
+        // ##########
+        // Filebeat
+        // ##########
+        if (beat.name.toLowerCase() === 'filebeat') {
+          // Build the list of steps
+
+          steps.push(
+            {
+              action: `Delete any previous backups of the Stream configuration files (${configFileNameBase}*.bak)`,
+              command: `for f in "/etc/filebeat/inputs.d/${configFileNameBase}"*.bak; do if [ -f "$f" ]; then rm -f "$f" ; fi ; done ;`,
+              continueOnFailure: true
+            },
+            {
+              action: `Backup any previous Stream configuration files (${configFileNameBase}*.yml -> *.bak)`,
+              command: `for f in "/etc/filebeat/inputs.d/${configFileNameBase}"*.yml; do if [ -f "$f" ]; then mv -- "$f" "\${f%.yml}.bak" ; fi ; done ;`,
+              continueOnFailure: true
+            },
+            {
+              action: 'List the Stream files of the config directory',
+              command: 'ls -la "/etc/filebeat/inputs.d/${configFileNameBase}"*'
+            }
+          );
+
+          streamConfigDeleteForBeatStatus.payload.steps = steps;
+        }
+
+        // ##########
+        // jsBeat
+        // ##########
+        if (beat.name.toLowerCase() === 'jsbeat') {
+          // Build a unique path to use a Symbolic link to the installation folder of jsBeat
+          // Most people will deploy it under /opt/jsBeat, but we plan for all the cases
+          const cleanTimestamp = new Date().toISOString().replace(/[^a-zA-Z0-9_-]/g, '_');
+          const tempSymbolicLinkPath = `/tmp/${configFileNameBase}__${cleanTimestamp}`;
+          // Build the list of steps
+
+          steps.push(
+            {
+              action: 'Create Symbolic link to the installation folder of jsBeat',
+              command: `jsBeatPath=$(systemctl show jsbeat | grep "^ExecStart" | head -n 1 | sed -E 's/\\s+;\\s+/🏁/g' | sed -E 's/(^.*path=([^🏁]+).*)/\\2/' | sed -E 's_/bin/.*__') ; if [ -z "$jsBeatPath" ]; then echo -E "Could not find jsBeat path (using 'systemctl show jsbeat'). Stopping now."; exit 42; else echo -E "jsBeat found at: $jsBeatPath"; ln -s $jsBeatPath ${tempSymbolicLinkPath} ; fi`
+            },
+            {
+              action: `Delete any previous backups of the Stream configuration files (${configFileNameBase}*.bak)`,
+              command: `for f in "${tempSymbolicLinkPath}/config/inputs.d/${configFileNameBase}"*.bak; do if [ -f "$f" ]; then rm -f "$f" ; fi ; done ;`,
+              continueOnFailure: true
+            },
+            {
+              action: `Backup any previous Stream configuration files (${configFileNameBase}*.json -> *.bak)`,
+              command: `for f in "${tempSymbolicLinkPath}/config/inputs.d/${configFileNameBase}"*.json; do if [ -f "$f" ]; then mv -- "$f" "\${f%.json}.bak" ; fi ; done ;`,
+              continueOnFailure: true
+            },
+            {
+              action: 'List the Stream files of the config directory',
+              command: `ls -la "${tempSymbolicLinkPath}/config/inputs.d/${configFileNameBase}"*`
+            },
+            {
+              action: 'Delete the created Symbolic link to the installation folder of jsBeat',
+              command: `rm -f "${tempSymbolicLinkPath}"`
+            },
+            {
+              action: 'Restart jsBeat to take new configuration files into account',
+              command: 'sudo systemctl restart jsbeat'
+            }
+          );
+          streamConfigDeleteForBeatStatus.payload.steps = steps;
+        }
+
+        // ##########
+        // lrHttpRest
+        // ##########
+        if (beat.name.toLowerCase() === 'lrhttprest') {
+          //
+        }
+
+        // Add the Steps to the Exec stack
+        steps.forEach((step, stepCounter) => {
+          logToSystem('Debug', `deleteStreamConfigurationForBeat - Adding step: (${stepCounter}) ${step.action}...`);
+
+          // Add space to record result of the action (return code, STDOUT, STDERR, ...)
+          streamConfigDeleteForBeatStatus.payload.steps[stepCounter].result = {
+            errors: [],
+            outputs: [],
+            exitCode: undefined,
+            failed: undefined
+          }
+
+          ssh
+            .exec(step.command, {
+              in: step.stdin || '',
+              exit (code) {
+                let continueToNextStep = true;
+                logToSystem('Debug', `deleteStreamConfigurationForBeat - EXEC: (${code}) - ${step.command}`);
+                streamConfigDeleteForBeatStatus.payload.steps[stepCounter].result.exitCode = code;
+                streamConfigDeleteForBeatStatus.payload.steps[stepCounter].result.failed = false;
+
+                if (code !== 0) {
+                  // if (socket.connected) {
+                  //   socket.emit('shipper.install',
+                  //     {
+                  //       jobId: payload.jobId,
+                  //       code: 'ERROR',
+                  //       payload: 'STEP FAILED',
+                  //       step: stepCounter + 1,
+                  //       totalSteps: steps.length
+                  //     });
+                  //   socket.emit('shipper.install',
+                  //     {
+                  //       jobId: payload.jobId,
+                  //       code: 'EXIT',
+                  //       payload: `Return code: ${code}`,
+                  //       step: stepCounter + 1,
+                  //       totalSteps: steps.length
+                  //     });
+                  // }
+
+                  streamConfigDeleteForBeatStatus.errors.push(`Step ${stepCounter} failed with return code (${code}) - Command was: ${step.command}`);
+                  streamConfigDeleteForBeatStatus.payload.steps[stepCounter].result.failed = true;
+                  continueToNextStep = false;
+                  // Set the whole job as failed, except if we are meant to continueOnFailure for this step
+                  streamConfigDeleteForBeatStatus.payload.success = !!(false | step.continueOnFailure)
+                } // if (code !== 0) {
+
+                // if (socket.connected) {
+                //   socket.emit('shipper.install',
+                //     {
+                //       jobId: payload.jobId,
+                //       code: 'FINISHED',
+                //       payload: step.action,
+                //       step: stepCounter + 1,
+                //       totalSteps: steps.length
+                //     });
+                // }
+
+                // Check if need to force Continue
+                if (step.continueOnFailure === true) {
+                  continueToNextStep = true;
+                }
+
+                return continueToNextStep;
+              },
+              err (stderr) {
+                // streamConfigDeleteForBeatStatus.errors.push(stderr);
+                logToSystem('Debug', `deleteStreamConfigurationForBeat - STDERR: ${stderr}`);
+                streamConfigDeleteForBeatStatus.payload.steps[stepCounter].result.errors.push(stderr);
+                // if (socket.connected) {
+                //   socket.emit('shipper.install',
+                //     {
+                //       jobId: payload.jobId,
+                //       code: 'STDERR',
+                //       payload: stderr,
+                //       step: stepCounter + 1,
+                //       totalSteps: steps.length
+                //     });
+                // }
+              },
+              out (stdout) {
+                // streamConfigDeleteForBeatStatus.outputs.push(stdout);
+                logToSystem('Debug', `deleteStreamConfigurationForBeat - STDOUT: ${stdout}`);
+                streamConfigDeleteForBeatStatus.payload.steps[stepCounter].result.outputs.push(stdout);
+                // if (socket.connected) {
+                //   socket.emit('shipper.install',
+                //     {
+                //       jobId: payload.jobId,
+                //       code: 'STDOUT',
+                //       payload: stdout,
+                //       step: stepCounter + 1,
+                //       totalSteps: steps.length
+                //     });
+                // }
+              }
+            });
+        });
+
+        // Add Event handlers and start
+        ssh
+          .on('end', (err) => {
+            logToSystem('Debug', `deleteStreamConfigurationForBeat - END: (${err})`);
+            if (err) {
+              streamConfigDeleteForBeatStatus.error.push(err);
+            } else {
+              //  If Success is not already set to False, then set it to true
+              if (streamConfigDeleteForBeatStatus.payload.success !== false) {
+                streamConfigDeleteForBeatStatus.payload.success = true;
+              }
+            }
+            streamConfigDeleteForBeatStatus.stillUpdating = false;
+
+            // Cleanup the sessions
+            // // eslint-disable-next-line no-use-before-define
+            // killInstallShipper(socket, payload);
+            // if (socket.connected) {
+            //   socket.emit('shipper.install',
+            //     {
+            //       jobId: payload.jobId,
+            //       code: 'END',
+            //       payload: err || 'SUCCESS',
+            //       step: null,
+            //       totalSteps: steps.length
+            //     });
+            // }
+          })
+          .start({
+            failure () {
+              streamConfigDeleteForBeatStatus.error.push('FAILURE - Job could not start');
+              streamConfigDeleteForBeatStatus.stillUpdating = false;
+
+              // // Cleanup the sessions
+              // // eslint-disable-next-line no-use-before-define
+              // killInstallShipper(socket, payload);
+              // if (socket.connected) {
+              //   socket.emit('shipper.install',
+              //     {
+              //       jobId: payload.jobId,
+              //       code: 'FAILURE',
+              //       payload: 'Job could not start',
+              //       step: null,
+              //       totalSteps: steps.length
+              //     });
+              // }
+            }
+          });
+
+      } catch (errorCaught) {
+        streamConfigDeleteForBeatStatus.errors.push('Exception: ' + errorCaught.message);
+      } finally {
+        //
+      }
+    }).catch(() => {
+      streamConfigDeleteForBeatStatus.errors.push(`Failed to get SSH configuration for OpenCollector (based on provided UID: ${openCollector.uid}).`);
+      streamConfigDeleteForBeatStatus.stillUpdating = false;
+    });
+  } else {
+    streamConfigDeleteForBeatStatus.errors.push('[deleteStreamConfigurationForBeat] Missing parameter(s). See following errors.');
+    if (missingOpenCollector) {
+      streamConfigDeleteForBeatStatus.errors.push('Missing or malformed "openCollector" object.');
+    }
+    if (missingBeat) {
+      streamConfigDeleteForBeatStatus.errors.push('Missing or malformed "beat" object.');
+    }
+    if (missingStream) {
+      streamConfigDeleteForBeatStatus.errors.push('Missing or malformed "stream" object.');
+    }
+    streamConfigDeleteForBeatStatus.stillUpdating = false;
+  }
+}
+
+router.post('/DeleteStreamConfigurationForBeat', async (req, res) => {
+  // Check we are ship-shape with the params
+  const missingOpenCollector = !(req && req.body && req.body.openCollector && req.body.openCollector.uid && req.body.openCollector.uid.length)
+  const missingBeat = !(req && req.body && req.body.beat && req.body.beat.name && req.body.beat.name.length)
+  const missingStream = !(req && req.body && req.body.stream && req.body.stream.uid && req.body.stream.uid.length)
+  if (
+    !missingOpenCollector &&
+    !missingBeat &&
+    !missingStream
+  ) {
+    const { openCollector, beat, stream } = req.body;
+
+    if (!streamConfigDeleteForBeatStatusArray[`${openCollector.uid}_${stream.uid}`]) {
+      streamConfigDeleteForBeatStatusArray[`${openCollector.uid}_${stream.uid}`] = JSON.parse(JSON.stringify(streamConfigDeleteForBeatStatusTemplate));
+    }
+
+    if (req.body.NoWait === undefined || (req.body.NoWait !== undefined && req.body.NoWait.toLowerCase() !== 'true')) {
+      // Waiting - Sync
+      if (!streamConfigDeleteForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].stillUpdating) {
+        streamConfigDeleteForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].stillUpdating = true;
+        deleteStreamConfigurationForBeat(streamConfigDeleteForBeatStatusArray[`${openCollector.uid}_${stream.uid}`], openCollector, beat, stream);
+      }
+      const loopEndTime = Date.now() / 1000 + maxCheckInterval;
+
+      while (streamConfigDeleteForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].stillUpdating && (loopEndTime > (Date.now() / 1000))) {
+        // Wait for 50 ms
+        // eslint-disable-next-line no-await-in-loop
+        await waitMilliseconds(50);
+      }
+    } else {
+      // No waiting - Async
+      // eslint-disable-next-line no-lonely-if
+      if (
+        !streamConfigDeleteForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].stillUpdating
+        && (streamConfigDeleteForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].lastSuccessfulUpdateTimeStampUtc + maxCheckInterval)
+        <= (Date.now() / 1000)
+      ) {
+        deleteStreamConfigurationForBeat(streamConfigDeleteForBeatStatusArray[`${openCollector.uid}_${stream.uid}`], openCollector, beat, stream);
+      }
+    }
+
+    if (streamConfigDeleteForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].payload) {
+      // streamConfigDeleteForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].payload.params = {
+      //   openCollector,
+      //   beat,
+      //   stream
+      // };
+    }
+    res.json(streamConfigDeleteForBeatStatusArray[`${openCollector.uid}_${stream.uid}`]);
+  } else {
+    const errorMessages = []; //['Missing parameters in Body (Both `openCollector`, `beat` and `stream` objects are compulstory and must be properly populated).. See following errors.']
+    if (missingOpenCollector) {
+      errorMessages.push('Missing or malformed compulstory "openCollector" object.');
+    }
+    if (missingBeat) {
+      errorMessages.push('Missing or malformed compulstory "beat" object.');
+    }
+    if (missingStream) {
+      errorMessages.push('Missing or malformed compulstory "stream" object.');
+    }
+
+
+    res.json(Object.assign(Object.assign({}, streamConfigDeleteForBeatStatusTemplate), { errors: errorMessages }, { requestBody: req.body }));
   }
 });
 
@@ -1704,7 +2066,6 @@ function importPipelineForBeat (pipelineImportForBeatStatus, openCollector, beat
     }
     pipelineImportForBeatStatus.stillUpdating = false;
   }
-  /* eslint-enable no-param-reassign */
 }
 
 router.post('/ImportPipelineForBeat', async (req, res) => {
