@@ -89,11 +89,10 @@
   - [x] List Open Collector LS
   - [x] Add LS Virtualisation Item to LS
 - [x] Update UpdateCollector API to persist `.pipelines` into TABLE `openCollectorsPipelines`
-- [ ] Build API endpoints to enable stream on OC for production
+- [x] Build API endpoints to enable stream on OC for production
   - [x] Drop Beat configuration in right location
     - [x] For Filebeat
     - [x] For jsBeat
-      - [ ] Clean/delete temp symbolic link if it exists at start of the job
     - [⏳] For LR Generic REST Beat (deferred)
   - [x] Create `/oc/DeleteStreamConfigurationForBeat` API endpoint to remove/disable the Beat configuration
   - [x] Import JQ to OC

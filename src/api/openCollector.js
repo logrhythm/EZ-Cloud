@@ -1452,7 +1452,8 @@ function deleteStreamConfigurationForBeat (streamConfigDeleteForBeatStatus, open
             },
             {
               action: 'List the Stream files of the config directory',
-              command: 'ls -la "/etc/filebeat/inputs.d/${configFileNameBase}"*'
+              command: 'ls -la "/etc/filebeat/inputs.d/${configFileNameBase}"*',
+              continueOnFailure: true
             }
           );
 
@@ -1486,11 +1487,13 @@ function deleteStreamConfigurationForBeat (streamConfigDeleteForBeatStatus, open
             },
             {
               action: 'List the Stream files of the config directory',
-              command: `ls -la "${tempSymbolicLinkPath}/config/inputs.d/${configFileNameBase}"*`
+              command: `ls -la "${tempSymbolicLinkPath}/config/inputs.d/${configFileNameBase}"*`,
+              continueOnFailure: true
             },
             {
               action: 'Delete the created Symbolic link to the installation folder of jsBeat',
-              command: `rm -f "${tempSymbolicLinkPath}"`
+              command: `rm -f "${tempSymbolicLinkPath}"`,
+              continueOnFailure: true
             },
             {
               action: 'Restart jsBeat to take new configuration files into account',
