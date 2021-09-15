@@ -1,11 +1,4 @@
--- Due to the impossibility to call a SP from another DB that uses a Table-Valued type
--- We need to create the real SP in EMDB, and call it from EZ using a shell SP
--- :(
-
-USE LogRhythmEMDB
-GO
-
-DROP PROCEDURE IF EXISTS [dbo].[EZ_Upsert_Processing_Policy]
+DROP PROCEDURE IF EXISTS [dbo].[upsert_Processing_Policy]
 GO
 
 SET ANSI_NULLS ON
@@ -13,12 +6,13 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 -- =============================================
--- Author:		  Tony Mass�
+-- Author:		  Tony Massé
 -- Create date: 2021-07-12 -- Discovery and POC
--- Updated date: 2021-07-13 -- Bring POC into Store Procedure
+-- Update date: 2021-07-13 -- Bring POC into Store Procedure
+-- Update date: 2021-09-10 -- Refactor to not need to add a SP to EMDB
 -- =============================================
 
-CREATE PROCEDURE [dbo].[EZ_Upsert_Processing_Policy] 
+CREATE PROCEDURE [dbo].[upsert_Processing_Policy] 
 	@uid varchar(40), -- UID of the LS Type
 	@name nvarchar(50), -- Name of the LS Type
 	@MPEPolicy_Name varchar(50) = 'LogRhythm Default' -- Name of the new Policy (if Policy already exists, old name is kept)
@@ -91,43 +85,68 @@ ___________  DO NOT MODIFY THE LINE BELOW  __________
 				SELECT @UpsertedMPEPolicyID = ISNULL(MAX(MPEPolicyID), 0) + 1 FROM[LogRhythmEMDB].[dbo].[MPERuleToPolicy]
 			END
 
-			-- Get the MPE Rule matching the LS Type UID and all its Sub Rules, and use it/them to build the Policy array
-			DECLARE @MPERuleToPolicyArray dbo.MPERuleToPolicyType
-
-			INSERT INTO @MPERuleToPolicyArray 
-				SELECT
-					a.MPERuleID AS 'MPERuleID', 
-					@UpsertedMPEPolicyID AS 'MPEPolicyID', 
-					ISNULL(a.DefMsgTTL, 32) AS 'MsgTTL', 
-					ISNULL(a.DefMsgArchiveMode, 2) AS 'MsgArchiveMode', 
-					ISNULL(a.DefForwarding, 0) AS 'Forwarding', 
-					ISNULL(b.DefRiskRating, 0) AS 'RiskRating', 
-					ISNULL(a.DefFalseAlarmRating, 0) AS 'FalseAlarmRating',
-					ISNULL(a.DefLogMartMode, 13627389) AS 'LogMartMode', 
-					1 AS 'Enabled'
-				FROM [LogRhythmEMDB].[dbo].[MPERule] a 
-				INNER JOIN [LogRhythmEMDB].[dbo].[CommonEvent] b 
-					ON a.CommonEventID = b.CommonEventID 
-				INNER JOIN [LogRhythmEMDB].[dbo].[MPERuleToMsgSourceType] c 
-					ON a.MPERuleRegexID = c.MPERuleRegexID 
-				WHERE c.MsgSourceTypeID = @RelatedLsTypeID
-					AND a.RuleStatus IN (1,2)
-					AND a.RecordStatus = 1
-					AND a.MPERuleRegexID = @RelatedMPERuleRegexID
-
-
-			-- KRA-BA-DA-BA-DOOM, create or update the MPE Policy
+			-- And BAM, get the job done as [LogRhythmEMDB] as the context
 			DECLARE @RC int
-			EXEC @RC = [LogRhythmEMDB].[dbo].[LogRhythm_EMDB_MPEPolicy_Upsert] 
-				@MPEPolicyId=@UpsertedMPEPolicyID,
-				@MsgSourceTypeID=@RelatedLsTypeID,
-				@Name=@UpsertedMPEPolicy_Name,
-				@ShortDesc=@UpsertedMPEPolicy_ShortDesc,
-				@LongDesc=@UpsertedMPEPolicy_LongDesc,
-				@AllowAutoSort=@UpsertedMPEPolicy_AllowAutoSort,
-				@RuleTimeoutMs=@UpsertedMPEPolicy_RuleTimeoutMs,
-				@UserId=@UpsertedMPEPolicy_UpdatedBy,
-				@tblPolicyRules=@MPERuleToPolicyArray
+			EXEC @RC = LogRhythmEMDB.sys.sp_executesql N'
+
+				-- Get the MPE Rule matching the LS Type UID and all its Sub Rules, and use it/them to build the Policy array
+				DECLARE @MPERuleToPolicyArray dbo.MPERuleToPolicyType -- 👈👈👈👈👈👈👈
+
+				INSERT INTO @MPERuleToPolicyArray 
+					SELECT
+						a.MPERuleID AS [MPERuleID], 
+						@UpsertedMPEPolicyID AS [MPEPolicyID], 
+						ISNULL(a.DefMsgTTL, 32) AS [MsgTTL], 
+						ISNULL(a.DefMsgArchiveMode, 2) AS [MsgArchiveMode], 
+						ISNULL(a.DefForwarding, 0) AS [Forwarding], 
+						ISNULL(b.DefRiskRating, 0) AS [RiskRating], 
+						ISNULL(a.DefFalseAlarmRating, 0) AS [FalseAlarmRating],
+						ISNULL(a.DefLogMartMode, 13627389) AS [LogMartMode], 
+						1 AS [Enabled]
+					FROM [dbo].[MPERule] a 
+					INNER JOIN [dbo].[CommonEvent] b 
+						ON a.CommonEventID = b.CommonEventID 
+					INNER JOIN [dbo].[MPERuleToMsgSourceType] c 
+						ON a.MPERuleRegexID = c.MPERuleRegexID 
+					WHERE c.MsgSourceTypeID = @RelatedLsTypeID
+						AND a.RuleStatus IN (1,2)
+						AND a.RecordStatus = 1
+						AND a.MPERuleRegexID = @RelatedMPERuleRegexID
+
+
+				-- KRA-BA-DA-BA-DOOM, create or update the MPE Policy
+				DECLARE @RC int
+				EXEC @RC = [dbo].[LogRhythm_EMDB_MPEPolicy_Upsert] 
+					@MPEPolicyId=@UpsertedMPEPolicyID,
+					@MsgSourceTypeID=@RelatedLsTypeID,
+					@Name=@UpsertedMPEPolicy_Name,
+					@ShortDesc=@UpsertedMPEPolicy_ShortDesc,
+					@LongDesc=@UpsertedMPEPolicy_LongDesc,
+					@AllowAutoSort=@UpsertedMPEPolicy_AllowAutoSort,
+					@RuleTimeoutMs=@UpsertedMPEPolicy_RuleTimeoutMs,
+					@UserId=@UpsertedMPEPolicy_UpdatedBy,
+					@tblPolicyRules=@MPERuleToPolicyArray
+			'
+			,N'
+			@UpsertedMPEPolicyID int,
+			@RelatedLsTypeID int,
+			@RelatedMPERuleRegexID int,
+			@UpsertedMPEPolicy_Name varchar(50),
+			@UpsertedMPEPolicy_ShortDesc varchar(255),
+			@UpsertedMPEPolicy_LongDesc varchar(2000),
+			@UpsertedMPEPolicy_AllowAutoSort bit,
+			@UpsertedMPEPolicy_RuleTimeoutMs int,
+			@UpsertedMPEPolicy_UpdatedBy int
+			'
+			,@UpsertedMPEPolicyID=@UpsertedMPEPolicyID
+			,@RelatedLsTypeID=@RelatedLsTypeID
+			,@RelatedMPERuleRegexID=@RelatedMPERuleRegexID
+			,@UpsertedMPEPolicy_Name=@UpsertedMPEPolicy_Name
+			,@UpsertedMPEPolicy_ShortDesc=@UpsertedMPEPolicy_ShortDesc
+			,@UpsertedMPEPolicy_LongDesc=@UpsertedMPEPolicy_LongDesc
+			,@UpsertedMPEPolicy_AllowAutoSort=@UpsertedMPEPolicy_AllowAutoSort
+			,@UpsertedMPEPolicy_RuleTimeoutMs=@UpsertedMPEPolicy_RuleTimeoutMs
+			,@UpsertedMPEPolicy_UpdatedBy=@UpsertedMPEPolicy_UpdatedBy
 
 			-- SET NOCOUNT ON added to prevent extra result sets from
 			-- interfering with SELECT statements.
@@ -143,37 +162,3 @@ ___________  DO NOT MODIFY THE LINE BELOW  __________
 	END
 END
 GO
-
--- And now, for something spectacular, we create a dummy SP just to call the other...
--- :(
-
-USE EZ
-GO
-
-DROP PROCEDURE IF EXISTS [dbo].[upsert_Processing_Policy]
-GO
-
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
--- =============================================
--- Author:		  Tony Mass�
--- Create date: 2021-07-12 -- Discovery and POC
--- Updated date: 2021-07-13 -- Bring POC into Store Procedure
--- =============================================
-
-CREATE PROCEDURE [dbo].[upsert_Processing_Policy] 
-	@uid varchar(40), -- UID of the LS Type
-	@name nvarchar(50), -- Name of the LS Type
-	@MPEPolicy_Name varchar(50) = 'LogRhythm Default' -- Name of the new Policy (if Policy already exists, old name is kept)
-AS
-BEGIN
-	DECLARE @RC int
-	EXEC @RC = [LogRhythmEMDB].[dbo].[EZ_Upsert_Processing_Policy] 
-		@uid=@uid,
-		@name=@name,
-		@MPEPolicy_Name=@MPEPolicy_Name
-END
-GO
-
