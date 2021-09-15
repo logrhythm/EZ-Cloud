@@ -42,7 +42,7 @@
     "supertest": "^6.1.6",
     "webpack": "^5.51.1",
     "webpack-cli": "^4.8.0",
-    "zip-webpack-plugin": "^4.0.1"
+    "webpack-shell-plugin-next": "^2.2.2"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.3",

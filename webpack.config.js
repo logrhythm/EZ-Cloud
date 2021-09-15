@@ -1,5 +1,5 @@
 const CopyPlugin = require('copy-webpack-plugin');
-// const ZipPlugin = require('zip-webpack-plugin');
+const WebpackShellPluginNext = require('webpack-shell-plugin-next');
 const path = require('path');
 const PACKAGE = require('./package.json');
 const version = PACKAGE.version;
@@ -15,6 +15,7 @@ module.exports = {
     mode: 'production',
     target: 'node',
     plugins: [
+        // Copy all the necessary sample files to the relevant place under dist/
         new CopyPlugin({
             patterns: [
                 { from: 'config.dist', to: path.join('..', 'config'), toType: 'dir' },
@@ -25,9 +26,16 @@ module.exports = {
                 { from: 'database', to: path.join('..', 'database'), toType: 'dir' }
             ],
         })
-        // ,
-        // new ZipPlugin({
-        //     path: path.join('..')
-        // })
+        ,
+        new WebpackShellPluginNext({
+            onBuildExit: {
+                scripts: [
+                    // Create a Zip file for this packaged version
+                    'PowerShell.exe -Command Compress-Archive -Path "' + path.join(__dirname, 'dist', `EZ-Cloud.v${version}`) + '" -DestinationPath "' + path.join(__dirname, 'dist', `EZ-Cloud_v${version}.zip` + '" -Force')
+                ],
+                blocking: false,
+                parallel: false
+            }
+        })
     ]
 }

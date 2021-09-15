@@ -3,8 +3,8 @@
 ### Target: v0.7
 
 ## TO DO
-- [ ] Build packaged version
-  - [ ] Compress into a versionned archive
+- [x] Build packaged version
+  - [x] Compress into a versionned archive
 - [x] Remove dependance to config/ssh.json
 - [x] Collect different Shippers versions for the Frontend
   - [x] Collect running OC Beats and their versions
