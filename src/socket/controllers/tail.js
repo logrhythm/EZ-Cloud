@@ -8,7 +8,7 @@ const { getCollectorSshConfigForPipeline } = require('../../shared/collectorSshC
 
 const tails = [];
 
-async function tailInit (socket, payload) {
+async function tailInit(socket, payload) {
   if (
     payload
     && payload.tailId
@@ -23,7 +23,7 @@ async function tailInit (socket, payload) {
   ) {
     // Check the tailId doesn't already exist
     if (!tails[payload.tailId]) {
-      const configSsh = await getCollectorSshConfigForPipeline( { uid: payload.pipelineUid } );
+      const configSsh = await getCollectorSshConfigForPipeline({ uid: payload.pipelineUid });
 
       tails[payload.tailId] = new SSH(configSsh);
 
@@ -90,7 +90,7 @@ async function tailInit (socket, payload) {
         const inputJson = collectionConfigToJson(payload.collectionConfig);
 
         // Parse the JSON into a Config object, so we can modify it a bit
-        let jsBeatConfigJson = {}
+        let jsBeatConfigJson = {};
         try {
           jsBeatConfigJson = JSON.parse(inputJson);
         } catch (err) {
@@ -112,7 +112,7 @@ async function tailInit (socket, payload) {
         }
         tails[payload.tailId]
           .exec(`if [ -d "/tmp/ez-${payload.tailId}" ]; then ps auxwww | grep \`cat /tmp/ez-${payload.tailId}/running.pid\` | grep -v "grep" -q && exit 42; fi;`, {
-            exit (code) {
+            exit(code) {
               if (code === 42) {
                 // If Shipper is still running for this Pipeline,
                 // simply prevent from running it again.
@@ -129,20 +129,20 @@ async function tailInit (socket, payload) {
           .exec(`mkdir --parent /tmp/ez-${payload.tailId}/config/inputs.d`, {})
           .exec(`cat > /tmp/ez-${payload.tailId}/config/inputs.d/tail.json`, { in: jsBeatConfig })
           .exec(`/opt/jsBeat/bin/start.sh --jsBeatRoot "/tmp/ez-${payload.tailId}" --logFilePath "/tmp/ez-${payload.tailId}/log/jsBeat" --logLevel verbose & echo -e $! > /tmp/ez-${payload.tailId}/running.pid ; echo -e "Shipper started. Shipper's PID: $(cat /tmp/ez-${payload.tailId}/running.pid)" >&2 ; tail -F "/tmp/ez-${payload.tailId}/log/jsBeat" >&2`, {
-            err (stderr) {
+            err(stderr) {
               // console.log('STDERR:::' + stderr);
               if (socket.connected) {
                 socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
               }
             },
-            exit (code) {
+            exit(code) {
               // console.log('CODE:::' + code);
               if (socket.connected) {
                 socket.emit('tail.log', { tailId: payload.tailId, code: 'EXIT', payload: code });
               }
               setTimeout(tailKillShipper, 2500, socket, payload);
             },
-            out (stdout) {
+            out(stdout) {
               // console.log('STDOUT:::' + stdout);
               if (socket.connected) {
                 socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
@@ -157,7 +157,7 @@ async function tailInit (socket, payload) {
             setTimeout(tailKillShipper, 1000, socket, payload);
           })
           .start({
-            failure () {
+            failure() {
               // console.log('FAILURE:::' + err);
               if (socket.connected) {
                 socket.emit('tail.log', { tailId: payload.tailId, code: 'FAILURE' });
@@ -201,8 +201,7 @@ async function tailKillShipper(socket, payload) {
 
         tails[payload.tailId]
           .exec(`if [ -d "/tmp/ez-${payload.tailId}" ]; then ps auxwww | grep \`cat /tmp/ez-${payload.tailId}/running.pid\` | grep -v "grep" -q && exit 42; fi;`, {
-            exit (code) {
-
+            exit(code) {
               if (code === 42) {
                 // If Shipper is still running for this Pipeline,
                 // go ahead and kill it.
@@ -210,23 +209,22 @@ async function tailKillShipper(socket, payload) {
                   socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDOUT', payload: 'Shipper is still running for this Pipeline. As expected. GNow ging for the kill.' });
                 }
                 return true;
-              } else {
-                if (socket.connected) {
-                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Shipper does\'t seem to be running for this Pipeline. Doing nothing.' });
-                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'EXIT', payload: code });
-                }
-                return false;
               }
+              if (socket.connected) {
+                socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Shipper does\'t seem to be running for this Pipeline. Doing nothing.' });
+                socket.emit('tail.kill', { tailId: payload.tailId, code: 'EXIT', payload: code });
+              }
+              return false;
             }
           })
           .exec(`if [ -e "/tmp/ez-${payload.tailId}/running.pid" ]; then kill $(cat /tmp/ez-${payload.tailId}/running.pid) && echo -e "Pipeline process terminated."; else echo -e "PID file is missing: /tmp/ez-${payload.tailId}/running.pid" 1>&2 ; exit 42; fi;`, {
-            err (stderr) {
+            err(stderr) {
               // console.log('STDERR:::' + stderr);
               if (socket.connected) {
                 socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
               }
             },
-            exit (code) {
+            exit(code) {
               // console.log('CODE:::' + code);
               if (code !== 0) {
                 if (socket.connected) {
@@ -237,8 +235,9 @@ async function tailKillShipper(socket, payload) {
               if (socket.connected) {
                 socket.emit('tail.kill', { tailId: payload.tailId, code: 'EXIT', payload: code });
               }
+              return true;
             },
-            out (stdout) {
+            out(stdout) {
               // console.log('STDOUT:::' + stdout);
               if (socket.connected) {
                 socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
@@ -246,13 +245,13 @@ async function tailKillShipper(socket, payload) {
             }
           })
           .exec(`rm -rf /tmp/ez-${payload.tailId}`, {
-            err (stderr) {
+            err(stderr) {
               // console.log('STDERR:::' + stderr);
               if (socket.connected) {
                 socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
               }
             },
-            exit (code) {
+            exit(code) {
               // console.log('CODE:::' + code);
               if (code !== 0) {
                 if (socket.connected) {
@@ -263,8 +262,9 @@ async function tailKillShipper(socket, payload) {
               if (socket.connected) {
                 socket.emit('tail.kill', { tailId: payload.tailId, code: 'EXIT', payload: code });
               }
+              return true;
             },
-            out (stdout) {
+            out(stdout) {
               // console.log('STDOUT:::' + stdout);
               if (socket.connected) {
                 socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
@@ -278,7 +278,7 @@ async function tailKillShipper(socket, payload) {
             }
           })
           .start({
-            failure () {
+            failure() {
               // console.log('FAILURE:::' + err);
               if (socket.connected) {
                 socket.emit('tail.kill', { tailId: payload.tailId, code: 'FAILURE' });

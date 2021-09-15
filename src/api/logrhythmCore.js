@@ -109,7 +109,7 @@ router.post('/UpdateMpeSubRule', async (req, res) => {
   const updatedMpeSubRule = {};
 
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
-  const [ sqlVariables, storedProcedureParams ] = createSqlVariablesAndStoredProcParams(
+  const [sqlVariables, storedProcedureParams] = createSqlVariablesAndStoredProcParams(
     req,
     [
       { name: 'uid', type: 'NVarChar' },
@@ -130,7 +130,7 @@ router.post('/UpdateMpeSubRule', async (req, res) => {
       { name: 'Tag10', type: 'NVarChar' } // (200) = '*'
     ],
     true // Weed stuff out
-  )
+  );
 
   // Ship it to SQL
   await getDataFromSql({
@@ -154,7 +154,7 @@ router.post('/UpdateProcessingPolicy', async (req, res) => {
   const updatedProcessingPolicy = {};
 
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
-  const [ sqlVariables, storedProcedureParams ] = createSqlVariablesAndStoredProcParams(
+  const [sqlVariables, storedProcedureParams] = createSqlVariablesAndStoredProcParams(
     req,
     [
       { name: 'uid', type: 'NVarChar' }, // (40)
@@ -162,7 +162,7 @@ router.post('/UpdateProcessingPolicy', async (req, res) => {
       { name: 'MPEPolicy_Name', type: 'NVarChar' } // (50) -- 'LogRhythm Default' -- Name of the new Policy (if Policy already exists, old name is kept)
     ],
     true // Weed stuff out
-  )
+  );
 
   // Ship it to SQL
   await getDataFromSql({
@@ -186,7 +186,7 @@ router.post('/UpdateLogSourceVirtualisationTemplate', async (req, res) => {
   const updatedLogSourceVirtualisationTemplate = {};
 
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
-  const [ sqlVariables, storedProcedureParams ] = createSqlVariablesAndStoredProcParams(
+  const [sqlVariables, storedProcedureParams] = createSqlVariablesAndStoredProcParams(
     req,
     [
       { name: 'Virt_Template_UID', type: 'NVarChar' }, // (40) Default to '0d7544aa-5760-4c5e-be62-26262f3cd1db', --UID of the EZ Cloud Template
@@ -196,7 +196,7 @@ router.post('/UpdateLogSourceVirtualisationTemplate', async (req, res) => {
       { name: 'ItemToDelete_ID', type: 'Int' } // Default to NULL -- ID of Template Item to delete, or NULL if none
     ],
     true // Weed stuff out
-  )
+  );
 
   // Ship it to SQL
   await getDataFromSql({
@@ -220,7 +220,7 @@ router.post('/UpdateLogSourceVirtualisationTemplateItem', async (req, res) => {
   const updatedLogSourceVirtualisationTemplateItem = {};
 
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
-  const [ sqlVariables, storedProcedureParams ] = createSqlVariablesAndStoredProcParams(
+  const [sqlVariables, storedProcedureParams] = createSqlVariablesAndStoredProcParams(
     req,
     [
       { name: 'uid', type: 'NVarChar' }, // (40) UID of the Log Source
@@ -229,7 +229,7 @@ router.post('/UpdateLogSourceVirtualisationTemplateItem', async (req, res) => {
       { name: 'MPEProcessingPolicyID', type: 'Int' } // Default to NULL, If not provided, we look for it
     ],
     true // Weed stuff out
-  )
+  );
 
   // Ship it to SQL
   await getDataFromSql({
@@ -301,7 +301,7 @@ router.post('/UpdateOpenCollectorLogSourceWithLogSourceVirtualisation', async (r
       { name: 'Virt_Template_UID', type: 'NVarChar' } // (40) Default to '0d7544aa-5760-4c5e-be62-26262f3cd1db', -- UID of the EZ Cloud Template
     ],
     true // Weed stuff out
-  )
+  );
 
   // Ship it to SQL
   await getDataFromSql({

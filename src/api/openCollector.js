@@ -86,8 +86,7 @@ function checkOSVersion(osVersion, uid) {
           out(stdout) {
             try {
               osVersion.payload = JSON.parse(stdout);
-            }
-            catch (error) {
+            } catch (error) {
               osVersion.payload = null;
             }
 
@@ -147,7 +146,7 @@ router.get('/CheckOSVersion', async (req, res) => {
     }
     res.json(osVersionArray[uid]);
   } else {
-    res.json(Object.assign(Object.assign({}, osVersionTemplate), { errors: ['Missing UID in Query.']}));
+    res.json({ ...osVersionTemplate, errors: ['Missing UID in Query.'] });
   }
 });
 
@@ -187,8 +186,7 @@ function checkfbVersion(fbVersion, uid) {
           out(stdout) {
             try {
               fbVersion.payload = JSON.parse(stdout);
-            }
-            catch (error) {
+            } catch (error) {
               fbVersion.payload = null;
             }
 
@@ -248,7 +246,7 @@ router.get('/CheckFilebeatVersion', async (req, res) => {
     }
     res.json(fbVersionArray[uid]);
   } else {
-    res.json(Object.assign(Object.assign({}, fbVersionTemplate), { errors: ['Missing UID in Query.']}));
+    res.json({ ...fbVersionTemplate, errors: ['Missing UID in Query.'] });
   }
 });
 
@@ -288,8 +286,7 @@ function checkOcBeatsVersion(ocAndBeatsVersion, uid) {
           out(stdout) {
             try {
               ocAndBeatsVersion.payload = JSON.parse(stdout);
-            }
-            catch (error) {
+            } catch (error) {
               ocAndBeatsVersion.payload = null;
             }
 
@@ -348,7 +345,7 @@ router.get('/CheckOpenCollectorAndBeatsVersions', async (req, res) => {
     }
     res.json(ocAndBeatsVersionArray[uid]);
   } else {
-    res.json(Object.assign(Object.assign({}, ocAndBeatsVersionTemplate), { errors: ['Missing UID in Query.']}));
+    res.json({ ...ocAndBeatsVersionTemplate, errors: ['Missing UID in Query.'] });
   }
 });
 
@@ -366,7 +363,7 @@ const jsBeatVersionTemplate = {
 
 const jsBeatVersionArray = {};
 
-function checkjsBeatVersion (jsBeatVersion, uid) {
+function checkjsBeatVersion(jsBeatVersion, uid) {
   /* eslint-disable no-param-reassign */
   if (uid && uid.length) {
     getSshConfigForCollector({ uid }).then((sshConfig) => {
@@ -379,13 +376,13 @@ function checkjsBeatVersion (jsBeatVersion, uid) {
 
       ssh
         .exec('/opt/jsBeat/bin/start.sh --version | grep -i jsbeat 2>/dev/null', {
-          err (stderr) {
+          err(stderr) {
             jsBeatVersion.errors.push(stderr);
           },
-          exit (code) {
+          exit(code) {
             jsBeatVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
           },
-          out (stdout) {
+          out(stdout) {
             const version = stdout.match(/js[Bb]eat *(([0-9]+)\.([0-9]+)\.([0-9]+))/);
             if (version.length > 0) {
               jsBeatVersion.payload = {
@@ -405,7 +402,7 @@ function checkjsBeatVersion (jsBeatVersion, uid) {
           jsBeatVersion.stillChecking = false;
         })
         .start({
-          failure () {
+          failure() {
             jsBeatVersion.stillChecking = false;
           }
         });
@@ -452,7 +449,7 @@ router.get('/CheckJsBeatVersion', async (req, res) => {
     }
     res.json(jsBeatVersionArray[uid]);
   } else {
-    res.json(Object.assign(Object.assign({}, jsBeatVersionTemplate), { errors: ['Missing UID in Query.'] }));
+    res.json({ ...jsBeatVersionTemplate, errors: ['Missing UID in Query.'] });
   }
 });
 
@@ -460,15 +457,15 @@ router.get('/CheckJsBeatVersion', async (req, res) => {
 // CheckDockerPresence
 // #############################################
 
-var dockerPresence = {
+const dockerPresence = {
   stillChecking: false,
   lastSuccessfulCheckTimeStampUtc: 0,
   payload: { presence: false }, // object with presence
   errors: [], // array of all the errors
   outputs: [] // array of all the outputs
-}
+};
 
-function checkDockerPresence () {
+function checkDockerPresence() {
   getSshConfigForCollector({ uid }).then((sshConfig) => {
     const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
@@ -479,22 +476,22 @@ function checkDockerPresence () {
 
     ssh
       .exec('docker -v >/dev/null 2>/dev/null || exit 1', {
-        err: function(stderr) {
+        err(stderr) {
           dockerPresence.errors.push(stderr);
         },
-        exit: function(code) {
-          dockerPresence.payload.presence = (code === 1 ? false : true);
+        exit(code) {
+          dockerPresence.payload.presence = (code !== 1);
           dockerPresence.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
         },
-        out: function(stdout) {
+        out(stdout) {
           dockerPresence.outputs.push(stdout);
         }
       })
-      .on('end', function(err) {
+      .on('end', (err) => {
         dockerPresence.stillChecking = false;
       })
       .start({
-        failure: function () {
+        failure() {
           dockerPresence.stillChecking = false;
         }
       });
@@ -507,7 +504,7 @@ router.get('/CheckDockerPresence', async (req, res) => {
     if (!dockerPresence.stillChecking) {
       checkDockerPresence();
     }
-    const loopEndTime = Date.now() / 1000 + maxCheckInterval
+    const loopEndTime = Date.now() / 1000 + maxCheckInterval;
 
     while (dockerPresence.stillChecking && (loopEndTime > (Date.now() / 1000))) {
       // Wait for 50 ms
@@ -519,24 +516,23 @@ router.get('/CheckDockerPresence', async (req, res) => {
       checkDockerPresence();
     }
   }
-  
-  res.json(dockerPresence);
 
+  res.json(dockerPresence);
 });
 
 // #############################################
 // CheckDockerVersion
 // #############################################
 
-var dockerVersion = {
+const dockerVersion = {
   stillChecking: false,
   lastSuccessfulCheckTimeStampUtc: 0,
   payload: { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } }, // object with version
   errors: [], // array of all the errors
   outputs: [] // array of all the outputs
-}
+};
 
-function checkDockerVersion () {
+function checkDockerVersion() {
   getSshConfigForCollector({ uid }).then((sshConfig) => {
     const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
@@ -547,28 +543,27 @@ function checkDockerVersion () {
 
     ssh
       .exec('docker -v 2>/dev/null || exit 1', {
-        err: function(stderr) {
+        err(stderr) {
           dockerVersion.errors.push(stderr);
         },
-        exit: function(code) {
+        exit(code) {
           dockerVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
         },
-        out: function(stdout) {
+        out(stdout) {
           version = stdout.match(/.*?\s+(([0-9]+)\.([0-9]+)\.([0-9]+))/);
           if (version.length > 0) {
             dockerVersion.payload = { version: { detailed: { major: version[2], minor: version[3], build: version[4] }, Full: version[1] } };
-          } else
-          {
+          } else {
             dockerVersion.payload = { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } };
           }
           dockerVersion.outputs.push(stdout);
         }
       })
-      .on('end', function(err) {
+      .on('end', (err) => {
         dockerVersion.stillChecking = false;
       })
       .start({
-        failure: function () {
+        failure() {
           dockerVersion.stillChecking = false;
         }
       });
@@ -581,7 +576,7 @@ router.get('/CheckDockerVersion', async (req, res) => {
     if (!dockerVersion.stillChecking) {
       checkDockerVersion();
     }
-    const loopEndTime = Date.now() / 1000 + maxCheckInterval
+    const loopEndTime = Date.now() / 1000 + maxCheckInterval;
 
     while (dockerVersion.stillChecking && (loopEndTime > (Date.now() / 1000))) {
       // Wait for 50 ms
@@ -593,16 +588,15 @@ router.get('/CheckDockerVersion', async (req, res) => {
       checkDockerVersion();
     }
   }
-  
-  res.json(dockerVersion);
 
+  res.json(dockerVersion);
 });
 
 // #############################################
 // CheckOCPresence
 // #############################################
 
-var ocPresence = {
+const ocPresence = {
   stillChecking: false,
   lastSuccessfulCheckTimeStampUtc: 0,
   lrtclPresent: null, // null (unchecked), true or false
@@ -613,9 +607,9 @@ var ocPresence = {
   payload: { presence: false }, // object with presence
   errors: [], // array of all the errors
   outputs: [] // array of all the outputs
-}
+};
 
-function checkOCPresence () {
+function checkOCPresence() {
   getSshConfigForCollector({ uid }).then((sshConfig) => {
     const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
     ocPresence.stillChecking = true;
@@ -625,48 +619,48 @@ function checkOCPresence () {
 
     ssh
       .exec('ls lrctl >/dev/null 2>/dev/null || exit 1', {
-        err: function(stderr) {
+        err(stderr) {
           ocPresence.errors.push(stderr);
         },
-        exit: function(code) {
-          ocPresence.lrtclPresent = (code === 1 ? false : true);
+        exit(code) {
+          ocPresence.lrtclPresent = (code !== 1);
           return ocPresence.lrtclPresent;
         },
-        out: function(stdout) {
+        out(stdout) {
           ocPresence.outputs.push(stdout);
         }
       })
       .exec('./lrctl --help >/dev/null 2>/dev/null || exit 1', {
-        err: function(stderr) {
+        err(stderr) {
           ocPresence.errors.push(stderr);
         },
-        exit: function(code) {
-          ocPresence.lrtclCanRun = (code === 1 ? false : true);
+        exit(code) {
+          ocPresence.lrtclCanRun = (code !== 1);
           return ocPresence.lrtclCanRun;
         },
-        out: function(stdout) {
+        out(stdout) {
           ocPresence.outputs.push(stdout);
         }
       })
       .exec('./lrctl status | grep -c -i open_collector 2>/dev/null || exit 1', {
-        err: function(stderr) {
+        err(stderr) {
           ocPresence.errors.push(stderr);
         },
-        exit: function(code) {
-          ocPresence.ocPresent = (code === 1 ? false : true);
+        exit(code) {
+          ocPresence.ocPresent = (code !== 1);
           ocPresence.payload.presence = ocPresence.ocPresent;
           return ocPresence.ocPresent;
         },
-        out: function(stdout) {
+        out(stdout) {
           ocPresence.outputs.push(stdout);
         }
       })
-      .on('end', function(err) {
+      .on('end', (err) => {
         ocPresence.stillChecking = false;
         ocPresence.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
       })
       .start({
-        failure: function () {
+        failure() {
           ocPresence.stillChecking = false;
         }
       });
@@ -679,7 +673,7 @@ router.get('/CheckOCPresence', async (req, res) => {
     if (!ocPresence.stillChecking) {
       checkOCPresence();
     }
-    const loopEndTime = Date.now() / 1000 + maxCheckInterval
+    const loopEndTime = Date.now() / 1000 + maxCheckInterval;
     while (ocPresence.stillChecking && (loopEndTime > (Date.now() / 1000))) {
       // Wait for 50 ms
       await waitMilliseconds(50);
@@ -692,7 +686,6 @@ router.get('/CheckOCPresence', async (req, res) => {
   }
 
   res.json(ocPresence);
-
 });
 
 // #############################################
@@ -737,8 +730,7 @@ function checkOCVersion(ocVersion, uid) {
                   full: version[1]
                 }
               };
-            } else
-            {
+            } else {
               ocVersion.payload = { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } };
             }
             ocVersion.outputs.push(stdout);
@@ -795,7 +787,7 @@ router.get('/CheckOCVersion', async (req, res) => {
     }
     res.json(ocVersionArray[uid]);
   } else {
-    res.json(Object.assign(Object.assign({}, ocVersionTemplate), { errors: ['Missing UID in Query.']}));
+    res.json({ ...ocVersionTemplate, errors: ['Missing UID in Query.'] });
   }
 });
 
@@ -803,15 +795,15 @@ router.get('/CheckOCVersion', async (req, res) => {
 // CheckOCHealth
 // #############################################
 
-var ocHealth = {
+const ocHealth = {
   stillChecking: false,
   lastSuccessfulCheckTimeStampUtc: 0,
   payload: { health: '' }, // object with health
   errors: [], // array of all the errors
   outputs: [] // array of all the outputs
-}
+};
 
-function checkOCHealth () {
+function checkOCHealth() {
   getSshConfigForCollector({ uid }).then((sshConfig) => {
     const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
@@ -822,28 +814,27 @@ function checkOCHealth () {
 
     ssh
       .exec('./lrctl status 2>/dev/null | grep -i open_collector 2>/dev/null', {
-        err: function(stderr) {
+        err(stderr) {
           ocHealth.errors.push(stderr);
         },
-        exit: function(code) {
+        exit(code) {
           ocHealth.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
         },
-        out: function(stdout) {
+        out(stdout) {
           health = stdout.match(/open_collector *[0-9]+\.[0-9]+\.[0-9]+ *[0-9]+-[0-9]+-[0-9]+ +[0-9]+:[0-9]+:[0-9]+ +\+[0-9]+ +UTC +(\w*)/);
           if (health.length > 0) {
             ocHealth.payload = { health: health[1] };
-          } else
-          {
+          } else {
             ocHealth.payload = { health: '' };
           }
           ocHealth.outputs.push(stdout);
         }
       })
-      .on('end', function(err) {
+      .on('end', (err) => {
         ocHealth.stillChecking = false;
       })
       .start({
-        failure: function () {
+        failure() {
           ocHealth.stillChecking = false;
         }
       });
@@ -856,7 +847,7 @@ router.get('/CheckOCHealth', async (req, res) => {
     if (!ocHealth.stillChecking) {
       checkOCHealth();
     }
-    const loopEndTime = Date.now() / 1000 + maxCheckInterval
+    const loopEndTime = Date.now() / 1000 + maxCheckInterval;
 
     while (ocHealth.stillChecking && (loopEndTime > (Date.now() / 1000))) {
       // Wait for 50 ms
@@ -868,24 +859,23 @@ router.get('/CheckOCHealth', async (req, res) => {
       checkOCHealth();
     }
   }
-  
-  res.json(ocHealth);
 
+  res.json(ocHealth);
 });
 
 // #############################################
 // ReadOCConfiguration
 // #############################################
 
-var ocConfiguration = {
+const ocConfiguration = {
   stillChecking: false,
   lastSuccessfulCheckTimeStampUtc: 0,
   payload: '', // raw output
   errors: [], // array of all the errors
   outputs: [] // array of all the outputs
-}
+};
 
-function readOcConfiguration () {
+function readOcConfiguration() {
   getSshConfigForCollector({ uid }).then((sshConfig) => {
     const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
@@ -896,22 +886,22 @@ function readOcConfiguration () {
 
     ssh
       .exec('./lrctl open-collector config export 2>/dev/null', {
-        err: function(stderr) {
+        err(stderr) {
           ocConfiguration.errors.push(stderr);
         },
-        exit: function(code) {
+        exit(code) {
           ocConfiguration.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
         },
-        out: function(stdout) {
+        out(stdout) {
           ocConfiguration.payload = stdout;
           ocConfiguration.outputs.push(stdout);
         }
       })
-      .on('end', function(err) {
+      .on('end', (err) => {
         ocConfiguration.stillChecking = false;
       })
       .start({
-        failure: function () {
+        failure() {
           ocConfiguration.stillChecking = false;
         }
       });
@@ -924,7 +914,7 @@ router.get('/ReadOcConfiguration', async (req, res) => {
     if (!ocConfiguration.stillChecking) {
       readOcConfiguration();
     }
-    const loopEndTime = Date.now() / 1000 + maxCheckInterval
+    const loopEndTime = Date.now() / 1000 + maxCheckInterval;
 
     while (ocConfiguration.stillChecking && (loopEndTime > (Date.now() / 1000))) {
       // Wait for 50 ms
@@ -944,9 +934,7 @@ router.get('/ReadOcConfiguration', async (req, res) => {
     // Send RAW
     res.send(ocConfiguration.payload);
   }
-
 });
-
 
 // #############################################
 // UpdateStreamConfigurationForBeat
@@ -962,16 +950,16 @@ const streamUpdateForBeatStatusTemplate = {
 
 const streamUpdateForBeatStatusArray = {};
 
-function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollector, beat, stream) {
+function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollector, beat, stream) {
   // Check we are ship-shape with the params
-  const missingOpenCollector = !(openCollector && openCollector.uid && openCollector.uid.length)
-  const missingBeat = !(beat && beat.name && beat.name.length && beat.config && Array.isArray(beat.config))
-  const missingStream = !(stream && stream.uid && stream.uid.length)
+  const missingOpenCollector = !(openCollector && openCollector.uid && openCollector.uid.length);
+  const missingBeat = !(beat && beat.name && beat.name.length && beat.config && Array.isArray(beat.config));
+  const missingStream = !(stream && stream.uid && stream.uid.length);
   if (
-    !missingOpenCollector &&
-    !missingBeat &&
-    !missingStream
-    ) {
+    !missingOpenCollector
+    && !missingBeat
+    && !missingStream
+  ) {
     getSshConfigForCollector({ uid: openCollector.uid }).then((sshConfig) => {
       const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
@@ -982,11 +970,11 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
 
       // ####################################################################################################
 
-      try  {
+      try {
         // Initialise the empty list of Steps
         const steps = [];
 
-        // Config file name will be escaped (to only letters, numbers, dashes and underscores) to 
+        // Config file name will be escaped (to only letters, numbers, dashes and underscores) to
         // not cause issues on the file system. Any non autorised chars will be replaced by "_".
         // It is built using:
         // - Stream Name
@@ -1027,7 +1015,7 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
 
           // Add the different Configuration file(s)
           beat.config.forEach((config, number) => {
-            const fileNumber = (multipleFiles ? '__' + String(number + 1).padStart(3, '0') : '');
+            const fileNumber = (multipleFiles ? `__${String(number + 1).padStart(3, '0')}` : '');
 
             // Adding file number, if any to the base file name. It is built using:
             // - configFileNameBase
@@ -1056,7 +1044,7 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
           steps.push(
             {
               action: 'List the Stream files of the config directory',
-              command: 'ls -la "/etc/filebeat/inputs.d/${configFileNameBase}"*'
+              command: `ls -la "/etc/filebeat/inputs.d/${configFileNameBase}"*`
             }
           );
           streamUpdateForBeatStatus.payload.steps = steps;
@@ -1071,7 +1059,7 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
           const cleanTimestamp = new Date().toISOString().replace(/[^a-zA-Z0-9_-]/g, '_');
           const tempSymbolicLinkPath = `/tmp/${configFileNameBase}__${cleanTimestamp}`;
           // Build the list of steps
-          
+
           steps.push(
             {
               action: 'Create Symbolic link to the installation folder of jsBeat',
@@ -1095,7 +1083,7 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
 
           // Add the different Configuration file(s)
           beat.config.forEach((config, number) => {
-            const fileNumber = (multipleFiles ? '__' + String(number + 1).padStart(3, '0') : '');
+            const fileNumber = (multipleFiles ? `__${String(number + 1).padStart(3, '0')}` : '');
 
             // Adding file number, if any to the base file name. It is built using:
             // - configFileNameBase
@@ -1155,12 +1143,12 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
             outputs: [],
             exitCode: undefined,
             failed: undefined
-          }
+          };
 
           ssh
             .exec(step.command, {
               in: step.stdin || '',
-              exit (code) {
+              exit(code) {
                 let continueToNextStep = true;
                 logToSystem('Debug', `updateStreamConfigurationForBeat - EXEC: (${code}) - ${step.command}`);
                 streamUpdateForBeatStatus.payload.steps[stepCounter].result.exitCode = code;
@@ -1171,7 +1159,7 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
                   streamUpdateForBeatStatus.payload.steps[stepCounter].result.failed = true;
                   continueToNextStep = false;
                   // Set the whole job as failed, except if we are meant to continueOnFailure for this step
-                  streamUpdateForBeatStatus.payload.success = !!(false | step.continueOnFailure)
+                  streamUpdateForBeatStatus.payload.success = !!(false | step.continueOnFailure);
                 } // if (code !== 0) {
 
                 // Check if need to force Continue
@@ -1181,12 +1169,11 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
 
                 return continueToNextStep;
               },
-              err (stderr) {
+              err(stderr) {
                 logToSystem('Debug', `updateStreamConfigurationForBeat - STDERR: ${stderr}`);
                 streamUpdateForBeatStatus.payload.steps[stepCounter].result.errors.push(stderr);
-
               },
-              out (stdout) {
+              out(stdout) {
                 logToSystem('Debug', `updateStreamConfigurationForBeat - STDOUT: ${stdout}`);
                 streamUpdateForBeatStatus.payload.steps[stepCounter].result.outputs.push(stdout);
               }
@@ -1208,14 +1195,13 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
             streamUpdateForBeatStatus.stillUpdating = false;
           })
           .start({
-            failure () {
+            failure() {
               streamUpdateForBeatStatus.error.push('FAILURE - Job could not start');
               streamUpdateForBeatStatus.stillUpdating = false;
             }
           });
-
       } catch (errorCaught) {
-        streamUpdateForBeatStatus.errors.push('Exception: ' + errorCaught.message);
+        streamUpdateForBeatStatus.errors.push(`Exception: ${errorCaught.message}`);
       }
     }).catch(() => {
       streamUpdateForBeatStatus.errors.push(`Failed to get SSH configuration for OpenCollector (based on provided UID: ${openCollector.uid}).`);
@@ -1238,13 +1224,13 @@ function updateStreamConfigurationForBeat (streamUpdateForBeatStatus, openCollec
 
 router.post('/UpdateStreamConfigurationForBeat', async (req, res) => {
   // Check we are ship-shape with the params
-  const missingOpenCollector = !(req && req.body && req.body.openCollector && req.body.openCollector.uid && req.body.openCollector.uid.length)
-  const missingBeat = !(req && req.body && req.body.beat && req.body.beat.name && req.body.beat.name.length && req.body.beat.config && Array.isArray(req.body.beat.config))
-  const missingStream = !(req && req.body && req.body.stream && req.body.stream.uid && req.body.stream.uid.length)
+  const missingOpenCollector = !(req && req.body && req.body.openCollector && req.body.openCollector.uid && req.body.openCollector.uid.length);
+  const missingBeat = !(req && req.body && req.body.beat && req.body.beat.name && req.body.beat.name.length && req.body.beat.config && Array.isArray(req.body.beat.config));
+  const missingStream = !(req && req.body && req.body.stream && req.body.stream.uid && req.body.stream.uid.length);
   if (
-    !missingOpenCollector &&
-    !missingBeat &&
-    !missingStream
+    !missingOpenCollector
+    && !missingBeat
+    && !missingStream
   ) {
     const { openCollector, beat, stream } = req.body;
 
@@ -1290,8 +1276,7 @@ router.post('/UpdateStreamConfigurationForBeat', async (req, res) => {
       errorMessages.push('Missing or malformed compulstory "stream" object.');
     }
 
-
-    res.json(Object.assign(Object.assign({}, streamUpdateForBeatStatusTemplate), { errors: errorMessages }, { requestBody: req.body }));
+    res.json({ ...streamUpdateForBeatStatusTemplate, errors: errorMessages, requestBody: req.body });
   }
 });
 
@@ -1309,15 +1294,15 @@ const streamConfigDeleteForBeatStatusTemplate = {
 
 const streamConfigDeleteForBeatStatusArray = {};
 
-function deleteStreamConfigurationForBeat (streamConfigDeleteForBeatStatus, openCollector, beat, stream) {
+function deleteStreamConfigurationForBeat(streamConfigDeleteForBeatStatus, openCollector, beat, stream) {
   // Check we are ship-shape with the params
-  const missingOpenCollector = !(openCollector && openCollector.uid && openCollector.uid.length)
-  const missingBeat = !(beat && beat.name && beat.name.length)
-  const missingStream = !(stream && stream.uid && stream.uid.length)
+  const missingOpenCollector = !(openCollector && openCollector.uid && openCollector.uid.length);
+  const missingBeat = !(beat && beat.name && beat.name.length);
+  const missingStream = !(stream && stream.uid && stream.uid.length);
   if (
-    !missingOpenCollector &&
-    !missingBeat &&
-    !missingStream
+    !missingOpenCollector
+    && !missingBeat
+    && !missingStream
   ) {
     getSshConfigForCollector({ uid: openCollector.uid }).then((sshConfig) => {
       const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
@@ -1331,7 +1316,7 @@ function deleteStreamConfigurationForBeat (streamConfigDeleteForBeatStatus, open
         // Initialise the empty list of Steps
         const steps = [];
 
-        // Config file name will be escaped (to only letters, numbers, dashes and underscores) to 
+        // Config file name will be escaped (to only letters, numbers, dashes and underscores) to
         // not cause issues on the file system. Any non autorised chars will be replaced by "_".
         // It is built using:
         // - Stream Name
@@ -1431,12 +1416,12 @@ function deleteStreamConfigurationForBeat (streamConfigDeleteForBeatStatus, open
             outputs: [],
             exitCode: undefined,
             failed: undefined
-          }
+          };
 
           ssh
             .exec(step.command, {
               in: step.stdin || '',
-              exit (code) {
+              exit(code) {
                 let continueToNextStep = true;
                 logToSystem('Debug', `deleteStreamConfigurationForBeat - EXEC: (${code}) - ${step.command}`);
                 streamConfigDeleteForBeatStatus.payload.steps[stepCounter].result.exitCode = code;
@@ -1447,7 +1432,7 @@ function deleteStreamConfigurationForBeat (streamConfigDeleteForBeatStatus, open
                   streamConfigDeleteForBeatStatus.payload.steps[stepCounter].result.failed = true;
                   continueToNextStep = false;
                   // Set the whole job as failed, except if we are meant to continueOnFailure for this step
-                  streamConfigDeleteForBeatStatus.payload.success = !!(false | step.continueOnFailure)
+                  streamConfigDeleteForBeatStatus.payload.success = !!(false | step.continueOnFailure);
                 } // if (code !== 0) {
 
                 // Check if need to force Continue
@@ -1457,11 +1442,11 @@ function deleteStreamConfigurationForBeat (streamConfigDeleteForBeatStatus, open
 
                 return continueToNextStep;
               },
-              err (stderr) {
+              err(stderr) {
                 logToSystem('Debug', `deleteStreamConfigurationForBeat - STDERR: ${stderr}`);
                 streamConfigDeleteForBeatStatus.payload.steps[stepCounter].result.errors.push(stderr);
               },
-              out (stdout) {
+              out(stdout) {
                 logToSystem('Debug', `deleteStreamConfigurationForBeat - STDOUT: ${stdout}`);
                 streamConfigDeleteForBeatStatus.payload.steps[stepCounter].result.outputs.push(stdout);
               }
@@ -1483,14 +1468,13 @@ function deleteStreamConfigurationForBeat (streamConfigDeleteForBeatStatus, open
             streamConfigDeleteForBeatStatus.stillUpdating = false;
           })
           .start({
-            failure () {
+            failure() {
               streamConfigDeleteForBeatStatus.error.push('FAILURE - Job could not start');
               streamConfigDeleteForBeatStatus.stillUpdating = false;
             }
           });
-
       } catch (errorCaught) {
-        streamConfigDeleteForBeatStatus.errors.push('Exception: ' + errorCaught.message);
+        streamConfigDeleteForBeatStatus.errors.push(`Exception: ${errorCaught.message}`);
       }
     }).catch(() => {
       streamConfigDeleteForBeatStatus.errors.push(`Failed to get SSH configuration for OpenCollector (based on provided UID: ${openCollector.uid}).`);
@@ -1513,13 +1497,13 @@ function deleteStreamConfigurationForBeat (streamConfigDeleteForBeatStatus, open
 
 router.post('/DeleteStreamConfigurationForBeat', async (req, res) => {
   // Check we are ship-shape with the params
-  const missingOpenCollector = !(req && req.body && req.body.openCollector && req.body.openCollector.uid && req.body.openCollector.uid.length)
-  const missingBeat = !(req && req.body && req.body.beat && req.body.beat.name && req.body.beat.name.length)
-  const missingStream = !(req && req.body && req.body.stream && req.body.stream.uid && req.body.stream.uid.length)
+  const missingOpenCollector = !(req && req.body && req.body.openCollector && req.body.openCollector.uid && req.body.openCollector.uid.length);
+  const missingBeat = !(req && req.body && req.body.beat && req.body.beat.name && req.body.beat.name.length);
+  const missingStream = !(req && req.body && req.body.stream && req.body.stream.uid && req.body.stream.uid.length);
   if (
-    !missingOpenCollector &&
-    !missingBeat &&
-    !missingStream
+    !missingOpenCollector
+    && !missingBeat
+    && !missingStream
   ) {
     const { openCollector, beat, stream } = req.body;
 
@@ -1565,7 +1549,7 @@ router.post('/DeleteStreamConfigurationForBeat', async (req, res) => {
       errorMessages.push('Missing or malformed compulstory "stream" object.');
     }
 
-    res.json(Object.assign(Object.assign({}, streamConfigDeleteForBeatStatusTemplate), { errors: errorMessages }, { requestBody: req.body }));
+    res.json({ ...streamConfigDeleteForBeatStatusTemplate, errors: errorMessages, requestBody: req.body });
   }
 });
 
@@ -1583,23 +1567,23 @@ const pipelineImportForBeatStatusTemplate = {
 
 const pipelineImportForBeatStatusArray = {};
 
-function importPipelineForBeat (pipelineImportForBeatStatus, openCollector, beat, stream) {
+function importPipelineForBeat(pipelineImportForBeatStatus, openCollector, beat, stream) {
   // Check we are ship-shape with the params
-  const missingOpenCollector = !(openCollector && openCollector.uid && openCollector.uid.length)
-  const missingBeat = !(beat && beat.name && beat.name.length)
+  const missingOpenCollector = !(openCollector && openCollector.uid && openCollector.uid.length);
+  const missingBeat = !(beat && beat.name && beat.name.length);
   const missingStream = !(
-    stream && 
-    stream.uid && stream.uid.length && 
-    stream.name && stream.name.length && 
-    stream.sanitisedName && stream.sanitisedName.length &&
-    stream.jqFilter && stream.jqFilter.length &&
-    stream.jqTransform && stream.jqTransform.length
-    )
+    stream
+    && stream.uid && stream.uid.length
+    && stream.name && stream.name.length
+    && stream.sanitisedName && stream.sanitisedName.length
+    && stream.jqFilter && stream.jqFilter.length
+    && stream.jqTransform && stream.jqTransform.length
+  );
   if (
-    !missingOpenCollector &&
-    !missingBeat &&
-    !missingStream
-    ) {
+    !missingOpenCollector
+    && !missingBeat
+    && !missingStream
+  ) {
     getSshConfigForCollector({ uid: openCollector.uid }).then((sshConfig) => {
       const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
@@ -1608,11 +1592,11 @@ function importPipelineForBeat (pipelineImportForBeatStatus, openCollector, beat
       pipelineImportForBeatStatus.outputs = [];
       pipelineImportForBeatStatus.payload = {};
 
-      try  {
+      try {
         // Initialise the empty list of Steps
         const steps = [];
 
-        // Pipeline file name will be escaped (to only letters, numbers, dashes and underscores) to 
+        // Pipeline file name will be escaped (to only letters, numbers, dashes and underscores) to
         // not cause issues on the file system. Any non autorised chars will be replaced by "_".
         // It is built using:
         // - Beat Name
@@ -1634,7 +1618,7 @@ function importPipelineForBeat (pipelineImportForBeatStatus, openCollector, beat
         const tempWorkingDirectoryPath = `/tmp/ez-pipeline-build.${pipelineNameBase}__${cleanTimestamp}`;
 
         // Build the list of steps
-        
+
         steps.push(
           {
             action: 'Clean up directories left by any previous attemp',
@@ -1695,7 +1679,7 @@ function importPipelineForBeat (pipelineImportForBeatStatus, openCollector, beat
             action: 'Delete the temporary work directory',
             command: `rm -rf "${tempWorkingDirectoryPath}"`
           }
-          );
+        );
 
         // Drop a copy of the steps in the Payload.steps of the response
         pipelineImportForBeatStatus.payload.steps = steps;
@@ -1710,12 +1694,12 @@ function importPipelineForBeat (pipelineImportForBeatStatus, openCollector, beat
             outputs: [],
             exitCode: undefined,
             failed: undefined
-          }
+          };
 
           ssh
             .exec(step.command, {
               in: step.stdin || '',
-              exit (code) {
+              exit(code) {
                 let continueToNextStep = true;
                 logToSystem('Debug', `importPipelineForBeat - EXEC: (${code}) - ${step.command}`);
                 pipelineImportForBeatStatus.payload.steps[stepCounter].result.exitCode = code;
@@ -1726,7 +1710,7 @@ function importPipelineForBeat (pipelineImportForBeatStatus, openCollector, beat
                   pipelineImportForBeatStatus.payload.steps[stepCounter].result.failed = true;
                   continueToNextStep = false;
                   // Set the whole job as failed, except if we are meant to continueOnFailure for this step
-                  pipelineImportForBeatStatus.payload.success = !!(false | step.continueOnFailure)
+                  pipelineImportForBeatStatus.payload.success = !!(false | step.continueOnFailure);
                 } // if (code !== 0) {
 
                 // Check if need to force Continue
@@ -1736,12 +1720,12 @@ function importPipelineForBeat (pipelineImportForBeatStatus, openCollector, beat
 
                 return continueToNextStep;
               },
-              err (stderr) {
+              err(stderr) {
                 // pipelineImportForBeatStatus.errors.push(stderr);
                 logToSystem('Debug', `importPipelineForBeat - STDERR: ${stderr}`);
                 pipelineImportForBeatStatus.payload.steps[stepCounter].result.errors.push(stderr);
               },
-              out (stdout) {
+              out(stdout) {
                 // pipelineImportForBeatStatus.outputs.push(stdout);
                 logToSystem('Debug', `importPipelineForBeat - STDOUT: ${stdout}`);
                 pipelineImportForBeatStatus.payload.steps[stepCounter].result.outputs.push(stdout);
@@ -1764,14 +1748,13 @@ function importPipelineForBeat (pipelineImportForBeatStatus, openCollector, beat
             pipelineImportForBeatStatus.stillUpdating = false;
           })
           .start({
-            failure () {
+            failure() {
               pipelineImportForBeatStatus.error.push('FAILURE - Job could not start');
               pipelineImportForBeatStatus.stillUpdating = false;
             }
           });
-
       } catch (errorCaught) {
-        pipelineImportForBeatStatus.errors.push('Exception: ' + errorCaught.message);
+        pipelineImportForBeatStatus.errors.push(`Exception: ${errorCaught.message}`);
       }
     }).catch(() => {
       pipelineImportForBeatStatus.errors.push(`Failed to get SSH configuration for OpenCollector (based on provided UID: ${openCollector.uid}).`);
@@ -1794,21 +1777,21 @@ function importPipelineForBeat (pipelineImportForBeatStatus, openCollector, beat
 
 router.post('/ImportPipelineForBeat', async (req, res) => {
   // Check we are ship-shape with the params
-  const missingOpenCollector = !(req && req.body && req.body.openCollector && req.body.openCollector.uid && req.body.openCollector.uid.length)
-  const missingBeat = !(req && req.body && req.body.beat && req.body.beat.name && req.body.beat.name.length)
+  const missingOpenCollector = !(req && req.body && req.body.openCollector && req.body.openCollector.uid && req.body.openCollector.uid.length);
+  const missingBeat = !(req && req.body && req.body.beat && req.body.beat.name && req.body.beat.name.length);
   const missingStream = !(
-    req && req.body &&
-    req.body.stream &&
-    req.body.stream.uid && req.body.stream.uid.length &&
-    req.body.stream.name && req.body.stream.name.length &&
-    req.body.stream.sanitisedName && req.body.stream.sanitisedName.length &&
-    req.body.stream.jqFilter && req.body.stream.jqFilter.length &&
-    req.body.stream.jqTransform && req.body.stream.jqTransform.length
-  )
+    req && req.body
+    && req.body.stream
+    && req.body.stream.uid && req.body.stream.uid.length
+    && req.body.stream.name && req.body.stream.name.length
+    && req.body.stream.sanitisedName && req.body.stream.sanitisedName.length
+    && req.body.stream.jqFilter && req.body.stream.jqFilter.length
+    && req.body.stream.jqTransform && req.body.stream.jqTransform.length
+  );
   if (
-    !missingOpenCollector &&
-    !missingBeat &&
-    !missingStream
+    !missingOpenCollector
+    && !missingBeat
+    && !missingStream
   ) {
     const { openCollector, beat, stream } = req.body;
 
@@ -1843,7 +1826,7 @@ router.post('/ImportPipelineForBeat', async (req, res) => {
 
     res.json(pipelineImportForBeatStatusArray[`${openCollector.uid}_${stream.uid}`]);
   } else {
-    const errorMessages = []; //['Missing parameters in Body (Both `openCollector`, `beat` and `stream` objects are compulstory and must be properly populated).. See following errors.']
+    const errorMessages = []; // ['Missing parameters in Body (Both `openCollector`, `beat` and `stream` objects are compulstory and must be properly populated).. See following errors.']
     if (missingOpenCollector) {
       errorMessages.push('Missing or malformed compulstory "openCollector" object.');
     }
@@ -1854,10 +1837,8 @@ router.post('/ImportPipelineForBeat', async (req, res) => {
       errorMessages.push('Missing or malformed compulstory "stream" object.');
     }
 
-
-    res.json(Object.assign(Object.assign({}, pipelineImportForBeatStatusTemplate), { errors: errorMessages }, { requestBody: req.body }));
+    res.json({ ...pipelineImportForBeatStatusTemplate, errors: errorMessages, requestBody: req.body });
   }
 });
-
 
 module.exports = router;
