@@ -17,6 +17,7 @@ Name: "ezCloudFrontend"; Description: "EZ Cloud Frontend"; Types: full compact c
 Name: "nodeJs"; Description: "NodeJS"; Types: full lrCloud custom
 
 [Tasks]
+Name: createDatabase; Description: "Create and Configure [EZ] SQL Database"; GroupDescription: "Database:"; Components: ezCloudServer
 Name: serviceSetup; Description: "Configure EZ Server Service"; GroupDescription: "Service:"; Components: ezCloudServer
 Name: serviceStart; Description: "Start EZ Server Service immediately"; GroupDescription: "Service:"; Components: ezCloudServer; Flags: unchecked
 Name: autoGenerateTokens; Description: "Automatically &generate private tokens"; GroupDescription: "Private tokens:"; Components: ezCloudServer
