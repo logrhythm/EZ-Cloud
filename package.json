@@ -37,12 +37,14 @@
     "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.24.1",
+    "innosetup": "^6.0.5",
     "mocha": "^8.4.0",
     "nodemon": "^2.0.12",
     "supertest": "^6.1.6",
     "webpack": "^5.51.1",
     "webpack-cli": "^4.8.0",
-    "webpack-shell-plugin-next": "^2.2.2"
+    "webpack-shell-plugin-next": "^2.2.2",
+    "yargs": "^17.1.1"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.3",
