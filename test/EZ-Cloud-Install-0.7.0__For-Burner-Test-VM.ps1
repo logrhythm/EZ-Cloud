@@ -49,9 +49,10 @@ npm install
 write-host "Prepare the Configuration for the EZ Cloud Server..."
 Copy-Item -Path "config.dist" -Destination "config" -Recurse
 (Get-Content "config\database.json") -replace '(?<="password":")CHANGE_ME', (Read-Host "Enter SA Password") | Set-Content "config\database.json"
-(Get-Content "config\secure.json") -replace '(?<="aes_secret": ")[^"]*', (Read-Host "(AES Encryption seed) Enter a long string of random characters") | Set-Content "config\secure.json"
-(Get-Content "config\jwt.json") -replace '(?<="secret": ")[^"]*', (Read-Host "(JWT Encryption Private Key) Enter a long string of random characters") | Set-Content "config\jwt.json"
-
+# (Get-Content "config\secure.json") -replace '(?<="aes_secret": ")[^"]*', (Read-Host "(AES Encryption seed) Enter a long string of random characters") | Set-Content "config\secure.json"
+(Get-Content "config\secure.json") -replace '(?<="aes_secret": ")[^"]*', ( -join ((35..91) + (97..126) | Get-Random -Count 120 | % {{[char]$_}})) | Set-Content "config\secure.json"
+# (Get-Content "config\jwt.json") -replace '(?<="secret": ")[^"]*', (Read-Host "(JWT Encryption Private Key) Enter a long string of random characters") | Set-Content "config\jwt.json"
+(Get-Content "config\jwt.json") -replace '(?<="secret": ")[^"]*', ( -join ((35..91) + (97..126) | Get-Random -Count 80 | % {{[char]$_}})) | Set-Content "config\jwt.json"
 # Set default listening Host to all IPs (0.0.0.0:4430), and start the EZ Cloud Server (in a separate window)
 write-host "Set default listening Host to all IPs (0.0.0.0:4430), and start the EZ Cloud Server (in a separate window)..."
 $Env:HOST=0.0.0.0
