@@ -5,6 +5,61 @@
 ## TO DO
 - [x] Build packaged version
   - [x] Compress into a versionned archive
+- [ ] Build full installer
+  - [x] Build solution that can be called from WebPack during build (`npm run build`)
+  - [x] Offer options to:
+    - [x] Install:
+      - [x] EZ Backend
+      - [x] EZ Frontend
+      - [x] NodeJS
+    - [x] Create and Configure `EZ` SQL Database
+    - [x] Create / Configure EZ Server Service
+    - [x] Start EZ Server Service immediately
+    - [x] Automatically generate private tokens for:
+      - [x] For JWT (Authentication token encryption/decripion key)
+      - [x] For AES (Encryption / Decryption private key)
+    - [x] Open and manually review:
+      - [x] JWT configuration file
+      - [x] AES configuration file
+      - [x] HTTPS Certificate file
+      - [x] HTTPS RSA Private Key file
+      - [x] HTTPS Encrypted Key file
+  - [x] Copy files in right location (Program Files)
+  - [x] Create Start menu shortcuts to:
+    - [x] Configuration Folder
+    - [x] Configuration Sample Folder
+    - [x] Access Source Code on GitHub
+    - [x] Uninstall EZ Cloud Server
+  - [x] Generate random tokens, if asked, for:
+    - [x] JWT
+    - [x] AES
+  - [ ] Prompt for SQL Credentials and details
+    - [ ] User
+    - [ ] Password
+    - [ ] Host
+    - [ ] Port
+  - [ ] ~~Download and install NodeJS if requested~~ (👈 In the interest of time, let's just package a version of NodeJS with the installer)
+  - [ ] Package NodeJS
+    - [ ] Install it if requested
+  - [ ] Build clean and parameters accepting script to create EZ Server Service
+    - [ ] Build script
+    - [ ] Create Webpack config to build the distributable version
+    - [ ] Integrate the distributable version into the Installer
+  - [x] Update `create_database.bat` to allow for unprompted install (not asking the user to press a key to continue)
+  - [x] Ability to fully Un-install
+    - [x] Stop EZ Server Service
+    - [x] Delete EZ Server Service
+  - [ ] Allow for Silent install
+    - [ ] Ability to specify user choice from command line, to decide:
+      - [ ] Install EZ Frontend
+      - [ ] Install NodeJS
+      - [ ] Create and Configure `EZ` SQL Database
+      - [ ] Create / Configure EZ Server Service
+      - [ ] Start EZ Server Service immediately
+      - [ ] Automatically generate private tokens for:
+        - [ ] For JWT (Authentication token encryption/decripion key)
+        - [ ] For AES (Encryption / Decryption private key)
+  - [ ] Sign Install package
 - [x] Remove dependance to config/ssh.json
 - [x] Collect different Shippers versions for the Frontend
   - [x] Collect running OC Beats and their versions
