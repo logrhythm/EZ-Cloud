@@ -1,6 +1,7 @@
 #define RepoURL 'https://github.com/TonyMasse/EZ-Cloud'
 #define NodeJsURL 'https://nodejs.org/dist/v14.17.6/node-v14.17.6-x64.msi'
 #define NodeJsSHA 'e72ceb05c7596a6e381172369dce1c374a2b09ee739dca330be58f3977b5c03d'
+#define NodeJsFilename 'node-v14.17.6-x64.msi'
 #define NodeJsVersionLabel 'v14.17.6-x64'
 #define ConfigFilesViewer 'Notepad.exe'
 
@@ -27,6 +28,7 @@ Name: "nodeJs"; Description: "NodeJS"; Types: full lrCloud custom
 
 [Tasks]
 Name: createDatabase; Description: "Create and Configure [EZ] SQL Database"; GroupDescription: "Database:"; Components: ezCloudServer
+Name: installNodeJs; Description: "Install NodeJS {#NodeJsVersionLabel}"; GroupDescription: "NodeJS:"; Components: nodeJs
 Name: serviceSetup; Description: "Configure EZ Server Service"; GroupDescription: "Service:"; Components: ezCloudServer
 Name: serviceStart; Description: "Start EZ Server Service immediately"; GroupDescription: "Service:"; Components: ezCloudServer; Flags: unchecked
 Name: autoGenerateTokens; Description: "Automatically &generate private tokens"; GroupDescription: "Private tokens:"; Components: ezCloudServer
@@ -50,6 +52,8 @@ Source: "{#DistSubDirectory}\database\*"; DestDir: "{app}\database"; Components:
 Source: "{#DistSubDirectory}\.env"; DestDir: "{app}"; Components: ezCloudServer
 Source: "{#DistSubDirectory}\.env.sample"; DestDir: "{app}"; Components: ezCloudServer
 Source: "{#DistSubDirectory}\public_web_root\*"; DestDir: "{app}\public_web_root"; Components: ezCloudFrontend; Flags: recursesubdirs
+; Source: "{#DistSubDirectory}\NodeJS_Installer\{#NodeJsFilename}"; DestDir: "{tmp}\{#NodeJsFilename}"; Components: nodeJs
+Source: "{#distDirectory}\NodeJS_Installer\{#NodeJsFilename}"; DestDir: "{tmp}"; Components: nodeJs
 ; NodeJS
 
 [Dirs]
@@ -62,8 +66,10 @@ Name: "{group}\Access Source Code on GitHub"; Filename: "https://github.com/Tony
 Name: "{group}\Uninstall EZ Cloud Server"; Filename: "{uninstallexe}"
 
 [Run]
-; READY, JUST DISABLED DURING TESTING --- Filename: "{app}\database\create_database.bat"; WorkingDir: "{app}\database"; Description: "Create and Configure [EZ] SQL Database"; Tasks: createDatabase;
-Filename: "{app}\database\create_database.bat"; Parameters: "--NoStoppingTillBrooklyn"; WorkingDir: "{app}\database"; Description: "Create and Configure [EZ] SQL Database"; Tasks: createDatabase
+Filename: "{app}\database\create_database.bat"; Parameters: "--NoSleepTillBrooklyn"; WorkingDir: "{app}\database"; Description: "Create and Configure [EZ] SQL Database"; Tasks: createDatabase
+; Filename: "MsiExec.exe"; Parameters: "/i ""{tmp}\{#NodeJsFilename}"" /qn"; Description: "Installing NodeJS {#NodeJsVersionLabel}"; Tasks: installNodeJs; Flags: runhidden skipifnotsilent
+; Filename: "MsiExec.exe"; Parameters: "/i ""{tmp}\{#NodeJsFilename}"""; Description: "Installing NodeJS {#NodeJsVersionLabel}"; Tasks: installNodeJs; Flags: skipifsilent
+Filename: "MsiExec.exe"; Parameters: "/i ""{tmp}\{#NodeJsFilename}"" /qn"; Description: "Installing NodeJS {#NodeJsVersionLabel}"; Tasks: installNodeJs; Flags: skipifsilent
 ; Filename: "PowerShell.exe"; Parameters: "-Command "; Description: "Setting up the EZ Server service"; Tasks: serviceSetup;
 Filename: {sys}\sc.exe; Parameters: "start ""EZ-Cloud Server"""; Description: "Starting EZ Server service"; Tasks: serviceStart; Flags: runhidden skipifsilent
 Filename: "{#ConfigFilesViewer}"; Parameters: "{app}\config\database.json"; Description: "View the Database configuration file"; Tasks: openConfigFileDatabase_json; Flags: nowait skipifsilent

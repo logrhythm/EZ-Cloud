@@ -1,15 +1,15 @@
 @echo off
-echo " "
-echo " EZ Cloud Server - Database creation script "
-echo " "
-echo "NOTE: This will attempt to create an EZ database on the local MS SQL server."
-echo " "
-echo "NOTE: It will use the current user in SQL Trusted mode. If the current user doesn't have Admin access onto SQL, please re-run this script as a local Administrator or provide it and the .SQL files to your DBA."
-echo " "
-echo " "
-echo "If this was run by mistake, press [Ctrl] + [C] to abord now. Or:"
+echo.
+echo  EZ Cloud Server - Database creation script 
+echo.
+echo NOTE: This will attempt to create an EZ database on the local MS SQL server.
+echo.
+echo NOTE: It will use the current user in SQL Trusted mode. If the current user doesn't have Admin access onto SQL, please re-run this script as a local Administrator or provide it and the .SQL files to your DBA.
+echo.
+echo.
+echo If this was run by mistake, press [Ctrl] + [C] to abord now. Or:
 
-if "%~1"=="--NoStoppingTillBrooklyn" (goto NO_PAUSE_ONE)
+if "%~1"=="--NoSleepTillBrooklyn" (goto NO_PAUSE_ONE)
 pause
 :NO_PAUSE_ONE
 
@@ -34,9 +34,10 @@ osql -E -n -d EZ -i "20210715.14 - Create Stored Procedure - upsert_Log_Source_V
 osql -E -n -d EZ -i "20210719.15 - Create View - list_OpenCollector_Log_Sources.sql"
 osql -E -n -d EZ -i "20210720.16 - Create Stored Procedure - upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource.sql"
 
-echo " "
-echo "Job done. See above for any error message."
+@echo off
+echo.
+echo Job done. See above for any error message.
 
-if "%~1"=="--NoStoppingTillBrooklyn" (goto NO_PAUSE_ONE)
-@pause
+if "%~1"=="--NoSleepTillBrooklyn" (goto NO_PAUSE_TWO)
+pause
 :NO_PAUSE_TWO
