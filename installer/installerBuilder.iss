@@ -237,9 +237,9 @@ begin
   if CurStep = ssInstall then
   begin
     { Collect the entered SQL Credentials into the relevant variables}
-    SqlCredentialsLogin := SqlCredentialsQueryPage.Values[0];
+    SqlCredentialsLogin    := SqlCredentialsQueryPage.Values[0];
     SqlCredentialsPassword := SqlCredentialsQueryPage.Values[1];
-    SqlCredentialsHost := SqlCredentialsQueryPage.Values[2];
-    SqlCredentialsPort := SqlCredentialsQueryPage.Values[3];
+    SqlCredentialsHost     := SqlCredentialsQueryPage.Values[2];
+    SqlCredentialsPort     := SqlCredentialsQueryPage.Values[3];
   end;
 end;
