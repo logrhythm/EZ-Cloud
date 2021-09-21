@@ -60,6 +60,9 @@
         - [ ] For JWT (Authentication token encryption/decripion key)
         - [ ] For AES (Encryption / Decryption private key)
   - [ ] Sign Install package
+  - [x] Add Welcome page
+  - [x] Add License page
+    - [x] Modify WebPack script to use the MIT License from Repo
 - [x] Remove dependance to config/ssh.json
 - [x] Collect different Shippers versions for the Frontend
   - [x] Collect running OC Beats and their versions

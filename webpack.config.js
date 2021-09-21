@@ -28,7 +28,8 @@ module.exports = {
         { from: 'public_web_root', to: path.join('..', 'public_web_root'), toType: 'dir' },
         { from: '.env.sample', to: path.join('..', '.env.sample'), toType: 'file' },
         { from: '.env.dist', to: path.join('..', '.env'), toType: 'file' },
-        { from: 'database', to: path.join('..', 'database'), toType: 'dir' }
+        { from: 'database', to: path.join('..', 'database'), toType: 'dir' },
+        { from: 'LICENSE', to: path.join('..', 'License.txt'), toType: 'file' }
       ]
     }),
 

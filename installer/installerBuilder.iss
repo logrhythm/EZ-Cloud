@@ -13,6 +13,8 @@ DefaultGroupName=EZ Cloud - Server
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
 WizardStyle=modern
+DisableWelcomePage=no
+LicenseFile="{#DistSubDirectory}\License.txt"
 
 [Types]
 Name: "full"; Description: "Full installation (EZ Cloud Server + Frontend + NodeJS)"
