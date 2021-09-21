@@ -37,7 +37,7 @@ Name: serviceStart; Description: "Start EZ Server Service immediately"; GroupDes
 Name: autoGenerateTokens; Description: "Automatically &generate private tokens"; GroupDescription: "Private tokens:"; Components: ezCloudServer
 Name: autoGenerateTokens\jwt; Description: "For &JWT (Authentication token encryption/decripion key)"; GroupDescription: "Private tokens:"; Components: ezCloudServer
 Name: autoGenerateTokens\aes; Description: "For &AES (Encryption / Decryption private key)"; GroupDescription: "Private tokens:"; Components: ezCloudServer
-Name: openConfigFileDatabase_json; Description: "&Database configuration file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer
+Name: openConfigFileDatabase_json; Description: "&Database configuration file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer; Flags: unchecked
 Name: openConfigFileJwt_json; Description: "JWT configuration file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer; Flags: unchecked
 Name: openConfigFileSecure_json; Description: "AES configuration file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer; Flags: unchecked
 Name: openConfigFileHttps_cert; Description: "HTTPS Certificate file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer; Flags: unchecked
@@ -46,7 +46,7 @@ Name: openConfigFileHttps_key_tmp; Description: "HTTPS Encrypted Key file"; Grou
 
 [Files]
 Source: "{#DistSubDirectory}\bin\*"; DestDir: "{app}\bin"; Components: ezCloudServer
-Source: "{#DistSubDirectory}\config\database.json"; DestDir: "{app}\config"; Components: ezCloudServer
+Source: "{#DistSubDirectory}\config\database.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceSqlCreds('{app}\config\database.json')
 Source: "{#DistSubDirectory}\config\jwt.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceTokenIfTaskSelected('{app}\config\jwt.json', 'CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS', 50, 'autoGenerateTokens\jwt')
 Source: "{#DistSubDirectory}\config\secure.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceTokenIfTaskSelected('{app}\config\secure.json', 'CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS', 120, 'autoGenerateTokens\aes')
 Source: "{#DistSubDirectory}\config\https.*"; DestDir: "{app}\config"; Components: ezCloudServer
@@ -92,6 +92,11 @@ Filename: {sys}\sc.exe; Parameters: "delete ""EZ-Cloud Server""" ; Flags: runhid
 ; - Start of Service
 
 [Code]
+var
+  SqlCredentialsQueryPage: TInputQueryWizardPage;
+  SqlCredentialsLogin: String;
+  SqlCredentialsPassword: String;
+
 procedure URLLabelOnClick(Sender: TObject);
 var
   ErrorCode: Integer;
@@ -116,9 +121,25 @@ begin
   URLLabel.Anchors := [akLeft, akBottom];
 end;
 
+procedure AddSqlCredentialsQueryPage();
+begin
+  SqlCredentialsQueryPage := CreateInputQueryPage(
+    wpSelectProgramGroup,
+    'SQL Credentials',
+    'EZ Server requires valid SQL Credentials to manage the SIEM database.',
+    'IMPORTANT:' + #10+#13 + 'The credentials must have READ and WRITE access to the LogRhythm_EMDB database.' + #10+#13);
+
+  SqlCredentialsQueryPage.Add('User Name:', False);
+  SqlCredentialsQueryPage.Add('Password:', True);
+
+  SqlCredentialsQueryPage.Values[0] := 'sa';
+  SqlCredentialsQueryPage.Values[1] := 'CHANGE_ME';
+end;
+
 procedure InitializeWizard();
 begin
   CreateURLLabel(WizardForm, WizardForm.CancelButton);
+  AddSqlCredentialsQueryPage();
 end;
 
 procedure InitializeUninstallProgressForm();
@@ -184,6 +205,14 @@ begin
     FileReplaceString(ExpandConstant(FileName), SearchString, GetRandomString(CharCount));
 end;
 
+// To replace the SQL Credentials by the ones provided in the Wizard
+
+procedure FileReplaceSqlCreds(const FileName: String);
+begin
+    FileReplaceString(ExpandConstant(FileName), '"userName":"sa"', '"userName":"' + SqlCredentialsLogin + '"');
+    FileReplaceString(ExpandConstant(FileName), '"password":"CHANGE_ME"', '"password":"' + SqlCredentialsPassword + '"');
+end;
+
 // To replace the token in a given file, by a generated random string, only if the mathcing Task is selected
 
 procedure FileReplaceTokenIfTaskSelected(const FileName, SearchString: string ; const CharCount: Integer ; const TaskSelected: string);
@@ -194,3 +223,12 @@ begin
     end;
 end;
 
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssInstall then
+  begin
+    { Collect the entered SQL Credentials into the relevant variables}
+    SqlCredentialsLogin := SqlCredentialsQueryPage.Values[0];
+    SqlCredentialsPassword := SqlCredentialsQueryPage.Values[1];
+  end;
+end;

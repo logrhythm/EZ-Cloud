@@ -34,8 +34,8 @@
     - [x] JWT
     - [x] AES
   - [ ] Prompt for SQL Credentials and details
-    - [ ] User
-    - [ ] Password
+    - [x] User
+    - [x] Password
     - [ ] Host
     - [ ] Port
   - [ ] ~~Download and install NodeJS if requested~~ (👈 In the interest of time, let's just package a version of NodeJS with the installer)
