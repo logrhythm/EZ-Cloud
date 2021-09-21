@@ -39,8 +39,8 @@
     - [ ] Host
     - [ ] Port
   - [ ] ~~Download and install NodeJS if requested~~ (👈 In the interest of time, let's just package a version of NodeJS with the installer)
-  - [ ] Package NodeJS
-    - [ ] Install it if requested
+  - [x] Package NodeJS
+    - [x] Install it if requested
   - [ ] Build clean and parameters accepting script to create EZ Server Service
     - [ ] Build script
     - [ ] Create Webpack config to build the distributable version
