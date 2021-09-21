@@ -96,6 +96,8 @@ var
   SqlCredentialsQueryPage: TInputQueryWizardPage;
   SqlCredentialsLogin: String;
   SqlCredentialsPassword: String;
+  SqlCredentialsHost: String;
+  SqlCredentialsPort: String;
 
 procedure URLLabelOnClick(Sender: TObject);
 var
@@ -125,15 +127,20 @@ procedure AddSqlCredentialsQueryPage();
 begin
   SqlCredentialsQueryPage := CreateInputQueryPage(
     wpSelectProgramGroup,
-    'SQL Credentials',
-    'EZ Server requires valid SQL Credentials to manage the SIEM database.',
-    'IMPORTANT:' + #10+#13 + 'The credentials must have READ and WRITE access to the LogRhythm_EMDB database.' + #10+#13);
+    'SQL Credentials and Details',
+    'At run time, EZ Server requires valid SQL Credentials to manage the its own and the SIEM databases.',
+    'NOTE:' + #10+#13 + 'These credentials are for run time only. This Installation Wizard will use the user currently running it to create the EZ database.' + #10+#13 + #10+#13 +
+    'IMPORTANT:' + #10+#13 + 'The credentials must have READ and WRITE access to the EZ and LogRhythm_EMDB databases.' + #10+#13);
 
-  SqlCredentialsQueryPage.Add('User Name:', False);
-  SqlCredentialsQueryPage.Add('Password:', True);
+  SqlCredentialsQueryPage.Add('SQL User Name:', False);
+  SqlCredentialsQueryPage.Add('SQL Password:', True);
+  SqlCredentialsQueryPage.Add('SQL Host:', False);
+  SqlCredentialsQueryPage.Add('SQL Port:', False);
 
   SqlCredentialsQueryPage.Values[0] := 'sa';
   SqlCredentialsQueryPage.Values[1] := 'CHANGE_ME';
+  SqlCredentialsQueryPage.Values[2] := 'localhost';
+  SqlCredentialsQueryPage.Values[3] := '1433';
 end;
 
 procedure InitializeWizard();
@@ -211,6 +218,8 @@ procedure FileReplaceSqlCreds(const FileName: String);
 begin
     FileReplaceString(ExpandConstant(FileName), '"userName":"sa"', '"userName":"' + SqlCredentialsLogin + '"');
     FileReplaceString(ExpandConstant(FileName), '"password":"CHANGE_ME"', '"password":"' + SqlCredentialsPassword + '"');
+    FileReplaceString(ExpandConstant(FileName), '"server":"localhost"', '"server":"' + SqlCredentialsHost + '"');
+    FileReplaceString(ExpandConstant(FileName), '"port": 1433', '"port": ' + SqlCredentialsPort);
 end;
 
 // To replace the token in a given file, by a generated random string, only if the mathcing Task is selected
@@ -230,5 +239,7 @@ begin
     { Collect the entered SQL Credentials into the relevant variables}
     SqlCredentialsLogin := SqlCredentialsQueryPage.Values[0];
     SqlCredentialsPassword := SqlCredentialsQueryPage.Values[1];
+    SqlCredentialsHost := SqlCredentialsQueryPage.Values[2];
+    SqlCredentialsPort := SqlCredentialsQueryPage.Values[3];
   end;
 end;

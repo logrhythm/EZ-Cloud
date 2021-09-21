@@ -33,11 +33,11 @@
   - [x] Generate random tokens, if asked, for:
     - [x] JWT
     - [x] AES
-  - [ ] Prompt for SQL Credentials and details
+  - [x] Prompt for SQL Credentials and details
     - [x] User
     - [x] Password
-    - [ ] Host
-    - [ ] Port
+    - [x] Host
+    - [x] Port
   - [ ] ~~Download and install NodeJS if requested~~ (👈 In the interest of time, let's just package a version of NodeJS with the installer)
   - [x] Package NodeJS
     - [x] Install it if requested
