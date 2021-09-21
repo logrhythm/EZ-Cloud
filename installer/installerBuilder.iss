@@ -24,11 +24,14 @@ Name: "custom"; Description: "Custom installation"; Flags: iscustom
 [Components]
 Name: "ezCloudServer"; Description: "EZ Cloud Server"; Types: full lrCloud compact minimal custom; Flags: fixed
 Name: "ezCloudFrontend"; Description: "EZ Cloud Frontend"; Types: full compact custom
-Name: "nodeJs"; Description: "NodeJS"; Types: full lrCloud custom
+Name: "nodeJs"; Description: "NodeJS"; Types: full lrCloud custom; ExtraDiskSpaceRequired: 56700928
+; NodeJS:
+; Installed - Installer = extra disk requered (all sizes in Bytes)
+; 87236608 - 30535680 = 56700928
 
 [Tasks]
 Name: createDatabase; Description: "Create and Configure [EZ] SQL Database"; GroupDescription: "Database:"; Components: ezCloudServer
-Name: installNodeJs; Description: "Install NodeJS {#NodeJsVersionLabel}"; GroupDescription: "NodeJS:"; Components: nodeJs
+Name: installNodeJs; Description: "Install NodeJS {#NodeJsVersionLabel} (>>> Can take up to 2 minutes to install in the background)"; GroupDescription: "NodeJS:"; Components: nodeJs
 Name: serviceSetup; Description: "Configure EZ Server Service"; GroupDescription: "Service:"; Components: ezCloudServer
 Name: serviceStart; Description: "Start EZ Server Service immediately"; GroupDescription: "Service:"; Components: ezCloudServer; Flags: unchecked
 Name: autoGenerateTokens; Description: "Automatically &generate private tokens"; GroupDescription: "Private tokens:"; Components: ezCloudServer
@@ -52,9 +55,7 @@ Source: "{#DistSubDirectory}\database\*"; DestDir: "{app}\database"; Components:
 Source: "{#DistSubDirectory}\.env"; DestDir: "{app}"; Components: ezCloudServer
 Source: "{#DistSubDirectory}\.env.sample"; DestDir: "{app}"; Components: ezCloudServer
 Source: "{#DistSubDirectory}\public_web_root\*"; DestDir: "{app}\public_web_root"; Components: ezCloudFrontend; Flags: recursesubdirs
-; Source: "{#DistSubDirectory}\NodeJS_Installer\{#NodeJsFilename}"; DestDir: "{tmp}\{#NodeJsFilename}"; Components: nodeJs
 Source: "{#distDirectory}\NodeJS_Installer\{#NodeJsFilename}"; DestDir: "{tmp}"; Components: nodeJs
-; NodeJS
 
 [Dirs]
 Name: "{app}\public_web_root"; Components: ezCloudServer
