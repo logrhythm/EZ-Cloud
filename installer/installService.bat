@@ -1,0 +1,1 @@
+ezcloudserver.exe install

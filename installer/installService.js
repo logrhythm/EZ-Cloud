@@ -1,19 +1,20 @@
 // Full doc at:
 // https://github.com/coreybutler/node-windows
 
-const Service = require('node-windows').Service;
+const { Service } = require('node-windows');
+const path = require('path');
 
 // Create a new service object
 const svc = new Service({
-  name:'EZ-Cloud Server',
+  name: 'EZ-Cloud Server',
   description: 'The Backend server of the EZ-Cloud for Legacy SIEM',
-  script: require('path').join(__dirname,'../src/index.js')
-  // nodeOptions: [
-  //   '--harmony',
-  //   '--max_old_space_size=4096'
-  // ],
-  //, workingDirectory: '...'
-  //, allowServiceLogon: true});
+  script: path.join(__dirname, '../src/index.js')
+  //  nodeOptions: [
+  //    '--harmony',
+  //    '--max_old_space_size=4096'
+  //  ],
+  // , workingDirectory: '...'
+  // , allowServiceLogon: true});
 });
 
 // https://github.com/coreybutler/node-windows#user-account-attributes
@@ -23,8 +24,8 @@ const svc = new Service({
 
 // Listen for the "install" event, which indicates the
 // process is available as a service.
-svc.on('install', function () {
-  svc.start();
+svc.on('install', () => {
+  // svc.start();
 });
 
 svc.install();

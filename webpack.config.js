@@ -11,7 +11,10 @@ const nodeJS = {
 
 module.exports = {
   entry: {
-    service: './src/index.js'
+    service: './src/index.js', // The main code of trhe service
+    // installService: './installer/installService.dist.js',
+    // uninstallService: './installer/uninstallService.dist.js',
+    serviceWrapper: './node_modules/node-windows/lib/wrapper.js'
   },
   output: {
     path: path.join(__dirname, 'dist', `EZ-Cloud.v${version}`, 'bin'),
@@ -29,7 +32,15 @@ module.exports = {
         { from: '.env.sample', to: path.join('..', '.env.sample'), toType: 'file' },
         { from: '.env.dist', to: path.join('..', '.env'), toType: 'file' },
         { from: 'database', to: path.join('..', 'database'), toType: 'dir' },
-        { from: 'LICENSE', to: path.join('..', 'License.txt'), toType: 'file' }
+        { from: 'LICENSE', to: path.join('..', 'License.txt'), toType: 'file' },
+        // Service and wrapper support files:
+        { from: 'node_modules/node-windows/bin/winsw/winsw.exe', to: 'ezcloudserver.exe', toType: 'file' },
+        { from: 'node_modules/node-windows/bin/winsw/winsw.exe.config', to: 'ezcloudserver.exe.config', toType: 'file' },
+        { from: 'installer/ezcloudserver.xml', to: 'ezcloudserver.xml', toType: 'file' },
+        // Small helpers for the Service management by user
+        { from: 'installer/installService.bat', to: './', toType: 'dir' },
+        { from: 'installer/uninstallService.bat', to: './', toType: 'dir' },
+        { from: 'installer/restartService.bat', to: './', toType: 'dir' }
       ]
     }),
 

@@ -47,7 +47,7 @@ Name: openConfigFileHttps_key; Description: "HTTPS RSA Private Key file"; GroupD
 Name: openConfigFileHttps_key_tmp; Description: "HTTPS Encrypted Key file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer; Flags: unchecked
 
 [Files]
-Source: "{#DistSubDirectory}\bin\*"; DestDir: "{app}\bin"; Components: ezCloudServer
+Source: "{#DistSubDirectory}\bin\*"; DestDir: "{app}\bin"; Components: ezCloudServer; AfterInstall: FileReplaceTokenByConstant('{app}\bin\ezcloudserver.xml', 'ROOT_PATH_EZ-Cloud', '{app}')
 Source: "{#DistSubDirectory}\config\database.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceSqlCreds('{app}\config\database.json')
 Source: "{#DistSubDirectory}\config\jwt.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceTokenIfTaskSelected('{app}\config\jwt.json', 'CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS', 50, 'autoGenerateTokens\jwt')
 Source: "{#DistSubDirectory}\config\secure.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceTokenIfTaskSelected('{app}\config\secure.json', 'CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS', 120, 'autoGenerateTokens\aes')
@@ -73,8 +73,8 @@ Filename: "{app}\database\create_database.bat"; Parameters: "--NoSleepTillBrookl
 ; Filename: "MsiExec.exe"; Parameters: "/i ""{tmp}\{#NodeJsFilename}"" /qn"; Description: "Installing NodeJS {#NodeJsVersionLabel}"; Tasks: installNodeJs; Flags: runhidden skipifnotsilent
 ; Filename: "MsiExec.exe"; Parameters: "/i ""{tmp}\{#NodeJsFilename}"""; Description: "Installing NodeJS {#NodeJsVersionLabel}"; Tasks: installNodeJs; Flags: skipifsilent
 Filename: "MsiExec.exe"; Parameters: "/i ""{tmp}\{#NodeJsFilename}"" /qn"; Description: "Installing NodeJS {#NodeJsVersionLabel}"; Tasks: installNodeJs; Flags: skipifsilent
-; Filename: "PowerShell.exe"; Parameters: "-Command "; Description: "Setting up the EZ Server service"; Tasks: serviceSetup;
-Filename: {sys}\sc.exe; Parameters: "start ""EZ-Cloud Server"""; Description: "Starting EZ Server service"; Tasks: serviceStart; Flags: runhidden skipifsilent
+Filename: "{app}\bin\ezcloudserver.exe"; Parameters: "install"; WorkingDir: "{app}\bin"; Description: "Setting up the EZ Server service"; Tasks: serviceSetup; Flags: runhidden
+Filename: "{app}\bin\ezcloudserver.exe"; Parameters: "start"; WorkingDir: "{app}\bin"; Description: "Starting the EZ Server service"; Tasks: serviceStart; Flags: runhidden skipifsilent
 Filename: "{#ConfigFilesViewer}"; Parameters: "{app}\config\database.json"; Description: "View the Database configuration file"; Tasks: openConfigFileDatabase_json; Flags: nowait skipifsilent
 Filename: "{#ConfigFilesViewer}"; Parameters: "{app}\config\jwt.json"; Description: "View the JWT configuration file"; Tasks: openConfigFileJwt_json; Flags: nowait skipifsilent
 Filename: "{#ConfigFilesViewer}"; Parameters: "{app}\config\secure.json"; Description: "View the AES configuration file"; Tasks: openConfigFileSecure_json; Flags: nowait skipifsilent
@@ -83,8 +83,11 @@ Filename: "{#ConfigFilesViewer}"; Parameters: "{app}\config\https.key.pem"; Desc
 Filename: "{#ConfigFilesViewer}"; Parameters: "{app}\config\https.keytmp.pem"; Description: "View the HTTP Private Key file"; Tasks: openConfigFileHttps_key_tmp; Flags: nowait skipifsilent
 
 [UninstallRun]
-Filename: {sys}\sc.exe; Parameters: "stop ""EZ-Cloud Server""" ; Flags: runhidden
-Filename: {sys}\sc.exe; Parameters: "delete ""EZ-Cloud Server""" ; Flags: runhidden
+Filename: "{app}\bin\ezcloudserver.exe"; Parameters: "stop"; WorkingDir: "{app}\bin"; Flags: runhidden
+Filename: "{app}\bin\ezcloudserver.exe"; Parameters: "uninstall"; WorkingDir: "{app}\bin"; Flags: runhidden
+
+[UninstallDelete]
+Type: files; Name: "{app}\bin\ezcloudserver.wrapper.log"
 
 ; Set by parameters (for Silent, or not):
 ; - SQL details (creds)
@@ -205,6 +208,13 @@ begin
         RandomString := RandomString + Chr(RandomInt);
     end;
     Result := RandomString;
+end;
+
+// To replace the token in a given file, by an exanded Constant
+
+procedure FileReplaceTokenByConstant(const FileName, SearchString, ReplaceString: string);
+begin
+    FileReplaceString(ExpandConstant(FileName), SearchString, ExpandConstant(ReplaceString));
 end;
 
 // To replace the token in a given file, by a generated random string

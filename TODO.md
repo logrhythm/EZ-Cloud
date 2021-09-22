@@ -41,15 +41,17 @@
   - [ ] ~~Download and install NodeJS if requested~~ (👈 In the interest of time, let's just package a version of NodeJS with the installer)
   - [x] Package NodeJS
     - [x] Install it if requested
-  - [ ] Build clean and parameters accepting script to create EZ Server Service
-    - [ ] Build script
-    - [ ] Create Webpack config to build the distributable version
-    - [ ] Integrate the distributable version into the Installer
+  - [x] Build clean and parameters accepting script to create EZ Server Service
+    - [x] Build scripts
+    - [x] Create Webpack config to build the distributable version
+    - [x] Integrate the distributable version into the Installer
+    - [x] Add necessary Uninstall steps and actions
   - [x] Update `create_database.bat` to allow for unprompted install (not asking the user to press a key to continue)
   - [x] Ability to fully Un-install
     - [x] Stop EZ Server Service
     - [x] Delete EZ Server Service
   - [ ] Allow for Silent install
+    - [x] Apply default settings during Silent install
     - [ ] Ability to specify user choice from command line, to decide:
       - [ ] Install EZ Frontend
       - [ ] Install NodeJS

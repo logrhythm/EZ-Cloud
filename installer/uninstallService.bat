@@ -1,0 +1,2 @@
+ezcloudserver.exe stop
+ezcloudserver.exe uninstall

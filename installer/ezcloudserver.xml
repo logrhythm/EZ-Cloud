@@ -1,0 +1,32 @@
+<service>
+	<id>ezcloudserver</id>
+	<name>EZ-Cloud Server</name>
+	<description>The Backend server of the EZ-Cloud On-boarder for LogRhythm Core SIEM</description>
+	<executable>node.exe</executable>
+	<argument>--harmony</argument>
+	<argument>ROOT_PATH_EZ-Cloud\bin\serviceWrapper.js</argument>
+	<argument>--file</argument>
+	<argument>ROOT_PATH_EZ-Cloud\bin\service.js</argument>
+	<argument>--scriptoptions=</argument>
+	<argument>--log</argument>
+	<argument>EZ-Cloud Server - Service wrapper</argument>
+	<argument>--grow</argument>
+	<argument>0.25</argument>
+	<argument>--wait</argument>
+	<argument>1</argument>
+	<argument>--maxrestarts</argument>
+	<argument>3</argument>
+	<argument>--abortonerror</argument>
+	<argument>n</argument>
+	<argument>--stopparentfirst</argument>
+	<argument>undefined</argument>
+	<logmode>none</logmode>
+	<stoptimeout>30sec</stoptimeout>
+	<serviceaccount>
+		<username>LocalSystem</username>
+	</serviceaccount>
+	<onfailure action="restart" delay="10 sec"/>
+	<onfailure action="restart" delay="20 sec"/>
+	<resetfailure>1 hour</resetfailure>
+	<workingdirectory>ROOT_PATH_EZ-Cloud</workingdirectory>
+</service>
