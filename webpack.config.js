@@ -38,7 +38,7 @@ module.exports = {
         scripts: [
           // Create a Zip file for this packaged version, without NodeJS
           // eslint-disable-next-line prefer-template
-          'PowerShell.exe -Command Compress-Archive -Path "' + path.join(__dirname, 'dist', `EZ-Cloud.v${version}`) + '" -DestinationPath "' + path.join(__dirname, 'dist', `EZ-Cloud_v${version}.NoNodeJS.zip` + '" -Force -CompressionLevel Fastest'),
+          'PowerShell.exe -Command Compress-Archive -Path "' + path.join(__dirname, 'dist', `EZ-Cloud.v${version}`) + '" -DestinationPath "' + path.join(__dirname, 'dist', `EZ-Cloud_v${version}.NoNodeJS.zip`) + '" -Force -CompressionLevel Fastest',
 
           // Downloading NodeJS
           // eslint-disable-next-line prefer-template
@@ -47,7 +47,7 @@ module.exports = {
 
           // Creating second Zip file, with NodeJS
           // eslint-disable-next-line prefer-template
-          'PowerShell.exe -Command Compress-Archive -Path "' + path.join(__dirname, 'dist', `EZ-Cloud.v${version}`) + '", "' + path.join(__dirname, 'dist', 'NodeJS_Installer') + '" -DestinationPath "' + path.join(__dirname, 'dist', `EZ-Cloud_v${version}.WithNodeJS.zip` + '" -Force -CompressionLevel Fastest'),
+          'PowerShell.exe -Command Compress-Archive -Path "' + path.join(__dirname, 'dist', `EZ-Cloud.v${version}`) + '", "' + path.join(__dirname, 'dist', 'NodeJS_Installer') + '" -DestinationPath "' + path.join(__dirname, 'dist', `EZ-Cloud_v${version}.WithNodeJS.zip`) + '" -Force -CompressionLevel Fastest',
           // eslint-disable-next-line max-len
           // 'PowerShell.exe -Command Compress-Archive -Path "' + path.join(__dirname, 'dist', `EZ-Cloud.v${version}`) + '"  -DestinationPath "' + path.join(__dirname, 'dist', `EZ-Cloud_v${version}.WithNodeJS.zip` + '" -Force -CompressionLevel Fastest'),
 
