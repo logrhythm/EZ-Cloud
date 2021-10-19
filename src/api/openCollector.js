@@ -11,6 +11,7 @@ const SSH = require('simple-ssh');
 
 // Lib to get the SSH config for a given OpenCollector
 const { getSshConfigForCollector } = require('../shared/collectorSshConfig');
+const { lrObfuscateSecret } = require('../shared/crypto');
 
 // Load the System Logging functions
 const { logToSystem } = require('../shared/systemLogging');
@@ -1838,6 +1839,42 @@ router.post('/ImportPipelineForBeat', async (req, res) => {
     }
 
     res.json({ ...pipelineImportForBeatStatusTemplate, errors: errorMessages, requestBody: req.body });
+  }
+});
+
+// #############################################
+// ObfuscateSecret
+// #############################################
+
+const obfuscateSecretTemplate = {
+  stillUpdating: false,
+  lastSuccessfulUpdateTimeStampUtc: 0,
+  payload: {}, // object with result of the operation
+  errors: [], // array of all the errors
+  outputs: [] // array of all the outputs
+};
+
+router.post('/ObfuscateSecret', async (req, res) => {
+  // Check we are ship-shape with the params
+  const missingSecret = !(
+    req
+    && req.body
+    && req.body.secretToObfuscate
+  );
+  if (
+    !missingSecret
+  ) {
+    const { secretToObfuscate } = req.body;
+
+    const obfuscatedSecret = lrObfuscateSecret(secretToObfuscate);
+
+    res.json({ ...obfuscateSecretTemplate, payload: { obfuscatedSecret } });
+  } else {
+    const errorMessages = [];
+    if (missingSecret) {
+      errorMessages.push('Missing or malformed compulstory "secretToObfuscate" string.');
+    }
+    res.json({ ...obfuscateSecretTemplate, errors: errorMessages, requestBody: req.body });
   }
 });
 
