@@ -18,7 +18,24 @@ function aesDecrypt(toDecrypt = '') {
   return decryptedBytes.toString(CryptoJS.enc.Utf8);
 }
 
+// Calling external LogRhythm tool to obfuscate secrets in configuration files
+
+const spawn = require('cross-spawn');
+
+const encryptionToolPath = (
+  process.env.NODE_ENV === 'development'
+    ? path.join(process.env.baseDirname, 'src', 'shared', 'encryptionTool.exe')
+    : path.join(process.env.baseDirname, 'bin', 'encryptionTool.exe')
+);
+
+function lrObfuscateSecret(toObfuscate = '') {
+  const obfuscationResult = spawn.sync(encryptionToolPath, [toObfuscate, 'encrypt', ''], {});
+  const obfuscatedSecret = (obfuscationResult && obfuscationResult.error === null && obfuscationResult.stdout ? obfuscationResult.stdout : '').toString().trim();
+  return obfuscatedSecret;
+}
+
 module.exports = {
   aesEncrypt,
-  aesDecrypt
+  aesDecrypt,
+  lrObfuscateSecret
 };
