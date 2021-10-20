@@ -33,14 +33,57 @@
           :readonly="(template.readonly ? template.readonly : false || (isPartOfObject && leafInObject && (leafInObject === 'stream_id' || leafInObject === 'stream_name')))"
           :type="template.type && template.type.name && template.type.name === 'password' && !showPassword ? 'password' : 'text'"
           :autogrow="template.type && template.type.multilines && template.type.multilines === true"
+          @blur="inFocus = false"
+          @focus="inFocus = true"
         >
-          <template v-slot:append>
+          <template
+            v-if="template.type && template.type.name && template.type.name === 'password'"
+            v-slot:append
+          >
+            <q-spinner
+              v-if="waitingForBackend"
+            />
             <q-icon
-              v-if="template.type && template.type.name && template.type.name === 'password'"
+              v-if="updateErrorMessage.length"
+              name="error"
+              :color="inFocus ? 'red-10' : 'alert'"
+            >
+              <q-tooltip content-style="font-size: 1rem;">
+                Failed to obfuscate the Secret. Error message:<br>
+                <span class="text-italic">{{ updateErrorMessage }}</span>
+              </q-tooltip>
+            </q-icon>
+            <q-icon
+              v-if="obfuscationRequirementNotMet"
+              name="warning"
+              :color="inFocus ? 'orange-10' : 'warning'"
+            >
+              <q-tooltip content-style="font-size: 1rem;">
+                This Secret must be obfuscated/encrypted to produce a valid configuration
+              </q-tooltip>
+            </q-icon>
+            <q-icon
+              v-if="template.obfuscation && template.obfuscation.method && template.obfuscation.method.length"
+              :name="obfuscationRequirementNotMet ? 'lock_open' : 'lock'"
+              :color="obfuscationRequirementNotMet ? (inFocus ? 'orange-10' : 'warning') : (inFocus ? 'green-10' : 'positive')"
+              :class="obfuscationRequirementNotMet ? 'cursor-pointer' : ''"
+              @click="obfuscateSecret"
+            >
+              <q-tooltip content-style="font-size: 1rem;">
+                <span v-if="obfuscationRequirementNotMet">Obfuscate/encrypt this Secret</span>
+                <span v-else>Your Secret is properly obfuscated</span>
+              </q-tooltip>
+            </q-icon>
+            <q-separator spaced inset vertical dark />
+            <q-icon
               :name="showPassword ? 'visibility' : 'visibility_off'"
               class="cursor-pointer"
               @click="showPassword = !showPassword"
-            />
+            >
+              <q-tooltip content-style="font-size: 1rem;">
+                <span v-if="showPassword">Hide</span><span v-else>Show</span> Secret
+              </q-tooltip>
+            </q-icon>
           </template>
         </q-input>
         <div v-if="template.type && template.type.name && template.type.name === 'array'" class="q-gutter-y-sm col">
@@ -134,6 +177,7 @@
 <script>
 import FieldEditor from 'components/Pipelines/Collection/FieldEditor.vue'
 import { uid } from 'quasar'
+import { mapActions } from 'vuex'
 
 export default {
   name: 'FieldEditor',
@@ -176,7 +220,10 @@ export default {
     return {
       internalPrefixVar: '',
       internalSuffixVar: '',
-      showPassword: false
+      showPassword: false,
+      inFocus: false,
+      waitingForBackend: false,
+      updateErrorMessage: '' // To store returned error message from API when obfuscating secret
     }
   }, // data
   computed: {
@@ -371,9 +418,20 @@ export default {
     },
     leafName () {
       return this.leafInObject
+    },
+    obfuscationRequirementNotMet () {
+      if (
+        this.template.obfuscation &&
+        // this.template.obfuscation.method && this.template.obfuscation.method.length &&
+        this.template.obfuscation.obfuscatedFormatCheckRegex && this.template.obfuscation.obfuscatedFormatCheckRegex.length
+      ) {
+        return this.internalValueRaw.match(this.template.obfuscation.obfuscatedFormatCheckRegex) === null
+      }
+      return false
     }
   }, // computed
   methods: {
+    ...mapActions('mainStore', ['obfuscateSecretForOpenCollector']),
     formatNumber (value) {
       // One day we will implement a number formatter
       return value
@@ -491,6 +549,40 @@ export default {
       ) {
         delete this.internalValue[payload.leafInObject]
         this.internalValue = JSON.parse(JSON.stringify(this.internalValue))
+      }
+    },
+    obfuscateSecret () {
+      if (this.obfuscationRequirementNotMet) {
+        this.waitingForBackend = true
+        this.updateErrorMessage = ''
+        this.obfuscateSecretForOpenCollector({
+          apiCallParams: {
+            secretToObfuscate: (this.internalValueRaw && this.internalValueRaw.length ? this.internalValueRaw : '')
+          },
+          loadingVariableName: 'waitingForBackend',
+          onSuccessCallBack: this.successfullObfuscation,
+          onErrorCallBack: this.failedObfuscation,
+          caller: this
+        })
+      }
+    },
+    successfullObfuscation (payload) {
+      if (payload.success && payload.data && payload.data.payload && payload.data.payload.obfuscatedSecret) {
+        this.internalValueRaw = payload.data.payload.obfuscatedSecret
+      }
+    },
+    failedObfuscation (payload) {
+      console.log('failedObfuscation', payload)
+      if (!payload.success && payload.captionForLogAndPopup) {
+        this.updateErrorMessage = payload.captionForLogAndPopup
+        this.$q.notify({
+          type: 'negative',
+          color: 'negative',
+          icon: 'report_problem',
+          message: 'Failed to obfuscate the Secret. Error message:',
+          caption: payload.captionForLogAndPopup,
+          timeout: 4000
+        })
       }
     }
   } // methods
