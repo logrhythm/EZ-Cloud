@@ -1855,11 +1855,12 @@ const obfuscateSecretTemplate = {
 };
 
 router.post('/ObfuscateSecret', async (req, res) => {
-  // Check we are ship-shape with the params
+  // Check we are ship-shape with the params, but we allow empty string for secretToObfuscate
+  // (as the password might be nothing)
   const missingSecret = !(
     req
     && req.body
-    && req.body.secretToObfuscate
+    && req.body.secretToObfuscate !== undefined
   );
   if (
     !missingSecret
