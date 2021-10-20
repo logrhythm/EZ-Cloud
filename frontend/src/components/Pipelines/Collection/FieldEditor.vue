@@ -31,9 +31,18 @@
           standout="bg-blue-4 text-white"
           v-model="internalValue"
           :readonly="(template.readonly ? template.readonly : false || (isPartOfObject && leafInObject && (leafInObject === 'stream_id' || leafInObject === 'stream_name')))"
-          :type="template.type && template.type.name && template.type.name === 'password' ? 'password' : 'text'"
+          :type="template.type && template.type.name && template.type.name === 'password' && !showPassword ? 'password' : 'text'"
           :autogrow="template.type && template.type.multilines && template.type.multilines === true"
-        />
+        >
+          <template v-slot:append>
+            <q-icon
+              v-if="template.type && template.type.name && template.type.name === 'password'"
+              :name="showPassword ? 'visibility' : 'visibility_off'"
+              class="cursor-pointer"
+              @click="showPassword = !showPassword"
+            />
+          </template>
+        </q-input>
         <div v-if="template.type && template.type.name && template.type.name === 'array'" class="q-gutter-y-sm col">
           <FieldEditor
             v-for="(subField, subFieldIndex) in (internalValue && Array.isArray(internalValue) ? internalValue : [])"
@@ -166,7 +175,8 @@ export default {
   data () {
     return {
       internalPrefixVar: '',
-      internalSuffixVar: ''
+      internalSuffixVar: '',
+      showPassword: false
     }
   }, // data
   computed: {
