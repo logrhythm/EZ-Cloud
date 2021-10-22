@@ -2351,22 +2351,22 @@ To store the custom fields as top-level fields, set the \`fields_under_root opti
 
       {
         shipper: 'lrHttpRest',
-        collectionMethod: 'generichttp',
+        collectionMethod: 'genericbeat',
         definition: [
           // Required
           {
-            name: 'request.url',
-            label: 'Request URL',
+            name: 'url',
+            label: 'API URL',
             type: {
               name: 'string'
             },
-            description: 'The URL of the HTTP API.',
+            description: 'Provide the API URL used to get data from the log source. The API URL consists of the API hostname and API endpoint only; do not include the query parameters string.',
             default: '',
             required: true,
             group: 'Required'
           },
           {
-            name: 'request.method',
+            name: 'request_method',
             label: 'Request Method',
             type: {
               name: 'option'
@@ -2374,82 +2374,200 @@ To store the custom fields as top-level fields, set the \`fields_under_root opti
             options: [{ value: 'GET', label: 'HTTP GET' }, { value: 'POST', label: 'HTTP POST' }],
             description: 'HTTP method to use when making requests. Default: `GET`.',
             default: 'GET',
-            required: false,
+            required: true,
             group: 'Required'
           },
           {
-            name: 'EZ__Auth_Basic__enable',
-            label: 'Enable',
+            name: 'auth_type',
+            label: 'Authentication Type',
             type: {
-              name: 'boolean'
+              name: 'option'
             },
-            description: 'Using Basic authentication?',
-            default: false,
+            options: [
+              { value: 'noauth', label: 'No Authentication' },
+              { value: 'basic', label: 'Basic Authentication' },
+              { value: 'token', label: 'Header Based Authentication' },
+              { value: 'oauth20', label: 'oAuth 2.0 Authentication' }
+            ],
+            description: 'The Generic beat supports three types of authentication mechanisms. Select one of the authentication types that is supported by the API in order to configure the Generic beat.',
+            default: 'noauth',
             required: true,
-            group: 'Authentication - Basic'
+            group: 'Authentication'
           },
+
+          // Basic Auth
+
           {
-            name: 'EZ__Auth_Basic__username',
+            name: 'basic_auth.username',
             label: 'Username',
             type: {
               name: 'string'
             },
-            description: 'Username for Basic authentication. It will be URL-encoded automatically with its password.',
+            description: 'The username required for basic authentication.',
             default: '',
             required: true,
             group: 'Authentication - Basic'
           },
           {
-            name: 'EZ__Auth_Basic__password',
+            name: 'basic_auth.password',
             label: 'Password',
             type: {
               name: 'password'
             },
-            description: 'Password for Basic authentication. It will be URL-encoded automatically with its username.',
+            obfuscation: {
+              compulsory: true,
+              method: 'oc_encrypt',
+              obfuscatedFormatCheckRegex: '[0-9]\\|\\|.{23,}' // Example: 2||64isxHMCDZfsEWhchnl+RTGW6RCjcOtxTjTBotLmtAzXTxMSc1jCPv7xPrtXO8nr4796WpAzSduLAENtAjs=
+            },
+            description: 'The password required for basic authentication.',
             default: '',
             required: true,
             group: 'Authentication - Basic'
           },
 
-          // OAuth2
+          // Header Based Auth
 
           {
-            name: 'auth.oauth2.enabled',
-            label: 'Enabled',
-            type: {
-              name: 'boolean'
-            },
-            description: 'When set to false, disables the OAuth2 configuration.',
-            default: false,
-            required: true,
-            group: 'Authentication - OAuth2'
-          },
-          {
-            name: 'auth.oauth2.provider',
-            label: 'OAuth2 Provider',
-            type: {
-              name: 'option'
-            },
-            options: [{ value: 'default', label: 'Default' }, { value: 'azure', label: 'Azure' }, { value: 'google', label: 'Google' }],
-            description: `Used to configure supported OAuth2 providers.
-Each supported provider will require specific settings. It is not set by default. Supported providers are: \`Default\`, \`Azure\` and \`Google\`.`,
-            default: 'default',
-            required: false,
-            group: 'Authentication - OAuth2'
-          },
-          {
-            name: 'auth.oauth2.client.id',
-            label: 'Client ID',
+            name: 'token_auth.auth_header',
+            label: 'Auth Header Field',
             type: {
               name: 'string'
             },
-            description: 'The Client ID used as part of the authentication flow. It is always required except if using `Google` as provider. Required for providers: `Default`, `Azure`.',
+            description: 'The authentication header field needed to be sent in the request. For example, `Authorization`',
             default: '',
-            required: false,
-            group: 'Authentication - OAuth2'
+            required: true,
+            group: 'Authentication - Header Based'
           },
           {
-            name: 'auth.oauth2.client.secret',
+            name: 'token_auth.auth_token',
+            label: 'Auth Token Value',
+            type: {
+              name: 'password'
+            },
+            obfuscation: {
+              compulsory: true,
+              method: 'oc_encrypt',
+              obfuscatedFormatCheckRegex: '[0-9]\\|\\|.{23,}' // Example: 2||64isxHMCDZfsEWhchnl+RTGW6RCjcOtxTjTBotLmtAzXTxMSc1jCPv7xPrtXO8nr4796WpAzSduLAENtAjs=
+            },
+            description: 'The token value sent in the request, including the append field, like Bearer or SSWS. For example, `SSWS 00uH4WDqFWdAlVNDzXQOLQBEA-JtlNzgCV4TwB`.',
+            default: '',
+            required: true,
+            group: 'Authentication - Header Based'
+          },
+
+          // OAuth2 Auth
+
+          {
+            name: 'oauth20_auth.url',
+            label: 'Provider URL',
+            type: {
+              name: 'string'
+            },
+            description: `The URL of the authentication server.
+For example, \`https://gateway.qg1.apps.qualys.in/auth\`.`,
+            default: '',
+            required: true,
+            group: 'Authentication - oAuth 2.0'
+          },
+          {
+            name: 'oauth20_auth.method',
+            label: 'Request method',
+            type: {
+              name: 'option'
+            },
+            options: [{ value: 'GET', label: 'HTTP GET' }, { value: 'POST', label: 'HTTP POST' }],
+            description: 'The request method to get the `access_token` from the authentication server. This could be `GET` or `POST`.',
+            default: 'POST',
+            required: false,
+            group: 'Authentication - oAuth 2.0'
+          },
+          {
+            name: 'oauth20_auth.content_type',
+            label: 'Content Type',
+            type: {
+              name: 'option'
+            },
+            options: [
+              { value: 'application/json', label: 'JSON (application/json)' },
+              { value: 'application/x-www-form-urlencoded', label: 'Web Form URL Encoded (application/x-www-form-urlencoded)' }
+            ],
+            description: `The content type of the request body. Choose one of the following content types as supported by the API.
+> NOTE
+> This is only necessary if the \`Request Method\` is \`POST\`.`,
+            default: 'application/json',
+            required: true,
+            group: 'Authentication - oAuth 2.0'
+          },
+          {
+            name: 'oauth20_auth.body',
+            label: 'Request body - For Content Type "JSON" Only',
+            type: {
+              name: 'string',
+              multilines: true,
+              textType: 'json'
+            },
+            obfuscation: {
+              compulsory: true,
+              method: 'oc_encrypt',
+              obfuscatedFormatCheckRegex: '[0-9]\\|\\|.{23,}' // Example: 2||64isxHMCDZfsEWhchnl+RTGW6RCjcOtxTjTBotLmtAzXTxMSc1jCPv7xPrtXO8nr4796WpAzSduLAENtAjs=
+            },
+            description: `Optionally provide the entire JSON body to receive the access token from the server.
+> NOTE
+> This is only necessary if the \`Content Type\` is \`JSON (application/json)\`
+
+::: danger
+The configuration value must be a valid JSON object.
+:::
+
+::: tip Example
+\`\`\`
+{
+  "user": "user_name",
+  "password": "b4d_p4ssw0rd"
+}
+\`\`\`
+:::
+`,
+            default: '',
+            required: false,
+            group: 'Authentication - oAuth 2.0'
+          },
+          {
+            name: 'oauth20_auth.body_param',
+            label: 'Request body - For Content Type "Web Form URL Encoded" Only',
+            type: {
+              name: 'object',
+              of: {
+                type: {
+                  name: 'password'
+                },
+                obfuscation: {
+                  compulsory: true,
+                  method: 'oc_encrypt',
+                  obfuscatedFormatCheckRegex: '[0-9]\\|\\|.{23,}' // Example: 2||64isxHMCDZfsEWhchnl+RTGW6RCjcOtxTjTBotLmtAzXTxMSc1jCPv7xPrtXO8nr4796WpAzSduLAENtAjs=
+                },
+                default: '',
+                required: true
+              }
+            },
+            description: `Optionally provide the body parameters as Key:Value pairs to receive the access token from the server.
+> NOTE
+> This is only necessary if the \`Content Type\` is \`Web Form URL Encoded (application/x-www-form-urlencoded)\`
+
+::: tip Examples
+
+| Key | Value |
+| --- | ----- |
+| username | user_name |
+| password | b4d_p4ssw0rd |
+:::
+`,
+            default: '',
+            required: false,
+            group: 'Authentication - oAuth 2.0'
+          },
+          {
+            name: 'oauth20_auth.client.secret',
             label: 'Client Secret',
             type: {
               name: 'password'
@@ -2462,10 +2580,10 @@ Each supported provider will require specific settings. It is not set by default
             description: 'The client secret used as part of the authentication flow. It is always required except if using `Google` as provider. Required for providers: `Default`, `Azure`.',
             default: '',
             required: false,
-            group: 'Authentication - OAuth2'
+            group: 'Authentication - oAuth 2.0'
           },
           {
-            name: 'auth.oauth2.scopes',
+            name: 'oauth20_auth.scopes',
             label: 'Scopes',
             type: {
               name: 'array',
@@ -2480,10 +2598,10 @@ Each supported provider will require specific settings. It is not set by default
             description: `A list of scopes that will be requested during the OAuth2 flow.
 It is optional for all providers.`,
             required: false,
-            group: 'Authentication - OAuth2'
+            group: 'Authentication - oAuth 2.0'
           },
           {
-            name: 'auth.oauth2.endpoint_params',
+            name: 'oauth20_auth.endpoint_params',
             label: 'Endpoint Parameters',
             type: {
               name: 'object',
@@ -2503,10 +2621,10 @@ It is optional for all providers.`,
             },
             description: 'Set of values that will be sent on each request to the `Token URL`. Each param key can have multiple values. Can be set for all providers except `Google`.',
             required: false,
-            group: 'Authentication - OAuth2'
+            group: 'Authentication - oAuth 2.0'
           },
           {
-            name: 'auth.oauth2.token_url',
+            name: 'oauth20_auth.token_url',
             label: 'Token URL',
             type: {
               name: 'string'
@@ -2516,7 +2634,7 @@ It is optional for all providers.`,
 > For \`Azure\` provider either \`Token URL\` or Azure \`Tenant ID\` is required.`,
             default: '',
             required: false,
-            group: 'Authentication - OAuth2'
+            group: 'Authentication - oAuth 2.0'
           },
           {
             name: 'auth.oauth2.azure.tenant_id',
@@ -2534,7 +2652,7 @@ For information about where to find it, you can refer to
 https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal.`,
             default: '',
             required: false,
-            group: 'Authentication - OAuth2'
+            group: 'Authentication - oAuth 2.0'
           },
           {
             name: 'auth.oauth2.azure.resource',
@@ -2546,7 +2664,7 @@ https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-ser
 It is not required.`,
             default: '',
             required: false,
-            group: 'Authentication - OAuth2'
+            group: 'Authentication - oAuth 2.0'
           },
           {
             name: 'auth.oauth2.google.credentials_file',
@@ -2562,7 +2680,7 @@ It is not required.`,
 For more information about how to provide Google credentials, please refer to https://cloud.google.com/docs/authentication.`,
             default: '',
             required: false,
-            group: 'Authentication - OAuth2'
+            group: 'Authentication - oAuth 2.0'
           },
           {
             name: 'auth.oauth2.google.credentials_json',
@@ -2578,7 +2696,7 @@ For more information about how to provide Google credentials, please refer to ht
 For more information about how to provide Google credentials, please refer to https://cloud.google.com/docs/authentication.`,
             default: '',
             required: false,
-            group: 'Authentication - OAuth2'
+            group: 'Authentication - oAuth 2.0'
           },
           {
             name: 'auth.oauth2.google.jwt_file',
@@ -2594,7 +2712,7 @@ For more information about how to provide Google credentials, please refer to ht
 For more information about how to provide Google credentials, please refer to https://cloud.google.com/docs/authentication.`,
             default: '',
             required: false,
-            group: 'Authentication - OAuth2'
+            group: 'Authentication - oAuth 2.0'
           },
 
           // SSL Configuration
@@ -3558,7 +3676,7 @@ To store the custom fields as top-level fields, set the \`fields_under_root opti
       },
       {
         shipper: 'lrHttpRest',
-        value: 'generichttp',
+        value: 'genericbeat',
         label: 'HTTP / REST API',
         icon: 'language'
       },
