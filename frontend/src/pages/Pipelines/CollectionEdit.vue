@@ -427,7 +427,7 @@ export default {
             newConf['request.url'] = 'https://CHANGE_THIS'
             // newConf['request.method'] = 'GET'
           }
-          if (this.activeCollectionMethod === 'generichttp') {
+          if (this.activeCollectionMethod === 'genericbeat') {
             newConf.config_version = 2
             newConf['request.url'] = 'https://CHANGE_THIS'
           }
