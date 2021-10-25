@@ -2471,7 +2471,7 @@ For example, \`https://gateway.qg1.apps.qualys.in/auth\`.`,
           },
           {
             name: 'oauth20_auth.method',
-            label: 'Request method',
+            label: 'Request Method',
             type: {
               name: 'option'
             },
@@ -2500,7 +2500,7 @@ For example, \`https://gateway.qg1.apps.qualys.in/auth\`.`,
           },
           {
             name: 'oauth20_auth.body',
-            label: 'Request body - For Content Type "JSON" Only',
+            label: 'Request Body - For Content Type "JSON" Only',
             type: {
               name: 'string',
               multilines: true,
@@ -2516,7 +2516,8 @@ For example, \`https://gateway.qg1.apps.qualys.in/auth\`.`,
 > This is only necessary if the \`Content Type\` is \`JSON (application/json)\`
 
 ::: danger
-The configuration value must be a valid JSON object.
+- The configuration value must be a valid JSON object.
+- As it might contain Secret(s), it must be obfuscated.
 :::
 
 ::: tip Example
@@ -2534,7 +2535,7 @@ The configuration value must be a valid JSON object.
           },
           {
             name: 'oauth20_auth.body_param',
-            label: 'Request body - For Content Type "Web Form URL Encoded" Only',
+            label: 'Request Body Parameters - For Content Type "Web Form URL Encoded" Only',
             type: {
               name: 'object',
               of: {
@@ -2554,6 +2555,10 @@ The configuration value must be a valid JSON object.
 > NOTE
 > This is only necessary if the \`Content Type\` is \`Web Form URL Encoded (application/x-www-form-urlencoded)\`
 
+::: danger
+As it might contain Secret(s), each entry must be obfuscated.
+:::
+
 ::: tip Examples
 
 | Key | Value |
@@ -2567,950 +2572,391 @@ The configuration value must be a valid JSON object.
             group: 'Authentication - oAuth 2.0'
           },
           {
-            name: 'oauth20_auth.client.secret',
-            label: 'Client Secret',
-            type: {
-              name: 'password'
-            },
-            obfuscation: {
-              compulsory: true,
-              method: 'oc_encrypt',
-              obfuscatedFormatCheckRegex: '[0-9]\\|\\|.{23,}' // Example: 2||64isxHMCDZfsEWhchnl+RTGW6RCjcOtxTjTBotLmtAzXTxMSc1jCPv7xPrtXO8nr4796WpAzSduLAENtAjs=
-            },
-            description: 'The client secret used as part of the authentication flow. It is always required except if using `Google` as provider. Required for providers: `Default`, `Azure`.',
-            default: '',
-            required: false,
-            group: 'Authentication - oAuth 2.0'
-          },
-          {
-            name: 'oauth20_auth.scopes',
-            label: 'Scopes',
-            type: {
-              name: 'array',
-              of: {
-                type: {
-                  name: 'string'
-                },
-                default: '',
-                required: true
-              }
-            },
-            description: `A list of scopes that will be requested during the OAuth2 flow.
-It is optional for all providers.`,
-            required: false,
-            group: 'Authentication - oAuth 2.0'
-          },
-          {
-            name: 'oauth20_auth.endpoint_params',
-            label: 'Endpoint Parameters',
+            name: 'oauth20_auth.headers',
+            label: 'Request Headers',
             type: {
               name: 'object',
               of: {
                 type: {
-                  name: 'array',
-                  of: {
-                    type: {
-                      name: 'string'
-                    },
-                    default: '',
-                    required: true
-                  }
+                  name: 'string'
                 },
+                // obfuscation: {
+                //   compulsory: true,
+                //   method: 'oc_encrypt',
+                //   obfuscatedFormatCheckRegex: '[0-9]\\|\\|.{23,}' // Example: 2||64isxHMCDZfsEWhchnl+RTGW6RCjcOtxTjTBotLmtAzXTxMSc1jCPv7xPrtXO8nr4796WpAzSduLAENtAjs=
+                // },
+                default: '',
                 required: true
               }
             },
-            description: 'Set of values that will be sent on each request to the `Token URL`. Each param key can have multiple values. Can be set for all providers except `Google`.',
-            required: false,
-            group: 'Authentication - oAuth 2.0'
-          },
-          {
-            name: 'oauth20_auth.token_url',
-            label: 'Token URL',
-            type: {
-              name: 'string'
-            },
-            description: `The endpoint that will be used to generate the tokens during the OAuth2 flow. It is required if no provider is specified.
-> NOTE
-> For \`Azure\` provider either \`Token URL\` or Azure \`Tenant ID\` is required.`,
+            description: `Optionally provide the Request Headers supported by the API as Key:Value pairs.
+::: tip Examples
+
+| Key | Value |
+| --- | ----- |
+| Content-Type | application/json |
+:::
+`,
             default: '',
             required: false,
             group: 'Authentication - oAuth 2.0'
           },
           {
-            name: 'auth.oauth2.azure.tenant_id',
-            label: 'Azure - Tenant ID',
+            name: 'oauth20_auth.params',
+            label: 'Request Parameters',
             type: {
-              name: 'string'
-            },
-            description: `Used for authentication when using \`Azure\` provider.
-> NOTE
-> Since it is used in the process to generate the \`Token URL\`, it can't be used in combination with it.
-
-It is not required.
-
-For information about where to find it, you can refer to
-https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal.`,
-            default: '',
-            required: false,
-            group: 'Authentication - oAuth 2.0'
-          },
-          {
-            name: 'auth.oauth2.azure.resource',
-            label: 'Azure - WebAPI Resource',
-            type: {
-              name: 'string'
-            },
-            description: `The accessed WebAPI resource when using \`Azure\` provider.
-It is not required.`,
-            default: '',
-            required: false,
-            group: 'Authentication - oAuth 2.0'
-          },
-          {
-            name: 'auth.oauth2.google.credentials_file',
-            label: 'Google - Credentials File',
-            type: {
-              name: 'string'
-            },
-            description: `The credentials file for \`Google\`.
-
-> NOTE
-> Only one of the credentials settings can be set at once. If none is provided, loading default credentials from the environment will be attempted via ADC. 
-
-For more information about how to provide Google credentials, please refer to https://cloud.google.com/docs/authentication.`,
-            default: '',
-            required: false,
-            group: 'Authentication - oAuth 2.0'
-          },
-          {
-            name: 'auth.oauth2.google.credentials_json',
-            label: 'Google - JSON Credentials File',
-            type: {
-              name: 'string'
-            },
-            description: `Your credentials information as raw JSON.
-
-> NOTE
-> Only one of the credentials settings can be set at once. If none is provided, loading default credentials from the environment will be attempted via ADC.
-
-For more information about how to provide Google credentials, please refer to https://cloud.google.com/docs/authentication.`,
-            default: '',
-            required: false,
-            group: 'Authentication - oAuth 2.0'
-          },
-          {
-            name: 'auth.oauth2.google.jwt_file',
-            label: 'Google - JWT Account Key File',
-            type: {
-              name: 'string'
-            },
-            description: `The JWT Account Key file for Google.
-
-> NOTE
-> Only one of the credentials settings can be set at once. If none is provided, loading default credentials from the environment will be attempted via ADC.
-
-For more information about how to provide Google credentials, please refer to https://cloud.google.com/docs/authentication.`,
-            default: '',
-            required: false,
-            group: 'Authentication - oAuth 2.0'
-          },
-
-          // SSL Configuration
-
-          {
-            name: 'request.ssl.enabled',
-            label: 'Enabled',
-            type: {
-              name: 'boolean'
-            },
-            default: false,
-            description: 'Is Syslog SSL enabled?',
-            required: false,
-            group: 'SSL Configuration'
-          },
-          {
-            name: 'request.ssl.certificate_authorities',
-            label: 'SSL Certificate Authorities',
-            type: {
-              name: 'string'
-            },
-            default: '',
-            description: 'Path to the file with the list of root certificates for client verifications is only required if `Client Authentication` is configured. If `Certificate Authorities` is empty or not set, and `Client Authentication` is configured, the system keystore is used. If `Certificate Authorities` is self-signed, the host system needs to trust that CA cert as well.',
-            required: false,
-            group: 'SSL Configuration'
-          },
-          {
-            name: 'request.ssl.certificate',
-            label: 'SSL Certificate',
-            type: {
-              name: 'string'
-            },
-            default: '',
-            description: 'For server authentication, the path to the SSL authentication certificate must be specified for TLS. If the certificate is not specified, startup will fail. When this option is configured, the key option is also required.',
-            required: false,
-            group: 'SSL Configuration'
-          },
-          {
-            name: 'request.ssl.key',
-            label: 'SSL Key',
-            type: {
-              name: 'string'
-            },
-            default: '',
-            description: 'The server certificate key used for authentication is required.',
-            required: false,
-            group: 'SSL Configuration'
-          },
-          {
-            name: 'request.ssl.key_passphrase',
-            label: 'Pass phrase for SSL Key',
-            type: {
-              name: 'password'
-            },
-            default: '',
-            description: 'The passphrase is used to decrypt an encrypted key stored in the configured key file.',
-            required: false,
-            group: 'SSL Configuration'
-          },
-          {
-            name: 'request.ssl.verification_mode',
-            label: 'Verification Mode',
-            type: {
-              name: 'option'
-            },
-            options: [{ value: 'full', label: 'Full: Verifies that the provided certificate is signed by a trusted authority (CA) and also verifies that the server’s hostname (or IP address) matches the names identified within the certificate.' }, { value: 'strict', label: 'Strict: Verifies that the provided certificate is signed by a trusted authority (CA) and also verifies that the server’s hostname (or IP address) matches the names identified within the certificate.If the Subject Alternative Name is empty, it returns an error.' }, { value: 'certificate', label: 'Certificate: Verifies that the provided certificate is signed by a trusted authority (CA), but does not perform any hostname verification.' }, { value: 'none', label: 'None: Performs no verification of the server’s certificate.This mode disables many of the security benefits of SSL/ TLS and should only be used after cautious consideration.It is primarily intended as a temporary diagnostic mechanism when attempting to resolve TLS errors; its use in production environments is strongly discouraged.' }],
-            default: 'full',
-            description: 'Controls the verification of client certificates. The default value is `Full`.',
-            required: false,
-            group: 'SSL Configuration'
-          },
-          {
-            name: 'request.ssl.client_authentication',
-            label: 'Client Authentication',
-            type: {
-              name: 'option'
-            },
-            options: [{ value: 'none', label: 'None: Disables client authentication.' }, { value: 'optional', label: 'Optional: When a client certificate is supplied, the server will verify it.' }, { value: 'required', label: 'Required: Will require clients to provide a valid certificate.' }],
-            default: 'none',
-            description: 'The type of client authentication mode. When `SSL Certificate Authorities` is set, it defaults to `Required`. Otherwise, it defaults to `None`.',
-            required: false,
-            group: 'SSL Configuration'
-          },
-          {
-            name: 'request.ssl.renegotiation',
-            label: 'Renegotiation',
-            type: {
-              name: 'option'
-            },
-            options: [{ value: 'never', label: 'Never: Disables renegotiation.' }, { value: 'once', label: 'Once: Allows a remote server to request renegotiation once per connection.' }, { value: 'freely', label: 'Freely: Allows a remote server to request renegotiation repeatedly.' }],
-            default: 'never',
-            description: 'This configures what types of TLS renegotiation are supported. The default value is `Never`.',
-            required: false,
-            group: 'SSL Configuration'
-          },
-          {
-            name: 'request.ssl.supported_protocols',
-            label: 'Supported Protocols',
-            type: {
-              name: 'array',
+              name: 'object',
               of: {
                 type: {
                   name: 'string'
                 },
+                // obfuscation: {
+                //   compulsory: true,
+                //   method: 'oc_encrypt',
+                //   obfuscatedFormatCheckRegex: '[0-9]\\|\\|.{23,}' // Example: 2||64isxHMCDZfsEWhchnl+RTGW6RCjcOtxTjTBotLmtAzXTxMSc1jCPv7xPrtXO8nr4796WpAzSduLAENtAjs=
+                // },
                 default: '',
-                required: false
+                required: true
               }
             },
-            description: 'List of allowed SSL/TLS versions. If SSL/TLS server decides for protocol versions not configured, the connection will be dropped during or after the handshake. The setting is a list of allowed protocol versions: SSLv3, TLSv1 for TLS version 1.0, TLSv1.0, TLSv1.1, TLSv1.2, and TLSv1.3. The default value is [TLSv1.1, TLSv1.2, TLSv1.3].',
+            description: `Optionally provide the Query Parameters supported by the API as Key:Value pairs.
+::: tip Examples
+
+| Key | Value |
+| --- | ----- |
+| limit | 100 |
+:::
+`,
+            default: '',
             required: false,
-            group: 'SSL Configuration'
+            group: 'Authentication - oAuth 2.0'
+          },
+          {
+            name: 'oauth20_auth.access_token_format',
+            label: 'Access Token Format',
+            type: {
+              name: 'option'
+            },
+            options: [{ value: 'jsonkey', label: 'JSON Key' }, { value: 'normaltext', label: 'Normal Text' }],
+            description: `The Generic beat supports two types of access token format. Choose the option supported by the API.
+This could be:
+- \`Normal text\` format: Contains the access token in the text/plain;charset=UTF-8 form, as shown in the example below:
+\`\`\` text
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaXNTb2NpYWwiOnRydWV9.4pcPyMD09olPSyXnrXCjTwXyr4BsezdI1AVTmud2fU4
+\`\`\`
+- \`JSON Key\` format: Contains the access token in JSON body, as shown in the example below:
+\`\`\`
+{
+  "access_token": "4484e52dc4744374aced826a4543cd28988816ff",
+  "token_type": "Bearer",
+  "expires_in": 129599
+}
+\`\`\`
+`,
+            default: 'normaltext',
+            required: false,
+            group: 'Authentication - oAuth 2.0'
+          },
+          {
+            name: 'oauth20_auth.access_token_field',
+            label: 'Access Token Field',
+            type: {
+              name: 'string'
+            },
+            description: `The field name in which the access token is coming in the response.
+> NOTE
+> This is only necessary if the \`Access Token Format\` is \`JSON Key\`
+
+For example, in the JSON format below, the access token field is \`access_token\`:
+\`\`\`
+{
+  "access_token": "4484e52dc4744374aced826a4543cd28988816ff",
+  "token_type": "Bearer",
+  "expires_in": 129599
+}
+\`\`\`
+`,
+            default: '',
+            required: true,
+            group: 'Authentication - oAuth 2.0'
+          },
+          {
+            name: 'oauth20_auth.auth_header_field',
+            label: 'Authorization Header Field',
+            type: {
+              name: 'string'
+            },
+            description: `The authorization header used to send the access token from auth server, in order to get the data records from the log source server.
+For example, in the header below, the authorization header field is \`authorization\`:
+\`\`\` text
+authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaXNTb2NpYWwiOnRydWV9.4pcPyMD09olPSyXnrXCjTwXyr4BsezdI1AVTmud2fU4
+\`\`\`
+`,
+            default: '',
+            required: true,
+            group: 'Authentication - oAuth 2.0'
+          },
+          {
+            name: 'oauth20_auth.auth_append_field',
+            label: 'Auth Token Append Field',
+            type: {
+              name: 'string'
+            },
+            description: `The field to append in the retrieved access token when requesting data from the log source server.
+For example, in the header below, the auth token field is \`Bearer\`:
+\`\`\` text
+authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaXNTb2NpYWwiOnRydWV9.4pcPyMD09olPSyXnrXCjTwXyr4BsezdI1AVTmud2fU4
+\`\`\`
+`,
+            default: '',
+            required: true,
+            group: 'Authentication - oAuth 2.0'
           },
 
-          // Advanced - Request Body
+          // Pagination
 
           {
-            name: 'request.encode_as',
-            label: 'Encoding',
+            name: 'sorting_enabled',
+            label: 'Pagination Style',
             type: {
               name: 'option'
             },
             options: [
-              { value: null, label: '** Not set ** <hr>' },
-              { value: 'application/json', label: 'JSON (application/json)' },
-              { value: 'application/x-www-form-urlencoded', label: 'Web Form URL Encoded (application/x-www-form-urlencoded)' }
+              { value: 'a', label: 'Cursor Pagination' },
+              { value: 'b', label: 'Limit Offset Pagination' },
+              { value: 'c', label: 'Page Number Pagination' },
+              { value: 'nopagination', label: 'No Pagination' }
             ],
-            description: `ContentType used for encoding the request body. If set it will force the encoding in the specified format regardless of the \`Content- Type\` header value, otherwise it will honor it if possible or fallback to \`application / json\`.
-By default the requests are sent with \`Content - Type: application / json\`.
-> NOTE
-> \`Web Form URL Encoded\` will url encode the \`url.params\` and set them as the body.`,
-            default: null,
-            required: false,
-            group: 'Advanced - Request Body'
-          },
-          {
-            name: 'request.body',
-            label: 'Body Content',
-            type: {
-              name: 'string',
-              multilines: true,
-              textType: 'json'
-            },
-            description: `An optional HTTP POST body.
-This is only valid when \`Request Method\` is \`POST\`. Defaults to \`null\` (no HTTP body).
-::: danger
-The configuration value must be a valid JSON object.
-:::`,
-            default: '',
-            required: false,
-            group: 'Advanced - Request Body'
+            default: 'nopagination',
+            description: `The Generic beat supports four types of pagination styles, as listed below:
+- Cursor-based Pagination
+- Limit Offset Pagination
+- Page Number Pagination
+- No Pagination
+
+Before configuring the Generic beat for log sources, it is recommended to learn the types of pagination styles that your API supports using the following methods.
+
+For more information about how each work, please refer to https://docs.logrhythm.com/docs/OCbeats/generic-beat/configure-the-generic-beat .`,
+            required: true,
+            group: 'Pagination'
           },
 
-          // Advanced - Retries
+          // Pagination - Cursor
 
           {
-            name: 'request.retry.max_attempts',
-            label: 'Request Maximum Retry Attempts',
+            name: 'pagination.cursor_based.cursor_type',
+            label: 'Cursor Type',
             type: {
-              name: 'number'
+              name: 'option'
             },
-            min: 1,
-            max: 100,
-            default: 5,
-            description: 'The maximum number of retries for the HTTP client. The default is 5.',
-            required: false,
-            group: 'Advanced - Retries'
+            options: [
+              { value: 'URL', label: 'URL' }
+            ],
+            default: 'URL',
+            description: `The cursor type can be a URL to the next set of data records or it can be a token to fetch the next set of records as a query parameter.
+For example, in the sample below, the cursor type is URL (as porvided on line 3):
+\`\`\`
+{
+  "count": 87,
+  "next": "https://swapi.co./api/people/?page=2",
+  "previous": null,
+  "result": [ ... ]
+}
+\`\`\`
+`,
+            required: true,
+            group: 'Pagination - Cursor'
           },
+
+          // Sorting
+
           {
-            name: 'request.retry.wait_min',
-            label: 'Request Minimum Wait Before Retry',
+            name: 'sorting_enabled',
+            label: 'Enabled',
             type: {
-              name: 'number'
+              name: 'option'
             },
-            suffix: {
-              options: [
-                { value: 's', label: 'Seconds' },
-                { value: 'm', label: 'Minutes' },
-                { value: 'h', label: 'Hours' }
-              ],
-              default: 's'
-            },
-            min: 1,
-            max: 60,
-            default: '1s',
-            description: 'The minimum time to wait before a retry is attempted. The default is 1 second.',
-            required: false,
-            group: 'Advanced - Retries'
-          },
-          {
-            name: 'request.retry.wait_max',
-            label: 'Request Maximum Wait Before Retry',
-            type: {
-              name: 'number'
-            },
-            suffix: {
-              options: [
-                { value: 's', label: 'Seconds' },
-                { value: 'm', label: 'Minutes' },
-                { value: 'h', label: 'Hours' }
-              ],
-              default: 's'
-            },
-            min: 1,
-            max: 60,
-            default: '60s',
-            description: 'The maximum time to wait before a retry is attempted. The default is 60 seconds.',
-            required: false,
-            group: 'Advanced - Retries'
-          },
-          {
-            name: 'request.redirect.forward_headers',
-            label: 'Redirect Forward Headers',
-            type: {
-              name: 'boolean'
-            },
+            options: [{ value: 'true', label: 'Yes' }, { value: 'false', label: 'No' }],
             default: false,
-            description: 'When set to `True` request headers are forwarded in case of a redirect. Default: `False`.',
-            required: false,
-            group: 'Advanced - Redirects'
-          },
-          {
-            name: 'request.redirect.headers_ban_list',
-            label: 'Redirect Forward Headers - Ban List',
-            type: {
-              name: 'array',
-              of: {
-                type: {
-                  name: 'string'
-                },
-                default: '',
-                required: false
-              }
-            },
-            description: 'When `Redirect Forward Headers` is set to `True`, all headers __except__ the ones defined in this list will be forwarded.',
-            required: false,
-            group: 'Advanced - Redirects'
-          },
-          {
-            name: 'request.redirect.max_redirects',
-            label: 'Maximum Redirects',
-            type: {
-              name: 'number'
-            },
-            min: 0,
-            max: 50,
-            default: 10,
-            description: 'The maximum number of redirects to follow for a request. The default is 10.',
-            required: false,
-            group: 'Advanced - Redirects'
-          },
-
-          // Advanced - Rate Limit
-
-          {
-            name: 'request.rate_limit.limit',
-            label: 'Total Requests Limit',
-            type: {
-              name: 'string'
-            },
-            default: '',
-            description: `The value of the response that specifies the total limit. It is defined with a Go template value.
-> NOTE
-> Can read state from: [.last_response.header]
-
-::: tip Examples
-- 1500
-- \`[[.last_response.header.X-RateLimit-Limit]]\`
-:::
-`,
-            required: false,
-            group: 'Advanced - Rate Limit'
-          },
-          {
-            name: 'request.rate_limit.remaining',
-            label: 'Remaining Requests',
-            type: {
-              name: 'string'
-            },
-            default: '',
-            description: `The value of the response that specifies the remaining quota of the rate limit. It is defined with a Go template value.
-> NOTE
-> Can read state from: [.last_response.header]
-
-::: tip Example
-\`[[.last_response.header.X-RateLimit-Remaining]]\`
-:::
-`,
-            required: false,
-            group: 'Advanced - Rate Limit'
-          },
-          {
-            name: 'request.rate_limit.reset',
-            label: 'Reset Time',
-            type: {
-              name: 'string'
-            },
-            default: '',
-            description: `The value of the response that specifies the epoch time when the rate limit will reset. It is defined with a Go template value.
-> NOTE
-> Can read state from: [.last_response.header]
-
-::: tip Example
-\`[[.last_response.header.X-RateLimit-Reset]]\`
-:::
-`,
-            required: false,
-            group: 'Advanced - Rate Limit'
-          },
-
-          // Advanced - Request Transforms
-
-          {
-            name: 'request.transforms',
-            label: 'Transforms List',
-            type: {
-              name: 'object',
-              of: {
-                type: {
-                  name: 'string'
-                },
-                prefix: {
-                  options: [
-                    { value: '___set___👉', label: 'Set to' },
-                    { value: '___append___👉', label: 'Append' },
-                    { value: '___delete___👉', label: 'Delete' }
-                  ],
-                  default: '___set___👉'
-                },
-                suffix: {
-                  options: [
-                    { value: '👈___default___🚫', label: 'No Default' },
-                    { value: '👈___default___', label: 'Empty string' },
-                    { value: '👈___default___0', label: '0' },
-                    { value: '👈___default___[[now]]', label: '[[now]]' },
-                    { value: '👈___default___[[now (parseDuration "-1m")]]', label: '[[now (parseDuration "-1m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-5m")]]', label: '[[now (parseDuration "-5m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-10m")]]', label: '[[now (parseDuration "-10m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-15m")]]', label: '[[now (parseDuration "-15m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-30m")]]', label: '[[now (parseDuration "-30m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-45m")]]', label: '[[now (parseDuration "-45m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-1h")]]', label: '[[now (parseDuration "-1h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-2h")]]', label: '[[now (parseDuration "-2h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-3h")]]', label: '[[now (parseDuration "-3h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-5h")]]', label: '[[now (parseDuration "-5h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-6h")]]', label: '[[now (parseDuration "-6h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-12h")]]', label: '[[now (parseDuration "-12h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-24h")]]', label: '[[now (parseDuration "-24h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-36h")]]', label: '[[now (parseDuration "-36h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-48h")]]', label: '[[now (parseDuration "-48h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-72h")]]', label: '[[now (parseDuration "-72h")]]' }
-                  ],
-                  default: '👈___default___🚫'
-                },
-                default: '',
-                required: true
-              },
-              required: true
-            },
-            description: `List of transforms to apply to the __request__ before each execution.
-
-Available transforms for request: \`Append\`, \`Delete\` and \`Set\`.
-
-> NOTE
-> Can __read__ state from:
-> - \`.last_response.* \`
-> - \`.last_event.* \`
-> - \`.cursor.* \`]
->
-> Can __write__ state to:
-> - \`header.* \`
-> - \`url.params.* \`
-> - \`body.*\`
-
-::: tip Examples
-
-| Target | Transform | Value | Default to |
-| ------ |:---------:| ----- | ---------- |
-|  body.from  | __Set to__ | \`[[now (parseDuration "-1h")]]\` | __[[now]]__ |
-|  body.variable_abc  | __Set to__ | \`AUTO\` |  |
-|  header.variable_xyz  | __Set to__ | \`[[.last_response.header.X-Var-XYZ]]\` | __0__ |
-|  body.my_array_of_names  | __Append__ | \`Bill\` |  |
-|  body.my_array_of_names  | __Append__ | \`Bob\` |  |
-|  body.useless_token  | __Delete__ |  |  |
-:::
-
-::: tip Creating an array of values
-
-Use __Append__, and use it several times with the same Target name.
-For example, to create and \`event_types\` array in the \`body\` with the following 4 values:
-- \`Auth Failure\`
-- \`Auth Success\`
-- \`Remote Connection\`
-- \`User Created\`
-
-Add these entries:
-
-| Target | Transform | Value | Default to |
-| ------ |:---------:| ----- | ---------- |
-|  body.event_types  | __Append__ | \`Auth Failure\` |  |
-|  body.event_types  | __Append__ | \`Auth Success\` |  |
-|  body.event_types  | __Append__ | \`Remote Connection\` |  |
-|  body.event_types  | __Append__ | \`User Created\` |  |
-:::
-`,
-            required: false,
-            group: 'Advanced - Request Transforms'
-          },
-
-          // Advanced - Response Transforms
-
-          {
-            name: 'response.transforms',
-            label: 'Transforms List',
-            type: {
-              name: 'object',
-              of: {
-                type: {
-                  name: 'string'
-                },
-                prefix: {
-                  options: [
-                    { value: '___set___👉', label: 'Set to' },
-                    { value: '___append___👉', label: 'Append' },
-                    { value: '___delete___👉', label: 'Delete' }
-                  ],
-                  default: '___set___👉'
-                },
-                suffix: {
-                  options: [
-                    { value: '👈___default___🚫', label: 'No Default' },
-                    { value: '👈___default___', label: 'Empty string' },
-                    { value: '👈___default___0', label: '0' },
-                    { value: '👈___default___[[now]]', label: '[[now]]' },
-                    { value: '👈___default___[[now (parseDuration "-1m")]]', label: '[[now (parseDuration "-1m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-5m")]]', label: '[[now (parseDuration "-5m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-10m")]]', label: '[[now (parseDuration "-10m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-15m")]]', label: '[[now (parseDuration "-15m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-30m")]]', label: '[[now (parseDuration "-30m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-45m")]]', label: '[[now (parseDuration "-45m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-1h")]]', label: '[[now (parseDuration "-1h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-2h")]]', label: '[[now (parseDuration "-2h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-3h")]]', label: '[[now (parseDuration "-3h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-5h")]]', label: '[[now (parseDuration "-5h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-6h")]]', label: '[[now (parseDuration "-6h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-12h")]]', label: '[[now (parseDuration "-12h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-24h")]]', label: '[[now (parseDuration "-24h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-36h")]]', label: '[[now (parseDuration "-36h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-48h")]]', label: '[[now (parseDuration "-48h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-72h")]]', label: '[[now (parseDuration "-72h")]]' }
-                  ],
-                  default: '👈___default___🚫'
-                },
-                default: '',
-                required: true
-              },
-              required: true
-            },
-            description: `List of transforms to apply to the __response__ once it is received.
-
-Available transforms for response: \`Append\`, \`Delete\` and \`Set\`.
-
-> NOTE
-> Can __read__ state from:
-> - \`.last_response.* \`
-> - \`.last_event.* \`
-> - \`.cursor.* \`]
-> - \`.header.* \`]
-> - \`.url.* \`]
->
-> Can __write__ state to:
-> - \`body.*\`
-
-::: tip Examples
-
-| Target | Transform | Value | Default to |
-| ------ |:---------:| ----- | ---------- |
-|  body.very_confidential  | __Delete__ |  |  |
-|  body.from_url  | __Set to__ | \`[[.url.value]]\` | __Empty string__ |
-|  body.variable_abc  | __Set to__ | \`Static ABC value\` |  |
-|  body.variable_xyz  | __Set to__ | \`[[.last_response.header.X-Var-XYZ]]\` |
-|  body.my_array_of_name  | __Append__ | \`Bill\` |  |
-|  body.my_array_of_name  | __Append__ | \`Bob\` |  |
-:::
-
-::: tip Creating an array of values
-Use __Append__, and use it several times with the same Target name.
-For example, to create and \`event_types\` array with the following 4 values:
-- \`Auth Failure\`
-- \`Auth Success\`
-- \`Remote Connection\`
-- \`User Created\`
-
-Add these entries:
-
-| Target | Transform | Value | Default to |
-| ------ |:---------:| ----- | ---------- |
- __[[now]]__ |  |
-|  body.event_types  | __Append__ | \`Auth Failure\` |  |
-|  body.event_types  | __Append__ | \`Auth Success\` |  |
-|  body.event_types  | __Append__ | \`Remote Connection\` |  |
-|  body.event_types  | __Append__ | \`User Created\` |  |
-
-If the array or entry might already exist in the response, some use case might require for it to be deleted first.
-Like so:
-
-| Target | Transform | Value | Default to |
-| ------ |:---------:| ----- | ---------- |
- __[[now]]__ |  |
-|  body.event_types  | __Delete__ |  |  |
-|  body.event_types  | __Append__ | \`Auth Failure\` |  |
-|  body.event_types  | __Append__ | \`Auth Success\` |  |
-|  body.event_types  | __Append__ | \`Remote Connection\` |  |
-|  body.event_types  | __Append__ | \`User Created\` |  |
-:::
-
-`,
-            required: false,
-            group: 'Advanced - Response Transforms'
-          },
-
-          // Advanced - Response Splits
-
-          // I decided NOT to implement this one, as it was too complicated
-          // (it would have required to develop new widgets / logic to deal with it)
-          // and a duplicate of the Fan Out option of the Open Collector
-
-          // {
-          //   name: 'response.split',
-          //   label: 'Splits List',
-          //   type: {
-          //     name: 'object',
-          //     of: {
-          //       type: {
-          //         name: 'object',
-          //         of: {
-          //           type: {
-          //             name: 'string'
-          //           },
-          //           prefix: {
-          //             options: [
-          //               { value: '___set___👉', label: 'Set to' },
-          //               { value: '___append___👉', label: 'Append' },
-          //               { value: '___delete___👉', label: 'Delete' }
-          //             ],
-          //             default: '___set___👉'
-          //           },
-          //           default: '',
-          //           required: true
-          //         },
-          //         required: true
-          //       },
-          //       prefix: {
-          //         options: [
-          //           { value: '___array___👉', label: 'Array' },
-          //           { value: '___map___👉', label: 'Map' },
-          //           { value: '___string___👉', label: 'String' }
-          //         ],
-          //         default: '___array___👉'
-          //       }
-          //     }
-          //   },
-          //   description: '',
-          //   required: true,
-          //   group: 'Advanced - Splits'
-          // },
-
-          {
-            name: 'response.split',
-            label: 'Splits List',
-            type: {
-              name: 'not implemented'
-            },
-            default: '** NOT IMPLEMENTED **',
-            description: `::: danger
-__NOT IMPLEMENTED__
-:::
-
-The __split__ feature of Filebeat is a duplicate of the __Fan Out__ feature of the Open Collector.
-As such, it is not necessary to implement it here.
-
-::: tip
-While building the __Field Mapping__, under __Modifier__ select: __Fan Out__.
-:::`,
-            required: false,
-            readonly: true,
-            group: 'Advanced - Splits'
-          },
-
-          // Advanced - Response Pagination Transforms
-
-          {
-            name: 'response.pagination',
-            label: 'Transforms List',
-            type: {
-              name: 'object',
-              of: {
-                type: {
-                  name: 'string'
-                },
-                prefix: {
-                  options: [
-                    { value: '___set___👉', label: 'Set to' },
-                    { value: '___append___👉', label: 'Append' },
-                    { value: '___delete___👉', label: 'Delete' }
-                  ],
-                  default: '___set___👉'
-                },
-                suffix: {
-                  options: [
-                    { value: '👈___default___🚫', label: 'No Default' },
-                    { value: '👈___default___', label: 'Empty string' },
-                    { value: '👈___default___0', label: '0' },
-                    { value: '👈___default___[[now]]', label: '[[now]]' },
-                    { value: '👈___default___[[now (parseDuration "-1m")]]', label: '[[now (parseDuration "-1m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-5m")]]', label: '[[now (parseDuration "-5m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-10m")]]', label: '[[now (parseDuration "-10m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-15m")]]', label: '[[now (parseDuration "-15m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-30m")]]', label: '[[now (parseDuration "-30m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-45m")]]', label: '[[now (parseDuration "-45m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-1h")]]', label: '[[now (parseDuration "-1h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-2h")]]', label: '[[now (parseDuration "-2h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-3h")]]', label: '[[now (parseDuration "-3h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-5h")]]', label: '[[now (parseDuration "-5h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-6h")]]', label: '[[now (parseDuration "-6h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-12h")]]', label: '[[now (parseDuration "-12h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-24h")]]', label: '[[now (parseDuration "-24h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-36h")]]', label: '[[now (parseDuration "-36h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-48h")]]', label: '[[now (parseDuration "-48h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-72h")]]', label: '[[now (parseDuration "-72h")]]' }
-                  ],
-                  default: '👈___default___🚫'
-                },
-                default: '',
-                required: true
-              },
-              required: true
-            },
-            description: `List of transforms that will be applied to the __response__ to every new page request. All the transforms from \`Request Transforms\` will be executed and then \`Response Pagination Transforms\` will be added to modify the next request as needed. For subsequent responses, the usual \`Response Transforms\` and \`Response Split\` will be executed normally.
-
-Available transforms for response: \`Append\`, \`Delete\` and \`Set\`.
-
-> NOTE
-> Can __read__ state from:
-> - \`.last_response.* \`
-> - \`.first_event.* \`
-> - \`.last_event.* \`
-> - \`.cursor.* \`]
->
-> Can __write__ state to:
-> - \`body.*\`
-> - \`.header.* \`]
-> - \`.url.* \`]
-
-::: tip Examples
-
-| Target | Transform | Value | Default to |
-| ------ |:---------:| ----- | ---------- |
-|  url.value  | __Set to__ | \`http://localhost:9200/_search/scroll\` |  |
-|  url.params.scroll_id  | __Set to__ | \`[[.last_response.body._scroll_id]]\` | __0__ |
-|  body.scroll  | __Set to__ | \`5m\` |  |
-:::
-
-::: tip Creating an array of values
-Use __Append__, and use it several times with the same Target name.
-For example, to create and \`event_types\` array with the following 4 values:
-- \`Auth Failure\`
-- \`Auth Success\`
-- \`Remote Connection\`
-- \`User Created\`
-
-Add these entries:
-
-| Target | Transform | Value | Default to |
-| ------ |:---------:| ----- | ---------- |
-|  body.event_types  | __Append__ | \`Auth Failure\` | |
-|  body.event_types  | __Append__ | \`Auth Success\` | |
-|  body.event_types  | __Append__ | \`Remote Connection\` | |
-|  body.event_types  | __Append__ | \`User Created\` | |
-
-If the array or entry might already exist in the response, some use case might require for it to be deleted first.
-Like so:
-
-| Target | Transform | Value | Default to |
-| ------ |:---------:| ----- | ---------- |
-|  body.event_types  | __Delete__ |  | |
-|  body.event_types  | __Append__ | \`Auth Failure\` | |
-|  body.event_types  | __Append__ | \`Auth Success\` | |
-|  body.event_types  | __Append__ | \`Remote Connection\` | |
-|  body.event_types  | __Append__ | \`User Created\` | |
-:::
-
-`,
-            required: false,
-            group: 'Advanced - Response Pagination Transforms'
-          },
-
-          {
-            name: 'cursor',
-            label: 'Cursors List',
-            type: {
-              name: 'object',
-              of: {
-                type: {
-                  name: 'string'
-                },
-                default: '',
-                required: true,
-                suffix: {
-                  options: [
-                    { value: '👈___default___🚫', label: 'No Default' },
-                    { value: '👈___default___', label: 'Empty string' },
-                    { value: '👈___default___0', label: '0' },
-                    { value: '👈___default___[[now]]', label: '[[now]]' },
-                    { value: '👈___default___[[now (parseDuration "-1m")]]', label: '[[now (parseDuration "-1m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-5m")]]', label: '[[now (parseDuration "-5m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-10m")]]', label: '[[now (parseDuration "-10m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-15m")]]', label: '[[now (parseDuration "-15m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-30m")]]', label: '[[now (parseDuration "-30m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-45m")]]', label: '[[now (parseDuration "-45m")]]' },
-                    { value: '👈___default___[[now (parseDuration "-1h")]]', label: '[[now (parseDuration "-1h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-2h")]]', label: '[[now (parseDuration "-2h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-3h")]]', label: '[[now (parseDuration "-3h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-5h")]]', label: '[[now (parseDuration "-5h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-6h")]]', label: '[[now (parseDuration "-6h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-12h")]]', label: '[[now (parseDuration "-12h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-24h")]]', label: '[[now (parseDuration "-24h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-36h")]]', label: '[[now (parseDuration "-36h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-48h")]]', label: '[[now (parseDuration "-48h")]]' },
-                    { value: '👈___default___[[now (parseDuration "-72h")]]', label: '[[now (parseDuration "-72h")]]' }
-                  ],
-                  default: '👈___default___🚫'
-                }
-              }
-            },
-            description: `Cursor is a list of key value objects where arbitrary values are defined. 
-The values are interpreted as [value templates](https://github.com/elastic/beats/blob/7.12/x-pack/filebeat/docs/inputs/input-httpjson.asciidoc#value-templates) and a default template can be set.
-Cursor state is kept between input restarts and updated once all the events for a request are published.
-
-> NOTE
-> Default templates do not have access to any state, only to functions.
->
-> Can __read__ state from:
-> - \`.last_response.* \`
-> - \`.first_event.* \`
-> - \`.last_event.* \`
->
-::: tip Examples
-
-| Key | Value | Default to |
-| --- | ----- | ---------- |
-| last_requested_at | \`[[now]]\` | __Empty String__ |
-| last_log_id | \`[[.last_event._id]]\` | __0__ |
-:::
-`,
+            description: 'Does this API support sorting?',
             required: true,
-            group: 'Advanced - Cursors'
+            group: 'Sorting Field'
+          },
+          {
+            name: 'sorting.sorting_field',
+            label: 'Sorting Field',
+            type: {
+              name: 'string'
+            },
+            description: `The field name that the API supports for sorting.
+For example, in the URL below, the sorting field is \`sortOrder\`:
+\`\`\` text
+https://dev-7887806.okta.com/api/v1/logs?since=2021-09-01T18:29:00Z&until=2021-10-05T18:29:00Z&limit=1000&sortOrder=ASCENDING
+\`\`\`
+`,
+            default: '',
+            required: false,
+            group: 'Sorting Field'
+          },
+          {
+            name: 'sorting.sorting_value',
+            label: 'Sorting Value',
+            type: {
+              name: 'string'
+            },
+            description: `The value used to determine sorting order.
+For example, in the URL below, the sorting value is \`ASCENDING\`:
+\`\`\` text
+https://dev-7887806.okta.com/api/v1/logs?since=2021-09-01T18:29:00Z&until=2021-10-05T18:29:00Z&limit=1000&sortOrder=ASCENDING
+\`\`\`
+`,
+            default: '',
+            required: false,
+            group: 'Sorting Field'
           },
 
-          // Advanced - Miscellaneous
+          // Request Headers and Parameters
 
           {
-            name: 'request.timeout',
-            label: 'Request Timeout',
+            name: 'headers',
+            label: 'Request Headers',
+            type: {
+              name: 'object',
+              of: {
+                type: {
+                  name: 'string'
+                },
+                // obfuscation: {
+                //   compulsory: true,
+                //   method: 'oc_encrypt',
+                //   obfuscatedFormatCheckRegex: '[0-9]\\|\\|.{23,}' // Example: 2||64isxHMCDZfsEWhchnl+RTGW6RCjcOtxTjTBotLmtAzXTxMSc1jCPv7xPrtXO8nr4796WpAzSduLAENtAjs=
+                // },
+                default: '',
+                required: true
+              }
+            },
+            description: `Optionally provide the Request Headers supported by the API as Key:Value pairs.
+::: tip Examples
+
+| Key | Value |
+| --- | ----- |
+| Content-Type | application/json |
+:::
+`,
+            default: '',
+            required: false,
+            group: 'Request Headers and Parameters'
+          },
+          {
+            name: 'params',
+            label: 'Request Parameters',
+            type: {
+              name: 'object',
+              of: {
+                type: {
+                  name: 'string'
+                },
+                // obfuscation: {
+                //   compulsory: true,
+                //   method: 'oc_encrypt',
+                //   obfuscatedFormatCheckRegex: '[0-9]\\|\\|.{23,}' // Example: 2||64isxHMCDZfsEWhchnl+RTGW6RCjcOtxTjTBotLmtAzXTxMSc1jCPv7xPrtXO8nr4796WpAzSduLAENtAjs=
+                // },
+                default: '',
+                required: true
+              }
+            },
+            description: `Optionally provide the Query Parameters supported by the API as Key:Value pairs.
+::: tip Examples
+
+| Key | Value |
+| --- | ----- |
+| limit | 100 |
+:::
+`,
+            default: '',
+            required: false,
+            group: 'Request Headers and Parameters'
+          },
+
+          // Response Data Field
+
+          {
+            name: 'response_field_flag',
+            label: 'Enabled',
+            type: {
+              name: 'option'
+            },
+            options: [{ value: 'true', label: 'Yes' }, { value: 'false', label: 'No' }],
+            default: false,
+            description: `Some servers send data records in a specific field in JSON response.
+If this is the case with this API, select \`Yes\` and specify the field name below.`,
+            required: true,
+            group: 'Response Data Field'
+          },
+          {
+            name: 'response_field',
+            label: 'Response Data Field',
+            type: {
+              name: 'string'
+            },
+            description: `Refers to the field name that contains the data records.
+> NOTE
+> This is only necessary if the \`Enabled\` is \`Yes\`
+
+For example, in the JSON below, the data field is \`logs\`:
+\`\`\`
+{
+  "journal": "ABYR-USER",
+  "version": "v1.0.3",
+  "logs": [
+    {
+      "timestamp": 1632924862,
+      "message": "User Logon",
+      "host": "laptop01",
+      "user": "Billy"
+    },
+    {
+      "timestamp": 1632925741,
+      "message": "User Logoff",
+      "host": "laptop01",
+      "user": "Billy"
+    }
+  ]
+}
+\`\`\`
+`,
+            default: '',
+            required: false,
+            group: 'Response Data Field'
+          },
+
+          // Polling Interval
+
+          {
+            name: 'period',
+            label: 'Period',
             type: {
               name: 'number'
             },
             suffix: {
               options: [
-                { value: 'ns', label: 'NanoSeconds' },
-                { value: 'us', label: 'MicroSeconds' },
-                { value: 'ms', label: 'MilliSeconds' },
-                { value: 's', label: 'Seconds' },
-                { value: 'm', label: 'Minutes' },
-                { value: 'h', label: 'Hours' }
+                { value: 's', label: 'Seconds' }
               ],
               default: 's'
             },
             min: 1,
-            max: 1000,
-            default: '30s',
-            description: 'Duration before declaring that the HTTP client connection has timed out. The default is 30 seconds.',
-            required: false,
-            group: 'Advanced - Miscellaneous'
-          },
-          {
-            name: 'config_version',
-            label: 'Configuration version',
-            type: {
-              name: 'number'
-            },
-            min: 1,
-            max: 2,
-            description: `Defines the configuration version.
-V1 configuration is deprecated and will be unsupported in future releases.
-> Any new configuration should use \`Configuration version\` \`2\`.`,
-            default: 2,
+            max: 3600,
+            default: '60s',
+            description: `The period value defines the polling interval to fetch records from the server, in seconds.
+If the API server has a request limit, set the period value accordingly to avoid the \`request limit error\` with error code \`429\`.
+
+::: tip Examples
+- If the API supports 1800 requests per 24 hours, then set the \`Period\` value to be \`60 Seconds\`
+- If the API supports 5 requests per hour, then set the \`Period\` value to be \`720 Seconds\`
+- If the API supports 1 request per day, then set the \`Period\` value to be \`86400 Seconds\`
+:::`,
             required: true,
-            group: 'Advanced - Miscellaneous'
+            group: 'Polling Interval'
           },
 
           // EZ Internal
