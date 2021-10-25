@@ -37,14 +37,13 @@
           @focus="inFocus = true"
         >
           <template
-            v-if="template.type && template.type.name && template.type.name === 'password'"
             v-slot:append
           >
             <q-spinner
               v-if="waitingForBackend"
             />
             <q-icon
-              v-if="updateErrorMessage.length"
+              v-if="template.obfuscation && template.obfuscation.method && template.obfuscation.method.length && updateErrorMessage && updateErrorMessage.length"
               name="error"
               :color="inFocus ? 'red-10' : 'alert'"
             >
@@ -54,7 +53,7 @@
               </q-tooltip>
             </q-icon>
             <q-icon
-              v-if="obfuscationRequirementNotMet"
+              v-if="template.obfuscation && template.obfuscation.method && template.obfuscation.method.length && obfuscationRequirementNotMet"
               name="warning"
               :color="inFocus ? 'orange-10' : 'warning'"
             >
@@ -74,8 +73,15 @@
                 <span v-else>Your Secret is properly obfuscated</span>
               </q-tooltip>
             </q-icon>
-            <q-separator spaced inset vertical dark />
+            <q-separator
+              v-if="template.type && template.type.name && template.type.name === 'password'"
+              spaced
+              inset
+              vertical
+              dark
+            />
             <q-icon
+              v-if="template.type && template.type.name && template.type.name === 'password'"
               :name="showPassword ? 'visibility' : 'visibility_off'"
               class="cursor-pointer"
               @click="showPassword = !showPassword"

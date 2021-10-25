@@ -94,9 +94,9 @@
   - [x] Use the real Beat name in the JQ
   - [x] Rename the JQ Filter area to match what the backend names it
   - [ ] Persist extractMessageFieldOnly (and use it in DeploymentEdit when ready)
-- [ ] Collection Builder Edit
+- [x] Collection Builder Edit
   - [x] Add way to encrypt password
-  - [ ] Add way to encrypt normal text and multi-lines
+  - [x] Add way to encrypt normal text and multi-lines
 
 ## TO FIX
 - [ ] Open Collector List - Installation progress bar showing always full, even when progress is not yet 100%
