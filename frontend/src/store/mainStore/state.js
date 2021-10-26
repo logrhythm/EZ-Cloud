@@ -2722,9 +2722,9 @@ authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3OD
               name: 'option'
             },
             options: [
-              { value: 'a', label: 'Cursor Pagination' },
-              { value: 'b', label: 'Limit Offset Pagination' },
-              { value: 'c', label: 'Page Number Pagination' },
+              { value: 'cursor', label: 'Cursor Pagination' },
+              { value: 'b🔴🔴🔴🔴🔴', label: 'Limit Offset Pagination' },
+              { value: 'c🔴🔴🔴🔴🔴', label: 'Page Number Pagination' },
               { value: 'nopagination', label: 'No Pagination' }
             ],
             default: 'nopagination',
@@ -2736,7 +2736,7 @@ authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3OD
 
 Before configuring the Generic beat for log sources, it is recommended to learn the types of pagination styles that your API supports using the following methods.
 
-For more information about how each work, please refer to https://docs.logrhythm.com/docs/OCbeats/generic-beat/configure-the-generic-beat .`,
+For more information about how each work, please refer to https://docs.logrhythm.com/docs/OCbeats/generic-beat/configure-the-generic-beat#ConfiguretheGenericBeat-Pagination .`,
             required: true,
             group: 'Pagination'
           },
@@ -2750,11 +2750,14 @@ For more information about how each work, please refer to https://docs.logrhythm
               name: 'option'
             },
             options: [
-              { value: 'URL', label: 'URL' }
+              { value: 'url', label: 'URL' },
+              { value: 'query_param', label: 'Query Parameter' }
             ],
-            default: 'URL',
+            default: 'url',
             description: `The cursor type can be a URL to the next set of data records or it can be a token to fetch the next set of records as a query parameter.
-For example, in the sample below, the cursor type is URL (as porvided on line 3):
+
+::: tip Examples
+- In the sample below, the cursor type is \`URL\` (as per line 3):
 \`\`\`
 {
   "count": 87,
@@ -2763,8 +2766,159 @@ For example, in the sample below, the cursor type is URL (as porvided on line 3)
   "result": [ ... ]
 }
 \`\`\`
+
+- In the sample below, the cursor type is \`Query Parameter\` (as per line 4):
+\`\`\`
+"data": [ ... ],
+"pageing": {
+  "cursors": {
+    "next": "MTAxNTExOTQ1MjAwNzI5NDE=",
+    "before": "NDMyNzQyODI3OTQw"
+  }
+}
+\`\`\`
+
+And would be typically used like this in the URL Parameters:
+\`\`\` text
+https://graph.facebook.com/me/albums?limit=25&after=MTAxNTExOTQ1MjAwNzI5NDE=
+\`\`\`
+
+:::
 `,
             required: true,
+            group: 'Pagination - Cursor'
+          },
+          {
+            name: 'pagination.cursor_based.cursor_location',
+            label: 'Cursor Location',
+            type: {
+              name: 'option'
+            },
+            options: [
+              { value: 'body', label: 'Response Body' },
+              { value: 'header', label: 'Response Header' }
+            ],
+            default: 'body',
+            description: `The cursor can be located in response headers or the response body.
+
+::: tip Examples
+- In the sample below, the cursor location is \`Response Body\` (as per line 7):
+\`\`\`
+{
+  "version": "v1.2.0",
+  "metadata": {
+    "links": {
+      "self": "https://api.amp.cisco.com/v1/events?limit=500&start_date=2021-09-21T00:00:00Z&offset=53000",
+      "prev": "https://api.amp.cisco.com/v1/events?limit=500&start_date=2021-09-21T00:00:00Z&offset=52500",
+      "next": "https://api.amp.cisco.com/v1/events?limit=500&start_date=2021-09-21T00:00:00Z&offset=53500"
+    },
+    "results": { ... }
+  },
+}
+\`\`\`
+
+- In the sample below, the cursor location is \`Response Header\`:
+\`\`\` text
+Link: "<https://{shop}.myshopify.com/admin/api/{version}/products.json?page_info={page_info}&limit={limit}>; rel={next}, ...
+\`\`\`
+:::
+`,
+            required: true,
+            group: 'Pagination - Cursor'
+          },
+          {
+            name: 'pagination.cursor_based.cursor_field',
+            label: 'Cursor Field - For Location "Response Body" Only',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `The cursor field refers to the field name in which the cursor appears inside the response body.
+> NOTE
+> This is only necessary if the \`Cursor Location\` is \`Response Body\`
+
+::: tip Example
+- In the sample below, the cursor field is \`next\` (as per line 7):
+\`\`\`
+{
+  "version": "v1.2.0",
+  "metadata": {
+    "links": {
+      "self": "https://api.amp.cisco.com/v1/events?limit=500&start_date=2021-09-21T00:00:00Z&offset=53000",
+      "prev": "https://api.amp.cisco.com/v1/events?limit=500&start_date=2021-09-21T00:00:00Z&offset=52500",
+      "next": "https://api.amp.cisco.com/v1/events?limit=500&start_date=2021-09-21T00:00:00Z&offset=53500"
+    },
+    "results": { ... }
+  },
+}
+\`\`\`
+:::
+`,
+            required: false,
+            group: 'Pagination - Cursor'
+          },
+          {
+            name: 'pagination.cursor_based.cursor_query_param',
+            label: 'Cursor Query Param - For Type "Query Parameter" Only',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `Cursor query param is the field name in the request query param in which the next token will be sent.
+> NOTE
+> This is only necessary if the \`Cursor Type\` is \`Query Parameter\`
+
+::: tip Example
+To produce the the sample below, the cursor query param is set to \`after\`:
+\`\`\` text
+https://graph.facebook.com/me/albums?limit=25&after=MTAxNTExOTQ1MjAwNzI5NDE=
+\`\`\`
+:::
+`,
+            required: false,
+            group: 'Pagination - Cursor'
+          },
+          {
+            name: 'pagination.cursor_based.cursor_header_type',
+            label: 'Cursor Header Type - For Location "Response Header" Only',
+            type: {
+              name: 'option'
+            },
+            options: [
+              { value: 'custom_header', label: 'Custom Header' },
+              { value: 'link', label: 'Link-defined HTTP Header' }
+            ],
+            default: 'custom_header',
+            description: `The cursor header type can be either a link-defined HTTP header, or a custom header that can be any named field.
+> NOTE
+> This is only necessary if the \`Cursor Location\` is \`Response Header\`
+`,
+            required: false,
+            group: 'Pagination - Cursor'
+          },
+          {
+            name: 'pagination.cursor_based.cursor_header_field',
+            label: 'Cursor Header Field - For Location "Response Header" Only',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `The cursor header field is the field name from which the token is pulled.
+> NOTE
+> This is only necessary if the \`Cursor Location\` is \`Response Header\`
+
+::: tip
+If it is a \`Link-defined HTTP Header\`, it is recommended to provide the \`rel\` value here.
+:::
+
+::: tip Example
+In the sample below, the cursor header field is \`next\`.
+\`\`\` text
+Link: "<https://{shop}.myshopify.com/admin/api/{version}/products.json?page_info={page_info}&limit={limit}>; rel={next}, ...
+\`\`\`
+:::
+`,
+            required: false,
             group: 'Pagination - Cursor'
           },
 
