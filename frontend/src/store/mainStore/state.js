@@ -3043,6 +3043,166 @@ $ curl https://api.box.com/2.0/folders/0/items?offset=0&limit=100 \\
             group: 'Pagination - Limit and Offset'
           },
 
+          // Date Range Filter
+
+          {
+            name: 'filter_type',
+            label: 'Filter Type',
+            type: {
+              name: 'option'
+            },
+            options: [
+              { value: 'afterstart', label: 'Date Range - After any specific date' },
+              { value: 'nofilter', label: 'No Filter' }
+            ],
+            default: 'nofilter',
+            description: 'If the API does support date / period / interval filters, then pick the right one from the list, otherwise choose `No Filter`.',
+            required: true,
+            group: 'Date Range Filter'
+          },
+          {
+            name: 'time_format',
+            label: 'Time Format',
+            type: {
+              name: 'option'
+            },
+            options: [
+              { value: '02 Jan 06 15:04 -0700', label: '02 Jan 06 15:04 -0700' },
+              { value: '02 Jan 06 15:04 MST', label: '02 Jan 06 15:04 MST' },
+              { value: '2006-01-02T15:04:05.999999999Z07:00', label: '2006-01-02T15:04:05.999999999Z07:00' },
+              { value: '2006-01-02T15:04:05Z07:00', label: '2006-01-02T15:04:05Z07:00' },
+              { value: 'Mon Jan 02 15:04:05 -0700 2006', label: 'Mon Jan 02 15:04:05 -0700 2006' },
+              { value: 'Mon Jan _2 15:04:05 2006', label: 'Mon Jan _2 15:04:05 2006' },
+              { value: 'Mon Jan _2 15:04:05 MST 2006', label: 'Mon Jan _2 15:04:05 MST 2006' },
+              { value: 'Mon, 02 Jan 2006 15:04:05 -0700', label: 'Mon, 02 Jan 2006 15:04:05 -0700' },
+              { value: 'Mon, 02 Jan 2006 15:04:05 MST', label: 'Mon, 02 Jan 2006 15:04:05 MST' },
+              { value: 'Monday, 02-Jan-06 15:04:05 MST', label: 'Monday, 02-Jan-06 15:04:05 MST' },
+              { value: 'UNIX_MILLISECONDS_TIMESTAMP', label: 'UNIX_MILLISECONDS_TIMESTAMP' },
+              { value: 'UNIX_SECONDS_TIMESTAMP', label: 'UNIX_SECONDS_TIMESTAMP' }
+            ],
+            default: '2006-01-02T15:04:05Z07:00',
+            description: `This refers to the date-time format that the API supports, i.e. RFC3339 or ISO8601.
+Select the appropriate time format from the drop-down menu.`,
+            required: true,
+            group: 'Date Range Filter'
+          },
+          {
+            name: 'filter.delay_time',
+            label: 'Delay time',
+            type: {
+              name: 'number'
+            },
+            suffix: {
+              options: [
+                { value: 's', label: 'Seconds' }
+              ],
+              default: 's'
+            },
+            min: 0,
+            max: 3600,
+            default: '5s',
+            description: `Some APIs don't support exact real-time log fetching. In this case, add the delay in seconds that the API supports.
+::: tip Example
+For example, if the API supports a five seconds delay, enter \`5 Seconds\`.
+:::`,
+            required: true,
+            group: 'Date Range Filter'
+          },
+
+          // Date Range Filter - After any specific start date
+
+          {
+            name: 'filter.after_start_filter.start_field',
+            label: 'Start field',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `The field name used to send the start time in the request.
+::: tip Example
+In the command sample below, the start field is \`since\` (as per line 5):
+\`\`\` text
+$ curl -v -X GET \\
+ -H "Accept: application/json" \\
+ -H "Content-Type: application/json" \\
+ -H "Authorization: SSWS \${api_token}" \\
+ "https://\${yourOktaDomain}/api/v1/logs?since=2017-10-01T00:00:00.000Z"
+\`\`\`
+:::
+`,
+            required: true,
+            group: 'Date Range Filter - After any specific start date'
+          },
+          {
+            name: 'filter.after_start_filter.start_value',
+            label: 'Start Value',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `The start date value from which logs should be fetched from the server. 
+::: danger
+When giving the start date as back days, ensure the API supports that number of back days to fetch logs.
+For example, if the start value is 7 days before the current date, then the API must support 7 day backlogs; otherwise, the beat will return an error.
+:::
+
+::: tip Example
+In the command sample below, the start value is \`2017-10-01T00:00:00.000Z\` (as per line 5):
+\`\`\` text
+$ curl -v -X GET \\
+ -H "Accept: application/json" \\
+ -H "Content-Type: application/json" \\
+ -H "Authorization: SSWS \${api_token}" \\
+ "https://\${yourOktaDomain}/api/v1/logs?since=2017-10-01T00:00:00.000Z"
+\`\`\`
+:::
+`,
+            required: true,
+            group: 'Date Range Filter - After any specific start date'
+          },
+          {
+            name: 'filter.after_start_filter.response_date_field',
+            label: 'Next Start Date Response Field',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `This is the date field to parse from the response to fetch the next set of records.
+::: danger
+This is JSON path within the record, using the dotted notation.
+See example below.
+:::
+
+::: tip Example
+In the sample below, the next start date is \`data.date\` (branch \`data\` as per line 11 and leaf \`date\` as per line 15):
+\`\`\`
+{
+  "version": "v1.2.0",
+  "metadata": {
+    "links": {
+      "self": "https://api.amp.cisco.com/v1/events?limit=500&start_date=2021-09-21T00:00:00Z&offset=53000",
+      "prev": "https://api.amp.cisco.com/v1/events?limit=500&start_date=2021-09-21T00:00:00Z&offset=52500",
+      "next": "https://api.amp.cisco.com/v1/events?limit=500&start_date=2021-09-21T00:00:00Z&offset=53500"
+    },
+    "results": { ... }
+  },
+  "data" : [
+    {
+      "id": 163336102013548932156345045,
+      "timestamp": 1633361020,
+      "date": "2021-10-04T15:23:40+00:00",
+      "event_type": "DFC Threat Detected",
+      ...
+    }
+  ]
+}
+\`\`\`
+:::
+`,
+            required: true,
+            group: 'Date Range Filter - After any specific start date'
+          },
+
           // Sorting
 
           {
