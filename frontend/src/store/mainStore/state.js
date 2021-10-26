@@ -2724,7 +2724,7 @@ authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3OD
             options: [
               { value: 'cursor', label: 'Cursor Pagination' },
               { value: 'b🔴🔴🔴🔴🔴', label: 'Limit Offset Pagination' },
-              { value: 'c🔴🔴🔴🔴🔴', label: 'Page Number Pagination' },
+              { value: 'pagebased', label: 'Page Number Pagination' },
               { value: 'nopagination', label: 'No Pagination' }
             ],
             default: 'nopagination',
@@ -2920,6 +2920,65 @@ Link: "<https://{shop}.myshopify.com/admin/api/{version}/products.json?page_info
 `,
             required: false,
             group: 'Pagination - Cursor'
+          },
+
+          // Pagination - Page-Based
+
+          {
+            name: 'pagination.page_based.pagesize_field',
+            label: 'Page Size Field',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `The field name for page size.
+::: tip Example
+In the URL sample below, the page size field is \`pagesize\`:
+\`\`\` text
+http://lrtestapi.azurewebsites.net/countries/?starttime=2021-08-03+17%3A26%3A44.223638&endtime=2021-08-03+17%3A35%3A30.692350&page=2&pagesize=15
+\`\`\`
+:::
+`,
+            required: true,
+            group: 'Pagination - Page-Based'
+          },
+          {
+            name: 'pagination.page_based.pagesize_value',
+            label: 'Page Size Value',
+            type: {
+              name: 'number'
+            },
+            min: 1,
+            max: 5000,
+            default: '100',
+            description: `The value for page size to limit the number of records returned by the server in a single request.
+::: tip Example
+In the URL sample below, the page size value is \`15\`:
+\`\`\` text
+http://lrtestapi.azurewebsites.net/countries/?starttime=2021-08-03+17%3A26%3A44.223638&endtime=2021-08-03+17%3A35%3A30.692350&page=2&pagesize=15
+\`\`\`
+:::
+`,
+            required: true,
+            group: 'Pagination - Page-Based'
+          },
+          {
+            name: 'pagination.page_based.pagenumber_field',
+            label: 'Page Number Field',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `The field name for the page number.
+::: tip Example
+In the URL sample below, the page size field is \`page\`:
+\`\`\` text
+http://lrtestapi.azurewebsites.net/countries/?starttime=2021-08-03+17%3A26%3A44.223638&endtime=2021-08-03+17%3A35%3A30.692350&page=2&pagesize=15
+\`\`\`
+:::
+`,
+            required: true,
+            group: 'Pagination - Page-Based'
           },
 
           // Sorting
