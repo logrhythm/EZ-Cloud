@@ -2935,7 +2935,7 @@ Link: "<https://{shop}.myshopify.com/admin/api/{version}/products.json?page_info
 ::: tip Example
 In the URL sample below, the page size field is \`pagesize\`:
 \`\`\` text
-http://lrtestapi.azurewebsites.net/countries/?starttime=2021-08-03+17%3A26%3A44.223638&endtime=2021-08-03+17%3A35%3A30.692350&page=2&pagesize=15
+https://lrtestapi.azurewebsites.net/countries/?starttime=2021-08-03+17%3A26%3A44.223638&endtime=2021-08-03+17%3A35%3A30.692350&page=2&pagesize=15
 \`\`\`
 :::
 `,
@@ -2950,12 +2950,12 @@ http://lrtestapi.azurewebsites.net/countries/?starttime=2021-08-03+17%3A26%3A44.
             },
             min: 1,
             max: 5000,
-            default: '100',
+            default: '1000',
             description: `The value for page size to limit the number of records returned by the server in a single request.
 ::: tip Example
 In the URL sample below, the page size value is \`15\`:
 \`\`\` text
-http://lrtestapi.azurewebsites.net/countries/?starttime=2021-08-03+17%3A26%3A44.223638&endtime=2021-08-03+17%3A35%3A30.692350&page=2&pagesize=15
+https://lrtestapi.azurewebsites.net/countries/?starttime=2021-08-03+17%3A26%3A44.223638&endtime=2021-08-03+17%3A35%3A30.692350&page=2&pagesize=15
 \`\`\`
 :::
 `,
@@ -2973,7 +2973,7 @@ http://lrtestapi.azurewebsites.net/countries/?starttime=2021-08-03+17%3A26%3A44.
 ::: tip Example
 In the URL sample below, the page size field is \`page\`:
 \`\`\` text
-http://lrtestapi.azurewebsites.net/countries/?starttime=2021-08-03+17%3A26%3A44.223638&endtime=2021-08-03+17%3A35%3A30.692350&page=2&pagesize=15
+https://lrtestapi.azurewebsites.net/countries/?starttime=2021-08-03+17%3A26%3A44.223638&endtime=2021-08-03+17%3A35%3A30.692350&page=2&pagesize=15
 \`\`\`
 :::
 `,
