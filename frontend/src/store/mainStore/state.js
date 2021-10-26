@@ -2723,7 +2723,7 @@ authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3OD
             },
             options: [
               { value: 'cursor', label: 'Cursor Pagination' },
-              { value: 'b🔴🔴🔴🔴🔴', label: 'Limit Offset Pagination' },
+              { value: 'limitoffset', label: 'Limit Offset Pagination' },
               { value: 'pagebased', label: 'Page Number Pagination' },
               { value: 'nopagination', label: 'No Pagination' }
             ],
@@ -2979,6 +2979,68 @@ http://lrtestapi.azurewebsites.net/countries/?starttime=2021-08-03+17%3A26%3A44.
 `,
             required: true,
             group: 'Pagination - Page-Based'
+          },
+
+          // Pagination - Limit and Offset
+
+          {
+            name: 'pagination.limit_offset.limit_field',
+            label: 'Limit Field',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `The field name to be used as the limit.
+::: tip Example
+In the command sample below, the limit field is \`limit\`:
+\`\`\` text
+$ curl https://api.box.com/2.0/folders/0/items?offset=0&limit=100 \\
+ -H "authorization: Bearer ACCESS_TOKEN"
+\`\`\`
+:::
+`,
+            required: true,
+            group: 'Pagination - Limit and Offset'
+          },
+          {
+            name: 'pagination.limit_offset.limit_value',
+            label: 'Limit Value',
+            type: {
+              name: 'number'
+            },
+            min: 1,
+            max: 5000,
+            default: '1000',
+            description: `The total number of records to be returned in a single request.
+::: tip Example
+In the command sample below, the limit value is \`100\`:
+\`\`\` text
+$ curl https://api.box.com/2.0/folders/0/items?offset=0&limit=100 \\
+ -H "authorization: Bearer ACCESS_TOKEN"
+\`\`\`
+:::
+`,
+            required: true,
+            group: 'Pagination - Limit and Offset'
+          },
+          {
+            name: 'pagination.limit_offset.offset_field',
+            label: 'Offset Field',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `The field name to be used as the offset.
+::: tip Example
+In the command sample below, the offset field is \`offset\`:
+\`\`\` text
+$ curl https://api.box.com/2.0/folders/0/items?offset=0&limit=100 \\
+ -H "authorization: Bearer ACCESS_TOKEN"
+\`\`\`
+:::
+`,
+            required: true,
+            group: 'Pagination - Limit and Offset'
           },
 
           // Sorting
