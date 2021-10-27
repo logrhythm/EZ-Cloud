@@ -2389,7 +2389,14 @@ To store the custom fields as top-level fields, set the \`fields_under_root opti
               { value: 'token', label: 'Header Based Authentication' },
               { value: 'oauth20', label: 'oAuth 2.0 Authentication' }
             ],
-            description: 'The Generic beat supports three types of authentication mechanisms. Select one of the authentication types that is supported by the API in order to configure the Generic beat.',
+            description: `The Generic beat supports three types of authentication mechanisms. Select one of the authentication types that is supported by the API in order to configure the Generic beat.
+
+::: tip Hint
+Once the right Authentication Type has been selected, do configure its related section below:
+- Authentication - Basic
+- Authentication - Header Based
+- Authentication - oAuth 2.0
+:::`,
             default: 'noauth',
             required: true,
             group: 'Authentication'
@@ -2723,20 +2730,27 @@ authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3OD
             },
             options: [
               { value: 'cursor', label: 'Cursor Pagination' },
-              { value: 'limitoffset', label: 'Limit Offset Pagination' },
               { value: 'pagebased', label: 'Page Number Pagination' },
+              { value: 'limitoffset', label: 'Limit Offset Pagination' },
               { value: 'nopagination', label: 'No Pagination' }
             ],
             default: 'nopagination',
             description: `The Generic beat supports four types of pagination styles, as listed below:
 - Cursor-based Pagination
-- Limit Offset Pagination
 - Page Number Pagination
+- Limit Offset Pagination
 - No Pagination
 
 Before configuring the Generic beat for log sources, it is recommended to learn the types of pagination styles that your API supports using the following methods.
 
-For more information about how each work, please refer to https://docs.logrhythm.com/docs/OCbeats/generic-beat/configure-the-generic-beat#ConfiguretheGenericBeat-Pagination .`,
+For more information about how each work, please refer to https://docs.logrhythm.com/docs/OCbeats/generic-beat/configure-the-generic-beat#ConfiguretheGenericBeat-Pagination .
+
+::: tip Hint
+Once the right Pagination Style has been selected, do configure its related section below:
+- Pagination - Cursor
+- Pagination - Page-Based
+- Pagination - Limit and Offset
+:::`,
             required: true,
             group: 'Pagination'
           },
@@ -3053,10 +3067,19 @@ $ curl https://api.box.com/2.0/folders/0/items?offset=0&limit=100 \\
             },
             options: [
               { value: 'afterstart', label: 'Date Range - After any specific date' },
+              { value: 'b🔴🔴🔴🔴🔴🔴', label: 'Date Range - Between start and end date' },
+              { value: 'c🔴🔴🔴🔴🔴🔴', label: 'Date Range - Within an interval' },
               { value: 'nofilter', label: 'No Filter' }
             ],
             default: 'nofilter',
-            description: 'If the API does support date / period / interval filters, then pick the right one from the list, otherwise choose `No Filter`.',
+            description: `If the API does support date / period / interval filters, then pick the right one from the list, otherwise choose \`No Filter\`.
+
+::: tip Hint
+Once the right Date Range Filter has been selected, do configure its related section below:
+- Date Range Filter - After any specific start date
+- Date Range Filter - Between start and end date
+- Date Range Filter - Within an interval
+:::`,
             required: true,
             group: 'Date Range Filter'
           },
