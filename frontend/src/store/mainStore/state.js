@@ -2391,6 +2391,28 @@ To store the custom fields as top-level fields, set the \`fields_under_root opti
             ],
             description: `The Generic beat supports three types of authentication mechanisms. Select one of the authentication types that is supported by the API in order to configure the Generic beat.
 
+#### **Basic authentication**
+
+This is the most straightforward method and the easiest. With this method, the sender places a username:password into the request header. The username and password are encoded with Base64, which is an encoding technique that converts the username and password into a set of 64 characters to ensure safe transmission.
+A basic authentication in a request header will look similar to the following:
+\`\`\` text
+Authorization: Basic bG9sOnNlY3VyZQ==
+\`\`\`
+
+#### **Header-based authentication**
+
+Header-based authentication (also called token authentication) is an HTTP authentication scheme that involves security tokens called bearer tokens.
+The client must send this token in the authorization header when making requests to protected resources.
+\`\`\` text
+Authorization: Bearer <token>
+\`\`\`
+
+#### **OAuth (2.0) access token**
+
+Sent like an API key, this token allows the application to access a user’s data. Optionally, access tokens can be configured to expire.
+
+As of the 2021.10 version of the Generic beat, only the access token method is supported.
+
 ::: tip Hint
 Once the right Authentication Type has been selected, do configure its related section below:
 - Authentication - Basic
@@ -2735,15 +2757,40 @@ authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3OD
               { value: 'nopagination', label: 'No Pagination' }
             ],
             default: 'nopagination',
-            description: `The Generic beat supports four types of pagination styles, as listed below:
-- Cursor-based Pagination
-- Page Number Pagination
-- Limit Offset Pagination
-- No Pagination
+            description: `The Generic beat supports four types of pagination styles.
+
+Most endpoints that return a list of entities will need to have some sort of pagination. Without pagination, a simple search could return millions or even billions of hits, causing extraneous network traffic. Pagination requires an implied ordering. By default, this may be the item's unique identifier, but can be other ordered fields such as a created date.
 
 Before configuring the Generic beat for log sources, it is recommended to learn the types of pagination styles that your API supports using the following methods.
 
-For more information about how each work, please refer to https://docs.logrhythm.com/docs/OCbeats/generic-beat/configure-the-generic-beat#ConfiguretheGenericBeat-Pagination .
+#### **Cursor-based pagination**
+
+In cursor-based pagination, when a request is made, the server returns the first page of data and the cursor points to the next page. A cursor can be a URL to the next page or it could be a token after which the next records should be fetched.
+A cursor-based pagination in a response header could look similar to the following:
+\`\`\` text
+Link: "<https://{shop}.myshopify.com/admin/api/{version}/products.json?page_info={page_info}&limit={limit}>; rel={next}, ...
+\`\`\`
+
+#### **Page number-based pagination**
+
+This is the simplest and most common form of pagination, particularly for apps that use SQL databases. Using this method, the set is divided into pages. The endpoint accepts a page parameter that is an integer indicating the page within the list to be returned.
+For example:
+\`\`\` text
+https://lrtestapi.azurewebsites.net/countries/?starttime=2021-08-03+17%3A26%3A44.223638&endtime=2021-08-03+17%3A35%3A30.692350&page=2&pagesize=15
+\`\`\`
+
+#### **Offset pagination**
+
+Limit/Offset pagination can be retrieved using the following:
+\`\`\` text
+GET /items?limit=20&offset=100
+\`\`\`
+This query would return 20 rows, starting with the 100th row.
+
+> NOTE
+> For more information about how each work, please refer to:
+> - https://docs.logrhythm.com/docs/OCbeats/generic-beat/configure-the-generic-beat#ConfiguretheGenericBeat-Pagination
+> - https://docs.logrhythm.com/docs/OCbeats/generic-beat/configure-the-generic-beat#ConfiguretheGenericBeat-PaginationStyles
 
 ::: tip Hint
 Once the right Pagination Style has been selected, do configure its related section below:
@@ -3074,6 +3121,34 @@ $ curl https://api.box.com/2.0/folders/0/items?offset=0&limit=100 \\
             default: 'nofilter',
             description: `If the API does support date / period / interval filters, then pick the right one from the list, otherwise choose \`No Filter\`.
 
+#### **After any specific start date**
+
+The \`after any specific start date\` filter takes a start value provided by the user and requests records from the server, fetching logs from after the specified start date.
+The following is an example of the \`after any specific start date\` filter.
+\`\`\` text
+$ curl -v -X GET \\
+ -H "Accept: application/json" \\
+ -H "Content-Type: application/json" \\
+ -H "Authorization: SSWS \${api_token}" \\
+ "https://\${yourOktaDomain}/api/v1/logs?since=2017-10-01T00:00:00.000Z"
+\`\`\`
+
+#### **Between start and end date**
+
+The \`between start and end date\` filter fetches the logs within the given range of start date and end date. Ensure the API supports this filter on the server end.
+The following is an example request using the \`between start and end date\` filter.
+\`\`\` text
+https://api.amp.cisco.com/v1/audit?start_time=2021-09-15T09:28:58Z&limit=250&offset=0&end_time=2021-09-28T08:29:28Z
+\`\`\`
+
+#### **Within an interval**
+
+Similar to the \`between start and end date\` filter, the \`within an interval\` filter fetches the logs between any specific start time and end time, with the only difference being the format in which the start and end date are sent. In this filter, the start and end dates are sent in a single string separated by a delimiter.
+The following is an example of the \`within an interval\` filter.
+\`\`\` text
+https://tap-api-v2.proofpoint.com/v2/siem/messages/blocked?interval=2021-10-08T00:00:00.000Z/2021-10-08T01:00:00.000Z
+\`\`\`
+
 ::: tip Hint
 Once the right Date Range Filter has been selected, do configure its related section below:
 - Date Range Filter - After any specific start date
@@ -3123,7 +3198,7 @@ Select the appropriate time format from the drop-down menu.`,
             },
             min: 0,
             max: 3600,
-            default: '5s',
+            default: '0s',
             description: `Some APIs don't support exact real-time log fetching. In this case, add the delay in seconds that the API supports.
 ::: tip Example
 For example, if the API supports a five seconds delay, enter \`5 Seconds\`.
@@ -3263,6 +3338,7 @@ For example, if the start value is 7 days before the current date, then the API 
 In the URL sample below, the start value is \`2021-09-15T09:28:58Z\`:
 \`\`\` text
 https://api.amp.cisco.com/v1/audit?start_time=2021-09-15T09:28:58Z&limit=250&offset=0&end_time=2021-09-28T08:29:28Z
+\`\`\`
 :::
 `,
             required: true,
@@ -3350,6 +3426,7 @@ For example, if the API supports a maximum of one hour logs in a single API requ
 In the URL sample below, the interval value is \`2021-10-08T00:00:00.000Z/2021-10-08T01:00:00.000Z\`:
 \`\`\` text
 https://tap-api-v2.proofpoint.com/v2/siem/messages/blocked?interval=2021-10-08T00:00:00.000Z/2021-10-08T01:00:00.000Z
+\`\`\`
 :::
 `,
             required: true,
@@ -3384,7 +3461,29 @@ https://tap-api-v2.proofpoint.com/v2/siem/messages/blocked?interval=2021-10-08T0
             },
             options: [{ value: 'true', label: 'Yes' }, { value: 'false', label: 'No' }],
             default: false,
-            description: 'Does this API support sorting?',
+            description: `Does this API support sorting?
+Sorting is an important feature for any API endpoint that returns a lot of data. When returning a list of users, your API users may want to sort by last modified date or by email.
+To enable sorting, many APIs add a sort or sort_by URL parameter that can take a field name as the value. However, good API designs give the flexibility to specify ascending or descending order. Specifying the order requires encoding three components into a key/value pair.
+
+The following are example formats for using the sorting feature:
+\`\`\` text
+GET /users?sort_by=asc(email)
+  and
+GET /users?sort_by=desc(email)
+\`\`\`
+
+\`\`\` text
+GET /users?sort_by=+email
+  and
+GET /users?sort_by=-email
+\`\`\`
+
+\`\`\` text
+GET /users?sort_by=email.asc
+  and
+GET /users?sort_by=email.desc
+\`\`\`
+`,
             required: true,
             group: 'Sorting Field'
           },
@@ -3615,12 +3714,6 @@ To store the custom fields as top-level fields, set the \`fields_under_root opti
 
     collectionShippersOptions: [
       {
-        value: 'filebeat',
-        label: 'Filebeat',
-        icon: 'filebeat',
-        outputFormat: 'yaml'
-      },
-      {
         value: 'jsBeat',
         label: 'jsBeat',
         icon: 'jsBeat',
@@ -3628,8 +3721,14 @@ To store the custom fields as top-level fields, set the \`fields_under_root opti
       },
       {
         value: 'lrHttpRest',
-        label: 'LogRhythm HTTP Rest Beat',
+        label: 'LogRhythm Generic HTTP Rest Beat',
         icon: 'logrhythm-rest',
+        outputFormat: 'yaml'
+      },
+      {
+        value: 'filebeat',
+        label: 'Filebeat',
+        icon: 'filebeat',
         outputFormat: 'yaml'
       }
     ], // collectionShippersOptions
