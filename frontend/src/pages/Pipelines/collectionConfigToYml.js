@@ -276,7 +276,7 @@ function collectionConfigToYml (collectionConfig) {
 
     // ***********
     // and push it out as Yaml
-    return dump([{ type: collectionMethod, ...jsonConfigClean }])
+    return dump([{ type: collectionMethod, ...jsonConfigClean }]) // XXXX 👈 This is NOT valid with genericbeat (and most likely all the LR Beats). MUST change this
   } catch (error) {
     return error
   }

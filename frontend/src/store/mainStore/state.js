@@ -3667,37 +3667,32 @@ If the API server has a request limit, set the period value accordingly to avoid
           // EZ Internal
 
           {
-            name: 'enabled',
-            label: 'Enabled',
+            name: 'beatIdentifier',
+            label: 'Beat Identifier',
             type: {
-              name: 'boolean'
+              name: 'string'
             },
-            default: true,
-            description: 'Is this Collection Method enabled?',
+            default: '',
+            description: `This is the identifier used by Generic Beat to name its separate instances.
+> NOTE
+> - It is limited to 12 characters in length.
+> - It's concatenated with \`genericbeat_\` to produce the Fully Qualified Beat Name (\`fullyqualifiedbeatname\` aka \`fqbn\`) in the form of \`genericbeat_xxxxxxxxxxxx\`
+`,
             required: true,
             readonly: true,
             group: 'EZ Internal'
           },
           {
-            name: 'fields',
-            label: 'Identification Fields',
+            name: 'logsource_name',
+            label: 'LogSource Name',
             type: {
-              name: 'object',
-              of: {
-                type: {
-                  name: 'string'
-                },
-                default: '',
-                description: '',
-                required: true
-              }
+              name: 'string'
             },
-            description: `In addition to \`stream_id\` and \`stream_name\` fields that are automatically added, and cannot be removed or changed, you can add optional fields that you can specify to add additional information to the output.
-For example, you might add fields that you can use for filtering log data.
-Fields can be scalar values, arrays, dictionaries, or any nested combination of these.
-By default, the fields that you specify here will be grouped under a fields sub-dictionary in the output document.
-To store the custom fields as top-level fields, set the \`fields_under_root option\` to true. If a duplicate field is declared in the general configuration, then its value will be overwritten by the value declared here.`,
+            default: '',
+            description: `This is the identifier transformed internally to \`device_type\`, and is usually provided by Generic Beat to the SIEM.
+It's used for the Log Source Virtualisation.`,
             required: true,
+            readonly: true,
             group: 'EZ Internal'
           }
         ] // definition
