@@ -2350,7 +2350,7 @@ To store the custom fields as top-level fields, set the \`fields_under_root opti
       //     ##     ## ########  ######     ##       ##     ## ##        ####                #######   ######
 
       {
-        shipper: 'lrHttpRest',
+        shipper: 'genericbeat',
         collectionMethod: 'genericbeat',
         definition: [
           // Required
@@ -3720,7 +3720,7 @@ To store the custom fields as top-level fields, set the \`fields_under_root opti
         outputFormat: 'json'
       },
       {
-        value: 'lrHttpRest',
+        value: 'genericbeat',
         label: 'LogRhythm Generic HTTP Rest Beat',
         icon: 'logrhythm-rest',
         outputFormat: 'yaml'
@@ -3826,7 +3826,7 @@ To store the custom fields as top-level fields, set the \`fields_under_root opti
         icon: 'input'
       },
       {
-        shipper: 'lrHttpRest',
+        shipper: 'genericbeat',
         value: 'genericbeat',
         label: 'HTTP / REST API',
         icon: 'language'
