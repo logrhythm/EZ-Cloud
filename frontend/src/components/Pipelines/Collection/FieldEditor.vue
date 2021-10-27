@@ -1,183 +1,185 @@
 <template>
-  <div class="row q-gutter-x-sm">
-    <!-- Object leaf name, if part of an Object -->
-    <q-input
-      v-if="isPartOfObject"
-      style="width: 20rem;"
-      standout
-      v-model="leafName"
-      :readonly="true"
-      class="col-auto"
-    />
-    <q-separator vertical color="orange" size="3px" v-if="template.required && !isPartOfArray && !isPartOfObject" />
-    <div class="col">
-      <div class="row q-gutter-x-md">
-        <!-- Prefix, if any -->
-        <q-select
-          v-if="template.prefix"
-          standout="bg-blue-4 text-white"
-          v-model="internalPrefix"
-          emit-value
-          map-options
-          :options="(template.prefix.options ? template.prefix.options : [])"
-          :readonly="(template.readonly ? template.readonly : false)"
-          style="min-width: 10rem;"
-        />
-        <!-- Text input -->
-        <q-input
-          v-if="template.type && template.type.name && (template.type.name === 'string' || template.type.name === 'regex' || template.type.name === 'number' || template.type.name === 'password')"
-          class="col"
-          :class="(template.type && template.type.textType && template.type.textType === 'json' ? 'fixed-font' : '')"
-          standout="bg-blue-4 text-white"
-          v-model="internalValue"
-          :readonly="(template.readonly ? template.readonly : false || (isPartOfObject && leafInObject && (leafInObject === 'stream_id' || leafInObject === 'stream_name')))"
-          :type="template.type && template.type.name && template.type.name === 'password' && !showPassword ? 'password' : 'text'"
-          :autogrow="template.type && template.type.multilines && template.type.multilines === true"
-          @blur="inFocus = false"
-          @focus="inFocus = true"
-        >
-          <template
-            v-slot:append
-          >
-            <q-spinner
-              v-if="waitingForBackend"
-            />
-            <q-icon
-              v-if="template.obfuscation && template.obfuscation.method && template.obfuscation.method.length && updateErrorMessage && updateErrorMessage.length"
-              name="error"
-              :color="inFocus ? 'red-10' : 'alert'"
-            >
-              <q-tooltip content-style="font-size: 1rem;">
-                Failed to obfuscate the Secret. Error message:<br>
-                <span class="text-italic">{{ updateErrorMessage }}</span>
-              </q-tooltip>
-            </q-icon>
-            <q-icon
-              v-if="template.obfuscation && template.obfuscation.method && template.obfuscation.method.length && obfuscationRequirementNotMet"
-              name="warning"
-              :color="inFocus ? 'orange-10' : 'warning'"
-            >
-              <q-tooltip content-style="font-size: 1rem;">
-                This Secret must be obfuscated/encrypted to produce a valid configuration
-              </q-tooltip>
-            </q-icon>
-            <q-icon
-              v-if="template.obfuscation && template.obfuscation.method && template.obfuscation.method.length"
-              :name="obfuscationRequirementNotMet ? 'lock_open' : 'lock'"
-              :color="obfuscationRequirementNotMet ? (inFocus ? 'orange-10' : 'warning') : (inFocus ? 'green-10' : 'positive')"
-              :class="obfuscationRequirementNotMet ? 'cursor-pointer' : ''"
-              @click="obfuscateSecret"
-            >
-              <q-tooltip content-style="font-size: 1rem;">
-                <span v-if="obfuscationRequirementNotMet">Obfuscate/encrypt this Secret</span>
-                <span v-else>Your Secret is properly obfuscated</span>
-              </q-tooltip>
-            </q-icon>
-            <q-separator
-              v-if="template.type && template.type.name && template.type.name === 'password'"
-              spaced
-              inset
-              vertical
-              dark
-            />
-            <q-icon
-              v-if="template.type && template.type.name && template.type.name === 'password'"
-              :name="showPassword ? 'visibility' : 'visibility_off'"
-              class="cursor-pointer"
-              @click="showPassword = !showPassword"
-            >
-              <q-tooltip content-style="font-size: 1rem;">
-                <span v-if="showPassword">Hide</span><span v-else>Show</span> Secret
-              </q-tooltip>
-            </q-icon>
-          </template>
-        </q-input>
-        <div v-if="template.type && template.type.name && template.type.name === 'array'" class="q-gutter-y-sm col">
-          <FieldEditor
-            v-for="(subField, subFieldIndex) in (internalValue && Array.isArray(internalValue) ? internalValue : [])"
-            :key="subFieldIndex"
-            :template="(template && template.type && template.type.of ? template.type.of : {})"
-            :isPartOfArray="true"
-            :indexInArray="subFieldIndex"
-            v-model="internalValue[subFieldIndex]"
-            @deleteSubField="deleteSubFieldEvent"
-          />
-          <q-btn no-caps flat dense icon="add" label="Add Item" color="primary" @click="addValueToArray()" />
-        </div>
-        <div v-if="template.type && template.type.name && template.type.name === 'object'" class="q-gutter-y-sm col">
-          <FieldEditor
-            v-for="(subField, subFieldLeafName) in (internalValue && typeof internalValue === 'object' ? internalValue : {})"
-            :key="subFieldLeafName"
-            :template="(template && template.type && template.type.of ? template.type.of : {})"
-            :isPartOfObject="true"
-            :leafInObject="subFieldLeafName"
-            v-model="internalValue[subFieldLeafName]"
-            @deleteSubField="deleteSubFieldEvent"
-          />
-          <q-btn no-caps flat dense icon="add" label="Add Item" color="primary" @click="addValueToObject()" />
-        </div>
-        <q-select
-          v-if="template.type && template.type.name && (template.type.name === 'boolean' || template.type.name === 'option')"
-          standout="bg-blue-4 text-white"
-          v-model="internalValue"
-          class="col"
-          emit-value
-          map-options
-          :options="(template.options ? template.options : (template.type.name === 'boolean' ? [{ value: true, label: 'True' }, { value: false, label: 'False' }] : []))"
-          :readonly="(template.readonly ? template.readonly : false)"
-        />
-        <!-- Suffix, if any -->
-        <q-select
-          v-if="template.suffix"
-          standout="bg-blue-4 text-white"
-          v-model="internalSuffix"
-          emit-value
-          map-options
-          :options="(template.suffix.options ? template.suffix.options : [])"
-          :readonly="(template.readonly ? template.readonly : false)"
-          style="min-width: 10rem;"
-        />
-      </div>
-      <!-- Slider, for numbers with Min or Max -->
-      <q-slider
-        v-if="(template.min || template.max) && !(template.readonly ? template.readonly : false)"
-        v-model="internalValue"
-        :min="template.min || 0"
-        :max="template.max || 100"
-        label
-        :label-value="(internalPrefixLong && internalPrefixLong.length ? internalPrefixLong + ' ' : '') + formatNumber(internalValue) + (internalSuffixLong && internalSuffixLong.length ? ' ' + internalSuffixLong : '')"
+  <form>
+    <div class="row q-gutter-x-sm">
+      <!-- Object leaf name, if part of an Object -->
+      <q-input
+        v-if="isPartOfObject"
+        style="width: 20rem;"
+        standout
+        v-model="leafName"
+        :readonly="true"
+        class="col-auto"
       />
-      <!-- Description, if any -->
-      <div v-if="template.description && template.description.length" class="q-mt-xs row" style="opacity: .7">
-        <q-icon name="info" size="xs" color="blue" class="col-auto q-mr-sm" />
-        <!-- {{ template.description }} -->
-        <q-markdown
-          class="col"
-          :src="template.description"
-          no-heading-anchor-links
+      <q-separator vertical color="orange" size="3px" v-if="template.required && !isPartOfArray && !isPartOfObject" />
+      <div class="col">
+        <div class="row q-gutter-x-md">
+          <!-- Prefix, if any -->
+          <q-select
+            v-if="template.prefix"
+            standout="bg-blue-4 text-white"
+            v-model="internalPrefix"
+            emit-value
+            map-options
+            :options="(template.prefix.options ? template.prefix.options : [])"
+            :readonly="(template.readonly ? template.readonly : false)"
+            style="min-width: 10rem;"
+          />
+          <!-- Text input -->
+          <q-input
+            v-if="template.type && template.type.name && (template.type.name === 'string' || template.type.name === 'regex' || template.type.name === 'number' || template.type.name === 'password')"
+            class="col"
+            :class="(template.type && template.type.textType && template.type.textType === 'json' ? 'fixed-font' : '')"
+            standout="bg-blue-4 text-white"
+            v-model="internalValue"
+            :readonly="(template.readonly ? template.readonly : false || (isPartOfObject && leafInObject && (leafInObject === 'stream_id' || leafInObject === 'stream_name')))"
+            :type="template.type && template.type.name && template.type.name === 'password' && !showPassword ? 'password' : 'text'"
+            :autogrow="template.type && template.type.multilines && template.type.multilines === true"
+            @blur="inFocus = false"
+            @focus="inFocus = true"
+          >
+            <template
+              v-slot:append
+            >
+              <q-spinner
+                v-if="waitingForBackend"
+              />
+              <q-icon
+                v-if="template.obfuscation && template.obfuscation.method && template.obfuscation.method.length && updateErrorMessage && updateErrorMessage.length"
+                name="error"
+                :color="inFocus ? 'red-10' : 'alert'"
+              >
+                <q-tooltip content-style="font-size: 1rem;">
+                  Failed to obfuscate the Secret. Error message:<br>
+                  <span class="text-italic">{{ updateErrorMessage }}</span>
+                </q-tooltip>
+              </q-icon>
+              <q-icon
+                v-if="template.obfuscation && template.obfuscation.method && template.obfuscation.method.length && obfuscationRequirementNotMet"
+                name="warning"
+                :color="inFocus ? 'orange-10' : 'warning'"
+              >
+                <q-tooltip content-style="font-size: 1rem;">
+                  This Secret must be obfuscated/encrypted to produce a valid configuration
+                </q-tooltip>
+              </q-icon>
+              <q-icon
+                v-if="template.obfuscation && template.obfuscation.method && template.obfuscation.method.length"
+                :name="obfuscationRequirementNotMet ? 'lock_open' : 'lock'"
+                :color="obfuscationRequirementNotMet ? (inFocus ? 'orange-10' : 'warning') : (inFocus ? 'green-10' : 'positive')"
+                :class="obfuscationRequirementNotMet ? 'cursor-pointer' : ''"
+                @click="obfuscateSecret"
+              >
+                <q-tooltip content-style="font-size: 1rem;">
+                  <span v-if="obfuscationRequirementNotMet">Obfuscate/encrypt this Secret</span>
+                  <span v-else>Your Secret is properly obfuscated</span>
+                </q-tooltip>
+              </q-icon>
+              <q-separator
+                v-if="template.type && template.type.name && template.type.name === 'password'"
+                spaced
+                inset
+                vertical
+                dark
+              />
+              <q-icon
+                v-if="template.type && template.type.name && template.type.name === 'password'"
+                :name="showPassword ? 'visibility' : 'visibility_off'"
+                class="cursor-pointer"
+                @click="showPassword = !showPassword"
+              >
+                <q-tooltip content-style="font-size: 1rem;">
+                  <span v-if="showPassword">Hide</span><span v-else>Show</span> Secret
+                </q-tooltip>
+              </q-icon>
+            </template>
+          </q-input>
+          <div v-if="template.type && template.type.name && template.type.name === 'array'" class="q-gutter-y-sm col">
+            <FieldEditor
+              v-for="(subField, subFieldIndex) in (internalValue && Array.isArray(internalValue) ? internalValue : [])"
+              :key="subFieldIndex"
+              :template="(template && template.type && template.type.of ? template.type.of : {})"
+              :isPartOfArray="true"
+              :indexInArray="subFieldIndex"
+              v-model="internalValue[subFieldIndex]"
+              @deleteSubField="deleteSubFieldEvent"
+            />
+            <q-btn no-caps flat dense icon="add" label="Add Item" color="primary" @click="addValueToArray()" />
+          </div>
+          <div v-if="template.type && template.type.name && template.type.name === 'object'" class="q-gutter-y-sm col">
+            <FieldEditor
+              v-for="(subField, subFieldLeafName) in (internalValue && typeof internalValue === 'object' ? internalValue : {})"
+              :key="subFieldLeafName"
+              :template="(template && template.type && template.type.of ? template.type.of : {})"
+              :isPartOfObject="true"
+              :leafInObject="subFieldLeafName"
+              v-model="internalValue[subFieldLeafName]"
+              @deleteSubField="deleteSubFieldEvent"
+            />
+            <q-btn no-caps flat dense icon="add" label="Add Item" color="primary" @click="addValueToObject()" />
+          </div>
+          <q-select
+            v-if="template.type && template.type.name && (template.type.name === 'boolean' || template.type.name === 'option')"
+            standout="bg-blue-4 text-white"
+            v-model="internalValue"
+            class="col"
+            emit-value
+            map-options
+            :options="(template.options ? template.options : (template.type.name === 'boolean' ? [{ value: true, label: 'True' }, { value: false, label: 'False' }] : []))"
+            :readonly="(template.readonly ? template.readonly : false)"
+          />
+          <!-- Suffix, if any -->
+          <q-select
+            v-if="template.suffix"
+            standout="bg-blue-4 text-white"
+            v-model="internalSuffix"
+            emit-value
+            map-options
+            :options="(template.suffix.options ? template.suffix.options : [])"
+            :readonly="(template.readonly ? template.readonly : false)"
+            style="min-width: 10rem;"
+          />
+        </div>
+        <!-- Slider, for numbers with Min or Max -->
+        <q-slider
+          v-if="(template.min || template.max) && !(template.readonly ? template.readonly : false)"
+          v-model="internalValue"
+          :min="template.min || 0"
+          :max="template.max || 100"
+          label
+          :label-value="(internalPrefixLong && internalPrefixLong.length ? internalPrefixLong + ' ' : '') + formatNumber(internalValue) + (internalSuffixLong && internalSuffixLong.length ? ' ' + internalSuffixLong : '')"
         />
-          <!-- class="full-width q-pa-sm bg-white" -->
-          <!-- style="height: 600px;" -->
+        <!-- Description, if any -->
+        <div v-if="template.description && template.description.length" class="q-mt-xs row" style="opacity: .7">
+          <q-icon name="info" size="xs" color="blue" class="col-auto q-mr-sm" />
+          <!-- {{ template.description }} -->
+          <q-markdown
+            class="col"
+            :src="template.description"
+            no-heading-anchor-links
+          />
+            <!-- class="full-width q-pa-sm bg-white" -->
+            <!-- style="height: 600px;" -->
+        </div>
+      </div>
+
+      <q-separator vertical v-if="isPartOfArray || isPartOfObject" />
+
+      <!-- Delete button, if part of an Array or Object-->
+      <div v-if="isPartOfArray || isPartOfObject" class="q-mx-sm items-center justify-center column">
+        <q-btn
+          icon="delete"
+          class="full-height"
+          text-color="negative"
+          :disabled="false || (isPartOfObject && leafInObject && (leafInObject === 'stream_id' || leafInObject === 'stream_name'))"
+          @click="deleteSubFieldPrompt()"
+        >
+          <q-tooltip content-style="font-size: 1rem;">
+            Delete entry
+          </q-tooltip>
+        </q-btn>
       </div>
     </div>
-
-    <q-separator vertical v-if="isPartOfArray || isPartOfObject" />
-
-    <!-- Delete button, if part of an Array or Object-->
-    <div v-if="isPartOfArray || isPartOfObject" class="q-mx-sm items-center justify-center column">
-      <q-btn
-        icon="delete"
-        class="full-height"
-        text-color="negative"
-        :disabled="false || (isPartOfObject && leafInObject && (leafInObject === 'stream_id' || leafInObject === 'stream_name'))"
-        @click="deleteSubFieldPrompt()"
-      >
-        <q-tooltip content-style="font-size: 1rem;">
-          Delete entry
-        </q-tooltip>
-      </q-btn>
-    </div>
-  </div>
+  </form>
 </template>
 
 <script>
