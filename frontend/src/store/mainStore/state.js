@@ -3067,8 +3067,8 @@ $ curl https://api.box.com/2.0/folders/0/items?offset=0&limit=100 \\
             },
             options: [
               { value: 'afterstart', label: 'Date Range - After any specific date' },
-              { value: 'b🔴🔴🔴🔴🔴🔴', label: 'Date Range - Between start and end date' },
-              { value: 'c🔴🔴🔴🔴🔴🔴', label: 'Date Range - Within an interval' },
+              { value: 'startend', label: 'Date Range - Between start and end date' },
+              { value: 'interval', label: 'Date Range - Within an interval' },
               { value: 'nofilter', label: 'No Filter' }
             ],
             default: 'nofilter',
@@ -3111,7 +3111,7 @@ Select the appropriate time format from the drop-down menu.`,
           },
           {
             name: 'filter.delay_time',
-            label: 'Delay time',
+            label: 'Delay Time',
             type: {
               name: 'number'
             },
@@ -3136,7 +3136,7 @@ For example, if the API supports a five seconds delay, enter \`5 Seconds\`.
 
           {
             name: 'filter.after_start_filter.start_field',
-            label: 'Start field',
+            label: 'Start Field',
             type: {
               name: 'string'
             },
@@ -3224,6 +3224,154 @@ In the sample below, the next start date is \`data.date\` (branch \`data\` as pe
 `,
             required: true,
             group: 'Date Range Filter - After any specific start date'
+          },
+
+          // Date Range Filter - Between start and end date
+
+          {
+            name: 'filter.start_and_end_filter.start_field',
+            label: 'Start Field',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `The field name used to send the start time in the request.
+::: tip Example
+In the URL sample below, the start field is \`start_time\`:
+\`\`\` text
+https://api.amp.cisco.com/v1/audit?start_time=2021-09-15T09:28:58Z&limit=250&offset=0&end_time=2021-09-28T08:29:28Z
+\`\`\`
+:::
+`,
+            required: true,
+            group: 'Date Range Filter - Between start and end date'
+          },
+          {
+            name: 'filter.start_and_end_filter.start_value',
+            label: 'Start Value',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `The start date value from which logs should be fetched from the server. 
+::: danger
+When giving the start date as back days, ensure the API supports that number of back days to fetch logs.
+For example, if the start value is 7 days before the current date, then the API must support 7 day backlogs; otherwise, the beat will return an error.
+:::
+
+::: tip Example
+In the URL sample below, the start value is \`2021-09-15T09:28:58Z\`:
+\`\`\` text
+https://api.amp.cisco.com/v1/audit?start_time=2021-09-15T09:28:58Z&limit=250&offset=0&end_time=2021-09-28T08:29:28Z
+:::
+`,
+            required: true,
+            group: 'Date Range Filter - Between start and end date'
+          },
+          {
+            name: 'filter.start_and_end_filter.end_field',
+            label: 'End Field',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `The field name to be used to send the end date in the request.
+::: tip Example
+In the URL sample below, the end field is \`end_time\`:
+\`\`\` text
+https://api.amp.cisco.com/v1/audit?start_time=2021-09-15T09:28:58Z&limit=250&offset=0&end_time=2021-09-28T08:29:28Z
+\`\`\`
+:::
+`,
+            required: true,
+            group: 'Date Range Filter - Between start and end date'
+          },
+          {
+            name: 'filter.start_and_end_filter.end_value',
+            label: 'End Value',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `The end date value until which logs should be fetched from the server.
+::: danger
+The end date value must be set according to the maximum interval that the API supports.
+For example, if the API supports a maximum of one hour logs in a single API request and the start value is 2021-10-02T08:00:00Z, then the end value must be 2021-10-02T09:00:00Z, for a difference of one hour.
+:::
+
+::: tip Example
+In the URL sample below, the end value is \`2021-09-28T08:29:28Z\`:
+\`\`\` text
+https://api.amp.cisco.com/v1/audit?start_time=2021-09-15T09:28:58Z&limit=250&offset=0&end_time=2021-09-28T08:29:28Z
+\`\`\`
+:::
+`,
+            required: true,
+            group: 'Date Range Filter - Between start and end date'
+          },
+
+          // Date Range Filter - Within an interval
+
+          {
+            name: 'filter.interval_filter.interval_field',
+            label: 'Interval field',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `The field name in which the date and time are sent.
+::: tip Example
+In the URL sample below, the interval field is \`interval\`:
+\`\`\` text
+https://tap-api-v2.proofpoint.com/v2/siem/messages/blocked?interval=2021-10-08T00:00:00.000Z/2021-10-08T01:00:00.000Z
+\`\`\`
+:::
+`,
+            required: true,
+            group: 'Date Range Filter - Within an interval'
+          },
+          {
+            name: 'filter.interval_filter.interval_value',
+            label: 'Interval Value',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `Interval values contain the start time and end time values separated by delimiter, as supported by the API.
+::: danger
+When giving the start date as back days, ensure the API supports that number of back days to fetch logs.
+For example, if the start value is 7 days before the current date, then the API must support 7 day backlogs; otherwise, the beat will return an error.
+
+The end date value must be set according to the maximum interval that the API supports.
+For example, if the API supports a maximum of one hour logs in a single API request and the start value is 2021-10-02T08:00:00Z, then the end value must be 2021-10-02T09:00:00Z, for a difference of one hour.
+:::
+
+::: tip Example
+In the URL sample below, the interval value is \`2021-10-08T00:00:00.000Z/2021-10-08T01:00:00.000Z\`:
+\`\`\` text
+https://tap-api-v2.proofpoint.com/v2/siem/messages/blocked?interval=2021-10-08T00:00:00.000Z/2021-10-08T01:00:00.000Z
+:::
+`,
+            required: true,
+            group: 'Date Range Filter - Within an interval'
+          },
+          {
+            name: 'filter.interval_filter.split_char',
+            label: 'Split Character',
+            type: {
+              name: 'string'
+            },
+            default: '',
+            description: `The delimiter between the start and end time in the interval value.
+::: tip Example
+In the URL sample below, the split character is \`/\`:
+\`\`\` text
+https://tap-api-v2.proofpoint.com/v2/siem/messages/blocked?interval=2021-10-08T00:00:00.000Z/2021-10-08T01:00:00.000Z
+\`\`\`
+:::
+`,
+            required: true,
+            group: 'Date Range Filter - Within an interval'
           },
 
           // Sorting
