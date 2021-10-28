@@ -2745,7 +2745,7 @@ authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3OD
           // Pagination
 
           {
-            name: 'sorting_enabled',
+            name: 'pagination_type',
             label: 'Pagination Style',
             type: {
               name: 'option'
@@ -3457,9 +3457,8 @@ https://tap-api-v2.proofpoint.com/v2/siem/messages/blocked?interval=2021-10-08T0
             name: 'sorting_enabled',
             label: 'Enabled',
             type: {
-              name: 'option'
+              name: 'boolean'
             },
-            options: [{ value: 'true', label: 'Yes' }, { value: 'false', label: 'No' }],
             default: false,
             description: `Does this API support sorting?
 Sorting is an important feature for any API endpoint that returns a lot of data. When returning a list of users, your API users may want to sort by last modified date or by email.
