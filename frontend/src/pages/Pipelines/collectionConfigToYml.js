@@ -275,8 +275,22 @@ function collectionConfigToYml (collectionConfig) {
     }))
 
     // ***********
+    // Decide if we are facing a Filebeat style config file
+    const sendCollectionMethodAsType = (
+      collectionMethod === 'log' ||
+      collectionMethod === 'syslog' ||
+      collectionMethod === 'httpjson'
+    )
+
+    // ***********
     // and push it out as Yaml
-    return dump([{ type: collectionMethod, ...jsonConfigClean }]) // XXXX 👈 This is NOT valid with genericbeat (and most likely all the LR Beats). MUST change this
+    return dump(
+      (
+        sendCollectionMethodAsType
+          ? [{ type: collectionMethod, ...jsonConfigClean }]
+          : { [collectionMethod]: jsonConfigClean }
+      )
+    )
   } catch (error) {
     return error
   }
