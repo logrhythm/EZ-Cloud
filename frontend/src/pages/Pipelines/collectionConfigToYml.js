@@ -287,8 +287,8 @@ function collectionConfigToYml (collectionConfig) {
     return dump(
       (
         sendCollectionMethodAsType
-          ? [{ type: collectionMethod, ...jsonConfigClean }]
-          : { [collectionMethod]: jsonConfigClean }
+          ? [{ type: collectionMethod, ...jsonConfigClean }] // Filebeat style config file
+          : { [collectionMethod]: jsonConfigClean } // LogRhythm style config file
       )
     )
   } catch (error) {
