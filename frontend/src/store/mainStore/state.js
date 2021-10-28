@@ -3716,7 +3716,7 @@ It's used for the Log Source Virtualisation.`,
       {
         value: 'genericbeat',
         label: 'LogRhythm Generic HTTP Rest Beat',
-        icon: 'logrhythm-rest',
+        icon: 'logrhythm-genericbeat',
         outputFormat: 'yaml'
       },
       {
@@ -3755,6 +3755,12 @@ It's used for the Log Source Virtualisation.`,
         value: 'gmtbeat',
         label: 'gmtbeat',
         icon: 'logrhythm-gmtbeat'
+        // icon: 'logrhythm'
+      },
+      {
+        value: 'genericbeat',
+        label: 'genericbeat',
+        icon: 'logrhythm-genericbeat'
         // icon: 'logrhythm'
       },
       {
