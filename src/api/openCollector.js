@@ -952,6 +952,7 @@ const streamUpdateForBeatStatusTemplate = {
 const streamUpdateForBeatStatusArray = {};
 
 function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollector, beat, stream) {
+  /* eslint-disable no-param-reassign */
   // Check we are ship-shape with the params
   const missingOpenCollector = !(openCollector && openCollector.uid && openCollector.uid.length);
   const missingBeat = !(beat && beat.name && beat.name.length && beat.config && Array.isArray(beat.config));
@@ -969,7 +970,7 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
       streamUpdateForBeatStatus.outputs = [];
       streamUpdateForBeatStatus.payload = {};
 
-      // ####################################################################################################
+      // ##########################################################################################
 
       try {
         // Initialise the empty list of Steps
@@ -988,8 +989,22 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
           throw new Error('configFileNameBase too short (Stream Name and UID must be non-empty)');
         }
 
+        // Identifier for the second part of the LogRhythm Beat's FQBN (Fully Qualified Beat Name)
+        const logRhythmBeatIdentifier = String(`${stream.uid.substring(0, 3)}_${stream.name.replace(/[^a-zA-Z0-9]/g, '_')}_${stream.uid}`).substring(0, 12);
+        // Fully Qualified Beat Name
+        const logRhythmFullyQualifiedBeatName = String(
+          `${
+            beat.name.toLowerCase().trim()
+          }_${
+            logRhythmBeatIdentifier
+          }`
+        );
+
         // Let's use file numbering only if there are more than one configuration file provided
         const multipleFiles = beat.config.length > 1;
+
+        // Load the base config file for LogRhythm shippers
+        const logrhythmShipperBaseConfig = fs.readFileSync(path.join(process.env.baseDirname, 'resources', 'LogRhythm_shippers-base_config.yaml'));
 
         // ##########
         // Filebeat
@@ -1128,10 +1143,44 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
         }
 
         // ##########
-        // lrHttpRest
+        // genericbeat
         // ##########
-        if (beat.name.toLowerCase() === 'lrhttprest') {
-          //
+        if (beat.name.toLowerCase() === 'genericbeat') {
+          // logrhythmShipperBaseConfig
+          // Build the list of steps
+
+          // Import the Configuration (should only be one, but deal with all of them)
+          beat.config.forEach((config) => {
+            steps.push(
+              {
+                action: `Import Stream configuration for FQBN (${logRhythmFullyQualifiedBeatName})`,
+                command: `cat | ./lrctl genericbeat config import --fqbn ${logRhythmFullyQualifiedBeatName}`,
+                stdin: (typeof config === 'string' ? `${config}\n${logrhythmShipperBaseConfig}` : `${JSON.stringify(config)}\n${logrhythmShipperBaseConfig}`)
+              }
+            );
+          });
+
+          // Wrap up
+          steps.push(
+            // We do a Stop - Start as a Restart would not do anything on a Beat not already running
+            {
+              action: 'Stop GenericBeat',
+              command: `./lrctl genericbeat stop --fqbn ${logRhythmFullyQualifiedBeatName}`
+            },
+            {
+              action: 'Start GenericBeat to take new configuration into account',
+              command: `./lrctl genericbeat start --fqbn ${logRhythmFullyQualifiedBeatName}`
+            },
+            {
+              action: 'Check Status for all GenericBeat instances',
+              command: './lrctl genericbeat status'
+            },
+            {
+              action: 'Get GenericBeat logs for this instance (last 10 lines only)',
+              command: `./lrctl genericbeat logs --fqbn ${logRhythmFullyQualifiedBeatName} | tail --lines=10`
+            }
+          );
+          streamUpdateForBeatStatus.payload.steps = steps;
         }
 
         // Add the Steps to the Exec stack
@@ -1221,13 +1270,34 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
     }
     streamUpdateForBeatStatus.stillUpdating = false;
   }
+  /* eslint-enable no-param-reassign */
 }
 
 router.post('/UpdateStreamConfigurationForBeat', async (req, res) => {
   // Check we are ship-shape with the params
-  const missingOpenCollector = !(req && req.body && req.body.openCollector && req.body.openCollector.uid && req.body.openCollector.uid.length);
-  const missingBeat = !(req && req.body && req.body.beat && req.body.beat.name && req.body.beat.name.length && req.body.beat.config && Array.isArray(req.body.beat.config));
-  const missingStream = !(req && req.body && req.body.stream && req.body.stream.uid && req.body.stream.uid.length);
+  const missingOpenCollector = !(
+    req
+    && req.body
+    && req.body.openCollector
+    && req.body.openCollector.uid
+    && req.body.openCollector.uid.length
+  );
+  const missingBeat = !(
+    req
+    && req.body
+    && req.body.beat
+    && req.body.beat.name
+    && req.body.beat.name.length
+    && req.body.beat.config
+    && Array.isArray(req.body.beat.config)
+  );
+  const missingStream = !(
+    req
+    && req.body
+    && req.body.stream
+    && req.body.stream.uid
+    && req.body.stream.uid.length
+  );
   if (
     !missingOpenCollector
     && !missingBeat
@@ -1494,6 +1564,7 @@ function deleteStreamConfigurationForBeat(streamConfigDeleteForBeatStatus, openC
     }
     streamConfigDeleteForBeatStatus.stillUpdating = false;
   }
+  /* eslint-enable no-param-reassign */
 }
 
 router.post('/DeleteStreamConfigurationForBeat', async (req, res) => {
@@ -1569,6 +1640,7 @@ const pipelineImportForBeatStatusTemplate = {
 const pipelineImportForBeatStatusArray = {};
 
 function importPipelineForBeat(pipelineImportForBeatStatus, openCollector, beat, stream) {
+  /* eslint-disable no-param-reassign */
   // Check we are ship-shape with the params
   const missingOpenCollector = !(openCollector && openCollector.uid && openCollector.uid.length);
   const missingBeat = !(beat && beat.name && beat.name.length);
@@ -1774,6 +1846,7 @@ function importPipelineForBeat(pipelineImportForBeatStatus, openCollector, beat,
     }
     pipelineImportForBeatStatus.stillUpdating = false;
   }
+  /* eslint-enable no-param-reassign */
 }
 
 router.post('/ImportPipelineForBeat', async (req, res) => {
