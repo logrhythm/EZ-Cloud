@@ -468,13 +468,6 @@ export default {
             newConf.period = '60s'
             newConf.sorting_enabled = false
             newConf.time_format = '2006-01-02T15:04:05Z07:00'
-            // newConf.logging = {
-            //   level: 'info',
-            //   metrics: {
-            //     enabled: false
-            //   },
-            //   to_stderr: true
-            // }
           }
 
           // We are limited to 12 characters to ID the Beat
