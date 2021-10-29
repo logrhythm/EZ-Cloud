@@ -54,6 +54,7 @@ Source: "{#DistSubDirectory}\config\secure.json"; DestDir: "{app}\config"; Compo
 Source: "{#DistSubDirectory}\config\https.*"; DestDir: "{app}\config"; Components: ezCloudServer
 Source: "{#DistSubDirectory}\config.sample\*"; DestDir: "{app}\config.sample"; Components: ezCloudServer
 Source: "{#DistSubDirectory}\database\*"; DestDir: "{app}\database"; Components: ezCloudServer
+Source: "{#DistSubDirectory}\resources\*"; DestDir: "{app}\resources"; Components: ezCloudServer
 Source: "{#DistSubDirectory}\.env"; DestDir: "{app}"; Components: ezCloudServer
 Source: "{#DistSubDirectory}\.env.sample"; DestDir: "{app}"; Components: ezCloudServer
 Source: "{#DistSubDirectory}\public_web_root\*"; DestDir: "{app}\public_web_root"; Components: ezCloudFrontend; Flags: recursesubdirs

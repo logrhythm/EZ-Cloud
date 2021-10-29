@@ -33,6 +33,7 @@ module.exports = {
         { from: '.env.dist', to: path.join('..', '.env'), toType: 'file' },
         { from: 'database', to: path.join('..', 'database'), toType: 'dir' },
         { from: 'LICENSE', to: path.join('..', 'License.txt'), toType: 'file' },
+        { from: 'resources', to: path.join('..', 'resources'), toType: 'dir' },
         // Service and wrapper support files:
         { from: 'node_modules/node-windows/bin/winsw/winsw.exe', to: 'ezcloudserver.exe', toType: 'file' },
         { from: 'node_modules/node-windows/bin/winsw/winsw.exe.config', to: 'ezcloudserver.exe.config', toType: 'file' },
