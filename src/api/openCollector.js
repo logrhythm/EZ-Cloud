@@ -1365,7 +1365,13 @@ const streamConfigDeleteForBeatStatusTemplate = {
 
 const streamConfigDeleteForBeatStatusArray = {};
 
-function deleteStreamConfigurationForBeat(streamConfigDeleteForBeatStatus, openCollector, beat, stream) {
+function deleteStreamConfigurationForBeat(
+  streamConfigDeleteForBeatStatus,
+  openCollector,
+  beat,
+  stream
+) {
+  /* eslint-disable no-param-reassign */
   // Check we are ship-shape with the params
   const missingOpenCollector = !(openCollector && openCollector.uid && openCollector.uid.length);
   const missingBeat = !(beat && beat.name && beat.name.length);
@@ -1394,6 +1400,15 @@ function deleteStreamConfigurationForBeat(streamConfigDeleteForBeatStatus, openC
         // - "__"
         // - Stream UID
         const configFileNameBase = String(`${stream.name}__${stream.uid}`).replace(/[^a-zA-Z0-9_-]/g, '_');
+
+        // Identifier for the second part of the LogRhythm Beat's FQBN (Fully Qualified Beat Name)
+        const logRhythmBeatIdentifier = String(`${stream.uid.substring(0, 3)}_${stream.name.replace(/[^a-zA-Z0-9]/g, '_')}_${stream.uid}`).substring(0, 12);
+        // Fully Qualified Beat Name
+        const logRhythmFullyQualifiedBeatName = String(
+          `${beat.name.toLowerCase().trim()
+          }_${logRhythmBeatIdentifier
+          }`
+        );
 
         // To avoid any risk of deleting unrelated files, we bail if the configFileNameBase is empty
         if (configFileNameBase.length === 0) {
@@ -1471,10 +1486,25 @@ function deleteStreamConfigurationForBeat(streamConfigDeleteForBeatStatus, openC
         }
 
         // ##########
-        // lrHttpRest
+        // genericbeat
         // ##########
-        if (beat.name.toLowerCase() === 'lrhttprest') {
-          //
+        if (beat.name.toLowerCase() === 'genericbeat') {
+          steps.push(
+            {
+              action: `Stop GenericBeat instance (${logRhythmFullyQualifiedBeatName})`,
+              command: `./lrctl genericbeat stop --fqbn ${logRhythmFullyQualifiedBeatName}`,
+              continueOnFailure: true
+            },
+            {
+              action: `Remove configuration for this GenericBeat instance (${logRhythmFullyQualifiedBeatName})`,
+              command: `./lrctl genericbeat config remove --yes --fqbn ${logRhythmFullyQualifiedBeatName}`
+            },
+            {
+              action: 'Check Status for all GenericBeat instances',
+              command: './lrctl genericbeat status'
+            }
+          );
+          streamConfigDeleteForBeatStatus.payload.steps = steps;
         }
 
         // Add the Steps to the Exec stack
