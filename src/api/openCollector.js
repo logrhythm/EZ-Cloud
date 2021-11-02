@@ -1748,7 +1748,11 @@ function importPipelineForBeat(pipelineImportForBeatStatus, openCollector, beat,
           },
           {
             action: 'Update files from template with the Stream name',
-            command: `sed --in-place 's/EZ_stream_placeholder/${safeSanitisedStreamName}/g' "${tempWorkingDirectoryPath}/EZ_stream_placeholder/include.jq" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/ocpipeline.root" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/testdata/general.json" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/testdata/EZ_stream_placeholder.json" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/EZ_stream_placeholder_test.jq" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/log_type_test.jq" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/is_EZ_stream_placeholder_test.jq" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/transform.jq"`
+            command: `sed --in-place 's/EZ_stream_placeholder/${safeSanitisedStreamName}/g' "${tempWorkingDirectoryPath}/EZ_stream_placeholder/include.jq" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/ocpipeline.root" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/EZ_stream_placeholder.yml" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/testdata/general.json" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/testdata/EZ_stream_placeholder.json" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/EZ_stream_placeholder_test.jq" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/log_type_test.jq" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/tests/is_EZ_stream_placeholder_test.jq" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/transform.jq"`
+          },
+          {
+            action: `Rename files from template to match the Stream name (${safeSanitisedStreamName}.yml)`,
+            command: `mv "${tempWorkingDirectoryPath}/EZ_stream_placeholder/EZ_stream_placeholder.yml" "${tempWorkingDirectoryPath}/EZ_stream_placeholder/${safeSanitisedStreamName}.yml"`
           },
           {
             action: `Rename files from template to match the Stream name (tests/${safeSanitisedStreamName}_test.jq)`,
