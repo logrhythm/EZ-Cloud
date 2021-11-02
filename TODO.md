@@ -190,6 +190,7 @@
 - [x] Refactor: upsert_Processing_Policy to not need to add a SP to EMDB
 - [ ] Add a KILL SIGTERM to the post Tail cleaning up process
 - [x] NPM modules with vulnerabilities
+- [x] Generated Pipeline imported with a missing YAML file, causing OC to fail to start/restart
 
 ## TO TEST
 
