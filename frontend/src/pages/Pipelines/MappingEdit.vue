@@ -69,9 +69,9 @@
                 <q-item class="q-pl-none" >
                 <q-toggle v-model="wrapSingleStringLog" label="Accept and Wrap non-JSON logs" />
                 </q-item>
-                <q-item class="q-pl-none" >
+                <!-- <q-item class="q-pl-none" >
                   <q-toggle v-model="extractMessageFieldOnly" label="Extract Filebeat '.message' only" />
-                </q-item>
+                </q-item> -->
                 <q-item  style="width: 20rem;">
                   <q-item-section avatar>
                     <q-icon name="speed" />
@@ -646,7 +646,7 @@ export default {
       queueInMaxSize: 200, // Maximum number of log messages in queueIn
       processedLogsMaxSize: 200, // Maximum number of log messages in processedLogs
       bufferStdOut: '', // Buffer to concatenate incoming STDOUT data until we find a carriage return
-      extractMessageFieldOnly: true, // Only extract the content of the .message field
+      extractMessageFieldOnly: false, // Only extract the content of the .message field
       showJqOutput: false, // Collapse / Hide the JQ panel
       jqFilterOutput: '', // The automacically built JQ Filter output
       jqTransformOutput: '', // The automacically built JQ Transform output

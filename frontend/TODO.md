@@ -103,6 +103,8 @@
 - [x] Field Mapping - JQ Transform - Put the Pipeline name in .output.device_name, and the Beat name in .output.beatname, so to comply with LS Virtualisation templates
 - [x] Rename "New Pipeline Details" popup title to "Pipeline Details"
 - [x] NPM modules with vulnerabilities
+- [x] Do not assume `.message` is always present (LR Generic Beat puts data in `.response`) when generating JQ Transform
+- [ ] Incomplete JQ Transform once deployed
 
 ## TO TEST
 - [ ] Trying to deploy on dead/non-existent OC

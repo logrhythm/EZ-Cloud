@@ -839,7 +839,7 @@ export default {
                   caller.beatName && caller.beatName.length &&
                   caller.loggedInUser && caller.loggedInUser.length &&
                   caller.pipeline.fieldsMapping
-                    ? this.buildJqTransformFromParams(caller.pipeline.uid, caller.pipeline.name, caller.beatName, caller.loggedInUser, true /* Hardcoding extractMessageFieldOnly */, caller.pipeline.fieldsMapping)
+                    ? this.buildJqTransformFromParams(caller.pipeline.uid, caller.pipeline.name, caller.beatName, caller.loggedInUser, false /* Hardcoding extractMessageFieldOnly */, caller.pipeline.fieldsMapping)
                     : undefined
                 )
               }
