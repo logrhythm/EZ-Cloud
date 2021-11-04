@@ -193,7 +193,6 @@
 - [ ] Add a KILL SIGTERM to the post Tail cleaning up process
 - [x] NPM modules with vulnerabilities
 - [x] Generated Pipeline imported with a missing YAML file, causing OC to fail to start/restart
-- [ ] Do not assume `.message` is always present (LR Generic Beat puts data in `.response`) when generating JQ Transform
 
 ## TO TEST
 
