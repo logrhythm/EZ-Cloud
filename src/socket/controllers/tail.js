@@ -1,6 +1,10 @@
 // Create SSH object
 const SSH = require('simple-ssh');
 
+// Get Beat base config
+const fs = require('fs');
+const path = require('path');
+
 // Import shared libraries
 const { collectionConfigToYml } = require('../../shared/collectionConfigToYml');
 const { collectionConfigToJson } = require('../../shared/collectionConfigToJson');
@@ -166,12 +170,168 @@ async function tailInit(socket, payload) {
               }
             }
           });
+      } else if (payload.collectionConfig.collectionShipper === 'genericbeat') {
+        // Get a clean Beat name
+        const beatName = payload.collectionConfig.collectionShipper.toLowerCase().trim();
+        // Create a new Beat ID for the Tail (different from the Prod one, but using UID of Stream)
+        const beatId = String(`T_${payload.pipelineUid}`).replace(/[^a-zA-Z0-9]/g, '_').substring(0, 12);
+        // Fully Qualified Beat Name
+        const logRhythmFullyQualifiedBeatName = String(
+          `${beatName
+          }_${beatId}`
+        );
+        // Get collection config
+        const inputYmlRaw = collectionConfigToYml(payload.collectionConfig);
+        // Replace config's beatIdentifier with this Tail's beatId
+        const configBeatIdentifier = (
+          payload.collectionConfig.beatIdentifier && payload.collectionConfig.beatIdentifier.length
+            ? payload.collectionConfig.beatIdentifier
+            : 'beatIdentifier NOT FOUND' // If none found, just use a random string so next step does nothing
+        );
+        const inputYml = String(inputYmlRaw).replace(new RegExp(configBeatIdentifier, 'g'), beatId);
+        // Load the base Tail config file for LogRhythm shippers
+        const logrhythmShipperBaseTailConfig = fs.readFileSync(path.join(process.env.baseDirname, 'resources', 'LogRhythm_shippers-base_tail_config.yaml'));
+        // Combine it with collection part
+        const beatConfig = `${inputYml}\n\n${logrhythmShipperBaseTailConfig}\n`;
+
+        tails[payload.tailId]
+          // Check LRCTL is present
+          .exec('if [ ! -e "./lrctl" ]; then exit 42; fi;', {
+            exit(code) {
+              if (code === 42) {
+                // If LRCTL doesn't exist,
+                // simply stop now.
+                if (socket.connected) {
+                  socket.emit('tail.log', { tailId: payload.tailId, code: 'ERROR', payload: 'LRCTL not present in home directory of user' });
+                  socket.emit('tail.log', { tailId: payload.tailId, code: 'EXIT', payload: code });
+                }
+                return false;
+              }
+              return true;
+            }
+          })
+          // ~~Check Beat ID is not already running~~
+          // Import configuration
+          .exec(`cat | ./lrctl genericbeat config import --fqbn ${logRhythmFullyQualifiedBeatName}`, {
+            in: beatConfig,
+            err(stderr) {
+              // console.log('STDERR:::' + stderr);
+              if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+              }
+            },
+            // exit(code) {
+            //   // console.log('CODE:::' + code + ' 📃');
+            //   return true;
+            // },
+            out(stdout) {
+              // console.log('STDOUT:::' + stdout);
+              if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+              }
+            }
+          })
+          // Stop / Start the Beat ID
+          .exec('./lrctl genericbeat status >&2', {
+            err(stderr) {
+              // console.log('STDERR:::' + stderr);
+              if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+              }
+            },
+            // exit(code) {
+            //   // console.log('CODE:::' + code + ' 🟠');
+            //   return true;
+            // },
+            out(stdout) {
+              // console.log('STDOUT:::' + stdout);
+              if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+              }
+            }
+          })
+          .exec(`./lrctl genericbeat stop --fqbn ${logRhythmFullyQualifiedBeatName} >&2`, {
+            err(stderr) {
+              // console.log('STDERR:::' + stderr);
+              if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+              }
+            },
+            // exit(code) {
+            //   // console.log('CODE:::' + code + ' 🔴');
+            //   return true;
+            // },
+            out(stdout) {
+              // console.log('STDOUT:::' + stdout);
+              if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+              }
+            }
+          })
+          .exec(`./lrctl genericbeat start --fqbn ${logRhythmFullyQualifiedBeatName} >&2`, {
+            err(stderr) {
+              // console.log('STDERR:::' + stderr);
+              if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+              }
+            },
+            // exit(code) {
+            //   // console.log('CODE:::' + code + ' 🟢');
+            //   return true;
+            // },
+            out(stdout) {
+              // console.log('STDOUT:::' + stdout);
+              if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+              }
+            }
+          })
+          // Tail -F /var/lib/docker/volumes/genericbeat_spool_volume_{Beat_ID}/_data/realtime.tail
+          .exec(`tail -F /var/lib/docker/volumes/${beatName}_spool_volume_${beatId}/_data/realtime.tail`, {
+            err(stderr) {
+              // console.log('STDERR:::' + stderr);
+              if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+              }
+            },
+            exit(code) {
+              // console.log('CODE:::' + code + ' 📑');
+              if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'EXIT', payload: code });
+              }
+              // eslint-disable-next-line no-use-before-define
+              setTimeout(tailKillShipper, 2500, socket, payload);
+            },
+            out(stdout) {
+              // console.log('STDOUT:::' + stdout);
+              if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+              }
+            }
+          })
+          .on('end', (err) => {
+            // console.log('END:::' + err);
+            if (socket.connected) {
+              socket.emit('tail.log', { tailId: payload.tailId, code: 'END', payload: err });
+            }
+            // eslint-disable-next-line no-use-before-define
+            setTimeout(tailKillShipper, 1000, socket, payload);
+          })
+          .start({
+            failure() {
+              // console.log('FAILURE:::' + err);
+              if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'FAILURE' });
+              }
+            }
+          });
       }
     }
   }
 } // tailInit
 
 function tailKill(socket, payload) {
+  // console.log('tailKill 💣');
   if (
     payload
     && payload.tailId
@@ -201,92 +361,181 @@ async function tailKillShipper(socket, payload) {
 
         tails[payload.tailId] = new SSH(configSsh);
 
-        tails[payload.tailId]
-          .exec(`if [ -d "/tmp/ez-${payload.tailId}" ]; then ps auxwww | grep \`cat /tmp/ez-${payload.tailId}/running.pid\` | grep -v "grep" -q && exit 42; fi;`, {
-            exit(code) {
-              if (code === 42) {
-                // If Shipper is still running for this Pipeline,
-                // go ahead and kill it.
+        // Get a clean Beat name
+        const beatName = String(
+          payload
+          && payload.collectionConfig
+          && payload.collectionConfig.collectionShipper
+            ? payload.collectionConfig.collectionShipper
+            : null
+        ).trim();
+
+        if (beatName === 'filebeat' || beatName === 'jsBeat') {
+          tails[payload.tailId]
+            .exec(`if [ -d "/tmp/ez-${payload.tailId}" ]; then ps auxwww | grep \`cat /tmp/ez-${payload.tailId}/running.pid\` | grep -v "grep" -q && exit 42; fi;`, {
+              exit(code) {
+                if (code === 42) {
+                  // If Shipper is still running for this Pipeline,
+                  // go ahead and kill it.
+                  if (socket.connected) {
+                    socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDOUT', payload: 'Shipper is still running for this Pipeline. As expected. Now going for the kill.' });
+                  }
+                  return true;
+                }
                 if (socket.connected) {
-                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDOUT', payload: 'Shipper is still running for this Pipeline. As expected. GNow ging for the kill.' });
+                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Shipper does\'t seem to be running for this Pipeline. Doing nothing.' });
+                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'EXIT', payload: code });
+                }
+                return false;
+              }
+            })
+            .exec(`if [ -e "/tmp/ez-${payload.tailId}/running.pid" ]; then kill $(cat /tmp/ez-${payload.tailId}/running.pid) && echo -e "Pipeline process terminated."; else echo -e "PID file is missing: /tmp/ez-${payload.tailId}/running.pid" 1>&2 ; exit 42; fi;`, {
+              err(stderr) {
+                // console.log('STDERR:::' + stderr);
+                if (socket.connected) {
+                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+                }
+              },
+              exit(code) {
+                // console.log('CODE:::' + code);
+                if (code !== 0) {
+                  if (socket.connected) {
+                    socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Something didn\'t go according to plan while trying to terminate Shipper\' Process.' });
+                  }
+                  return false;
+                }
+                if (socket.connected) {
+                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'EXIT', payload: code });
                 }
                 return true;
-              }
-              if (socket.connected) {
-                socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Shipper does\'t seem to be running for this Pipeline. Doing nothing.' });
-                socket.emit('tail.kill', { tailId: payload.tailId, code: 'EXIT', payload: code });
-              }
-              return false;
-            }
-          })
-          .exec(`if [ -e "/tmp/ez-${payload.tailId}/running.pid" ]; then kill $(cat /tmp/ez-${payload.tailId}/running.pid) && echo -e "Pipeline process terminated."; else echo -e "PID file is missing: /tmp/ez-${payload.tailId}/running.pid" 1>&2 ; exit 42; fi;`, {
-            err(stderr) {
-              // console.log('STDERR:::' + stderr);
-              if (socket.connected) {
-                socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
-              }
-            },
-            exit(code) {
-              // console.log('CODE:::' + code);
-              if (code !== 0) {
+              },
+              out(stdout) {
+                // console.log('STDOUT:::' + stdout);
                 if (socket.connected) {
-                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Something didn\'t go according to plan while trying to terminate Shipper\' Process.' });
+                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
                 }
-                return false;
               }
-              if (socket.connected) {
-                socket.emit('tail.kill', { tailId: payload.tailId, code: 'EXIT', payload: code });
-              }
-              return true;
-            },
-            out(stdout) {
-              // console.log('STDOUT:::' + stdout);
-              if (socket.connected) {
-                socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
-              }
-            }
-          })
-          .exec(`rm -rf /tmp/ez-${payload.tailId}`, {
-            err(stderr) {
-              // console.log('STDERR:::' + stderr);
-              if (socket.connected) {
-                socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
-              }
-            },
-            exit(code) {
-              // console.log('CODE:::' + code);
-              if (code !== 0) {
+            })
+            .exec(`rm -rf /tmp/ez-${payload.tailId}`, {
+              err(stderr) {
+                // console.log('STDERR:::' + stderr);
                 if (socket.connected) {
-                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Something didn\'t go according to plan while trying to clean the temporary Shipper\' directory.' });
+                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
                 }
-                return false;
+              },
+              exit(code) {
+                // console.log('CODE:::' + code);
+                if (code !== 0) {
+                  if (socket.connected) {
+                    socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Something didn\'t go according to plan while trying to clean the temporary Shipper\' directory.' });
+                  }
+                  return false;
+                }
+                if (socket.connected) {
+                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'EXIT', payload: code });
+                }
+                return true;
+              },
+              out(stdout) {
+                // console.log('STDOUT:::' + stdout);
+                if (socket.connected) {
+                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+                }
               }
+            })
+            .on('end', (err) => {
+              // console.log('END:::' + err);
               if (socket.connected) {
-                socket.emit('tail.kill', { tailId: payload.tailId, code: 'EXIT', payload: code });
+                socket.emit('tail.kill', { tailId: payload.tailId, code: 'END', payload: err });
               }
-              return true;
-            },
-            out(stdout) {
-              // console.log('STDOUT:::' + stdout);
+            })
+            .start({
+              failure() {
+                // console.log('FAILURE:::' + err);
+                if (socket.connected) {
+                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'FAILURE' });
+                }
+              }
+            });
+        } else if (beatName === 'genericbeat') {
+          // Create a new Beat ID for the Tail
+          const beatId = String(`T_${payload.pipelineUid}`).replace(/[^a-zA-Z0-9]/g, '_').substring(0, 12);
+          // Fully Qualified Beat Name
+          const logRhythmFullyQualifiedBeatName = String(
+            `${beatName.toLowerCase()
+            }_${beatId}`
+          );
+
+          tails[payload.tailId]
+            .exec(`./lrctl genericbeat stop --fqbn ${logRhythmFullyQualifiedBeatName}`, {
+              err(stderr) {
+                // console.log('STDERR:::' + stderr);
+                if (socket.connected) {
+                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+                }
+              },
+              exit(code) {
+                // console.log('CODE:::' + code);
+                if (code !== 0) {
+                  if (socket.connected) {
+                    socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Something didn\'t go according to plan while trying to terminate Shipper\' Process.' });
+                  }
+                  return false;
+                }
+                if (socket.connected) {
+                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'EXIT', payload: code });
+                }
+                return true;
+              },
+              out(stdout) {
+                // console.log('STDOUT:::' + stdout);
+                if (socket.connected) {
+                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+                }
+              }
+            })
+            .exec(`./lrctl genericbeat config remove --yes --fqbn ${logRhythmFullyQualifiedBeatName}`, {
+              err(stderr) {
+                // console.log('STDERR:::' + stderr);
+                if (socket.connected) {
+                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+                }
+              },
+              exit(code) {
+                // console.log('CODE:::' + code);
+                if (code !== 0) {
+                  if (socket.connected) {
+                    socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Something didn\'t go according to plan while trying to clean the temporary Shipper\' configuration.' });
+                  }
+                  return false;
+                }
+                if (socket.connected) {
+                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'EXIT', payload: code });
+                }
+                return true;
+              },
+              out(stdout) {
+                // console.log('STDOUT:::' + stdout);
+                if (socket.connected) {
+                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+                }
+              }
+            })
+            .on('end', (err) => {
+              // console.log('END:::' + err);
               if (socket.connected) {
-                socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+                socket.emit('tail.kill', { tailId: payload.tailId, code: 'END', payload: err });
               }
-            }
-          })
-          .on('end', (err) => {
-            // console.log('END:::' + err);
-            if (socket.connected) {
-              socket.emit('tail.kill', { tailId: payload.tailId, code: 'END', payload: err });
-            }
-          })
-          .start({
-            failure() {
-              // console.log('FAILURE:::' + err);
-              if (socket.connected) {
-                socket.emit('tail.kill', { tailId: payload.tailId, code: 'FAILURE' });
+            })
+            .start({
+              failure() {
+                // console.log('FAILURE:::' + err);
+                if (socket.connected) {
+                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'FAILURE' });
+                }
               }
-            }
-          });
+            });
+        }
       }
     }
   } catch (err) {

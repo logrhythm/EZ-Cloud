@@ -160,8 +160,10 @@
     - [x] Update `upsert_Log_Source_Virtualisation_Template_Item` SQL SP to use and sanitise the right Beat and Pipeline names
     - [x] Create Pipeline template
     - [x] Create API enpoint
-- [ ] Tail for LogRhythm Beats
-  - [ ] Generic Beat
+- [x] Tail for LogRhythm Beats
+  - [x] Generic Beat
+    - [x] Tail
+    - [x] Kill Tail Shipper
 - Process of onboarding a LS (Beat Config, JQ Pipeline and SIEM LogSource)
   - New Log Source
     - Drop Beat configuration in right location
@@ -191,6 +193,7 @@
 - [ ] Add a KILL SIGTERM to the post Tail cleaning up process
 - [x] NPM modules with vulnerabilities
 - [x] Generated Pipeline imported with a missing YAML file, causing OC to fail to start/restart
+- [ ] Do not assume `.message` is always present (LR Generic Beat puts data in `.response`) when generating JQ Transform
 
 ## TO TEST
 
