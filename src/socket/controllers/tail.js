@@ -231,7 +231,7 @@ async function tailInit(socket, payload) {
               }
             }
           })
-          // Stop / Start the Beat ID
+          // Check the already running instances of this Beat
           .exec('./lrctl genericbeat status >&2', {
             err(stderr) {
               // console.log('STDERR:::' + stderr);
@@ -250,6 +250,7 @@ async function tailInit(socket, payload) {
               }
             }
           })
+          // Stop / Start the Beat ID
           .exec(`./lrctl genericbeat stop --fqbn ${logRhythmFullyQualifiedBeatName} >&2`, {
             err(stderr) {
               // console.log('STDERR:::' + stderr);
@@ -277,6 +278,25 @@ async function tailInit(socket, payload) {
             },
             // exit(code) {
             //   // console.log('CODE:::' + code + ' 🟢');
+            //   return true;
+            // },
+            out(stdout) {
+              // console.log('STDOUT:::' + stdout);
+              if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+              }
+            }
+          })
+          // Check if the new instance is running
+          .exec(`./lrctl genericbeat status | grep "${logRhythmFullyQualifiedBeatName}" >&2`, {
+            err(stderr) {
+              // console.log('STDERR:::' + stderr);
+              if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+              }
+            },
+            // exit(code) {
+            //   // console.log('CODE:::' + code + ' 🟠');
             //   return true;
             // },
             out(stdout) {
