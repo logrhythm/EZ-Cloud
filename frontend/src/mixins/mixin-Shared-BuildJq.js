@@ -258,12 +258,12 @@ export default {
 
       // Put this all together
       jqTransform = jqTransform
-        .replace(/{{EZ_flatten_array_placeholder}}/g, flattenArrayPlaceholder.join('\r'))
+        .replace(/{{EZ_flatten_array_placeholder}}/g, flattenArrayPlaceholder.join('\n'))
         .replace(/{{EZ_original_message_placeholder}}/g, originalMessagePlaceholder)
-        .replace(/{{EZ_timestamp__add_field_placeholder}}/g, timestampAddFieldPlaceholder.join('\r'))
-        .replace(/{{EZ_flatten_array__add_field_placeholder}}/g, flattenArrayAddFieldPlaceholder.join('\r'))
-        .replace(/{{EZ_add_field_placeholder}}/g, addFieldPlaceholder.join('\r'))
-        .replace(/{{EZ_sub_rules__add_field_placeholder}}/g, subRulesAddFieldPlaceholder.join('\r'))
+        .replace(/{{EZ_timestamp__add_field_placeholder}}/g, timestampAddFieldPlaceholder.join('\n'))
+        .replace(/{{EZ_flatten_array__add_field_placeholder}}/g, flattenArrayAddFieldPlaceholder.join('\n'))
+        .replace(/{{EZ_add_field_placeholder}}/g, addFieldPlaceholder.join('\n'))
+        .replace(/{{EZ_sub_rules__add_field_placeholder}}/g, subRulesAddFieldPlaceholder.join('\n'))
 
       // And ship it back
       return jqTransform

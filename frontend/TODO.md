@@ -8,6 +8,15 @@
     - [ ] Backend API to remove config from Beat
 - Mapping Editor
   - [ ] Handle Sub Rules
+  - [ ] Resurface the `.message` feature
+    - [ ] In UI (menu Settings)
+    - [ ] When generating JQ Transform
+      - [ ] In Field Mapping Editor
+      - [ ] In deployment
+    - [ ] Allow for different holder
+      - [ ] `.message`
+      - [ ] `.response`
+      - [ ] Configurable in the Collection Template
 
 ### Target: v0.7
 
@@ -104,7 +113,7 @@
 - [x] Rename "New Pipeline Details" popup title to "Pipeline Details"
 - [x] NPM modules with vulnerabilities
 - [x] Do not assume `.message` is always present (LR Generic Beat puts data in `.response`) when generating JQ Transform
-- [ ] Incomplete JQ Transform once deployed
+- [x] Incomplete JQ Transform once deployed
 
 ## TO TEST
 - [ ] Trying to deploy on dead/non-existent OC
