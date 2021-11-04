@@ -159,13 +159,14 @@
         <q-separator />
         <q-card-section>
           <div class="text-caption">
-            Manual input (one log at a time)
+            Manual input (one proper JSON log at a time)
           </div>
           <q-input
             v-model="queueInDataEntry"
             filled
             autogrow
-            label="queueInDataEntry"
+            input-style="min-height: 4em;"
+            label="Manual Data Entry"
             @keypress.shift.enter.prevent="queueInAdd({values: queueInDataEntry});"
           >
             <template v-slot:after>
@@ -175,14 +176,15 @@
         </q-card-section>
         <q-card-section>
           <div class="text-caption">
-            Input Q
+            Input Queue
           </div>
           <q-input
             v-model="queueInWindow"
             filled
             autogrow
+            input-style="min-height: 10em;"
             readonly
-            label="queueIn"
+            label="Read Only"
           >
             <template v-slot:after>
               <div class="column">
@@ -200,8 +202,9 @@
             v-model="queueProcessWindow"
             filled
             autogrow
+            input-style="min-height: 10em;"
             readonly
-            label="queueProcess"
+            label="Read Only"
           >
             <template v-slot:after>
               <!-- <q-btn round dense flat icon="send" @click="processLogSample({ logSample: queueProcess, options: {} }).finally({ console.log('processLogSample IS DONE'); })" :disable="Object.keys(queueProcess).length === 0"/> -->
