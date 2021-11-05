@@ -15,6 +15,7 @@ ArchitecturesInstallIn64BitMode=x64
 WizardStyle=modern
 DisableWelcomePage=no
 LicenseFile="{#DistSubDirectory}\License.txt"
+; SignTool=MicrosoftSigningTool "{#InstallerHelper}\signtool.exe" sign /f "{#InstallerHelper}\Installer_Wizard_Code_Signing_Certificate.crt" /tr http://timestamp.sectigo.com /td sha256 /fd sha256 /a $p
 
 [Types]
 Name: "full"; Description: "Full installation (EZ Cloud Server + Frontend + NodeJS)"

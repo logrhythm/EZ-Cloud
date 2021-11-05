@@ -2,6 +2,11 @@
 const yargs = require('yargs');
 
 const parsedArguments = yargs
+  // .option('installerHelper', {
+  //   alias: 's',
+  //   description: 'installer directory containing Microsoft Signing Tool and Code Signing certificate(s)',
+  //   type: 'string'
+  // })
   .option('distDirectory', {
     alias: 'd',
     description: 'dist directory',
@@ -39,6 +44,11 @@ require('innosetup')(
       parsedArguments && parsedArguments.distSubDirectory && parsedArguments.distSubDirectory.length
         ? parsedArguments.distSubDirectory
         : undefined
+    // ),
+    // DInstallerHelper: (
+    //   parsedArguments && parsedArguments.installerHelper && parsedArguments.installerHelper.length
+    //     ? parsedArguments.installerHelper
+    //     : undefined
     )
   },
   (error) => {

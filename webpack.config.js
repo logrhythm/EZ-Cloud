@@ -64,7 +64,7 @@ module.exports = {
           // 'PowerShell.exe -Command Compress-Archive -Path "' + path.join(__dirname, 'dist', `EZ-Cloud.v${version}`) + '"  -DestinationPath "' + path.join(__dirname, 'dist', `EZ-Cloud_v${version}.WithNodeJS.zip` + '" -Force -CompressionLevel Fastest'),
 
           // Build the self contained Installer
-          `node ${path.join(__dirname, 'installer', 'installerBuilder')} --distDirectory "${path.join(__dirname, 'dist')}" --distSubDirectory "${path.join(__dirname, 'dist', `EZ-Cloud.v${version}`)}" `
+          `node ${path.join(__dirname, 'installer', 'installerBuilder')} --installerHelper "${path.join(__dirname, 'installer')}" --distDirectory "${path.join(__dirname, 'dist')}" --distSubDirectory "${path.join(__dirname, 'dist', `EZ-Cloud.v${version}`)}" `
         ],
         blocking: false,
         parallel: false
