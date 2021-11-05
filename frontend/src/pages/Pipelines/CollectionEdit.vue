@@ -475,7 +475,7 @@ export default {
           // - then add the Stream name and full UID
           // - then truncate back to 12 chars max.
           newConf.beatIdentifier = String(this.pipeline.uid.substring(0, 3) + '_' + this.pipeline.name.replace(/[^a-zA-Z0-9]/g, '_') + '_' + this.pipeline.uid).substring(0, 12)
-          newConf.logsource_name = this.pipeline.name.replace(/[^a-zA-Z0-9]/g, '_')
+          newConf.logsource_name = this.pipeline.name
         }
 
         this.collectionConfig = newConf
