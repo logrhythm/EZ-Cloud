@@ -137,6 +137,8 @@ def is_matching:
       .fields.stream_id == "{{EZ_stream_id_placeholder}}"
       or
       .fields.stream_name == "{{EZ_stream_name_placeholder}}"
+      or
+      .device_type == "{{EZ_stream_name_placeholder}}"
     )
 ;
    `,
