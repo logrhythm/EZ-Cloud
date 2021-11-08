@@ -114,7 +114,7 @@
 - [x] NPM modules with vulnerabilities
 - [x] Do not assume `.message` is always present (LR Generic Beat puts data in `.response`) when generating JQ Transform
 - [x] Incomplete JQ Transform once deployed
-- [ ] Pipeline Properties - Deployment shows an item for brand new (not yet deployed) Pipeline
+- [x] Pipeline Properties - Deployment shows an item for brand new (not yet deployed) Pipeline
 
 ## TO TEST
 - [ ] Trying to deploy on dead/non-existent OC
