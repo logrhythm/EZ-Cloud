@@ -1338,13 +1338,13 @@ router.post('/UpdateStreamConfigurationForBeat', async (req, res) => {
   } else {
     const errorMessages = [];
     if (missingOpenCollector) {
-      errorMessages.push('Missing or malformed compulstory "openCollector" object.');
+      errorMessages.push('Missing or malformed compulsory "openCollector" object.');
     }
     if (missingBeat) {
-      errorMessages.push('Missing or malformed compulstory "beat" object.');
+      errorMessages.push('Missing or malformed compulsory "beat" object.');
     }
     if (missingStream) {
-      errorMessages.push('Missing or malformed compulstory "stream" object.');
+      errorMessages.push('Missing or malformed compulsory "stream" object.');
     }
 
     res.json({ ...streamUpdateForBeatStatusTemplate, errors: errorMessages, requestBody: req.body });
@@ -1642,13 +1642,13 @@ router.post('/DeleteStreamConfigurationForBeat', async (req, res) => {
   } else {
     const errorMessages = [];
     if (missingOpenCollector) {
-      errorMessages.push('Missing or malformed compulstory "openCollector" object.');
+      errorMessages.push('Missing or malformed compulsory "openCollector" object.');
     }
     if (missingBeat) {
-      errorMessages.push('Missing or malformed compulstory "beat" object.');
+      errorMessages.push('Missing or malformed compulsory "beat" object.');
     }
     if (missingStream) {
-      errorMessages.push('Missing or malformed compulstory "stream" object.');
+      errorMessages.push('Missing or malformed compulsory "stream" object.');
     }
 
     res.json({ ...streamConfigDeleteForBeatStatusTemplate, errors: errorMessages, requestBody: req.body });
@@ -1934,15 +1934,15 @@ router.post('/ImportPipelineForBeat', async (req, res) => {
 
     res.json(pipelineImportForBeatStatusArray[`${openCollector.uid}_${stream.uid}`]);
   } else {
-    const errorMessages = []; // ['Missing parameters in Body (Both `openCollector`, `beat` and `stream` objects are compulstory and must be properly populated).. See following errors.']
+    const errorMessages = []; // ['Missing parameters in Body (Both `openCollector`, `beat` and `stream` objects are compulsory and must be properly populated).. See following errors.']
     if (missingOpenCollector) {
-      errorMessages.push('Missing or malformed compulstory "openCollector" object.');
+      errorMessages.push('Missing or malformed compulsory "openCollector" object.');
     }
     if (missingBeat) {
-      errorMessages.push('Missing or malformed compulstory "beat" object.');
+      errorMessages.push('Missing or malformed compulsory "beat" object.');
     }
     if (missingStream) {
-      errorMessages.push('Missing or malformed compulstory "stream" object.');
+      errorMessages.push('Missing or malformed compulsory "stream" object.');
     }
 
     res.json({ ...pipelineImportForBeatStatusTemplate, errors: errorMessages, requestBody: req.body });
@@ -1980,7 +1980,7 @@ router.post('/ObfuscateSecret', async (req, res) => {
   } else {
     const errorMessages = [];
     if (missingSecret) {
-      errorMessages.push('Missing or malformed compulstory "secretToObfuscate" string.');
+      errorMessages.push('Missing or malformed compulsory "secretToObfuscate" string.');
     }
     res.json({ ...obfuscateSecretTemplate, errors: errorMessages, requestBody: req.body });
   }
