@@ -17,6 +17,26 @@
       - [ ] `.message`
       - [ ] `.response`
       - [ ] Configurable in the Collection Template
+- [ ] Add a simple Wizard from landing page
+  - [ ] Ask for name for Log Source
+  - [ ] Create collection configuation
+    - [ ] Pick Shipper
+    - [ ] Pick type of collection (Flat File, Syslog, REST, etc...)
+    - [ ] Configure it
+  - [ ] Pick up Open Collector
+    - [ ] Add one if none in the list
+  - [ ] Create field mapping
+    - [ ] Run pre-configured Tail
+  - [ ] Recap page
+    - [ ] Ability to rename Log Source
+    - [ ] Ability to assign Log Source to other Open Collectors
+    - [ ] Ability to Enable / Commit the Log Source creation
+- [ ] Provide feedback if failing to connect over SSH
+  - [ ] In Open Collectors list page
+    - [ ] On version check
+    - [ ] On Shipper deployment
+  - [ ] In Tail
+  - [ ] In Deployment
 
 ### Target: v0.7
 
@@ -83,20 +103,6 @@
     - [x] Text colour
     - [x] Navigation icons colour
   - [x] Add Day/Dark mode switch on Logon page/card
-- [ ] Add a simple Wizard from landing page
-  - [ ] Ask for name for Log Source
-  - [ ] Create collection configuation
-    - [ ] Pick Shipper
-    - [ ] Pick type of collection (Flat File, Syslog, REST, etc...)
-    - [ ] Configure it
-  - [ ] Pick up Open Collector
-    - [ ] Add one if none in the list
-  - [ ] Create field mapping
-    - [ ] Run pre-configured Tail
-  - [ ] Recap page
-    - [ ] Ability to rename Log Source
-    - [ ] Ability to assign Log Source to other Open Collectors
-    - [ ] Ability to Enable / Commit the Log Source creation
 - [x] Highlight the current active page in the navigation bar
 - [x] Pipeline Mapping Edit
   - [x] Use the right beat name, instead of pipeline name in `beatName ()`
