@@ -837,9 +837,9 @@ export default {
                   caller && caller.pipeline && caller.pipeline.uid && caller.pipeline.uid.length &&
                   caller.pipeline.name && caller.pipeline.name.length &&
                   caller.beatName && caller.beatName.length &&
-                  caller.loggedInUser && caller.loggedInUser.length &&
-                  caller.pipeline.fieldsMapping
-                    ? this.buildJqTransformFromParams(caller.pipeline.uid, caller.pipeline.name, caller.beatName, caller.loggedInUser, false /* Hardcoding extractMessageFieldOnly */, caller.pipeline.fieldsMapping)
+                  caller.loggedInUser && caller.loggedInUser.length // &&
+                  // caller.pipeline.fieldsMapping
+                    ? this.buildJqTransformFromParams(caller.pipeline.uid, caller.pipeline.name, caller.beatName, caller.loggedInUser, false /* Hardcoding extractMessageFieldOnly */, (caller.pipeline.fieldsMapping || []))
                     : undefined
                 )
               }
