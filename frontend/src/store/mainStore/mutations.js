@@ -69,16 +69,6 @@ export function addPipeline (state, payload) {
     }
 
     state.pipelines.push(newPipelines)
-
-    // And add this Pipeline to its Primary OC, if any is specified
-    if (payload.primaryOpenCollector && payload.primaryOpenCollector.length > 0) {
-      state.openCollectors.find(oc => oc.uid === payload.primaryOpenCollector).pipelines.push(
-        {
-          uid: newPipelines.uid,
-          enabled: false
-        }
-      )
-    }
   }
 }
 
