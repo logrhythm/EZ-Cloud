@@ -10,6 +10,7 @@ GO
 -- Create date: 2021-07-20
 -- Update date: 2021-07-21 - Remove unnecessary parameter (@OpenCollectorLogSourceTypeID)
 -- Update date: 2021-07-21 - Change separator between OC Log Source and Virtual LS (adding spaces around the dash: '-' -> ' - ')
+-- Update date: 2021-11-08 - Change type for @VirtualSourceTemplateItemRegex to handle RegEx properly ('nvarchar(100)' -> 'varchar(max)')
 -- =============================================
 
 CREATE PROCEDURE [dbo].[upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource] 
@@ -45,7 +46,7 @@ BEGIN
 
 		DECLARE @VirtualSourceTemplateItemID int
 		DECLARE @VirtualSourceTemplateItemName nvarchar(100)
-		DECLARE @VirtualSourceTemplateItemRegex nvarchar(100)
+		DECLARE @VirtualSourceTemplateItemRegex varchar(max)
 		DECLARE @VirtualSourceTemplateItemMPEPolicyID int
 
 		SELECT TOP 1
