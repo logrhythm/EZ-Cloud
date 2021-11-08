@@ -23,13 +23,13 @@
 ## TO DO
 - OpenCollectors list
   - [ ] ~~Load SSH Token from file instead of copy/paste in field~~ (👈 Keep it as is for now, as LRCloud users won't have access to their local files)
-  - [ ] Use alternative to Filebeat
-    - [ ] LR Rest Beat
-      - [ ] Install LR Rest
-      - [ ] Communicate each step to Frontend
-      - [ ] Display Install progress in Frontend
-      - [ ] Create LR Rest Beat configuration
-      - [ ] Use LR Rest Beat for Tail
+  - [x] Use alternative to Filebeat
+    - [x] LR Rest Beat
+      - [x] Install LR Rest
+      - [x] Communicate each step to Frontend
+      - [x] Display Install progress in Frontend
+      - [x] Create LR Rest Beat configuration
+      - [x] Use LR Rest Beat for Tail
     - [x] jsBeat
   - [x] Move `OS version` to the left of `Open Collector Version`
   - [x] Change `Filebeat version` to `Shippers version`
@@ -116,6 +116,8 @@
 - [x] Incomplete JQ Transform once deployed
 - [x] Pipeline Properties - Deployment shows an item for brand new (not yet deployed) Pipeline
 - [x] Collection Editor - Drop down menu background colour wrong when in Light mode
+- [ ] Shipper installer - Content Security Policy prevents download of `shippers_url.json` from GitHub
+  - `app.ab179f5f.js:1 Refused to connect to 'https://raw.githubusercontent.com/TonyMasse/EZ-Cloud/main/resources/shippers_url.json' because it violates the following Content Security Policy directive: "default-src 'self'". Note that 'connect-src' was not explicitly set, so 'default-src' is used as a fallback.`
 
 ## TO TEST
 - [ ] Trying to deploy on dead/non-existent OC
