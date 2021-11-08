@@ -1785,6 +1785,10 @@ function importPipelineForBeat(pipelineImportForBeatStatus, openCollector, beat,
           {
             action: 'Delete the temporary work directory',
             command: `rm -rf "${tempWorkingDirectoryPath}"`
+          },
+          {
+            action: 'Restart Open Collector',
+            command: './lrctl oc restart'
           }
         );
 
