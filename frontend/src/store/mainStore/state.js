@@ -209,7 +209,7 @@ def add_field($input_field; output_field):
 def get_io_format:
     {
         "input": .,
-        "message": .message | fromjson,
+#        "message": .message | fromjson,
 {{EZ_flatten_array_placeholder}}
         "output": {
             "original_message": {{EZ_original_message_placeholder}}
@@ -226,7 +226,7 @@ def transform:
     # "beatname" is a required field for Open Collector Regex to work in the SIEM.
     # We add here more details to help the Log Source Virtualisation
 
-    add_field("@metadata".beat; .output.beatname) | # For the Log Source Virtualisation
+    add_field(.input."@metadata".beat; .output.beatname) | # For the Log Source Virtualisation
     add_field("{{EZ_compact_stream_name_placeholder}}"; .output.device_name) | # For the Log Source Virtualisation
     add_field("{{EZ_stream_id_placeholder}}"; .output.stream_id) | # For the Log Source Virtualisation (optional)
     add_field("{{EZ_stream_name_placeholder}}"; .output.stream_name) |
