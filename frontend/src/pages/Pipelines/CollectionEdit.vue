@@ -106,14 +106,13 @@
             <q-card-section>
                 <q-select
                   dense
-                  standout="bg-blue-5 text-white"
+                  standout="bg-blue-4 text-white"
                   v-model="collectionShipper"
                   emit-value
                   map-options
                   :options="collectionShippersOptions"
                   style="min-width: 20rem;"
                   class="q-mx-sm q-my-xs"
-                  popup-content-class="bg-grey-9"
                 />
             </q-card-section>
           </q-card-section>
@@ -126,14 +125,13 @@
             <q-card-section>
                 <q-select
                   dense
-                  standout="bg-blue-5 text-white"
+                  standout="bg-blue-4 text-white"
                   v-model="collectionMethod"
                   emit-value
                   map-options
                   :options="collectionMethodsOptions.filter(cmo => cmo.shipper == collectionShipper)"
                   style="min-width: 20rem;"
                   class="q-mx-sm q-my-xs"
-                  popup-content-class="bg-grey-9"
                 />
             </q-card-section>
           </q-card-section>
