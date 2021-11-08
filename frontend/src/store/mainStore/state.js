@@ -227,7 +227,7 @@ def transform:
     # We add here more details to help the Log Source Virtualisation
 
     add_field(.input."@metadata".beat; .output.beatname) | # For the Log Source Virtualisation
-    add_field("{{EZ_compact_stream_name_placeholder}}"; .output.device_name) | # For the Log Source Virtualisation
+    add_field("{{EZ_compact_stream_name_placeholder}}"; .output.device_type) | # For the Log Source Virtualisation
     add_field("{{EZ_stream_id_placeholder}}"; .output.stream_id) | # For the Log Source Virtualisation (optional)
     add_field("{{EZ_stream_name_placeholder}}"; .output.stream_name) |
 
