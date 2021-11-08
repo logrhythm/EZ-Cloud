@@ -2,6 +2,22 @@
     {
         "version": "1.1",
         "name": "jsBeat + NodeJS",
+        "description": "jsBeat-1.1.4 + node-v14.17.1-linux-x64",
+        "filename": "jsBeat-1.1.4 + node-v14.17.1-linux-x64",
+        "jsBeat": {
+            "url": "https://github.com/TonyMasse/jsBeat/releases/download/v1.1.4/jsBeat-1.1.4.tgz",
+            "sha256": "42b77a3f470871d82693709c8d0bb0137f2eeeb17bc9b886bdf5f981a515157e",
+            "folderName": "jsBeat-1.1.4"
+        },
+        "nodeJs": {
+            "url": "https://nodejs.org/download/release/v14.17.1/node-v14.17.1-linux-x64.tar.gz",
+            "sha256": "4781b162129b19bdb3a7010cab12d06fc7c89421ea3fda03346ed17f09ceacd6",
+            "folderName": "node-v14.17.1-linux-x64"
+        }
+    },
+    {
+        "version": "1.1",
+        "name": "jsBeat + NodeJS",
         "description": "jsBeat-1.1.2 + node-v14.17.1-linux-x64",
         "filename": "jsBeat-1.1.2 + node-v14.17.1-linux-x64",
         "jsBeat": {
