@@ -74,7 +74,7 @@ BEGIN
 			IF @RegexFilter IS NULL
 			BEGIN
 				SELECT @RegexFilter = CONCAT(
-					'(\|device_name=', @DeviceName, '\|', -- Catch it by Device Name (the way it should be)
+					'(\|device_type=', @DeviceName, '\|', -- Catch it by Device Name (the way it should be)
 					'|\|beatname=', @DeviceName, '\|',    -- Or by Beatname, to work with older EZ made JQ Transforms
 					'|\|stream_uid=', @uid, '\|)'         -- Or by Stream UID, nice use case
 				)
