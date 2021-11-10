@@ -38,6 +38,9 @@ module.exports = {
         { from: 'node_modules/node-windows/bin/winsw/winsw.exe', to: 'ezcloudserver.exe', toType: 'file' },
         { from: 'node_modules/node-windows/bin/winsw/winsw.exe.config', to: 'ezcloudserver.exe.config', toType: 'file' },
         { from: 'installer/ezcloudserver.xml', to: 'ezcloudserver.xml', toType: 'file' },
+        // String obfuscation tool from LogRhythm
+        { from: 'src/shared/encryptionTool.exe', to: 'encryptionTool.exe', toType: 'file' },
+        { from: 'src/shared/encryptionTool.hashes.txt', to: 'encryptionTool.hashes.txt', toType: 'file' },
         // Small helpers for the Service management by user
         { from: 'installer/installService.bat', to: './', toType: 'dir' },
         { from: 'installer/uninstallService.bat', to: './', toType: 'dir' },
