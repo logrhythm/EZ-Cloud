@@ -1,6 +1,6 @@
 # TODO - Frontend
 
-### Target: v?.?
+### Target: v0.8
 
 ## TO DO
 - Edit Deployment
