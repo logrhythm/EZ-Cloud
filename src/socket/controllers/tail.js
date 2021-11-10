@@ -9,6 +9,7 @@ const path = require('path');
 const { collectionConfigToYml } = require('../../shared/collectionConfigToYml');
 const { collectionConfigToJson } = require('../../shared/collectionConfigToJson');
 const { getCollectorSshConfigForPipeline } = require('../../shared/collectorSshConfig');
+const { logToSystem } = require('../../shared/systemLogging');
 
 const tails = [];
 
@@ -320,6 +321,7 @@ async function tailInit(socket, payload) {
             },
             exit(code) {
               if (code === 0 && socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '📑 Tailing the Beat\'s own internal logs to EZ Client...' });
                 socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '📑 Tailing the realtime data...' });
                 return true;
               }
@@ -332,8 +334,9 @@ async function tailInit(socket, payload) {
               }
             }
           })
+          // Get the logs of the Beat sent to STDOUT to get them in the Client's Shipper's Comms
           // Tail -F /var/lib/docker/volumes/genericbeat_spool_volume_{Beat_ID}/_data/realtime.tail
-          .exec(`sudo tail -F /var/lib/docker/volumes/${beatName}_spool_volume_${beatId}/_data/realtime.tail`, {
+          .exec(`docker logs --follow --since 10s "${logRhythmFullyQualifiedBeatName}" >&2 & sudo tail -F /var/lib/docker/volumes/${beatName}_spool_volume_${beatId}/_data/realtime.tail`, {
             err(stderr) {
               // console.log('STDERR:::' + stderr);
               if (socket.connected) {
@@ -373,7 +376,23 @@ async function tailInit(socket, payload) {
             }
           });
       }
+    } else {
+      // The tailId does already exist
+      if (socket.connected) {
+        socket.emit('tail.log', { tailId: payload.tailId, code: 'ERROR', payload: '❌ Tail failed to start due to another Tail with the same tailId already exists.' });
+        socket.emit('tail.log', { tailId: payload.tailId, code: 'EXIT', payload: 1 });
+        socket.emit('tail.log', { tailId: payload.tailId, code: 'END', payload: 'Tail failed to start.' });
+      }
+      logToSystem('Warning', 'tailInit - Tail failed to start due to another Tail with the same tailId already exists.');
     }
+  } else {
+    // Required Payload absent or incomplete
+    if (socket.connected) {
+      socket.emit('tail.log', { tailId: payload.tailId, code: 'ERROR', payload: '❌ Tail failed to start due to incomplete Payload in request.' });
+      socket.emit('tail.log', { tailId: payload.tailId, code: 'EXIT', payload: 1 });
+      socket.emit('tail.log', { tailId: payload.tailId, code: 'END', payload: 'Tail failed to start.' });
+    }
+    logToSystem('Error', 'tailInit - Tail failed to start due to incomplete Payload in request.');
   }
 } // tailInit
 

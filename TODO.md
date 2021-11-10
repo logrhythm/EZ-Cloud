@@ -194,6 +194,7 @@
 - [x] NPM modules with vulnerabilities
 - [x] Generated Pipeline imported with a missing YAML file, causing OC to fail to start/restart
 - [x] Use SUDO to run the Tail for GenericBeat
+- [x] Improve logging for Tail for GenericBeat
 
 ## TO TEST
 
