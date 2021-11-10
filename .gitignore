@@ -19,6 +19,9 @@ dist/
 # Windows Service deamon
 daemon/
 
+# Inno Setup samples
+sandpit/is/
+
 # Logs
 logs
 *.log

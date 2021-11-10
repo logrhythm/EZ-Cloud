@@ -1,6 +1,14 @@
 {
+  "Sign in to EZ Cloud": "Sign in to EZ Cloud",
+  "Switch between Light and Dark mode": "Switch between Light and Dark mode",
+  "Username": "Username",
+  "Username is required": "Username is required",
+  "Password": "Password",
+  "Authentication failed.": "Authentication failed.",
+  "Login": "Login",
   "Save settings to local web browser.": "Save settings to local web browser.",
   "New Pipeline Details": "New Pipeline Details",
+  "Pipeline Details": "Pipeline Details",
   "Add new Pipeline": "Add new Pipeline",
   "Cancel": "Cancel",
   "Open this Pipeline": "Open this Pipeline",
@@ -37,5 +45,14 @@
   "Switch to this Collection Method.": "Switch to this Collection Method.",
   "Downloading Input Configuration file...": "Downloading Input Configuration file...",
   "Input Configuration file downloaded": "Input Configuration file downloaded",
-  "Problem while downloading Input Configuration file:": "Problem while downloading Input Configuration file:"
+  "Problem while downloading Input Configuration file:": "Problem while downloading Input Configuration file:",
+  "Edit Pipeline details": "Edit Pipeline details",
+  "Update Pipeline": "Update Pipeline",
+  "Pipeline name cannot be empty": "Pipeline name cannot be empty",
+  "Edit Deployment details": "Edit Deployment details",
+  "Delete Deployment": "Delete Deployment",
+  "Deploy": "Deploy",
+  "Un-deploy": "Un-deploy",
+  "This Stream has already been deployed on this OpenCollector.": "This Stream has already been deployed on this OpenCollector.",
+  "This will remove the configuration from the Shipper on the OpenCollector, but will leave the OpenCollector's Pipeline and SIEM Log Source as they are.": "This will remove the configuration from the Shipper on the OpenCollector, but will leave the OpenCollector's Pipeline and SIEM Log Source as they are."
 }

@@ -1,0 +1,32 @@
+
+logging.level: info
+logging.metrics.enabled: false
+logging.to_stderr: true
+output:
+  logstash:
+    backoff.init: 1
+    backoff.max: 60
+    bulk_max_size: 2048
+    compression_level: 3
+    hosts:
+    - open_collector:5044
+    loadbalance: false
+    pipelining: 2
+    slow_start: false
+    timeout: 30
+    ttl: 0
+queue:
+  spool:
+    file:
+      page_size: 4KiB
+      path: ${path.data}/spool.dat
+      permissions: 384
+      prealloc: true
+      size: 100MiB
+    read:
+      flush.timeout: 0s
+    write:
+      buffer_size: 1MiB
+      codec: cbor
+      flush.events: 16384
+      flush.timeout: 1s

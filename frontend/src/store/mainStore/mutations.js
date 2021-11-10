@@ -33,9 +33,15 @@ export function updateOpenCollector (state, payload) {
       }
     })
 
-    if (payload.pipelines) {
-      openCollectorToUpdate.pipelines = [].concat(payload.pipelines)
-    }
+    const arrayBranches = [
+      'pipelines',
+      'installedShippers'
+    ]
+    arrayBranches.forEach((branch) => {
+      if (payload[branch]) {
+        openCollectorToUpdate[branch] = [].concat(payload[branch])
+      }
+    })
   }
 }
 
@@ -63,16 +69,6 @@ export function addPipeline (state, payload) {
     }
 
     state.pipelines.push(newPipelines)
-
-    // And add this Pipeline to its Primary OC, if any is specified
-    if (payload.primaryOpenCollector && payload.primaryOpenCollector.length > 0) {
-      state.openCollectors.find(oc => oc.uid === payload.primaryOpenCollector).pipelines.push(
-        {
-          uid: newPipelines.uid,
-          enabled: false
-        }
-      )
-    }
   }
 }
 
@@ -134,5 +130,11 @@ export function updateJwtToken (state, payload) {
 export function loadShippersUrls (state, payload) {
   if (payload && Array.isArray(payload)) {
     state.shippersUrlsInternal = payload
+  }
+}
+
+export function getOpenCollectorLogSources (state, payload) {
+  if (payload && Array.isArray(payload)) {
+    state.openCollectorLogSources = payload
   }
 }

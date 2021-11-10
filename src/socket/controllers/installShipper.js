@@ -34,8 +34,7 @@ function installShipper(socket, payload) {
         payload.uid // UID of the Collector
         && payload.uid.length > 0
         && payload.installerSource // Source information as to where to downlad the Shipper from
-        &&
-        (
+        && (
           (
             payload.installerSource.url
             && payload.installerSource.url.length > 0
@@ -51,8 +50,7 @@ function installShipper(socket, payload) {
             && payload.installerSource.sha.hash
             && payload.installerSource.sha.hash.length > 0
           )
-          ||
-          (
+          || (
             payload.installerSource.jsBeat
             && payload.installerSource.jsBeat.url
             && payload.installerSource.jsBeat.url.length > 0
@@ -90,7 +88,7 @@ function installShipper(socket, payload) {
                   command: `mkdir /tmp/ez-shipper-install-${payload.jobId}`
                 },
                 {
-                  action: 'Download package to install // ' + `curl -o /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.filename} -L ${payload.installerSource.url}`,
+                  action: `Download package to install // curl -o /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.filename} -L ${payload.installerSource.url}`,
                   command: `curl -o /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.filename} -L ${payload.installerSource.url}`
                 },
                 {
@@ -168,7 +166,7 @@ function installShipper(socket, payload) {
               steps.push(
                 {
                   action: 'Check if jsBeat is not already installed',
-                  command: `if [ -e "/opt/jsBeat/bin/start.sh" ]; then echo -e "jsBeat already installed. Exiting."; exit 42; fi;`
+                  command: 'if [ -e "/opt/jsBeat/bin/start.sh" ]; then echo -e "jsBeat already installed. Exiting."; exit 42; fi;'
                 },
                 {
                   action: 'Clean up directories left by any previous attemp',
@@ -196,7 +194,7 @@ function installShipper(socket, payload) {
                 },
                 {
                   action: 'Remove previous symbolic link to older version, if any',
-                  command: `sudo rm -f /opt/jsBeat`,
+                  command: 'sudo rm -f /opt/jsBeat',
                   continueOnFailure: true
                 },
                 {
@@ -230,7 +228,7 @@ function installShipper(socket, payload) {
                 }
               );
             } // if (payload.installerSource.jsBeat)
-            
+
             if (
               payload.installerSource.nodeJs
               && payload.installerSource.nodeJs.url
@@ -271,7 +269,7 @@ function installShipper(socket, payload) {
                 },
                 {
                   action: 'Remove previous symbolic link to older version, if any',
-                  command: `sudo rm -f /opt/jsBeat/lib/node`,
+                  command: 'sudo rm -f /opt/jsBeat/lib/node',
                   continueOnFailure: true
                 },
                 {
@@ -286,7 +284,7 @@ function installShipper(socket, payload) {
                   action: 'Clean up. Remove the temporary directory and its content',
                   command: `rm -rf /tmp/ez-shipper-install-${payload.jobId}/`
                 }
-              )
+              );
             } // if (payload.installerSource.nodeJs && ...)
 
             // Now add the Service start
@@ -302,9 +300,8 @@ function installShipper(socket, payload) {
                   command: 'sudo service jsbeat status',
                   continueOnFailure: true
                 }
-              )
+              );
             } // if (payload.installerSource.jsBeat)
-
 
             // Add the Steps to the Exec stack
             steps.forEach((step, stepCounter) => {

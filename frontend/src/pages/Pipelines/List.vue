@@ -53,6 +53,11 @@
                 {{ $t('Open this Pipeline') }}
               </q-tooltip>
             </q-btn>
+            <q-btn flat dense icon="edit" @click="doPromptForPipelineDetails(props.row)">
+              <q-tooltip content-style="font-size: 1em">
+                {{ $t('Edit Pipeline details') }}
+              </q-tooltip>
+            </q-btn>
             <q-btn flat dense icon="delete" color="negative" @click="deletePipelinePrompt(props.row)">
               <q-tooltip content-style="font-size: 1em">
                 {{ $t('Delete Pipeline') }}
@@ -114,7 +119,7 @@
       <q-dialog v-model="promptForNewPipelineDetails" persistent>
         <q-card style="min-width: 350px">
           <q-card-section>
-            <div class="text-h6">{{ $t('New Pipeline Details') }}</div>
+            <div class="text-h6">{{ $t('Pipeline Details') }}</div>
           </q-card-section>
 
           <q-card-section class="q-pt-none">
@@ -122,12 +127,17 @@
           </q-card-section>
 
           <q-card-section class="q-pt-none">
-            <q-select dense v-model="newPipelineOpenCollector" :options="openCollectorsOptions" label="Primary Open Collector" />
+            <q-select dense v-model="newPipelineOpenCollector" :options="openCollectorsOptions" label="Primary Open Collector" emit-value map-options />
           </q-card-section>
 
-          <q-card-actions align="right" class="text-primary">
+          <q-card-section class="q-pt-none q-mt-md" v-if="newPipelineStatus">
+            <q-select dense v-model="newPipelineStatus" :options="statusOptions" label="Status" />
+          </q-card-section>
+
+          <q-card-actions align="right" class="text-primary q-mt-md">
             <q-btn flat :label="$t('Cancel')" v-close-popup />
-            <q-btn flat :label="$t('Add new Pipeline')" v-close-popup :disabled="!newPipelineName.length" @click="addNewPipeline()" />
+            <q-btn flat :label="$t('Update Pipeline')" v-if="newPipelineUid && newPipelineUid.length" v-close-popup :disabled="!newPipelineName.length" @click="updatePipeline()" />
+            <q-btn flat :label="$t('Add new Pipeline')" v-else v-close-popup :disabled="!newPipelineName.length" @click="updatePipeline()" />
           </q-card-actions>
         </q-card>
       </q-dialog>
@@ -137,11 +147,13 @@
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
+import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 
 export default {
   name: 'PagePipelinesList',
   mixins: [
-    mixinSharedLoadCollectorsAndPipelines // Shared functions to load the Collectors and Pipelines
+    mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
+    mixinSharedShipperAndCollectionsHelpers // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
   ],
   data () {
     return {
@@ -164,7 +176,10 @@ export default {
       // collectorsLoading: false,
       promptForNewPipelineDetails: false,
       newPipelineName: '',
-      newPipelineOpenCollector: null
+      newPipelineOpenCollector: null,
+      newPipelineUid: '',
+      newPipelineStatus: null,
+      statusOptions: ['New', 'Dev', 'Ready']
     } // return
   },
   computed: {
@@ -228,12 +243,17 @@ export default {
         }) // }).onOk(() => {
       }
     }, // deletePipelinePrompt
-    doPromptForPipelineDetails () {
-      this.newPipelineName = ''
-      this.newPipelineOpenCollector = null
+    doPromptForPipelineDetails (existing) {
+      this.newPipelineUid = (existing && existing.uid ? existing.uid : null)
+      this.newPipelineName = (existing && existing.name ? existing.name : '')
+      this.newPipelineOpenCollector = (existing && existing.primaryOpenCollector ? existing.primaryOpenCollector : null)
+      this.newPipelineStatus = (existing && existing.status ? existing.status : null)
+
+      // this.newPipelineName = ''
+      // this.newPipelineOpenCollector = null
       this.promptForNewPipelineDetails = true
     }, // doPromptForPipelineDetails
-    addNewPipeline () {
+    updatePipeline () {
       this.promptForNewPipelineDetails = false
       this.upsertPipeline(
         {
@@ -241,20 +261,13 @@ export default {
           caller: this,
           pipeline:
           {
+            uid: this.newPipelineUid,
             name: this.newPipelineName,
-            status: 'New',
-            primaryOpenCollector: (this.newPipelineOpenCollector && this.newPipelineOpenCollector.value && this.newPipelineOpenCollector.value.length ? this.newPipelineOpenCollector.value : null)
+            status: (this.newPipelineStatus && this.newPipelineStatus.length ? this.newPipelineStatus : 'New'),
+            primaryOpenCollector: (this.newPipelineOpenCollector && this.newPipelineOpenCollector.length ? this.newPipelineOpenCollector : null)
           }
         }
       )
-    },
-    collectionShipperDetails (shipperId) {
-      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'unknown', outputFormat: 'json' }
-      if (shipperId && shipperId.length) {
-        return this.collectionShippersOptions.find(cso => cso.value && cso.value === shipperId) || fallbackValue
-      } else {
-        return fallbackValue
-      }
     },
     collectionMethodDetails (shipperId, methodId) {
       // console.log('collectionMethodDetails: ', methodId)

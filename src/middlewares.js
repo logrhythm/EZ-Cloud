@@ -1,12 +1,12 @@
 // To manage the JWT Token
 const jwt = require('jsonwebtoken');
 
-// Load the System Logging functions
-const { logToSystem } = require('./shared/systemLogging');
-
 // Get SQL config
 const fs = require('fs');
 const path = require('path');
+
+// Load the System Logging functions
+const { logToSystem } = require('./shared/systemLogging');
 
 const configJwt = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'jwt.json'), 'utf8'));
 

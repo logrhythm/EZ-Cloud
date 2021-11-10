@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pa-sm">
-    <q-header elevated style="background: var(--q-color-dark);">
-      <q-toolbar class="q-gutter-x-sm">
+    <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
+      <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
 <!--
         - Pipeline Builder - move actions to menu / icon bar (including Settings icon/button)
         -- Return (to list / to Properties)
@@ -37,7 +37,7 @@
         <q-btn no-caps flat dense icon="search" label="Start background processing" color="secondary" @click="processInBackground = true" v-if="!processInBackground" />
         <q-btn no-caps flat dense icon="search_off" label="Stop background processing" @click="processInBackground = false" v-else />
         <q-separator vertical />
-        <q-btn no-caps flat dense icon="file_download" label="Export JQ" />
+        <q-btn no-caps flat dense icon="file_download" label="Export JQ" disable />
         <q-btn no-caps flat dense icon="visibility" label="Show JQ" v-if="!showJqOutput" @click="buildJqFilter(); buildJqTransform(); showJqOutput = true" />
         <q-btn no-caps flat dense icon="visibility_off" label="Hide JQ output" v-else @click="showJqOutput = false" />
 
@@ -69,9 +69,9 @@
                 <q-item class="q-pl-none" >
                 <q-toggle v-model="wrapSingleStringLog" label="Accept and Wrap non-JSON logs" />
                 </q-item>
-                <q-item class="q-pl-none" >
+                <!-- <q-item class="q-pl-none" >
                   <q-toggle v-model="extractMessageFieldOnly" label="Extract Filebeat '.message' only" />
-                </q-item>
+                </q-item> -->
                 <q-item  style="width: 20rem;">
                   <q-item-section avatar>
                     <q-icon name="speed" />
@@ -159,13 +159,14 @@
         <q-separator />
         <q-card-section>
           <div class="text-caption">
-            Manual input (one log at a time)
+            Manual input (one proper JSON log at a time)
           </div>
           <q-input
             v-model="queueInDataEntry"
             filled
             autogrow
-            label="queueInDataEntry"
+            input-style="min-height: 4em;"
+            label="Manual Data Entry"
             @keypress.shift.enter.prevent="queueInAdd({values: queueInDataEntry});"
           >
             <template v-slot:after>
@@ -175,14 +176,15 @@
         </q-card-section>
         <q-card-section>
           <div class="text-caption">
-            Input Q
+            Input Queue
           </div>
           <q-input
             v-model="queueInWindow"
             filled
             autogrow
+            input-style="min-height: 10em;"
             readonly
-            label="queueIn"
+            label="Read Only"
           >
             <template v-slot:after>
               <div class="column">
@@ -200,8 +202,9 @@
             v-model="queueProcessWindow"
             filled
             autogrow
+            input-style="min-height: 10em;"
             readonly
-            label="queueProcess"
+            label="Read Only"
           >
             <template v-slot:after>
               <!-- <q-btn round dense flat icon="send" @click="processLogSample({ logSample: queueProcess, options: {} }).finally({ console.log('processLogSample IS DONE'); })" :disable="Object.keys(queueProcess).length === 0"/> -->
@@ -251,6 +254,7 @@
           style="height: calc(100vh - (150px)); min-height: 10rem;"
           :items="orderBy(jsonPathes, 'name')"
           virtual-scroll-item-size="48"
+          :class="(darkMode ? 'dark' : '')"
         >
           <template v-slot="{ item, index }">
             <div
@@ -260,11 +264,11 @@
             >
               <div class="row content-center q-mr-sm q-gutter-y-none" style="width: 3rem;">
                 <q-tooltip content-style="font-size: 1em;">
-                  <q-icon name="stop" color="blue-10" />Relative frequency <span style="font-weight: bold;" v-if="maxSeenInLog != 0">{{ Math.round(item.seenInLogCount / maxSeenInLog * 100) }}%</span> ({{ item.seenInLogCount }}&nbsp;/&nbsp;{{ maxSeenInLog }}).<br>
-                  <q-icon name="stop" color="indigo-10" />Seen in <span v-if="processedLogsCount != 0"><span style="font-weight: bold;" >{{ Math.round(item.seenInLogCount / processedLogsCount * 100) }}%</span> of the logs ({{ item.seenInLogCount }}&nbsp;/&nbsp;{{ processedLogsCount }})</span><span style="font-weight: bold;" v-else>N/A</span>.
+                  <q-icon name="stop" :color="(darkMode ? 'blue-10' : 'blue-7')" />Relative frequency <span style="font-weight: bold;" v-if="maxSeenInLog != 0">{{ Math.round(item.seenInLogCount / maxSeenInLog * 100) }}%</span> ({{ item.seenInLogCount }}&nbsp;/&nbsp;{{ maxSeenInLog }}).<br>
+                  <q-icon name="stop" :color="(darkMode ? 'indigo-10' : 'indigo-7')" />Seen in <span v-if="processedLogsCount != 0"><span style="font-weight: bold;" >{{ Math.round(item.seenInLogCount / processedLogsCount * 100) }}%</span> of the logs ({{ item.seenInLogCount }}&nbsp;/&nbsp;{{ processedLogsCount }})</span><span style="font-weight: bold;" v-else>N/A</span>.
                 </q-tooltip>
-                <q-linear-progress :value="item.seenInLogCount / maxSeenInLog" color="blue-10" />
-                <q-linear-progress :value="item.seenInLogCount / processedLogsCount" color="indigo-10" />
+                <q-linear-progress :value="item.seenInLogCount / maxSeenInLog" :color="(darkMode ? 'blue-10' : 'blue-7')" />
+                <q-linear-progress :value="item.seenInLogCount / processedLogsCount" :color="(darkMode ? 'indigo-10' : 'indigo-7')" />
               </div>
               <div
                 v-for="d in item.depth" :key="d"
@@ -299,7 +303,8 @@
                   </div>
                 </q-tooltip>
                 <div
-                  class="json-style-leaf text-bold text-light-blue-3"
+                  class="json-style-leaf text-bold"
+                  :class="(darkMode ? 'text-light-blue-3' : 'text-light-blue-9')"
                 >
                   {{ item.leaf }}
                 </div>
@@ -329,7 +334,7 @@
                 stack-label
                 style="width: 18rem;"
                 class="q-mx-sm q-my-xs"
-                popup-content-class="bg-grey-9"
+                :popup-content-class="(darkMode ? 'bg-grey-9' : undefined)"
 
                 use-input
                 input-debounce="0"
@@ -365,7 +370,7 @@
                 :options="['Parse JSON', 'Stringify JSON', 'Fan out', 'Sub Rule selector', 'Sub Rule qualifier 1', 'Sub Rule qualifier 2', 'Sub Rule qualifier 3', 'Sub Rule qualifier 4', 'Timestamp selector - ISO8601 format', 'Timestamp selector - Unix Timestamp format']"
                 style="width: 20rem;"
                 class="q-mx-sm q-my-xs"
-                popup-content-class="bg-grey-9"
+                :popup-content-class="(darkMode ? 'bg-grey-9' : undefined)"
                 label="Modifiers"
                 stack-label
                 multiple
@@ -389,7 +394,7 @@
             type="textarea"
             filled
             readonly
-            :label="'is_' + beatName + '.jq'"
+            :label="'is_' + pipelineNameSafe + '.jq'"
             style="min-height: 10rem;"
             rows="21"
             class="fixed-font"
@@ -488,6 +493,8 @@ import { copyToClipboard } from 'quasar'
 import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
+import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import mixinSharedBuildJq from 'src/mixins/mixin-Shared-BuildJq'
 import Vue2Filters from 'vue2-filters'
 
 export default {
@@ -495,6 +502,8 @@ export default {
   mixins: [
     mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
     mixinSharedSocket, // Shared function and state to access the Socket.io
+    mixinSharedDarkMode, // Shared computed to access and update the DarkMode
+    mixinSharedBuildJq, // Shared JQ Building functions (Filter and Transform)
     Vue2Filters.mixin
   ],
   data () {
@@ -640,7 +649,7 @@ export default {
       queueInMaxSize: 200, // Maximum number of log messages in queueIn
       processedLogsMaxSize: 200, // Maximum number of log messages in processedLogs
       bufferStdOut: '', // Buffer to concatenate incoming STDOUT data until we find a carriage return
-      extractMessageFieldOnly: true, // Only extract the content of the .message field
+      extractMessageFieldOnly: false, // Only extract the content of the .message field
       showJqOutput: false, // Collapse / Hide the JQ panel
       jqFilterOutput: '', // The automacically built JQ Filter output
       jqTransformOutput: '', // The automacically built JQ Transform output
@@ -661,9 +670,15 @@ export default {
       return (pipeline && pipeline.name && pipeline.name.length ? pipeline.name : '')
     },
     beatName () {
-      // Beat Name will be PipleineName in lower case and without space no double quote
+      // // Beat Name will be PipleineName in lower case and without space no double quote
+      // return this.pipelineName
+      //   .replace(/[ "]/g, '_')
+      //   .toLowerCase()
+      return (this.pipeline && this.pipeline.collectionConfig && this.pipeline.collectionConfig.collectionShipper ? this.pipeline.collectionConfig.collectionShipper : '')
+    },
+    pipelineNameSafe () {
       return this.pipelineName
-        .replace(/[ "]/g, '_')
+        .replace(/[^a-zA-Z0-9_]/g, '_')
         .toLowerCase()
     },
     maxSeenInLog () {
@@ -1210,262 +1225,25 @@ export default {
     },
 
     buildJqFilter () {
-      let jqFilter = ''
-
-      // First pass to change the headers and static fields
-      jqFilter = this.jqFilterTemplate
-        .replace(/{{EZ_generation_timestamp}}/g, (new Date()).toISOString())
-        .replace(/{{EZ_generation_user}}/g, this.loggedInUser)
-        .replace(/{{EZ_stream_name_placeholder}}/g, this.pipelineName)
-        .replace(/{{EZ_stream_id_placeholder}}/g, this.pipelineUid)
-        .replace(/{{EZ_beatname_placeholder}}/g, this.beatName)
-
-      // And ship it back
-      this.jqFilterOutput = jqFilter
+      // Use buildJqFilterFromParams() from mixin-Shared-BuildJq
+      this.jqFilterOutput = this.buildJqFilterFromParams(
+        this.pipelineUid,
+        this.pipelineName,
+        this.beatName,
+        this.loggedInUser
+      )
     },
 
     buildJqTransform () {
-      let jqTransform = ''
-
-      // First pass to change the headers and static fields
-      jqTransform = this.jqTransformTemplate
-        .replace(/{{EZ_generation_timestamp}}/g, (new Date()).toISOString())
-        .replace(/{{EZ_generation_user}}/g, this.loggedInUser)
-        .replace(/{{EZ_stream_name_placeholder}}/g, this.pipelineName)
-        .replace(/{{EZ_stream_id_placeholder}}/g, this.pipelineUid)
-        .replace(/{{EZ_beatname_placeholder}}/g, this.beatName)
-
-      // What do we use for original_message?
-      let originalMessagePlaceholder = '. | tojson'
-      let messagePlaceholder = '.input'
-      if (this.extractMessageFieldOnly) {
-        originalMessagePlaceholder = '.message'
-        messagePlaceholder = '.message'
-      }
-
-      // Fanning out the log
-      const flattenArrays = [] // array of the IDs
-      const flattenArrayPlaceholder = []
-      const flattenArrayPlaceholderTemplate = '        "{{EZ_flatten_array_id}}": flatten_array({{EZ_message_root}}{{EZ_flatten_array_field_path}}),'
-      const flattenArrayAddFieldPlaceholderTemplate = '    add_field({{EZ_flatten_array_name_placeholder}}{{EZ_flatten_array_field_doted_path_placeholder}}; .output.{{EZ_mdi_field_placeholder}}) |'
-      const flattenArrayAddFieldPlaceholder = [] // multiple strings
-
-      // Mapping of the Timestamp field(s)
-      const timestampAddFieldPlaceholderTemplate = '    add_field(({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}{{EZ_date_parser_placeholder}}); .output.normal_msg_date) |'
-      const dateParserIso8601Template = ' | fromdate' // Used for Timestamp - ISO8601 format
-      const timestampAddFieldPlaceholder = [] // multiple strings
-
-      // Mapping of the fields
-      const addFieldPlaceholderTemplate = '    add_field({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}; .output.{{EZ_mdi_field_placeholder}}) |'
-      const addFieldPlaceholder = [] // multiple strings
-
-      // MDI Sub-rules
-      const subRulesAddFieldPlaceholderTemplate = '    add_field({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}; .output.{{EZ_mdi_tag_placeholder}}) |'
-      const subRulesAddFieldPlaceholder = []
-
-      let messageRoot = ''
-      if (this.extractMessageFieldOnly) {
-        messageRoot = '.message | fromjson | '
-      }
-
-      // Fanning out the log and Sub Rules
-      this.jsonPathes.forEach(path => {
-        if (path.modifiers && path.modifiers.length) {
-          path.modifiers.forEach(pm => {
-            if (pm === 'Fan out') {
-              const flattenArrayId = 'flatten_array_' + path.name.replace(/[^a-zA-Z0-9]/g, '_')
-              flattenArrays.push(path.name)
-
-              flattenArrayPlaceholder.push(
-                flattenArrayPlaceholderTemplate
-                  .replace(/{{EZ_flatten_array_id}}/g, flattenArrayId)
-                  .replace(/{{EZ_message_root}}/g, messageRoot)
-                  .replace(/{{EZ_flatten_array_field_path}}/g, path.name)
-              )
-            } else if (pm === 'Sub Rule selector') {
-              subRulesAddFieldPlaceholder.push(
-                subRulesAddFieldPlaceholderTemplate
-                  .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-                  .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
-                  .replace(/{{EZ_mdi_tag_placeholder}}/g, 'tag1')
-              )
-            } else if (pm === 'Sub Rule qualifier 1') {
-              subRulesAddFieldPlaceholder.push(
-                subRulesAddFieldPlaceholderTemplate
-                  .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-                  .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
-                  .replace(/{{EZ_mdi_tag_placeholder}}/g, 'tag2')
-              )
-            } else if (pm === 'Sub Rule qualifier 2') {
-              subRulesAddFieldPlaceholder.push(
-                subRulesAddFieldPlaceholderTemplate
-                  .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-                  .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
-                  .replace(/{{EZ_mdi_tag_placeholder}}/g, 'tag3')
-              )
-            } else if (pm === 'Sub Rule qualifier 3') {
-              subRulesAddFieldPlaceholder.push(
-                subRulesAddFieldPlaceholderTemplate
-                  .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-                  .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
-                  .replace(/{{EZ_mdi_tag_placeholder}}/g, 'tag4')
-              )
-            } else if (pm === 'Sub Rule qualifier 4') {
-              subRulesAddFieldPlaceholder.push(
-                subRulesAddFieldPlaceholderTemplate
-                  .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-                  .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
-                  .replace(/{{EZ_mdi_tag_placeholder}}/g, 'tag5')
-              )
-            }
-          })
-        }
-      })
-
-      this.jsonPathes.forEach(path => {
-        // First check if the field is part (sub branch) of a Fanned out branch
-        let isSubFannedOutBranch = false
-        let flattenArrayPathName = ''
-        if ((path.mappedField && path.mappedField.length) || (path.modifiers && path.modifiers.length)) {
-          flattenArrays.forEach(fa => {
-            if (
-              path.name &&
-              path.name.indexOf(fa) === 0 &&
-              fa.length > flattenArrayPathName.length
-            ) {
-              flattenArrayPathName = fa
-              isSubFannedOutBranch = true
-            }
-          })
-        }
-
-        // Mapping of the fields
-        if (path.mappedField && path.mappedField.length) {
-          if (isSubFannedOutBranch) {
-            // Field is a Sub of a Fanned out branch
-            flattenArrayAddFieldPlaceholder.push(
-              flattenArrayAddFieldPlaceholderTemplate
-                .replace(
-                  /{{EZ_flatten_array_name_placeholder}}/g,
-                  'flatten_array_' + flattenArrayPathName.replace(/[^a-zA-Z0-9]/g, '_') // rebuild the flatten array ID
-                )
-                .replace(
-                  /{{EZ_flatten_array_field_doted_path_placeholder}}/g,
-                  path.name
-                    .replace(flattenArrayPathName, '') // Remove the part of the path that is the flatten array's own path
-                    .replace(/\[\d+\]/, '') // remove any array numerical ID (like [0], [1], etc...)
-                )
-                .replace(/{{EZ_mdi_field_placeholder}}/g, path.mappedField)
-            )
-          } else {
-            // Standard field
-            addFieldPlaceholder.push(
-              addFieldPlaceholderTemplate
-                .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-                .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
-                .replace(/{{EZ_mdi_field_placeholder}}/g, path.mappedField)
-            )
-          }
-        }
-
-        // Mapping the Timestamp field(s)
-        if (path.modifiers && path.modifiers.length) {
-          path.modifiers.forEach(pm => {
-            if (
-              (pm === 'Timestamp selector - ISO8601 format') ||
-              (pm === 'Timestamp selector - Unix Timestamp format')
-            ) {
-              // Setup the date/time parser first
-              let dateParser = ''
-              if (
-                (pm === 'Timestamp selector - ISO8601 format')
-              ) {
-                dateParser = dateParserIso8601Template
-              }
-
-              if (isSubFannedOutBranch) {
-                // Field is a Sub of a Fanned out branch
-                timestampAddFieldPlaceholder.push(
-                  timestampAddFieldPlaceholderTemplate
-                    .replace(
-                      /{{EZ_message_placeholder}}/g,
-                      'flatten_array_' + flattenArrayPathName.replace(/[^a-zA-Z0-9]/g, '_') // rebuild the flatten array ID
-                    )
-                    .replace(
-                      /{{EZ_field_doted_path_placeholder}}/g,
-                      path.name
-                        .replace(flattenArrayPathName, '') // Remove the part of the path that is the flatten array's own path
-                        .replace(/\[\d+\]/, '') // remove any array numerical ID (like [0], [1], etc...)
-                    )
-                    .replace(
-                      /{{EZ_date_parser_placeholder}}/g,
-                      dateParser
-                    )
-                )
-              } else {
-                // Standard field
-                timestampAddFieldPlaceholder.push(
-                  timestampAddFieldPlaceholderTemplate
-                    .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-                    .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
-                    .replace(/{{EZ_date_parser_placeholder}}/g, dateParser)
-                )
-              }
-            }
-          })
-        }
-
-        // // MDI Sub-rules
-        // if (path.mappedField && path.mappedField.length && path.mappedField.indexOf('tag') === 0) {
-        //   subRulesAddFieldPlaceholder.push(
-        //     subRulesAddFieldPlaceholderTemplate
-        //       .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-        //       .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
-        //       .replace(/{{EZ_mdi_tag_placeholder}}/g, path.mappedField)
-        //   )
-        // }
-      })
-
-      // // const addFieldPlaceholderTemplate = '    add_field({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}; .output.{{EZ_mdi_field_placeholder}}) |'
-      // // const addFieldPlaceholder = [] // multiple strings
-      // this.jsonPathes.forEach(path => {
-      //   // // Mapping of the fields
-      //   // if (path.mappedField && path.mappedField.length) {
-      //   //   addFieldPlaceholder.push(
-      //   //     addFieldPlaceholderTemplate
-      //   //       .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-      //   //       .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
-      //   //       .replace(/{{EZ_mdi_field_placeholder}}/g, path.mappedField)
-      //   //   )
-      //   // }
-      // })
-
-      // // MDI Sub-rules
-      // // const subRulesAddFieldPlaceholderTemplate = '    add_field({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}; .output.{{EZ_mdi_tag_placeholder}}) |'
-      // // const subRulesAddFieldPlaceholder = []
-      // this.jsonPathes.forEach(path => {
-      //   // // MDI Sub-rules
-      //   // if (path.mappedField && path.mappedField.length && path.mappedField.indexOf('tag') === 0) {
-      //   //   subRulesAddFieldPlaceholder.push(
-      //   //     subRulesAddFieldPlaceholderTemplate
-      //   //       .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-      //   //       .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
-      //   //       .replace(/{{EZ_mdi_tag_placeholder}}/g, path.mappedField)
-      //   //   )
-      //   // }
-      // })
-
-      // Put this all together
-      jqTransform = jqTransform
-        .replace(/{{EZ_flatten_array_placeholder}}/g, flattenArrayPlaceholder.join('\r'))
-        .replace(/{{EZ_original_message_placeholder}}/g, originalMessagePlaceholder)
-        .replace(/{{EZ_timestamp__add_field_placeholder}}/g, timestampAddFieldPlaceholder.join('\r'))
-        .replace(/{{EZ_flatten_array__add_field_placeholder}}/g, flattenArrayAddFieldPlaceholder.join('\r'))
-        .replace(/{{EZ_add_field_placeholder}}/g, addFieldPlaceholder.join('\r'))
-        .replace(/{{EZ_sub_rules__add_field_placeholder}}/g, subRulesAddFieldPlaceholder.join('\r'))
-
-      // And ship it back
-      this.jqTransformOutput = jqTransform
+      // Use buildJqTransformFromParams() from mixin-Shared-BuildJq
+      this.jqTransformOutput = this.buildJqTransformFromParams(
+        this.pipelineUid,
+        this.pipelineName,
+        this.beatName,
+        this.loggedInUser,
+        this.extractMessageFieldOnly,
+        this.jsonPathes
+      )
     },
 
     save () {
@@ -1628,12 +1406,31 @@ export default {
   color: rgb(80, 112, 255);
 }
 .json-type-number {
-  color: rgb(21, 173, 66);
+  color: rgb(19, 158, 61);
 }
 .json-type-boolean {
-  color: rgb(32, 227, 253);
+  color: rgb(0, 174, 200);
 }
 .json-type- { /* to catch empty types */
+  color: rgb(117, 115, 1);
+}
+
+.dark .json-type-object {
+  color: rgb(138, 43, 226);
+}
+.dark .json-type-array {
+  color: rgb(148, 14, 41);
+}
+.dark .json-type-string {
+  color: rgb(80, 112, 255);
+}
+.dark .json-type-number {
+  color: rgb(21, 173, 66);
+}
+.dark .json-type-boolean {
+  color: rgb(32, 227, 253);
+}
+.dark .json-type- { /* to catch empty types */
   color: rgb(117, 115, 1);
 }
 
@@ -1658,9 +1455,13 @@ export default {
   background-color: rgb(17, 116, 129);
   color: white;
 }
-.json-path-line:hover {
+.json-path-line.dark:hover {
   /* background-color: rgb(49, 18, 42); */
   background-image: linear-gradient(rgba(49, 18, 42, .75), rgba(49, 18, 42, 1), rgba(49, 18, 42, .75));
+}
+.json-path-line:hover {
+  /* background-color: rgb(148, 45, 124); */
+  background-image: linear-gradient(rgba(148, 45, 124, 0.05), rgba(148, 45, 124, 0.15), rgba(148, 45, 124, 0.05));
 }
 .force-long-text-wrap {
 

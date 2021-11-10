@@ -1,5 +1,205 @@
 # TODO - Backend
 
+### Target: v0.7
+
+## TO DO
+- [x] Build packaged version
+  - [x] Compress into a versionned archive
+- [ ] Build full installer
+  - [x] Build solution that can be called from WebPack during build (`npm run build`)
+  - [x] Offer options to:
+    - [x] Install:
+      - [x] EZ Backend
+      - [x] EZ Frontend
+      - [x] NodeJS
+    - [x] Create and Configure `EZ` SQL Database
+    - [x] Create / Configure EZ Server Service
+    - [x] Start EZ Server Service immediately
+    - [x] Automatically generate private tokens for:
+      - [x] For JWT (Authentication token encryption/decripion key)
+      - [x] For AES (Encryption / Decryption private key)
+    - [x] Open and manually review:
+      - [x] JWT configuration file
+      - [x] AES configuration file
+      - [x] HTTPS Certificate file
+      - [x] HTTPS RSA Private Key file
+      - [x] HTTPS Encrypted Key file
+  - [x] Copy files in right location (Program Files)
+  - [x] Create Start menu shortcuts to:
+    - [x] Configuration Folder
+    - [x] Configuration Sample Folder
+    - [x] Access Source Code on GitHub
+    - [x] Uninstall EZ Cloud Server
+  - [x] Generate random tokens, if asked, for:
+    - [x] JWT
+    - [x] AES
+  - [x] Prompt for SQL Credentials and details
+    - [x] User
+    - [x] Password
+    - [x] Host
+    - [x] Port
+  - [ ] ~~Download and install NodeJS if requested~~ (👈 In the interest of time, let's just package a version of NodeJS with the installer)
+  - [x] Package NodeJS
+    - [x] Install it if requested
+  - [x] Build clean and parameters accepting script to create EZ Server Service
+    - [x] Build scripts
+    - [x] Create Webpack config to build the distributable version
+    - [x] Integrate the distributable version into the Installer
+    - [x] Add necessary Uninstall steps and actions
+  - [x] Update `create_database.bat` to allow for unprompted install (not asking the user to press a key to continue)
+  - [x] Ability to fully Un-install
+    - [x] Stop EZ Server Service
+    - [x] Delete EZ Server Service
+  - [ ] Allow for Silent install
+    - [x] Apply default settings during Silent install
+    - [ ] Ability to specify user choice from command line, to decide:
+      - [ ] Install EZ Frontend
+      - [ ] Install NodeJS
+      - [ ] Create and Configure `EZ` SQL Database
+      - [ ] Create / Configure EZ Server Service
+      - [ ] Start EZ Server Service immediately
+      - [ ] Automatically generate private tokens for:
+        - [ ] For JWT (Authentication token encryption/decripion key)
+        - [ ] For AES (Encryption / Decryption private key)
+  - [ ] Sign Install package
+  - [x] Add Welcome page
+  - [x] Add License page
+    - [x] Modify WebPack script to use the MIT License from Repo
+- [x] Remove dependance to config/ssh.json
+- [x] Collect different Shippers versions for the Frontend
+  - [x] Collect running OC Beats and their versions
+    - [x] Get active Beats names and version into a JSON
+    - [x] Merge CheckOpenCollectorBeatsVersions and CheckOCVersion
+  - [x] Collect jsBeat version
+- [x] Store different Shippers information in EZ DB
+- [x] Reverse engineer Log Source creation and Virtualisation process
+  - [x] LS Type
+    - [x] List LS Types
+    - [x] Create LS Types
+    - [x] Update LS Types
+  - [x] MPE Rules
+    - [x] List MPE Rules
+    - [x] Create MPE Rules
+    - [x] Update MPE Rules
+  - [x] MPE Sub-Rules
+    - [x] List MPE Sub-Rules
+    - [x] Create MPE Sub-Rules
+    - [x] Update MPE Sub-Rules
+  - [x] Processing Policy
+    - [x] List Processing Policy
+    - [x] Create Processing Policy
+    - [x] Update Processing Policy
+  - [x] LS Virtualisation
+    - [x] List LS Virtualisation
+    - [x] Create LS Virtualisation
+    - [x] Update LS Virtualisation
+  - [x] Mapping Virtualisation to Open Collector LS
+    - [x] List Entities Hosts
+    - [x] List Log Sources
+    - [x] Add LS Virtualisation to LS
+    - [x] Update LS Virtualisation to LS
+- [x] Build SQL functions to
+  - [x] Upsert LS Type
+    - Param: UID
+    - Param: Name
+  - [x] Clone MPE Rules
+    - Param: UID
+    - Param: Name
+    - Param: SourceMsgSourceTypeID (default 1000772 // "BETA : Syslog - Open Collector - Azure Event Hub")
+    - Param: TargetCommonEventID (default 1029941 // Information // Generic Record)
+    - Param: TargetRuleStatus (default 2 // Test)
+  - [x] Upsert MPE Sub-Rules
+    - Param: UID
+    - Param: SubRuleUid
+    - Param: SubRuleName
+    - Param: TargetCommonEventID (default 1029941 // Information // Generic Record)
+    - Param: TargetRuleStatus (default 2 // Test)
+    - Param: ForwardAsEvent (default 0 // 0 Not an Event, 1 Is an event)
+    - Param: Tag1 .. Tag10 (default '*')
+  - [x] Upsert Processing Policy
+    - Param: UID
+    - Param: Name
+    - Param: MPEPolicy_Name
+  - [x] Upsert LS Virtualisation Template
+    - Param: Virt_Template_UID (default '0d7544aa-5760-4c5e-be62-26262f3cd1db', UID of the EZ Cloud Template)
+    - Param: Virt_Template_Name (default 'EZ CLoud', Name of the new Template)
+    - Param: ItemToInsert_ID (default NULL, ID of Template Item to insert, or NULL if none)
+    - Param: ItemToInsert_SortOrder (default NULL, SortOrder of the Template Item to insert, or NULL if none or happy to get the Max +1)
+    - Param: ItemToDelete_ID (default NULL, ID of Template Item to delete, or NULL if none)
+  - [x] Upsert LS Virtualisation Template Item
+    - Param: UID // UID of the Log Source
+    - Param: Name // Name of Log Source
+    - Param: RegexFilter (default NULL, If not provided, we build it up from UID and Name)
+    - Param: MPEProcessingPolicyID (default NULL, If not provided, we look for it. If none found, it will error and do nothing)
+  - [x] List Open Collector LS
+    - Get Log Sources
+    - Get Host Identifiers as JSON object
+  - [x] Add LS Virtualisation to LS
+    - Param: UID // UID of the Log Source
+    - Param: OpenCollectorMotherLogSourceID // Log Source ID of the Open Collector
+    - Param: Virt_Template_UID (default '0d7544aa-5760-4c5e-be62-26262f3cd1db', UID of the EZ Cloud Template)
+    - Param: OpenCollectorLogSourceTypeID (default 1000759, ID of the Open collector Log Source Type)
+- [x] Build API endpoints to
+  - [x] Create LS Type
+  - [x] Create MPE Rules
+  - [x] Create MPE Sub-Rules
+  - [x] Create Processing Policy
+  - [x] Create LS Virtualisation
+  - [x] Create LS Virtualisation Item
+  - [x] List Open Collector LS
+  - [x] Add LS Virtualisation Item to LS
+- [x] Update UpdateCollector API to persist `.pipelines` into TABLE `openCollectorsPipelines`
+- [x] Build API endpoints to enable stream on OC for production
+  - [x] Drop Beat configuration in right location
+    - [x] For Filebeat
+    - [x] For jsBeat
+    - [x] For LR Generic REST Beat
+  - [x] Create `/oc/DeleteStreamConfigurationForBeat` API endpoint to remove/disable the Beat configuration
+  - [x] Import JQ to OC
+    - [x] Create Bash command lines/script
+    - [x] Update `upsert_Log_Source_Virtualisation_Template_Item` SQL SP to use and sanitise the right Beat and Pipeline names
+    - [x] Create Pipeline template
+    - [x] Create API enpoint
+- [x] Tail for LogRhythm Beats
+  - [x] Generic Beat
+    - [x] Tail
+    - [x] Kill Tail Shipper
+- Process of onboarding a LS (Beat Config, JQ Pipeline and SIEM LogSource)
+  - New Log Source
+    - Drop Beat configuration in right location
+    - Import JQ to OC
+    - Create LS Type
+    - Create MPE Rule
+    - Create MPE Sub-Rule(s)
+      - Based on Field Mapping / Sub Rules ID
+    - Create Processing Policy
+    - Create LS Virtualisation
+    - Create new LS Virtualisation Item and associate it to LS Virtualisation
+    - Search related Open Collector LS
+    - Add LS Virtualisation to Open Collector LS
+  - Exisiting Log Source / Update of field mapping
+    - Update Beat configuration in right location
+    - Re-import JQ to OC
+    - Modify MPE Sub-Rule(s)
+    - Modify Processing Policy
+    - Modify LS Virtualisation Item
+- Process for un-deploying a LS on OC
+  - Delete Beat configuration from OC
+
+## TO FIX
+- [x] Damn Tedious saving NULL as 'null' in OC list
+- [x] Refactor: upsert_Log_Source_Virtualisation_Template to not need to add a SP to EMDB
+- [x] Refactor: upsert_Processing_Policy to not need to add a SP to EMDB
+- [ ] Add a KILL SIGTERM to the post Tail cleaning up process
+- [x] NPM modules with vulnerabilities
+- [x] Generated Pipeline imported with a missing YAML file, causing OC to fail to start/restart
+- [x] Use SUDO to run the Tail for GenericBeat
+- [x] Improve logging for Tail for GenericBeat
+
+## TO TEST
+
+---
+
 ### Target: v0.6
 
 ## TO DO

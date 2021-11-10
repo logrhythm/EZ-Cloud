@@ -1,5 +1,5 @@
 [![Last Release](https://badgen.net/badge/release/v0.6.0/green)](https://github.com/TonyMasse/EZ-Cloud/releases)
-[![Dev Version](https://badgen.net/badge/dev/v0.6.x/orange)](https://github.com/TonyMasse/EZ-Cloud/tree/v0.6.0)
+[![Dev Version](https://badgen.net/badge/dev/v0.7.0/orange)](https://github.com/TonyMasse/EZ-Cloud/tree/v0.7.0)
 
 # EZ-Cloud
  EZ-Cloud for Legacy SIEM
@@ -10,7 +10,7 @@ Check [Releases](https://github.com/TonyMasse/EZ-Cloud/releases) for version spe
 
 ## Requirements
 - NodeJS (v12.16 or above)
-- MS SQL (v2012 or above)
+- MS SQL (v2016 or above)
 
 ## Setup
 See [Releases](https://github.com/TonyMasse/EZ-Cloud/releases) for version specific installation instructions

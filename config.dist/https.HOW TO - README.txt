@@ -1,0 +1,3 @@
+cd ../config/
+openssl req -x509 -newkey rsa:2048 -keyout https.keytmp.pem -out https.cert.pem -days 365
+openssl rsa -in https.keytmp.pem -out https.key.pem

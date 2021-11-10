@@ -1,0 +1,25 @@
+
+logging.level: info
+logging.metrics.enabled: false
+logging.to_stderr: true
+output.file:
+  path: ${path.data}
+  filename: realtime.tail
+  rotate_every_kb: 10240
+  number_of_files: 2
+  permissions: 0644
+queue:
+  spool:
+    file:
+      page_size: 4KiB
+      path: ${path.data}/spool.dat
+      permissions: 384
+      prealloc: true
+      size: 100MiB
+    read:
+      flush.timeout: 0s
+    write:
+      buffer_size: 1MiB
+      codec: cbor
+      flush.events: 16384
+      flush.timeout: 1s

@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pa-sm">
-    <q-header elevated style="background: var(--q-color-dark);">
-      <q-toolbar class="q-gutter-x-sm">
+    <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
+      <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
         <q-btn no-caps flat dense icon="arrow_back" label="Return to Properties" :to="'/Pipelines/' + this.pipelineUid + '/Properties'" />
         <q-separator vertical />
         <q-btn no-caps flat dense icon="save" label="Save" color="primary" :disabled="!needsSaving" @click="save()" />
@@ -106,14 +106,13 @@
             <q-card-section>
                 <q-select
                   dense
-                  standout="bg-blue-5 text-white"
+                  standout="bg-blue-4 text-white"
                   v-model="collectionShipper"
                   emit-value
                   map-options
                   :options="collectionShippersOptions"
                   style="min-width: 20rem;"
                   class="q-mx-sm q-my-xs"
-                  popup-content-class="bg-grey-9"
                 />
             </q-card-section>
           </q-card-section>
@@ -126,14 +125,13 @@
             <q-card-section>
                 <q-select
                   dense
-                  standout="bg-blue-5 text-white"
+                  standout="bg-blue-4 text-white"
                   v-model="collectionMethod"
                   emit-value
                   map-options
                   :options="collectionMethodsOptions.filter(cmo => cmo.shipper == collectionShipper)"
                   style="min-width: 20rem;"
                   class="q-mx-sm q-my-xs"
-                  popup-content-class="bg-grey-9"
                 />
             </q-card-section>
           </q-card-section>
@@ -225,6 +223,7 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
+import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import FieldEditor from 'components/Pipelines/Collection/FieldEditor.vue'
 // import { dump } from 'js-yaml'
 import Vue2Filters from 'vue2-filters'
@@ -233,6 +232,7 @@ import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml
 export default {
   mixins: [
     mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
+    mixinSharedDarkMode, // Shared computed to access and update the DarkMode
     Vue2Filters.mixin
   ],
   components: { FieldEditor },
@@ -425,6 +425,10 @@ export default {
             newConf['request.url'] = 'https://CHANGE_THIS'
             // newConf['request.method'] = 'GET'
           }
+          if (this.activeCollectionMethod === 'genericbeat') {
+            newConf.config_version = 2
+            newConf['request.url'] = 'https://CHANGE_THIS'
+          }
         }
 
         // For jsBeat:
@@ -447,6 +451,29 @@ export default {
               msgDelimiterRegex: ''
             }
           }
+        }
+
+        // For genericbeat:
+        if (this.activeCollectionShipper === 'genericbeat') {
+          if (this.activeCollectionMethod === 'genericbeat') {
+            newConf.url = ''
+            newConf.request_method = 'GET'
+            newConf.auth_type = 'noauth'
+            newConf.filter_type = 'nofilter'
+            newConf.heartbeatdisabled = false
+            newConf.heartbeatinterval = 60
+            newConf.pagination_type = 'nopagination'
+            newConf.period = '60s'
+            newConf.sorting_enabled = false
+            newConf.time_format = '2006-01-02T15:04:05Z07:00'
+          }
+
+          // We are limited to 12 characters to ID the Beat
+          // - let's use the first 3 chars from the UID, so to reduce the chances of collision
+          // - then add the Stream name and full UID
+          // - then truncate back to 12 chars max.
+          newConf.beatIdentifier = String(this.pipeline.uid.substring(0, 3) + '_' + this.pipeline.name.replace(/[^a-zA-Z0-9]/g, '_') + '_' + this.pipeline.uid).substring(0, 12)
+          newConf.logsource_name = this.pipeline.name
         }
 
         this.collectionConfig = newConf

@@ -1,6 +1,6 @@
 {
   "name": "ez-cloud-client",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "User Interface for EZ-Cloud for Legacy SIEM",
   "productName": "EZ Cloud Client",
   "author": "Tony Massé <tony.masse@logrhythm.com>",
@@ -15,25 +15,25 @@
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
-    "@quasar/extras": "^1.0.0",
-    "axios": "^0.21.1",
-    "core-js": "^3.6.5",
+    "@quasar/extras": "^1.11.1",
+    "axios": "^0.21.4",
+    "core-js": "^3.18.0",
     "js-yaml": "^3.14.1",
-    "quasar": "^1.0.0",
-    "socket.io-client": "^4.0.1",
-    "vue-i18n": "^8.0.0",
+    "quasar": "^1.16.0",
+    "socket.io-client": "^4.2.0",
+    "vue-i18n": "^8.26.1",
     "vue2-filters": "^0.12.0"
   },
   "devDependencies": {
-    "@quasar/app": "^2.0.0",
-    "@quasar/quasar-app-extension-qmarkdown": "^1.4.1",
+    "@quasar/app": "^2.2.10",
+    "@quasar/quasar-app-extension-qmarkdown": "^1.4.3",
     "babel-eslint": "^10.0.1",
-    "eslint": "^7.21.0",
-    "eslint-config-standard": "^16.0.2",
-    "eslint-plugin-import": "^2.14.0",
+    "eslint": "^7.32.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.24.2",
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-promise": "^4.0.1",
-    "eslint-plugin-vue": "^7.7.0",
+    "eslint-plugin-vue": "^7.18.0",
     "eslint-webpack-plugin": "^2.4.0"
   },
   "browserslist": [

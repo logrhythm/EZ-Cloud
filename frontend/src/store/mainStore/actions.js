@@ -175,6 +175,40 @@ export function getOpenCollectorsFilebeatVersion ({ state }, payload) {
   })
 }
 
+export function getOpenCollectorsjsBeatVersion ({ state }, payload) {
+  getDataFromSite({
+    apiUrl: '/oc/CheckJsBeatVersion',
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    targetObjectName: (payload && payload.targetObjectName ? payload.targetObjectName : ''),
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    apiCallParams: (payload && payload.apiCallParams ? payload.apiCallParams : undefined),
+    silent: true,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: (payload && payload.debug ? payload.debug : false)
+  })
+}
+
+export function getOpenCollectorsOcAndActiveBeatsVersion ({ state }, payload) {
+  getDataFromSite({
+    apiUrl: '/oc/CheckOpenCollectorAndBeatsVersions',
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    targetObjectName: (payload && payload.targetObjectName ? payload.targetObjectName : ''),
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    apiCallParams: (payload && payload.apiCallParams ? payload.apiCallParams : undefined),
+    silent: true,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: (payload && payload.debug ? payload.debug : false)
+  })
+}
+
 // ######################################################################
 // PIPELINES
 // ######################################################################
@@ -272,6 +306,10 @@ export function deletePipeline ({ state, commit }, payload) {
   }
 }
 
+// ######################################################################
+// SHIPPERS URLS
+// ######################################################################
+
 export function loadShippersUrls ({ state, commit }, payload) {
   if (state.shippersUrlsInternal.length === 0) {
     console.log('☁️ Downloading Shippers\' details and URLs...')
@@ -299,6 +337,100 @@ export function loadShippersUrls ({ state, commit }, payload) {
         console.log('⚠️ [API ERROR] Loading error: ' + error.message)
       })
   }
+}
+
+// ######################################################################
+// COLLECTOR LOG SOURCES
+// ######################################################################
+
+export function forgetOpenCollectorLogSources ({ state, commit }) {
+  // Usefull when login out, for example
+  // Update the Store with an empty array
+  commit('getOpenCollectorLogSources', [])
+}
+
+export function getOpenCollectorLogSources ({ state, commit }, payload) {
+  getDataFromSite({
+    apiUrl: '/logrhythmCore/GetOpenCollectorLogSourcesList',
+    dataLabel: 'Open Collector Log Sources',
+    countDataLabel: true,
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    commit: commit,
+    targetCommitName: 'getOpenCollectorLogSources',
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    silent: false,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    debug: false
+  })
+}
+
+// ######################################################################
+// DEPLOYMENTS
+// ######################################################################
+
+export function deleteDeployment ({ state, dispatch }, payload) {
+  if (payload && payload.openCollector && payload.openCollector.pipelines && Array.isArray(payload.openCollector.pipelines) && payload.pipelineUid && payload.pipelineUid.length) {
+    const newOpenCollector = Object.assign(
+      {},
+      payload.openCollector,
+      { pipelines: payload.openCollector.pipelines.filter(p => p.uid !== payload.pipelineUid) }
+    )
+
+    const newPayload = {
+      pushToApi: payload.pushToApi,
+      caller: payload.caller,
+      openCollector: newOpenCollector
+    }
+
+    // And push it out for Update
+    return dispatch('upsertOpenCollector', newPayload)
+  }
+}
+
+export function callDeploymentStepApi ({ state }, payload) {
+  if (
+    payload &&
+    payload.apiUrl &&
+    payload.apiUrl.length
+  ) {
+    postDataToSite({
+      apiUrl: payload.apiUrl,
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      dataLabel: (payload && payload.dataLabel ? payload.dataLabel : undefined),
+      countDataLabel: false,
+      silent: (payload && payload.silent ? payload.silent : true),
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      apiCallParams: (payload && payload.apiCallParams ? payload.apiCallParams : undefined),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: (payload && payload.debug ? payload.debug : false)
+    })
+  }
+}
+
+// ######################################################################
+// SECRET OBFUSCATION
+// ######################################################################
+
+export function obfuscateSecretForOpenCollector ({ state }, payload) {
+  postDataToSite({
+    apiUrl: '/oc/ObfuscateSecret',
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    targetObjectName: (payload && payload.targetObjectName ? payload.targetObjectName : ''),
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    silent: true,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    apiCallParams: (payload && payload.apiCallParams ? payload.apiCallParams : undefined),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: (payload && payload.debug ? payload.debug : false)
+  })
 }
 
 //           ###    ########  ####       ##     ## ######## #### ##       #### ######## #### ########  ######
@@ -418,7 +550,7 @@ export function getDataFromSite (params = {
       if (params.debug) {
         console.log('getDataFromSite -- Catch')
       }
-      messageForLogAndPopup = i18n.t('Loading error') + ': ' + errorMessage
+      messageForLogAndPopup = i18n.t('Loading error') + ': ' + (typeof errorMessage !== 'object' ? errorMessage : JSON.stringify(errorMessage))
       queryResultedInError = true
     })
     .finally(() => {
@@ -447,7 +579,8 @@ export function getDataFromSite (params = {
           params.onErrorCallBack({
             data: (apiResponse && apiResponse.data ? apiResponse.data : undefined),
             success: false,
-            params
+            params,
+            messageForLogAndPopup
           })
         }
       } else {
@@ -470,7 +603,8 @@ export function getDataFromSite (params = {
           params.onSuccessCallBack({
             data: (apiResponse && apiResponse.data ? apiResponse.data : undefined),
             success: true,
-            params
+            params,
+            messageForLogAndPopup
           })
         }
       }
@@ -587,7 +721,10 @@ export function postDataToSite (params = {
           queryResultedInError = true
           messageForLogAndPopup = i18n.t('Error updating persistance layer.')
           if (process.env.DEV) {
-            captionForLogAndPopup = response.data.errors.join(' / ')
+            captionForLogAndPopup = response.data.errors.reduce((errorsAccumulatorArray, errorMessage) => {
+              errorsAccumulatorArray.push(typeof errorMessage !== 'object' ? errorMessage : JSON.stringify(errorMessage))
+              return errorsAccumulatorArray
+            }, []).join(' / ')
           }
         } else {
           queryResultedInError = false
@@ -602,7 +739,7 @@ export function postDataToSite (params = {
       if (params.debug) {
         console.log('postDataToSite -- Catch')
       }
-      messageForLogAndPopup = i18n.t('Update error') + ': ' + errorMessage
+      messageForLogAndPopup = i18n.t('Update error') + ': ' + (typeof errorMessage !== 'object' ? errorMessage : JSON.stringify(errorMessage))
       queryResultedInError = true
     })
     .finally(() => {
@@ -630,7 +767,9 @@ export function postDataToSite (params = {
           params.onErrorCallBack({
             data: (apiResponse && apiResponse.data ? apiResponse.data : undefined),
             success: false,
-            params
+            params,
+            messageForLogAndPopup,
+            captionForLogAndPopup
           })
         }
       } else {
@@ -653,7 +792,9 @@ export function postDataToSite (params = {
           params.onSuccessCallBack({
             data: (apiResponse && apiResponse.data ? apiResponse.data : undefined),
             success: true,
-            params
+            params,
+            messageForLogAndPopup,
+            captionForLogAndPopup
           })
         }
       }

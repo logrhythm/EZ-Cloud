@@ -31,6 +31,10 @@ export default {
           caller: this
         }
       )
+    },
+    loadOpenCollectorsAndPipelines () {
+      this.loadOpenCollectors()
+      this.loadPipelines()
     }
   },
   mounted () {

@@ -275,8 +275,22 @@ function collectionConfigToYml (collectionConfig) {
     }))
 
     // ***********
+    // Decide if we are facing a Filebeat style config file
+    const sendCollectionMethodAsType = (
+      collectionMethod === 'log' ||
+      collectionMethod === 'syslog' ||
+      collectionMethod === 'httpjson'
+    )
+
+    // ***********
     // and push it out as Yaml
-    return dump([{ type: collectionMethod, ...jsonConfigClean }])
+    return dump(
+      (
+        sendCollectionMethodAsType
+          ? [{ type: collectionMethod, ...jsonConfigClean }] // Filebeat style config file
+          : { [collectionMethod]: jsonConfigClean } // LogRhythm style config file
+      )
+    )
   } catch (error) {
     return error
   }
