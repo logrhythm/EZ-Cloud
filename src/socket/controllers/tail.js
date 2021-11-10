@@ -194,6 +194,11 @@ async function tailInit(socket, payload) {
         // Combine it with collection part
         const beatConfig = `${inputYml}\n\n${logrhythmShipperBaseTailConfig}\n`;
 
+        if (socket.connected) {
+          socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🚀 Tail starting...' });
+          socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🔎 Checking if LRCTL not present in home directory of user...' });
+        }
+
         tails[payload.tailId]
           // Check LRCTL is present
           .exec('if [ ! -e "./lrctl" ]; then exit 42; fi;', {
@@ -206,6 +211,9 @@ async function tailInit(socket, payload) {
                   socket.emit('tail.log', { tailId: payload.tailId, code: 'EXIT', payload: code });
                 }
                 return false;
+              }
+              if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '📥 Importing Beat configuration...' });
               }
               return true;
             }
@@ -220,10 +228,14 @@ async function tailInit(socket, payload) {
                 socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
               }
             },
-            // exit(code) {
-            //   // console.log('CODE:::' + code + ' 📃');
-            //   return true;
-            // },
+            exit(code) {
+              // console.log('CODE:::' + code + ' 📃');
+              if (code === 0 && socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🔎 Listing the already running instances of this Beat...' });
+                return true;
+              }
+              return false;
+            },
             out(stdout) {
               // console.log('STDOUT:::' + stdout);
               if (socket.connected) {
@@ -232,21 +244,25 @@ async function tailInit(socket, payload) {
             }
           })
           // Check the already running instances of this Beat
-          .exec('./lrctl genericbeat status >&2', {
+          // .exec('./lrctl genericbeat status >&2', {
+          .exec('docker ps --format "{{.Names}} // {{.State}} // {{.Status}}" --filter name="genericbeat_"', {
             err(stderr) {
               // console.log('STDERR:::' + stderr);
               if (socket.connected) {
                 socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
               }
             },
-            // exit(code) {
-            //   // console.log('CODE:::' + code + ' 🟠');
-            //   return true;
-            // },
+            exit(code) {
+              if (code === 0 && socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: `🟥 Stopping the Beat ID "${logRhythmFullyQualifiedBeatName}"...` });
+                return true;
+              }
+              return false;
+            },
             out(stdout) {
               // console.log('STDOUT:::' + stdout);
               if (socket.connected) {
-                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stdout });
               }
             }
           })
@@ -258,10 +274,13 @@ async function tailInit(socket, payload) {
                 socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
               }
             },
-            // exit(code) {
-            //   // console.log('CODE:::' + code + ' 🔴');
-            //   return true;
-            // },
+            exit(code) {
+              if (code === 0 && socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: `🟢 Starting the Beat ID "${logRhythmFullyQualifiedBeatName}"...` });
+                return true;
+              }
+              return false;
+            },
             out(stdout) {
               // console.log('STDOUT:::' + stdout);
               if (socket.connected) {
@@ -276,10 +295,13 @@ async function tailInit(socket, payload) {
                 socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
               }
             },
-            // exit(code) {
-            //   // console.log('CODE:::' + code + ' 🟢');
-            //   return true;
-            // },
+            exit(code) {
+              if (code === 0 && socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🔎 Checking if the new instance is running...' });
+                return true;
+              }
+              return false;
+            },
             out(stdout) {
               // console.log('STDOUT:::' + stdout);
               if (socket.connected) {
@@ -288,26 +310,30 @@ async function tailInit(socket, payload) {
             }
           })
           // Check if the new instance is running
-          .exec(`./lrctl genericbeat status | grep "${logRhythmFullyQualifiedBeatName}" >&2`, {
+          // .exec(`./lrctl genericbeat status | grep "${logRhythmFullyQualifiedBeatName}" >&2`, {
+          .exec(`docker ps --format "{{.Names}} // {{.State}} // {{.Status}}" --filter name="${logRhythmFullyQualifiedBeatName}"`, {
             err(stderr) {
               // console.log('STDERR:::' + stderr);
               if (socket.connected) {
                 socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
               }
             },
-            // exit(code) {
-            //   // console.log('CODE:::' + code + ' 🟠');
-            //   return true;
-            // },
+            exit(code) {
+              if (code === 0 && socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '📑 Tailing the realtime data...' });
+                return true;
+              }
+              return false;
+            },
             out(stdout) {
               // console.log('STDOUT:::' + stdout);
               if (socket.connected) {
-                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stdout });
               }
             }
           })
           // Tail -F /var/lib/docker/volumes/genericbeat_spool_volume_{Beat_ID}/_data/realtime.tail
-          .exec(`tail -F /var/lib/docker/volumes/${beatName}_spool_volume_${beatId}/_data/realtime.tail`, {
+          .exec(`sudo tail -F /var/lib/docker/volumes/${beatName}_spool_volume_${beatId}/_data/realtime.tail`, {
             err(stderr) {
               // console.log('STDERR:::' + stderr);
               if (socket.connected) {
@@ -317,6 +343,7 @@ async function tailInit(socket, payload) {
             exit(code) {
               // console.log('CODE:::' + code + ' 📑');
               if (socket.connected) {
+                socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🟥 Tailing Terminated.' });
                 socket.emit('tail.log', { tailId: payload.tailId, code: 'EXIT', payload: code });
               }
               // eslint-disable-next-line no-use-before-define

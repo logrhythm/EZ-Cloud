@@ -193,6 +193,7 @@
 - [ ] Add a KILL SIGTERM to the post Tail cleaning up process
 - [x] NPM modules with vulnerabilities
 - [x] Generated Pipeline imported with a missing YAML file, causing OC to fail to start/restart
+- [x] Use SUDO to run the Tail for GenericBeat
 
 ## TO TEST
 
