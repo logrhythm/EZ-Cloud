@@ -3,10 +3,8 @@
 ### Target: v0.8
 
 ## TO DO
-- Edit Deployment
-  - [ ] Offer action to un-deploy
-    - [ ] Backend API to remove config from Beat
 - Mapping Editor
+  - [ ] Warn user if Socket is not connected to Backend (as Tail feature needs it)
   - [ ] Handle Sub Rules
   - [ ] Resurface the `.message` feature
     - [ ] In UI (menu Settings)
@@ -25,6 +23,7 @@
     - [ ] Configure it
   - [ ] Pick up Open Collector
     - [ ] Add one if none in the list
+    - [ ] Offer to deploy required Shipper if not already on OC
   - [ ] Create field mapping
     - [ ] Run pre-configured Tail
   - [ ] Recap page
@@ -37,6 +36,52 @@
     - [ ] On Shipper deployment
   - [ ] In Tail
   - [ ] In Deployment
+- [ ] Market Place
+  - [ ] Find a Free-tiered public database
+  - [ ] Find a Free-tiered public hosting (for Admin and API)
+  - [ ] Find / register domain
+  - [ ] List available Collection Templates
+  - [ ] Import Collection Template
+  - [ ] Export to Market Place
+    - [ ] Sanitization of secrets
+    - [ ] Export to Market Place
+  - [ ] Market Place Admin
+    - [ ] Approval / Review / Moderation of submissions
+    - [ ] Change Status of submission
+      - Under review
+      - Rejected
+      - Approved
+    - [ ] Change Visibility of submission
+      - Visible
+      - Hidden
+    - [ ] Delete submission
+- [ ] Import/Export of Collection
+  - [ ] Import Collection from file
+  - [ ] Import Collection from Copy/Paste
+  - [ ] Export Collection to file
+  - [ ] Export Collection to Copy/Paste
+- [ ] Import/Export of Fields Mapping
+  - [ ] Import Mapping from file
+  - [ ] Import Mapping from Copy/Paste
+  - [ ] Export Mapping to file
+  - [ ] Export Mapping to Copy/Paste
+- [ ] LogRhythm Beats mapping for Collection Configuration
+  - [ ] Azure Event Hub
+  - [ ] S3
+  - [ ] PubSub
+  - [ ] Kafka
+  - ...
+- Open Collector Properties
+  - [ ] SUDO requirement
+    - [ ] Collect optional SUDO Username
+    - [ ] Collect optional SUDO Password
+
+## TO FIX
+- [ ] Fan Out feature - OC refuses to import JQ Transform
+
+## TO TEST
+- [ ] Fan Out feature
+- [ ] `.message` feature
 
 ### Target: v0.7
 
