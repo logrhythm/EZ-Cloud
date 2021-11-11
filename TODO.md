@@ -6,9 +6,9 @@
 - Installer
   - [x] Start the Service by default
   - [x] Provide blank SQL password in prompt (instead of CHANGE_ME, as it confuses people thinking there is already a valid password)
-  - [ ] ezAdmin account creation
-    - [ ] Prompt for ezAdmin password
-    - [ ] Create account in SQL
+  - [x] ezAdmin account creation
+    - [x] Prompt for ezAdmin password
+    - [x] Create account in SQL
 - [ ] RBAC
   - [ ] Create SQL Table
     - [ ] Roles

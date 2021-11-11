@@ -59,7 +59,11 @@ Source: "{#DistSubDirectory}\resources\*"; DestDir: "{app}\resources"; Component
 Source: "{#DistSubDirectory}\.env"; DestDir: "{app}"; Components: ezCloudServer
 Source: "{#DistSubDirectory}\.env.sample"; DestDir: "{app}"; Components: ezCloudServer
 Source: "{#DistSubDirectory}\public_web_root\*"; DestDir: "{app}\public_web_root"; Components: ezCloudFrontend; Flags: recursesubdirs
+; For NodeJS Installation
 Source: "{#distDirectory}\NodeJS_Installer\{#NodeJsFilename}"; DestDir: "{tmp}"; Components: nodeJs
+; For EzAdmin account creation
+Source: "{#DistSubDirectory}\database\20211111.17 - Create User - EzAdmin.sql"; DestDir: "{tmp}"; Components: ezCloudServer; AfterInstall: FileReplaceEzAdminCreds('{tmp}\20211111.17 - Create User - EzAdmin.sql')
+Source: "{#DistSubDirectory}\database\create_ezadmin.bat"; DestDir: "{tmp}"; Components: ezCloudServer
 
 [Dirs]
 Name: "{app}\public_web_root"; Components: ezCloudServer
@@ -72,6 +76,7 @@ Name: "{group}\Uninstall EZ Cloud Server"; Filename: "{uninstallexe}"
 
 [Run]
 Filename: "{app}\database\create_database.bat"; Parameters: "--NoSleepTillBrooklyn"; WorkingDir: "{app}\database"; Description: "Create and Configure [EZ] SQL Database"; Tasks: createDatabase
+Filename: "{tmp}\create_ezadmin.bat"; Parameters: "--NoSleepTillBrooklyn"; WorkingDir: "{tmp}"; Description: "Create and Configure EzAdmin account in SQL Database"; Tasks: createDatabase; Flags: runhidden
 ; Filename: "MsiExec.exe"; Parameters: "/i ""{tmp}\{#NodeJsFilename}"" /qn"; Description: "Installing NodeJS {#NodeJsVersionLabel}"; Tasks: installNodeJs; Flags: runhidden skipifnotsilent
 ; Filename: "MsiExec.exe"; Parameters: "/i ""{tmp}\{#NodeJsFilename}"""; Description: "Installing NodeJS {#NodeJsVersionLabel}"; Tasks: installNodeJs; Flags: skipifsilent
 Filename: "MsiExec.exe"; Parameters: "/i ""{tmp}\{#NodeJsFilename}"" /qn"; Description: "Installing NodeJS {#NodeJsVersionLabel}"; Tasks: installNodeJs; Flags: skipifsilent
@@ -105,6 +110,8 @@ var
   SqlCredentialsPassword: String;
   SqlCredentialsHost: String;
   SqlCredentialsPort: String;
+  EzAdminCredentialsQueryPage: TInputQueryWizardPage;
+  EzAdminCredentialsPassword: String;
 
 procedure URLLabelOnClick(Sender: TObject);
 var
@@ -150,9 +157,25 @@ begin
   SqlCredentialsQueryPage.Values[3] := '1433';
 end;
 
+procedure AddEzAdminCredentialsQueryPage();
+begin
+  EzAdminCredentialsQueryPage := CreateInputQueryPage(
+    wpSelectProgramGroup,
+    'EZ Server Administrator Credentials and Details - ezAdmin',
+    'This is the EZ Admin account for EZ Server.',
+    'NOTE:' + #10+#13 + ' - The Username is NOT case sensitive' + #10+#13 +
+    ' - The Password IS case sensitive.' + #10+#13 + #10+#13 + #10+#13 +
+    'Username:' + #10+#13 + 'ezAdmin');
+
+  EzAdminCredentialsQueryPage.Add('Password:', True);
+
+  EzAdminCredentialsQueryPage.Values[0] := '';
+end;
+
 procedure InitializeWizard();
 begin
   CreateURLLabel(WizardForm, WizardForm.CancelButton);
+  AddEzAdminCredentialsQueryPage();
   AddSqlCredentialsQueryPage();
 end;
 
@@ -236,6 +259,20 @@ begin
     FileReplaceString(ExpandConstant(FileName), '"port": 1433', '"port": ' + SqlCredentialsPort);
 end;
 
+// To replace the EzAdmin password by the ones provided in the Wizard
+// NOTE: This should only be used against a temporary file, as you do not want to leave
+// the EzAdmin password left in a file after the installation
+
+procedure FileReplaceEzAdminCreds(const FileName: String);
+var
+  EscapedEzAdminCredentialsPassword : string;
+begin
+    // Escaping the password for SQL consumption
+    EscapedEzAdminCredentialsPassword := EzAdminCredentialsPassword
+    StringChangeEx(EscapedEzAdminCredentialsPassword, '''', '''''', True)
+    FileReplaceString(ExpandConstant(FileName), 'CHANGE_ME', EscapedEzAdminCredentialsPassword);
+end;
+
 // To replace the token in a given file, by a generated random string, only if the mathcing Task is selected
 
 procedure FileReplaceTokenIfTaskSelected(const FileName, SearchString: string ; const CharCount: Integer ; const TaskSelected: string);
@@ -255,5 +292,8 @@ begin
     SqlCredentialsPassword := SqlCredentialsQueryPage.Values[1];
     SqlCredentialsHost     := SqlCredentialsQueryPage.Values[2];
     SqlCredentialsPort     := SqlCredentialsQueryPage.Values[3];
+
+    { Collect the entered EZAdmin Credentials into the relevant variables}
+    EzAdminCredentialsPassword := EzAdminCredentialsQueryPage.Values[0];
   end;
 end;
