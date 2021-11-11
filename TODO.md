@@ -5,7 +5,7 @@
 ## TO DO
 - Installer
   - [x] Start the Service by default
-  - [ ] Provide blank SQL password in prompt (instead of CHANGE_THIS, as it confuses people thinking there is already a valid password)
+  - [x] Provide blank SQL password in prompt (instead of CHANGE_ME, as it confuses people thinking there is already a valid password)
   - [ ] ezAdmin account creation
     - [ ] Prompt for ezAdmin password
     - [ ] Create account in SQL

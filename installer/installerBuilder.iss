@@ -145,7 +145,7 @@ begin
   SqlCredentialsQueryPage.Add('SQL Port:', False);
 
   SqlCredentialsQueryPage.Values[0] := 'sa';
-  SqlCredentialsQueryPage.Values[1] := 'CHANGE_ME';
+  SqlCredentialsQueryPage.Values[1] := '';
   SqlCredentialsQueryPage.Values[2] := 'localhost';
   SqlCredentialsQueryPage.Values[3] := '1433';
 end;
