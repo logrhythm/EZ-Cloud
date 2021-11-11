@@ -3,6 +3,22 @@
 ### Target: v0.8
 
 ## TO DO
+- Installer
+  - [ ] Start the Service by default
+  - [ ] Provide blank SQL password in prompt (instead of CHANGE_THIS, as it confuses people thinking there is already a valid password)
+  - [ ] ezAdmin account creation
+    - [ ] Prompt for ezAdmin password
+    - [ ] Create account in SQL
+- [ ] RBAC
+  - [ ] Create SQL Table
+    - [ ] Roles
+      - Admin
+      - User
+    - [ ] UserToRole
+  - [ ] API
+    - [ ] Embed Role in JWT token
+    - [ ] Check for Role in each API query
+
 ## TO FIX
 ## TO TEST
 
