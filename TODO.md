@@ -11,10 +11,10 @@
     - [x] Create account in SQL
 - [ ] RBAC
   - [ ] Create SQL Table
-    - [ ] Roles
+    - [x] Roles
       - Admin
       - User
-    - [ ] UserToRole
+    - [x] UserToRole
   - [ ] API
     - [ ] Embed Role in JWT token
     - [ ] Check for Role in each API query

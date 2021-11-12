@@ -33,6 +33,8 @@ osql -E -n -d EZ -i "20210714.13 - Create Stored Procedure - upsert_Log_Source_V
 osql -E -n -d EZ -i "20210715.14 - Create Stored Procedure - upsert_Log_Source_Virtualisation_Template_Item.sql"
 osql -E -n -d EZ -i "20210719.15 - Create View - list_OpenCollector_Log_Sources.sql"
 osql -E -n -d EZ -i "20210720.16 - Create Stored Procedure - upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource.sql"
+osql -E -n -d EZ -i "20211112.18 - Create Table - rbacRoles.sql"
+osql -E -n -d EZ -i "20211112.19 - Create Table - rbacUserToRoles.sql"
 
 @echo off
 echo.
