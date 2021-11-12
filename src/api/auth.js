@@ -8,14 +8,18 @@ const express = require('express');
 const router = express.Router();
 const checkCredentials = require('../shared/checkCredentials');
 
+// Import SQL Utilities
+const { getDataFromSql, createSqlVariables } = require('../shared/sqlUtils');
+
 // Get JWT Secret and TTL
 const jwtConfig = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'jwt.json'), 'utf8'));
 const jwtSecret = (jwtConfig && jwtConfig.secret ? jwtConfig.secret : '');
 const jwtTtl = (jwtConfig && jwtConfig.ttl ? jwtConfig.ttl : '1h');
 
-const createTokenSendResponse = (user, res, next) => {
+const createTokenSendResponse = (user, roles, res, next) => {
   const payload = {
-    username: user || ''
+    username: user || '',
+    roles: roles || []
   };
 
   jwt.sign(
@@ -55,12 +59,42 @@ router.post('/Login', async (req, res, next) => {
   checkCredentials({
     login: (req.body && req.body.username ? req.body.username : ''),
     password: (req.body && req.body.password ? req.body.password : '')
-  }).then((checkedCreds) => {
+  }).then(async (checkedCreds) => {
     if (checkedCreds.valid === true) {
       // If YES
+
+      // Get the Roles for the User
+      const userRolesFromSql = {};
+      const userRoles = [];
+
+      await getDataFromSql({
+        targetVariable: userRolesFromSql,
+        query: `
+        SELECT DISTINCT [rbacRoles].[name] AS 'roles'
+          FROM [dbo].[rbacRoles]
+            INNER JOIN [dbo].[rbacUserToRole] ON [rbacRoles].[uid] = [rbacUserToRole].[roleUid]
+          WHERE [login] = 'ezAdmin'
+        `
+      });
+
+      // Clean it up
+      if (userRolesFromSql && userRolesFromSql.payload && Array.isArray(userRolesFromSql.payload)) {
+        userRolesFromSql.payload.forEach((item) => {
+          console.log('item:', item);
+          if (item && item.roles && item.roles.length) {
+            userRoles.push(item.roles);
+          }
+        });
+      }
+
       //   Create JWT token
       //   Return token
-      createTokenSendResponse(checkedCreds.username, res, next);
+      createTokenSendResponse(
+        checkedCreds.username, // Login name
+        userRoles, // Array of Roles
+        res,
+        next
+      );
     } else {
       // If NO
       //   Return error
