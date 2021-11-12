@@ -10,7 +10,7 @@
     - [x] Prompt for ezAdmin password
     - [x] Create account in SQL
 - [ ] RBAC
-  - [ ] Create SQL Table
+  - [x] Create SQL Table
     - [x] Roles
       - Admin
       - User
