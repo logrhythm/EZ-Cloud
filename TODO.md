@@ -16,7 +16,7 @@
       - User
     - [x] UserToRole
   - [ ] API
-    - [ ] Embed Role in JWT token
+    - [x] Embed Role in JWT token
     - [ ] Check for Role in each API query
 
 ## TO FIX
