@@ -68,6 +68,7 @@
 - [ ] LogRhythm Beats mapping for Collection Configuration
   - [ ] Azure Event Hub
   - [ ] S3
+  - [ ] WebHook
   - [ ] PubSub
   - [ ] Kafka
   - ...
