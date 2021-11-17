@@ -69,9 +69,9 @@
                 <q-item class="q-pl-none" >
                 <q-toggle v-model="wrapSingleStringLog" label="Accept and Wrap non-JSON logs" />
                 </q-item>
-                <!-- <q-item class="q-pl-none" >
-                  <q-toggle v-model="extractMessageFieldOnly" label="Extract Filebeat '.message' only" />
-                </q-item> -->
+                <q-item class="q-pl-none" >
+                  <q-toggle v-model="extractMessageFieldOnly" label="Extract Beat's '.message' only" />
+                </q-item>
                 <q-item  style="width: 20rem;">
                   <q-item-section avatar>
                     <q-icon name="speed" />
