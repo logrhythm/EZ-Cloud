@@ -119,7 +119,7 @@ router.post('/Login', async (req, res, next) => {
         });
       }
 
-      logToSystem('Verbose', `Login | RBAC Results for User | user: ${req.body.username} | role(s): ${JSON.stringify(userRoles)} | isUserPriviledged: ${isUserPriviledged}.`);
+      logToSystem('Verbose', `Login | RBAC Results for User | user: ${req.body.username} | role(s): ${JSON.stringify(userRoles)} | isUserPriviledged: ${isUserPriviledged}`);
 
       // If user has at least one Role, it can login and we respond with a JWT token
       if (userRoles && userRoles.length > 0) {
