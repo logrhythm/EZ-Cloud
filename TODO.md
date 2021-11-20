@@ -17,7 +17,10 @@
     - [x] UserToRole
   - [ ] API
     - [x] Embed Role in JWT token
-    - [ ] Check for Role in each API query
+    - [x] Check for Role in each API query
+    - [ ] Enpoints for
+      - [ ] UpsertUser
+      - [ ] UpsertUserRoles
 
 ## TO FIX
 ## TO TEST

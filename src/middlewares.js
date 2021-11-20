@@ -24,11 +24,14 @@ function checkJwTokenAndSetUser(req, res, next) {
     const token = String(authHeader).replace(/^Bearer /, '');
     if (token) {
       // use jwt lib to decode
-      jwt.verify(token, configJwt.secret, (error, user) => {
+      jwt.verify(token, configJwt.secret, (error, decodedPayload) => {
+        // decodedPayload should contain something like:
+        // {"username":"tmasse","roles":["Admin"],"iat":1637363428,"exp":1637449828}
         if (error) {
           logToSystem('Error', error);
         }
-        req.user = user;
+        logToSystem('Debug', `checkJwTokenAndSetUser - ${JSON.stringify(decodedPayload)}`);
+        req.user = decodedPayload;
         next();
       });
     } else {
@@ -48,9 +51,18 @@ function isLoggedIn(req, res, next) {
   }
 }
 
+// Check if the logged user is and Admin
+function isAdmin(req, res, next) {
+  if (req.user && req.user.role && Array.isArray(req.user.role) && req.user.role.includes('Admin')) {
+    next();
+  } else {
+    accessDenied(res, next);
+  }
+}
+
 // Log the Web requests / responses to the System Journal
 function logHttpToSystem(req, res, next) {
-  logToSystem('Verbose', `HTTP Request | client_ip: ${(req.socket && req.socket._peername && req.socket._peername.address ? req.socket._peername.address : '-')} | client_port: ${(req.socket && req.socket._peername && req.socket._peername.port ? req.socket._peername.port : '-')} | username: ${(req.user && req.user.username ? req.user.username : '-')} | method: ${(req.method ? req.method : '-')} | path: ${(req.url ? req.url : '-')}`);
+  logToSystem('Verbose', `HTTP Request | client_ip: ${(req.socket && req.socket._peername && req.socket._peername.address ? req.socket._peername.address : '-')} | client_port: ${(req.socket && req.socket._peername && req.socket._peername.port ? req.socket._peername.port : '-')} | username: ${(req.user && req.user.username ? req.user.username : '-')} | roles: ${(req.user && req.user.roles ? req.user.roles.join(',') : '-')} | method: ${(req.method ? req.method : '-')} | path: ${(req.url ? req.url : '-')}`);
   next();
 }
 
@@ -73,6 +85,7 @@ function errorHandler(err, req, res, next) {
 module.exports = {
   checkJwTokenAndSetUser,
   isLoggedIn,
+  isAdmin,
   logHttpToSystem,
   notFound,
   errorHandler
