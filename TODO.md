@@ -15,12 +15,21 @@
       - Admin
       - User
     - [x] UserToRole
-  - [ ] API
+  - [x] API
     - [x] Embed Role in JWT token
     - [x] Check for Role in each API query
-    - [ ] Enpoints for
-      - [ ] UpsertUser
-      - [ ] UpsertUserRoles
+    - [x] Endpoints for
+      - [x] GetUsersList
+      - [x] UpdateUser
+      - [ ] DeleteUser
+      - [x] GetRolesList
+      - [x] UpdateRole
+      - [ ] DeleteRole
+  - [ ] Create SQL Stored Procedures
+    - [ ] upsert_RBAC_User
+    - [ ] upsert_RBAC_Role
+    - [ ] delete_RBAC_User
+    - [ ] delete_RBAC_Role
 
 ## TO FIX
 ## TO TEST
