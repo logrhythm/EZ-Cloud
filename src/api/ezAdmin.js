@@ -18,8 +18,7 @@ router.get('/', (req, res) => {
 
 const {
   getDataFromSql,
-  createSqlVariables,
-  createSqlVariablesAndStoredProcParams
+  createSqlVariables
 } = require('../shared/sqlUtils');
 
 //        ########   #######  ##     ## ######## ########  ######
