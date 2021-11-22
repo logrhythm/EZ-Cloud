@@ -21,10 +21,10 @@
     - [x] Endpoints for
       - [x] GetUsersList
       - [x] UpdateUser
-      - [ ] DeleteUser
+      - [x] DeleteUser
       - [x] GetRolesList
       - [x] UpdateRole
-      - [ ] DeleteRole
+      - [x] DeleteRole
   - [ ] Create SQL Stored Procedures
     - [ ] upsert_RBAC_User
     - [ ] upsert_RBAC_Role
