@@ -27,8 +27,8 @@
       - [x] DeleteRole
   - [ ] Create SQL Stored Procedures
     - [x] upsert_RBAC_User
+    - [x] delete_RBAC_User
     - [ ] upsert_RBAC_Role
-    - [ ] delete_RBAC_User
     - [ ] delete_RBAC_Role
 - [ ] Upgradable Install
   - [x] Update SQL scripts to be runnable multiple times and ignore unnecessary tasks
