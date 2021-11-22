@@ -1,6 +1,21 @@
-CREATE DATABASE [EZ]
- CONTAINMENT = NONE
- COLLATE SQL_Latin1_General_CP1_CI_AS
+-- =============================================
+-- Author:		Tony Massé
+-- Create date: 2021-04-30
+-- Update date: 2021-11-22 - To be runnable multiple times and ignore unnecessary tasks
+-- =============================================
+
+USE master
+GO
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'EZ')
+BEGIN
+	CREATE DATABASE [EZ]
+		CONTAINMENT = NONE
+		COLLATE SQL_Latin1_General_CP1_CI_AS
+END
+ELSE
+BEGIN
+	PRINT 'INFO: [EZ] already exists. Moving on.'
+END
 GO
 ALTER DATABASE [EZ] SET COMPATIBILITY_LEVEL = 130
 GO
