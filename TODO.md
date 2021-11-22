@@ -31,7 +31,7 @@
     - [ ] delete_RBAC_User
     - [ ] delete_RBAC_Role
 - [ ] Upgradable Install
-  - [ ] Update SQL scripts to be runnable multiple times and ignore unnecessary tasks
+  - [x] Update SQL scripts to be runnable multiple times and ignore unnecessary tasks
   - [ ] Update/Complement Installer to allow for upgrade from previous versions
 
 ## TO FIX
