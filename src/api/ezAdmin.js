@@ -59,25 +59,6 @@ router.get('/GetUsersList', async (req, res) => {
 });
 
 // ##########################################################################################
-// GetRolesList
-// ##########################################################################################
-
-router.get('/GetRolesList', async (req, res) => {
-  const rolesList = {};
-  await getDataFromSql({
-    targetVariable: rolesList,
-    query: `
-    SELECT [uid] AS 'roleUid'
-      ,[name] AS 'roleName'
-      ,[isPriviledged] AS 'roleIsPriviledged'
-    FROM [EZ].[dbo].[rbacRoles]
-  `
-  });
-
-  res.json(rolesList);
-});
-
-// ##########################################################################################
 // UpdateUser
 // ##########################################################################################
 
@@ -96,7 +77,7 @@ router.post('/UpdateUser', async (req, res) => {
     variables: createSqlVariables(
       req,
       [
-        { name: 'userID', type: 'NVarChar' },
+        { name: 'userID', type: 'Int' },
         { name: 'userLogin', type: 'NVarChar' },
         { name: 'roleUid', type: 'NVarChar' }
       ]
@@ -104,6 +85,50 @@ router.post('/UpdateUser', async (req, res) => {
   });
 
   res.json(updatedUser);
+});
+
+// ##########################################################################################
+// DeleteUser
+// ##########################################################################################
+
+router.post('/DeleteUser', async (req, res) => {
+  const deletedUser = {};
+
+  await getDataFromSql({
+    targetVariable: deletedUser,
+    query: `
+    EXECUTE [dbo].[delete_RBAC_User]
+       @userID
+      ;
+    `,
+    variables: createSqlVariables(
+      req,
+      [
+        { name: 'userID', type: 'Int' }
+      ]
+    )
+  });
+
+  res.json(deletedUser);
+});
+
+// ##########################################################################################
+// GetRolesList
+// ##########################################################################################
+
+router.get('/GetRolesList', async (req, res) => {
+  const rolesList = {};
+  await getDataFromSql({
+    targetVariable: rolesList,
+    query: `
+    SELECT [uid] AS 'roleUid'
+      ,[name] AS 'roleName'
+      ,[isPriviledged] AS 'roleIsPriviledged'
+    FROM [EZ].[dbo].[rbacRoles]
+  `
+  });
+
+  res.json(rolesList);
 });
 
 // ##########################################################################################
@@ -133,6 +158,31 @@ router.post('/UpdateRole', async (req, res) => {
   });
 
   res.json(updatedRole);
+});
+
+// ##########################################################################################
+// DeleteRole
+// ##########################################################################################
+
+router.post('/DeleteRole', async (req, res) => {
+  const deletedRole = {};
+
+  await getDataFromSql({
+    targetVariable: deletedRole,
+    query: `
+    EXECUTE [dbo].[delete_RBAC_Role]
+       @roleID
+      ;
+    `,
+    variables: createSqlVariables(
+      req,
+      [
+        { name: 'roleID', type: 'Int' }
+      ]
+    )
+  });
+
+  res.json(deletedRole);
 });
 
 //        ######## ##     ## ########   #######  ########  ########  ######
