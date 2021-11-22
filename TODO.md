@@ -26,7 +26,7 @@
       - [x] UpdateRole
       - [x] DeleteRole
   - [ ] Create SQL Stored Procedures
-    - [ ] upsert_RBAC_User
+    - [x] upsert_RBAC_User
     - [ ] upsert_RBAC_Role
     - [ ] delete_RBAC_User
     - [ ] delete_RBAC_Role
