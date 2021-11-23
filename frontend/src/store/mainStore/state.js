@@ -3866,7 +3866,9 @@ It's used for the Log Source Virtualisation.`,
         icon: 'input'
       }
     ], // collectionMethodsOptions
-    openCollectorLogSources: []
+    openCollectorLogSources: [],
+    userAccounts: [], // EZ Users on EZ Server
+    userRoles: [] // Roles for EZ Users on EZ Server
   }
 }
 /*

@@ -46,7 +46,7 @@
                         </q-input>
                       </div>
                       <!-- <q-separator vertical dark color="orange" /> -->
-                      <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadAccounts()">
+                      <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadAccountsAndRoles()">
                         <q-tooltip content-style="font-size: 1em">
                           Reload the list of Pipelines.
                         </q-tooltip>
@@ -90,7 +90,11 @@
             </q-card-section>
             <q-card-section>
                 <span class="text-bold">Accounts: </span>
-                <pre>{{ accounts }}</pre>
+                <pre>{{ userAccounts }}</pre>
+            </q-card-section>
+            <q-card-section>
+                <span class="text-bold">Roles: </span>
+                <pre>{{ userRoles }}</pre>
             </q-card-section>
           </q-card-section>
 
@@ -103,7 +107,7 @@
                   Add Account
                 </q-tooltip>
               </q-btn>
-              <q-btn icon="refresh" :loading="dataLoading" @click="loadAccounts()">
+              <q-btn icon="refresh" :loading="dataLoading" @click="loadAccountsAndRoles()">
                 <q-tooltip content-style="font-size: 1rem;">
                   Reload
                 </q-tooltip>
@@ -115,6 +119,7 @@
 </template>
 
 <script>
+import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 
 export default {
@@ -136,20 +141,30 @@ export default {
         descending: true,
         rowsPerPage: 25
       },
-      dataLoading: false,
-      accounts: []
+      accountsLoading: false,
+      rolesLoading: false
     }
   }, // data
   computed: {
+    ...mapState('mainStore', ['userAccounts', 'userRoles']),
     tableData () {
       // const list = []
       // return list
-      return this.accounts
+      return this.userAccounts
+    },
+    dataLoading () {
+      return this.accountsLoading || this.rolesLoading
     }
   },
   methods: {
-    loadAccounts () {
-      //
+    ...mapActions('mainStore', ['getUserAccounts']),
+    loadAccountsAndRoles () {
+      this.getUserAccounts(
+        {
+          loadingVariableName: 'accountsLoading',
+          caller: this
+        }
+      )
     },
     addNewAccount () {
       //

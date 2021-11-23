@@ -149,3 +149,11 @@ export function getOpenCollectorLogSources (state, payload) {
     state.openCollectorLogSources = payload
   }
 }
+
+// User Accounts Management
+
+export function getUserAccounts (state, payload) {
+  if (payload && Array.isArray(payload)) {
+    state.userAccounts = payload
+  }
+}

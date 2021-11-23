@@ -433,6 +433,27 @@ export function obfuscateSecretForOpenCollector ({ state }, payload) {
   })
 }
 
+// ######################################################################
+// USER ACCOUNTS MANAGEMENT
+// ######################################################################
+
+export function getUserAccounts ({ state, commit }, payload) {
+  getDataFromSite({
+    apiUrl: '/admin/GetUsersList',
+    dataLabel: 'Accounts',
+    countDataLabel: true,
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    commit: commit,
+    targetCommitName: 'getUserAccounts',
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    silent: false,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    debug: false
+  })
+}
+
 //           ###    ########  ####       ##     ## ######## #### ##       #### ######## #### ########  ######
 //          ## ##   ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
 //         ##   ##  ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##
