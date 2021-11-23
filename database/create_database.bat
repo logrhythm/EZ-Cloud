@@ -35,6 +35,9 @@ osql -E -n -d EZ -i "20210719.15 - Create View - list_OpenCollector_Log_Sources.
 osql -E -n -d EZ -i "20210720.16 - Create Stored Procedure - upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource.sql"
 osql -E -n -d EZ -i "20211112.18 - Create Table - rbacRoles.sql"
 osql -E -n -d EZ -i "20211112.19 - Create Table - rbacUserToRoles.sql"
+osql -E -n -d EZ -i "20211122.20 - Create Stored Procedure - upsert_RBAC_User.sql"
+osql -E -n -d EZ -i "20211122.21 - Create Stored Procedure - delete_RBAC_User.sql"
+osql -E -n -d EZ -i "20211123.22 - Create Stored Procedure - upsert_RBAC_Role.sql"
 
 @echo off
 echo.

@@ -9,7 +9,7 @@
   - [x] ezAdmin account creation
     - [x] Prompt for ezAdmin password
     - [x] Create account in SQL
-- [ ] RBAC
+- [x] RBAC
   - [x] Create SQL Table
     - [x] Roles
       - Admin
@@ -25,12 +25,12 @@
       - [x] GetRolesList
       - [x] UpdateRole
       - [x] DeleteRole
-  - [ ] Create SQL Stored Procedures
+  - [x] Create SQL Stored Procedures
     - [x] upsert_RBAC_User
     - [x] delete_RBAC_User
     - [x] upsert_RBAC_Role
     - [x] delete_RBAC_Role
-    - [ ] Update create_database.bat
+    - [x] Update create_database.bat
 - [ ] Upgradable Install
   - [x] Update SQL scripts to be runnable multiple times and ignore unnecessary tasks
   - [ ] Update/Complement Installer to allow for upgrade from previous versions
