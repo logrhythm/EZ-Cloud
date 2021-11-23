@@ -4,6 +4,8 @@
 
 ## TO DO
 - Mapping Editor
+  - [ ] Add User Admin page
+  - [x] Settings - Only show Backend settings in Dev Mode
   - [ ] Warn user if Socket is not connected to Backend (as Tail feature needs it)
   - [ ] Handle Sub Rules
   - [ ] Resurface the `.message` feature
