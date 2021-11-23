@@ -72,6 +72,16 @@ const routes = [
   },
 
   {
+    path: '/Admin',
+    meta: { title: 'Admin' },
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/Admin/Users.vue') },
+      { path: 'Users', component: () => import('pages/Admin/Users.vue') }
+    ]
+  },
+
+  {
     path: '/Settings',
     meta: { title: 'Settings' },
     component: () => import('layouts/MainLayout.vue'),

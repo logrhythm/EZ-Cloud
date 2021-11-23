@@ -53,6 +53,7 @@
           v-for="link in lowLinks"
           :key="link.title"
           v-bind="link"
+          v-show="!link.needsPriviledge || (link.needsPriviledge && loggedInUserIsPriviledged)"
         />
       </q-list>
       <div class="text-center">
@@ -69,6 +70,7 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 import EssentialLink from 'components/EssentialLink.vue'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import { version } from '../../package.json'
@@ -107,6 +109,12 @@ export default {
       ],
       lowLinks: [
         {
+          title: 'Admin',
+          icon: 'admin_panel_settings',
+          link: '#/Admin/Users',
+          needsPriviledge: true
+        },
+        {
           title: 'Settings',
           icon: 'settings',
           link: '#/Settings'
@@ -119,6 +127,9 @@ export default {
       ],
       version: version
     }
+  },
+  computed: {
+    ...mapState('mainStore', ['loggedInUser', 'loggedInUserIsPriviledged'])
   }
 }
 </script>
