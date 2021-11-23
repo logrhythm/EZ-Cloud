@@ -132,12 +132,12 @@ export default {
       searchFilter: '',
       columns: [
         { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
-        { name: 'name', align: 'center', label: 'Username', field: 'name', sortable: true },
-        { name: 'role', align: 'center', label: 'Role', field: 'role', sortable: true },
-        { name: 'isPriviledged', align: 'center', label: 'Is Priviledged', field: 'isPriviledged', sortable: true }
+        { name: 'userLogin', align: 'center', label: 'Username', field: 'userLogin', sortable: true },
+        { name: 'roleName', align: 'center', label: 'Role', field: 'roleName', sortable: true },
+        { name: 'roleIsPriviledged', align: 'center', label: 'Is Priviledged', field: 'roleIsPriviledged', sortable: true }
       ],
       pagination: {
-        sortBy: 'name',
+        sortBy: 'userLogin',
         descending: true,
         rowsPerPage: 25
       },
