@@ -1,6 +1,8 @@
 export default function () {
   return {
-    loggedInUser: 'tmasse',
+    loggedInUser: '',
+    loggedInUserRoles: [], // Array of all the Roles of the logged in user (typically array of one value: "User" or "Admin")
+    loggedInUserIsPriviledged: false,
     jwtToken: (process.env.DEV ? localStorage.getItem('jwtToken') || '' : ''), // Fetch jwtToken from LocalStorage if present and if we are in DEV mode. Saving from logging back in every 2 minutes...
     openCollectors: [
       // // {

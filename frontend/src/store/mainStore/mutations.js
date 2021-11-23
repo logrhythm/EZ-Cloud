@@ -1,4 +1,6 @@
 import { uid } from 'quasar'
+// eslint-disable-next-line camelcase
+import jwt_decode from 'jwt-decode'
 
 export function addOpenCollector (state, payload) {
   if (payload && payload.name && payload.name.length > 0) {
@@ -115,6 +117,15 @@ export function getPipelines (state, payload) {
 export function updateJwtToken (state, payload) {
   if (payload) {
     state.jwtToken = payload.token
+    try {
+      const decodedToken = jwt_decode(payload.token)
+      console.log('decodedToken: ', decodedToken)
+      state.loggedInUser = (decodedToken && decodedToken.username ? decodedToken.username : '')
+      state.loggedInUserRoles = (decodedToken && decodedToken.roles && Array.isArray(decodedToken.roles) ? decodedToken.roles : [])
+      state.loggedInUserIsPriviledged = !!(decodedToken && decodedToken.isPriviledged === true)
+    } catch (err) {
+      console.log('Authentication - Failed to decode received JWT Token. Reason:', err)
+    }
     try {
       // Quick trick to save time while developping.
       // Avoids from having to login all the time when modifying the code
