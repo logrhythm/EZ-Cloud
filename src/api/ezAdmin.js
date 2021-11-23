@@ -44,7 +44,7 @@ router.get('/GetUsersList', async (req, res) => {
   await getDataFromSql({
     targetVariable: usersList,
     query: `
-    SELECT [rbacUserToRole].[id] AS 'userID'
+    SELECT [rbacUserToRole].[id] AS 'userId'
       ,[rbacUserToRole].[login] AS 'userLogin'
       ,[rbacRoles].[uid] AS 'roleUid'
       ,[rbacRoles].[name] AS 'roleName'
@@ -68,7 +68,7 @@ router.post('/UpdateUser', async (req, res) => {
     targetVariable: updatedUser,
     query: `
     EXECUTE [dbo].[upsert_RBAC_User]
-       @userID
+       @userId
       ,@userLogin
       ,@roleUid
       ;
@@ -76,7 +76,7 @@ router.post('/UpdateUser', async (req, res) => {
     variables: createSqlVariables(
       req,
       [
-        { name: 'userID', type: 'Int' },
+        { name: 'userId', type: 'Int' },
         { name: 'userLogin', type: 'NVarChar' },
         { name: 'roleUid', type: 'NVarChar' }
       ]
@@ -97,7 +97,7 @@ router.post('/DeleteUser', async (req, res) => {
     targetVariable: deletedUser,
     query: `
     EXECUTE [dbo].[delete_RBAC_User]
-       @userID
+       @userId
       ;
     `,
     variables: createSqlVariables(
