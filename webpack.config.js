@@ -22,6 +22,9 @@ module.exports = {
   },
   mode: 'production',
   target: 'node',
+  stats: {
+    errorDetails: true
+  },
   plugins: [
     // Copy all the necessary sample files to the relevant place under dist/
     new CopyPlugin({
