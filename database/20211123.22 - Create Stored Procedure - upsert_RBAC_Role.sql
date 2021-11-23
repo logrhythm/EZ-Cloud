@@ -30,7 +30,6 @@ BEGIN
 			FROM [dbo].[rbacRoles]
 			WHERE [uid] = @uid)
 		BEGIN
-			PRINT 'UPDATE rbacRoles'
 			UPDATE [dbo].[rbacRoles]
 				SET 
 					[name] = @name,
@@ -39,7 +38,6 @@ BEGIN
 		END
 	ELSE
 		BEGIN
-			PRINT 'INSERT rbacRoles'
 			INSERT INTO [dbo].[rbacRoles]
 			([uid], [name], [isPriviledged]) VALUES (@uid, @name, @isPriviledged)
 		END

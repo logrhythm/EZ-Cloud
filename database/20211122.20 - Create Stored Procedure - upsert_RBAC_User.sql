@@ -72,13 +72,11 @@ BEGIN
 		FROM sys.database_principals
 		WHERE name = @userLogin)
 	BEGIN
-		PRINT '@userLogin EXISTS'
 		IF EXISTS 
 			(SELECT *
 				FROM [dbo].[rbacUserToRole]
 				WHERE [id] = @userID)
 			BEGIN
-				PRINT 'UPDATE @userLogin'
 				UPDATE [dbo].[rbacUserToRole]
 					SET 
 						-- [login] = @userLogin, -- We do not allow for login/user rename
@@ -87,51 +85,46 @@ BEGIN
 			END
 		ELSE
 			BEGIN
-				PRINT 'INSERT @userLogin'
 				INSERT INTO [dbo].[rbacUserToRole]
 				([login], [roleUid]) VALUES (@userLogin, @roleUid)
 			END
 	END
-	ELSE
-		PRINT '@userLogin DOES NOT EXISTS'
 
 END;
 GO
 
--- Tests
--- 
-/*
-USE [EZ]
-GO
+-- -- Tests
+-- -- 
 
-DECLARE @RC int
+-- USE [EZ]
+-- GO
 
-EXECUTE @RC = [dbo].[upsert_RBAC_User] 
-   NULL
-  ,'billoutte'
-  ,'cb36e823-e68f-46aa-9dc1-71c35cae43b5' -- User
-  ,'P4s$word!'
+-- DECLARE @RC int
 
-SELECT @RC;
-GO
+-- EXECUTE @RC = [dbo].[upsert_RBAC_User] 
+--    NULL
+--   ,'billoutte'
+--   ,'cb36e823-e68f-46aa-9dc1-71c35cae43b5' -- User
+--   ,'P4s$word!'
 
--- Assuming this created new User with ID 3
+-- SELECT @RC;
+-- GO
 
-DECLARE @RC int
+-- -- Assuming this created new User with ID 3
 
-EXECUTE @RC = [dbo].[upsert_RBAC_User] 
-   3
-  ,'billoutte'
-  ,'b7972c45-3546-4993-93ab-c0f1d9a0ffae' -- Admin
-  ,NULL
-SELECT @RC;
-GO
+-- DECLARE @RC int
 
--- Clean up
-USE [EZ]
-GO
-DELETE FROM [dbo].[rbacUserToRole] WHERE [login] = 'billoutte'
-DROP USER [billoutte]
-DROP LOGIN [billoutte]
+-- EXECUTE @RC = [dbo].[upsert_RBAC_User] 
+--    3
+--   ,'billoutte'
+--   ,'b7972c45-3546-4993-93ab-c0f1d9a0ffae' -- Admin
+--   ,NULL
+-- SELECT @RC;
+-- GO
 
-*/
+-- -- Clean up
+-- USE [EZ]
+-- GO
+-- DELETE FROM [dbo].[rbacUserToRole] WHERE [login] = 'billoutte'
+-- DROP USER [billoutte]
+-- DROP LOGIN [billoutte]

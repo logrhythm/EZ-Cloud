@@ -61,29 +61,27 @@ BEGIN
 END;
 GO
 
--- Tests
--- 
-/*
-USE [EZ]
-GO
+-- -- Tests
+-- -- 
 
-DECLARE @RC int
+-- USE [EZ]
+-- GO
 
--- Should do nothing:
+-- DECLARE @RC int
 
-EXECUTE @RC = [dbo].[delete_RBAC_User] 
-   NULL
+-- -- Should do nothing:
 
-SELECT @RC;
-GO
+-- EXECUTE @RC = [dbo].[delete_RBAC_User] 
+--    NULL
 
--- Assuming the User has ID 3:
+-- SELECT @RC;
+-- GO
 
-DECLARE @RC int
+-- -- Assuming the User has ID 3:
 
-EXECUTE @RC = [dbo].[delete_RBAC_User] 
-   3
-SELECT @RC;
-GO
+-- DECLARE @RC int
 
-*/
+-- EXECUTE @RC = [dbo].[delete_RBAC_User] 
+--    3
+-- SELECT @RC;
+-- GO
