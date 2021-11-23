@@ -103,7 +103,7 @@ router.post('/DeleteUser', async (req, res) => {
     variables: createSqlVariables(
       req,
       [
-        { name: 'userID', type: 'Int' }
+        { name: 'userId', type: 'Int' }
       ]
     )
   });
