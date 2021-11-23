@@ -71,6 +71,7 @@ router.post('/UpdateUser', async (req, res) => {
        @userId
       ,@userLogin
       ,@roleUid
+      ,@userPassword
       ;
     `,
     variables: createSqlVariables(
@@ -78,7 +79,8 @@ router.post('/UpdateUser', async (req, res) => {
       [
         { name: 'userId', type: 'Int' },
         { name: 'userLogin', type: 'NVarChar' },
-        { name: 'roleUid', type: 'NVarChar' }
+        { name: 'roleUid', type: 'NVarChar' },
+        { name: 'userPassword', type: 'NVarChar' }
       ]
     )
   });
