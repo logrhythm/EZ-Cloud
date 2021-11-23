@@ -19,10 +19,11 @@ const jwtConfig = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 
 const jwtSecret = (jwtConfig && jwtConfig.secret ? jwtConfig.secret : '');
 const jwtTtl = (jwtConfig && jwtConfig.ttl ? jwtConfig.ttl : '1h');
 
-const createTokenSendResponse = (user, roles, res, next) => {
+const createTokenSendResponse = (user, roles, isUserPriviledged, res, next) => {
   const payload = {
     username: user || '',
-    roles: roles || []
+    roles: roles || [],
+    isPriviledged: (isUserPriviledged === true) || false
   };
 
   jwt.sign(
@@ -128,6 +129,7 @@ router.post('/Login', async (req, res, next) => {
         createTokenSendResponse(
           checkedCreds.username, // Login name
           userRoles, // Array of Roles
+          isUserPriviledged, // True or False
           res,
           next
         );
