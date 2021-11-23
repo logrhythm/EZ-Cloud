@@ -170,13 +170,13 @@ router.post('/DeleteRole', async (req, res) => {
     targetVariable: deletedRole,
     query: `
     EXECUTE [dbo].[delete_RBAC_Role]
-       @roleID
+       @uid
       ;
     `,
     variables: createSqlVariables(
       req,
       [
-        { name: 'roleID', type: 'Int' }
+        { name: 'uid', type: 'Int' }
       ]
     )
   });

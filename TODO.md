@@ -29,7 +29,8 @@
     - [x] upsert_RBAC_User
     - [x] delete_RBAC_User
     - [x] upsert_RBAC_Role
-    - [ ] delete_RBAC_Role
+    - [x] delete_RBAC_Role
+    - [ ] Update create_database.bat
 - [ ] Upgradable Install
   - [x] Update SQL scripts to be runnable multiple times and ignore unnecessary tasks
   - [ ] Update/Complement Installer to allow for upgrade from previous versions
