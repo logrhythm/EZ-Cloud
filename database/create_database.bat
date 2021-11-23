@@ -1,8 +1,8 @@
 @echo off
 echo.
-echo  EZ Cloud Server - Database creation script 
+echo  EZ Cloud Server - Database creation and update script 
 echo.
-echo NOTE: This will attempt to create an EZ database on the local MS SQL server.
+echo NOTE: This will attempt to create or update the EZ database on the local MS SQL server. It is SAFE to run this script multiple times.
 echo.
 echo NOTE: It will use the current user in SQL Trusted mode. If the current user doesn't have Admin access onto SQL, please re-run this script as a local Administrator or provide it and the .SQL files to your DBA.
 echo.
@@ -38,6 +38,7 @@ osql -E -n -d EZ -i "20211112.19 - Create Table - rbacUserToRoles.sql"
 osql -E -n -d EZ -i "20211122.20 - Create Stored Procedure - upsert_RBAC_User.sql"
 osql -E -n -d EZ -i "20211122.21 - Create Stored Procedure - delete_RBAC_User.sql"
 osql -E -n -d EZ -i "20211123.22 - Create Stored Procedure - upsert_RBAC_Role.sql"
+osql -E -n -d EZ -i "20211123.23 - Create Stored Procedure - delete_RBAC_Role.sql"
 
 @echo off
 echo.
