@@ -22,7 +22,10 @@ Name: "full"; Description: "Full installation (EZ Cloud Server + Frontend + Node
 Name: "lrCloud"; Description: "LR Cloud installation (EZ Cloud Server + NodeJS)"
 Name: "compact"; Description: "Compact installation (EZ Cloud Server + Frontend)"
 Name: "minimal"; Description: "Minimal installation (EZ Cloud Server)"
-Name: "custom"; Description: "Custom installation"; Flags: iscustom
+Name: "upgrade"; Description: "Full upgrade to {#Version} (EZ Cloud Server + Frontend)"
+Name: "upgradeBackend"; Description: "Backend upgrade to {#Version} (EZ Cloud Server)"
+Name: "upgradeFrontend"; Description: "Frontend upgrade to {#Version} (EZ Frontend)"
+Name: "custom"; Description: "Custom installation / upgrade"; Flags: iscustom
 
 [Components]
 Name: "ezCloudServer"; Description: "EZ Cloud Server"; Types: full lrCloud compact minimal custom; Flags: fixed
@@ -31,42 +34,44 @@ Name: "nodeJs"; Description: "NodeJS"; Types: full lrCloud custom; ExtraDiskSpac
 ; NodeJS:
 ; Installed - Installer = extra disk requered (all sizes in Bytes)
 ; 87236608 - 30535680 = 56700928
+Name: "ezCloudUpgradeServer"; Description: "Upgrade EZ Cloud Server to {#Version}"; Types: upgrade upgradeBackend custom
+Name: "ezCloudUpgradeFrontend"; Description: "Upgrade EZ Cloud Frontend to {#Version}"; Types: upgrade upgradeFrontend custom
 
 [Tasks]
-Name: createDatabase; Description: "Create and Configure [EZ] SQL Database"; GroupDescription: "Database:"; Components: ezCloudServer
+Name: createDatabase; Description: "Create / Update and Configure [EZ] SQL Database"; GroupDescription: "Database:"; Components: ezCloudServer ezCloudUpgradeServer
 Name: installNodeJs; Description: "Install NodeJS {#NodeJsVersionLabel} (>>> Can take up to 2 minutes to install in the background)"; GroupDescription: "NodeJS:"; Components: nodeJs
 Name: serviceSetup; Description: "Configure EZ Server Service"; GroupDescription: "Service:"; Components: ezCloudServer
 Name: serviceStart; Description: "Start EZ Server Service immediately"; GroupDescription: "Service:"; Components: ezCloudServer
 Name: autoGenerateTokens; Description: "Automatically &generate private tokens"; GroupDescription: "Private tokens:"; Components: ezCloudServer
 Name: autoGenerateTokens\jwt; Description: "For &JWT (Authentication token encryption/decripion key)"; GroupDescription: "Private tokens:"; Components: ezCloudServer
 Name: autoGenerateTokens\aes; Description: "For &AES (Encryption / Decryption private key)"; GroupDescription: "Private tokens:"; Components: ezCloudServer
-Name: openConfigFileDatabase_json; Description: "&Database configuration file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer; Flags: unchecked
-Name: openConfigFileJwt_json; Description: "JWT configuration file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer; Flags: unchecked
-Name: openConfigFileSecure_json; Description: "AES configuration file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer; Flags: unchecked
-Name: openConfigFileHttps_cert; Description: "HTTPS Certificate file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer; Flags: unchecked
-Name: openConfigFileHttps_key; Description: "HTTPS RSA Private Key file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer; Flags: unchecked
-Name: openConfigFileHttps_key_tmp; Description: "HTTPS Encrypted Key file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer; Flags: unchecked
+Name: openConfigFileDatabase_json; Description: "&Database configuration file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer ezCloudUpgradeServer; Flags: unchecked
+Name: openConfigFileJwt_json; Description: "JWT configuration file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer ezCloudUpgradeServer; Flags: unchecked
+Name: openConfigFileSecure_json; Description: "AES configuration file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer ezCloudUpgradeServer; Flags: unchecked
+Name: openConfigFileHttps_cert; Description: "HTTPS Certificate file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer ezCloudUpgradeServer; Flags: unchecked
+Name: openConfigFileHttps_key; Description: "HTTPS RSA Private Key file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer ezCloudUpgradeServer; Flags: unchecked
+Name: openConfigFileHttps_key_tmp; Description: "HTTPS Encrypted Key file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer ezCloudUpgradeServer; Flags: unchecked
 
 [Files]
-Source: "{#DistSubDirectory}\bin\*"; DestDir: "{app}\bin"; Components: ezCloudServer; AfterInstall: FileReplaceTokenByConstant('{app}\bin\ezcloudserver.xml', 'ROOT_PATH_EZ-Cloud', '{app}')
+Source: "{#DistSubDirectory}\bin\*"; DestDir: "{app}\bin"; Components: ezCloudServer ezCloudUpgradeServer; AfterInstall: FileReplaceTokenByConstant('{app}\bin\ezcloudserver.xml', 'ROOT_PATH_EZ-Cloud', '{app}')
 Source: "{#DistSubDirectory}\config\database.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceSqlCreds('{app}\config\database.json')
 Source: "{#DistSubDirectory}\config\jwt.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceTokenIfTaskSelected('{app}\config\jwt.json', 'CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS', 50, 'autoGenerateTokens\jwt')
 Source: "{#DistSubDirectory}\config\secure.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceTokenIfTaskSelected('{app}\config\secure.json', 'CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS', 120, 'autoGenerateTokens\aes')
 Source: "{#DistSubDirectory}\config\https.*"; DestDir: "{app}\config"; Components: ezCloudServer
-Source: "{#DistSubDirectory}\config.sample\*"; DestDir: "{app}\config.sample"; Components: ezCloudServer
-Source: "{#DistSubDirectory}\database\*"; DestDir: "{app}\database"; Components: ezCloudServer
-Source: "{#DistSubDirectory}\resources\*"; DestDir: "{app}\resources"; Components: ezCloudServer
+Source: "{#DistSubDirectory}\config.sample\*"; DestDir: "{app}\config.sample"; Components: ezCloudServer ezCloudUpgradeServer
+Source: "{#DistSubDirectory}\database\*"; DestDir: "{app}\database"; Components: ezCloudServer ezCloudUpgradeServer
+Source: "{#DistSubDirectory}\resources\*"; DestDir: "{app}\resources"; Components: ezCloudServer ezCloudUpgradeServer
 Source: "{#DistSubDirectory}\.env"; DestDir: "{app}"; Components: ezCloudServer
-Source: "{#DistSubDirectory}\.env.sample"; DestDir: "{app}"; Components: ezCloudServer
-Source: "{#DistSubDirectory}\public_web_root\*"; DestDir: "{app}\public_web_root"; Components: ezCloudFrontend; Flags: recursesubdirs
+Source: "{#DistSubDirectory}\.env.sample"; DestDir: "{app}"; Components: ezCloudServer ezCloudUpgradeServer
+Source: "{#DistSubDirectory}\public_web_root\*"; DestDir: "{app}\public_web_root"; Components: ezCloudFrontend ezCloudUpgradeFrontend; Flags: recursesubdirs
 ; For NodeJS Installation
 Source: "{#distDirectory}\NodeJS_Installer\{#NodeJsFilename}"; DestDir: "{tmp}"; Components: nodeJs
 ; For EzAdmin account creation
-Source: "{#DistSubDirectory}\database\20211111.17 - Create User - EzAdmin.sql"; DestDir: "{tmp}"; Components: ezCloudServer; AfterInstall: FileReplaceEzAdminCreds('{tmp}\20211111.17 - Create User - EzAdmin.sql')
-Source: "{#DistSubDirectory}\database\create_ezadmin.bat"; DestDir: "{tmp}"; Components: ezCloudServer
+Source: "{#DistSubDirectory}\database\20211111.17 - Create User - EzAdmin.sql"; DestDir: "{tmp}"; Components: ezCloudServer ezCloudUpgradeServer; AfterInstall: FileReplaceEzAdminCreds('{tmp}\20211111.17 - Create User - EzAdmin.sql')
+Source: "{#DistSubDirectory}\database\create_ezadmin.bat"; DestDir: "{tmp}"; Components: ezCloudServer ezCloudUpgradeServer
 
 [Dirs]
-Name: "{app}\public_web_root"; Components: ezCloudServer
+Name: "{app}\public_web_root"; Components: ezCloudServer ezCloudUpgradeServer
 
 [Icons]
 Name: "{group}\Open Configuration Folder"; Filename: "{app}\config"
@@ -104,6 +109,10 @@ Type: files; Name: "{app}\bin\ezcloudserver.wrapper.log"
 ; - Start of Service
 
 [Code]
+const
+wcpEzAdminCredentialsQueryPage = 100;
+wcpSqlCredentialsQueryPage = 101;
+
 var
   SqlCredentialsQueryPage: TInputQueryWizardPage;
   SqlCredentialsLogin: String;
@@ -139,37 +148,44 @@ end;
 
 procedure AddSqlCredentialsQueryPage();
 begin
-  SqlCredentialsQueryPage := CreateInputQueryPage(
-    wpSelectProgramGroup,
-    'SQL Credentials and Details',
-    'At run time, EZ Server requires valid SQL Credentials to manage the its own and the SIEM databases.',
-    'NOTE:' + #10+#13 + 'These credentials are for run time only. This Installation Wizard will use the user currently running it to create the EZ database.' + #10+#13 + #10+#13 +
-    'IMPORTANT:' + #10+#13 + 'The credentials must have READ and WRITE access to the EZ and LogRhythm_EMDB databases.' + #10+#13);
+  if SqlCredentialsQueryPage = nil then
+    begin
+      SqlCredentialsQueryPage := CreateInputQueryPage(
+        wpSelectProgramGroup,
+        'SQL Credentials and Details',
+        'At run time, EZ Server requires valid SQL Credentials to manage the its own and the SIEM databases.',
+        'NOTE:' + #10+#13 + 'These credentials are for run time only. This Installation Wizard will use the user currently running it to create the EZ database.' + #10+#13 + #10+#13 +
+        'IMPORTANT:' + #10+#13 + 'The credentials must have READ and WRITE access to the EZ and LogRhythm_EMDB databases.' + #10+#13);
 
-  SqlCredentialsQueryPage.Add('SQL User Name:', False);
-  SqlCredentialsQueryPage.Add('SQL Password:', True);
-  SqlCredentialsQueryPage.Add('SQL Host:', False);
-  SqlCredentialsQueryPage.Add('SQL Port:', False);
+      SqlCredentialsQueryPage.Add('SQL User Name:', False);
+      SqlCredentialsQueryPage.Add('SQL Password:', True);
+      SqlCredentialsQueryPage.Add('SQL Host:', False);
+      SqlCredentialsQueryPage.Add('SQL Port:', False);
 
-  SqlCredentialsQueryPage.Values[0] := 'sa';
-  SqlCredentialsQueryPage.Values[1] := '';
-  SqlCredentialsQueryPage.Values[2] := 'localhost';
-  SqlCredentialsQueryPage.Values[3] := '1433';
+      SqlCredentialsQueryPage.Values[0] := 'sa';
+      SqlCredentialsQueryPage.Values[1] := '';
+      SqlCredentialsQueryPage.Values[2] := 'localhost';
+      SqlCredentialsQueryPage.Values[3] := '1433';
+    end
 end;
 
 procedure AddEzAdminCredentialsQueryPage();
 begin
-  EzAdminCredentialsQueryPage := CreateInputQueryPage(
-    wpSelectProgramGroup,
-    'EZ Server Administrator Credentials and Details - ezAdmin',
-    'This is the EZ Admin account for EZ Server.',
-    'NOTE:' + #10+#13 + ' - The Username is NOT case sensitive' + #10+#13 +
-    ' - The Password IS case sensitive.' + #10+#13 + #10+#13 + #10+#13 +
-    'Username:' + #10+#13 + 'ezAdmin');
+  if EzAdminCredentialsQueryPage = nil then
+    begin
+      EzAdminCredentialsQueryPage := CreateInputQueryPage(
+        wpSelectProgramGroup,
+        'EZ Server Administrator Credentials and Details - ezAdmin',
+        'This is the EZ Admin account for EZ Server.',
+        'NOTE:' + #10+#13 + ' - The Username is NOT case sensitive' + #10+#13 +
+        ' - The Password IS case sensitive.' + #10+#13 +
+        ' - If the "ezAdmin" SQL Login already exists (in case of Upgrade for example), it will NOT be modified.' + #10+#13 + #10+#13 + #10+#13 +
+        'Username:' + #10+#13 + 'ezAdmin');
 
-  EzAdminCredentialsQueryPage.Add('Password:', True);
+      EzAdminCredentialsQueryPage.Add('Password:', True);
 
-  EzAdminCredentialsQueryPage.Values[0] := '';
+      EzAdminCredentialsQueryPage.Values[0] := '';
+    end;
 end;
 
 procedure InitializeWizard();
@@ -296,4 +312,17 @@ begin
     { Collect the entered EZAdmin Credentials into the relevant variables}
     EzAdminCredentialsPassword := EzAdminCredentialsQueryPage.Values[0];
   end;
+end;
+
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+  Result := False;
+
+  // Skip the EzAdmin Credential Page if Component neither ezCloudServer nor ezCloudUpgradeServer is selected
+  if (PageID = wcpEzAdminCredentialsQueryPage) and not WizardIsComponentSelected('ezCloudServer ezCloudUpgradeServer') then
+    Result := True;
+
+  // Skip the SQL Credential Page if Component ezCloudServer is not selected
+  if (PageID = wcpSqlCredentialsQueryPage) and not WizardIsComponentSelected('ezCloudServer') then
+    Result := True;
 end;
