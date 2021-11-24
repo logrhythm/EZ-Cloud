@@ -68,5 +68,7 @@
   "Delete Role": "Delete Role",
   "Role Name cannot be empty": "Role Name cannot be empty",
   "What did just go wrong?": "What did just go wrong?",
+  "Manage User Accounts": "Manage User Accounts",
+  "Manage User Roles": "Manage User Roles",
   "Close": "Close"
 }
