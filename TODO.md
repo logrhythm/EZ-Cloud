@@ -34,6 +34,7 @@
 - [x] Upgradable Install
   - [x] Update SQL scripts to be runnable multiple times and ignore unnecessary tasks
   - [x] Update/Complement Installer to allow for upgrade from previous versions
+- [ ] More logging in the API for User and Role updates
 
 ## TO FIX
 ## TO TEST
