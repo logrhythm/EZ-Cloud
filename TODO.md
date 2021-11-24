@@ -27,7 +27,9 @@
       - [x] DeleteRole
   - [x] Create SQL Stored Procedures
     - [x] upsert_RBAC_User
+      - [x] Update to deal with non EZ accounts
     - [x] delete_RBAC_User
+      - [ ] Update to deal with non EZ accounts
     - [x] upsert_RBAC_Role
     - [x] delete_RBAC_Role
     - [x] Update create_database.bat

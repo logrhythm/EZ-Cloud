@@ -8,7 +8,8 @@ GO
 -- =============================================
 -- Author:		  Tony Massé
 -- Create date: 2021-11-22
--- Update date: 2021-11-24 - To make @userLogin optional, rename @password into @userPassword and load userLogin from table when updating the user details (as opposed to create a new user)
+-- Update date: 2021-11-23 - To make @userLogin optional, rename @password into @userPassword and load userLogin from table when updating the user details (as opposed to create a new user)
+-- Update date: 2021-11-24 - Update to deal with non EZ accounts
 -- =============================================
 CREATE PROCEDURE upsert_RBAC_User 
 	@userID int = NULL, -- If none is provided, we create a new User
@@ -23,7 +24,9 @@ BEGIN
 
 	-- WORKFLOW:
 	-- If userID is NULL, then:
-	-- - create the User in SQL
+	-- - double check the Login doesn't already exist in SQL (for any DB, as we do not want to mess with existing accounts)
+	-- - if Login not found anywhere:
+	-- -- create the User in SQL
 	-- If userLogin exists as an SQL User and is already in rbacUserToToles:
 	-- - update the entry in rbacUserToToles
 	-- If userLogin exists as an SQL User and is not yet in rbacUserToToles:
@@ -36,10 +39,11 @@ BEGIN
 	-- - create the User in SQL
 	IF @userID IS NULL
 	BEGIN
-		IF NOT EXISTS 
+		-- Double checking the Login doesn't already exist in SQL (for any DB, as we do not want to mess with existing accounts)
+		IF NOT EXISTS
 			(SELECT name  
 				FROM master.sys.server_principals
-				WHERE name = @userLogin AND default_database_name = 'EZ')
+				WHERE name = @userLogin)
 		BEGIN
 			SET @sqlStatement = N'CREATE LOGIN ' + QUOTENAME(@userLogin) + N' WITH PASSWORD=N' + QUOTENAME(ISNULL(@userPassword,''), '''') + N', DEFAULT_DATABASE=[EZ], CHECK_EXPIRATION=OFF, CHECK_POLICY=OFF'
 			EXEC (@sqlStatement)
@@ -62,6 +66,12 @@ BEGIN
 				EXEC (@sqlStatement)
 				SET @sqlStatement = N''
 			END
+		END
+		ELSE
+		BEGIN
+			PRINT 'ERROR - User already exists: ' + QUOTENAME(@userLogin);
+			PRINT 'INFO - EZ Server only allows using non already exisiting User Login';
+			THROW 51001, 'User Login already exists. EZ Server only uses new User Login.', 1;
 		END
 		-- As we came here with OUT a userId, we use the userLogin from the parameter
 		SET @tempUserLogin = @userLogin
