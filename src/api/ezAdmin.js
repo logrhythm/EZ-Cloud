@@ -179,7 +179,7 @@ router.post('/DeleteRole', async (req, res) => {
     variables: createSqlVariables(
       req,
       [
-        { name: 'uid', type: 'Int' }
+        { name: 'uid', type: 'NVarChar' }
       ]
     )
   });
