@@ -7,7 +7,7 @@
   - [x] Add User Admin page
   - [x] Add Roles Admin page
   - [x] Add landing Admin page
-  - [ ] Add navigation in Users and Roles Admin pages
+  - [x] Add navigation in Users and Roles Admin pages
 - General
   - [x] Settings - Only show Backend settings in Dev Mode
   - [x] Error messages
