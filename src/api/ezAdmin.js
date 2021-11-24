@@ -51,7 +51,7 @@ router.get('/GetUsersList', async (req, res) => {
       ,[rbacRoles].[name] AS 'roleName'
       ,[rbacRoles].[isPriviledged] AS 'roleIsPriviledged'
     FROM [EZ].[dbo].[rbacRoles]
-      INNER JOIN [EZ].[dbo].[rbacUserToRole] ON [rbacRoles].[uid] = [rbacUserToRole].[roleUid]
+      RIGHT OUTER JOIN [EZ].[dbo].[rbacUserToRole] ON [rbacRoles].[uid] = [rbacUserToRole].[roleUid]
   `
   });
 
