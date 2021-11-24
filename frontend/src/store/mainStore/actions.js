@@ -450,6 +450,70 @@ export function getUserAccounts ({ state, commit }, payload) {
     loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
     silent: false,
     caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: false
+  })
+}
+
+export function updateUserAccount ({ state }, payload) {
+  if (payload && payload.roleUid) {
+    postDataToSite({
+      apiUrl: '/admin/UpdateUser',
+      dataLabel: 'Account',
+      apiCallParams: {
+        userId: payload.userId,
+        userLogin: (payload.userId == null ? payload.userLogin : null), // Not sending Login nor Pass for new Users
+        userPassword: (payload.userId == null ? payload.userPassword : null), // Not sending Login nor Pass for new Users
+        roleUid: payload.roleUid
+      },
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      silent: false,
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: false
+    })
+  }
+}
+
+export function deleteUserAccount ({ state }, payload) {
+  if (payload && payload.userId != null) {
+    postDataToSite({
+      apiUrl: '/admin/DeleteUser',
+      dataLabel: 'Account',
+      apiCallParams: { userId: payload.userId },
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      silent: false,
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: false
+    })
+  }
+}
+
+export function getUserRoles ({ state, commit }, payload) {
+  getDataFromSite({
+    apiUrl: '/admin/GetRolesList',
+    dataLabel: 'Roles',
+    countDataLabel: true,
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    commit: commit,
+    targetCommitName: 'getUserRoles',
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    silent: false,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
     debug: false
   })
 }

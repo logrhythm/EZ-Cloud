@@ -54,5 +54,12 @@
   "Deploy": "Deploy",
   "Un-deploy": "Un-deploy",
   "This Stream has already been deployed on this OpenCollector.": "This Stream has already been deployed on this OpenCollector.",
-  "This will remove the configuration from the Shipper on the OpenCollector, but will leave the OpenCollector's Pipeline and SIEM Log Source as they are.": "This will remove the configuration from the Shipper on the OpenCollector, but will leave the OpenCollector's Pipeline and SIEM Log Source as they are."
+  "This will remove the configuration from the Shipper on the OpenCollector, but will leave the OpenCollector's Pipeline and SIEM Log Source as they are.": "This will remove the configuration from the Shipper on the OpenCollector, but will leave the OpenCollector's Pipeline and SIEM Log Source as they are.",
+  "New User Account": "New User Account",
+  "Add new User Account": "Add new User Account",
+  "User Account Details": "User Account Details",
+  "Edit Account details": "Edit Account details",
+  "Account Username cannot be empty": "Account Username cannot be empty",
+  "Delete Account": "Delete Account",
+  "Update User Account": "Update User Account"
 }

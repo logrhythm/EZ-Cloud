@@ -14,7 +14,7 @@
               <q-table
                 :data="tableData"
                 :columns="columns"
-                row-key="id"
+                row-key="userId"
                 dense
                 no-data-label="No Account to display."
                 :filter="searchFilter"
@@ -70,38 +70,51 @@
                   </q-td>
                 </template>
 
-                <template v-slot:body-cell-status="props">
+                <template v-slot:body-cell-roleIsPriviledged="props">
                   <q-td :props="props">
-                    <q-icon name="arrow_circle_up" color="green" size="md" v-if="props.value === true" />
-                    <q-icon name="arrow_circle_down" color="red" size="md" v-else-if ="props.value === false" />
-                    <q-icon name="help_center" color="grey" size="md" v-else />
+                    <q-icon name="check_circle_outline" color="green" size="md" v-if="props.value === 1" />
                     <q-tooltip content-style="font-size: 1em">
-                      <span v-if="props.value === true">Enabled</span>
-                      <span v-else-if ="props.value === false">Disabled / Un-deployed</span>
+                      <span v-if="props.value === 1">Priviledged user</span>
+                      <span v-else-if ="props.value === 0">Non-priviledged user</span>
                       <span v-else>{{ props.value }}</span>
                     </q-tooltip>
                   </q-td>
                 </template>
               </q-table>
             </q-card-section>
+            <!-- <q-card-section>
+                <span class="text-bold">editingAccount ID: </span>
+                <pre>{{ editingAccountId }}</pre>
+            </q-card-section>
             <q-card-section>
+                <span class="text-bold">editingAccount Username: </span>
+                <pre>{{ editingAccountUsername }}</pre>
+            </q-card-section>
+            <q-card-section>
+                <span class="text-bold">editingAccount Password: </span>
+                <pre>{{ editingAccountPassword }}</pre>
+            </q-card-section>
+            <q-card-section>
+                <span class="text-bold">editingAccount Role Uid: </span>
+                <pre>{{ editingAccountRoleUid }}</pre>
+            </q-card-section> -->
+            <!-- <q-card-section>
                 <span class="text-bold">Table Data: </span>
                 <pre>{{ tableData }}</pre>
-            </q-card-section>
-            <q-card-section>
+            </q-card-section> -->
+            <!-- <q-card-section>
                 <span class="text-bold">Accounts: </span>
                 <pre>{{ userAccounts }}</pre>
-            </q-card-section>
-            <q-card-section>
+            </q-card-section> -->
+            <!-- <q-card-section>
                 <span class="text-bold">Roles: </span>
                 <pre>{{ userRoles }}</pre>
-            </q-card-section>
+            </q-card-section> -->
           </q-card-section>
 
           <q-separator vertical />
 
           <q-card-actions vertical class="justify-around q-px-md">
-              <!-- <q-btn icon="add" color="primary" :to="'/Pipelines/' + this.pipelineUid + '/Accounts/Edit'" > -->
               <q-btn icon="add" color="primary" @click="addNewAccount()" >
                 <q-tooltip content-style="font-size: 1rem;">
                   Add Account
@@ -115,6 +128,60 @@
           </q-card-actions>
         </q-card-section>
     </q-card>
+    <q-dialog v-model="promptForAccountDetails" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h6" v-if="editingAccountId != null">{{ $t('User Account Details') }}</div>
+          <div class="text-h6" v-else>{{ $t('New User Account') }}</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-input dense v-model="editingAccountUsername"
+            label="Username"
+            autofocus
+            :disable="editingAccountId != null"
+            :rules="[val => !!val || $t('Account Username cannot be empty')]"
+            @keyup.esc="promptForAccountDetails = false"
+          />
+        </q-card-section>
+
+        <q-card-section class="q-pt-none q-mb-md">
+          <q-input dense v-model="editingAccountPassword"
+            label="Password"
+            :type="!showPassword ? 'password' : 'text'"
+            :disable="editingAccountId != null"
+            @keyup.esc="promptForAccountDetails = false"
+          >
+          <template
+              v-slot:append
+            >
+              <q-icon
+                :name="showPassword ? 'visibility' : 'visibility_off'"
+                class="cursor-pointer"
+                @click="showPassword = !showPassword"
+              >
+                <q-tooltip content-style="font-size: 1rem;">
+                  <span v-if="showPassword">Hide</span><span v-else>Show</span> Secret
+                </q-tooltip>
+              </q-icon>
+            </template>
+          </q-input>
+
+        </q-card-section>
+
+        <q-card-section class="q-pt-none q-mb-md">
+          <q-select dense v-model="editingAccountRoleUid" :options="rolesOptions" label="Role" emit-value map-options />
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right" class="text-primary">
+          <q-btn flat :label="$t('Cancel')" v-close-popup @click="cleanEditingVariables()" />
+          <q-btn flat :label="$t('Update User Account')" v-close-popup v-if="editingAccountId != null" :disabled="!editingAccountRoleUid || !editingAccountRoleUid.length" @click="addNewOrUpdateUserAccount()" />
+          <q-btn flat :label="$t('Add new User Account')" v-close-popup v-else :disabled="!editingAccountUsername || !editingAccountUsername.length || !editingAccountPassword || !editingAccountPassword.length || !editingAccountRoleUid || !editingAccountRoleUid.length" @click="addNewOrUpdateUserAccount()" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -138,11 +205,17 @@ export default {
       ],
       pagination: {
         sortBy: 'userLogin',
-        descending: true,
-        rowsPerPage: 25
+        descending: false,
+        rowsPerPage: 20
       },
       accountsLoading: false,
-      rolesLoading: false
+      rolesLoading: false,
+      promptForAccountDetails: false,
+      editingAccountId: null,
+      editingAccountUsername: null,
+      editingAccountPassword: null,
+      editingAccountRoleUid: null,
+      showPassword: false
     }
   }, // data
   computed: {
@@ -154,11 +227,38 @@ export default {
     },
     dataLoading () {
       return this.accountsLoading || this.rolesLoading
+    },
+    rolesOptions () {
+      // Build the list of options for the Drop Down list of Roles
+      const options = []
+      this.userRoles.forEach(role => {
+        options.push(
+          {
+            value: role.roleUid,
+            label: role.roleName + (role.roleIsPriviledged === 1 ? ' (Priviledged)' : ''),
+            isPriviledged: (role.roleIsPriviledged === 1)
+          }
+        )
+      })
+      // Sort them by Name
+      return options.sort(
+        (a, b) => {
+          const nameA = String(a.roleName).toLowerCase()
+          const nameB = String(b.roleName).toLowerCase()
+          if (nameA < nameB) {
+            return -1
+          }
+          if (nameA > nameB) {
+            return 1
+          }
+          return 0
+        }
+      )
     }
   },
   methods: {
-    ...mapActions('mainStore', ['getUserAccounts']),
-    loadAccountsAndRoles () {
+    ...mapActions('mainStore', ['getUserAccounts', 'getUserRoles', 'updateUserAccount', 'deleteUserAccount']),
+    loadAccounts () {
       this.getUserAccounts(
         {
           loadingVariableName: 'accountsLoading',
@@ -166,8 +266,93 @@ export default {
         }
       )
     },
+    loadRoles () {
+      this.getUserRoles(
+        {
+          loadingVariableName: 'rolesLoading',
+          caller: this
+        }
+      )
+    },
+    loadAccountsAndRoles () {
+      this.loadAccounts()
+      this.loadRoles()
+    },
+    cleanEditingVariables () {
+      // Clean the variables
+      this.editingAccountId = null
+      this.editingAccountUsername = ''
+      this.editingAccountPassword = ''
+      this.editingAccountRoleUid = null
+    },
     addNewAccount () {
-      //
+      this.cleanEditingVariables()
+      this.showPassword = false
+      this.promptForAccountDetails = true
+    },
+    doPromptForAccountDetails (existing) {
+      this.editingAccountId = (existing && existing.userId ? existing.userId : null)
+      this.editingAccountUsername = (existing && existing.userLogin ? existing.userLogin : '')
+      this.editingAccountPassword = 'placeholder.......'
+      this.editingAccountRoleUid = (existing && existing.roleUid ? existing.roleUid : null)
+      this.showPassword = false
+      this.promptForAccountDetails = true
+    },
+    addNewOrUpdateUserAccount () {
+      this.updateUserAccount(
+        {
+          userId: this.editingAccountId,
+          userLogin: this.editingAccountUsername,
+          userPassword: this.editingAccountPassword,
+          roleUid: this.editingAccountRoleUid,
+          loadingVariableName: 'accountsLoading',
+          caller: this,
+          onSuccessCallBack: this.loadAccounts,
+          onErrorCallBack: this.loadAccounts
+        }
+      )
+
+      // And clean the variables
+      this.cleanEditingVariables()
+    },
+    deleteAccountPrompt (row) {
+      // ask to confirm
+      this.$q.dialog({
+        title: 'Confirm',
+        message: 'Do you REALLY want to delete this User Account?',
+        ok: {
+          push: true,
+          color: 'negative'
+        },
+        cancel: {
+          push: true,
+          color: 'positive'
+        },
+        persistent: true
+      }).onOk(() => {
+        this.deleteAccount(row ? row.userId : null)
+      }) // }).onOk(() => {
+    },
+    deleteAccount (userId) {
+      if (userId != null) {
+        this.deleteUserAccount(
+          {
+            userId: userId,
+            loadingVariableName: 'accountsLoading',
+            caller: this,
+            onSuccessCallBack: this.loadAccounts,
+            onErrorCallBack: this.loadAccounts
+          }
+        )
+      }
+    }
+  },
+  mounted () {
+    if (this.userAccounts && this.userAccounts.length === 0) {
+      this.loadAccounts()
+    }
+    if (this.userRoles && this.userRoles.length === 0) {
+      this.loadRoles()
     }
   }
 }

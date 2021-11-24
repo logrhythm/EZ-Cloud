@@ -157,3 +157,9 @@ export function getUserAccounts (state, payload) {
     state.userAccounts = payload
   }
 }
+
+export function getUserRoles (state, payload) {
+  if (payload && Array.isArray(payload)) {
+    state.userRoles = payload
+  }
+}
