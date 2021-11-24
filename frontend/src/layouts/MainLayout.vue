@@ -200,6 +200,7 @@ export default {
       }
     },
     prepareAndShowErrorPanel (payload) {
+      console.log('prepareAndShowErrorPanel', payload)
       // Let me clear my throat...
       this.errorPanelDetails = []
 
@@ -266,8 +267,28 @@ export default {
             timestamp: timestamp,
             timestampIso: date.formatDate(timestamp, 'YYYY-MM-DDTHH:mm:ss.SSSZ'),
             code: 'N/A',
-            message: (payload && payload.captionForLogAndPopup ? payload.captionForLogAndPopup : 'Unknown error. See Console.'),
-            wikiLink: (payload && payload.captionForLogAndPopup ? null : this.errorWikiUrlBase + 'unknown-error-see-console')
+            message: (
+              payload &&
+              payload.messageForLogAndPopup
+                ? payload.messageForLogAndPopup
+                : (
+                    payload &&
+                    payload.captionForLogAndPopup
+                      ? payload.captionForLogAndPopup
+                      : 'Unknown error. See Console.'
+                  )
+            ),
+            wikiLink: (
+              payload &&
+              payload.messageForLogAndPopup
+                ? null
+                : (
+                    payload &&
+                    payload.captionForLogAndPopup
+                      ? null
+                      : this.errorWikiUrlBase + 'unknown-error-see-console'
+                  )
+            )
           }
         )
       }
