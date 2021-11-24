@@ -48,7 +48,7 @@
                       <!-- <q-separator vertical dark color="orange" /> -->
                       <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadAccountsAndRoles()">
                         <q-tooltip content-style="font-size: 1em">
-                          Reload the list of Pipelines.
+                          Reload the list of Accounts.
                         </q-tooltip>
                       </q-btn>
                     </div>
@@ -128,6 +128,9 @@
           </q-card-actions>
         </q-card-section>
     </q-card>
+
+    <!-- User Account details dialog -->
+
     <q-dialog v-model="promptForAccountDetails" persistent>
       <q-card style="min-width: 350px">
         <q-card-section>
@@ -308,12 +311,17 @@ export default {
           loadingVariableName: 'accountsLoading',
           caller: this,
           onSuccessCallBack: this.loadAccounts,
-          onErrorCallBack: this.loadAccounts
+          onErrorCallBack: this.addNewOrUpdateUserAccountFailure
         }
       )
 
       // And clean the variables
       this.cleanEditingVariables()
+    },
+    addNewOrUpdateUserAccountFailure (payload) {
+      // Pop this to the screen (via MainLayout)
+      this.$root.$emit('addAndShowErrorToErrorPanel', payload)
+      this.loadAccounts()
     },
     deleteAccountPrompt (row) {
       // ask to confirm

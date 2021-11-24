@@ -76,8 +76,9 @@ const routes = [
     meta: { title: 'Admin' },
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/Admin/Users.vue') },
-      { path: 'Users', component: () => import('pages/Admin/Users.vue') }
+      { path: '', component: () => import('pages/Admin/Index.vue') },
+      { path: 'Users', component: () => import('pages/Admin/Users.vue') },
+      { path: 'Roles', component: () => import('pages/Admin/Roles.vue') }
     ]
   },
 

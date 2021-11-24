@@ -3868,7 +3868,8 @@ It's used for the Log Source Virtualisation.`,
     ], // collectionMethodsOptions
     openCollectorLogSources: [],
     userAccounts: [], // EZ Users on EZ Server
-    userRoles: [] // Roles for EZ Users on EZ Server
+    userRoles: [], // Roles for EZ Users on EZ Server
+    errorWikiUrlBase: 'https://github.com/TonyMasse/EZ-Cloud/wiki/Error-Messages#'
   }
 }
 /*

@@ -3,9 +3,16 @@
 ### Target: v0.8
 
 ## TO DO
-- Mapping Editor
-  - [ ] Add User Admin page
+- RBAC
+  - [x] Add User Admin page
+  - [ ] Add Roles Admin page
+  - [x] Add landing Admin page
+- General
   - [x] Settings - Only show Backend settings in Dev Mode
+  - [x] Error messages
+    - [x] Add pop up with error details and pointer to Wiki
+    - [x] Write Wiki with error explanation
+- Mapping Editor
   - [ ] Warn user if Socket is not connected to Backend (as Tail feature needs it)
   - [ ] Handle Sub Rules
   - [ ] Resurface the `.message` feature

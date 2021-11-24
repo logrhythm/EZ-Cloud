@@ -61,5 +61,12 @@
   "Edit Account details": "Edit Account details",
   "Account Username cannot be empty": "Account Username cannot be empty",
   "Delete Account": "Delete Account",
-  "Update User Account": "Update User Account"
+  "Update User Account": "Update User Account",
+  "New User Role": "New User Role",
+  "Add new User Role": "Add new User Role",
+  "Edit Role details": "Edit Role details",
+  "Delete Role": "Delete Role",
+  "Role Name cannot be empty": "Role Name cannot be empty",
+  "What did just go wrong?": "What did just go wrong?",
+  "Close": "Close"
 }
