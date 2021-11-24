@@ -8,12 +8,13 @@ GO
 -- =============================================
 -- Author:		  Tony Massé
 -- Create date: 2021-11-22
+-- Update date: 2021-11-24 - To make @userLogin optional, rename @password into @userPassword and load userLogin from table when updating the user details (as opposed to create a new user)
 -- =============================================
 CREATE PROCEDURE upsert_RBAC_User 
 	@userID int = NULL, -- If none is provided, we create a new User
-	@userLogin nvarchar(500),
+	@userLogin nvarchar(500) = NULL, -- Only used when creating a new User
 	@roleUid varchar(40),
-	@password nvarchar(max) = NULL -- Only used when creating a new User
+	@userPassword nvarchar(max) = NULL -- Only used when creating a new User
 AS
 BEGIN
 	-- SET NOCOUNT ON added to prevent extra result sets from
@@ -29,6 +30,7 @@ BEGIN
 	-- - add an entry in rbacUserToToles
 
 	DECLARE @sqlStatement nvarchar(max)
+	DECLARE @tempUserLogin nvarchar(500)
 
 	-- If userID is NULL, then:
 	-- - create the User in SQL
@@ -39,7 +41,7 @@ BEGIN
 				FROM master.sys.server_principals
 				WHERE name = @userLogin AND default_database_name = 'EZ')
 		BEGIN
-			SET @sqlStatement = N'CREATE LOGIN ' + QUOTENAME(@userLogin) + N' WITH PASSWORD=N' + QUOTENAME(ISNULL(@password,''), '''') + N', DEFAULT_DATABASE=[EZ], CHECK_EXPIRATION=OFF, CHECK_POLICY=OFF'
+			SET @sqlStatement = N'CREATE LOGIN ' + QUOTENAME(@userLogin) + N' WITH PASSWORD=N' + QUOTENAME(ISNULL(@userPassword,''), '''') + N', DEFAULT_DATABASE=[EZ], CHECK_EXPIRATION=OFF, CHECK_POLICY=OFF'
 			EXEC (@sqlStatement)
 			SET @sqlStatement = N''
 
@@ -61,6 +63,15 @@ BEGIN
 				SET @sqlStatement = N''
 			END
 		END
+		-- As we came here with OUT a userId, we use the userLogin from the parameter
+		SET @tempUserLogin = @userLogin
+	END
+	ELSE
+	BEGIN
+		-- As we came here WITH a userId, we use the userLogin from the Table, based on the userId
+		SELECT @tempUserLogin = [login]
+			FROM [dbo].[rbacUserToRole]
+			WHERE [id] = @userID
 	END
 
 	-- If userLogin exists as an SQL User and is already in rbacUserToToles:
@@ -70,7 +81,7 @@ BEGIN
 	IF EXISTS 
 		(SELECT name
 		FROM sys.database_principals
-		WHERE name = @userLogin)
+		WHERE name = @tempUserLogin)
 	BEGIN
 		IF EXISTS 
 			(SELECT *
@@ -79,14 +90,14 @@ BEGIN
 			BEGIN
 				UPDATE [dbo].[rbacUserToRole]
 					SET 
-						-- [login] = @userLogin, -- We do not allow for login/user rename
+						-- [login] = @tempUserLogin, -- We do not allow for login/user rename
 						[roleUid] = @roleUid
 					WHERE [id] = @userID;
 			END
 		ELSE
 			BEGIN
 				INSERT INTO [dbo].[rbacUserToRole]
-				([login], [roleUid]) VALUES (@userLogin, @roleUid)
+				([login], [roleUid]) VALUES (@tempUserLogin, @roleUid)
 			END
 	END
 

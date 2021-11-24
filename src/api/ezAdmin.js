@@ -18,7 +18,8 @@ router.get('/', (req, res) => {
 
 const {
   getDataFromSql,
-  createSqlVariables
+  createSqlVariables,
+  createSqlVariablesAndStoredProcParams
 } = require('../shared/sqlUtils');
 
 //        ########   #######  ##     ## ######## ########  ######
@@ -64,25 +65,25 @@ router.get('/GetUsersList', async (req, res) => {
 router.post('/UpdateUser', async (req, res) => {
   const updatedUser = {};
 
+  const [sqlVariables, storedProcedureParams] = createSqlVariablesAndStoredProcParams(
+    req,
+    [
+      { name: 'userId', type: 'Int' },
+      { name: 'userLogin', type: 'NVarChar' },
+      { name: 'roleUid', type: 'NVarChar' },
+      { name: 'userPassword', type: 'NVarChar' }
+    ],
+    true
+  );
+
   await getDataFromSql({
     targetVariable: updatedUser,
     query: `
     EXECUTE [dbo].[upsert_RBAC_User]
-       @userId
-      ,@userLogin
-      ,@roleUid
-      ,@userPassword
+       ${storedProcedureParams.join(', ')}
       ;
     `,
-    variables: createSqlVariables(
-      req,
-      [
-        { name: 'userId', type: 'Int' },
-        { name: 'userLogin', type: 'NVarChar' },
-        { name: 'roleUid', type: 'NVarChar' },
-        { name: 'userPassword', type: 'NVarChar' }
-      ]
-    )
+    variables: sqlVariables
   });
 
   res.json(updatedUser);
