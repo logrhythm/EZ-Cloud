@@ -1,0 +1,287 @@
+<template>
+  <q-page class="q-gutter-sm q-pa-xl">
+    <q-card class="q-pa-md q-mx-none">
+      <q-card-section horizontal>
+        <q-card-section class="col q-ma-none q-pa-none">
+          <q-card-section class="text-h4">
+              User Roles
+          </q-card-section>
+          <q-card-section>
+            <q-table
+              :data="tableData"
+              :columns="columns"
+              row-key="roleUid"
+              dense
+              no-data-label="No Role to display."
+              :filter="searchFilter"
+              :loading="dataLoading"
+              rows-per-page-label="Roles per page:"
+              :pagination.sync="pagination"
+            >
+              <template v-slot:top>
+                <div class="full-width row wrap justify-between">
+                  <div class="q-table__title">
+                    Roles
+                  </div>
+                  <div class="row q-gutter-md">
+                    <div class="col" >
+                      <q-btn rounded dense color="primary" icon="add" label="Add New Role" style="min-width:14rem;" @click="addNewRole()" >
+                        <q-tooltip content-style="font-size: 1em">
+                          Create a new Role.
+                        </q-tooltip>
+                      </q-btn>
+                    </div>
+                  </div>
+                  <div class="row q-gutter-md">
+                    <div style="width:300px;">
+                      <q-input outlined dense debounce="300" v-model="searchFilter" placeholder="Search">
+                        <template v-slot:append>
+                          <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
+                          <q-icon name="search" />
+                        </template>
+                      </q-input>
+                    </div>
+                    <!-- <q-separator vertical dark color="orange" /> -->
+                    <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadRoles()">
+                      <q-tooltip content-style="font-size: 1em">
+                        Reload the list of Roles.
+                      </q-tooltip>
+                    </q-btn>
+                  </div>
+                </div>
+              </template>
+
+              <template v-slot:body-cell-actions="props">
+                <q-td :props="props">
+                  <q-btn flat dense icon="edit" @click="doPromptForRoleDetails(props.row)">
+                    <q-tooltip content-style="font-size: 1em">
+                      {{ $t('Edit Role details') }}
+                    </q-tooltip>
+                  </q-btn>
+                  <q-btn flat dense icon="delete" color="negative" @click="deleteRolePrompt(props.row)">
+                    <q-tooltip content-style="font-size: 1em">
+                      {{ $t('Delete Role') }}
+                    </q-tooltip>
+                  </q-btn>
+                </q-td>
+              </template>
+
+              <template v-slot:body-cell-roleIsPriviledged="props">
+                <q-td :props="props">
+                  <q-icon name="check_circle_outline" color="green" size="md" v-if="props.value === 1" />
+                  <q-tooltip content-style="font-size: 1em">
+                    <span v-if="props.value === 1">Priviledged user</span>
+                    <span v-else-if ="props.value === 0">Non-priviledged user</span>
+                    <span v-else>{{ props.value }}</span>
+                  </q-tooltip>
+                </q-td>
+              </template>
+            </q-table>
+          </q-card-section>
+          <!-- <q-card-section>
+              <span class="text-bold">editingRole ID: </span>
+              <pre>{{ editingRoleUid }}</pre>
+          </q-card-section>
+          <q-card-section>
+              <span class="text-bold">editingRole Username: </span>
+              <pre>{{ editingRoleName }}</pre>
+          </q-card-section>
+          <q-card-section>
+              <span class="text-bold">editingRole Is Priviledged: </span>
+              <pre>{{ editingRoleIsPriviledged }}</pre>
+          </q-card-section>
+          <q-card-section>
+              <span class="text-bold">Table Data: </span>
+              <pre>{{ tableData }}</pre>
+          </q-card-section>
+          <q-card-section>
+              <span class="text-bold">Roles: </span>
+              <pre>{{ userRoles }}</pre>
+          </q-card-section> -->
+        </q-card-section>
+
+        <q-separator vertical />
+
+        <q-card-actions vertical class="justify-around q-px-md">
+            <q-btn icon="add" color="primary" @click="addNewRole()" >
+              <q-tooltip content-style="font-size: 1rem;">
+                Add Role
+              </q-tooltip>
+            </q-btn>
+            <q-btn icon="refresh" :loading="dataLoading" @click="loadRoles()">
+              <q-tooltip content-style="font-size: 1rem;">
+                Reload
+              </q-tooltip>
+            </q-btn>
+        </q-card-actions>
+      </q-card-section>
+    </q-card>
+
+    <!-- User Role details dialog -->
+
+    <q-dialog v-model="promptForRoleDetails" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h6" v-if="editingRoleUid != null">{{ $t('User Role Details') }}</div>
+          <div class="text-h6" v-else>{{ $t('New User Role') }}</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-input dense v-model="editingRoleName"
+            label="Name"
+            autofocus
+            :rules="[val => !!val || $t('Role Name cannot be empty')]"
+            @keyup.esc="promptForRoleDetails = false"
+          />
+        </q-card-section>
+
+        <q-card-section class="q-pt-none q-mb-md">
+          <q-toggle
+            v-model="editingRoleIsPriviledged"
+            label="Is Priviledged"
+            false-value="0"
+            :true-value="1"
+            left-label
+          />
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right" class="text-primary">
+          <q-btn flat :label="$t('Cancel')" v-close-popup @click="cleanEditingVariables()" />
+          <q-btn flat :label="$t('Update User Role')" v-close-popup v-if="editingRoleUid != null" :disabled="!editingRoleName || !editingRoleName.length" @click="addNewOrUpdateUserRole()" />
+          <q-btn flat :label="$t('Add new User Role')" v-close-popup v-else :disabled="!editingRoleName || !editingRoleName.length" @click="addNewOrUpdateUserRole()" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+  </q-page>
+</template>
+
+<script>
+import { mapState, mapActions } from 'vuex'
+import { uid } from 'quasar'
+import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+
+export default {
+  name: 'PageAdminRoles',
+  mixins: [
+    mixinSharedDarkMode // Shared computed to access and update the DarkMode
+  ],
+  data () {
+    return {
+      searchFilter: '',
+      columns: [
+        { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
+        { name: 'roleName', align: 'center', label: 'Role', field: 'roleName', sortable: true },
+        { name: 'roleIsPriviledged', align: 'center', label: 'Is Priviledged', field: 'roleIsPriviledged', sortable: true }
+      ],
+      pagination: {
+        sortBy: 'roleName',
+        descending: false,
+        rowsPerPage: 20
+      },
+      rolesLoading: false,
+      promptForRoleDetails: false,
+      editingRoleUid: null,
+      editingRoleName: null,
+      editingRoleIsPriviledged: null
+    }
+  }, // data
+  computed: {
+    ...mapState('mainStore', ['userRoles']),
+    tableData () {
+      // const list = []
+      // return list
+      return this.userRoles
+    },
+    dataLoading () {
+      return this.rolesLoading
+    }
+  },
+  methods: {
+    ...mapActions('mainStore', ['getUserRoles', 'updateUserRole', 'deleteUserRole']),
+    loadRoles () {
+      this.getUserRoles(
+        {
+          loadingVariableName: 'rolesLoading',
+          caller: this
+        }
+      )
+    },
+    cleanEditingVariables () {
+      // Clean the variables
+      this.editingRoleUid = null
+      this.editingRoleName = ''
+      this.editingRoleIsPriviledged = '0'
+    },
+    addNewRole () {
+      this.cleanEditingVariables()
+      this.promptForRoleDetails = true
+    },
+    doPromptForRoleDetails (existing) {
+      this.editingRoleUid = (existing && existing.roleUid ? existing.roleUid : null)
+      this.editingRoleName = (existing && existing.roleName ? existing.roleName : '')
+      this.editingRoleIsPriviledged = (existing && existing.roleIsPriviledged ? existing.roleIsPriviledged : '0')
+      this.promptForRoleDetails = true
+    },
+    addNewOrUpdateUserRole () {
+      this.updateUserRole(
+        {
+          roleUid: (this.editingRoleRoleUid && this.editingRoleRoleUid.length ? this.editingRoleRoleUid : uid()),
+          roleName: this.editingRoleName,
+          roleIsPriviledged: this.editingRoleIsPriviledged,
+          loadingVariableName: 'rolesLoading',
+          caller: this,
+          onSuccessCallBack: this.loadRoles,
+          onErrorCallBack: this.addNewOrUpdateUserRoleFailure
+        }
+      )
+
+      // And clean the variables
+      this.cleanEditingVariables()
+    },
+    addNewOrUpdateUserRoleFailure (payload) {
+      // Pop this to the screen (via MainLayout)
+      this.$root.$emit('addAndShowErrorToErrorPanel', payload)
+      this.loadRoles()
+    },
+    deleteRolePrompt (row) {
+      // ask to confirm
+      this.$q.dialog({
+        title: 'Confirm',
+        message: 'Do you REALLY want to delete this User Role?',
+        ok: {
+          push: true,
+          color: 'negative'
+        },
+        cancel: {
+          push: true,
+          color: 'positive'
+        },
+        persistent: true
+      }).onOk(() => {
+        this.deleteRole(row ? row.roleUid : null)
+      }) // }).onOk(() => {
+    },
+    deleteRole (roleUid) {
+      console.log('deleteRole', roleUid)
+      if (roleUid && roleUid.length) {
+        this.deleteUserRole(
+          {
+            roleUid: roleUid,
+            loadingVariableName: 'rolesLoading',
+            caller: this,
+            onSuccessCallBack: this.loadRoles,
+            onErrorCallBack: this.addNewOrUpdateUserRoleFailure
+          }
+        )
+      }
+    }
+  },
+  mounted () {
+    if (this.userRoles && this.userRoles.length === 0) {
+      this.loadRoles()
+    }
+  }
+}
+</script>

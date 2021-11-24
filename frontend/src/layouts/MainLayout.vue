@@ -150,7 +150,7 @@ export default {
         {
           title: 'Admin',
           icon: 'admin_panel_settings',
-          link: '#/Admin/Users',
+          link: '#/Admin',
           needsPriviledge: true
         },
         {

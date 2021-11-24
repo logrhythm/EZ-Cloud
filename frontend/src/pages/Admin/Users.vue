@@ -48,7 +48,7 @@
                       <!-- <q-separator vertical dark color="orange" /> -->
                       <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadAccountsAndRoles()">
                         <q-tooltip content-style="font-size: 1em">
-                          Reload the list of Pipelines.
+                          Reload the list of Accounts.
                         </q-tooltip>
                       </q-btn>
                     </div>

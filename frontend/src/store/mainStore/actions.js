@@ -518,6 +518,48 @@ export function getUserRoles ({ state, commit }, payload) {
   })
 }
 
+export function updateUserRole ({ state }, payload) {
+  if (payload && payload.roleUid && payload.roleUid.length && payload.roleName && payload.roleName.length) {
+    postDataToSite({
+      apiUrl: '/admin/UpdateRole',
+      dataLabel: 'Role',
+      apiCallParams: {
+        uid: payload.roleUid,
+        name: payload.roleName,
+        isPriviledged: payload.roleIsPriviledged
+      },
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      silent: false,
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: false
+    })
+  }
+}
+
+export function deleteUserRole ({ state }, payload) {
+  if (payload && payload.roleUid && payload.roleUid.length) {
+    postDataToSite({
+      apiUrl: '/admin/DeleteRole',
+      dataLabel: 'Role',
+      apiCallParams: { uid: payload.roleUid },
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      silent: false,
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: false
+    })
+  }
+}
+
 //           ###    ########  ####       ##     ## ######## #### ##       #### ######## #### ########  ######
 //          ## ##   ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
 //         ##   ##  ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##
