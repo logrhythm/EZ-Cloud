@@ -128,6 +128,9 @@
           </q-card-actions>
         </q-card-section>
     </q-card>
+
+    <!-- User Account details dialog -->
+
     <q-dialog v-model="promptForAccountDetails" persistent>
       <q-card style="min-width: 350px">
         <q-card-section>
@@ -308,12 +311,17 @@ export default {
           loadingVariableName: 'accountsLoading',
           caller: this,
           onSuccessCallBack: this.loadAccounts,
-          onErrorCallBack: this.loadAccounts
+          onErrorCallBack: this.addNewOrUpdateUserAccountFailure
         }
       )
 
       // And clean the variables
       this.cleanEditingVariables()
+    },
+    addNewOrUpdateUserAccountFailure (payload) {
+      // Pop this to the screen (via MainLayout)
+      this.$root.$emit('addAndShowErrorToErrorPanel', payload)
+      this.loadAccounts()
     },
     deleteAccountPrompt (row) {
       // ask to confirm

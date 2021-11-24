@@ -66,6 +66,44 @@
       <router-view />
     </q-page-container>
 
+    <!-- Error messages display. Responds to "addAndShowErrorToErrorPanel" events -->
+
+    <q-dialog v-model="showErrorPanel" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section class="q-pb-none">
+          <div class="text-h6">{{ $t('What did just go wrong?') }}</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none" v-if="errorPanelDetails && Array.isArray(errorPanelDetails) && errorPanelDetails.length > 1">
+          <div class="text-bold text-italic">{{ errorPanelDetails.length }} errors occured.</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none" v-else-if="errorPanelDetails && Array.isArray(errorPanelDetails)">
+          <div class="text-bold text-italic">{{ errorPanelDetails.length }} error occured.</div>
+        </q-card-section>
+
+        <q-card-section class="" v-for="(detail, index) in errorPanelDetails" :key="index">
+          <div class="">
+              <div class="row q-my-sm">
+                <q-separator vertical size="2px" color="orange" />
+                <div class="q-ml-sm">
+                  <div class="text-overline">Message Code:</div>
+                  <div class="q-ml-sm text-bold">{{ detail.code }}</div>
+                  <div class="q-mt-sm text-overline">Message:</div>
+                  <div class="q-ml-sm text-italic">{{ detail.message }}</div>
+                  <div class="q-mt-sm text-overline">More information available at:</div>
+                  <div class="q-ml-sm"><a :href="detail.wikiLink" target="_blank" class="text-primary">{{ detail.wikiLink }}</a></div>
+                </div>
+              </div>
+          </div>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right">
+          <q-btn color="primary" text-color="white" :label="$t('Close')" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
   </q-layout>
 </template>
 
@@ -125,11 +163,117 @@ export default {
           link: '#/Logout'
         }
       ],
-      version: version
+      version: version,
+      showErrorPanel: false,
+      errorPanelDetails: []
     }
   },
   computed: {
-    ...mapState('mainStore', ['loggedInUser', 'loggedInUserIsPriviledged'])
+    ...mapState('mainStore', ['loggedInUser', 'loggedInUserIsPriviledged', 'errorWikiUrlBase'])
+  },
+  methods: {
+    sanitiseWikiLinks (rawLinkRef) {
+      // We are using GitHub Wiki to host the error explaination page
+      // And the links needs to be cleaned out of any non alpha-numerical characters
+      //
+      // For example:
+      //   --THIS--
+      // Fancy Code 1!2"3£4$5%6^7&8*9(0)1-2_3=4+5[6{7]8}9'0@1#2~3/4?5.6>7,8<9\0|1`2¬3€4¦5 6
+      //   --BECOMES--
+      // fancy-code-12345678901-2_34567890123456789012345-6
+      //
+      // So the rule seems to be:
+      // - all lower case
+      // - replace each space with a dash
+      // - keep only:
+      // -- alpha-numerical characters
+      // -- dashes
+      // -- underscores
+      try {
+        return String(rawLinkRef)
+          .toLowerCase()
+          .replace(/[^a-zA-Z0-9_-]/g, '') // Strip non alpha-num chars, non dashes and non underscores
+          .replace(/ /g, '-') // Spaces into dashes
+      } catch (error) {
+        return null
+      }
+    },
+    prepareAndShowErrorPanel (payload) {
+      console.log('prepareAndShowErrorPanel:', payload)
+      // Let me clear my throat...
+      this.errorPanelDetails = []
+
+      if (
+        payload &&
+        payload.data &&
+        payload.data.errors &&
+        Array.isArray(payload.data.errors) &&
+        payload.data.errors.length
+      ) {
+        payload.data.errors.forEach(error => {
+          this.errorPanelDetails.push(
+            {
+              code: (
+                error && error.number != null
+                  ? error.number
+                  : error.code
+              ) || 'N/A',
+
+              message: (
+                error && error.message
+                  ? error.message
+                  : 'Unknown error. See Console.'
+              ),
+
+              wikiLink: (
+                error && error.message
+                  ? (
+                      error && error.number != null
+                        ? this.errorWikiUrlBase + this.sanitiseWikiLinks(error.number)
+                        : this.errorWikiUrlBase + this.sanitiseWikiLinks(error.code)
+                    )
+                  // No error message. Direct to Unknown article:
+                  : this.errorWikiUrlBase + 'unknown-error-see-console'
+              )
+            }
+          )
+        })
+        // data:
+        // {
+        //     "stillChecking": false,
+        //     "errors": [
+        //         {
+        //             "message": "User Login already exists. EZ Server only uses new User Login.",
+        //             "code": "EREQUEST",
+        //             "number": 51001,
+        //             "state": 1,
+        //             "class": 16,
+        //             "serverName": "LRVM6",
+        //             "procName": "upsert_RBAC_User",
+        //             "lineNumber": 67
+        //         }
+        //     ],
+        //     "outputs": [],
+        //     "payload": []
+        // }
+      } else {
+        this.errorPanelDetails.push(
+          {
+            code: 'N/A',
+            message: (payload && payload.captionForLogAndPopup ? payload.captionForLogAndPopup : 'Unknown error. See Console.'),
+            wikiLink: (payload && payload.captionForLogAndPopup ? null : this.errorWikiUrlBase + 'unknown-error-see-console')
+          }
+        )
+      }
+
+      this.showErrorPanel = true
+    }
+  },
+  mounted () {
+    this.$root.$on('addAndShowErrorToErrorPanel', this.prepareAndShowErrorPanel)
+  },
+  beforeDestroy () {
+    this.$root.$off('addAndShowErrorToErrorPanel')
   }
 }
 </script>
