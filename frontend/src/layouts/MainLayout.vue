@@ -112,6 +112,7 @@ import { mapState } from 'vuex'
 import EssentialLink from 'components/EssentialLink.vue'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import { version } from '../../package.json'
+import { date } from 'quasar'
 
 export default {
   name: 'MainLayout',
@@ -199,7 +200,6 @@ export default {
       }
     },
     prepareAndShowErrorPanel (payload) {
-      console.log('prepareAndShowErrorPanel:', payload)
       // Let me clear my throat...
       this.errorPanelDetails = []
 
@@ -211,8 +211,11 @@ export default {
         payload.data.errors.length
       ) {
         payload.data.errors.forEach(error => {
+          const timestamp = Date.now()
           this.errorPanelDetails.push(
             {
+              timestamp: timestamp,
+              timestampIso: date.formatDate(timestamp, 'YYYY-MM-DDTHH:mm:ss.SSSZ'),
               code: (
                 error && error.number != null
                   ? error.number
@@ -257,8 +260,11 @@ export default {
         //     "payload": []
         // }
       } else {
+        const timestamp = Date.now()
         this.errorPanelDetails.push(
           {
+            timestamp: timestamp,
+            timestampIso: date.formatDate(timestamp, 'YYYY-MM-DDTHH:mm:ss.SSSZ'),
             code: 'N/A',
             message: (payload && payload.captionForLogAndPopup ? payload.captionForLogAndPopup : 'Unknown error. See Console.'),
             wikiLink: (payload && payload.captionForLogAndPopup ? null : this.errorWikiUrlBase + 'unknown-error-see-console')
@@ -267,6 +273,9 @@ export default {
       }
 
       this.showErrorPanel = true
+      this.errorPanelDetails.forEach(error => {
+        console.log('📜 [LOG] |', error.timestampIso, '| Code:', error.code, '| Message:', error.message, '| WikiLink:', error.wikiLink)
+      })
     }
   },
   mounted () {
