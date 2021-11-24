@@ -5,6 +5,8 @@
 ## TO DO
 - RBAC
   - [x] Add User Admin page
+  - [ ] Add Roles Admin page
+  - [ ] Add landing Admin page
 - General
   - [x] Settings - Only show Backend settings in Dev Mode
   - [x] Error messages
