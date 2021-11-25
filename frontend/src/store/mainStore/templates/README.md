@@ -1,8 +1,8 @@
 # Collection Method Templates
 
-:::
-:warning: :warning: :warning: This is not up to date anymore :warning: :warning: :warning:
-:::
+> NOTE:
+>
+> :warning: :warning: :warning: This is not up to date anymore :warning: :warning: :warning:
 
 Definition:
 - name
