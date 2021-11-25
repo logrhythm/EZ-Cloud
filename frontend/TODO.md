@@ -14,8 +14,8 @@
     - [x] Add pop up with error details and pointer to Wiki
     - [x] Write Wiki with error explanation
 - Mapping Editor
-  - [ ] Warn user if Socket is not connected to Backend (as Tail feature needs it)
-  - [ ] Automatically start Parsing when starting Tail
+  - [x] Warn user if Socket is not connected to Backend (as Tail feature needs it)
+  - [x] Automatically start Parsing when starting Tail
   - [ ] Handle Sub Rules
   - [ ] Resurface the `.message` feature
     - [ ] In UI (menu Settings)
