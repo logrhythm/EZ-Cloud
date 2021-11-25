@@ -27,6 +27,10 @@ export function signOut ({ commit }, payload) {
   // Empty the list of Collectors and Pipelines
   commit('getOpenCollectors', [])
   commit('getPipelines', [])
+
+  // Empty the list of User Accounts and Roles
+  commit('getUserAccounts', [])
+  commit('getUserRoles', [])
 }
 
 // ######################################################################
