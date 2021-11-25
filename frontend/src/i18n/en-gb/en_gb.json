@@ -64,6 +64,8 @@
   "Update User Account": "Update User Account",
   "New User Role": "New User Role",
   "Add new User Role": "Add new User Role",
+  "Update User Role": "Update User Role",
+  "User Role Details": "User Role Details",
   "Edit Role details": "Edit Role details",
   "Delete Role": "Delete Role",
   "Role Name cannot be empty": "Role Name cannot be empty",
