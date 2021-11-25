@@ -69,6 +69,7 @@ router.post('/Login', async (req, res, next) => {
 
     if (checkedCreds.valid === true) {
       // If YES
+      logToSystem('Information', `Login | Credentials for User are valid | user: ${req.body.username}`);
 
       // Get the Roles for the User
       const userRolesFromSql = {};
@@ -120,7 +121,7 @@ router.post('/Login', async (req, res, next) => {
         });
       }
 
-      logToSystem('Verbose', `Login | RBAC Results for User | user: ${req.body.username} | role(s): ${JSON.stringify(userRoles)} | isUserPriviledged: ${isUserPriviledged}`);
+      logToSystem('Information', `Login | RBAC Results for User | user: ${req.body.username} | role(s): ${JSON.stringify(userRoles)} | isUserPriviledged: ${isUserPriviledged}`);
 
       // If user has at least one Role, it can login and we respond with a JWT token
       if (userRoles && userRoles.length > 0) {
@@ -136,11 +137,12 @@ router.post('/Login', async (req, res, next) => {
         denyAccess = false;
       }
     }
+    logToSystem('Information', `Login | Credentials for User are invalid | user: ${req.body.username}`);
 
     if (denyAccess) {
       // If NO
       //   Return error
-      logToSystem('Error', 'Login | Denying access to user with HTTP Code 401.');
+      logToSystem('Error', `Login | Denying access to user with HTTP Code 401. | user: ${(req.body.username ? req.body.username : '-')}`);
       res.status(401);
       const error = Error('Unable to login');
       next(error);
