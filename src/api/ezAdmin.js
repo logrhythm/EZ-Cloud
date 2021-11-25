@@ -1,3 +1,6 @@
+// Load the System Logging functions
+const { logToSystem } = require('../shared/systemLogging');
+
 const express = require('express');
 
 const router = express.Router();
@@ -65,6 +68,13 @@ router.get('/GetUsersList', async (req, res) => {
 router.post('/UpdateUser', async (req, res) => {
   const updatedUser = {};
 
+  if (req.body.userId == null) {
+    logToSystem('Verbose', `Admin | Attempting to create User Account | Login: ${req.body.userLogin} | Role UID: ${req.body.roleUid} | user: ${(req.user.username ? req.user.username : '-')}`);
+  }
+  if (req.body.userId != null) {
+    logToSystem('Verbose', `Admin | Attempting to update User Account | User ID: ${req.body.userId} | Role UID: ${req.body.roleUid} | user: ${(req.user.username ? req.user.username : '-')}`);
+  }
+
   const [sqlVariables, storedProcedureParams] = createSqlVariablesAndStoredProcParams(
     req,
     [
@@ -86,6 +96,36 @@ router.post('/UpdateUser', async (req, res) => {
     variables: sqlVariables
   });
 
+  if (req.body.userId == null) { // User creation
+    if (
+      updatedUser
+      && !(
+        updatedUser.errors
+        && Array.isArray(updatedUser.errors)
+        && updatedUser.errors.length
+      )
+    ) { // 🎉
+      logToSystem('Information', `Admin | User Account created | Login: ${req.body.userLogin} | Role UID: ${req.body.roleUid} | user: ${(req.user.username ? req.user.username : '-')}`);
+    } else { // 😥
+      logToSystem('Warning', `Admin | Failed to create User Account | Login: ${req.body.userLogin} | Role UID: ${req.body.roleUid} | user: ${(req.user.username ? req.user.username : '-')} | Details: ${JSON.stringify(updatedUser)}`);
+    }
+  }
+
+  if (req.body.userId != null) { // User update
+    if (
+      updatedUser
+      && !(
+        updatedUser.errors
+        && Array.isArray(updatedUser.errors)
+        && updatedUser.errors.length
+      )
+    ) { // 🎉
+      logToSystem('Information', `Admin | User Account updated | User ID: ${req.body.userId} | Role UID: ${req.body.roleUid} | user: ${(req.user.username ? req.user.username : '-')}`);
+    } else { // 😥
+      logToSystem('Warning', `Admin | Fail to update User Account | User ID: ${req.body.userId} | Role UID: ${req.body.roleUid} | user: ${(req.user.username ? req.user.username : '-')} | Details: ${JSON.stringify(updatedUser)}`);
+    }
+  }
+
   res.json(updatedUser);
 });
 
@@ -95,6 +135,8 @@ router.post('/UpdateUser', async (req, res) => {
 
 router.post('/DeleteUser', async (req, res) => {
   const deletedUser = {};
+
+  logToSystem('Verbose', `Admin | Attempting to delete User Account | User ID: ${req.body.userId} | user: ${(req.user.username ? req.user.username : '-')}`);
 
   await getDataFromSql({
     targetVariable: deletedUser,
@@ -110,6 +152,19 @@ router.post('/DeleteUser', async (req, res) => {
       ]
     )
   });
+
+  if (
+    deletedUser
+    && !(
+      deletedUser.errors
+      && Array.isArray(deletedUser.errors)
+      && deletedUser.errors.length
+    )
+  ) { // 🎉 💀 🪓🪓🪓🪓 😈
+    logToSystem('Information', `Admin | User Account deleted | User ID: ${req.body.userId} | user: ${(req.user.username ? req.user.username : '-')}`);
+  } else { // 😥
+    logToSystem('Warning', `Admin | Failed to delete User Account | User ID: ${req.body.userId} | user: ${(req.user.username ? req.user.username : '-')} | Details: ${JSON.stringify(deletedUser)}`);
+  }
 
   res.json(deletedUser);
 });
@@ -140,6 +195,8 @@ router.get('/GetRolesList', async (req, res) => {
 router.post('/UpdateRole', async (req, res) => {
   const updatedRole = {};
 
+  logToSystem('Verbose', `Admin | Attempting to create/update User Role | Role UID: ${req.body.uid} | Role Name: ${req.body.name} | Is Role Priviledged: ${(req.body.isPriviledged === 1 ? 'Priviledged' : 'Not priviledged')} | user: ${(req.user.username ? req.user.username : '-')}`);
+
   await getDataFromSql({
     targetVariable: updatedRole,
     query: `
@@ -159,6 +216,19 @@ router.post('/UpdateRole', async (req, res) => {
     )
   });
 
+  if (
+    updatedRole
+    && !(
+      updatedRole.errors
+      && Array.isArray(updatedRole.errors)
+      && updatedRole.errors.length
+    )
+  ) { // 🎉 💀 🪓🪓🪓🪓 😈
+    logToSystem('Information', `Admin | User Role created/updated | Role UID: ${req.body.uid} | Role Name: ${req.body.name} | Is Role Priviledged: ${(req.body.isPriviledged === 1 ? 'Priviledged' : 'Not priviledged')} | user: ${(req.user.username ? req.user.username : '-')}`);
+  } else { // 😥
+    logToSystem('Warning', `Admin | Failed to create/update User Role | Role UID: ${req.body.uid} | Role Name: ${req.body.name} | Is Role Priviledged: ${(req.body.isPriviledged === 1 ? 'Priviledged' : 'Not priviledged')} | user: ${(req.user.username ? req.user.username : '-')} | Details: ${JSON.stringify(updatedRole)}`);
+  }
+
   res.json(updatedRole);
 });
 
@@ -168,6 +238,8 @@ router.post('/UpdateRole', async (req, res) => {
 
 router.post('/DeleteRole', async (req, res) => {
   const deletedRole = {};
+
+  logToSystem('Verbose', `Admin | Attempting to delete User Role | Role UID: ${req.body.uid} | user: ${(req.user.username ? req.user.username : '-')}`);
 
   await getDataFromSql({
     targetVariable: deletedRole,
@@ -183,6 +255,19 @@ router.post('/DeleteRole', async (req, res) => {
       ]
     )
   });
+
+  if (
+    deletedRole
+    && !(
+      deletedRole.errors
+      && Array.isArray(deletedRole.errors)
+      && deletedRole.errors.length
+    )
+  ) { // 🎉 💀 🪓🪓🪓🪓 😈
+    logToSystem('Information', `Admin | User Role deleted | Role UID: ${req.body.uid} | user: ${(req.user.username ? req.user.username : '-')}`);
+  } else { // 😥
+    logToSystem('Warning', `Admin | Failed to delete User Role | Role UID: ${req.body.uid} | user: ${(req.user.username ? req.user.username : '-')} | Details: ${JSON.stringify(deletedRole)}`);
+  }
 
   res.json(deletedRole);
 });
