@@ -26,7 +26,7 @@
       - [ ] `.message`
       - [ ] `.response`
       - [ ] Configurable in the Collection Template
-  - [ ] Externalise Collection Templates
+  - [x] Externalise Collection Templates
 - [ ] Add a simple Wizard from landing page
   - [ ] Ask for name for Log Source
   - [ ] Create collection configuation
