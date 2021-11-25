@@ -1,6 +1,5 @@
 // Load JQ Templates
-import jqTemplates from './templates/jqTemplates'
-const { filterTemplate, transformTemplate } = jqTemplates()
+import { filterTemplate, transformTemplate } from './templates/jqTemplates'
 
 // Load Collection Templates
 // jsBeat
@@ -10,6 +9,7 @@ import collectionMethodTemplatesFilebeatLog from './templates/collectionMethodTe
 import collectionMethodTemplatesFilebeatSyslogUdp from './templates/collectionMethodTemplate.filebeat.syslog.udp'
 import collectionMethodTemplatesFilebeatSyslogTcp from './templates/collectionMethodTemplate.filebeat.syslog.tcp'
 import collectionMethodTemplatesFilebeatHttpJson from './templates/collectionMethodTemplate.filebeat.httpjson'
+// Genericbeat
 import collectionMethodTemplatesGenericbeat from './templates/collectionMethodTemplate.genericbeat'
 
 export default function () {

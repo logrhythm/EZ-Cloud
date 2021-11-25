@@ -1,6 +1,4 @@
-export default function () {
-  return {
-    filterTemplate: `# -------------------------------------------
+const filterTemplate = `# -------------------------------------------
 # THIS TRANSFORM WAS AUTOMATICALLY GENERATED.
 # ANY MANUAL MODIFICATION WILL BE LOST.
 # -------------------------------------------
@@ -22,8 +20,9 @@ def is_matching:
       .device_type == "{{EZ_stream_name_placeholder}}"
     )
 ;
-   `,
-    transformTemplate: `# -------------------------------------------
+`
+
+const transformTemplate = `# -------------------------------------------
 # THIS TRANSFORM WAS AUTOMATICALLY GENERATED.
 # ANY MANUAL MODIFICATION WILL BE LOST.
 # -------------------------------------------
@@ -133,5 +132,8 @@ def transform:
     .output
 ;
 `
-  }
+
+export {
+  filterTemplate,
+  transformTemplate
 }
