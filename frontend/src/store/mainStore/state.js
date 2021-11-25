@@ -446,26 +446,4 @@ definition
   }
 ]
 
-filebeat.inputs:
-- type: log
-  enabled: true
-  paths:
-    - /var/log/*.log
-  encoding: utf-8
-  #   plain, utf-8, utf-16be-bom, utf-16be, utf-16le, big5, gb18030, gbk,
-  #    hz-gb-2312, euc-kr, euc-jp, iso-2022-jp, shift-jis, ... http://www.w3.org/TR/encoding
-  #include_lines: ['^ERR', '^WARN']
-  #exclude_lines: ['^DBG']
-  #exclude_files: ['.gz$']
-  fields:
-  #  level: debug
-  #  review: 1
-  ignore_older: 0
-  #ignore_older: 5m
-  #ignore_older: 24h
-  scan_frequency: 10s
-  #max_bytes: 10485760
-  file_identity: inode_deviceid
-  #file_identity: path
-  #file_identity: inode_marker
 */
