@@ -1324,10 +1324,34 @@ export default {
     }, // queueIn
     tailEnabled: {
       handler () {
-        if (this.tailEnabled) {
-          this.initTail()
-        } else {
-          this.killTail()
+        if (this.socket.connected) {
+          if (this.tailEnabled) {
+            // Kick off the Tail
+            this.initTail()
+            // Start processing at the same time
+            if (!this.processInBackground) {
+              this.processInBackground = true
+            }
+          } else {
+            this.killTail()
+          }
+        } else { // No Socket. Tell the user.
+          this.tailEnabled = false
+          // Pop this to the screen (via MainLayout)
+          this.$root.$emit('addAndShowErrorToErrorPanel', {
+            data: {
+              errors: [
+                {
+                  code: 'NoLiveSocket',
+                  message: 'Live (Socket) connection with the EZ Server has been lost or is not currently established.'
+                },
+                {
+                  code: 'TailFailedToStart',
+                  message: 'Tail could not start due to no live socket available.'
+                }
+              ]
+            }
+          })
         }
       },
       deep: false

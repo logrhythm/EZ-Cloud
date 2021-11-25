@@ -14,7 +14,8 @@
     - [x] Add pop up with error details and pointer to Wiki
     - [x] Write Wiki with error explanation
 - Mapping Editor
-  - [ ] Warn user if Socket is not connected to Backend (as Tail feature needs it)
+  - [x] Warn user if Socket is not connected to Backend (as Tail feature needs it)
+  - [x] Automatically start Parsing when starting Tail
   - [ ] Handle Sub Rules
   - [ ] Resurface the `.message` feature
     - [ ] In UI (menu Settings)
@@ -25,6 +26,7 @@
       - [ ] `.message`
       - [ ] `.response`
       - [ ] Configurable in the Collection Template
+  - [ ] Externalise Collection Templates
 - [ ] Add a simple Wizard from landing page
   - [ ] Ask for name for Log Source
   - [ ] Create collection configuation
@@ -90,6 +92,7 @@
 ## TO FIX
 - [ ] Fan Out feature - OC refuses to import JQ Transform
 - [x] Admin - Roles - Creates new duplicated Role instead of updating existing one when changing the Priviledge
+- [ ] Ability to collect data from external site (Github, ...)
 
 ## TO TEST
 - [ ] Fan Out feature
