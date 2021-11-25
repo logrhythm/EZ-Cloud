@@ -39,8 +39,6 @@
 - [x] More logging in the API for User and Role updates
 
 ## TO FIX
-- [ ] `upsert_RBAC_Role` create new duplicated Role instead of updating existing one when changing the Priviledge
-
 ## TO TEST
 
 ---
