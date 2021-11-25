@@ -89,7 +89,7 @@
 
 ## TO FIX
 - [ ] Fan Out feature - OC refuses to import JQ Transform
-- [ ] Admin - Roles - Creates new duplicated Role instead of updating existing one when changing the Priviledge
+- [x] Admin - Roles - Creates new duplicated Role instead of updating existing one when changing the Priviledge
 
 ## TO TEST
 - [ ] Fan Out feature

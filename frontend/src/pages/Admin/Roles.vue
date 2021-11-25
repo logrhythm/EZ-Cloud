@@ -225,6 +225,8 @@ export default {
       this.promptForRoleDetails = true
     },
     doPromptForRoleDetails (existing) {
+      console.log('doPromptForRoleDetails')
+      console.log(existing)
       this.editingRoleUid = (existing && existing.roleUid ? existing.roleUid : null)
       this.editingRoleName = (existing && existing.roleName ? existing.roleName : '')
       this.editingRoleIsPriviledged = (existing && existing.roleIsPriviledged ? existing.roleIsPriviledged : '0')
@@ -233,7 +235,7 @@ export default {
     addNewOrUpdateUserRole () {
       this.updateUserRole(
         {
-          roleUid: (this.editingRoleRoleUid && this.editingRoleRoleUid.length ? this.editingRoleRoleUid : uid()),
+          roleUid: (this.editingRoleUid && this.editingRoleUid.length ? this.editingRoleUid : uid()),
           roleName: this.editingRoleName,
           roleIsPriviledged: this.editingRoleIsPriviledged,
           loadingVariableName: 'rolesLoading',
