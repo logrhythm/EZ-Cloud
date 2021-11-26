@@ -18,7 +18,7 @@
   - [x] Automatically start Parsing when starting Tail
   - [ ] Handle Sub Rules
   - [ ] Resurface the `.message` feature
-    - [ ] In UI (menu Settings)
+    - [x] In UI (menu Settings)
     - [ ] When generating JQ Transform
       - [ ] In Field Mapping Editor
       - [ ] In deployment
