@@ -22,7 +22,7 @@ BEGIN
 END
 ELSE
 BEGIN
-	PRINT 'INFO: [openCollectorsPipelines] already exists. Moving on.'
+	PRINT CONVERT(nvarchar(24), GETDATE(), 121) + ' | INFO: [openCollectorsPipelines] already exists. Moving on.'
 END
 GO
 

@@ -22,7 +22,7 @@ BEGIN
 END
 ELSE
 BEGIN
-	PRINT 'INFO: [rbacUserToRole] already exists. Moving on.'
+	PRINT CONVERT(nvarchar(24), GETDATE(), 121) + ' | INFO: [rbacUserToRole] already exists. Moving on.'
 END
 GO
 

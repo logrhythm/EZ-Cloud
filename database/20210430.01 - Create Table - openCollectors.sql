@@ -42,6 +42,6 @@ BEGIN
 END
 ELSE
 BEGIN
-	PRINT 'INFO: [openCollectors] already exists. Moving on.'
+	PRINT CONVERT(nvarchar(24), GETDATE(), 121) + ' | INFO: [openCollectors] already exists. Moving on.'
 END
 GO

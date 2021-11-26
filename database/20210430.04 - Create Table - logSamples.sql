@@ -25,6 +25,6 @@ BEGIN
 END
 ELSE
 BEGIN
-	PRINT 'INFO: [logSamples] already exists. Moving on.'
+	PRINT CONVERT(nvarchar(24), GETDATE(), 121) + ' | INFO: [logSamples] already exists. Moving on.'
 END
 GO

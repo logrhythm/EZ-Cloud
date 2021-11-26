@@ -26,6 +26,6 @@ BEGIN
 END
 ELSE
 BEGIN
-	PRINT 'INFO: [pipelines] already exists. Moving on.'
+	PRINT CONVERT(nvarchar(24), GETDATE(), 121) + ' | INFO: [pipelines] already exists. Moving on.'
 END
 GO
