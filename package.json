@@ -9,6 +9,7 @@
     "lint": "eslint --fix src",
     "test": "mocha --exit",
     "build": "webpack",
+    "buildWithFrontend": "cd frontend && npm install && quasar build && (robocopy dist\\spa\\ ..\\public_web_root\\ /COPYALL /MIR /NJH) ^& IF %ERRORLEVEL% LEQ 1 SET ERRORLEVEL = 0 && cd.. && webpack",
     "installService": "node installer/installService.js",
     "uninstallService": "node installer/uninstallService.js"
   },
