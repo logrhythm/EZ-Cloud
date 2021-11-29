@@ -136,8 +136,9 @@ router.post('/Login', async (req, res, next) => {
         );
         denyAccess = false;
       }
+    } else {
+      logToSystem('Information', `Login | Credentials for User are invalid | user: ${req.body.username}`);
     }
-    logToSystem('Information', `Login | Credentials for User are invalid | user: ${req.body.username}`);
 
     if (denyAccess) {
       // If NO
