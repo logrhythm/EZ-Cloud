@@ -1607,10 +1607,6 @@ export default {
           if (this.tailEnabled) {
             // Kick off the Tail
             this.initTail()
-            // Start processing at the same time
-            if (!this.processInBackground) {
-              this.processInBackground = true
-            }
           } else {
             this.killTail()
           }
