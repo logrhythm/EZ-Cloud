@@ -1110,13 +1110,13 @@ export default {
       }
     },
 
-    //         #######  ##     ## ######## ##     ## ########
-    //        ##     ## ##     ## ##       ##     ## ##
-    //        ##     ## ##     ## ##       ##     ## ##
-    //        ##     ## ##     ## ######   ##     ## ######
-    //        ##  ## ## ##     ## ##       ##     ## ##
-    //        ##    ##  ##     ## ##       ##     ## ##
-    //        ##### ##  #######  ########  #######  ########
+    //     ##     ##    ###    ##    ## ##     ##    ###    ##             #### ##     ## ########   #######  ########  ########
+    //     ###   ###   ## ##   ###   ## ##     ##   ## ##   ##              ##  ###   ### ##     ## ##     ## ##     ##    ##
+    //     #### ####  ##   ##  ####  ## ##     ##  ##   ##  ##              ##  #### #### ##     ## ##     ## ##     ##    ##
+    //     ## ### ## ##     ## ## ## ## ##     ## ##     ## ##              ##  ## ### ## ########  ##     ## ########     ##
+    //     ##     ## ######### ##  #### ##     ## ######### ##              ##  ##     ## ##        ##     ## ##   ##      ##
+    //     ##     ## ##     ## ##   ### ##     ## ##     ## ##              ##  ##     ## ##        ##     ## ##    ##     ##
+    //     ##     ## ##     ## ##    ##  #######  ##     ## ########       #### ##     ## ##         #######  ##     ##    ##
 
     isProperJson (value) {
       let isValid = false
@@ -1129,6 +1129,25 @@ export default {
       }
       return isValid
     },
+
+    async processFileInput (file) {
+      console.log('processFileInput')
+      console.log(file)
+      if (file) {
+        const fileContent = await file.text()
+        console.log('[processFileInput] - 🟢 - File content', fileContent) // XXXX
+      } else {
+        console.log('[processFileInput] - 🟠 - No file selected.')
+      }
+    },
+
+    //         #######  ##     ## ######## ##     ## ########
+    //        ##     ## ##     ## ##       ##     ## ##
+    //        ##     ## ##     ## ##       ##     ## ##
+    //        ##     ## ##     ## ######   ##     ## ######
+    //        ##  ## ## ##     ## ##       ##     ## ##
+    //        ##    ##  ##     ## ##       ##     ## ##
+    //        ##### ##  #######  ########  #######  ########
 
     queueInAdd ({ values, manualEntry, multiLogs }) {
       if (typeof values === 'string') {
@@ -1187,17 +1206,6 @@ export default {
         console.log('[queueInAdd] - UNKNOWN TYPE') // XXXX
       }
     }, // queueInAdd
-
-    async processFileInput (file) {
-      console.log('processFileInput')
-      console.log(file)
-      if (file) {
-        const fileContent = await file.text()
-        console.log('[processFileInput] - 🟢 - File content', fileContent) // XXXX
-      } else {
-        console.log('[processFileInput] - 🟠 - No file selected.')
-      }
-    },
 
     queueInPush (value, manualEntry = false) {
       // `manualEntry` is designed to override standard flood protection
