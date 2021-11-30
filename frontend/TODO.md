@@ -30,8 +30,9 @@
   - [ ] Add a way to import log samples
     - [x] Single log at a time, including Array of logs
     - [x] Multiple logs at a time, as one per line
-    - [ ] From file
-      - [ ] As an Array of Logs
+    - [ ] From file(s)
+      - [ ] As a Single Log per file
+      - [ ] As an Array of Logs per file
       - [ ] As an Set of Logs
       - [ ] Write Wiki help page to explain the difference
 - [ ] Add a simple Wizard from landing page
