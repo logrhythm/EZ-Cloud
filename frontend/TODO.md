@@ -16,9 +16,9 @@
 - Mapping Editor
   - [x] Warn user if Socket is not connected to Backend (as Tail feature needs it)
   - [x] Automatically start Parsing when starting Tail
-  - [ ] Optimise Parsing Start/Stop
-    - [ ] Automatically start Parsing when entries are added to the Queue
-    - [ ] Automatically stop Parsing when the Queue is fully processed
+  - [x] Optimise Parsing Start/Stop
+    - [x] Automatically start Parsing when entries are added to the Queue
+    - [x] Automatically stop Parsing when the Queue is fully processed
   - [ ] Handle Sub Rules
   - [ ] Resurface the `.message` feature
     - [x] In UI (menu Settings)

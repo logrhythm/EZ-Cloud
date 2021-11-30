@@ -1275,12 +1275,20 @@ export default {
           }
           try {
             this.queueIn.push(JSON.parse(value.message))
+            // Kick off the Background processing
+            if (this.processInBackground !== true) {
+              this.processInBackground = true
+            }
           } catch {
             // Not proper JSON
             console.log('Field .message does not contain proper JSON')
           }
         } else {
           this.queueIn.push(value)
+          // Kick off the Background processing
+          if (this.processInBackground !== true) {
+            this.processInBackground = true
+          }
         }
       } else {
         console.log('[queueInPush] Trying to push a value when Tail is disabled or queue is full')
@@ -1338,6 +1346,11 @@ export default {
           this.processedLogs.push(logSampleToProcess)
         } else {
           // Turning off the background processing of the logs
+          this.processInBackground = false
+        }
+
+        // Check the status of the QueueIn, and turn off the Background processing if it's empty
+        if (this.processInBackground === true && this.queueIn.length === 0) {
           this.processInBackground = false
         }
       }
