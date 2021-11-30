@@ -29,7 +29,7 @@
   - [x] Externalise Collection Templates
   - [ ] Add a way to import log samples
     - [x] Single log at a time, including Array of logs
-    - [ ] Multiple logs at a time, as one per line
+    - [x] Multiple logs at a time, as one per line
     - [ ] From file
       - [ ] As an Array of Logs
       - [ ] As an Set of Logs
