@@ -31,9 +31,9 @@
     - [x] Single log at a time, including Array of logs
     - [x] Multiple logs at a time, as one per line
     - [ ] From file(s)
-      - [ ] As a Single Log per file
-      - [ ] As an Array of Logs per file
-      - [ ] As an Set of Logs
+      - [x] As a Single Log per file
+      - [x] As an Array of Logs per file
+      - [x] As an Set of Logs
       - [ ] Write Wiki help page to explain the difference
 - [ ] Add a simple Wizard from landing page
   - [ ] Ask for name for Log Source

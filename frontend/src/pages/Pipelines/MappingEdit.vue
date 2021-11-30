@@ -246,6 +246,7 @@
                 bottom-slots
                 v-model="manualImportFileInput"
                 label="Click or Drop a file here"
+                multiple
                 counter
                 max-files="10"
                 input-style="min-height: 15.75em;"
@@ -257,24 +258,34 @@
 
                 <template v-slot:after>
                   <div class="full-height justify-around q-gutter-y-lg">
-                    <!-- <q-btn class="row" dense icon="upload_file" color="primary" :disable="manualImportFileInput == null" @click="processFileInput(manualImportFileInput)" > -->
-                    <q-btn class="row" dense icon="upload_file" color="primary" >
+                    <q-btn class="row" dense icon="upload_file" color="primary" :disable="manualImportFileInput == null" >
                       <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
-                        Add File Content to Queue
+                       <span v-if="manualImportFileInput !== null && manualImportFileInput.length > 1" >Add Files Content to Queue</span>
+                       <span v-else >Add File Content to Queue</span>
                       </q-tooltip>
                       <q-menu>
                         <q-list style="min-width: 400px">
-                          <q-item clickable v-close-popup>
+                          <q-item clickable v-close-popup @click="processFilesInput({ filesInput: manualImportFileInput, importAs: 'single_log_per_file' })">
+                            <q-item-section avatar top>
+                              <q-avatar icon="short_text" color="green-10" text-color="white" />
+                            </q-item-section>
+
+                            <q-item-section>
+                              <q-item-label lines="1">As a Single Log</q-item-label>
+                              <q-item-label caption>One JSON Log per file</q-item-label>
+                            </q-item-section>
+                          </q-item>
+                          <q-item clickable v-close-popup @click="processFilesInput({ filesInput: manualImportFileInput, importAs: 'log_array_per_file' })">
                             <q-item-section avatar top>
                               <q-avatar icon="data_array" color="purple-10" text-color="white" />
                             </q-item-section>
 
                             <q-item-section>
                               <q-item-label lines="1">As an Array of Logs</q-item-label>
-                              <q-item-label caption>One JSON array of Logs</q-item-label>
+                              <q-item-label caption>One JSON array of Logs per file</q-item-label>
                             </q-item-section>
                           </q-item>
-                          <q-item clickable v-close-popup>
+                          <q-item clickable v-close-popup @click="processFilesInput({ filesInput: manualImportFileInput, importAs: 'log_set_per_file' })">
                             <q-item-section avatar top>
                               <q-avatar icon="format_list_numbered" color="indigo-10" text-color="white" />
                             </q-item-section>
@@ -1125,17 +1136,64 @@ export default {
         isValid = true
       } catch {
         // Not proper JSON
-        console.log('String is not a proper JSON')
       }
       return isValid
     },
 
-    async processFileInput (file) {
-      console.log('processFileInput')
-      console.log(file)
-      if (file) {
-        const fileContent = await file.text()
-        console.log('[processFileInput] - 🟢 - File content', fileContent) // XXXX
+    processFilesInput ({ filesInput, importAs }) {
+      // Import one or more files into the Queue
+
+      console.log('processFilesInput', importAs) // XXXX
+      console.log(filesInput) // XXXX
+      console.log('Type: ', typeof filesInput) // XXXX
+      // importAs:
+      // - single_log_per_file
+      // - log_array_per_file
+      // - log_set_per_file
+
+      if (filesInput == null) {
+        console.log('[processFilesInput] - 🟠 - No file selected.')
+      } else {
+        // Deal with multiple or single file(s)
+        if (Array.isArray(filesInput)) {
+          filesInput.forEach(singleFileInput => {
+            this.processFileInput({ singleFileInput: singleFileInput, importAs })
+          })
+        } else {
+          this.processFileInput({ singleFileInput: filesInput, importAs })
+        }
+      }
+    },
+
+    async processFileInput ({ singleFileInput, importAs }) {
+      // Import one file into the Queue
+
+      console.log('processFileInput', importAs) // XXXX
+      console.log(singleFileInput) // XXXX
+      console.log('Type: ', typeof singleFileInput) // XXXX
+      // importAs:
+      // - single_log_per_file
+      // - log_array_per_file
+      // - log_set_per_file
+
+      if (singleFileInput) {
+        const fileContent = await singleFileInput.text()
+        console.log('[processFileInput] - 🟢 - File content') // XXXX
+        console.log(fileContent) // XXXX
+        if (importAs === 'single_log_per_file') {
+          this.queueInAdd({ values: fileContent, manualEntry: true, multiLogs: false })
+        } else if (importAs === 'log_array_per_file') {
+          try {
+            this.queueInAdd({ values: JSON.parse(fileContent), manualEntry: true, multiLogs: null })
+          } catch {
+            // Not proper JSON
+            console.log('[processFileInput] - 🟠 - File contentis not a proper JSON Array')
+          }
+        } else if (importAs === 'log_set_per_file') {
+          this.queueInAdd({ values: fileContent, manualEntry: true, multiLogs: true })
+        } else {
+          console.log(`[processFileInput] - 🟠 - Unknowm importAs "${importAs}".`)
+        }
       } else {
         console.log('[processFileInput] - 🟠 - No file selected.')
       }
