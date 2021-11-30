@@ -298,7 +298,7 @@
                           <!-- format_list_numbered -->
                           <!-- format_align_left -->
                           <q-separator />
-                          <q-item clickable v-close-popup tag="a" :href="wikiLink('whatTheDifferenceLogArrayLogSet')" target="_blank" >
+                          <q-item clickable v-close-popup tag="a" :href="wikiLink('ref-whatsthedifferencefileimport')" target="_blank" >
                             <q-item-section avatar top>
                               <q-avatar icon="help_outline" color="info" text-color="black" />
                             </q-item-section>
@@ -311,9 +311,9 @@
                         </q-list>
                       </q-menu>
                     </q-btn>
-                    <q-btn class="row" dense icon="close" flat :disable="manualImportFileInput != null" @click="manualImportFileInput = null" >
+                    <q-btn class="row" dense icon="close" flat :disable="manualImportFileInput == null" @click="manualImportFileInput = null" >
                       <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
-                        Copy to Clipboad
+                        Clear out file selection
                       </q-tooltip>
                     </q-btn>
                   </div>

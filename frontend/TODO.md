@@ -35,7 +35,7 @@
       - [x] As an Array of Logs per file
       - [x] As an Set of Logs
       - [x] Write Wiki help page to explain the difference
-        - https://github.com/TonyMasse/EZ-Cloud/wiki/Help#whatTheDifferenceLogArrayLogSet
+        - https://github.com/TonyMasse/EZ-Cloud/wiki/Help#ref-whatsthedifferencefileimport
 - [ ] Add a simple Wizard from landing page
   - [ ] Ask for name for Log Source
   - [ ] Create collection configuation
