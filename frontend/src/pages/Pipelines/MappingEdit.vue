@@ -1130,21 +1130,30 @@ export default {
       return isValid
     },
 
-    queueInAdd ({ values, manualEntry }) {
+    queueInAdd ({ values, manualEntry, multiLogs }) {
       if (typeof values === 'string') {
         // deal with it as Strings
 
-        // Increase counter
-        this.incomingLogCount++
+        if (multiLogs === true) {
+          // Dealing with multiple Logs, one per line
 
-        // if (this.tailEnabled && (this.queueIn.length < this.queueInMaxSize)) {
-        if (values.length > 0) {
-          try {
-            // this.queueIn.push(JSON.parse(values))
-            this.queueInPush(JSON.parse(values), manualEntry)
-          } catch {
-            // Not proper JSON
-            console.log('String is not a proper JSON')
+          // Call itself while providing an Array of Strings
+          this.queueInAdd({ values: values.split('\r'), manualEntry })
+        } else {
+          // Dealing with Single Log
+
+          // Increase counter
+          this.incomingLogCount++
+
+          // if (this.tailEnabled && (this.queueIn.length < this.queueInMaxSize)) {
+          if (values.length > 0) {
+            try {
+              // this.queueIn.push(JSON.parse(values))
+              this.queueInPush(JSON.parse(values), manualEntry)
+            } catch {
+              // Not proper JSON
+              console.log('String is not a proper JSON')
+            }
           }
         }
       } else if (Array.isArray(values)) {
