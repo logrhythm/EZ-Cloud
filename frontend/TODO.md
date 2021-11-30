@@ -27,14 +27,15 @@
       - [ ] `.response`
       - [ ] Configurable in the Collection Template
   - [x] Externalise Collection Templates
-  - [ ] Add a way to import log samples
+  - [x] Add a way to import log samples
     - [x] Single log at a time, including Array of logs
     - [x] Multiple logs at a time, as one per line
-    - [ ] From file(s)
+    - [x] From file(s)
       - [x] As a Single Log per file
       - [x] As an Array of Logs per file
       - [x] As an Set of Logs
-      - [ ] Write Wiki help page to explain the difference
+      - [x] Write Wiki help page to explain the difference
+        - https://github.com/TonyMasse/EZ-Cloud/wiki/Help#whatTheDifferenceLogArrayLogSet
 - [ ] Add a simple Wizard from landing page
   - [ ] Ask for name for Log Source
   - [ ] Create collection configuation
