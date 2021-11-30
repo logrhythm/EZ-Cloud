@@ -20,7 +20,8 @@
   - [x] Optimise Parsing Start/Stop
     - [x] Automatically start Parsing when entries are added to the Queue
     - [x] Automatically stop Parsing when the Queue is fully processed
-  - [ ] Handle Sub Rules
+  - [ ] Change sheduling method for the Background Processing to allow changes in the Settings to be picked up once already running
+  - [ ] ~~Handle Sub Rules~~ (👈 low value, low priority. Might resurect if users demand)
   - [ ] Resurface the `.message` feature
     - [x] In UI (menu Settings)
     - [ ] When generating JQ Transform
