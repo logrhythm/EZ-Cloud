@@ -196,6 +196,7 @@ export default function () {
     openCollectorLogSources: [],
     userAccounts: [], // EZ Users on EZ Server
     userRoles: [], // Roles for EZ Users on EZ Server
-    errorWikiUrlBase: 'https://github.com/TonyMasse/EZ-Cloud/wiki/Error-Messages#'
+    errorWikiUrlBase: 'https://github.com/TonyMasse/EZ-Cloud/wiki/Error-Messages#',
+    helpWikiUrlBase: 'https://github.com/TonyMasse/EZ-Cloud/wiki/Help#'
   }
 }

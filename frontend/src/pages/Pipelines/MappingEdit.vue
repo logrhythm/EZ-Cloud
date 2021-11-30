@@ -33,6 +33,8 @@
         <q-separator vertical />
         <q-btn no-caps flat dense icon="play_circle_outline" label="Start Live Tail" color="secondary" @click="tailEnabled = true" v-if="!tailEnabled" />
         <q-btn no-caps flat dense icon="stop" label="Stop Live Tail" @click="tailEnabled = false" v-else />
+        <q-btn no-caps flat dense icon="playlist_add" label="Manual Import" @click="showManualImport = true" v-if="!showManualImport" />
+        <q-btn no-caps flat dense icon="visibility_off" label="Manual Import" @click="showManualImport = false" v-else />
         <q-separator vertical />
         <q-btn no-caps flat dense icon="search" label="Start background processing" color="secondary" @click="processInBackground = true" v-if="!processInBackground" />
         <q-btn no-caps flat dense icon="search_off" label="Stop background processing" @click="processInBackground = false" v-else />
@@ -152,28 +154,169 @@
       <!-- <div class="q-mt-md">
         <span class="text-bold">Queues / Stacks sizes: </span>{{ incomingLogCount }} / {{ queueIn.length }} / {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ processedLogs.length }}
       </div> -->
+      <q-card class="q-mt-md" v-show="showManualImport">
+      <!-- <q-card class="q-mt-md"> -->
+        <q-card-section class="text-h4" style="opacity:.4">
+          Manual import
+        </q-card-section>
+        <q-separator />
+        <q-card-section>
+          <q-tabs
+            v-model="manualImportMethod"
+            active-color="primary"
+            indicator-color="primary"
+            align="justify"
+            narrow-indicator
+          >
+            <q-tab name="single_log" label="Single Log" />
+            <q-tab name="multiple_logs" label="Multiple Logs" />
+            <q-tab name="log_file" label="File Import" />
+          </q-tabs>
+
+          <q-separator />
+
+          <q-tab-panels v-model="manualImportMethod" animated>
+            <q-tab-panel name="single_log">
+              <q-input
+                v-model="queueInDataEntrySingleLog"
+                filled
+                autogrow
+                input-style="min-height: 16em;"
+                label="One single JSON log at a time"
+                :rules="[ val => isProperJson(val) || 'JSON Syntax Error(s)' ]"
+                @keypress.shift.enter.prevent="queueInAdd({values: queueInDataEntrySingleLog, manualEntry: true});"
+              >
+                <template v-slot:after>
+                  <div class="full-height justify-around q-gutter-y-lg">
+                    <q-btn dense icon="playlist_add" color="primary" :disable="!isProperJson(queueInDataEntrySingleLog)" @click="queueInAdd({ values: queueInDataEntrySingleLog, manualEntry: true })" >
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                        Add to Queue
+                      </q-tooltip>
+                    </q-btn>
+                    <q-btn class="row" dense icon="content_copy" flat :disable="!queueInDataEntrySingleLog.length" @click="copyToClipboard(queueInDataEntrySingleLog)" >
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                        Copy to Clipboad
+                      </q-tooltip>
+                    </q-btn>
+                    <q-btn class="row" dense icon="close" flat :disable="!queueInDataEntrySingleLog.length" @click="queueInDataEntrySingleLog = ''" >
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                        Clear out
+                      </q-tooltip>
+                    </q-btn>
+                  </div>
+                </template>
+              </q-input>
+            </q-tab-panel>
+
+            <q-tab-panel name="multiple_logs">
+              <q-input
+                v-model="queueInDataEntryMultiLog"
+                filled
+                autogrow
+                input-style="min-height: 16em;"
+                label="One JSON entry per line"
+                :rules="[ val => val != null || 'Common, give me some JSON!' ]"
+                @keypress.shift.enter.prevent="queueInAdd({values: queueInDataEntryMultiLog, manualEntry: true});"
+              >
+                <template v-slot:after>
+                  <div class="full-height justify-around q-gutter-y-lg">
+                    <q-btn class="row" dense icon="playlist_add" color="primary" :disable="!queueInDataEntryMultiLog.length" @click="queueInAdd({ values: queueInDataEntryMultiLog, manualEntry: true, multiLogs: true })" >
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                        Add to Queue
+                      </q-tooltip>
+                    </q-btn>
+                    <q-btn class="row" dense icon="content_copy" flat :disable="!queueInDataEntryMultiLog.length" @click="copyToClipboard(queueInDataEntryMultiLog)" >
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                        Copy to Clipboad
+                      </q-tooltip>
+                    </q-btn>
+                    <q-btn class="row" dense icon="close" flat :disable="!queueInDataEntryMultiLog.length" @click="queueInDataEntryMultiLog = ''" >
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                        Clear out
+                      </q-tooltip>
+                    </q-btn>
+                  </div>
+                </template>
+              </q-input>
+            </q-tab-panel>
+
+            <q-tab-panel name="log_file">
+              <q-file
+                filled
+                bottom-slots
+                v-model="manualImportFileInput"
+                label="Click or Drop a file here"
+                counter
+                max-files="10"
+                input-style="min-height: 15.75em;"
+              >
+                <template v-slot:append>
+                  <q-icon v-if="manualImportFileInput !== null" name="close" @click.stop="manualImportFileInput = null" class="cursor-pointer" />
+                  <q-icon name="note_add" @click.stop />
+                </template>
+
+                <template v-slot:after>
+                  <div class="full-height justify-around q-gutter-y-lg">
+                    <!-- <q-btn class="row" dense icon="upload_file" color="primary" :disable="manualImportFileInput == null" @click="processFileInput(manualImportFileInput)" > -->
+                    <q-btn class="row" dense icon="upload_file" color="primary" >
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                        Add File Content to Queue
+                      </q-tooltip>
+                      <q-menu>
+                        <q-list style="min-width: 400px">
+                          <q-item clickable v-close-popup>
+                            <q-item-section avatar top>
+                              <q-avatar icon="data_array" color="purple-10" text-color="white" />
+                            </q-item-section>
+
+                            <q-item-section>
+                              <q-item-label lines="1">As an Array of Logs</q-item-label>
+                              <q-item-label caption>One JSON array of Logs</q-item-label>
+                            </q-item-section>
+                          </q-item>
+                          <q-item clickable v-close-popup>
+                            <q-item-section avatar top>
+                              <q-avatar icon="format_list_numbered" color="indigo-10" text-color="white" />
+                            </q-item-section>
+
+                            <q-item-section>
+                              <q-item-label lines="1">As a Set of Logs</q-item-label>
+                              <q-item-label caption>One JSON log per line</q-item-label>
+                            </q-item-section>
+                          </q-item>
+                          <!-- format_list_numbered -->
+                          <!-- format_align_left -->
+                          <q-separator />
+                          <q-item clickable v-close-popup tag="a" :href="wikiLink('whatTheDifferenceLogArrayLogSet')" target="_blank" >
+                            <q-item-section avatar top>
+                              <q-avatar icon="help_outline" color="info" text-color="black" />
+                            </q-item-section>
+
+                            <q-item-section>
+                              <q-item-label lines="1">What's the difference?</q-item-label>
+                              <q-item-label caption>A quick peek at the Wiki</q-item-label>
+                            </q-item-section>
+                          </q-item>
+                        </q-list>
+                      </q-menu>
+                    </q-btn>
+                    <q-btn class="row" dense icon="close" flat :disable="manualImportFileInput != null" @click="manualImportFileInput = null" >
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                        Copy to Clipboad
+                      </q-tooltip>
+                    </q-btn>
+                  </div>
+                </template>
+              </q-file>
+            </q-tab-panel>
+          </q-tab-panels>
+        </q-card-section>
+      </q-card>
       <q-card class="q-mt-md" v-show="showQueues">
         <q-card-section class="text-h4" style="opacity:.4">
           Queues
         </q-card-section>
         <q-separator />
-        <q-card-section>
-          <div class="text-caption">
-            Manual input (one proper JSON log at a time)
-          </div>
-          <q-input
-            v-model="queueInDataEntry"
-            filled
-            autogrow
-            input-style="min-height: 4em;"
-            label="Manual Data Entry"
-            @keypress.shift.enter.prevent="queueInAdd({values: queueInDataEntry});"
-          >
-            <template v-slot:after>
-              <q-btn round dense flat icon="add" @click="queueInAdd({ values: queueInDataEntry })" />
-            </template>
-          </q-input>
-        </q-card-section>
         <q-card-section>
           <div class="text-caption">
             Input Queue
@@ -636,8 +779,7 @@ export default {
       showQueues: false, // Collapse / Hide the Queues panel if false (default)
       wrapSingleStringLog: false,
       incomingLogCount: 0, // Number of lines of logs sent over the socket
-      queueIn: [], // To feed from the Server Tail, or the queueInDataEntry field
-      queueInDataEntry: '{"timestamp":"20210422T16:40:00","id":"abcdef-1234","code":15,"destination":{"ip":"172.16.1.2","port":443},"source":{"ip":"192.168.0.1","port":44444},"bam":"boop","values":[{"type":"Object","count":4},{"type":"Plane","count":25,"value":"A320"}]}', // To enter log data by hand
+      queueIn: [], // To feed from the Server Tail, or the queueInDataEntrySingleLog field
       queueProcess: {}, // The one record we are working on (coming from the queueIn, one at a time)
       processedLogs: [], // The logs, once processed
       processedLogsCount: 0, // The count of processed logs
@@ -656,11 +798,26 @@ export default {
       needsSaving: false, // Are there any un-saved changes
       saving: false, // Saving is still ongoing
       showCommunicationLog: false, // Collapse / Hide the logs about the Socket communication with the server
-      communicationLogsOutput: '' // The logs about the Socket communication, as text
+      communicationLogsOutput: '', // The logs about the Socket communication, as text
+      showManualImport: false, // Collapse / Hide Manual Import panel
+      manualImportMethod: 'single_log', // How is the user going to manually import Logs
+      queueInDataEntrySingleLog: `{
+  "timestamp":"20210422T16:40:00",
+  "destination":{
+    "ip":"172.16.1.2",
+    "port":443
+  },
+  "source":{
+    "ip":"192.168.0.1",
+    "port":44444
+  }
+}`, // To enter log data by hand
+      queueInDataEntryMultiLog: '{"timestamp":"20210422T16:40:00","id":"abcdef-1234"}\r{"timestamp":"20210422T16:43:00","id":"xyzmno-8754"}', // To enter log data by hand, one per line
+      manualImportFileInput: null // File
     }
   },
   computed: {
-    ...mapState('mainStore', ['loggedInUser', 'jqFilterTemplate', 'jqTransformTemplate']),
+    ...mapState('mainStore', ['loggedInUser', 'jqFilterTemplate', 'jqTransformTemplate', 'helpWikiUrlBase']),
     ...mapGetters('mainStore', ['pipelines']),
     pipeline () {
       return this.pipelines.find(p => p.uid === this.pipelineUid)
@@ -961,7 +1118,19 @@ export default {
     //        ##    ##  ##     ## ##       ##     ## ##
     //        ##### ##  #######  ########  #######  ########
 
-    queueInAdd ({ values }) {
+    isProperJson (value) {
+      let isValid = false
+      try {
+        JSON.parse(value)
+        isValid = true
+      } catch {
+        // Not proper JSON
+        console.log('String is not a proper JSON')
+      }
+      return isValid
+    },
+
+    queueInAdd ({ values, manualEntry }) {
       if (typeof values === 'string') {
         // deal with it as Strings
 
@@ -972,7 +1141,7 @@ export default {
         if (values.length > 0) {
           try {
             // this.queueIn.push(JSON.parse(values))
-            this.queueInPush(JSON.parse(values))
+            this.queueInPush(JSON.parse(values), manualEntry)
           } catch {
             // Not proper JSON
             console.log('String is not a proper JSON')
@@ -988,14 +1157,14 @@ export default {
           if (typeof value === 'string') {
             if (value.length > 0) {
               try {
-                this.queueInPush(JSON.parse(value))
+                this.queueInPush(JSON.parse(value), manualEntry)
               } catch {
                 // Not proper JSON
                 console.log('String is not a proper JSON')
               }
             }
           } else {
-            this.queueInPush(value)
+            this.queueInPush(value, manualEntry)
           }
         })
       } else if (typeof values === 'object') {
@@ -1004,12 +1173,27 @@ export default {
         // Increase counter
         this.incomingLogCount++
 
-        this.queueInPush(values)
+        this.queueInPush(values, manualEntry)
+      } else {
+        console.log('[queueInAdd] - UNKNOWN TYPE') // XXXX
       }
     }, // queueInAdd
 
-    queueInPush (value) {
-      if (this.tailEnabled && (this.queueIn.length < this.queueInMaxSize)) {
+    async processFileInput (file) {
+      console.log('processFileInput')
+      console.log(file)
+      if (file) {
+        const fileContent = await file.text()
+        console.log('[processFileInput] - 🟢 - File content', fileContent) // XXXX
+      } else {
+        console.log('[processFileInput] - 🟠 - No file selected.')
+      }
+    },
+
+    queueInPush (value, manualEntry = false) {
+      // `manualEntry` is designed to override standard flood protection
+      // and allow for a user to enter logs manually, if set to TRUE
+      if ((this.tailEnabled && (this.queueIn.length < this.queueInMaxSize)) | manualEntry) {
         if (this.extractMessageFieldOnly) {
           if (!value.message) {
             console.log('No .message found in log object')
@@ -1023,6 +1207,8 @@ export default {
         } else {
           this.queueIn.push(value)
         }
+      } else {
+        console.log('[queueInPush] Trying to push a value when Tail is disabled or queue is full')
       }
     },
 
@@ -1276,6 +1462,11 @@ export default {
       } catch {
         console.log('Can\'t parse JSON')
       }
+    },
+
+    wikiLink (reference) {
+      // 'whatTheDifferenceLogArrayLogSet'
+      return this.helpWikiUrlBase + reference
     }
   },
 

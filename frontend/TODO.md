@@ -27,6 +27,13 @@
       - [ ] `.response`
       - [ ] Configurable in the Collection Template
   - [x] Externalise Collection Templates
+  - [ ] Add a way to import log samples
+    - [x] Single log at a time, including Array of logs
+    - [ ] Multiple logs at a time, as one per line
+    - [ ] From file
+      - [ ] As an Array of Logs
+      - [ ] As an Set of Logs
+      - [ ] Write Wiki help page to explain the difference
 - [ ] Add a simple Wizard from landing page
   - [ ] Ask for name for Log Source
   - [ ] Create collection configuation
