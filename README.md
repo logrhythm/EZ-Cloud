@@ -1,5 +1,5 @@
 [![Last Release](https://badgen.net/badge/release/v0.6.0/green)](https://github.com/TonyMasse/EZ-Cloud/releases)
-[![Dev Version](https://badgen.net/badge/dev/v0.8.0/orange)](https://github.com/TonyMasse/EZ-Cloud/tree/v0.8.0)
+[![Dev Version](https://badgen.net/badge/dev/v0.8.1/orange)](https://github.com/TonyMasse/EZ-Cloud/tree/v0.8.1)
 
 # EZ-Cloud
  EZ-Cloud for Legacy SIEM
