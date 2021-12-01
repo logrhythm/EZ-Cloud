@@ -32,9 +32,39 @@
 - Click **Logout**
 - Log back in as the new non-privileged user
 
+
+## What's new in this release
+- [v0.8.0] Role Based Access Control
+  - Users can belong to different types of Roles (by default `Admin` or `User`)
+  - Any Role can be created
+  - Role can be privileged or not
+  - Privileged Roles can create, modify and delete Roles and User Accounts 
+- [v0.8.0] Installer - Automated `ezAdmin` account creation
+- [v0.8.0] Installer - Offers options to Upgrade existing (v0.6 and v0.7) deployment
+- [v0.8.0] Better and more logging on the Backend for:
+  - User Authentication
+  - User and Role creation/updates
+- [v0.8.0] General - Error messages - Add pop up with error details and pointer to online Wiki
+- [v0.8.0] Mapping Editor - Warn user if Socket is not connected to Backend when trying to run a Tail
+- [v0.8.0] Mapping Editor - Optimise Parsing Start/Stop:
+  - Automatically start Parsing when entries are added to the Queue
+  - Automatically stop Parsing when the Queue is fully processed
+- [v0.8.0] Mapping Editor - Change scheduling method for the Background Processing to allow changes in the Settings to be picked up once already running
+- [v0.8.0] Mapping Editor - Add Manual Import of log samples
+    - Single log at a time, including Array of logs
+    - Multiple logs at a time, as one per line
+    - From file(s)
+      - As a Single Log per file
+      - As an Array of Logs per file
+      - As an Set of Logs
+      - Offer to direct to a Wiki help page to explain the difference
+        - https://github.com/TonyMasse/EZ-Cloud/wiki/Help#ref-whatsthedifferencefileimport
+- [v0.8.🚧] 
+
 ## Know issues :bug: :beetle:
 - Will fail silently (to check OC status and version, deploy Shipper, start Tail, Deploy, etc...) if SSH Credentials are incorrect
 - Will fail to deploy log shippers if not using the `root` account or an account with full `sudo` access
+- If using the Fan Out feature - OpenCollector will refuse to import JQ Transform
 
 ## Report a bug or issue
 - Use the [Issues](https://github.com/TonyMasse/EZ-Cloud/issues) on GitHub
