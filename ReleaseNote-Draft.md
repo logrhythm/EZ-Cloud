@@ -21,16 +21,16 @@
 - Open https://`<ip-of-the-EZ-server>`:8400/
 - Login with `ezAdmin` and the password you specified during the installation
 
-#### 4. Advised: Create and use a non priviledged User
+## Advice: Create and use a non privileged User
 - Login as `ezAdmin`
 - Click **Admin** (just above **Settings**, on the bottom left)
 - Click **Manage User Accounts**
 - Click **Add New Account**
 - Provide a Username and Password
-- Select **Role**: `User` (or any other non-priviledged Role you might have created)
+- Select **Role**: `User` (or any other non-privileged Role you might have created)
 - Click **Add New User Account**
 - Click **Logout**
-- Log back in as the new non-priviledged user
+- Log back in as the new non-privileged user
 
 ## Know issues :bug: :beetle:
 - Will fail silently (to check OC status and version, deploy Shipper, start Tail, Deploy, etc...) if SSH Credentials are incorrect
@@ -40,4 +40,5 @@
 - Use the [Issues](https://github.com/TonyMasse/EZ-Cloud/issues) on GitHub
 
 Enjoy,
+
 Tony
