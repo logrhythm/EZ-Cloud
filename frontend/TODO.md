@@ -15,8 +15,13 @@
     - [x] Write Wiki with error explanation
 - Mapping Editor
   - [x] Warn user if Socket is not connected to Backend (as Tail feature needs it)
-  - [x] Automatically start Parsing when starting Tail
-  - [ ] Handle Sub Rules
+  - [x] ~~Automatically start Parsing when starting Tail~~
+    - [x] Revert this change, as better optimistion now in place
+  - [x] Optimise Parsing Start/Stop
+    - [x] Automatically start Parsing when entries are added to the Queue
+    - [x] Automatically stop Parsing when the Queue is fully processed
+  - [ ] Change sheduling method for the Background Processing to allow changes in the Settings to be picked up once already running
+  - [ ] ~~Handle Sub Rules~~ (👈 low value, low priority. Might resurect if users demand)
   - [ ] Resurface the `.message` feature
     - [x] In UI (menu Settings)
     - [ ] When generating JQ Transform
@@ -27,14 +32,15 @@
       - [ ] `.response`
       - [ ] Configurable in the Collection Template
   - [x] Externalise Collection Templates
-  - [ ] Add a way to import log samples
+  - [x] Add a way to import log samples
     - [x] Single log at a time, including Array of logs
     - [x] Multiple logs at a time, as one per line
-    - [ ] From file(s)
+    - [x] From file(s)
       - [x] As a Single Log per file
       - [x] As an Array of Logs per file
       - [x] As an Set of Logs
-      - [ ] Write Wiki help page to explain the difference
+      - [x] Write Wiki help page to explain the difference
+        - https://github.com/TonyMasse/EZ-Cloud/wiki/Help#ref-whatsthedifferencefileimport
 - [ ] Add a simple Wizard from landing page
   - [ ] Ask for name for Log Source
   - [ ] Create collection configuation
