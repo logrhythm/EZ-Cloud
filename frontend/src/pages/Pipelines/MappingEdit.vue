@@ -798,7 +798,7 @@ export default {
       tailEnabled: false, // Are we running a tail against the sample/capture file?
       // tailId: '', // UUID of the tail. Needed to be able to kill it on the server
       processInBackground: false,
-      processInBackgroundMaxRate: 1, // once per second by default
+      processInBackgroundMaxRate: 3, // How many queue items to process per second
       queueInMaxSize: 200, // Maximum number of log messages in queueIn
       processedLogsMaxSize: 200, // Maximum number of log messages in processedLogs
       bufferStdOut: '', // Buffer to concatenate incoming STDOUT data until we find a carriage return
@@ -1455,9 +1455,14 @@ export default {
       }
     }, // upsertToJsonPaths
 
-    processLogSampleInBackground ({ options }) {
+    processLogSampleInBackground () {
       this.queueProcessAdd({ fromArray: this.queueIn })
       this.processLogSample({ options: { cleanQueueProcessAfterProcess: true } })
+
+      // Schedule the next tick
+      if (this.processInBackground) {
+        this.scheduleNextBackgroundProcess()
+      }
     }, // processLogSampleInBackground
 
     //        ########    ###    #### ##
@@ -1552,9 +1557,37 @@ export default {
       }
     },
 
+    //     ##      ## #### ##    ## ####
+    //     ##  ##  ##  ##  ##   ##   ##
+    //     ##  ##  ##  ##  ##  ##    ##
+    //     ##  ##  ##  ##  #####     ##
+    //     ##  ##  ##  ##  ##  ##    ##
+    //     ##  ##  ##  ##  ##   ##   ##
+    //      ###  ###  #### ##    ## ####
+
     wikiLink (reference) {
       // 'whatTheDifferenceLogArrayLogSet'
       return this.helpWikiUrlBase + reference
+    },
+
+    //     ########     ###     ######  ##    ##  ######   ########   #######  ##     ## ##    ## ########      ######   ######  ##     ## ######## ########  ##     ## ##       ######## ########
+    //     ##     ##   ## ##   ##    ## ##   ##  ##    ##  ##     ## ##     ## ##     ## ###   ## ##     ##    ##    ## ##    ## ##     ## ##       ##     ## ##     ## ##       ##       ##     ##
+    //     ##     ##  ##   ##  ##       ##  ##   ##        ##     ## ##     ## ##     ## ####  ## ##     ##    ##       ##       ##     ## ##       ##     ## ##     ## ##       ##       ##     ##
+    //     ########  ##     ## ##       #####    ##   #### ########  ##     ## ##     ## ## ## ## ##     ##     ######  ##       ######### ######   ##     ## ##     ## ##       ######   ########
+    //     ##     ## ######### ##       ##  ##   ##    ##  ##   ##   ##     ## ##     ## ##  #### ##     ##          ## ##       ##     ## ##       ##     ## ##     ## ##       ##       ##   ##
+    //     ##     ## ##     ## ##    ## ##   ##  ##    ##  ##    ##  ##     ## ##     ## ##   ### ##     ##    ##    ## ##    ## ##     ## ##       ##     ## ##     ## ##       ##       ##    ##
+    //     ########  ##     ##  ######  ##    ##  ######   ##     ##  #######   #######  ##    ## ########      ######   ######  ##     ## ######## ########   #######  ######## ######## ##     ##
+
+    scheduleNextBackgroundProcess () {
+      this.backgroundProcessInterval = setTimeout(
+        this.processLogSampleInBackground
+        , 1000 / this.processInBackgroundMaxRate
+      )
+    },
+
+    unscheduleNextBackgroundProcess () {
+      clearTimeout(this.backgroundProcessInterval)
+      this.backgroundProcessInterval = null
     }
   },
 
@@ -1581,13 +1614,15 @@ export default {
     processInBackground: {
       handler () {
         if (this.processInBackground) {
-          this.backgroundProcessInterval = setInterval(() => {
-            if (this.processInBackground) {
-              this.processLogSampleInBackground({})
-            }
-          }, 1000 / this.processInBackgroundMaxRate)
+          // this.backgroundProcessInterval = setInterval(() => {
+          //   if (this.processInBackground) {
+          //     this.processLogSampleInBackground({})
+          //   }
+          // }, 1000 / this.processInBackgroundMaxRate)
+          this.scheduleNextBackgroundProcess()
         } else {
-          clearInterval(this.backgroundProcessInterval)
+          // clearInterval(this.backgroundProcessInterval)
+          this.unscheduleNextBackgroundProcess()
         }
       },
       deep: false
