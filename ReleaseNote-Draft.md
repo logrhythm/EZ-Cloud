@@ -21,7 +21,7 @@
 - Open https://`<ip-of-the-EZ-server>`:8400/
 - Login with `ezAdmin` and the password you specified during the installation
 
-#### 4. Advised: Create and use a non priviledged User
+## Advice: Create and use a non priviledged User
 - Login as `ezAdmin`
 - Click **Admin** (just above **Settings**, on the bottom left)
 - Click **Manage User Accounts**
