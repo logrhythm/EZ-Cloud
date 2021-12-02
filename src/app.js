@@ -15,9 +15,15 @@ const app = express();
 
 // eslint-disable-next-line max-len
 const httpsServer = https.createServer({ key: httpsKey, cert: httpsCert }, app);
+const socketIoCorsOrigin = (
+  process.env.NODE_ENV === 'development'
+    ? '*' // Allow all origins during Dev
+    : ['http://localhost:8080', 'https://localhost:8080', 'http://localhost:8400', 'https://localhost:8400']
+);
 const io = require('socket.io')(httpsServer, {
   cors: {
-    origin: ['http://localhost:8080', 'https://localhost:8080', 'http://localhost:8400', 'https://localhost:8400'],
+    // origin: ['http://localhost:8080', 'https://localhost:8080', 'http://localhost:8400', 'https://localhost:8400'],
+    origin: socketIoCorsOrigin,
     methods: ['GET', 'POST']
   }
 });
