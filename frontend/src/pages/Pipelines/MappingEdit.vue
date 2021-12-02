@@ -575,7 +575,7 @@
             type="textarea"
             filled
             readonly
-            :label="beatName + '.jq'"
+            :label="pipelineNameSafe + '.jq'"
             style="min-height: 20rem;"
             rows="32"
             class="fixed-font"
