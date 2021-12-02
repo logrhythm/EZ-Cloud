@@ -118,7 +118,7 @@ export function updateJwtToken (state, payload) {
   if (payload) {
     state.jwtToken = payload.token
     try {
-      const decodedToken = jwt_decode(payload.token)
+      const decodedToken = (payload.token && payload.token.length ? jwt_decode(payload.token) : null)
       state.loggedInUser = (decodedToken && decodedToken.username ? decodedToken.username : '')
       state.loggedInUserRoles = (decodedToken && decodedToken.roles && Array.isArray(decodedToken.roles) ? decodedToken.roles : [])
       state.loggedInUserIsPriviledged = !!(decodedToken && decodedToken.isPriviledged === true)
