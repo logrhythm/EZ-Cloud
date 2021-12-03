@@ -24,6 +24,7 @@
   - [ ] ~~Handle Sub Rules~~ (👈 low value, low priority. Might resurect if users demand)
   - [ ] Resurface the `.message` feature
     - [x] In UI (menu Settings)
+    - [ ] Send to API when Saving
     - [ ] When generating JQ Transform
       - [ ] In Field Mapping Editor
       - [ ] In deployment
