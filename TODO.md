@@ -38,7 +38,7 @@
   - [x] Update/Complement Installer to allow for upgrade from previous versions
 - [x] More logging in the API for User and Role updates
 - [ ] Persist the `pipeline.extractMessageFieldOnly` value, to save the `.message` feature
-  - [ ] Update `[pipelines]` table creation script
+  - [x] Update `[pipelines]` table creation script
   - [ ] Update API endpoint `UpdatePipeline`
 
 ## TO FIX
