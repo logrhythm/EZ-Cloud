@@ -105,6 +105,8 @@
     - [ ] Collect optional SUDO Username
     - [ ] Collect optional SUDO Password
 - Pipeline - Deployment - Change Pipeline status to Ready when deployed successfully
+- Shipper Installation
+  - [ ] Update Shippers list with jsBeat v1.1.5
 
 ## TO FIX
 - [ ] Fan Out feature - OC refuses to import JQ Transform
