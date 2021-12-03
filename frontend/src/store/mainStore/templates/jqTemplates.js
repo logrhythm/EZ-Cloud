@@ -10,14 +10,16 @@ const filterTemplate = `# -------------------------------------------
 
 # is_matching checks if the data matches the {{EZ_stream_name_placeholder}} criteria
 def is_matching:
-    ."@metadata".beat == "{{EZ_beat_name_placeholder}}"
+    (."@metadata".beat | ascii_downcase == ("{{EZ_beat_name_placeholder}}" | ascii_downcase))
     and
     (
-      .fields.stream_id == "{{EZ_stream_id_placeholder}}"
+      ."@metadata".fields.stream_id == "{{EZ_stream_id_placeholder}}"
       or
-      .fields.stream_name == "{{EZ_stream_name_placeholder}}"
+      ."@metadata".fields.stream_name == "{{EZ_stream_name_placeholder}}"
       or
-      .device_type == "{{EZ_stream_name_placeholder}}"
+      ."@metadata".device_type == "{{EZ_stream_name_placeholder}}"
+      or
+      ."@metadata".device_type == "{{EZ_compact_stream_name_placeholder}}"
     )
 ;
 `

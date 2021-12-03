@@ -102,11 +102,15 @@
   - [ ] SUDO requirement
     - [ ] Collect optional SUDO Username
     - [ ] Collect optional SUDO Password
+- Pipeline - Deployment - Change Pipeline status to Ready when deployed successfully
 
 ## TO FIX
 - [ ] Fan Out feature - OC refuses to import JQ Transform
 - [x] Admin - Roles - Creates new duplicated Role instead of updating existing one when changing the Priviledge
 - [ ] Ability to collect data from external site (Github, ...)
+- [x] JQ small nags
+  - [x] .message is commented in Transform template
+  - [x] Filter uses un-cleaned Stream Name for `device_type`
 
 ## TO TEST
 - [ ] Fan Out feature
