@@ -37,9 +37,10 @@
   - [x] Update SQL scripts to be runnable multiple times and ignore unnecessary tasks
   - [x] Update/Complement Installer to allow for upgrade from previous versions
 - [x] More logging in the API for User and Role updates
-- [ ] Persist the `pipeline.extractMessageFieldOnly` value, to save the `.message` feature
+- [x] Persist the `pipeline.extractMessageFieldOnly` value, to save the `.message` feature
   - [x] Update `[pipelines]` table creation script
-  - [ ] Update API endpoint `UpdatePipeline`
+  - [x] Update API endpoint `UpdatePipeline`
+  - [x] Update API endpoint `GetPipeline`
 
 ## TO FIX
 ## TO TEST

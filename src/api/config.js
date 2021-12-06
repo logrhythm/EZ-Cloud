@@ -143,6 +143,7 @@ router.get('/GetPipelines', async (req, res) => {
       ,p.[primaryOpenCollector]
       ,p.[fieldsMappingJson]
       ,p.[collectionConfigJson]
+      ,p.[optionsJson]
   FROM [dbo].[pipelines] p
   LEFT JOIN [dbo].[states] s
     ON s.[id] = p.[status]
@@ -163,6 +164,12 @@ router.get('/GetPipelines', async (req, res) => {
         delete pipeline.collectionConfigJson;
       } catch (error) {
         pipeline.collectionConfig = {};
+      }
+      try {
+        pipeline.options = JSON.parse((pipeline.optionsJson && pipeline.optionsJson.length > 0 ? pipeline.optionsJson : '{}'));
+        delete pipeline.optionsJson;
+      } catch (error) {
+        pipeline.options = {};
       }
       /* eslint-enable no-param-reassign */
     });
@@ -277,6 +284,7 @@ router.post('/UpdatePipeline', async (req, res) => {
       ,@primaryOpenCollector
       ,@fieldsMapping
       ,@collectionConfig
+      ,@options
       ;
     `,
     variables: createSqlVariables(
@@ -287,7 +295,8 @@ router.post('/UpdatePipeline', async (req, res) => {
         { name: 'status', type: 'NVarChar' },
         { name: 'primaryOpenCollector', type: 'NVarChar' },
         { name: 'fieldsMapping', type: 'NVarChar' },
-        { name: 'collectionConfig', type: 'NVarChar' }
+        { name: 'collectionConfig', type: 'NVarChar' },
+        { name: 'options', type: 'NVarChar' }
       ]
     )
   });
