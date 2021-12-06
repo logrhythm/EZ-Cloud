@@ -33,11 +33,16 @@
         <q-separator vertical />
         <q-btn no-caps flat dense icon="play_circle_outline" label="Start Live Tail" color="secondary" @click="tailEnabled = true" v-if="!tailEnabled" />
         <q-btn no-caps flat dense icon="stop" label="Stop Live Tail" @click="tailEnabled = false" v-else />
-        <q-btn no-caps flat dense icon="playlist_add" label="Manual Import" @click="showManualImport = true" v-if="!showManualImport" />
-        <q-btn no-caps flat dense icon="visibility_off" label="Manual Import" @click="showManualImport = false" v-else />
-        <q-separator vertical />
-        <q-btn no-caps flat dense icon="search" label="Start background processing" color="secondary" @click="processInBackground = true" v-if="!processInBackground" />
-        <q-btn no-caps flat dense icon="search_off" label="Stop background processing" @click="processInBackground = false" v-else />
+        <q-btn no-caps flat dense icon="playlist_add" label="Manual Import" @click="showManualImport = true" v-if="!showManualImport" >
+          <q-tooltip content-style="font-size: 1rem;">
+            Import log messages manually
+          </q-tooltip>
+        </q-btn>
+        <q-btn no-caps flat dense icon="visibility_off" label="Manual Import" @click="showManualImport = false" v-else >
+          <q-tooltip content-style="font-size: 1rem;">
+            Hide Manual Import panel
+          </q-tooltip>
+        </q-btn>
         <q-separator vertical />
         <q-btn no-caps flat dense icon="file_download" label="Export JQ" disable />
         <q-btn no-caps flat dense icon="visibility" label="Show JQ" v-if="!showJqOutput" @click="buildJqFilter(); buildJqTransform(); showJqOutput = true" />

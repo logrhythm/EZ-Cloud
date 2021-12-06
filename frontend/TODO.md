@@ -21,7 +21,7 @@
     - [x] Automatically start Parsing when entries are added to the Queue
     - [x] Automatically stop Parsing when the Queue is fully processed
   - [x] Change scheduling method for the Background Processing to allow changes in the Settings to be picked up once already running
-  - [ ] Change 'Start/Stop background porcessing' button to a simple indicator
+  - [x] Change 'Start/Stop background processing' button to a simple indicator, or remove
   - [ ] ~~Handle Sub Rules~~ (👈 low value, low priority. Might resurect if users demand)
   - [x] Resurface the `.message` feature
     - [x] In UI (menu Settings)
