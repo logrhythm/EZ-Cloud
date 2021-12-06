@@ -29,7 +29,7 @@
     - [x] When generating JQ Transform
       - [x] In Field Mapping Editor
       - [x] In deployment
-    - [ ] ~~Allow for different holder~~
+    - [ ] ~~Allow for different holder~~ (👈 low value, low priority. Might resurect if users demand)
       - [ ] ~~`.message`~~
       - [ ] ~~`.response`~~
       - [ ] ~~Configurable in the Collection Template~~
