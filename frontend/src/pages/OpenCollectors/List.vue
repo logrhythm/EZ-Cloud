@@ -92,12 +92,31 @@
         <template v-slot:body-cell-osVersion="props">
           <q-td :props="props">
             {{ props.value }}
-            <q-spinner-dots
-              color="primary"
-              size="2em"
-              v-if="osVersionCheck && osVersionCheck[props.row.uid] && osVersionCheck[props.row.uid].checking"
-              class="q-ml-sm"
-            />
+            <div v-if="osVersionCheck && osVersionCheck[props.row.uid] && osVersionCheck[props.row.uid].checking">
+              <q-spinner-dots
+                color="primary"
+                size="2em"
+                class="q-ml-sm"
+              />
+            </div>
+            <div v-else-if="osVersionCheck && osVersionCheck[props.row.uid] && osVersionCheck[props.row.uid].error">
+              <q-tooltip content-style="font-size: 1rem;">
+                Failed to connect to the server.<br>
+                Check the Open Collector details and Credentials.
+              </q-tooltip>
+              <q-icon
+                name="cloud_off"
+                color="orange"
+                size="2em"
+                class="q-ml-sm"
+              />
+              <q-icon
+                name="warning_amber"
+                color="orange"
+                size="2em"
+                class="q-ml-sm"
+              />
+            </div>
           </q-td>
         </template>
         <!-- <template v-slot:body-cell-fbVersion="props">
@@ -537,6 +556,7 @@ export default {
         const uid = (response.params && response.params.apiCallParams && response.params.apiCallParams.uid ? response.params.apiCallParams.uid : null)
         if (uid && this.osVersionCheck && this.osVersionCheck[uid]) {
           this.osVersionCheck[uid].checking = false
+          console.log('response', response) // XXXX
           if (response.success) {
             this.osVersionCheck[uid].error = false
 

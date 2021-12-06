@@ -60,7 +60,7 @@
     - [ ] Ability to Enable / Commit the Log Source creation
 - [ ] Provide feedback if failing to connect over SSH
   - [ ] In Open Collectors list page
-    - [ ] On version check
+    - [x] On version check
     - [ ] On Shipper deployment
   - [ ] In Tail
   - [ ] In Deployment
