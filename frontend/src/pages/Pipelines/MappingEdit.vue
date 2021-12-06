@@ -1034,7 +1034,6 @@ export default {
         payload.tailId &&
         payload.tailId === this.pipelineUid
       ) {
-        console.error(payload.payload)
         this.addLineToCommunicationLog(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
         this.showNotificationWithActionToLogs(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
       }
@@ -1148,9 +1147,6 @@ export default {
     processFilesInput ({ filesInput, importAs }) {
       // Import one or more files into the Queue
 
-      console.log('processFilesInput', importAs) // XXXX
-      console.log(filesInput) // XXXX
-      console.log('Type: ', typeof filesInput) // XXXX
       // importAs:
       // - single_log_per_file
       // - log_array_per_file
@@ -1173,9 +1169,6 @@ export default {
     async processFileInput ({ singleFileInput, importAs }) {
       // Import one file into the Queue
 
-      console.log('processFileInput', importAs) // XXXX
-      console.log(singleFileInput) // XXXX
-      console.log('Type: ', typeof singleFileInput) // XXXX
       // importAs:
       // - single_log_per_file
       // - log_array_per_file
@@ -1183,8 +1176,6 @@ export default {
 
       if (singleFileInput) {
         const fileContent = await singleFileInput.text()
-        console.log('[processFileInput] - 🟢 - File content') // XXXX
-        console.log(fileContent) // XXXX
         if (importAs === 'single_log_per_file') {
           this.queueInAdd({ values: fileContent, manualEntry: true, multiLogs: false })
         } else if (importAs === 'log_array_per_file') {
@@ -1549,7 +1540,6 @@ export default {
     },
 
     reverseToLastSaved () {
-      console.log('reverseToLastSaved') // XXXX
       try {
         // Bring back mapping from the store
         const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
@@ -1557,8 +1547,6 @@ export default {
 
         // Bring back the `extractMessageFieldOnly` options
         this.extractMessageFieldOnly = (pipeline && pipeline.options ? pipeline.options.extractMessageFieldOnly === true : false)
-        console.log('extractMessageFieldOnly', this.extractMessageFieldOnly)
-        console.log('pipeline', pipeline)
 
         // Try to resurect the processedLogsCount (failing to 0 if no logSample)
         this.processedLogsCount = (this.logSample ? this.logSample.length : 0)
