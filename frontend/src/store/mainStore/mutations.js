@@ -81,7 +81,8 @@ export function updatePipeline (state, payload) {
     const branches = [
       'status',
       'primaryOpenCollector',
-      'collectionConfig'
+      'collectionConfig',
+      'options'
     ]
     branches.forEach((branch) => {
       if (payload[branch]) {

@@ -1535,17 +1535,25 @@ export default {
           {
             uid: this.pipelineUid,
             status: (this.pipeline && this.pipeline.status && this.pipeline.status === 'Ready' ? this.pipeline.status : 'Dev'),
-            fieldsMapping: this.jsonPathes
+            fieldsMapping: this.jsonPathes,
+            // Update / Add extractMessageFieldOnly to the Options
+            options: { ...(this.pipeline && this.pipeline.options ? this.pipeline.options : {}), extractMessageFieldOnly: this.extractMessageFieldOnly }
           }
         }
       )
     },
 
     reverseToLastSaved () {
+      console.log('reverseToLastSaved') // XXXX
       try {
         // Bring back mapping from the store
         const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
         this.jsonPathes = (pipeline && pipeline.fieldsMapping && pipeline.fieldsMapping.length ? JSON.parse(JSON.stringify(pipeline.fieldsMapping)) : [])
+
+        // Bring back the `extractMessageFieldOnly` options
+        this.extractMessageFieldOnly = (pipeline && pipeline.options ? pipeline.options.extractMessageFieldOnly === true : false)
+        console.log('extractMessageFieldOnly', this.extractMessageFieldOnly)
+        console.log('pipeline', pipeline)
 
         // Try to resurect the processedLogsCount (failing to 0 if no logSample)
         this.processedLogsCount = (this.logSample ? this.logSample.length : 0)
@@ -1553,7 +1561,7 @@ export default {
         // Flag down the need to Save as data is fresh from last save now
         this.needsSaving = false
       } catch {
-        console.log('Can\'t parse JSON')
+        console.log('Error while trying to reverse to last saved version')
       }
     },
 

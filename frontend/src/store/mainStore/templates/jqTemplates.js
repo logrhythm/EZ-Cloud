@@ -91,7 +91,7 @@ def add_field($input_field; output_field):
 def get_io_format:
     {
         "input": .,
-#        "message": .message | fromjson,
+        "message": .message | fromjson,
 {{EZ_flatten_array_placeholder}}
         "output": {
             "original_message": {{EZ_original_message_placeholder}}

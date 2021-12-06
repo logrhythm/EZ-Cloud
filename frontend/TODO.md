@@ -23,16 +23,16 @@
   - [x] Change scheduling method for the Background Processing to allow changes in the Settings to be picked up once already running
   - [ ] Change 'Start/Stop background porcessing' button to a simple indicator
   - [ ] ~~Handle Sub Rules~~ (👈 low value, low priority. Might resurect if users demand)
-  - [ ] Resurface the `.message` feature
+  - [x] Resurface the `.message` feature
     - [x] In UI (menu Settings)
-    - [ ] Send to API when Saving
-    - [ ] When generating JQ Transform
-      - [ ] In Field Mapping Editor
-      - [ ] In deployment
-    - [ ] Allow for different holder
-      - [ ] `.message`
-      - [ ] `.response`
-      - [ ] Configurable in the Collection Template
+    - [x] Send to API when Saving
+    - [x] When generating JQ Transform
+      - [x] In Field Mapping Editor
+      - [x] In deployment
+    - [ ] ~~Allow for different holder~~
+      - [ ] ~~`.message`~~
+      - [ ] ~~`.response`~~
+      - [ ] ~~Configurable in the Collection Template~~
   - [x] Externalise Collection Templates
   - [x] Add a way to import log samples
     - [x] Single log at a time, including Array of logs
