@@ -803,8 +803,6 @@ export default {
 
             // Prepare the parameters
             const apiUrl = (step.apiEndpoint && step.apiEndpoint.length ? step.apiEndpoint : '/test/doesNotExist/andShouldReturnAnError')
-            console.log('🔴🔴🔴 caller.pipeline.extractMessageFieldOnly:', caller.pipeline.extractMessageFieldOnly) // XXXX
-            console.log('🔴🔴🔴 caller.pipeline:', caller.pipeline) // XXXX
             const apiCallParamsSource = {
               uid: (caller && caller.pipeline && caller.pipeline.uid && caller.pipeline.uid.length ? caller.pipeline.uid : undefined),
               name: (caller && caller.pipeline && caller.pipeline.name && caller.pipeline.name.length ? caller.pipeline.name : undefined),
