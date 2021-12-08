@@ -3,14 +3,14 @@
   "active":false,
   "case_detail":"We have detected an unexpected user activity. We recommend investigating this activity as it might lead to an unauthorized access to sensitive resources.",
   "case_id":5807,
-  "case_summary":"Anomalous activity Unusual JA3 fingerprint, when compared to similar hosts has been detected by 10.128.64.54",
+  "case_summary":"Anomalous activity Unusual JA3 fingerprint, when compared to similar hosts has been detected by 10.1.6.5",
   "category":"Anomalous Activity",
   "certainty":99,
   "created_at":1607579970635,
   "entity_type":"",
   "entity_uuid":"",
   "entry_origin":"Distributed Analytics Engine",
-  "entry_source":"logrhythm-boulder-0-0",
+  "entry_source":"acme-newyork-0-0",
   "entry_type":"SslAnomalyEvent",
   "entry_uuid":"4a5b26e4-981b-4cc3-a2cd-202131812d9f",
   "event_count":0,
@@ -22,18 +22,18 @@
       },
       "community_id":"1:TfsKeaK8YkFz2q0zzwCXuSqZxl4=",
       "date":"2020-12-10",
-      "dest":"192.168.178.75",
+      "dest":"192.168.8.7",
       "dest_port":443,
       "destination":{
-        "ip":"192.168.178.75",
+        "ip":"192.168.8.7",
         "port":443,
         "is_local":true
       },
       "end_time":1607571942935,
       "entity_type":"Ip",
-      "entity_uuid":"192.168.178.75",
+      "entity_uuid":"192.168.8.7",
       "entry_origin":"Distributed Analytics Engine",
-      "entry_source":"logrhythm-boulder-0-0",
+      "entry_source":"acme-newyork-0-0",
       "entry_type":"SslAnomalyEvent",
       "entry_uuid":"4a5b26e4-981b-4cc3-a2cd-202131812d9f",
       "event_attribute":"Behavior Anomaly",
@@ -81,15 +81,15 @@
       "mitre_technique":null,
       "session_id":"C0xzyIr30S77pHPXl",
       "source":{
-        "ip":"10.128.64.54",
+        "ip":"10.1.6.5",
         "port":61440,
         "is_local":true
       },
-      "src":"10.128.64.54",
+      "src":"10.1.6.5",
       "src_port":61440,
       "start_time":1607571942935,
       "summary_dests":[
-        "192.168.178.75"
+        "192.168.8.7"
       ],
       "timestamp":1607571942935,
       "weekday":4,
@@ -166,13 +166,13 @@
         "process_count":1,
         "response_code":200,
         "int_dest":{
-          "ip_addr":"192.168.178.75",
+          "ip_addr":"192.168.8.7",
           "network_description":"z-SSD-Security",
-          "network_prefix":"192.168.178.1/24",
+          "network_prefix":"192.168.8.0/24",
           "network_type":"internal"
         },
         "int_src":{
-          "ip_addr":"10.128.64.54",
+          "ip_addr":"10.1.6.5",
           "network_description":"Unknown",
           "network_prefix":"Unknown",
           "network_type":"internal"
@@ -213,23 +213,23 @@
           "community_id":"1:TfsKeaK8YkFz2q0zzwCXuSqZxl4=",
           "created_at":1607571943970,
           "date":"2020-12-10",
-          "dest":"192.168.178.75",
+          "dest":"192.168.8.7",
           "destination":{
-            "ip":"192.168.178.75",
+            "ip":"192.168.8.7",
             "port":443,
             "is_local":true
           },
           "entry_origin":"Network Analysis Engine",
-          "entry_source":"logrhythm-boulder-0-0",
+          "entry_source":"acme-newyork-0-0",
           "entry_type":"Ssl",
           "entry_uuid":"4fa30d3a-cc5d-4d5f-9cff-5b8c233e19f7",
           "hour":3,
           "source":{
-            "ip":"10.128.64.54",
+            "ip":"10.1.6.5",
             "port":61440,
             "is_local":true
           },
-          "src":"10.128.64.54",
+          "src":"10.1.6.5",
           "timestamp":1607571942934,
           "pcap_info":{
             
