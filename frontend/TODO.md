@@ -59,7 +59,7 @@
     - [ ] Ability to assign Log Source to other Open Collectors
     - [ ] Ability to Enable / Commit the Log Source creation
 - [ ] Provide feedback if failing to connect over SSH
-  - [ ] In Open Collectors list page
+  - [x] In Open Collectors list page
     - [x] On version check
     - [x] On Shipper deployment
   - [ ] In Tail
