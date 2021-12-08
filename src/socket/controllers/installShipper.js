@@ -307,8 +307,6 @@ function installShipper(socket, payload) {
 
             // Add the Steps to the Exec stack
             steps.forEach((step, stepCounter) => {
-              // eslint-disable-next-line no-console
-              // console.log(`installShipper - Adding step: (${stepCounter}) ${step.action}...`);
               logToSystem('Debug', `installShipper - Adding step: (${stepCounter}) ${step.action}...`);
               installs[payload.jobId]
                 .exec(step.command, {
@@ -411,18 +409,7 @@ function installShipper(socket, payload) {
                 logToSystem('Debug', `installShipper - Job [${payload.jobId}] - Monitor cycle...`);
                 if (
                   installStepsStatus[payload.jobId]
-                  // && installStepsStatus[payload.jobId].steps
-                  // && Array.isArray(installStepsStatus[payload.jobId].steps)
-                  // && installStepsStatus[payload.jobId].steps.length
                 ) {
-                  // installStepsStatus[payload.jobId].steps.forEach((step) => {
-                  //   // console.log(step);
-                  //   logToSystem('Debug', `installShipper - Job [${payload.jobId}] - Step: ${JSON.stringify(step)}.`);
-                  //   // Details provided in the Step:
-                  //   // installStepsStatus[payload.jobId].step[stepCounter].exited = true;
-                  //   // installStepsStatus[payload.jobId].step[stepCounter].endTime
-                  // });
-
                   // Check how long has the current step running for
                   // (based on previous step end time)
                   const currentStepTookMs = Date.now()
@@ -464,27 +451,8 @@ function installShipper(socket, payload) {
                     killInstallShipper(socket, payload);
                   }
                 }
-                // THIS IS NOW UNNECESSARY:
-                // else {
-                //   logToSystem('Debug', `installShipper - Job [${payload.jobId}] timed out before Step 1. Check Open Collector Host details.`);
-                //   // eslint-disable-next-line no-use-before-define
-                //   killInstallShipper(socket, payload);
-                //   if (socket.connected) {
-                //     socket.emit('shipper.install',
-                //       {
-                //         jobId: payload.jobId,
-                //         code: 'FAILURE',
-                //         // eslint-disable-next-line max-len
-                //         // payload: `Timed out at step: ${installStepsStatus[payload.jobId].length}`,
-                //         payload: 'Timed out before Step 1. Check Open Collector Host details.',
-                //         step: null,
-                //         totalSteps: steps.length
-                //       });
-                //   }
-                // }
               }, timeoutCheckCycleTime);
             }
-            // console.log(installs[payload.jobId]);
 
             // Add Event handlers and start
             installs[payload.jobId]
@@ -533,26 +501,31 @@ function installShipper(socket, payload) {
               totalSteps: null
             });
         }
-      } else if (socket.connected) {
+      } else {
+        if (socket.connected) {
+          socket.emit('shipper.install',
+            {
+              jobId: (payload ? payload.jobId : null),
+              code: 'FAILURE',
+              payload: 'Job could not start due to missing parameters',
+              step: null,
+              totalSteps: null
+            });
+        }
+        logToSystem('Error', `installShipper - Job [${payload.jobId}] - Job could not start due to missing parameters`);
+      }
+    } catch (error) {
+      if (socket.connected) {
         socket.emit('shipper.install',
           {
             jobId: payload.jobId,
             code: 'FAILURE',
-            payload: 'Job could not start due to missing parameters',
+            payload: `Job failed. Reason: ${error.message}`,
             step: null,
             totalSteps: null
           });
       }
-    } catch (error) {
-      socket.emit('shipper.install',
-        {
-          jobId: payload.jobId,
-          code: 'FAILURE',
-          payload: `Job failed. Reason: ${error.message}`,
-          step: null,
-          totalSteps: null
-        });
-        console.error(error);
+      logToSystem('Error', `installShipper - Job [${payload.jobId}] - Job failed. Reason: ${error.message}`);
     } finally {
       // eslint-disable-next-line no-use-before-define
       killInstallShipper(socket, payload);
@@ -591,10 +564,10 @@ function killInstallShipper(socket, payload) {
     // Check the jobId exists
     if (installs[payload.jobId]) {
       try {
-        logToSystem('Debug', `installShipper - Ending job [${payload.jobId}]...`);
+        logToSystem('Verbose', `installShipper - Ending job [${payload.jobId}]...`);
         installs[payload.jobId].end();
       } catch (error) {
-        logToSystem('Debug', `installShipper - Failed to end job [${payload.jobId}]. Error: ${error.message}`);
+        logToSystem('Error', `installShipper - Failed to end job [${payload.jobId}]. Error: ${error.message}`);
         //
       } finally {
         installs[payload.jobId] = null;
