@@ -5,7 +5,7 @@
  * @author Tony Massé
  *
  * Created at     : 2021-04-07 15:00:00
- * Last modified  : 2021-05-25 12:55:56
+ * Last modified  : 2021-12-08 00:35:42
  */
 
 const path = require('path');
@@ -28,12 +28,20 @@ process.env.logForceToConsole = process.env.LOGFORCETOCONSOLE || false;
 // Push a log to the Windows Application logs
 function exitOnUncaughtException(err) {
   try {
-    logToSystem('Critical', `There was an uncaught error: (${err.code ? err.code : '__NO_CODE__'}) ${err.message ? err.message : '__NO_MESSAGE__'}`, true);
+    logToSystem('Critical', `There was an uncaught error: (${err.code ? err.code : '__NO_CODE__'}) ${err.message ? err.message : '__NO_MESSAGE__'} ${(process.env.NODE_ENV === 'development' ? ` // ${err.stack}` : '')}`, true);
   } catch (error) {
     // Last resort
     // eslint-disable-next-line no-console
     console.error('There was an uncaught error', err);
+    // eslint-disable-next-line no-console
     console.error('Could not log it on the system\'s journal', error);
+
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.error('Stack for uncaught error:', err.stack);
+      // eslint-disable-next-line no-console
+      console.error('Stack for logging error:', error.stack);
+    }
   }
   process.exit(1);
 }
