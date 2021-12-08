@@ -9,6 +9,7 @@ const { getSshConfigForCollector } = require('../../shared/collectorSshConfig');
 const { logToSystem } = require('../../shared/systemLogging');
 
 const installs = [];
+const installStepsStatus = [];
 
 function getInstallerUrls(socket, payload) {
   if (
@@ -68,7 +69,16 @@ function installShipper(socket, payload) {
         // Check the jobId doesn't already exist
         if (!installs[payload.jobId]) {
           getSshConfigForCollector({ uid: payload.uid }).then((sshConfig) => {
+            // Prep the Steps status
+            if (!installStepsStatus[payload.jobId]) {
+              installStepsStatus[payload.jobId] = {
+                steps: []
+              };
+            }
+
+            logToSystem('Debug', `installShipper - Creating SSH connection [${payload.jobId}]...`);
             installs[payload.jobId] = new SSH(JSON.parse(JSON.stringify(sshConfig)));
+            logToSystem('Debug', `installShipper - SSH session [${payload.jobId}] created.`);
 
             const steps = [];
 
@@ -146,14 +156,6 @@ function installShipper(socket, payload) {
                 {
                   action: 'Clean up. Remove the temporary directory and its content',
                   command: `rm -rf /tmp/ez-shipper-install-${payload.jobId}/`
-                  // },
-                  // {
-                  //   action: 'Try to add some more text to the file in the temporary directory. This will fail.',
-                  //   command: `echo "Tony" > /tmp/ez-shipper-install-${payload.jobId}/test.txt`
-                  // },
-                  // {
-                  //   action: '',
-                  //   command: ``
                 }
               );
             } // Backward ocmpatibility : if (payload.installerSource.url)
@@ -313,8 +315,11 @@ function installShipper(socket, payload) {
                   in: step.stdin || '',
                   exit(code) {
                     let continueToNextStep = true;
+                    installStepsStatus[payload.jobId].steps[stepCounter].exited = true;
+                    installStepsStatus[payload.jobId].steps[stepCounter].endTime = Date.now();
 
                     if (code !== 0) {
+                      installStepsStatus[payload.jobId].steps[stepCounter].failed = true;
                       if (socket.connected) {
                         socket.emit('shipper.install',
                           {
@@ -382,9 +387,109 @@ function installShipper(socket, payload) {
                 });
             });
 
+            logToSystem('Debug', `installShipper - Kicking off Shipper deployment job [${payload.jobId}]...`);
+            if (socket.connected) {
+              socket.emit('shipper.install',
+                {
+                  jobId: payload.jobId,
+                  code: 'CONTROL.INFO',
+                  payload: 'Kicking off Shipper deployment job...',
+                  step: 0,
+                  totalSteps: steps.length
+                });
+            }
+
+            // Timestamp of when the job is started
+            installStepsStatus[payload.jobId].kickOffTime = Date.now();
+
+            // Enable a fail safe timeout
+            const timeoutCheckCycleTime = 2000; // 2 seconds timeout check cycle
+            // 5 minutes (300 seconds) timeout max duration for a Step
+            const timeoutMaxDurationForStep = 300000;
+            if (installStepsStatus[payload.jobId].intervalId == null) {
+              installStepsStatus[payload.jobId].intervalId = setInterval(() => {
+                logToSystem('Debug', `installShipper - Job [${payload.jobId}] - Monitor cycle...`);
+                if (
+                  installStepsStatus[payload.jobId]
+                  // && installStepsStatus[payload.jobId].steps
+                  // && Array.isArray(installStepsStatus[payload.jobId].steps)
+                  // && installStepsStatus[payload.jobId].steps.length
+                ) {
+                  // installStepsStatus[payload.jobId].steps.forEach((step) => {
+                  //   // console.log(step);
+                  //   logToSystem('Debug', `installShipper - Job [${payload.jobId}] - Step: ${JSON.stringify(step)}.`);
+                  //   // Details provided in the Step:
+                  //   // installStepsStatus[payload.jobId].step[stepCounter].exited = true;
+                  //   // installStepsStatus[payload.jobId].step[stepCounter].endTime
+                  // });
+
+                  // Check how long has the current step running for
+                  // (based on previous step end time)
+                  const currentStepTookMs = Date.now()
+                  - (
+                    // Check we are on Step 2 or more (so there is a step before)
+                    installStepsStatus[payload.jobId].steps
+                    && Array.isArray(installStepsStatus[payload.jobId].steps)
+                    && installStepsStatus[payload.jobId].steps.length > 1
+                      // If yes, use the endTime of the previous step
+                      ? (installStepsStatus[payload.jobId].steps[
+                        installStepsStatus[payload.jobId].steps.length - 2
+                      ].endTime || 0)
+                      // If not, return Job's kickOffTime
+                      : installStepsStatus[payload.jobId].kickOffTime
+                  );
+
+                  logToSystem('Debug', `installShipper - Job [${payload.jobId}] - Current step (${installStepsStatus[payload.jobId].steps.length}) took ${currentStepTookMs} ms.`);
+                  // If it took too long, complain and kill the job
+                  if (currentStepTookMs > timeoutMaxDurationForStep) {
+                    const errorMessage = (
+                      installStepsStatus[payload.jobId].steps.length < 1
+                        ? 'Timed out before Step 1. Check Open Collector Host details (host name/IP, port), and make sure it\'s reachable from the EZ Server.'
+                        : `Timed out at step: ${installStepsStatus[payload.jobId].steps.length}. As it took ${currentStepTookMs} ms.`
+                    );
+                    logToSystem('Error', `installShipper - Job [${payload.jobId}] - ${errorMessage}`);
+                    if (socket.connected) {
+                      socket.emit('shipper.install',
+                        {
+                          jobId: payload.jobId,
+                          code: 'FAILURE',
+                          // If we timed out on the first step, provide a more specific message.
+                          // eslint-disable-next-line max-len
+                          payload: errorMessage,
+                          step: null,
+                          totalSteps: steps.length
+                        });
+                    }
+                    // eslint-disable-next-line no-use-before-define
+                    killInstallShipper(socket, payload);
+                  }
+                }
+                // THIS IS NOW UNNECESSARY:
+                // else {
+                //   logToSystem('Debug', `installShipper - Job [${payload.jobId}] timed out before Step 1. Check Open Collector Host details.`);
+                //   // eslint-disable-next-line no-use-before-define
+                //   killInstallShipper(socket, payload);
+                //   if (socket.connected) {
+                //     socket.emit('shipper.install',
+                //       {
+                //         jobId: payload.jobId,
+                //         code: 'FAILURE',
+                //         // eslint-disable-next-line max-len
+                //         // payload: `Timed out at step: ${installStepsStatus[payload.jobId].length}`,
+                //         payload: 'Timed out before Step 1. Check Open Collector Host details.',
+                //         step: null,
+                //         totalSteps: steps.length
+                //       });
+                //   }
+                // }
+              }, timeoutCheckCycleTime);
+            }
+            // console.log(installs[payload.jobId]);
+
             // Add Event handlers and start
             installs[payload.jobId]
               .on('end', (err) => {
+                logToSystem('Debug', `installShipper - Job [${payload.jobId}] ended. Result: ${err || 'SUCCESS'}`);
                 // Cleanup the sessions
                 // eslint-disable-next-line no-use-before-define
                 killInstallShipper(socket, payload);
@@ -401,6 +506,7 @@ function installShipper(socket, payload) {
               })
               .start({
                 failure() {
+                  logToSystem('Debug', `installShipper - Job [${payload.jobId}] failed to start.`);
                   // Cleanup the sessions
                   // eslint-disable-next-line no-use-before-define
                   killInstallShipper(socket, payload);
@@ -446,6 +552,7 @@ function installShipper(socket, payload) {
           step: null,
           totalSteps: null
         });
+        console.error(error);
     } finally {
       // eslint-disable-next-line no-use-before-define
       killInstallShipper(socket, payload);
@@ -465,11 +572,29 @@ function killInstallShipper(socket, payload) {
     && payload.jobId
     && payload.jobId.length > 0
   ) {
+    // Clearing out the Steps status
+    if (installStepsStatus[payload.jobId]) {
+      // Ending timeout monitor
+      if (installStepsStatus[payload.jobId].intervalId) {
+        try {
+          logToSystem('Debug', `installShipper - Ending timeout monitor for job [${payload.jobId}]...`);
+          clearInterval(installStepsStatus[payload.jobId].intervalId);
+        } catch (error) {
+          logToSystem('Debug', `installShipper - Failed to end timeout monitor for job [${payload.jobId}]. Error: ${error.message}`);
+        } finally {
+          installStepsStatus[payload.jobId].intervalId = null;
+        }
+      }
+      installStepsStatus[payload.jobId] = null;
+    }
+
     // Check the jobId exists
     if (installs[payload.jobId]) {
       try {
+        logToSystem('Debug', `installShipper - Ending job [${payload.jobId}]...`);
         installs[payload.jobId].end();
       } catch (error) {
+        logToSystem('Debug', `installShipper - Failed to end job [${payload.jobId}]. Error: ${error.message}`);
         //
       } finally {
         installs[payload.jobId] = null;
