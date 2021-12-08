@@ -1,0 +1,42 @@
+{
+  "page":1,
+  "results":{
+    "count":3,
+    "awesome":"You damn bet!"
+  },
+  "logs":[
+    {
+      "timestamp":"20210422T16:40:00",
+      "destination":{
+        "ip":"172.16.1.2",
+        "port":443
+      },
+      "source":{
+        "ip":"192.168.0.1",
+        "port":7458
+      }
+    },
+    {
+      "timestamp":"20210422T16:42:00",
+      "destination":{
+        "ip":"172.16.6.48",
+        "port":80
+      },
+      "source":{
+        "ip":"192.168.0.1",
+        "port":8745
+      }
+    },
+    {
+      "timestamp":"20210422T16:43:00",
+      "destination":{
+        "ip":"172.16.6.48",
+        "port":443
+      },
+      "source":{
+        "ip":"192.168.0.1",
+        "port":8967
+      }
+    }
+  ]
+}
