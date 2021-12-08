@@ -61,6 +61,7 @@
 - [ ] Provide feedback if failing to connect over SSH
   - [ ] In Open Collectors list page
     - [x] On version check
+    - [x] On Shipper deployment
   - [ ] In Tail
   - [ ] In Deployment
 - [ ] Warn user if Socket is not connected to Backend (as some features needs it)

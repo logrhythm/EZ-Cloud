@@ -290,7 +290,7 @@
         </q-card-section>
         <q-card-section v-for="(job, jobIndex) in shipperInstall" :key="jobIndex">
           <div class="row q-gutter-x-md items-center" v-if="job.collector">
-            <q-spinner-gears size="2em" color="teal" v-show="job.onGoing === true" />
+            <q-spinner-dots size="2em" color="teal" v-show="job.onGoing === true" />
             <q-icon name="thumb_up" size="2em" color="positive" v-show="job.onGoing === false && job.failed === false" >
               <q-tooltip content-style="font-size: 1em;" >Job completed successfuly</q-tooltip>
             </q-icon>
@@ -310,9 +310,11 @@
             <q-separator vertical size="2px" color="teal" />
             <div class="q-ml-sm col">
               <div v-for="(log, logIndex) in job.console" :key="logIndex">
+                <q-icon name="info" class="q-mr-sm" color="primary" v-if="log.msgCode === 'CONTROL.INFO'"/>
                 <q-icon name="subdirectory_arrow_right" class="q-mr-sm" color="primary" v-if="log.type === 'finished'"/>
                 <q-icon name="error" class="q-mr-sm" color="orange" v-if="log.type === 'error' && log.msgCode === 'ERROR'"/>
                 <q-icon name="error" class="q-mr-sm" color="orange" v-if="log.type === 'error' && log.msgCode === 'EXIT'"/>
+                <q-icon name="info" class="q-mr-sm" color="orange" v-if="log.msgCode === 'CONTROL.ERROR'"/>
                 <span
                   :class="(log.type === 'stdout' ? 'fixed-font-console' : '') + ' '
                     + (log.type === 'finished' ? 'text-positive' : '')
@@ -893,7 +895,19 @@ export default {
           }
         }
 
-        // If we are getting data from the remote job, breack it in multiple lines (if \n is found in it) and push it in the job's console
+        // Updating the Progress Bar
+        this.shipperInstall[payload.jobId].step = payload.step || this.shipperInstall[payload.jobId].step
+        this.shipperInstall[payload.jobId].totalSteps = payload.totalSteps || this.shipperInstall[payload.jobId].totalSteps
+
+        // If we are receiving Control information
+        if (payload.code === 'CONTROL.INFO') {
+          this.addLineToShipperInstallConsole(payload, 'info')
+        }
+        if (payload.code === 'CONTROL.ERROR') {
+          this.addLineToShipperInstallConsole(payload, 'error')
+        }
+
+        // If we are getting data from the remote job, break it in multiple lines (if \n is found in it) and push it in the job's console
         if (payload.code === 'STDOUT') {
           if (typeof payload.payload === 'string') {
             // Add new data to end of buffer
@@ -934,8 +948,6 @@ export default {
         // Moving along?
         if (payload.code === 'FINISHED') {
           // this.shipperInstall[payload.jobId].onGoing = true
-          this.shipperInstall[payload.jobId].step = payload.step || this.shipperInstall[payload.jobId].step
-          this.shipperInstall[payload.jobId].totalSteps = payload.totalSteps || this.shipperInstall[payload.jobId].totalSteps
           this.addLineToShipperInstallConsole(payload, 'finished')
         }
 
@@ -986,10 +998,19 @@ export default {
     this.loadShippersUrls({ caller: this })
 
     // Event when Server sends output or updates from an Install/Uninstall job
+    this.socket.offAny(this.handleSocketOnShipperInstall)
+    this.socket.off('shipper.install')
     this.socket.on('shipper.install', this.handleSocketOnShipperInstall)
   },
   beforeDestroy () {
+    // Unsubscribe from Socket.io events
     this.socket.offAny(this.handleSocketOnShipperInstall)
+    this.socket.off('shipper.install')
+  },
+  destroyed () {
+    // Unsubscribe from Socket.io events
+    this.socket.offAny(this.handleSocketOnShipperInstall)
+    this.socket.off('shipper.install')
   }
 }
 
