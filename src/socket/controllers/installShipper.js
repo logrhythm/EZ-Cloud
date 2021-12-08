@@ -306,8 +306,30 @@ function installShipper(socket, payload) {
             } // if (payload.installerSource.jsBeat)
 
             // Add the Steps to the Exec stack
+            if (socket.connected) {
+              socket.emit('shipper.install',
+                {
+                  jobId: payload.jobId,
+                  code: 'CONTROL.INFO',
+                  payload: 'Preparing steps for Shipper deployment job...',
+                  step: 0,
+                  totalSteps: steps.length
+                });
+            }
+
             steps.forEach((step, stepCounter) => {
-              logToSystem('Debug', `installShipper - Adding step: (${stepCounter}) ${step.action}...`);
+              logToSystem('Verbose', `installShipper - Adding step: (${stepCounter}) ${step.action}...`);
+              if (socket.connected) {
+                socket.emit('shipper.install',
+                  {
+                    jobId: payload.jobId,
+                    code: 'CONTROL.INFO',
+                    payload: `➕ Adding step: (${stepCounter}) ${step.action}...`,
+                    step: 0,
+                    totalSteps: steps.length
+                  });
+              }
+
               installs[payload.jobId]
                 .exec(step.command, {
                   in: step.stdin || '',
@@ -385,13 +407,12 @@ function installShipper(socket, payload) {
                 });
             });
 
-            logToSystem('Debug', `installShipper - Kicking off Shipper deployment job [${payload.jobId}]...`);
             if (socket.connected) {
               socket.emit('shipper.install',
                 {
                   jobId: payload.jobId,
                   code: 'CONTROL.INFO',
-                  payload: 'Kicking off Shipper deployment job...',
+                  payload: `${steps.length} steps have been prepared.`,
                   step: 0,
                   totalSteps: steps.length
                 });
@@ -454,10 +475,31 @@ function installShipper(socket, payload) {
               }, timeoutCheckCycleTime);
             }
 
+            logToSystem('Verbose', `installShipper - Job [${payload.jobId}] - Timeout for each step of the job, including initial SSH connection, is set to ${timeoutMaxDurationForStep / 1000} seconds.`);
+            logToSystem('Info', `installShipper - Kicking off Shipper deployment job [${payload.jobId}]...`);
+            if (socket.connected) {
+              socket.emit('shipper.install',
+                {
+                  jobId: payload.jobId,
+                  code: 'CONTROL.INFO',
+                  payload: `⏱ Timeout for each step of the job, including initial SSH connection, is set to ${timeoutMaxDurationForStep / 1000} seconds.`,
+                  step: 0,
+                  totalSteps: steps.length
+                });
+              socket.emit('shipper.install',
+                {
+                  jobId: payload.jobId,
+                  code: 'CONTROL.INFO',
+                  payload: '🚀 Kicking off Shipper deployment job...',
+                  step: 0,
+                  totalSteps: steps.length
+                });
+            }
+
             // Add Event handlers and start
             installs[payload.jobId]
               .on('end', (err) => {
-                logToSystem('Debug', `installShipper - Job [${payload.jobId}] ended. Result: ${err || 'SUCCESS'}`);
+                logToSystem((err ? 'Error' : 'Info'), `installShipper - Job [${payload.jobId}] ended. Result: ${err || 'SUCCESS'}`);
                 // Cleanup the sessions
                 // eslint-disable-next-line no-use-before-define
                 killInstallShipper(socket, payload);
@@ -474,7 +516,7 @@ function installShipper(socket, payload) {
               })
               .start({
                 failure() {
-                  logToSystem('Debug', `installShipper - Job [${payload.jobId}] failed to start.`);
+                  logToSystem('Error', `installShipper - Job [${payload.jobId}] failed to start.`);
                   // Cleanup the sessions
                   // eslint-disable-next-line no-use-before-define
                   killInstallShipper(socket, payload);
@@ -491,15 +533,18 @@ function installShipper(socket, payload) {
                 }
               });
           });
-        } else if (socket.connected) {
-          socket.emit('shipper.install',
-            {
-              jobId: payload.jobId,
-              code: 'FAILURE',
-              payload: 'A same job is still running with the same ID.',
-              step: null,
-              totalSteps: null
-            });
+        } else {
+          if (socket.connected) {
+            socket.emit('shipper.install',
+              {
+                jobId: payload.jobId,
+                code: 'FAILURE',
+                payload: 'A same job is still running with the same ID.',
+                step: null,
+                totalSteps: null
+              });
+          }
+          logToSystem('Warning', `installShipper - Job [${payload.jobId}] - Job could not start due to the same job is still running with the same ID.`);
         }
       } else {
         if (socket.connected) {
@@ -540,6 +585,7 @@ function uninstallShipper(socket, payload) {
 }
 
 function killInstallShipper(socket, payload) {
+  logToSystem('Verbose', `installShipper - Trying to end job [${(payload && payload.jobId ? payload.jobId : 'N/A')}]...`);
   if (
     payload
     && payload.jobId
@@ -550,10 +596,10 @@ function killInstallShipper(socket, payload) {
       // Ending timeout monitor
       if (installStepsStatus[payload.jobId].intervalId) {
         try {
-          logToSystem('Debug', `installShipper - Ending timeout monitor for job [${payload.jobId}]...`);
+          logToSystem('Verbose', `installShipper - Ending timeout monitor for job [${payload.jobId}]...`);
           clearInterval(installStepsStatus[payload.jobId].intervalId);
         } catch (error) {
-          logToSystem('Debug', `installShipper - Failed to end timeout monitor for job [${payload.jobId}]. Error: ${error.message}`);
+          logToSystem('Error', `installShipper - Failed to end timeout monitor for job [${payload.jobId}]. Error: ${error.message}`);
         } finally {
           installStepsStatus[payload.jobId].intervalId = null;
         }
@@ -573,6 +619,8 @@ function killInstallShipper(socket, payload) {
         installs[payload.jobId] = null;
       }
     }
+  } else {
+    logToSystem('Warning', `installShipper - Failed to end job [${(payload && payload.jobId ? payload.jobId : 'N/A')}] as missing or empty Job ID.`);
   }
 } // killInstallShipper
 
