@@ -1,7 +1,5 @@
 ## Samples
 
-You can use the [editor on GitHub](https://github.com/TonyMasse/EZ-Cloud/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
-
 #### 01.single.json
 
 Contains a single log
