@@ -820,10 +820,6 @@ export default {
     },
 
     installFilebeat (uid, shipperSource) {
-      console.log('installFilebeat:')
-      console.log(uid)
-      console.log(shipperSource)
-
       this.shipperInstall[uid] = {
         collector: this.tableData.find(c => c.uid === uid),
         onGoing: true,
@@ -840,6 +836,23 @@ export default {
           jobId: uid,
           uid,
           installerSource: shipperSource
+        })
+      } else { // No Socket. Tell the user.
+        this.tailEnabled = false
+        // Pop this to the screen (via MainLayout)
+        this.$root.$emit('addAndShowErrorToErrorPanel', {
+          data: {
+            errors: [
+              {
+                code: 'NoLiveSocket',
+                message: 'Live (Socket) connection with the EZ Server has been lost or is not currently established.'
+              },
+              {
+                code: 'ShipperInstallFailedToStart',
+                message: 'Shipper deployment could not start due to no live socket available.'
+              }
+            ]
+          }
         })
       }
     },

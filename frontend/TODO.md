@@ -64,8 +64,8 @@
     - [x] On Shipper deployment
   - [ ] In Tail
   - [ ] In Deployment
-- [ ] Warn user if Socket is not connected to Backend (as some features needs it)
-  - [ ] On Shipper deployment
+- [x] Warn user if Socket is not connected to Backend (as some features needs it)
+  - [x] On Shipper deployment
 - [ ] Market Place
   - [ ] Find a Free-tiered public database
   - [ ] Find a Free-tiered public hosting (for Admin and API)
