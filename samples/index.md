@@ -1,6 +1,6 @@
 ## Samples
 
-#### :page_with_curl: 01.single.json
+#### 📃 01.single.json
 
 Contains a single log
 - URL: [https://tonymasse.github.io/EZ-Cloud/samples/01.single.json](https://tonymasse.github.io/EZ-Cloud/samples/01.single.json)
@@ -19,7 +19,7 @@ Contains a single log
 }
 ```
 
-#### :page_with_curl: 02.array.json
+#### 📃 02.array.json
 
 Contains a single array of 3 log
 - URL: [https://tonymasse.github.io/EZ-Cloud/samples/02.array.json](https://tonymasse.github.io/EZ-Cloud/samples/02.array.json)
