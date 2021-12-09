@@ -43,6 +43,8 @@
   - [x] Update API endpoint `GetPipeline`
 
 ## TO FIX
+- [x] URL might contain directory traversal attempt
+
 ## TO TEST
 
 ---

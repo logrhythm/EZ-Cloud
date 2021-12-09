@@ -60,9 +60,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(process.env.baseDirname, 'public_web_root', 'index.html'));
 });
 // - Second, all the other files/pages
-app.get('/:file(*)', (req, res) => {
-  res.sendFile(path.join(process.env.baseDirname, 'public_web_root', req.params.file));
-});
+app.use('/:file(*)', middlewares.serveFileSafely);
 
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);

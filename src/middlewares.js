@@ -68,17 +68,41 @@ function logHttpToSystem(req, res, next) {
 
 function notFound(req, res, next) {
   res.status(404);
-  const error = new Error(`Not Found - ${req.originalUrl}`);
+  const error = new Error('Not Found');
   next(error);
 }
 
 /* eslint-disable no-unused-vars */
 function errorHandler(err, req, res, next) {
   res.status(res.statusCode || 500);
+
   /* eslint-enable no-unused-vars */
   res.json({
-    message: err.message,
+    code: err.code,
+    message: process.env.NODE_ENV === 'production' ? '__REDACTED__' : err.message,
     stack: process.env.NODE_ENV === 'production' ? '🥞' : err.stack
+  });
+}
+
+/* eslint-disable no-unused-vars */
+function serveFileSafely(req, res, next) {
+  const safePath = path.join(
+    process.env.baseDirname,
+    'public_web_root',
+    String(req.params.file).replace(RegExp('../', 'g'), '') // strip any "../"
+  );
+
+  fs.stat(safePath, (err, stat) => {
+    if (err == null) {
+      res.sendFile(safePath);
+    } else if (err.code === 'ENOENT') {
+      // file does not exist
+      notFound(req, res, next);
+    } else {
+      res.status(500);
+      const error = new Error('File could\'t be served');
+      next(error);
+    }
   });
 }
 
@@ -88,5 +112,6 @@ module.exports = {
   isAdmin,
   logHttpToSystem,
   notFound,
-  errorHandler
+  errorHandler,
+  serveFileSafely
 };
