@@ -89,7 +89,7 @@ function serveFileSafely(req, res, next) {
   const safePath = path.join(
     process.env.baseDirname,
     'public_web_root',
-    String(req.params.file).replace(RegExp('../', 'g'), '') // strip any "../"
+    String(req.params.file).replace(RegExp('\\.\\./', 'g'), '') // strip any "../"
   );
 
   fs.stat(safePath, (err, stat) => {
