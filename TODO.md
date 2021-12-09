@@ -41,6 +41,7 @@
   - [x] Update `[pipelines]` table creation script
   - [x] Update API endpoint `UpdatePipeline`
   - [x] Update API endpoint `GetPipeline`
+- [x] SQL - Log an error when SQL fails to connect
 
 ## TO FIX
 - [x] URL might contain directory traversal attempt
