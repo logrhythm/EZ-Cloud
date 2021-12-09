@@ -44,6 +44,8 @@
 
 ## TO FIX
 - [x] URL might contain directory traversal attempt
+- [x] Error message returned to client is too complete:
+  - [x] The value of the URL path filename is copied into the application's response.
 
 ## TO TEST
 
