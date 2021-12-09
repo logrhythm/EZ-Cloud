@@ -63,6 +63,9 @@ async function getDataFromSql(parameters) {
         }
         targetVariable.stillChecking = false;
         stillChecking = false;
+
+        // And close the SQL connection
+        connection.close();
       });
 
       if (variables && Array.isArray(variables)) {

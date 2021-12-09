@@ -46,6 +46,7 @@
 - [x] URL might contain directory traversal attempt
 - [x] Error message returned to client is too complete:
   - [x] The value of the URL path filename is copied into the application's response.
+- [x] SQL Connection seem not to close automatically, and time out only after +/-50 minutes
 
 ## TO TEST
 
