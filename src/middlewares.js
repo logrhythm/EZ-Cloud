@@ -77,34 +77,53 @@ function notFound(req, res, next) {
 function errorHandler(err, req, res, next) {
   res.status(res.statusCode || 500);
 
+  // Error code
+  const code = err.code || `HTTP Return Code: ${res.statusCode}`;
+
   /* eslint-enable no-unused-vars */
   res.json({
-    code: err.code,
+    code,
     message: process.env.NODE_ENV === 'production' ? '__REDACTED__' : err.message,
     stack: process.env.NODE_ENV === 'production' ? '🥞' : err.stack
   });
+  logToSystem('Error', `HTTP Error | client_ip: ${(req.socket && req.socket._peername && req.socket._peername.address ? req.socket._peername.address : '-')} | client_port: ${(req.socket && req.socket._peername && req.socket._peername.port ? req.socket._peername.port : '-')} | username: ${(req.user && req.user.username ? req.user.username : '-')} | roles: ${(req.user && req.user.roles ? req.user.roles.join(',') : '-')} | method: ${(req.method ? req.method : '-')} | path: ${(req.url ? req.url : '-')} | error code: ${code}`);
 }
 
 /* eslint-disable no-unused-vars */
 function serveFileSafely(req, res, next) {
-  const safePath = path.join(
-    process.env.baseDirname,
-    'public_web_root',
-    String(req.params.file).replace(/\.\.(\/|\\)/g, '') // strip any "../" and "..\"
-  );
-
-  fs.stat(safePath, (err, stat) => {
-    if (err == null) {
-      res.sendFile(safePath);
-    } else if (err.code === 'ENOENT') {
-      // file does not exist
+  if (req && req.params && req.params.file) {
+    if (String(req.params.file || '').indexOf('\0') !== -1) {
+      // Got a char #0 in the filename/path? Go get lost.
       notFound(req, res, next);
     } else {
-      res.status(500);
-      const error = new Error('File could\'t be served');
-      next(error);
+      // Build full path
+      const safePath = path.join(
+        process.env.baseDirname,
+        'public_web_root',
+        path.normalize(req.params.file || '').replace(/\.\.(\/|\\|$)/g, '') // strip any "../" and "..\"
+      );
+
+      // Check file exists
+      fs.stat(safePath, (err, stat) => {
+        if (err == null) {
+          // Good to go, serve the file
+          res.sendFile(safePath);
+        } else if (err.code === 'ENOENT') {
+          // File does not exist
+          notFound(req, res, next);
+        } else {
+          // no idea what's going on. Too bad, mate.
+          res.status(500);
+          const error = new Error('File could\'t be served');
+          next(error);
+        }
+      });
     }
-  });
+  } else { // No file was asked for
+    res.status(500);
+    const error = new Error('No file was asked for.');
+    next(error);
+  }
 }
 
 module.exports = {
