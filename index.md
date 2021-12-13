@@ -8,7 +8,7 @@ Please follow this [link](samples/) to get to the few log samples to play with.
 
 Not yet available.
 
-### I was looking for the Wiki
+### I was looking for the Wiki, actually
 
 It's right [there](https://github.com/TonyMasse/EZ-Cloud/wiki).
 
