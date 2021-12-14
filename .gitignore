@@ -1,0 +1,4 @@
+config/*
+frontend/*
+node_modules/*
+private/*
