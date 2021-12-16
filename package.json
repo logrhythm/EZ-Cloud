@@ -4,12 +4,13 @@
   "description": "Server backend for EZ-Cloud for Legacy SIEM",
   "main": "index.js",
   "scripts": {
+    "buildVersion": "npx genversion --semi --source ./package.json src/shared/version.js",
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
+    "dev": "npm run buildVersion && nodemon src/index.js",
     "lint": "eslint --fix src",
     "test": "mocha --exit",
     "build": "webpack",
-    "buildWithFrontend": "cd frontend && npm install && quasar build && (robocopy dist\\spa\\ ..\\public_web_root\\ /COPYALL /MIR /NJH) ^& IF %ERRORLEVEL% LEQ 1 SET ERRORLEVEL = 0 && cd.. && webpack",
+    "buildWithFrontend": "npm run buildVersion && cd frontend && npm install && quasar build && (robocopy dist\\spa\\ ..\\public_web_root\\ /COPYALL /MIR /NJH) ^& IF %ERRORLEVEL% LEQ 1 SET ERRORLEVEL = 0 && cd.. && webpack",
     "installService": "node installer/installService.js",
     "uninstallService": "node installer/uninstallService.js"
   },
@@ -39,6 +40,7 @@
     "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.24.1",
+    "genversion": "^3.0.2",
     "innosetup": "^6.0.5",
     "mocha": "^8.4.0",
     "nodemon": "^2.0.12",

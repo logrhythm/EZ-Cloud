@@ -5,7 +5,7 @@
  * @author Tony Massé
  *
  * Created at     : 2021-04-07 15:00:00
- * Last modified  : 2021-12-08 00:35:42
+ * Last modified  : 2021-12-16 21:58:39
  */
 
 const path = require('path');
@@ -58,8 +58,10 @@ const port = process.env.PORT || 8400;
 const host = process.env.HOST || 'localhost';
 
 // Service name and version
+const version = require('./shared/version'); // Version file is generated at build time
+
 process.env.NAME = 'EZ-Cloud Onboarding for Legacy SIEM';
-process.env.VERSION = process.env.npm_package_version;
+process.env.VERSION = version;
 
 logToSystem('Information', `${process.env.NAME} - Version: ${process.env.VERSION} - Started`, true);
 
