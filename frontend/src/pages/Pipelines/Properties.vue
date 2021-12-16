@@ -64,6 +64,89 @@
                   Copy Collection configuration in Shipper's format to Clipboard
                 </q-tooltip>
               </q-btn>
+              <q-btn icon="share">
+                <q-tooltip content-style="font-size: 1rem;">
+                  Share and Import Collection Configuration
+                </q-tooltip>
+                <q-menu>
+                  <q-list style="min-width: 400px">
+                    <q-item clickable v-close-popup @click="downloadCollectionAsEZImportableConfigFile()">
+                      <q-item-section avatar top>
+                        <q-avatar icon="share" color="green-10" text-color="white" >
+                          <q-badge color="primary" floating transparent>
+                            <q-icon name="insert_drive_file" color="white" />
+                          </q-badge>
+                        </q-avatar>
+                      </q-item-section>
+
+                      <q-item-section>
+                        <q-item-label lines="1">Share as a Local File</q-item-label>
+                        <q-item-label caption>As an importable EZ Cloud Collection Configuration file</q-item-label>
+                      </q-item-section>
+                    </q-item>
+
+                    <q-item clickable disabled>
+                      <q-item-section avatar top>
+                        <q-avatar icon="share" color="green-10" text-color="white" >
+                          <q-badge color="primary" floating transparent>
+                            <q-icon name="cloud" color="white" />
+                          </q-badge>
+                        </q-avatar>
+                      </q-item-section>
+
+                      <q-item-section>
+                        <q-item-label lines="1">Share via the Marketplace</q-item-label>
+                        <q-item-label caption>As an importable EZ Cloud Collection Configuration</q-item-label>
+                      </q-item-section>
+                    </q-item>
+
+                    <q-separator />
+
+                    <q-item clickable v-close-popup @click="showFileImportPopup = true">
+                      <q-item-section avatar top>
+                        <q-avatar icon="input" color="purple-10" text-color="white" >
+                          <q-badge color="primary" floating transparent>
+                            <q-icon name="insert_drive_file" color="white" />
+                          </q-badge>
+                        </q-avatar>
+                      </q-item-section>
+
+                      <q-item-section>
+                        <q-item-label lines="1">Import from Local File</q-item-label>
+                        <q-item-label caption>Import a shared EZ Cloud Collection Configuration file</q-item-label>
+                      </q-item-section>
+                    </q-item>
+
+                    <q-item clickable disabled>
+                      <q-item-section avatar top>
+                        <q-avatar icon="input" color="purple-10" text-color="white" >
+                          <q-badge color="primary" floating transparent>
+                            <q-icon name="cloud" color="white" />
+                          </q-badge>
+                        </q-avatar>
+                      </q-item-section>
+
+                      <q-item-section>
+                        <q-item-label lines="1">Import from Marketplace</q-item-label>
+                        <q-item-label caption>Import a shared EZ Cloud Collection Configuration</q-item-label>
+                      </q-item-section>
+                    </q-item>
+
+                    <q-separator />
+
+                    <q-item clickable v-close-popup tag="a" :href="wikiLink('ref-whatsthedifferencecollectionconfigurationshareimport')" target="_blank" >
+                      <q-item-section avatar top>
+                        <q-avatar icon="help_outline" color="info" text-color="black" />
+                      </q-item-section>
+
+                      <q-item-section>
+                        <q-item-label lines="1">What's the difference?</q-item-label>
+                        <q-item-label caption>A quick peek at the Wiki</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-menu>
+              </q-btn>
               <!-- <q-btn icon="highlight_off" disable>
                 <q-tooltip content-style="font-size: 1rem;">
                   Stop collection
@@ -257,12 +340,13 @@ export default {
         sortBy: 'status',
         descending: true,
         rowsPerPage: 25
-      }
+      },
+      showFileImportPopup: false // Governs the display of the Popup to import shared config file
     }
   },
   computed: {
     ...mapGetters('mainStore', ['openCollectors', 'pipelines']),
-    ...mapState('mainStore', ['collectionMethodsOptions', 'collectionShippersOptions']),
+    ...mapState('mainStore', ['collectionMethodsOptions', 'collectionShippersOptions', 'helpWikiUrlBase']),
     pipeline () {
       const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
       return (pipeline || {
@@ -497,6 +581,42 @@ export default {
           })
         })
     },
+    downloadCollectionAsEZImportableConfigFile () {
+      // Fallback file extension and Mime type (if not possible to assign a better one based on Shipper)
+      const fileExtension = '.ezCollection'
+      const fileMimeType = 'application/json'
+
+      const fileName = 'input.' + this.pipeline.name + '_' + this.pipeline.uid + fileExtension
+
+      const notificationPopupId = this.$q.notify({
+        icon: 'cloud_download',
+        message: this.$t('Downloading Importable Collection Configuration file...'),
+        caption: fileName,
+        type: 'ongoing'
+      })
+
+      // Push file out
+      const status = exportFile(fileName, JSON.stringify(this.pipeline.collectionConfig), fileMimeType)
+
+      if (status === true) {
+        notificationPopupId({
+          type: 'positive',
+          color: 'positive',
+          icon: 'check',
+          message: this.$t('Importable Collection Configuration file downloaded'),
+          caption: fileName
+        })
+      } else {
+        notificationPopupId({
+          type: 'negative',
+          color: 'negative',
+          icon: 'report_problem',
+          message: this.$t('Problem while downloading Importable Collection Configuration file:'),
+          caption: status
+        })
+        console.log('Error: ' + status)
+      }
+    },
     addNewDeployment () {
       this.$router.push('/Pipelines/' + this.pipelineUid + '/Deployments/Edit')
     },
@@ -531,7 +651,11 @@ export default {
           })
         }) // }).onOk(() => {
       }
-    } // deleteDeploymentPrompt
+    }, // deleteDeploymentPrompt
+    wikiLink (reference) {
+      // 'whatTheDifferenceLogArrayLogSet'
+      return this.helpWikiUrlBase + reference
+    }
   },
   mounted () {
     if (this.$route.params.pipelineUid && this.$route.params.pipelineUid.length) {

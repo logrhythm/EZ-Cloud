@@ -72,5 +72,8 @@
   "What did just go wrong?": "What did just go wrong?",
   "Manage User Accounts": "Manage User Accounts",
   "Manage User Roles": "Manage User Roles",
-  "Close": "Close"
+  "Close": "Close",
+  "Downloading Importable Collection Configuration file...": "Downloading Importable Collection Configuration file...",
+  "Importable Collection Configuration file downloaded": "Importable Collection Configuration file downloaded",
+  "Problem while downloading Importable Collection Configuration file:": "Problem while downloading Importable Collection Configuration file:"
 }

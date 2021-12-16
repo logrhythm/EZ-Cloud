@@ -87,14 +87,14 @@
     - [ ] Delete submission
 - [ ] Import/Export of Collection
   - [ ] Import Collection from file
-  - [ ] Import Collection from Copy/Paste
-  - [ ] Export Collection to file
-  - [ ] Export Collection to Copy/Paste
+  - [ ] ~~Import Collection from Copy/Paste~~
+  - [x] Export Collection to file
+  - [ ] ~~Export Collection to Copy/Paste~~ (👈 low value, low priority. Might resurect if users demand)
 - [ ] Import/Export of Fields Mapping
   - [ ] Import Mapping from file
-  - [ ] Import Mapping from Copy/Paste
+  - [ ] ~~Import Mapping from Copy/Paste~~ (👈 low value, low priority. Might resurect if users demand)
   - [ ] Export Mapping to file
-  - [ ] Export Mapping to Copy/Paste
+  - [ ] ~~Export Mapping to Copy/Paste~~ (👈 low value, low priority. Might resurect if users demand)
 - [ ] LogRhythm Beats mapping for Collection Configuration
   - [ ] Azure Event Hub
   - [ ] S3
