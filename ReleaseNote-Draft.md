@@ -34,6 +34,7 @@
 
 
 ## What's new in this release
+**v0.8.0**
 - [v0.8.0] Role Based Access Control
   - Users can belong to different types of Roles (by default `Admin` or `User`)
   - Any Role can be created
@@ -59,6 +60,33 @@
       - As an Set of Logs
       - Offer to direct to a Wiki help page to explain the difference
         - https://github.com/TonyMasse/EZ-Cloud/wiki/Help#ref-whatsthedifferencefileimport
+
+**v0.8.1**
+- [v0.8.1] Pipelines - Import/Export of Collection and Mapping
+- [v0.8.1] Mapping Editor - Persist the "Extract Beat's .message" option
+- [v0.8.1] Mapping Editor - Resurface the `.message` feature (UI, API and JQ)
+- [v0.8.1] Provide feedback if failing to connect over SSH, in Open Collectors list page
+  - On version check
+  - On Shipper deployment
+- [v0.8.🚧] 
+
+## What has been fixed in this release
+**v0.8.1**
+- [v0.8.1] Security - URL might contain directory traversal attempt
+- [v0.8.1] Security - Error message returned to client is too complete:
+  - The value of the URL path filename is copied into the application's response.
+- [v0.8.1] Admin - Roles - Creates new duplicated Role instead of updating existing one when changing the Priviledge
+- [v0.8.1] Mapping Editor - JQ small nags
+  - `.message` is commented in Transform template
+  - Filter uses un-cleaned Stream Name for `device_type`
+- [v0.8.1] Change "priviledged" to "privileged", through out
+  - Frontend - UI
+  - Frontend - Actions (Store)
+  - Backend - SQL Scripts
+  - Backend - API
+- [v0.8.1] SQL Connection seem not to close automatically, and time out only after +/-50 minutes
+- [v0.8.1] Privileged access is only valid if member of Role `Admin`. Needs to change to use `isPrivileged` instead
+- [v0.8.1] No version number showing in logs when in Production
 - [v0.8.🚧] 
 
 ## Know issues :bug: :beetle:
