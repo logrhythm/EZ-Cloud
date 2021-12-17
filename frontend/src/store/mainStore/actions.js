@@ -271,6 +271,8 @@ export function upsertPipeline ({ state, commit }, payload) {
           loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
           silent: false,
           caller: (payload && payload.caller ? payload.caller : this._vm),
+          onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+          onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
           debug: false
         })
       }
