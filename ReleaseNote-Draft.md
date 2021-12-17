@@ -32,12 +32,12 @@
 - Click **Logout**
 - Log back in as the new non-privileged user
 
-## Where is the documentation
+## Where is the documentation?
 - Wiki: [Home](https://github.com/TonyMasse/EZ-Cloud/wiki/)
 - Wiki: [Getting Started](https://github.com/TonyMasse/EZ-Cloud/wiki/Help#getting-started)
 - Wiki: [Troubleshooting](https://github.com/TonyMasse/EZ-Cloud/wiki/Troubleshooting)
 
-## What's new in this release
+## What's new in this release?
 **v0.8.0**
 - [v0.8.0] Role Based Access Control
   - Users can belong to different types of Roles (by default `Admin` or `User`)
@@ -74,7 +74,7 @@
   - On Shipper deployment
 - [v0.8.🚧] 
 
-## What has been fixed in this release
+## What has been fixed in this release?
 **v0.8.1**
 - [v0.8.1] Security - URL might contain directory traversal attempt
 - [v0.8.1] Security - Error message returned to client is too complete:
