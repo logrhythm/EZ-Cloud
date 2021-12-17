@@ -19,11 +19,11 @@ const jwtConfig = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 
 const jwtSecret = (jwtConfig && jwtConfig.secret ? jwtConfig.secret : '');
 const jwtTtl = (jwtConfig && jwtConfig.ttl ? jwtConfig.ttl : '1h');
 
-const createTokenSendResponse = (user, roles, isUserPriviledged, res, next) => {
+const createTokenSendResponse = (user, roles, isUserPrivileged, res, next) => {
   const payload = {
     username: user || '',
     roles: roles || [],
-    isPriviledged: (isUserPriviledged === true) || false
+    isPrivileged: (isUserPrivileged === true) || false
   };
 
   jwt.sign(
@@ -74,7 +74,7 @@ router.post('/Login', async (req, res, next) => {
       // Get the Roles for the User
       const userRolesFromSql = {};
       const userRoles = [];
-      let isUserPriviledged = false;
+      let isUserPrivileged = false;
 
       await getDataFromSql({
         targetVariable: userRolesFromSql,
@@ -83,7 +83,7 @@ router.post('/Login', async (req, res, next) => {
           [rbacUserToRole].[login] AS 'userLogin'
           -- ,[rbacRoles].[uid] AS 'roleUid'
           ,[rbacRoles].[name] AS 'roleName'
-          ,[rbacRoles].[isPriviledged] AS 'roleIsPriviledged'
+          ,[rbacRoles].[isPrivileged] AS 'roleIsPrivileged'
         FROM [EZ].[dbo].[rbacRoles]
           RIGHT OUTER JOIN [EZ].[dbo].[rbacUserToRole] ON [rbacRoles].[uid] = [rbacUserToRole].[roleUid]
         WHERE [rbacUserToRole].[login] = @username
@@ -114,14 +114,14 @@ router.post('/Login', async (req, res, next) => {
             if (item.roleName && item.roleName.length) {
               userRoles.push(item.roleName);
             }
-            if (item.roleIsPriviledged === 1) {
-              isUserPriviledged = true;
+            if (item.roleIsPrivileged === 1) {
+              isUserPrivileged = true;
             }
           }
         });
       }
 
-      logToSystem('Information', `Login | RBAC Results for User | user: ${req.body.username} | role(s): ${JSON.stringify(userRoles)} | isUserPriviledged: ${isUserPriviledged}`);
+      logToSystem('Information', `Login | RBAC Results for User | user: ${req.body.username} | role(s): ${JSON.stringify(userRoles)} | isUserPrivileged: ${isUserPrivileged}`);
 
       // If user has at least one Role, it can login and we respond with a JWT token
       if (userRoles && userRoles.length > 0) {
@@ -130,7 +130,7 @@ router.post('/Login', async (req, res, next) => {
         createTokenSendResponse(
           checkedCreds.username, // Login name
           userRoles, // Array of Roles
-          isUserPriviledged, // True or False
+          isUserPrivileged, // True or False
           res,
           next
         );

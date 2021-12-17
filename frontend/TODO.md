@@ -117,6 +117,9 @@
 - [x] JQ small nags
   - [x] .message is commented in Transform template
   - [x] Filter uses un-cleaned Stream Name for `device_type`
+- [x] Change "priviledged" to "privileged", through out
+  - [x] Actions (Store)
+  - [x] UI
 
 ## TO TEST
 - [ ] Fan Out feature

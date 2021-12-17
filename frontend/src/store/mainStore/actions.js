@@ -532,7 +532,7 @@ export function updateUserRole ({ state }, payload) {
       apiCallParams: {
         uid: payload.roleUid,
         name: payload.roleName,
-        isPriviledged: payload.roleIsPriviledged
+        isPrivileged: payload.roleIsPrivileged
       },
       apiHeaders: {
         authorization: 'Bearer ' + state.jwtToken

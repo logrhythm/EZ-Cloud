@@ -48,8 +48,12 @@
 - [x] Error message returned to client is too complete:
   - [x] The value of the URL path filename is copied into the application's response.
 - [x] SQL Connection seem not to close automatically, and time out only after +/-50 minutes
-- [x] Privileged access is only valid if member of Role `Admin`. Needs to change to use `isPriviledged` instead
+- [x] Privileged access is only valid if member of Role `Admin`. Needs to change to use `isPrivileged` instead
 - [x] No version number showing in logs when in Production
+- [x] Change "priviledged" to "privileged", through out
+  - [x] SQL Scripts
+  - [x] API
+  - [x] Rest of the source code
 
 ## TO TEST
 

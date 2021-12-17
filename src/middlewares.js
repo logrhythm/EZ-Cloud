@@ -54,7 +54,7 @@ function isLoggedIn(req, res, next) {
 // Check if the logged user is and Admin
 function isAdmin(req, res, next) {
   // if (req.user && req.user.roles && Array.isArray(req.user.roles) && req.user.roles.includes('Admin')) {
-  if (req.user && req.user.isPriviledged === true) {
+  if (req.user && req.user.isPrivileged === true) {
     next();
   } else {
     accessDenied(res, next);

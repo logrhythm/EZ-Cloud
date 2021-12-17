@@ -122,7 +122,7 @@ export function updateJwtToken (state, payload) {
       const decodedToken = (payload.token && payload.token.length ? jwt_decode(payload.token) : null)
       state.loggedInUser = (decodedToken && decodedToken.username ? decodedToken.username : '')
       state.loggedInUserRoles = (decodedToken && decodedToken.roles && Array.isArray(decodedToken.roles) ? decodedToken.roles : [])
-      state.loggedInUserIsPriviledged = !!(decodedToken && decodedToken.isPriviledged === true)
+      state.loggedInUserIsPrivileged = !!(decodedToken && decodedToken.isPrivileged === true)
     } catch (err) {
       console.log('Authentication - Failed to decode received JWT Token. Reason:', err.message)
     }

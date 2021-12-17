@@ -76,12 +76,12 @@
                   </q-td>
                 </template>
 
-                <template v-slot:body-cell-roleIsPriviledged="props">
+                <template v-slot:body-cell-roleIsPrivileged="props">
                   <q-td :props="props">
                     <q-icon name="check_circle_outline" color="green" size="md" v-if="props.value === 1" />
                     <q-tooltip content-style="font-size: 1em">
-                      <span v-if="props.value === 1">Priviledged user</span>
-                      <span v-else-if ="props.value === 0">Non-priviledged user</span>
+                      <span v-if="props.value === 1">Privileged user</span>
+                      <span v-else-if ="props.value === 0">Non-privileged user</span>
                       <span v-else>{{ props.value }}</span>
                     </q-tooltip>
                   </q-td>
@@ -210,7 +210,7 @@ export default {
         { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
         { name: 'userLogin', align: 'center', label: 'Username', field: 'userLogin', sortable: true },
         { name: 'roleName', align: 'center', label: 'Role', field: 'roleName', sortable: true },
-        { name: 'roleIsPriviledged', align: 'center', label: 'Is Priviledged', field: 'roleIsPriviledged', sortable: true }
+        { name: 'roleIsPrivileged', align: 'center', label: 'Is Privileged', field: 'roleIsPrivileged', sortable: true }
       ],
       pagination: {
         sortBy: 'userLogin',
@@ -244,8 +244,8 @@ export default {
         options.push(
           {
             value: role.roleUid,
-            label: role.roleName + (role.roleIsPriviledged === 1 ? ' (Priviledged)' : ''),
-            isPriviledged: (role.roleIsPriviledged === 1)
+            label: role.roleName + (role.roleIsPrivileged === 1 ? ' (Privileged)' : ''),
+            isPrivileged: (role.roleIsPrivileged === 1)
           }
         )
       })

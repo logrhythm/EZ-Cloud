@@ -8,11 +8,12 @@ GO
 -- =============================================
 -- Author:		  Tony Massé
 -- Create date: 2021-11-23
+-- Update date: 2021-12-17 - To rename the [isPrivileged] column into [isPrivileged]
 -- =============================================
 CREATE PROCEDURE upsert_RBAC_Role 
 	@uid varchar(40),
 	@name nvarchar(200),
-	@isPriviledged tinyint = 0 -- Default to FALSE
+	@isPrivileged tinyint = 0 -- Default to FALSE
 AS
 BEGIN
 	-- SET NOCOUNT ON added to prevent extra result sets from
@@ -33,13 +34,13 @@ BEGIN
 			UPDATE [dbo].[rbacRoles]
 				SET 
 					[name] = @name,
-					[isPriviledged] = @isPriviledged
+					[isPrivileged] = @isPrivileged
 				WHERE [uid] = @uid;
 		END
 	ELSE
 		BEGIN
 			INSERT INTO [dbo].[rbacRoles]
-			([uid], [name], [isPriviledged]) VALUES (@uid, @name, @isPriviledged)
+			([uid], [name], [isPrivileged]) VALUES (@uid, @name, @isPrivileged)
 		END
 
 END;
@@ -55,7 +56,7 @@ GO
 -- EXECUTE @RC = [dbo].[upsert_RBAC_Role] 
 --   '88b3cd68-0086-425f-bbd3-1518b93c07dc'
 --   ,'Role Name - Default Priviledge'
---   -- Missing isPriviledged, shoudl default to FALSE
+--   -- Missing isPrivileged, shoudl default to FALSE
 
 -- SELECT @RC;
 -- SELECT * FROM [dbo].[rbacRoles] WHERE [uid] = '88b3cd68-0086-425f-bbd3-1518b93c07dc'

@@ -53,7 +53,7 @@
           v-for="link in lowLinks"
           :key="link.title"
           v-bind="link"
-          v-show="!link.needsPriviledge || (link.needsPriviledge && loggedInUserIsPriviledged)"
+          v-show="!link.needsPriviledge || (link.needsPriviledge && loggedInUserIsPrivileged)"
         />
       </q-list>
       <div class="text-center">
@@ -170,7 +170,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('mainStore', ['loggedInUser', 'loggedInUserIsPriviledged', 'errorWikiUrlBase'])
+    ...mapState('mainStore', ['loggedInUser', 'loggedInUserIsPrivileged', 'errorWikiUrlBase'])
   },
   methods: {
     sanitiseWikiLinks (rawLinkRef) {

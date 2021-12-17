@@ -52,7 +52,7 @@ router.get('/GetUsersList', async (req, res) => {
       ,[rbacUserToRole].[login] AS 'userLogin'
       ,[rbacRoles].[uid] AS 'roleUid'
       ,[rbacRoles].[name] AS 'roleName'
-      ,[rbacRoles].[isPriviledged] AS 'roleIsPriviledged'
+      ,[rbacRoles].[isPrivileged] AS 'roleIsPrivileged'
     FROM [EZ].[dbo].[rbacRoles]
       RIGHT OUTER JOIN [EZ].[dbo].[rbacUserToRole] ON [rbacRoles].[uid] = [rbacUserToRole].[roleUid]
   `
@@ -180,7 +180,7 @@ router.get('/GetRolesList', async (req, res) => {
     query: `
     SELECT [uid] AS 'roleUid'
       ,[name] AS 'roleName'
-      ,[isPriviledged] AS 'roleIsPriviledged'
+      ,[isPrivileged] AS 'roleIsPrivileged'
     FROM [EZ].[dbo].[rbacRoles]
   `
   });
@@ -195,7 +195,7 @@ router.get('/GetRolesList', async (req, res) => {
 router.post('/UpdateRole', async (req, res) => {
   const updatedRole = {};
 
-  logToSystem('Verbose', `Admin | Attempting to create/update User Role | Role UID: ${req.body.uid} | Role Name: ${req.body.name} | Is Role Priviledged: ${(req.body.isPriviledged === 1 ? 'Priviledged' : 'Not priviledged')} | user: ${(req.user.username ? req.user.username : '-')}`);
+  logToSystem('Verbose', `Admin | Attempting to create/update User Role | Role UID: ${req.body.uid} | Role Name: ${req.body.name} | Is Role Privileged: ${(req.body.isPrivileged === 1 ? 'Privileged' : 'Not privileged')} | user: ${(req.user.username ? req.user.username : '-')}`);
 
   await getDataFromSql({
     targetVariable: updatedRole,
@@ -203,7 +203,7 @@ router.post('/UpdateRole', async (req, res) => {
     EXECUTE [dbo].[upsert_RBAC_Role]
        @uid
       ,@name
-      ,@isPriviledged
+      ,@isPrivileged
       ;
     `,
     variables: createSqlVariables(
@@ -211,7 +211,7 @@ router.post('/UpdateRole', async (req, res) => {
       [
         { name: 'uid', type: 'NVarChar' },
         { name: 'name', type: 'NVarChar' },
-        { name: 'isPriviledged', type: 'TinyInt' }
+        { name: 'isPrivileged', type: 'TinyInt' }
       ]
     )
   });
@@ -224,9 +224,9 @@ router.post('/UpdateRole', async (req, res) => {
       && updatedRole.errors.length
     )
   ) { // 🎉 💀 🪓🪓🪓🪓 😈
-    logToSystem('Information', `Admin | User Role created/updated | Role UID: ${req.body.uid} | Role Name: ${req.body.name} | Is Role Priviledged: ${(req.body.isPriviledged === 1 ? 'Priviledged' : 'Not priviledged')} | user: ${(req.user.username ? req.user.username : '-')}`);
+    logToSystem('Information', `Admin | User Role created/updated | Role UID: ${req.body.uid} | Role Name: ${req.body.name} | Is Role Privileged: ${(req.body.isPrivileged === 1 ? 'Privileged' : 'Not privileged')} | user: ${(req.user.username ? req.user.username : '-')}`);
   } else { // 😥
-    logToSystem('Warning', `Admin | Failed to create/update User Role | Role UID: ${req.body.uid} | Role Name: ${req.body.name} | Is Role Priviledged: ${(req.body.isPriviledged === 1 ? 'Priviledged' : 'Not priviledged')} | user: ${(req.user.username ? req.user.username : '-')} | Details: ${JSON.stringify(updatedRole)}`);
+    logToSystem('Warning', `Admin | Failed to create/update User Role | Role UID: ${req.body.uid} | Role Name: ${req.body.name} | Is Role Privileged: ${(req.body.isPrivileged === 1 ? 'Privileged' : 'Not privileged')} | user: ${(req.user.username ? req.user.username : '-')} | Details: ${JSON.stringify(updatedRole)}`);
   }
 
   res.json(updatedRole);

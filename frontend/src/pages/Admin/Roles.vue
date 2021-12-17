@@ -72,12 +72,12 @@
                 </q-td>
               </template>
 
-              <template v-slot:body-cell-roleIsPriviledged="props">
+              <template v-slot:body-cell-roleIsPrivileged="props">
                 <q-td :props="props">
                   <q-icon name="check_circle_outline" color="green" size="md" v-if="props.value === 1" />
                   <q-tooltip content-style="font-size: 1em">
-                    <span v-if="props.value === 1">Priviledged user</span>
-                    <span v-else-if ="props.value === 0">Non-priviledged user</span>
+                    <span v-if="props.value === 1">Privileged user</span>
+                    <span v-else-if ="props.value === 0">Non-privileged user</span>
                     <span v-else>{{ props.value }}</span>
                   </q-tooltip>
                 </q-td>
@@ -93,8 +93,8 @@
               <pre>{{ editingRoleName }}</pre>
           </q-card-section>
           <q-card-section>
-              <span class="text-bold">editingRole Is Priviledged: </span>
-              <pre>{{ editingRoleIsPriviledged }}</pre>
+              <span class="text-bold">editingRole Is Privileged: </span>
+              <pre>{{ editingRoleIsPrivileged }}</pre>
           </q-card-section>
           <q-card-section>
               <span class="text-bold">Table Data: </span>
@@ -143,8 +143,8 @@
 
         <q-card-section class="q-pt-none q-mb-md">
           <q-toggle
-            v-model="editingRoleIsPriviledged"
-            label="Is Priviledged"
+            v-model="editingRoleIsPrivileged"
+            label="Is Privileged"
             false-value="0"
             :true-value="1"
             left-label
@@ -179,7 +179,7 @@ export default {
       columns: [
         { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
         { name: 'roleName', align: 'center', label: 'Role', field: 'roleName', sortable: true },
-        { name: 'roleIsPriviledged', align: 'center', label: 'Is Priviledged', field: 'roleIsPriviledged', sortable: true }
+        { name: 'roleIsPrivileged', align: 'center', label: 'Is Privileged', field: 'roleIsPrivileged', sortable: true }
       ],
       pagination: {
         sortBy: 'roleName',
@@ -190,7 +190,7 @@ export default {
       promptForRoleDetails: false,
       editingRoleUid: null,
       editingRoleName: null,
-      editingRoleIsPriviledged: null
+      editingRoleIsPrivileged: null
     }
   }, // data
   computed: {
@@ -218,7 +218,7 @@ export default {
       // Clean the variables
       this.editingRoleUid = null
       this.editingRoleName = ''
-      this.editingRoleIsPriviledged = '0'
+      this.editingRoleIsPrivileged = '0'
     },
     addNewRole () {
       this.cleanEditingVariables()
@@ -229,7 +229,7 @@ export default {
       console.log(existing)
       this.editingRoleUid = (existing && existing.roleUid ? existing.roleUid : null)
       this.editingRoleName = (existing && existing.roleName ? existing.roleName : '')
-      this.editingRoleIsPriviledged = (existing && existing.roleIsPriviledged ? existing.roleIsPriviledged : '0')
+      this.editingRoleIsPrivileged = (existing && existing.roleIsPrivileged ? existing.roleIsPrivileged : '0')
       this.promptForRoleDetails = true
     },
     addNewOrUpdateUserRole () {
@@ -237,7 +237,7 @@ export default {
         {
           roleUid: (this.editingRoleUid && this.editingRoleUid.length ? this.editingRoleUid : uid()),
           roleName: this.editingRoleName,
-          roleIsPriviledged: this.editingRoleIsPriviledged,
+          roleIsPrivileged: this.editingRoleIsPrivileged,
           loadingVariableName: 'rolesLoading',
           caller: this,
           onSuccessCallBack: this.loadRoles,
