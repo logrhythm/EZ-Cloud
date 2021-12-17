@@ -75,5 +75,10 @@
   "Close": "Close",
   "Downloading Importable Collection Configuration file...": "Downloading Importable Collection Configuration file...",
   "Importable Collection Configuration file downloaded": "Importable Collection Configuration file downloaded",
-  "Problem while downloading Importable Collection Configuration file:": "Problem while downloading Importable Collection Configuration file:"
+  "Problem while downloading Importable Collection Configuration file:": "Problem while downloading Importable Collection Configuration file:",
+  "Import EZ Cloud Collection Configuration": "Import EZ Cloud Collection Configuration",
+  "Import Configuration": "Import Configuration",
+  "Importing Shared Collection Configuration file...": "Importing Shared Collection Configuration file...",
+  "Shared Collection Configuration file imported": "Shared Collection Configuration file imported",
+  "Problem while importing Shared Collection Configuration file": "Problem while importing Shared Collection Configuration file"
 }

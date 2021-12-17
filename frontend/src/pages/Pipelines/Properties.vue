@@ -102,7 +102,7 @@
 
                     <q-separator />
 
-                    <q-item clickable v-close-popup @click="showFileImportPopup = true">
+                    <q-item clickable v-close-popup @click="collectionConfigurationImportFileInput = null ; showFileImportPopup = true">
                       <q-item-section avatar top>
                         <q-avatar icon="input" color="purple-10" text-color="white" >
                           <q-badge color="primary" floating transparent>
@@ -306,6 +306,37 @@
         </q-card-section>
       </q-card>
     </div>
+    <q-dialog v-model="showFileImportPopup" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h6">{{ $t('Import EZ Cloud Collection Configuration') }}</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-file
+            filled
+            bottom-slots
+            v-model="collectionConfigurationImportFileInput"
+            label="Click or Drop a file here"
+            input-style="min-width: 20em;min-height: 14em;"
+            accept=".ezCollection"
+            @rejected="onRejected"
+          >
+            <template v-slot:append>
+              <q-icon v-if="collectionConfigurationImportFileInput !== null" name="close" @click.stop="collectionConfigurationImportFileInput = null" class="cursor-pointer" />
+              <q-icon name="note_add" @click.stop />
+            </template>
+          </q-file>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right" >
+          <q-btn color="primary" flat :label="$t('Cancel')" v-close-popup />
+          <q-btn color="primary" :label="$t('Import Configuration')" v-close-popup :disabled="collectionConfigurationImportFileInput === null" @click="importCollectionFromEZImportableConfigFile(collectionConfigurationImportFileInput)" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -341,7 +372,8 @@ export default {
         descending: true,
         rowsPerPage: 25
       },
-      showFileImportPopup: false // Governs the display of the Popup to import shared config file
+      showFileImportPopup: false, // Governs the display of the Popup to import shared collection config file
+      collectionConfigurationImportFileInput: null // File to import shared collection config from
     }
   },
   computed: {
@@ -615,6 +647,119 @@ export default {
           caption: status
         })
         console.log('Error: ' + status)
+      }
+    },
+    onRejected (rejectedEntries) {
+      const badFileName = (
+        rejectedEntries &&
+        Array.isArray(rejectedEntries) &&
+        rejectedEntries[0] &&
+        rejectedEntries[0].file &&
+        rejectedEntries[0].file.name
+          ? rejectedEntries[0].file.name
+          : ''
+      )
+      this.$root.$emit('addAndShowErrorToErrorPanel',
+        {
+          code: 'BadFileExtentionImportCollection',
+          messageForLogAndPopup: `Only .ezCollection files are accepted. You tried to import "${badFileName}".`
+        }
+      )
+    },
+    async importCollectionFromEZImportableConfigFile (filesInput) {
+      let fileName
+
+      if (filesInput == null) {
+        console.log('[importCollectionFromEZImportableConfigFile] - 🟠 - No file selected.')
+      } else {
+        // Deal with multiple or single file(s)
+        if (Array.isArray(filesInput)) {
+          this.$root.$emit('addAndShowErrorToErrorPanel',
+            {
+              code: 'TooManyFilesImportCollection',
+              messageForLogAndPopup: `Only one .ezCollection file is accepted. You tried to import ${filesInput.length} files.`
+            }
+          )
+        } else {
+          // Get the file name
+          fileName = (
+            filesInput &&
+            filesInput.name &&
+            filesInput.name.length
+              ? filesInput.name
+              : undefined
+          )
+
+          const notificationPopupId = this.$q.notify({
+            icon: 'cloud_download',
+            message: this.$t('Importing Shared Collection Configuration file...'),
+            caption: fileName,
+            type: 'ongoing'
+          })
+
+          let thereWasAnError = false
+
+          try {
+            // Read the Import file
+            const fileContent = await filesInput.text()
+
+            // Parse it out
+            let parsedFileContent = {}
+            try {
+              parsedFileContent = JSON.parse(fileContent)
+
+              // Update Pipeline and Persist
+              this.upsertPipeline(
+                {
+                  caller: this,
+                  pushToApi: true,
+                  pipeline:
+                  {
+                    uid: this.pipelineUid,
+                    status: (this.pipeline && this.pipeline.status && this.pipeline.status === 'Ready' ? this.pipeline.status : 'Dev'),
+                    collectionConfig: parsedFileContent
+                  },
+                  onSuccessCallBack: this.loadPipelines,
+                  onErrorCallBack: this.loadPipelines
+                }
+              )
+              notificationPopupId({
+                type: 'positive',
+                color: 'positive',
+                icon: 'check',
+                message: this.$t('Shared Collection Configuration file imported'),
+                caption: fileName
+              })
+            } catch (error) {
+              thereWasAnError = true
+              this.$root.$emit('addAndShowErrorToErrorPanel',
+                {
+                  code: 'CantParseFileImportCollection',
+                  messageForLogAndPopup: `Error trying to parse the content of ${filesInput.length} file. Error: ${error.message}`
+                }
+              )
+            }
+          } catch (error) {
+            thereWasAnError = true
+            this.$root.$emit('addAndShowErrorToErrorPanel',
+              {
+                code: 'CantReadFileImportCollection',
+                messageForLogAndPopup: `Error trying to open ${filesInput.length} file. Error: ${error.message}`
+              }
+            )
+          }
+
+          if (thereWasAnError) {
+            notificationPopupId({
+              type: 'negative',
+              color: 'negative',
+              icon: 'report_problem',
+              message: this.$t('Problem while importing Shared Collection Configuration file'),
+              caption: fileName
+            })
+            console.log('Error: Problem while importing Shared Collection Configuration file')
+          }
+        }
       }
     },
     addNewDeployment () {

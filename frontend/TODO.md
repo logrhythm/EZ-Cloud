@@ -86,7 +86,7 @@
       - Hidden
     - [ ] Delete submission
 - [ ] Import/Export of Collection
-  - [ ] Import Collection from file
+  - [x] Import Collection from file
   - [ ] ~~Import Collection from Copy/Paste~~
   - [x] Export Collection to file
   - [ ] ~~Export Collection to Copy/Paste~~ (👈 low value, low priority. Might resurect if users demand)
