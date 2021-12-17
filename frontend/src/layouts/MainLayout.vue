@@ -266,7 +266,12 @@ export default {
           {
             timestamp: timestamp,
             timestampIso: date.formatDate(timestamp, 'YYYY-MM-DDTHH:mm:ss.SSSZ'),
-            code: 'N/A',
+            code: (
+              payload &&
+              payload.code
+                ? payload.code
+                : 'N/A'
+            ),
             message: (
               payload &&
               payload.messageForLogAndPopup
@@ -280,13 +285,18 @@ export default {
             ),
             wikiLink: (
               payload &&
-              payload.messageForLogAndPopup
-                ? null
+              payload.code
+                ? this.errorWikiUrlBase + payload.code
                 : (
                     payload &&
-                    payload.captionForLogAndPopup
+                    payload.messageForLogAndPopup
                       ? null
-                      : this.errorWikiUrlBase + 'unknown-error-see-console'
+                      : (
+                          payload &&
+                          payload.captionForLogAndPopup
+                            ? null
+                            : this.errorWikiUrlBase + 'unknown-error-see-console'
+                        )
                   )
             )
           }
