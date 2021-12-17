@@ -477,9 +477,9 @@
             filled
             bottom-slots
             v-model="mappingImportFileInput"
-            label="Click or Drop a .ezFieldMapping file here"
+            label="Click or Drop a .ezFieldsMapping file here"
             input-style="min-width: 24em;min-height: 14em;"
-            accept=".ezFieldMapping"
+            accept=".ezFieldsMapping"
             @rejected="onRejectedMappingFile"
           >
             <template v-slot:append>
@@ -973,7 +973,7 @@ export default {
     },
     downloadMappingAsEZImportableConfigFile () {
       // Fallback file extension and Mime type (if not possible to assign a better one based on Shipper)
-      const fileExtension = '.ezFieldMapping'
+      const fileExtension = '.ezFieldsMapping'
       const fileMimeType = 'application/json'
 
       const fileName = 'input.' + this.pipeline.name + '_' + this.pipeline.uid + fileExtension
@@ -1044,7 +1044,7 @@ export default {
       this.$root.$emit('addAndShowErrorToErrorPanel',
         {
           code: 'BadFileExtentionImportMapping',
-          messageForLogAndPopup: `Only .ezFieldMapping files are accepted. You tried to import "${badFileName}".`
+          messageForLogAndPopup: `Only .ezFieldsMapping files are accepted. You tried to import "${badFileName}".`
         }
       )
     },
@@ -1059,7 +1059,7 @@ export default {
           this.$root.$emit('addAndShowErrorToErrorPanel',
             {
               code: 'TooManyFilesImportMapping',
-              messageForLogAndPopup: `Only one .ezFieldMapping file is accepted. You tried to import ${filesInput.length} files.`
+              messageForLogAndPopup: `Only one .ezFieldsMapping file is accepted. You tried to import ${filesInput.length} files.`
             }
           )
         } else {
@@ -1119,7 +1119,7 @@ export default {
               thereWasAnError = true
               this.$root.$emit('addAndShowErrorToErrorPanel',
                 {
-                  code: 'CantParseFileImportCollection',
+                  code: 'CantParseFileImportMapping',
                   messageForLogAndPopup: `Error trying to parse the content of ${filesInput.length} file. Error: ${error.message}`
                 }
               )
@@ -1128,7 +1128,7 @@ export default {
             thereWasAnError = true
             this.$root.$emit('addAndShowErrorToErrorPanel',
               {
-                code: 'CantReadFileImportCollection',
+                code: 'CantReadFileImportMapping',
                 messageForLogAndPopup: `Error trying to open ${filesInput.length} file. Error: ${error.message}`
               }
             )
