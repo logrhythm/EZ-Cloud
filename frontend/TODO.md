@@ -90,10 +90,10 @@
   - [ ] ~~Import Collection from Copy/Paste~~
   - [x] Export Collection to file
   - [ ] ~~Export Collection to Copy/Paste~~ (👈 low value, low priority. Might resurect if users demand)
-- [ ] Import/Export of Fields Mapping
-  - [ ] Import Mapping from file
+- [x] Import/Export of Fields Mapping
+  - [x] Import Mapping from file
   - [ ] ~~Import Mapping from Copy/Paste~~ (👈 low value, low priority. Might resurect if users demand)
-  - [ ] Export Mapping to file
+  - [x] Export Mapping to file
   - [ ] ~~Export Mapping to Copy/Paste~~ (👈 low value, low priority. Might resurect if users demand)
 - [ ] LogRhythm Beats mapping for Collection Configuration
   - [ ] Azure Event Hub

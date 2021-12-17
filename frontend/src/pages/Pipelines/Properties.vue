@@ -102,7 +102,7 @@
 
                     <q-separator />
 
-                    <q-item clickable v-close-popup @click="collectionConfigurationImportFileInput = null ; showFileImportPopup = true">
+                    <q-item clickable v-close-popup @click="collectionConfigurationImportFileInput = null ; showCollectionFileImportPopup = true">
                       <q-item-section avatar top>
                         <q-avatar icon="input" color="purple-10" text-color="white" >
                           <q-badge color="primary" floating transparent>
@@ -188,6 +188,133 @@
                 <q-tooltip content-style="font-size: 1rem;">
                   Download Mapping as JQ Pipeline
                 </q-tooltip>
+              </q-btn>
+              <q-btn icon="share">
+                <q-tooltip content-style="font-size: 1rem;">
+                  Share and Import Mapping
+                </q-tooltip>
+                <q-menu content-style="min-width: 420px">
+                  <q-list style="min-width: 400px">
+                    <q-item-label header>Sanitisation</q-item-label>
+                    <q-item tag="label" v-ripple>
+                      <q-item-section>
+                        <q-item-label>Share Field Frequencies</q-item-label>
+                        <q-item-label caption>Include the frequency statistics for each field</q-item-label>
+                      </q-item-section>
+                      <q-item-section avatar>
+                        <q-toggle v-model="shareFieldFrequencies" />
+                      </q-item-section>
+                    </q-item>
+
+                    <q-item tag="label" v-ripple>
+                      <q-item-section>
+                        <q-item-label>Share Field Values</q-item-label>
+                        <q-item-label caption>Include all the observed values for each field</q-item-label>
+                        <q-item-label caption class="text-bold text-italic"><q-icon name="warning" class="q-ma-none q-mr-xs" color="orange" />This could lead to sharing sensitive information</q-item-label>
+                      </q-item-section>
+                      <q-item-section avatar>
+                        <q-toggle color="orange" v-model="shareFieldValues" />
+                      </q-item-section>
+                    </q-item>
+
+                    <q-item tag="label" v-ripple>
+                      <q-item-section>
+                        <q-item-label>Share Field SIEM Mapping</q-item-label>
+                        <q-item-label caption>Include the SIEM tags mapping for each field</q-item-label>
+                      </q-item-section>
+                      <q-item-section avatar>
+                        <q-toggle v-model="shareFieldMapping" />
+                      </q-item-section>
+                    </q-item>
+
+                    <q-item tag="label" v-ripple>
+                      <q-item-section>
+                        <q-item-label>Share Field Modifiers</q-item-label>
+                        <q-item-label caption>Include the modifiers for each field</q-item-label>
+                      </q-item-section>
+                      <q-item-section avatar>
+                        <q-toggle v-model="shareFieldModifiers" />
+                      </q-item-section>
+                    </q-item>
+
+                    <q-separator />
+
+                    <q-item clickable v-close-popup @click="downloadMappingAsEZImportableConfigFile()">
+                      <q-item-section avatar top>
+                        <q-avatar icon="share" color="green-10" text-color="white" >
+                          <q-badge color="primary" floating transparent>
+                            <q-icon name="insert_drive_file" color="white" />
+                          </q-badge>
+                        </q-avatar>
+                      </q-item-section>
+
+                      <q-item-section>
+                        <q-item-label lines="1">Share as a Local File</q-item-label>
+                        <q-item-label caption>As an importable EZ Cloud Mapping file</q-item-label>
+                      </q-item-section>
+                    </q-item>
+
+                    <q-item clickable disabled>
+                      <q-item-section avatar top>
+                        <q-avatar icon="share" color="green-10" text-color="white" >
+                          <q-badge color="primary" floating transparent>
+                            <q-icon name="cloud" color="white" />
+                          </q-badge>
+                        </q-avatar>
+                      </q-item-section>
+
+                      <q-item-section>
+                        <q-item-label lines="1">Share via the Marketplace</q-item-label>
+                        <q-item-label caption>As an importable EZ Cloud Mapping</q-item-label>
+                      </q-item-section>
+                    </q-item>
+
+                    <q-separator />
+
+                    <q-item clickable v-close-popup @click="collectionConfigurationImportFileInput = null ; showMappingFileImportPopup = true">
+                      <q-item-section avatar top>
+                        <q-avatar icon="input" color="purple-10" text-color="white" >
+                          <q-badge color="primary" floating transparent>
+                            <q-icon name="insert_drive_file" color="white" />
+                          </q-badge>
+                        </q-avatar>
+                      </q-item-section>
+
+                      <q-item-section>
+                        <q-item-label lines="1">Import from Local File</q-item-label>
+                        <q-item-label caption>Import a shared EZ Cloud Mapping file</q-item-label>
+                      </q-item-section>
+                    </q-item>
+
+                    <q-item clickable disabled>
+                      <q-item-section avatar top>
+                        <q-avatar icon="input" color="purple-10" text-color="white" >
+                          <q-badge color="primary" floating transparent>
+                            <q-icon name="cloud" color="white" />
+                          </q-badge>
+                        </q-avatar>
+                      </q-item-section>
+
+                      <q-item-section>
+                        <q-item-label lines="1">Import from Marketplace</q-item-label>
+                        <q-item-label caption>Import a shared EZ Cloud Mapping</q-item-label>
+                      </q-item-section>
+                    </q-item>
+
+                    <q-separator />
+
+                    <q-item clickable v-close-popup tag="a" :href="wikiLink('ref-whatsthedifferencefieldmappingshareimport')" target="_blank" >
+                      <q-item-section avatar top>
+                        <q-avatar icon="help_outline" color="info" text-color="black" />
+                      </q-item-section>
+
+                      <q-item-section>
+                        <q-item-label lines="1">What's the difference?</q-item-label>
+                        <q-item-label caption>A quick peek at the Wiki</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-menu>
               </q-btn>
               <q-btn icon="delete" text-color="negative" @click="deleteMappingPrompt()">
                 <q-tooltip content-style="font-size: 1rem;">
@@ -306,7 +433,8 @@
         </q-card-section>
       </q-card>
     </div>
-    <q-dialog v-model="showFileImportPopup" persistent>
+
+    <q-dialog v-model="showCollectionFileImportPopup" persistent>
       <q-card style="min-width: 350px">
         <q-card-section>
           <div class="text-h6">{{ $t('Import EZ Cloud Collection Configuration') }}</div>
@@ -317,10 +445,10 @@
             filled
             bottom-slots
             v-model="collectionConfigurationImportFileInput"
-            label="Click or Drop a file here"
-            input-style="min-width: 20em;min-height: 14em;"
+            label="Click or Drop a .ezCollection file here"
+            input-style="min-width: 24em;min-height: 14em;"
             accept=".ezCollection"
-            @rejected="onRejected"
+            @rejected="onRejectedCollectionFile"
           >
             <template v-slot:append>
               <q-icon v-if="collectionConfigurationImportFileInput !== null" name="close" @click.stop="collectionConfigurationImportFileInput = null" class="cursor-pointer" />
@@ -334,6 +462,38 @@
         <q-card-actions align="right" >
           <q-btn color="primary" flat :label="$t('Cancel')" v-close-popup />
           <q-btn color="primary" :label="$t('Import Configuration')" v-close-popup :disabled="collectionConfigurationImportFileInput === null" @click="importCollectionFromEZImportableConfigFile(collectionConfigurationImportFileInput)" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="showMappingFileImportPopup" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h6">{{ $t('Import EZ Cloud Fields Mapping') }}</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-file
+            filled
+            bottom-slots
+            v-model="mappingImportFileInput"
+            label="Click or Drop a .ezFieldMapping file here"
+            input-style="min-width: 24em;min-height: 14em;"
+            accept=".ezFieldMapping"
+            @rejected="onRejectedMappingFile"
+          >
+            <template v-slot:append>
+              <q-icon v-if="mappingImportFileInput !== null" name="close" @click.stop="mappingImportFileInput = null" class="cursor-pointer" />
+              <q-icon name="note_add" @click.stop />
+            </template>
+          </q-file>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right" >
+          <q-btn color="primary" flat :label="$t('Cancel')" v-close-popup />
+          <q-btn color="primary" :label="$t('Import Fields Mapping')" v-close-popup :disabled="mappingImportFileInput === null" @click="importMappingFromEZImportableConfigFile(mappingImportFileInput)" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -372,8 +532,14 @@ export default {
         descending: true,
         rowsPerPage: 25
       },
-      showFileImportPopup: false, // Governs the display of the Popup to import shared collection config file
-      collectionConfigurationImportFileInput: null // File to import shared collection config from
+      showCollectionFileImportPopup: false, // Governs the display of the Popup to import shared collection config file
+      collectionConfigurationImportFileInput: null, // File to import shared collection config from
+      showMappingFileImportPopup: false, // Governs the display of the Popup to import shared Mapping file
+      mappingImportFileInput: null, // File to import shared Mapping from
+      shareFieldFrequencies: true, // Include field frequencies when sharing?
+      shareFieldValues: false, // Include field values when sharing? Default FALSE as risk of sharing sensitive info
+      shareFieldMapping: true, // Include field SIEM tags mapping when sharing?
+      shareFieldModifiers: true // Include field modifiers when sharing?
     }
   },
   computed: {
@@ -649,7 +815,7 @@ export default {
         console.log('Error: ' + status)
       }
     },
-    onRejected (rejectedEntries) {
+    onRejectedCollectionFile (rejectedEntries) {
       const badFileName = (
         rejectedEntries &&
         Array.isArray(rejectedEntries) &&
@@ -801,6 +967,182 @@ export default {
               caption: fileName
             })
             console.log('Error: Problem while importing Shared Collection Configuration file')
+          }
+        }
+      }
+    },
+    downloadMappingAsEZImportableConfigFile () {
+      // Fallback file extension and Mime type (if not possible to assign a better one based on Shipper)
+      const fileExtension = '.ezFieldMapping'
+      const fileMimeType = 'application/json'
+
+      const fileName = 'input.' + this.pipeline.name + '_' + this.pipeline.uid + fileExtension
+
+      const notificationPopupId = this.$q.notify({
+        icon: 'cloud_download',
+        message: this.$t('Downloading Importable Fields Mapping file...'),
+        caption: fileName,
+        type: 'ongoing'
+      })
+
+      // Sanitise the Mapping before export
+      const sanitisedFieldsMapping = JSON.parse(JSON.stringify(this.pipeline.fieldsMapping))
+      if (
+        this.shareFieldFrequencies !== true ||
+        this.shareFieldValues !== true ||
+        this.shareFieldMapping !== true ||
+        this.shareFieldModifiers !== true
+      ) {
+        sanitisedFieldsMapping.forEach(fieldMapping => {
+          fieldMapping.seenInLogCount = (this.shareFieldFrequencies !== true ? 1 : fieldMapping.seenInLogCount)
+          fieldMapping.values = (this.shareFieldValues !== true ? [] : fieldMapping.values)
+          fieldMapping.mappedField = (this.shareFieldMapping !== true ? undefined : fieldMapping.mappedField)
+          fieldMapping.modifiers = (this.shareFieldModifiers !== true ? undefined : fieldMapping.modifiers)
+        })
+      }
+
+      // Add the relevant Options
+      const sanitisedFieldsMappingWithOptions = {
+        options: {
+          extractMessageFieldOnly: (this.pipeline && this.pipeline.options ? this.pipeline.options.extractMessageFieldOnly : undefined)
+        },
+        fieldsMapping: sanitisedFieldsMapping
+      }
+
+      // Push file out
+      const status = exportFile(fileName, JSON.stringify(sanitisedFieldsMappingWithOptions), fileMimeType)
+
+      if (status === true) {
+        notificationPopupId({
+          type: 'positive',
+          color: 'positive',
+          icon: 'check',
+          message: this.$t('Importable Fields Mapping file downloaded'),
+          caption: fileName
+        })
+      } else {
+        notificationPopupId({
+          type: 'negative',
+          color: 'negative',
+          icon: 'report_problem',
+          message: this.$t('Problem while downloading Importable Fields Mapping file:'),
+          caption: status
+        })
+        console.log('Error: ' + status)
+      }
+    },
+    onRejectedMappingFile (rejectedEntries) {
+      const badFileName = (
+        rejectedEntries &&
+        Array.isArray(rejectedEntries) &&
+        rejectedEntries[0] &&
+        rejectedEntries[0].file &&
+        rejectedEntries[0].file.name
+          ? rejectedEntries[0].file.name
+          : ''
+      )
+      this.$root.$emit('addAndShowErrorToErrorPanel',
+        {
+          code: 'BadFileExtentionImportMapping',
+          messageForLogAndPopup: `Only .ezFieldMapping files are accepted. You tried to import "${badFileName}".`
+        }
+      )
+    },
+    async importMappingFromEZImportableConfigFile (filesInput) {
+      let fileName
+
+      if (filesInput == null) {
+        console.log('[importMappingFromEZImportableConfigFile] - 🟠 - No file selected.')
+      } else {
+        // Deal with multiple or single file(s)
+        if (Array.isArray(filesInput)) {
+          this.$root.$emit('addAndShowErrorToErrorPanel',
+            {
+              code: 'TooManyFilesImportMapping',
+              messageForLogAndPopup: `Only one .ezFieldMapping file is accepted. You tried to import ${filesInput.length} files.`
+            }
+          )
+        } else {
+          // Get the file name
+          fileName = (
+            filesInput &&
+            filesInput.name &&
+            filesInput.name.length
+              ? filesInput.name
+              : undefined
+          )
+
+          const notificationPopupId = this.$q.notify({
+            icon: 'cloud_download',
+            message: this.$t('Importing Shared Fields Mapping file...'),
+            caption: fileName,
+            type: 'ongoing'
+          })
+
+          let thereWasAnError = false
+
+          try {
+            // Read the Import file
+            const fileContent = await filesInput.text()
+
+            // Parse it out and import
+            let parsedFileContent = {}
+            try {
+              // Parse
+              parsedFileContent = JSON.parse(fileContent)
+
+              // Update Pipeline and Persist
+              this.upsertPipeline(
+                {
+                  caller: this,
+                  pushToApi: true,
+                  pipeline:
+                  {
+                    uid: this.pipelineUid,
+                    status: (this.pipeline && this.pipeline.status && this.pipeline.status === 'Ready' ? this.pipeline.status : 'Dev'),
+                    fieldsMapping: parsedFileContent.fieldsMapping || [],
+                    // Update / Add extractMessageFieldOnly and any saved options to the Pipeline's Options
+                    options: { ...(this.pipeline && this.pipeline.options ? this.pipeline.options : {}), ...(parsedFileContent && parsedFileContent.options ? parsedFileContent.options : {}) }
+                  },
+                  onSuccessCallBack: this.loadPipelines,
+                  onErrorCallBack: this.loadPipelines
+                }
+              )
+              notificationPopupId({
+                type: 'positive',
+                color: 'positive',
+                icon: 'check',
+                message: this.$t('Shared Fields Mapping file imported'),
+                caption: fileName
+              })
+            } catch (error) {
+              thereWasAnError = true
+              this.$root.$emit('addAndShowErrorToErrorPanel',
+                {
+                  code: 'CantParseFileImportCollection',
+                  messageForLogAndPopup: `Error trying to parse the content of ${filesInput.length} file. Error: ${error.message}`
+                }
+              )
+            }
+          } catch (error) {
+            thereWasAnError = true
+            this.$root.$emit('addAndShowErrorToErrorPanel',
+              {
+                code: 'CantReadFileImportCollection',
+                messageForLogAndPopup: `Error trying to open ${filesInput.length} file. Error: ${error.message}`
+              }
+            )
+          }
+
+          if (thereWasAnError) {
+            notificationPopupId({
+              type: 'negative',
+              color: 'negative',
+              icon: 'report_problem',
+              message: this.$t('Problem while importing Shared Fields Mapping file'),
+              caption: fileName
+            })
+            console.log('Error: Problem while importing Shared Fields Mapping file')
           }
         }
       }
