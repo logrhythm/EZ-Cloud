@@ -14,8 +14,8 @@
 - Run it
 
 #### 2. Create your configuration
-- During the Install, please provide the correct credentials for SQL
-- During the Install, please provide the credentials for the new user ezAdmin
+- During the Install, if prompted, please provide the correct credentials for SQL
+- During the Install, if prompted, please provide the credentials for the new user ezAdmin
 
 #### 3. Connect to the EZ Server
 - Open https://`<ip-of-the-EZ-server>`:8400/
@@ -32,6 +32,10 @@
 - Click **Logout**
 - Log back in as the new non-privileged user
 
+## Where is the documentation
+- Wiki: [Home](https://github.com/TonyMasse/EZ-Cloud/wiki/)
+- Wiki: [Getting Started](https://github.com/TonyMasse/EZ-Cloud/wiki/Help#getting-started)
+- Wiki: [Troubleshooting](https://github.com/TonyMasse/EZ-Cloud/wiki/Troubleshooting)
 
 ## What's new in this release
 **v0.8.0**
@@ -90,7 +94,7 @@
 - [v0.8.🚧] 
 
 ## Know issues :bug: :beetle:
-- Will fail silently (to check OC status and version, deploy Shipper, start Tail, Deploy, etc...) if SSH Credentials are incorrect
+- Will fail silently (start Tail, Deploy, etc...) if SSH Credentials are incorrect
 - Will fail to deploy log shippers if not using the `root` account or an account with full `sudo` access
 - If using the Fan Out feature - OpenCollector will refuse to import JQ Transform
 
