@@ -97,6 +97,8 @@ Contains a single array of 3 logs
 Contains a single object, providing information (page number, details about the result set) and an array of 3 logs
 - URL: [https://tonymasse.github.io/EZ-Cloud/samples/03.array.with_info.json](https://tonymasse.github.io/EZ-Cloud/samples/03.array.with_info.json)
 - Pre-configured **Shared Collection Configuration**: [input.EZ Cloud - Samples - 03.array.with_info.json_422ae9b2-bf8a-49a8-999b-5359ba958831.ezCollection](input.EZ Cloud - Samples - 03.array.with_info.json_422ae9b2-bf8a-49a8-999b-5359ba958831.ezCollection)
+  - Do note that this **Collection Configuration** properly configures the Beat to extract the messages from the `.logs` field
+  - Compare this sample with the one just above to see the difference
 - Pre-configured **Shared Fields Mapping**: [input.EZ Cloud - Samples - 03.array.with_info.json_422ae9b2-bf8a-49a8-999b-5359ba958831.ezFieldsMapping](input.EZ Cloud - Samples - 03.array.with_info.json_422ae9b2-bf8a-49a8-999b-5359ba958831.ezFieldsMapping)
 
 ``` json
@@ -210,6 +212,8 @@ Contains a single array of 3 logs
 Contains a single object, providing information (page number, details about the result set) and an array of 3 logs
 - URL: [https://tonymasse.github.io/EZ-Cloud/samples/06.ndr-array.with_info.json](https://tonymasse.github.io/EZ-Cloud/samples/06.ndr-array.with_info.json)
 - Pre-configured **Shared Collection Configuration**: [input.EZ Cloud - Samples - 06.ndr-array.with_info.json_bb4fc13e-316e-4571-8649-5b80a586e392.ezCollection](input.EZ Cloud - Samples - 06.ndr-array.with_info.json_bb4fc13e-316e-4571-8649-5b80a586e392.ezCollection)
+  - Do note that this **Collection Configuration** properly configures the Beat to extract the messages from the `.logs` field
+  - Compare this sample with the one just above to see the difference
 - Pre-configured **Shared Fields Mapping**: [input.EZ Cloud - Samples - 06.ndr-array.with_info.json_bb4fc13e-316e-4571-8649-5b80a586e392.ezFieldsMapping](input.EZ Cloud - Samples - 06.ndr-array.with_info.json_bb4fc13e-316e-4571-8649-5b80a586e392.ezFieldsMapping)
 
 ``` json
