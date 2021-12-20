@@ -1,13 +1,36 @@
 ## Samples
 
+Each sample below comes with:
+- The URL of the RAW log sample, in a `.json` file
+  - This is to be used in the **Pipeline**'s **Collection Configuration**
+  - **Rick Click** and **Copy** it, then **Paste** it in the **API URL** field of the **Collection Parameters**
+- The URL of a pre-configured **Shared Collection Configuration**
+  - This is to save you time, or show you how this sample could be used in the **Collection Configuration**
+  - If you want to use it:
+    - Download it to your local drive
+    - Go to the **Pipeline**'s **Properties** page / **Collection** area
+    - Click the **Share / Import** button in the right hand side actions panel
+    - Select **Import from Local File**
+    - Drag and Drop the previously downloaded file (or click the field and search for the file)
+    - Click **Import Configuration**
+- The URL of a pre-configured **Shared Fields Mapping**
+  - This is to save you time, or show you how this sample would look after being tailed and (at least partially) mapped to SIEM fields in the **Fields Mapping** editor
+  - If you want to use it:
+    - Download it to your local drive
+    - Go to the **Pipeline**'s **Properties** page / **Mapping** area
+    - Click the **Share / Import** button in the right hand side actions panel
+    - Select **Import from Local File**
+    - Drag and Drop the previously downloaded file (or click the field and search for the file)
+    - Click **Import Fields Mapping**
+
 ### Fake simple logs
 
 #### 📃 01.single.json
 
 Contains a single log
 - URL: [https://tonymasse.github.io/EZ-Cloud/samples/01.single.json](https://tonymasse.github.io/EZ-Cloud/samples/01.single.json)
-- Pre-configured Shared Collection Configuration: [input.EZ Cloud - Samples - 01.single.json_9456b2e2-731a-495e-a112-b79124807db6.ezCollection](input.EZ Cloud - Samples - 01.single.json_9456b2e2-731a-495e-a112-b79124807db6.ezCollection)
-- Pre-configured Shared Fields Mapping: [input.EZ Cloud - Samples - 01.single.json_9456b2e2-731a-495e-a112-b79124807db6.ezFieldsMapping](input.EZ Cloud - Samples - 01.single.json_9456b2e2-731a-495e-a112-b79124807db6.ezFieldsMapping)
+- Pre-configured **Shared Collection Configuration**: [input.EZ Cloud - Samples - 01.single.json_9456b2e2-731a-495e-a112-b79124807db6.ezCollection](input.EZ Cloud - Samples - 01.single.json_9456b2e2-731a-495e-a112-b79124807db6.ezCollection)
+- Pre-configured **Shared Fields Mapping**: [input.EZ Cloud - Samples - 01.single.json_9456b2e2-731a-495e-a112-b79124807db6.ezFieldsMapping](input.EZ Cloud - Samples - 01.single.json_9456b2e2-731a-495e-a112-b79124807db6.ezFieldsMapping)
 
 ``` json
 {
@@ -27,8 +50,8 @@ Contains a single log
 
 Contains a single array of 3 logs
 - URL: [https://tonymasse.github.io/EZ-Cloud/samples/02.array.json](https://tonymasse.github.io/EZ-Cloud/samples/02.array.json)
-- Pre-configured Shared Collection Configuration: [input.EZ Cloud - Samples - 02.array.json_41b90374-ef13-41e0-bca3-62e5b154cb12.ezCollection](input.EZ Cloud - Samples - 02.array.json_41b90374-ef13-41e0-bca3-62e5b154cb12.ezCollection)
-- Pre-configured Shared Fields Mapping: [input.EZ Cloud - Samples - 02.array.json_41b90374-ef13-41e0-bca3-62e5b154cb12.ezFieldsMapping](input.EZ Cloud - Samples - 02.array.json_41b90374-ef13-41e0-bca3-62e5b154cb12.ezFieldsMapping)
+- Pre-configured **Shared Collection Configuration**: [input.EZ Cloud - Samples - 02.array.json_41b90374-ef13-41e0-bca3-62e5b154cb12.ezCollection](input.EZ Cloud - Samples - 02.array.json_41b90374-ef13-41e0-bca3-62e5b154cb12.ezCollection)
+- Pre-configured **Shared Fields Mapping**: [input.EZ Cloud - Samples - 02.array.json_41b90374-ef13-41e0-bca3-62e5b154cb12.ezFieldsMapping](input.EZ Cloud - Samples - 02.array.json_41b90374-ef13-41e0-bca3-62e5b154cb12.ezFieldsMapping)
 
 ``` json
 [
@@ -73,8 +96,8 @@ Contains a single array of 3 logs
 
 Contains a single object, providing information (page number, details about the result set) and an array of 3 logs
 - URL: [https://tonymasse.github.io/EZ-Cloud/samples/03.array.with_info.json](https://tonymasse.github.io/EZ-Cloud/samples/03.array.with_info.json)
-- Pre-configured Shared Collection Configuration: [input.EZ Cloud - Samples - 03.array.with_info.json_422ae9b2-bf8a-49a8-999b-5359ba958831.ezCollection](input.EZ Cloud - Samples - 03.array.with_info.json_422ae9b2-bf8a-49a8-999b-5359ba958831.ezCollection)
-- Pre-configured Shared Fields Mapping: [input.EZ Cloud - Samples - 03.array.with_info.json_422ae9b2-bf8a-49a8-999b-5359ba958831.ezFieldsMapping](input.EZ Cloud - Samples - 03.array.with_info.json_422ae9b2-bf8a-49a8-999b-5359ba958831.ezFieldsMapping)
+- Pre-configured **Shared Collection Configuration**: [input.EZ Cloud - Samples - 03.array.with_info.json_422ae9b2-bf8a-49a8-999b-5359ba958831.ezCollection](input.EZ Cloud - Samples - 03.array.with_info.json_422ae9b2-bf8a-49a8-999b-5359ba958831.ezCollection)
+- Pre-configured **Shared Fields Mapping**: [input.EZ Cloud - Samples - 03.array.with_info.json_422ae9b2-bf8a-49a8-999b-5359ba958831.ezFieldsMapping](input.EZ Cloud - Samples - 03.array.with_info.json_422ae9b2-bf8a-49a8-999b-5359ba958831.ezFieldsMapping)
 
 ``` json
 {
@@ -129,8 +152,8 @@ Contains a single object, providing information (page number, details about the 
 
 Contains a single log
 - URL: [https://tonymasse.github.io/EZ-Cloud/samples/04.ndr-single.json](https://tonymasse.github.io/EZ-Cloud/samples/04.ndr-single.json)
-- Pre-configured Shared Collection Configuration: [input.EZ Cloud - Samples - 04.ndr-single.json_dea8bca6-7b7c-4f8b-aea9-4a7ea2ce6cca.ezCollection](input.EZ Cloud - Samples - 04.ndr-single.json_dea8bca6-7b7c-4f8b-aea9-4a7ea2ce6cca.ezCollection)
-- Pre-configured Shared Fields Mapping: [input.EZ Cloud - Samples - 04.ndr-single.json_dea8bca6-7b7c-4f8b-aea9-4a7ea2ce6cca.ezFieldsMapping](input.EZ Cloud - Samples - 04.ndr-single.json_dea8bca6-7b7c-4f8b-aea9-4a7ea2ce6cca.ezFieldsMapping)
+- Pre-configured **Shared Collection Configuration**: [input.EZ Cloud - Samples - 04.ndr-single.json_dea8bca6-7b7c-4f8b-aea9-4a7ea2ce6cca.ezCollection](input.EZ Cloud - Samples - 04.ndr-single.json_dea8bca6-7b7c-4f8b-aea9-4a7ea2ce6cca.ezCollection)
+- Pre-configured **Shared Fields Mapping**: [input.EZ Cloud - Samples - 04.ndr-single.json_dea8bca6-7b7c-4f8b-aea9-4a7ea2ce6cca.ezFieldsMapping](input.EZ Cloud - Samples - 04.ndr-single.json_dea8bca6-7b7c-4f8b-aea9-4a7ea2ce6cca.ezFieldsMapping)
 
 ``` json
 {
@@ -156,8 +179,8 @@ Contains a single log
 
 Contains a single array of 3 logs
 - URL: [https://tonymasse.github.io/EZ-Cloud/samples/05.ndr-array.json](https://tonymasse.github.io/EZ-Cloud/samples/05.ndr-array.json)
-- Pre-configured Shared Collection Configuration: [input.EZ Cloud - Samples - 05.ndr-array.json_1b050f67-bab2-4c2e-b847-57607294e301.ezCollection](input.EZ Cloud - Samples - 05.ndr-array.json_1b050f67-bab2-4c2e-b847-57607294e301.ezCollection)
-- Pre-configured Shared Fields Mapping: [input.EZ Cloud - Samples - 05.ndr-array.json_1b050f67-bab2-4c2e-b847-57607294e301.ezFieldsMapping](input.EZ Cloud - Samples - 05.ndr-array.json_1b050f67-bab2-4c2e-b847-57607294e301.ezFieldsMapping)
+- Pre-configured **Shared Collection Configuration**: [input.EZ Cloud - Samples - 05.ndr-array.json_1b050f67-bab2-4c2e-b847-57607294e301.ezCollection](input.EZ Cloud - Samples - 05.ndr-array.json_1b050f67-bab2-4c2e-b847-57607294e301.ezCollection)
+- Pre-configured **Shared Fields Mapping**: [input.EZ Cloud - Samples - 05.ndr-array.json_1b050f67-bab2-4c2e-b847-57607294e301.ezFieldsMapping](input.EZ Cloud - Samples - 05.ndr-array.json_1b050f67-bab2-4c2e-b847-57607294e301.ezFieldsMapping)
 
 ``` json
 [
@@ -186,8 +209,8 @@ Contains a single array of 3 logs
 
 Contains a single object, providing information (page number, details about the result set) and an array of 3 logs
 - URL: [https://tonymasse.github.io/EZ-Cloud/samples/06.ndr-array.with_info.json](https://tonymasse.github.io/EZ-Cloud/samples/06.ndr-array.with_info.json)
-- Pre-configured Shared Collection Configuration: [input.EZ Cloud - Samples - 06.ndr-array.with_info.json_bb4fc13e-316e-4571-8649-5b80a586e392.ezCollection](input.EZ Cloud - Samples - 06.ndr-array.with_info.json_bb4fc13e-316e-4571-8649-5b80a586e392.ezCollection)
-- Pre-configured Shared Fields Mapping: [input.EZ Cloud - Samples - 06.ndr-array.with_info.json_bb4fc13e-316e-4571-8649-5b80a586e392.ezFieldsMapping](input.EZ Cloud - Samples - 06.ndr-array.with_info.json_bb4fc13e-316e-4571-8649-5b80a586e392.ezFieldsMapping)
+- Pre-configured **Shared Collection Configuration**: [input.EZ Cloud - Samples - 06.ndr-array.with_info.json_bb4fc13e-316e-4571-8649-5b80a586e392.ezCollection](input.EZ Cloud - Samples - 06.ndr-array.with_info.json_bb4fc13e-316e-4571-8649-5b80a586e392.ezCollection)
+- Pre-configured **Shared Fields Mapping**: [input.EZ Cloud - Samples - 06.ndr-array.with_info.json_bb4fc13e-316e-4571-8649-5b80a586e392.ezFieldsMapping](input.EZ Cloud - Samples - 06.ndr-array.with_info.json_bb4fc13e-316e-4571-8649-5b80a586e392.ezFieldsMapping)
 
 ``` json
 {
