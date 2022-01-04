@@ -1177,7 +1177,7 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
             },
             {
               action: 'Get GenericBeat logs for this instance (last 10 lines only)',
-              command: `./lrctl genericbeat logs --fqbn ${logRhythmFullyQualifiedBeatName} | tail --lines=10`
+              command: `docker logs --tail 10 "${logRhythmFullyQualifiedBeatName}"`
             }
           );
           streamUpdateForBeatStatus.payload.steps = steps;
@@ -1218,7 +1218,7 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
             },
             {
               action: 'Get Webhookbeat logs for this instance (last 10 lines only)',
-              command: `./lrctl webhookbeat logs --fqbn ${logRhythmFullyQualifiedBeatName} | tail --lines=10`
+              command: `docker logs --tail 10 "${logRhythmFullyQualifiedBeatName}"`
             }
           );
           streamUpdateForBeatStatus.payload.steps = steps;
@@ -1356,7 +1356,9 @@ router.post('/UpdateStreamConfigurationForBeat', async (req, res) => {
         streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].stillUpdating = true;
         updateStreamConfigurationForBeat(streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`], openCollector, beat, stream);
       }
-      const loopEndTime = Date.now() / 1000 + maxCheckInterval;
+
+      // Exceptionnaly, increase the timeout for this opeation (to 5 times the standard one)
+      const loopEndTime = Date.now() / 1000 + maxCheckInterval * 5;
 
       while (streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].stillUpdating && (loopEndTime > (Date.now() / 1000))) {
         // Wait for 50 ms
