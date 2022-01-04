@@ -26,10 +26,12 @@ export default {
       name: 'portnumber',
       label: 'Port Number',
       type: {
-        name: 'string'
+        name: 'number'
       },
       description: 'HTTP listening service TCP Port.',
       default: '8080',
+      min: 0,
+      max: 65535,
       required: true,
       group: 'Required'
     },

@@ -480,8 +480,8 @@ export default {
         if (this.activeCollectionShipper === 'webhookbeat') {
           if (this.activeCollectionMethod === 'webhookbeat') {
             newConf.hostname = ''
-            newConf.portnumber = '8080'
-            newConf.sslflag = 'false'
+            newConf.portnumber = 8080
+            newConf.sslflag = false
             newConf.heartbeatdisabled = false
             newConf.heartbeatinterval = 60
           }
