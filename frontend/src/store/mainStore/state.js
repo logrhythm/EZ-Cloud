@@ -11,6 +11,8 @@ import collectionMethodTemplatesFilebeatSyslogTcp from './templates/collectionMe
 import collectionMethodTemplatesFilebeatHttpJson from './templates/collectionMethodTemplate.filebeat.httpjson'
 // Genericbeat
 import collectionMethodTemplatesGenericbeat from './templates/collectionMethodTemplate.genericbeat'
+// WebHookBeat
+import collectionMethodTemplatesWebhookbeat from './templates/collectionMethodTemplate.webhookbeat'
 
 export default function () {
   return {
@@ -35,7 +37,8 @@ export default function () {
       collectionMethodTemplatesFilebeatSyslogUdp, // Filebeat - syslog_udp
       collectionMethodTemplatesFilebeatSyslogTcp, // Filebeat - syslog_tcp
       collectionMethodTemplatesFilebeatHttpJson, // Filebeat - httpjson
-      collectionMethodTemplatesGenericbeat // genericbeat
+      collectionMethodTemplatesGenericbeat, // genericbeat
+      collectionMethodTemplatesWebhookbeat // webhookbeat
     ], // collectionMethodTemplates
     collectionShippersOptions: [
       {
@@ -45,9 +48,39 @@ export default function () {
         outputFormat: 'json'
       },
       {
+        value: 'eventhubbeat',
+        label: 'LogRhythm Azure Event Hub Beat (🚧 - Stub)',
+        icon: 'logrhythm-eventhubbeat',
+        outputFormat: 'yaml'
+      },
+      {
         value: 'genericbeat',
         label: 'LogRhythm Generic HTTP Rest Beat',
         icon: 'logrhythm-genericbeat',
+        outputFormat: 'yaml'
+      },
+      {
+        value: 'kafkabeat',
+        label: 'LogRhythm Kafka Beat (🚧 - Stub)',
+        icon: 'logrhythm-kafkabeat',
+        outputFormat: 'yaml'
+      },
+      {
+        value: 'pubsubbeat',
+        label: 'LogRhythm PubSub Beat (🚧 - Stub)',
+        icon: 'logrhythm-pubsubbeat',
+        outputFormat: 'yaml'
+      },
+      {
+        value: 's3beat',
+        label: 'LogRhythm S3 Beat (🚧 - Stub)',
+        icon: 'logrhythm-s3beat',
+        outputFormat: 'yaml'
+      },
+      {
+        value: 'webhookbeat',
+        label: 'LogRhythm Webhook Beat (🚧 - Stub)',
+        icon: 'logrhythm-webhookbeat',
         outputFormat: 'yaml'
       },
       {
@@ -160,6 +193,36 @@ export default function () {
         shipper: 'genericbeat',
         value: 'genericbeat',
         label: 'HTTP / REST API',
+        icon: 'language'
+      },
+      {
+        shipper: 'eventhubbeat',
+        value: 'eventhubbeat',
+        label: 'Azure Event Hub',
+        icon: 'language'
+      },
+      {
+        shipper: 'kafkabeat',
+        value: 'kafkabeat',
+        label: 'Kafka',
+        icon: 'language'
+      },
+      {
+        shipper: 'pubsubbeat',
+        value: 'pubsubbeat',
+        label: 'PubSub',
+        icon: 'language'
+      },
+      {
+        shipper: 's3beat',
+        value: 's3beat',
+        label: 'S3',
+        icon: 'language'
+      },
+      {
+        shipper: 'webhookbeat',
+        value: 'webhookbeat',
+        label: 'Webhook',
         icon: 'language'
       },
       {
