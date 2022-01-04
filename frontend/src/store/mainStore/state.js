@@ -88,6 +88,12 @@ export default function () {
         label: 'Filebeat',
         icon: 'filebeat',
         outputFormat: 'yaml'
+      },
+      {
+        value: 'webhookbeat',
+        label: 'LogRhythm Webhook Beat',
+        icon: 'logrhythm-webhookbeat',
+        outputFormat: 'yaml'
       }
     ], // collectionShippersOptions
     openCollectorBeats: [
@@ -253,6 +259,12 @@ export default function () {
         shipper: 'filebeat',
         value: 'syslog_udp',
         label: 'Syslog over UDP',
+        icon: 'input'
+      },
+      {
+        shipper: 'webhookbeat',
+        value: 'webhookbeat',
+        label: 'Webhook over HTTP',
         icon: 'input'
       }
     ], // collectionMethodsOptions

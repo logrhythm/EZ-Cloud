@@ -11,6 +11,43 @@ export default {
   collectionMethod: 'webhookbeat',
   definition: [
     // Required
+    {
+      name: 'hostname',
+      label: 'Webhook Listener Hostname/IP',
+      type: {
+        name: 'string'
+      },
+      description: 'Provide the hostname or IP address for the Webhook endpoint only; do not include the query parameters string.',
+      default: '',
+      required: true,
+      group: 'Required'
+    },
+    {
+      name: 'portnumber',
+      label: 'Port Number',
+      type: {
+        name: 'string'
+      },
+      description: 'HTTP listening service TCP Port.',
+      default: '8080',
+      required: true,
+      group: 'Required'
+    },
+    {
+      name: 'sslflag',
+      label: 'SSL Flag',
+      type: {
+        name: 'option'
+      },
+      options: [
+        { value: 'true', label: 'Enable HTTPS' },
+        { value: 'false', label: 'Disable HTTPS' }
+      ],
+      description: `Enforce HTTPS or operate the Webhook Beat without any transport encryption.`,
+      default: 'false',
+      required: true,
+      group: 'Required'
+    },
 
     // EZ Internal
 
