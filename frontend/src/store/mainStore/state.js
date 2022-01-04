@@ -228,8 +228,8 @@ export default function () {
       {
         shipper: 'webhookbeat',
         value: 'webhookbeat',
-        label: 'Webhook',
-        icon: 'language'
+        label: 'Webhook over HTTP',
+        icon: 'input'
       },
       {
         shipper: 'filebeat',
@@ -259,12 +259,6 @@ export default function () {
         shipper: 'filebeat',
         value: 'syslog_udp',
         label: 'Syslog over UDP',
-        icon: 'input'
-      },
-      {
-        shipper: 'webhookbeat',
-        value: 'webhookbeat',
-        label: 'Webhook over HTTP',
         icon: 'input'
       }
     ], // collectionMethodsOptions

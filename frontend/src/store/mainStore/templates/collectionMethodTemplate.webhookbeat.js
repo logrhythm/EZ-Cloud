@@ -43,7 +43,7 @@ export default {
         { value: 'true', label: 'Enable HTTPS' },
         { value: 'false', label: 'Disable HTTPS' }
       ],
-      description: `Enforce HTTPS or operate the Webhook Beat without any transport encryption.`,
+      description: 'Enforce HTTPS or operate the Webhook Beat without any transport encryption.',
       default: 'false',
       required: true,
       group: 'Required'
