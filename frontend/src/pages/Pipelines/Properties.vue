@@ -917,6 +917,12 @@ export default {
                 parsedFileContent.name = this.pipeline.name
               }
 
+              // Beat: webhookbeat
+              if (collectionShipper === 'webhookbeat') {
+                parsedFileContent.beatIdentifier = String(this.pipeline.uid.substring(0, 3) + '_' + this.pipeline.name.replace(/[^a-zA-Z0-9]/g, '_') + '_' + this.pipeline.uid).substring(0, 12)
+                parsedFileContent.logsource_name = this.pipeline.name
+              }
+
               // Update Pipeline and Persist
               this.upsertPipeline(
                 {

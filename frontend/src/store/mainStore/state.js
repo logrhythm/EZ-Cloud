@@ -11,6 +11,8 @@ import collectionMethodTemplatesFilebeatSyslogTcp from './templates/collectionMe
 import collectionMethodTemplatesFilebeatHttpJson from './templates/collectionMethodTemplate.filebeat.httpjson'
 // Genericbeat
 import collectionMethodTemplatesGenericbeat from './templates/collectionMethodTemplate.genericbeat'
+// Genericbeat
+import collectionMethodTemplatesWebhookbeat from './templates/collectionMethodTemplate.webhookbeat'
 
 export default function () {
   return {
@@ -35,7 +37,8 @@ export default function () {
       collectionMethodTemplatesFilebeatSyslogUdp, // Filebeat - syslog_udp
       collectionMethodTemplatesFilebeatSyslogTcp, // Filebeat - syslog_tcp
       collectionMethodTemplatesFilebeatHttpJson, // Filebeat - httpjson
-      collectionMethodTemplatesGenericbeat // genericbeat
+      collectionMethodTemplatesGenericbeat, // genericbeat
+      collectionMethodTemplatesWebhookbeat // Webhookbeat
     ], // collectionMethodTemplates
     collectionShippersOptions: [
       {
@@ -54,6 +57,12 @@ export default function () {
         value: 'filebeat',
         label: 'Filebeat',
         icon: 'filebeat',
+        outputFormat: 'yaml'
+      },
+      {
+        value: 'webhookbeat',
+        label: 'LogRhythm Webhook Beat',
+        icon: 'logrhythm-webhookbeat',
         outputFormat: 'yaml'
       }
     ], // collectionShippersOptions
@@ -190,6 +199,12 @@ export default function () {
         shipper: 'filebeat',
         value: 'syslog_udp',
         label: 'Syslog over UDP',
+        icon: 'input'
+      },
+      {
+        shipper: 'webhookbeat',
+        value: 'webhookbeat',
+        label: 'Webhook over HTTP',
         icon: 'input'
       }
     ], // collectionMethodsOptions

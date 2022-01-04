@@ -1183,6 +1183,47 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
           streamUpdateForBeatStatus.payload.steps = steps;
         }
 
+        // ##########
+        // webhookbeat
+        // ##########
+        if (beat.name.toLowerCase() === 'webhookbeat') {
+          // logrhythmShipperBaseConfig
+          // Build the list of steps
+
+          // Import the Configuration (should only be one, but deal with all of them)
+          beat.config.forEach((config) => {
+            steps.push(
+              {
+                action: `Import Stream configuration for FQBN (${logRhythmFullyQualifiedBeatName})`,
+                command: `cat | ./lrctl webhookbeat config import --fqbn ${logRhythmFullyQualifiedBeatName}`,
+                stdin: (typeof config === 'string' ? `${config}\n${logrhythmShipperBaseConfig}` : `${JSON.stringify(config)}\n${logrhythmShipperBaseConfig}`)
+              }
+            );
+          });
+
+          // Wrap up
+          steps.push(
+            // We do a Stop - Start as a Restart would not do anything on a Beat not already running
+            {
+              action: 'Stop Webhookbeat',
+              command: `./lrctl webhookbeat stop --fqbn ${logRhythmFullyQualifiedBeatName}`
+            },
+            {
+              action: 'Start Webhookbeat to take new configuration into account',
+              command: `./lrctl webhookbeat start --fqbn ${logRhythmFullyQualifiedBeatName}`
+            },
+            {
+              action: 'Check Status for all Webhookbeat instances',
+              command: './lrctl webhookbeat status'
+            },
+            {
+              action: 'Get Webhookbeat logs for this instance (last 10 lines only)',
+              command: `./lrctl webhookbeat logs --fqbn ${logRhythmFullyQualifiedBeatName} | tail --lines=10`
+            }
+          );
+          streamUpdateForBeatStatus.payload.steps = steps;
+        }
+
         // Add the Steps to the Exec stack
         steps.forEach((step, stepCounter) => {
           logToSystem('Debug', `updateStreamConfigurationForBeat - Adding step: (${stepCounter}) ${step.action}...`);
@@ -1502,6 +1543,28 @@ function deleteStreamConfigurationForBeat(
             {
               action: 'Check Status for all GenericBeat instances',
               command: './lrctl genericbeat status'
+            }
+          );
+          streamConfigDeleteForBeatStatus.payload.steps = steps;
+        }
+
+        // ##########
+        // webhookbeat
+        // ##########
+        if (beat.name.toLowerCase() === 'webhookbeat') {
+          steps.push(
+            {
+              action: `Stop WebhookBeat instance (${logRhythmFullyQualifiedBeatName})`,
+              command: `./lrctl webhookbeat stop --fqbn ${logRhythmFullyQualifiedBeatName}`,
+              continueOnFailure: true
+            },
+            {
+              action: `Remove configuration for this WebhookBeat instance (${logRhythmFullyQualifiedBeatName})`,
+              command: `./lrctl webhookbeat config remove --yes --fqbn ${logRhythmFullyQualifiedBeatName}`
+            },
+            {
+              action: 'Check Status for all WebhookBeat instances',
+              command: './lrctl webhookbeat status'
             }
           );
           streamConfigDeleteForBeatStatus.payload.steps = steps;
