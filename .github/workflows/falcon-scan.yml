@@ -17,6 +17,8 @@ jobs:
     steps:
       # Checkout project source
       - uses: actions/checkout@v2
+        with:
+          ref: v0.8
       - name: Create zip archive
         run: zip -r upload.zip *
       # Upload & scan
