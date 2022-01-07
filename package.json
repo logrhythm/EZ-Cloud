@@ -1,57 +1,57 @@
 {
-  "name": "ez-cloud-server",
-  "version": "0.8.2",
-  "description": "Server backend for EZ-Cloud for Legacy SIEM",
-  "main": "index.js",
-  "scripts": {
-    "buildVersion": "npx genversion --semi --source ./package.json src/shared/version.js",
-    "start": "node src/index.js",
-    "dev": "npm run buildVersion && nodemon src/index.js",
-    "lint": "eslint --fix src",
-    "test": "mocha --exit",
-    "build": "webpack",
-    "buildWithFrontend": "npm run buildVersion && cd frontend && npm install && quasar build && (robocopy dist\\spa\\ ..\\public_web_root\\ /COPYALL /MIR /NJH) ^& IF %ERRORLEVEL% LEQ 1 SET ERRORLEVEL = 0 && cd.. && webpack",
-    "installService": "node installer/installService.js",
-    "uninstallService": "node installer/uninstallService.js"
-  },
-  "author": "Tony Massé <tony.masse@logrhythm.com>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/TonyMasse/EZ-Cloud.git"
-  },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "cross-spawn": "^7.0.3",
-    "crypto-js": "^4.1.1",
-    "dotenv": "^8.6.0",
-    "express": "^4.17.1",
-    "helmet": "^4.6.0",
-    "js-yaml": "^3.14.1",
-    "jsonwebtoken": "^8.5.1",
-    "morgan": "^1.10.0",
-    "node-windows": "^1.0.0-beta.6",
-    "simple-ssh": "^1.0.0",
-    "socket.io": "^4.1.3",
-    "tedious": "^11.4.0"
-  },
-  "devDependencies": {
-    "copy-webpack-plugin": "^9.0.1",
-    "eslint": "^7.32.0",
-    "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-plugin-import": "^2.24.1",
-    "genversion": "^3.0.2",
-    "innosetup": "^6.0.5",
-    "mocha": "^8.4.0",
-    "nodemon": "^2.0.12",
-    "supertest": "^6.1.6",
-    "webpack": "^5.51.1",
-    "webpack-cli": "^4.8.0",
-    "webpack-shell-plugin-next": "^2.2.2",
-    "yargs": "^17.1.1"
-  },
-  "optionalDependencies": {
-    "bufferutil": "^4.0.3",
-    "utf-8-validate": "^5.0.5"
-  }
+    "name": "ez-cloud-server",
+    "version": "0.8.2",
+    "description": "Server backend for EZ-Cloud for Legacy SIEM",
+    "main": "index.js",
+    "scripts": {
+        "buildVersion": "npx genversion --semi --source ./package.json src/shared/version.js",
+        "start": "node src/index.js",
+        "dev": "npm run buildVersion && nodemon src/index.js",
+        "lint": "eslint --fix src",
+        "test": "mocha --exit",
+        "build": "webpack",
+        "buildWithFrontend": "npm run buildVersion && cd frontend && npm install && quasar build && (robocopy dist\\spa\\ ..\\public_web_root\\ /COPYALL /MIR /NJH) ^& IF %ERRORLEVEL% LEQ 1 SET ERRORLEVEL = 0 && cd.. && webpack",
+        "installService": "node installer/installService.js",
+        "uninstallService": "node installer/uninstallService.js"
+    },
+    "author": "Tony Massé <tony.masse@logrhythm.com>",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/TonyMasse/EZ-Cloud.git"
+    },
+    "dependencies": {
+        "cors": "^2.8.5",
+        "cross-spawn": "^7.0.3",
+        "crypto-js": "^4.1.1",
+        "dotenv": "^8.6.0",
+        "express": "^4.17.1",
+        "helmet": "^4.6.0",
+        "js-yaml": "^3.14.1",
+        "jsonwebtoken": "^8.5.1",
+        "morgan": "^1.10.0",
+        "node-windows": "^1.0.0-beta.6",
+        "simple-ssh": "^0.5.0",
+        "socket.io": "^4.1.3",
+        "tedious": "^11.4.0"
+    },
+    "devDependencies": {
+        "copy-webpack-plugin": "^9.0.1",
+        "eslint": "^7.32.0",
+        "eslint-config-airbnb-base": "^14.2.1",
+        "eslint-plugin-import": "^2.24.1",
+        "genversion": "^3.0.2",
+        "innosetup": "^6.0.5",
+        "mocha": "^8.4.0",
+        "nodemon": "^2.0.12",
+        "supertest": "^6.1.6",
+        "webpack": "^5.51.1",
+        "webpack-cli": "^4.8.0",
+        "webpack-shell-plugin-next": "^2.2.2",
+        "yargs": "^17.1.1"
+    },
+    "optionalDependencies": {
+        "bufferutil": "^4.0.3",
+        "utf-8-validate": "^5.0.5"
+    }
 }
