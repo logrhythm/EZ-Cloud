@@ -45,6 +45,9 @@ const api = require('./api');
 app.use(middlewares.checkJwTokenAndSetUser);
 // Log the Web requests / responses to the System Journal
 app.use(middlewares.logHttpToSystem);
+// To protect against clickjacking
+app.use(middlewares.setXFrameOptions);
+app.use(middlewares.setContentSecurityPolicy);
 
 app.get('/test', (req, res) => {
   res.json({

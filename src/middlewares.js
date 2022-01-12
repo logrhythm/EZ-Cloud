@@ -126,6 +126,20 @@ function serveFileSafely(req, res, next) {
   }
 }
 
+// To protect against clickjacking
+// (strongly) Inspired by https://auth0.com/blog/preventing-clickjacking-attacks/
+function setXFrameOptions(req, res, next) {
+  res.setHeader('X-Frame-Options', 'sameorigin');
+  next();
+}
+
+// To protect against clickjacking
+// (strongly) Inspired by https://auth0.com/blog/preventing-clickjacking-attacks/
+function setContentSecurityPolicy(req, res, next) {
+  res.setHeader('Content-Security-Policy', "frame-ancestors 'self';");
+  next();
+}
+
 module.exports = {
   checkJwTokenAndSetUser,
   isLoggedIn,
@@ -133,5 +147,7 @@ module.exports = {
   logHttpToSystem,
   notFound,
   errorHandler,
-  serveFileSafely
+  serveFileSafely,
+  setXFrameOptions,
+  setContentSecurityPolicy
 };
