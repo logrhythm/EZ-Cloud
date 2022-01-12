@@ -16,6 +16,9 @@ const { lrObfuscateSecret } = require('../shared/crypto');
 // Load the System Logging functions
 const { logToSystem } = require('../shared/systemLogging');
 
+// Load the Sanitisation function(s)
+const { getSafeUidFrom } = require('../shared/sanitiser');
+
 function waitMilliseconds(delay = 250) {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -110,7 +113,7 @@ function checkOSVersion(osVersion, uid) {
 
 router.get('/CheckOSVersion', async (req, res) => {
   if (req && req.query && req.query.uid && req.query.uid.length) {
-    const { uid } = req.query;
+    const uid = getSafeUidFrom(req.query);
 
     if (!osVersionArray[uid]) {
       // osVersionArray[uid] = Object.assign({}, osVersionTemplate);
@@ -210,7 +213,7 @@ function checkfbVersion(fbVersion, uid) {
 
 router.get('/CheckFilebeatVersion', async (req, res) => {
   if (req && req.query && req.query.uid && req.query.uid.length) {
-    const { uid } = req.query;
+    const uid = getSafeUidFrom(req.query);
 
     if (!fbVersionArray[uid]) {
       // fbVersionArray[uid] = Object.assign({}, fbVersionTemplate);
@@ -310,7 +313,7 @@ function checkOcBeatsVersion(ocAndBeatsVersion, uid) {
 
 router.get('/CheckOpenCollectorAndBeatsVersions', async (req, res) => {
   if (req && req.query && req.query.uid && req.query.uid.length) {
-    const { uid } = req.query;
+    const uid = getSafeUidFrom(req.query);
 
     if (!ocAndBeatsVersionArray[uid]) {
       ocAndBeatsVersionArray[uid] = JSON.parse(JSON.stringify(ocAndBeatsVersionTemplate));
@@ -414,7 +417,7 @@ function checkjsBeatVersion(jsBeatVersion, uid) {
 
 router.get('/CheckJsBeatVersion', async (req, res) => {
   if (req && req.query && req.query.uid && req.query.uid.length) {
-    const { uid } = req.query;
+    const uid = getSafeUidFrom(req.query);
 
     if (!jsBeatVersionArray[uid]) {
       jsBeatVersionArray[uid] = JSON.parse(JSON.stringify(jsBeatVersionTemplate));
@@ -752,7 +755,7 @@ function checkOCVersion(ocVersion, uid) {
 
 router.get('/CheckOCVersion', async (req, res) => {
   if (req && req.query && req.query.uid && req.query.uid.length) {
-    const { uid } = req.query;
+    const uid = getSafeUidFrom(req.query);
 
     if (!ocVersionArray[uid]) {
       ocVersionArray[uid] = JSON.parse(JSON.stringify(ocVersionTemplate));
@@ -1390,7 +1393,7 @@ router.post('/UpdateStreamConfigurationForBeat', async (req, res) => {
       errorMessages.push('Missing or malformed compulsory "stream" object.');
     }
 
-    res.json({ ...streamUpdateForBeatStatusTemplate, errors: errorMessages, requestBody: req.body });
+    res.json({ ...streamUpdateForBeatStatusTemplate, errors: errorMessages, requestBody: (process.env.NODE_ENV === 'development' ? req.body : undefined) });
   }
 });
 
@@ -1716,7 +1719,7 @@ router.post('/DeleteStreamConfigurationForBeat', async (req, res) => {
       errorMessages.push('Missing or malformed compulsory "stream" object.');
     }
 
-    res.json({ ...streamConfigDeleteForBeatStatusTemplate, errors: errorMessages, requestBody: req.body });
+    res.json({ ...streamConfigDeleteForBeatStatusTemplate, errors: errorMessages, requestBody: (process.env.NODE_ENV === 'development' ? req.body : undefined) });
   }
 });
 
@@ -2014,7 +2017,7 @@ router.post('/ImportPipelineForBeat', async (req, res) => {
       errorMessages.push('Missing or malformed compulsory "stream" object.');
     }
 
-    res.json({ ...pipelineImportForBeatStatusTemplate, errors: errorMessages, requestBody: req.body });
+    res.json({ ...pipelineImportForBeatStatusTemplate, errors: errorMessages, requestBody: (process.env.NODE_ENV === 'development' ? req.body : undefined) });
   }
 });
 
@@ -2051,7 +2054,7 @@ router.post('/ObfuscateSecret', async (req, res) => {
     if (missingSecret) {
       errorMessages.push('Missing or malformed compulsory "secretToObfuscate" string.');
     }
-    res.json({ ...obfuscateSecretTemplate, errors: errorMessages, requestBody: req.body });
+    res.json({ ...obfuscateSecretTemplate, errors: errorMessages, requestBody: (process.env.NODE_ENV === 'development' ? req.body : undefined) });
   }
 });
 
