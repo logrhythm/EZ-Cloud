@@ -17,7 +17,7 @@ const { lrObfuscateSecret } = require('../shared/crypto');
 const { logToSystem } = require('../shared/systemLogging');
 
 // Load the Sanitisation function(s)
-const { getSafeUidFrom } = require('../shared/sanitiser');
+const { getSafeUidFrom, makeSafeUidFrom } = require('../shared/sanitiser');
 
 function waitMilliseconds(delay = 250) {
   return new Promise((resolve) => {
@@ -119,6 +119,54 @@ router.get('/CheckOSVersion', async (req, res) => {
     && getSafeUidFrom(req.query).length
   ) {
     const uid = getSafeUidFrom(req.query);
+
+    if (!osVersionArray[uid]) {
+      // osVersionArray[uid] = Object.assign({}, osVersionTemplate);
+      osVersionArray[uid] = JSON.parse(JSON.stringify(osVersionTemplate));
+    }
+
+    if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
+      // Waiting - Sync
+      if (!osVersionArray[uid].stillChecking) {
+        osVersionArray[uid].stillChecking = true;
+        checkOSVersion(osVersionArray[uid], uid);
+      }
+      const loopEndTime = Date.now() / 1000 + maxCheckInterval;
+
+      while (osVersionArray[uid].stillChecking && (loopEndTime > (Date.now() / 1000))) {
+        // Wait for 50 ms
+        // eslint-disable-next-line no-await-in-loop
+        await waitMilliseconds(50);
+      }
+    } else {
+      // No waiting - Async
+      // eslint-disable-next-line no-lonely-if
+      if (
+        !osVersionArray[uid].stillChecking
+        && (osVersionArray[uid].lastSuccessfulCheckTimeStampUtc + maxCheckInterval)
+        <= (Date.now() / 1000)
+      ) {
+        checkOSVersion(osVersionArray[uid], uid);
+      }
+    }
+
+    if (osVersionArray[uid].payload) {
+      osVersionArray[uid].payload.uid = uid;
+    }
+    res.json(osVersionArray[uid]);
+  } else {
+    res.json({ ...osVersionTemplate, errors: ['Missing UID in Query.'] });
+  }
+});
+
+// DUMMY FUNCTION TO TEST CODE VERIFICATION
+router.get('/CheckOSVersionXXX', async (req, res) => {
+  if (req
+    && req.query
+    && req.query.uid
+    && req.query.uid.length
+  ) {
+    const uid = makeSafeUidFrom(req.query.uid); // Only variation from the original router.get('/CheckOSVersion',....
 
     if (!osVersionArray[uid]) {
       // osVersionArray[uid] = Object.assign({}, osVersionTemplate);
