@@ -120,7 +120,7 @@
 - [x] Change "priviledged" to "privileged", through out
   - [x] Actions (Store)
   - [x] UI
-- [ ] Change typical message ('Persistance layer issue') when API returns an error to a more generic, or more specific if necessary
+- [ ] Change typical message ('Error updating persistance layer') when API returns an error to a more generic, or more specific if necessary
 
 ## TO TEST
 - [ ] Fan Out feature
