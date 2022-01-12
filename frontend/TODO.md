@@ -108,12 +108,12 @@
     - [ ] ~~Collect optional SUDO Password~~ (👈 we are using a non-interactive TTY, so we can't provide any extra creds for `sudo`)
 - Pipeline - Deployment - Change Pipeline status to Ready when deployed successfully
 - Shipper Installation
-  - [ ] Update Shippers list with jsBeat v1.1.5
+  - [x] Update Shippers list with jsBeat v1.1.5
 
 ## TO FIX
 - [ ] ~~Fan Out feature - OC refuses to import JQ Transform~~ (👈 not an issue. Was only caused on Dev system)
 - [x] Admin - Roles - Creates new duplicated Role instead of updating existing one when changing the Priviledge
-- [ ] Ability to collect data from external site (Github, ...)
+- [x] Ability to collect data from external site (Github, ...)
 - [x] JQ small nags
   - [x] .message is commented in Transform template
   - [x] Filter uses un-cleaned Stream Name for `device_type`
