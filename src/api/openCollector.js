@@ -112,7 +112,12 @@ function checkOSVersion(osVersion, uid) {
 }
 
 router.get('/CheckOSVersion', async (req, res) => {
-  if (req && req.query && req.query.uid && req.query.uid.length) {
+  if (req
+    && req.query
+    && req.query.uid
+    && req.query.uid.length
+    && getSafeUidFrom(req.query).length
+  ) {
     const uid = getSafeUidFrom(req.query);
 
     if (!osVersionArray[uid]) {
@@ -212,7 +217,12 @@ function checkfbVersion(fbVersion, uid) {
 }
 
 router.get('/CheckFilebeatVersion', async (req, res) => {
-  if (req && req.query && req.query.uid && req.query.uid.length) {
+  if (req
+    && req.query
+    && req.query.uid
+    && req.query.uid.length
+    && getSafeUidFrom(req.query).length
+  ) {
     const uid = getSafeUidFrom(req.query);
 
     if (!fbVersionArray[uid]) {
@@ -312,7 +322,12 @@ function checkOcBeatsVersion(ocAndBeatsVersion, uid) {
 }
 
 router.get('/CheckOpenCollectorAndBeatsVersions', async (req, res) => {
-  if (req && req.query && req.query.uid && req.query.uid.length) {
+  if (req
+    && req.query
+    && req.query.uid
+    && req.query.uid.length
+    && getSafeUidFrom(req.query).length
+  ) {
     const uid = getSafeUidFrom(req.query);
 
     if (!ocAndBeatsVersionArray[uid]) {
@@ -416,7 +431,12 @@ function checkjsBeatVersion(jsBeatVersion, uid) {
 }
 
 router.get('/CheckJsBeatVersion', async (req, res) => {
-  if (req && req.query && req.query.uid && req.query.uid.length) {
+  if (req
+    && req.query
+    && req.query.uid
+    && req.query.uid.length
+    && getSafeUidFrom(req.query).length
+  ) {
     const uid = getSafeUidFrom(req.query);
 
     if (!jsBeatVersionArray[uid]) {
@@ -754,7 +774,12 @@ function checkOCVersion(ocVersion, uid) {
 }
 
 router.get('/CheckOCVersion', async (req, res) => {
-  if (req && req.query && req.query.uid && req.query.uid.length) {
+  if (req
+    && req.query
+    && req.query.uid
+    && req.query.uid.length
+    && getSafeUidFrom(req.query).length
+  ) {
     const uid = getSafeUidFrom(req.query);
 
     if (!ocVersionArray[uid]) {
