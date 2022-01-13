@@ -37,6 +37,9 @@
     "eslint-plugin-vue": "^7.18.0",
     "eslint-webpack-plugin": "^2.4.0"
   },
+  "overrides": {
+    "postcss": ">=8.2.13"
+  },
   "browserslist": [
     "last 10 Chrome versions",
     "last 10 Firefox versions",
