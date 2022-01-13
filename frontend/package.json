@@ -39,8 +39,8 @@
     "eslint-webpack-plugin": "^2.4.0"
   },
   "overrides": {
-    "postcss": ">=8.2.13",
-    "markdown-it": ">=12.3.2"
+    "markdown-it": ">=12.3.2",
+    "node-forge": ">=1.2.1"
   },
   "browserslist": [
     "last 10 Chrome versions",
