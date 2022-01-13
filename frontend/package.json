@@ -15,6 +15,7 @@
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
+    "@quasar/cli": "^1.2.2",
     "@quasar/extras": "^1.11.1",
     "axios": "^0.21.4",
     "core-js": "^3.18.0",
@@ -38,7 +39,8 @@
     "eslint-webpack-plugin": "^2.4.0"
   },
   "overrides": {
-    "postcss": ">=8.2.13"
+    "postcss": ">=8.2.13",
+    "markdown-it": ">=12.3.2"
   },
   "browserslist": [
     "last 10 Chrome versions",
