@@ -41,7 +41,7 @@
   "Uploading": "Uploading",
   "Succesfully updated": "Succesfully updated",
   "Update error": "Update error",
-  "Error updating persistance layer.": "Error updating persistance layer.",
+  "EZ Server API returned an error.": "EZ Server API returned an error.",
   "Switch to this Collection Method.": "Switch to this Collection Method.",
   "Downloading Input Configuration file...": "Downloading Input Configuration file...",
   "Input Configuration file downloaded": "Input Configuration file downloaded",

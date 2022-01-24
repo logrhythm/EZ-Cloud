@@ -852,7 +852,7 @@ export function postDataToSite (params = {
 
         if (response.data.errors && Array.isArray(response.data.errors) && response.data.errors.length > 0) {
           queryResultedInError = true
-          messageForLogAndPopup = i18n.t('Error updating persistance layer.')
+          messageForLogAndPopup = i18n.t('EZ Server API returned an error.')
           if (process.env.DEV) {
             captionForLogAndPopup = response.data.errors.reduce((errorsAccumulatorArray, errorMessage) => {
               errorsAccumulatorArray.push(typeof errorMessage !== 'object' ? errorMessage : JSON.stringify(errorMessage))
