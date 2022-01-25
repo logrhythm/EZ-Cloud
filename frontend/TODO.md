@@ -99,6 +99,8 @@
   - [ ] Azure Event Hub
   - [ ] S3
   - [ ] WebHook
+    - [x] http (Contribution from @Jt3kt)
+    - [ ] https
   - [ ] PubSub
   - [ ] Kafka
   - ...
@@ -106,7 +108,7 @@
   - [ ] ~~SUDO requirement~~ (👈 we are using a non-interactive TTY, so we can't provide any extra creds for `sudo`)
     - [ ] ~~Collect optional SUDO Username~~ (👈 we are using a non-interactive TTY, so we can't provide any extra creds for `sudo`)
     - [ ] ~~Collect optional SUDO Password~~ (👈 we are using a non-interactive TTY, so we can't provide any extra creds for `sudo`)
-- Pipeline - Deployment - Change Pipeline status to Ready when deployed successfully
+- [ ] Pipeline - Deployment - Change Pipeline status to Ready when deployed successfully
 - Shipper Installation
   - [x] Update Shippers list with jsBeat v1.1.5
 
@@ -121,6 +123,7 @@
   - [x] Actions (Store)
   - [x] UI
 - [x] Change typical message ('Error updating persistance layer') when API returns an error to a more generic, or more specific if necessary
+- [x] Shipper installer - Content Security Policy prevents download of `shippers_url.json` from GitHub
 
 ## TO TEST
 - [ ] Fan Out feature
