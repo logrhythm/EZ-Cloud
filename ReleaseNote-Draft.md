@@ -72,6 +72,10 @@
 - [v0.8.1] Provide feedback if failing to connect over SSH, in Open Collectors list page
   - On version check
   - On Shipper deployment
+
+**v0.8.2**
+- [v0.8.2] Collection - Add support for LogRhythm Webhook Beat (HTTP only)
+- [v0.8.2] General - Error messages - Change "Error updating persistance layer" to a less misleading and more generic message
 - [v0.8.🚧] 
 
 ## What has been fixed in this release?
@@ -91,6 +95,13 @@
 - [v0.8.1] SQL Connection seem not to close automatically, and time out only after +/-50 minutes
 - [v0.8.1] Privileged access is only valid if member of Role `Admin`. Needs to change to use `isPrivileged` instead
 - [v0.8.1] No version number showing in logs when in Production
+- [v0.8.🚧] 
+
+**v0.8.2**
+- [v0.8.2] Security - CVE-2020-26301 - Upgrade `simple-ssh` to v1.1.0 to benefit from `ssh2` v1.5.0
+- [v0.8.2] Security - Fix/upgrade several dependencies with low and medium risks
+- [v0.8.2] Security - Fix several low and medium security risks in EZ Backend source code
+- [v0.8.2] Shipper installer - Content Security Policy prevents download of `shippers_url.json` from GitHub
 - [v0.8.🚧] 
 
 ## Know issues :bug: :beetle:
