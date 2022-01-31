@@ -9,8 +9,9 @@
         "dev": "npm run buildVersion && nodemon src/index.js",
         "lint": "eslint --fix src",
         "test": "mocha --exit",
-        "build": "webpack",
-        "buildWithFrontend": "npm run buildVersion && cd frontend && npm install && quasar build && (robocopy dist\\spa\\ ..\\public_web_root\\ /COPYALL /MIR /NJH) ^& IF %ERRORLEVEL% LEQ 1 SET ERRORLEVEL = 0 && cd.. && webpack",
+        "build": "npm run buildVersion && webpack",
+        "buildFrontendAndImport": "npm run buildVersion && cd frontend && npm install && quasar build && (robocopy dist\\spa\\ ..\\public_web_root\\ /COPYALL /MIR /NJH) ^& IF %ERRORLEVEL% LEQ 1 SET ERRORLEVEL = 0 && cd..",
+        "buildWithFrontend": "npm run buildVersion && npm run buildFrontendAndImport && webpack",
         "installService": "node installer/installService.js",
         "uninstallService": "node installer/uninstallService.js"
     },
