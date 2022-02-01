@@ -6,7 +6,7 @@
     "scripts": {
         "buildVersion": "npx genversion --semi --source ./package.json src/shared/version.js",
         "start": "node src/index.js",
-        "dev": "npm run buildVersion && nodemon src/index.js",
+        "dev": "npm run buildVersion && nodemon src/index.js --ignore ez-market-place/*",
         "lint": "eslint --fix src",
         "test": "mocha --exit",
         "build": "npm run buildVersion && webpack",
