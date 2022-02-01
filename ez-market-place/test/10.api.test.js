@@ -16,13 +16,28 @@ describe('GET /api/v1', () => {
   });
 });
 
-// describe('GET /api/v1/test', () => {
-//   it('responds with a json message', (done) => {
-//     request(app)
-//       .get('/api/v1/test')
-//       .trustLocalhost()
-//       .set('Accept', 'application/json')
-//       .expect('Content-Type', /json/)
-//       .expect(200, ['👍', '✔'], done);
-//   });
-// });
+describe('GET /api/v1/pipelinesTemplates', () => {
+  it('responds with a json message', (done) => {
+    request(app)
+      .get('/api/v1/pipelinesTemplates')
+      .trustLocalhost()
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      // .expect((res) => Array.isArray(res.body)) // Not working...
+      .end(done);
+  });
+});
+
+describe('GET /api/v1/pipelinesTemplates/{id}', () => {
+  it('responds with a json message', (done) => {
+    request(app)
+      .get('/api/v1/pipelinesTemplates/abc123')
+      .trustLocalhost()
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      // .expect((res) => Array.isArray(res.body)) // Not working...
+      .end(done);
+  });
+});
