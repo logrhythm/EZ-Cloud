@@ -29,7 +29,7 @@ app.get('/test', (req, res) => {
   });
 });
 
-app.use('/api/v1', api);
+app.use('/API/v1', api);
 
 // // Static web site hosting:
 // // - First, the home page
