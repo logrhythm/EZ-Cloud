@@ -1,0 +1,7 @@
+{
+    "deploymentUid": "CHANGE_ME_WITH_A_UUID",
+    "server": {
+        "baseUrl": "https://journey.logrhythm.com/EZ",
+        "baseApiPath": "/API/v1"
+    }
+}

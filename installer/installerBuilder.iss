@@ -55,6 +55,7 @@ Name: openConfigFileHttps_key_tmp; Description: "HTTPS Encrypted Key file"; Grou
 [Files]
 Source: "{#DistSubDirectory}\bin\*"; DestDir: "{app}\bin"; Components: ezCloudServer ezCloudUpgradeServer; AfterInstall: FileReplaceTokenByConstant('{app}\bin\ezcloudserver.xml', 'ROOT_PATH_EZ-Cloud', '{app}')
 Source: "{#DistSubDirectory}\config\database.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceSqlCreds('{app}\config\database.json')
+Source: "{#DistSubDirectory}\config\ez-market-place.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceTokenByV4Uuid('{app}\config\ez-market-place.json', 'CHANGE_ME_WITH_A_UUID')
 Source: "{#DistSubDirectory}\config\jwt.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceTokenIfTaskSelected('{app}\config\jwt.json', 'CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS', 50, 'autoGenerateTokens\jwt')
 Source: "{#DistSubDirectory}\config\secure.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceTokenIfTaskSelected('{app}\config\secure.json', 'CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS', 120, 'autoGenerateTokens\aes')
 Source: "{#DistSubDirectory}\config\https.*"; DestDir: "{app}\config"; Components: ezCloudServer
@@ -251,6 +252,42 @@ begin
     Result := RandomString;
 end;
 
+// To generate a Version 4 UUID
+
+function GetVersion4UuidString(): String;
+var
+    RandomString: String;
+    RandomIntA: Integer;
+    RandomIntB: Integer;
+    RandomIntC: Integer;
+    RandomIntD: Integer;
+    RandomIntEa: Integer;
+    RandomIntEb: Integer;
+    RandomIntF: Integer;
+    RandomIntG: Integer;
+    RandomIntH: Integer;
+begin
+    // Outputing a UUID in the format: 123e4567-e89b-12d3-a456-426655440000
+    RandomIntA := Random(65536);
+    RandomIntB := Random(65536);
+    // -
+    RandomIntC := Random(65536);
+    // -
+    // Value 4
+    RandomIntD := Random(4096);
+    // -
+    RandomIntEa := Random(4) + 8; // Values between 8 and 11
+    RandomIntEb := Random(4096);
+    // -
+    RandomIntF := Random(65536);
+    RandomIntG := Random(65536);
+    RandomIntH := Random(65536);
+    RandomString := Lowercase(
+      Format('%.4x%.4x-%.4x-4%.3x-%.1x%.3x-%.4x%.4x%.4x', [RandomIntA, RandomIntB, RandomIntC, RandomIntD, RandomIntEa, RandomIntEb, RandomIntF, RandomIntG, RandomIntH])
+    );
+    Result := RandomString;
+end;
+
 // To replace the token in a given file, by an exanded Constant
 
 procedure FileReplaceTokenByConstant(const FileName, SearchString, ReplaceString: string);
@@ -263,6 +300,13 @@ end;
 procedure FileReplaceToken(const FileName, SearchString: string ; const CharCount: Integer);
 begin
     FileReplaceString(ExpandConstant(FileName), SearchString, GetRandomString(CharCount));
+end;
+
+// To replace the token in a given file, by a generated random v4 UUID
+
+procedure FileReplaceTokenByV4Uuid(const FileName, SearchString: string);
+begin
+    FileReplaceString(ExpandConstant(FileName), SearchString, GetVersion4UuidString());
 end;
 
 // To replace the SQL Credentials by the ones provided in the Wizard

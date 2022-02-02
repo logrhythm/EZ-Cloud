@@ -1,0 +1,7 @@
+{
+    "deploymentUid": "A_UUID_THAT'S_UNIQUE_TO_THIS_DEPLOYMENT",
+    "server": {
+        "baseUrl": "https://journey.logrhythm.com/EZ",
+        "baseApiPath": "/API/v1"
+    }
+}
