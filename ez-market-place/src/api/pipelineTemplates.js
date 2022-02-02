@@ -54,9 +54,9 @@ router.get('/:id', (req, res) => {
       action: 'get_pipeline_templates',
       description: 'Get the list of Pipeline Templates',
       pageNumber: 1,
-      pageSize: 100000,
-      found: 2,
-      returned: 2,
+      pageSize: 1,
+      found: 1,
+      returned: 1,
       records: [
         '🥌',
         '🚀'
