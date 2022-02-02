@@ -25,6 +25,10 @@ module.exports = {
   stats: {
     errorDetails: true
   },
+  module: {
+    // This rule is to allow SSH2 and CPU-FEATURE compiled code (.node files) to be embedded:
+    rules: [{ test: /\.node$/, use: 'raw-loader' }]
+  },
   plugins: [
     // Copy all the necessary sample files to the relevant place under dist/
     new CopyPlugin({
