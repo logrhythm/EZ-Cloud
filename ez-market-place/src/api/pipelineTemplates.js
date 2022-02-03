@@ -30,27 +30,34 @@ function reqParam(req, param, defaultValue = undefined) {
  * Get the list of Pipeline Templates
  */
 router.get('/', async (req, res) => {
-  // Query the DB
-  const foundRecords = await db.pool.query({
-    sql: `
-      SELECT
-        pipeline_templates.uid,
-        statuses.name AS status,
-        pipeline_templates.created,
-        pipeline_templates.modified,
-        publishers.display_name AS publisher,
-        NULL AS collection_configuration,
-        NULL AS mapping_configuration,
-        pipeline_templates.stats
-      FROM
-        pipeline_templates
-      INNER JOIN statuses
-        ON pipeline_templates.status = statuses.id
-        AND statuses.id <= 1 -- Visible and Pending Review
-      LEFT OUTER JOIN publishers
-        ON publishers.uid = pipeline_templates.publisher_uid
-        `
-  });
+  let foundRecords = [];
+  let thereWasAnError = false;
+
+  try {
+    // Query the DB
+    foundRecords = await db.pool.query({
+      sql: `
+        SELECT
+          pipeline_templates.uid,
+          statuses.name AS status,
+          pipeline_templates.created,
+          pipeline_templates.modified,
+          publishers.display_name AS publisher,
+          NULL AS collection_configuration,
+          NULL AS mapping_configuration,
+          pipeline_templates.stats
+        FROM
+          pipeline_templates
+        INNER JOIN statuses
+          ON pipeline_templates.status = statuses.id
+          AND statuses.id <= 1 -- Visible and Pending Review
+        LEFT OUTER JOIN publishers
+          ON publishers.uid = pipeline_templates.publisher_uid
+          `
+    });
+  } catch (error) {
+    thereWasAnError = true;
+  }
 
   // Ship it out!
   res.json(
@@ -61,7 +68,8 @@ router.get('/', async (req, res) => {
       pageSize: 100000,
       found: foundRecords.length,
       returned: foundRecords.length,
-      records: foundRecords
+      records: foundRecords,
+      error: (thereWasAnError ? 'Error querying the database' : undefined)
     }
   );
 });
@@ -73,13 +81,42 @@ router.get('/:id', async (req, res) => {
   const pipelineTemplateId = reqParam(req, 'id');
 
   let foundRecords = [];
+  let thereWasAnError = false;
 
   if (pipelineTemplateId && pipelineTemplateId.length) {
     // Query the DB
-    foundRecords = [
-      '🥌🎯',
-      '🚀'
-    ];
+    try {
+      // Query the DB
+      foundRecords = await db.pool.query({
+        namedPlaceholders: true,
+        sql: `
+          SELECT
+            pipeline_templates.uid,
+            statuses.name AS status,
+            pipeline_templates.created,
+            pipeline_templates.modified,
+            publishers.display_name AS publisher,
+            NULL AS collection_configuration,
+            NULL AS mapping_configuration,
+            pipeline_templates.stats
+          FROM
+            pipeline_templates
+          INNER JOIN statuses
+            ON pipeline_templates.status = statuses.id
+            AND statuses.id <= 1 -- Visible and Pending Review
+          LEFT OUTER JOIN publishers
+            ON publishers.uid = pipeline_templates.publisher_uid
+          WHERE
+          pipeline_templates.uid = :pipelineTemplateId
+        `
+      },
+      {
+        // Named parameters
+        pipelineTemplateId
+      });
+    } catch (error) {
+      thereWasAnError = true;
+    }
   }
 
   res.json(
@@ -88,9 +125,10 @@ router.get('/:id', async (req, res) => {
       description: 'Get the content of a specific Pipeline Template',
       pageNumber: 1,
       pageSize: 1,
-      found: 1,
-      returned: 1,
-      records: foundRecords
+      found: foundRecords.length,
+      returned: foundRecords.length,
+      records: foundRecords,
+      error: (thereWasAnError ? 'Error querying the database' : undefined)
     }
   );
 });

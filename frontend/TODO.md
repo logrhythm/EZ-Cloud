@@ -70,7 +70,7 @@
   - [ ] Find a Free-tiered public database
   - [ ] Find a Free-tiered public hosting (for Admin and API)
   - [ ] Find / register domain
-  - [ ] List available Collection Templates
+  - [x] List available Collection Templates
   - [ ] Import Collection Template
   - [ ] Export to Market Place
     - [ ] Sanitization of secrets
