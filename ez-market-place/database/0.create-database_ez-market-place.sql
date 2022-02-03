@@ -27,7 +27,11 @@ CREATE TABLE IF NOT EXISTS `pipeline_templates` (
   `collection_configuration` longtext DEFAULT NULL,
   `mapping_configuration` longtext DEFAULT NULL,
   `stats` longtext DEFAULT NULL,
-  PRIMARY KEY (`uid`)
+  PRIMARY KEY (`uid`),
+  KEY `status` (`status`),
+  KEY `FK_pipeline_templates_publishers` (`publisher_uid`),
+  CONSTRAINT `FK_pipeline_templates_publishers` FOREIGN KEY (`publisher_uid`) REFERENCES `publishers` (`uid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `FK_pipeline_templates_statuses` FOREIGN KEY (`status`) REFERENCES `statuses` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table ez-market-place.pipeline_templates: ~0 rows (approximately)
@@ -58,7 +62,7 @@ CREATE TABLE IF NOT EXISTS `statuses` (
 /*!40000 ALTER TABLE `statuses` DISABLE KEYS */;
 INSERT IGNORE INTO `statuses` (`id`, `name`, `description`) VALUES
 	(0, 'Visible', 'The item is publicly visible'),
-	(1, 'For review', 'The item is to be reviewed'),
+	(1, 'Pending review', 'The item is to be reviewed'),
 	(2, 'Hidden', 'The item is hidden'),
 	(3, 'To be deleted', 'The item is flag for deletion');
 /*!40000 ALTER TABLE `statuses` ENABLE KEYS */;

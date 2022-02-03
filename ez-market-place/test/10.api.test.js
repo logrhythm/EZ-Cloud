@@ -16,7 +16,7 @@ describe('GET /api/v1', () => {
   });
 });
 
-describe('GET /api/v1/pipelineTemplates', () => {
+describe('GET /api/v1/pipelineTemplates', async () => {
   it('responds with a json message', (done) => {
     request(app)
       .get('/api/v1/pipelineTemplates')
@@ -36,7 +36,7 @@ describe('GET /api/v1/pipelineTemplates', () => {
   });
 });
 
-describe('GET /api/v1/pipelineTemplates/{id}', () => {
+describe('GET /api/v1/pipelineTemplates/{id}', async () => {
   it('responds with a json message', (done) => {
     request(app)
       .get('/api/v1/pipelineTemplates/abc123')
