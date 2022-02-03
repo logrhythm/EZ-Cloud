@@ -40,7 +40,8 @@
   },
   "overrides": {
     "markdown-it": ">=12.3.2",
-    "node-forge": ">=1.2.1"
+    "node-forge": ">=1.2.1",
+    "express": ">=4.17.2"
   },
   "browserslist": [
     "last 10 Chrome versions",
