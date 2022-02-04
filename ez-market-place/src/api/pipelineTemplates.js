@@ -11,14 +11,6 @@ const db = require('../shared/database-connector');
 
 // Define input schemas
 
-// UIDs of Deployment and Publisher. Passed via HTTP Header.
-const headerUidsSchema = yup.object().shape(
-  {
-    deploymentUid: yup.string().uuid().required(),
-    publisherUid: yup.string().uuid().required()
-  }
-);
-
 // UID of the Pipeline Template to query/manipulate. Passed via HTTP Parameter (URL or Body).
 const pipelineTemplateSchema = yup.object().shape(
   {
@@ -48,51 +40,10 @@ function reqParam(req, param, defaultValue = undefined) {
 }
 
 /**
- * Extract the UIDs of Deployement and Publisher
- * @param {*} req Express Router's request object
- * @returns Object containing both UIDs
- */
-function extractHeaderUids(req) {
-  const ezPublisherHeader = (
-    req
-    && req.headers
-    && req.headers['ez-publisher']
-      ? req.headers['ez-publisher']
-      : ':'
-  );
-  const uids = ezPublisherHeader.split(':', 2);
-  return {
-    deploymentUid: uids[0],
-    publisherUid: uids[1]
-  };
-}
-
-/**
- * Safely extract the UIDs of Deployement and Publisher
- * @param {*} req Express Router's request object
- * @returns Object containing both UIDs
- */
-function safeHeaderUids(req) {
-  // Get the raw UIDs
-  const headerUids = extractHeaderUids(req);
-
-  // Check validity
-  if (headerUidsSchema.isValidSync(headerUids)) {
-    return headerUids;
-  }
-
-  // Fall back to existing by empty fields
-  return {
-    deploymentUid: '',
-    publisherUid: ''
-  };
-}
-
-/**
  * Get the list of Pipeline Templates
  */
 router.get('/', async (req, res) => {
-  const { deploymentUid, publisherUid } = safeHeaderUids(req);
+  const { deploymentUid, publisherUid } = req.ezPublisherHeader;
 
   let foundRecords = [];
   let thereWasAnError = false;
@@ -151,7 +102,7 @@ router.get('/', async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
   const pipelineTemplateId = reqParam(req, 'id');
-  const { deploymentUid, publisherUid } = safeHeaderUids(req);
+  const { deploymentUid, publisherUid } = req.ezPublisherHeader;
 
   let foundRecords = [];
   let thereWasAnError = false;

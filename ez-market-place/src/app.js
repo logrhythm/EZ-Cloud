@@ -20,6 +20,9 @@ app.use(middlewares.logHttpToSystem);
 app.use(middlewares.setXFrameOptions);
 app.use(middlewares.setContentSecurityPolicy);
 
+// Extract the deployment and publisher UIDs from the "ez-publisher" Header
+app.use(middlewares.extractDeploymentAndPublishUids);
+
 app.get('/test', (req, res) => {
   res.json({
     message: '👋 All good mate'
