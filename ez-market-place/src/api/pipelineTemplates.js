@@ -12,11 +12,7 @@ const db = require('../shared/database-connector');
 // Define input schemas
 
 // UID of the Pipeline Template to query/manipulate. Passed via HTTP Parameter (URL or Body).
-const pipelineTemplateSchema = yup.object().shape(
-  {
-    pipelineTemplateUid: yup.string().uuid().required()
-  }
-);
+const pipelineTemplateSchema = yup.string().uuid().required();
 
 /**
  * Double check the parameter exists in the request. If not, provide the provided defaultValue.
@@ -39,11 +35,23 @@ function reqParam(req, param, defaultValue = undefined) {
   );
 }
 
+function safePipelineTemplateUid(req, idParamName) {
+  // Get the raw UID
+  const pipelineTemplateUid = reqParam(req, idParamName);
+
+  // Check validity
+  if (pipelineTemplateSchema.isValidSync(pipelineTemplateUid)) {
+    return pipelineTemplateUid;
+  }
+
+  // Fall back to a NULL UID
+  return null;
+}
 /**
  * Get the list of Pipeline Templates
  */
 router.get('/', async (req, res) => {
-  const { deploymentUid, publisherUid } = req.ezPublisherHeader;
+  const { publisherUid } = req.ezPublisherHeader;
 
   let foundRecords = [];
   let thereWasAnError = false;
@@ -101,8 +109,8 @@ router.get('/', async (req, res) => {
  * Get the content of a specific Pipeline Template
  */
 router.get('/:id', async (req, res) => {
-  const pipelineTemplateId = reqParam(req, 'id');
-  const { deploymentUid, publisherUid } = req.ezPublisherHeader;
+  const pipelineTemplateId = safePipelineTemplateUid(req, 'id');
+  const { publisherUid } = req.ezPublisherHeader;
 
   let foundRecords = [];
   let thereWasAnError = false;
