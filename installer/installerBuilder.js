@@ -1,5 +1,16 @@
+/**
+ * Build the Installer (using Inno Setup) and create/save its Hash (SHA256)
+ * *
+ * Changes log:
+ * Tony Massé - 2021-09-17 - Inno Setup encapsulation script
+ * Tony Massé - 2022-02-04 - Add Hash calculation
+ */
+
 // eslint-disable-next-line import/no-extraneous-dependencies
 const yargs = require('yargs');
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
 const parsedArguments = yargs
   // .option('installerHelper', {
@@ -24,37 +35,74 @@ const parsedArguments = yargs
 // Grab the version from the Package file
 const { version } = require('../package.json');
 
+// Prep directories from parameters
+const distDirectory = (
+  parsedArguments && parsedArguments.distDirectory && parsedArguments.distDirectory.length
+    ? parsedArguments.distDirectory
+    : undefined
+);
+
+const distSubDirectory = (
+  parsedArguments && parsedArguments.distSubDirectory && parsedArguments.distSubDirectory.length
+    ? parsedArguments.distSubDirectory
+    : undefined
+);
+
+// const installerHelper = (
+//   parsedArguments && parsedArguments.installerHelper && parsedArguments.installerHelper.length
+//     ? parsedArguments.installerHelper
+//     : undefined
+// );
+
+// Build the name of the new Installer
+const targetInstallerFileName = `EZ-Cloud.v${version}.Server-Installer`;
+const targetInstallerFileNameWithExt = `EZ-Cloud.v${version}.Server-Installer.exe`;
+const targetInstallerFileFullPath = path.join(distDirectory, targetInstallerFileNameWithExt);
+
+// Run Inno Setup to build the installer
+// eslint-disable-next-line no-console
+console.log('👷 Build the installer...');
 // eslint-disable-next-line import/no-extraneous-dependencies
 require('innosetup')(
   './installer/installerBuilder.iss',
   {
-    O: (
-      parsedArguments && parsedArguments.distDirectory && parsedArguments.distDirectory.length
-        ? parsedArguments.distDirectory
-        : undefined
-    ),
-    F: `EZ-Cloud.v${version}.Server-Installer`,
+    O: distDirectory,
+    F: targetInstallerFileName,
     DVersion: version,
-    DDistDirectory: (
-      parsedArguments && parsedArguments.distDirectory && parsedArguments.distDirectory.length
-        ? parsedArguments.distDirectory
-        : undefined
-    ),
-    DDistSubDirectory: (
-      parsedArguments && parsedArguments.distSubDirectory && parsedArguments.distSubDirectory.length
-        ? parsedArguments.distSubDirectory
-        : undefined
-    // ),
-    // DInstallerHelper: (
-    //   parsedArguments && parsedArguments.installerHelper && parsedArguments.installerHelper.length
-    //     ? parsedArguments.installerHelper
-    //     : undefined
-    )
+    DDistDirectory: distDirectory,
+    DDistSubDirectory: distSubDirectory
+    // DInstallerHelper: installerHelper
   },
-  (error) => {
-    if (error) {
+  (buildError) => {
+    if (buildError) {
       // eslint-disable-next-line no-console
-      console.log(error);
+      console.log('❌ Failed.', buildError);
+    } else {
+      // eslint-disable-next-line no-console
+      console.log('✔️  Done. File: ', targetInstallerFileNameWithExt);
+
+      // Create the SHA256 hash of the fresh Installer.exe file and write it to disk
+      // eslint-disable-next-line no-console
+      console.log(`⚙ Create the SHA256 hash of the fresh "${targetInstallerFileNameWithExt}" file...`);
+      try {
+        const fileBuffer = fs.readFileSync(targetInstallerFileFullPath);
+        const hashSum = crypto.createHash('sha256');
+        hashSum.update(fileBuffer);
+
+        const hashAsHex = hashSum.digest('hex');
+
+        // Build the SHA file name
+        const targetHashFileName = `${targetInstallerFileFullPath}.sha256`;
+
+        // Write to disk
+        fs.writeFileSync(targetHashFileName, hashAsHex);
+
+        // eslint-disable-next-line no-console
+        console.log('✔️  Done. Hash:', hashAsHex);
+      } catch (hashError) {
+        // eslint-disable-next-line no-console
+        console.error('❌ Failed.', hashError.message);
+      }
     }
   }
 );
