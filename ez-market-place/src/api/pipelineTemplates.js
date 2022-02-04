@@ -12,7 +12,7 @@ const db = require('../shared/database-connector');
 // Define input schemas
 
 // UID of the Pipeline Template to query/manipulate. Passed via HTTP Parameter (URL or Body).
-const pipelineTemplateSchema = yup.string().uuid().required();
+const pipelineTemplateUidSchema = yup.string().uuid().required();
 
 /**
  * Double check the parameter exists in the request. If not, provide the provided defaultValue.
@@ -40,7 +40,7 @@ function safePipelineTemplateUid(req, idParamName) {
   const pipelineTemplateUid = reqParam(req, idParamName);
 
   // Check validity
-  if (pipelineTemplateSchema.isValidSync(pipelineTemplateUid)) {
+  if (pipelineTemplateUidSchema.isValidSync(pipelineTemplateUid)) {
     return pipelineTemplateUid;
   }
 
