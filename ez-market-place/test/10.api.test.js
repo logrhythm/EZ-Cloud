@@ -2,6 +2,10 @@ const request = require('supertest');
 
 const app = require('../src/app');
 
+function hasNoErrorFieldInBody(res) {
+  if ('error' in res.body) throw new Error('endpoint returned an error');
+}
+
 describe('GET /api/v1', () => {
   it('responds with a json message', (done) => {
     request(app)
@@ -31,7 +35,7 @@ describe('GET /api/v1/pipelineTemplates', async () => {
       .expect(/found/)
       .expect(/returned/)
       .expect(/records/)
-      // .expect((res) => Array.isArray(res.body)) // Not working...
+      .expect(hasNoErrorFieldInBody)
       .end(done);
   });
 });
@@ -39,7 +43,7 @@ describe('GET /api/v1/pipelineTemplates', async () => {
 describe('GET /api/v1/pipelineTemplates/{id}', async () => {
   it('responds with a json message', (done) => {
     request(app)
-      .get('/api/v1/pipelineTemplates/abc123')
+      .get('/api/v1/pipelineTemplates/00000000-0000-0000-0000-000000000000')
       .trustLocalhost()
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -51,7 +55,7 @@ describe('GET /api/v1/pipelineTemplates/{id}', async () => {
       .expect(/found/)
       .expect(/returned/)
       .expect(/records/)
-      // .expect((res) => Array.isArray(res.body)) // Not working...
+      .expect(hasNoErrorFieldInBody)
       .end(done);
   });
 });
