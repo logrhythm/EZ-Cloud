@@ -130,7 +130,7 @@ function safeHeaderUids(req) {
     return headerUids;
   }
 
-  // Fall back to existing by empty fields
+  // Fall back to existing but empty fields
   return {
     deploymentUid: '',
     publisherUid: ''
