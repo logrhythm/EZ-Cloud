@@ -119,7 +119,8 @@ router.get('/', async (req, res) => {
           ON publishers.uid = pipeline_templates.publisher_uid
         WHERE
           statuses.id <= 1 -- Visible and Pending Review
-          OR pipeline_templates.publisher_uid = :publisherUid
+          OR
+          pipeline_templates.publisher_uid = :publisherUid -- Items's publisher can see it no matter the item's status
           `
     },
     {
@@ -181,7 +182,8 @@ router.get('/:id', async (req, res) => {
             pipeline_templates.uid = :pipelineTemplateId
             AND (
               statuses.id <= 1 -- Visible and Pending Review
-              OR pipeline_templates.publisher_uid = :publisherUid
+              OR
+              pipeline_templates.publisher_uid = :publisherUid -- Items's publisher can see it no matter the item's status
             )
           `
       },
