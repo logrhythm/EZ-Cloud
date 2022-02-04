@@ -7,7 +7,12 @@ const { logToSystem } = require('./shared/systemLogging');
 // -------
 // LOGGING
 
-// Log the Web requests / responses to the System Journal
+/**
+ * Log the Web requests / responses to the System Journal
+ * @param {*} req Express Router's request object
+ * @param {*} res Express Router's response object
+ * @param {*} next Express Router's next function
+ */
 function logHttpToSystem(req, res, next) {
   logToSystem('Verbose', `HTTP Request | client_ip: ${(req.socket && req.socket._peername && req.socket._peername.address ? req.socket._peername.address : '-')} | client_port: ${(req.socket && req.socket._peername && req.socket._peername.port ? req.socket._peername.port : '-')} | deployment_uid: ${(req.ezPublisherHeader && req.ezPublisherHeader.deploymentUid ? req.ezPublisherHeader.deploymentUid : '-')} | publisher_uid: ${(req.ezPublisherHeader && req.ezPublisherHeader.publisherUid ? req.ezPublisherHeader.publisherUid : '-')} | method: ${(req.method ? req.method : '-')} | path: ${(req.url ? req.url : '-')}`);
   next();
@@ -16,6 +21,12 @@ function logHttpToSystem(req, res, next) {
 // --------------
 // ERROR HANDLING
 
+/**
+ * Return 404-Not
+ * @param {*} req Express Router's request object
+ * @param {*} res Express Router's response object
+ * @param {*} next Express Router's next function
+ */
 function notFound(req, res, next) {
   res.status(404);
   const error = new Error('Not Found');
@@ -23,6 +34,13 @@ function notFound(req, res, next) {
 }
 
 /* eslint-disable no-unused-vars */
+/**
+ * Deal and return error messages
+ * @param {*} err Express Router's error object
+ * @param {*} req Express Router's request object
+ * @param {*} res Express Router's response object
+ * @param {*} next Express Router's next function
+ */
 function errorHandler(err, req, res, next) {
   res.status(res.statusCode || 500);
 
