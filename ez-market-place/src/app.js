@@ -14,14 +14,15 @@ app.use(bodyParser.json({ limit: '5mb' }));
 const middlewares = require('./middlewares');
 const api = require('./api');
 
+// Extract the deployment and publisher UIDs from the "ez-publisher" Header
+app.use(middlewares.extractDeploymentAndPublishUids);
+
 // Log the Web requests / responses to the System Journal
 app.use(middlewares.logHttpToSystem);
+
 // To protect against clickjacking
 app.use(middlewares.setXFrameOptions);
 app.use(middlewares.setContentSecurityPolicy);
-
-// Extract the deployment and publisher UIDs from the "ez-publisher" Header
-app.use(middlewares.extractDeploymentAndPublishUids);
 
 app.get('/test', (req, res) => {
   res.json({
