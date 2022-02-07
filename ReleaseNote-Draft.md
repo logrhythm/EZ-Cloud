@@ -5,6 +5,7 @@
 - NodeJS (v12.16 or above) 👈 Installer will offer to install NodeJS v14.17.6-x64 for you
 - MS SQL (v2012 or above)
 - Microsoft Windows (v2012 or above)
+- Docker version 20 or above (on the Open Collectors)
 
 ## Setup
 ### Microsoft Windows
@@ -108,6 +109,7 @@
 - Will fail silently (start Tail, Deploy, etc...) if SSH Credentials are incorrect
 - Will fail to deploy log shippers if not using the `root` account or an account with full `sudo` access
 - If using the Fan Out feature - OpenCollector will refuse to import JQ Transform
+- Open Collector machines running older versions of Docker (anything below v20) will fail to Tail
 
 ## Report a bug or issue
 - Use the [Issues](https://github.com/TonyMasse/EZ-Cloud/issues) on GitHub
