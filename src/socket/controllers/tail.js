@@ -336,7 +336,8 @@ async function tailInit(socket, payload) {
           })
           // Get the logs of the Beat sent to STDOUT to get them in the Client's Shipper's Comms
           // Tail -F /var/lib/docker/volumes/genericbeat_spool_volume_{Beat_ID}/_data/realtime.tail
-          .exec(`docker logs --follow --since 10s "${logRhythmFullyQualifiedBeatName}" >&2 & sudo tail -F /var/lib/docker/volumes/${beatName}_spool_volume_${beatId}/_data/realtime.tail`, {
+          .exec(`docker logs --follow --since 10s "${logRhythmFullyQualifiedBeatName}" >&2 & cat | sudo -S tail -F /var/lib/docker/volumes/${beatName}_spool_volume_${beatId}/_data/realtime.tail`, {
+            in: (configSsh.pass ? configSsh.pass : ''),
             err(stderr) {
               // console.log('STDERR:::' + stderr);
               if (socket.connected) {
@@ -540,7 +541,8 @@ async function tailInit(socket, payload) {
           })
           // Get the logs of the Beat sent to STDOUT to get them in the Client's Shipper's Comms
           // Tail -F /var/lib/docker/volumes/webhookbeat_spool_volume_{Beat_ID}/_data/realtime.tail
-          .exec(`docker logs --follow --since 10s "${logRhythmFullyQualifiedBeatName}" >&2 & sudo tail -F /var/lib/docker/volumes/${beatName}_spool_volume_${beatId}/_data/realtime.tail`, {
+          .exec(`docker logs --follow --since 10s "${logRhythmFullyQualifiedBeatName}" >&2 & cat | sudo -S tail -F /var/lib/docker/volumes/${beatName}_spool_volume_${beatId}/_data/realtime.tail`, {
+            in: (configSsh.pass ? configSsh.pass : ''),
             err(stderr) {
               // console.log('STDERR:::' + stderr);
               if (socket.connected) {
