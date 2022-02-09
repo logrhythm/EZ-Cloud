@@ -329,7 +329,7 @@ describe('PUT /api/v1/pipelineTemplates/{id}', async () => {
   });
 });
 
-describe('PUT /api/v1/pipelineTemplates/{id}', async () => {
+describe('PUT /api/v1/pipelineTemplates/{id}   (non-existing UID)', async () => {
   const tempUuid = uuidv4();
   it('responds with a json message with ".result.affectedRows" === 0', (done) => {
     request(app)
@@ -365,6 +365,65 @@ describe('PUT /api/v1/pipelineTemplates/{id}', async () => {
           && res.body.result
           && res.body.result.affectedRows === 0
         )) throw new Error('endpoint did not return .result.affectedRows === 0');
+      })
+      .end(done);
+  });
+});
+
+describe('DELETE /api/v1/pipelineTemplates/{id}   (non-existing UID)', async () => {
+  const tempUuid = uuidv4();
+  it('responds with a json message with ".result.affectedRows" === 0', (done) => {
+    request(app)
+      .delete(`/api/v1/pipelineTemplates/${tempUuid}`)
+      .trustLocalhost()
+      .set('EZ-Publisher', ezPublisherHeaderValue)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .expect(hasNoErrorFieldInBody)
+      .expect(/action/)
+      .expect(/description/)
+      .expect(/pageSize/)
+      .expect(/pageNumber/)
+      .expect(/found/)
+      .expect(/returned/)
+      .expect(/records/)
+      .expect((res) => {
+        if (!(
+          res.body.returned === 0
+          && res.body.records.length === 0
+          && res.body.result
+          && res.body.result.affectedRows === 0
+        )) throw new Error('endpoint did not return .result.affectedRows === 0');
+      })
+      .end(done);
+  });
+});
+
+describe('DELETE /api/v1/pipelineTemplates/{id}', async () => {
+  it('responds with a json message with ".result.affectedRows" === 1', (done) => {
+    request(app)
+      .delete(`/api/v1/pipelineTemplates/${pipelineTemplateUid}`)
+      .trustLocalhost()
+      .set('EZ-Publisher', ezPublisherHeaderValue)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .expect(hasNoErrorFieldInBody)
+      .expect(/action/)
+      .expect(/description/)
+      .expect(/pageSize/)
+      .expect(/pageNumber/)
+      .expect(/found/)
+      .expect(/returned/)
+      .expect(/records/)
+      .expect((res) => {
+        if (!(
+          res.body.returned === 0
+          && res.body.records.length === 0
+          && res.body.result
+          && res.body.result.affectedRows === 1
+        )) throw new Error('endpoint did not delete the newly updated Pipeline Template');
       })
       .end(done);
   });
