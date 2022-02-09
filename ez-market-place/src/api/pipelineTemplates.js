@@ -397,8 +397,63 @@ router.put('/:id', async (req, res) => {
 /**
  * Delete a specific Pipeline Template
  */
-router.delete('/:id', (req, res) => {
-  res.json(['🥌', 'id']);
+router.delete('/:id', async (req, res) => {
+  const pipelineTemplateUid = safePipelineTemplateUid(req, 'id');
+  const { publisherUid } = req.ezPublisherHeader;
+
+  let recordDeletionResult = null;
+  let thereWasAnError = false;
+  let errorMessage = defaultErrorMessage;
+
+  if (!pipelineTemplateUid) {
+    thereWasAnError = true;
+    errorMessage = 'Missing or invalid Pipeline Template `UID` provided in the HTTP query parameter.';
+  }
+
+  if (!publisherUid) {
+    thereWasAnError = true;
+    errorMessage = 'Missing or invalid Publisher UID provided in the `ez-publisher` HTTP Header.';
+  }
+
+  if (!thereWasAnError) {
+    // Delete the item
+    try {
+      recordDeletionResult = await db.pool.query({
+        namedPlaceholders: true,
+        sql: `
+          DELETE
+            FROM
+              \`ez-market-place\`.\`pipeline_templates\`
+            WHERE
+              \`uid\` = :pipelineTemplateUid
+              AND
+              \`publisher_uid\` = :publisherUid;
+          `
+      },
+      {
+        // Named parameters
+        pipelineTemplateUid,
+        publisherUid
+      });
+    } catch (error) {
+      thereWasAnError = true;
+      errorMessage = `Error updating the database. Code: ${(error && error.code ? error.code : 'N/A')}`;
+    }
+  }
+
+  res.json(
+    {
+      action: 'delete_pipeline_template',
+      description: 'Delete a specific Pipeline Template',
+      pageNumber: 1,
+      pageSize: 1,
+      found: 0,
+      returned: 0,
+      records: [],
+      error: (thereWasAnError ? errorMessage : undefined),
+      result: recordDeletionResult || undefined
+    }
+  );
 });
 
 module.exports = router;
