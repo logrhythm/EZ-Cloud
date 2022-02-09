@@ -244,86 +244,88 @@ router.post('/', async (req, res) => {
   //     stats: yup.object()
   //   }
 
-  // Insert the item
-  try {
-    // eslint-disable-next-line max-len
-    // INSERT INTO `ez-market-place`.`pipeline_templates` (`uid`, `created`, `modified`, `publisher_uid`, `collection_configuration`, `mapping_configuration`, `stats`) VALUES ('uid', '2022-02-04 18:20:13', '2022-02-04 18:20:14', 'e5b8cc39-ae9d-4f1c-aa57-7a0950f4a3b1', '{coll}', '{mapping}', '{stats}');
-    recordCreationResult = await db.pool.query({
-      namedPlaceholders: true,
-      sql: `
-        INSERT
-          INTO \`ez-market-place\`.\`pipeline_templates\`
-            (
-              \`uid\`,
-              \`publisher_uid\`,
-              \`name\`,
-              \`collection_configuration\`,
-              \`mapping_configuration\`,
-              \`stats\`
-            )
-          VALUES
-            (
-              :pipelineTemplateUid,
-              :publisherUid,
-              :templateName,
-              :templateCollectionConfiguration,
-              :templateMappingConfiguration,
-              :templateStats
-            );
-        `
-    },
-    {
-      // Named parameters
-      pipelineTemplateUid: pipelineTemplate.pipelineTemplateUid,
-      publisherUid,
-      templateName: pipelineTemplate.name,
-      templateCollectionConfiguration: pipelineTemplate.collectionConfiguration || {},
-      templateMappingConfiguration: pipelineTemplate.fieldsMapping || {},
-      templateStats: pipelineTemplate.stats || {}
-    });
-  } catch (error) {
-    thereWasAnError = true;
-    errorMessage = `Error updating the database. Code: ${(error && error.code ? error.code : 'N/A')}`;
-  }
+  if (!thereWasAnError) {
+    // Insert the item
+    try {
+      // eslint-disable-next-line max-len
+      // INSERT INTO `ez-market-place`.`pipeline_templates` (`uid`, `created`, `modified`, `publisher_uid`, `collection_configuration`, `mapping_configuration`, `stats`) VALUES ('uid', '2022-02-04 18:20:13', '2022-02-04 18:20:14', 'e5b8cc39-ae9d-4f1c-aa57-7a0950f4a3b1', '{coll}', '{mapping}', '{stats}');
+      recordCreationResult = await db.pool.query({
+        namedPlaceholders: true,
+        sql: `
+          INSERT
+            INTO \`ez-market-place\`.\`pipeline_templates\`
+              (
+                \`uid\`,
+                \`publisher_uid\`,
+                \`name\`,
+                \`collection_configuration\`,
+                \`mapping_configuration\`,
+                \`stats\`
+              )
+            VALUES
+              (
+                :pipelineTemplateUid,
+                :publisherUid,
+                :templateName,
+                :templateCollectionConfiguration,
+                :templateMappingConfiguration,
+                :templateStats
+              );
+          `
+      },
+      {
+        // Named parameters
+        pipelineTemplateUid: pipelineTemplate.pipelineTemplateUid,
+        publisherUid,
+        templateName: pipelineTemplate.name,
+        templateCollectionConfiguration: pipelineTemplate.collectionConfiguration || {},
+        templateMappingConfiguration: pipelineTemplate.fieldsMapping || {},
+        templateStats: pipelineTemplate.stats || {}
+      });
+    } catch (error) {
+      thereWasAnError = true;
+      errorMessage = `Error updating the database. Code: ${(error && error.code ? error.code : 'N/A')}`;
+    }
 
-  // // Query the DB
-  // try {
-  //   // Query the DB
-  //   foundRecords = await db.pool.query({
-  //     namedPlaceholders: true,
-  //     sql: `
-  //       SELECT
-  //         pipeline_templates.uid,
-  //         statuses.name AS status,
-  //         pipeline_templates.created,
-  //         pipeline_templates.modified,
-  //         publishers.display_name AS publisher,
-  //         NULL AS collection_configuration,
-  //         NULL AS mapping_configuration,
-  //         pipeline_templates.stats
-  //       FROM
-  //         pipeline_templates
-  //       INNER JOIN statuses
-  //         ON pipeline_templates.status = statuses.id
-  //       LEFT OUTER JOIN publishers
-  //         ON publishers.uid = pipeline_templates.publisher_uid
-  //       WHERE
-  //         pipeline_templates.uid = :pipelineTemplateUid
-  //         AND (
-  //           statuses.id <= 1 -- Visible and Pending Review
-  //           OR
-  //           pipeline_templates.publisher_uid = :publisherUid -- Items's publisher can see it no matter the item's status
-  //         )
-  //       `
-  //   },
-  //   {
-  //     // Named parameters
-  //     pipelineTemplateUid: pipelineTemplate.pipelineTemplateUid,
-  //     publisherUid
-  //   });
-  // } catch (error) {
-  //   thereWasAnError = true;
-  // }
+    // // Query the DB
+    // try {
+    //   // Query the DB
+    //   foundRecords = await db.pool.query({
+    //     namedPlaceholders: true,
+    //     sql: `
+    //       SELECT
+    //         pipeline_templates.uid,
+    //         statuses.name AS status,
+    //         pipeline_templates.created,
+    //         pipeline_templates.modified,
+    //         publishers.display_name AS publisher,
+    //         NULL AS collection_configuration,
+    //         NULL AS mapping_configuration,
+    //         pipeline_templates.stats
+    //       FROM
+    //         pipeline_templates
+    //       INNER JOIN statuses
+    //         ON pipeline_templates.status = statuses.id
+    //       LEFT OUTER JOIN publishers
+    //         ON publishers.uid = pipeline_templates.publisher_uid
+    //       WHERE
+    //         pipeline_templates.uid = :pipelineTemplateUid
+    //         AND (
+    //           statuses.id <= 1 -- Visible and Pending Review
+    //           OR
+    //           pipeline_templates.publisher_uid = :publisherUid -- Items's publisher can see it no matter the item's status
+    //         )
+    //       `
+    //   },
+    //   {
+    //     // Named parameters
+    //     pipelineTemplateUid: pipelineTemplate.pipelineTemplateUid,
+    //     publisherUid
+    //   });
+    // } catch (error) {
+    //   thereWasAnError = true;
+    // }
+  }
 
   res.json(
     {
@@ -382,34 +384,36 @@ router.put('/:id', async (req, res) => {
   //     stats: yup.object()
   //   }
 
-  // Update the item
-  try {
-    // Update the provided fields of the Pipeline Template. If absent, they are left as is.
-    recordUpdateResult = await db.pool.query({
-      namedPlaceholders: true,
-      sql: `
-        UPDATE
-          \`ez-market-place\`.\`pipeline_templates\`
-          SET
-            \`name\` = :templateName,
-            ${pipelineTemplate.collectionConfiguration ? '`collection_configuration` = :templateCollectionConfiguration,' : '/* No Collection Configuration present */'}
-            ${pipelineTemplate.fieldsMapping ? '`mapping_configuration` = :templateMappingConfiguration,' : '/* No Field Mapping Configuration present */'}
-            ${pipelineTemplate.stats ? '`stats` = :templateStats' : '/* No Stats present */'}
-          WHERE
-            \`uid\`=:pipelineTemplateUid;
-        `
-    },
-    {
-      // Named parameters
-      pipelineTemplateUid: pipelineTemplate.pipelineTemplateUid,
-      templateName: pipelineTemplate.name,
-      templateCollectionConfiguration: pipelineTemplate.collectionConfiguration || {},
-      templateMappingConfiguration: pipelineTemplate.fieldsMapping || {},
-      templateStats: pipelineTemplate.stats || {}
-    });
-  } catch (error) {
-    thereWasAnError = true;
-    errorMessage = `Error updating the database. Code: ${(error && error.code ? error.code : 'N/A')}`;
+  if (!thereWasAnError) {
+    // Update the item
+    try {
+      // Update the provided fields of the Pipeline Template. If absent, they are left as is.
+      recordUpdateResult = await db.pool.query({
+        namedPlaceholders: true,
+        sql: `
+          UPDATE
+            \`ez-market-place\`.\`pipeline_templates\`
+            SET
+              \`name\` = :templateName,
+              ${pipelineTemplate.collectionConfiguration ? '`collection_configuration` = :templateCollectionConfiguration,' : '/* No Collection Configuration present */'}
+              ${pipelineTemplate.fieldsMapping ? '`mapping_configuration` = :templateMappingConfiguration,' : '/* No Field Mapping Configuration present */'}
+              ${pipelineTemplate.stats ? '`stats` = :templateStats' : '/* No Stats present */'}
+            WHERE
+              \`uid\`=:pipelineTemplateUid;
+          `
+      },
+      {
+        // Named parameters
+        pipelineTemplateUid: pipelineTemplate.pipelineTemplateUid,
+        templateName: pipelineTemplate.name,
+        templateCollectionConfiguration: pipelineTemplate.collectionConfiguration || {},
+        templateMappingConfiguration: pipelineTemplate.fieldsMapping || {},
+        templateStats: pipelineTemplate.stats || {}
+      });
+    } catch (error) {
+      thereWasAnError = true;
+      errorMessage = `Error updating the database. Code: ${(error && error.code ? error.code : 'N/A')}`;
+    }
   }
 
   res.json(
