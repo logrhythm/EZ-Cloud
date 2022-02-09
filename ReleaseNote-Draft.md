@@ -83,6 +83,7 @@
   - Deployment UID randomly generated at installation time
   - URL for the EZ Market Place stored in configuration file
   - Publisher UID column added to user table
+- [v0.8.2] Mapping Editor - Provide password to Sudo commands during Tail operations
 - [v0.8.🚧] 
 
 ## What has been fixed in this release?
