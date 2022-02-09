@@ -343,8 +343,88 @@ router.post('/', async (req, res) => {
 /**
  * Update a specific Pipeline Template
  */
-router.put('/:id', (req, res) => {
-  res.json(['🥌', 'id']);
+router.put('/:id', async (req, res) => {
+  const pipelineTemplateUid = safePipelineTemplateUid(req, 'id');
+  const { publisherUid } = req.ezPublisherHeader;
+  // Gather the verified Pipeline Template object from the Body of the query
+  const pipelineTemplate = safePipelineTemplateObject(req);
+
+  let recordUpdateResult = null;
+  let thereWasAnError = false;
+  let errorMessage = 'Error updating or querying the database'; // Fall back error message
+
+  if (!pipelineTemplate) {
+    thereWasAnError = true;
+    errorMessage = 'Missing or invalid `pipelineTemplate` provided in the HTTP Body.';
+  }
+
+  // Checking the UIDs match, as otherwise at least one of them is wrong
+  if (
+    pipelineTemplate
+    && pipelineTemplate.pipelineTemplateUid
+    && pipelineTemplate.pipelineTemplateUid !== pipelineTemplateUid
+  ) {
+    thereWasAnError = true;
+    errorMessage = 'UID mismatch between the one provided in `pipelineTemplate` and the one provided in the HTTP Parameters.';
+  }
+
+  if (!publisherUid) {
+    thereWasAnError = true;
+    errorMessage = 'Missing or invalid Publisher UID provided in the `ez-publisher` HTTP Header.';
+  }
+
+  // const pipelineTemplateSchema = yup.object().shape(
+  //   {
+  //     pipelineTemplateUid: yup.string().uuid().required(),
+  //     name: yup.string().required(),
+  //     collectionConfiguration: yup.object(),
+  //     fieldsMapping: yup.object(),
+  //     stats: yup.object()
+  //   }
+
+  // Update the item
+  try {
+    // Update the provided fields of the Pipeline Template. If absent, they are left as is.
+    recordUpdateResult = await db.pool.query({
+      namedPlaceholders: true,
+      sql: `
+        UPDATE
+          \`ez-market-place\`.\`pipeline_templates\`
+          SET
+            \`name\` = :templateName,
+            ${pipelineTemplate.collectionConfiguration ? '`collection_configuration` = :templateCollectionConfiguration,' : '/* No Collection Configuration present */'}
+            ${pipelineTemplate.fieldsMapping ? '`mapping_configuration` = :templateMappingConfiguration,' : '/* No Field Mapping Configuration present */'}
+            ${pipelineTemplate.stats ? '`stats` = :templateStats' : '/* No Stats present */'}
+          WHERE
+            \`uid\`=:pipelineTemplateUid;
+        `
+    },
+    {
+      // Named parameters
+      pipelineTemplateUid: pipelineTemplate.pipelineTemplateUid,
+      templateName: pipelineTemplate.name,
+      templateCollectionConfiguration: pipelineTemplate.collectionConfiguration || {},
+      templateMappingConfiguration: pipelineTemplate.fieldsMapping || {},
+      templateStats: pipelineTemplate.stats || {}
+    });
+  } catch (error) {
+    thereWasAnError = true;
+    errorMessage = `Error updating the database. Code: ${(error && error.code ? error.code : 'N/A')}`;
+  }
+
+  res.json(
+    {
+      action: 'update_pipeline_template',
+      description: 'Update a specific Pipeline Template',
+      pageNumber: 1,
+      pageSize: 1,
+      found: 0,
+      returned: 0,
+      records: 0,
+      error: (thereWasAnError ? errorMessage : undefined),
+      result: recordUpdateResult || undefined
+    }
+  );
 });
 
 /**
