@@ -2,10 +2,12 @@
 *🚧🚧🚧🚧-🚧🚧-🚧🚧*
 
 ## Requirements
+- a non-HA and non-DR LogRhythm deployment (v7.5 or above)
 - NodeJS (v12.16 or above) 👈 Installer will offer to install NodeJS v14.17.6-x64 for you
 - MS SQL (v2012 or above)
 - Microsoft Windows (v2012 or above)
-- Docker version 20 or above (on the Open Collectors)
+- Ideally, one or more already configured, running and collected Open Collectors
+  - Docker version 20 or above (on the Open Collectors)
 
 ## Setup
 ### Microsoft Windows
@@ -110,6 +112,7 @@
 - Will fail to deploy log shippers if not using the `root` account or an account with full `sudo` access
 - If using the Fan Out feature - OpenCollector will refuse to import JQ Transform
 - Open Collector machines running older versions of Docker (anything below v20) will fail to Tail
+- HA and DR deployments of LogRhythm SIEM are not supported
 
 ## Report a bug or issue
 - Use the [Issues](https://github.com/TonyMasse/EZ-Cloud/issues) on GitHub
