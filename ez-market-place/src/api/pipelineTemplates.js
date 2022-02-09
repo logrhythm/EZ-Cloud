@@ -25,6 +25,9 @@ const pipelineTemplateSchema = yup.object().shape(
   }
 );
 
+// Fall back error message
+const defaultErrorMessage = 'Error updating or querying the database';
+
 /**
  * Double check the parameter exists in the request. If not, provide the provided defaultValue.
  * @param {*} req Express Router's request object
@@ -224,7 +227,7 @@ router.post('/', async (req, res) => {
 
   let recordCreationResult = null;
   let thereWasAnError = false;
-  let errorMessage = 'Error updating or querying the database'; // Fall back error message
+  let errorMessage = defaultErrorMessage;
 
   if (!pipelineTemplate) {
     thereWasAnError = true;
@@ -313,7 +316,7 @@ router.put('/:id', async (req, res) => {
 
   let recordUpdateResult = null;
   let thereWasAnError = false;
-  let errorMessage = 'Error updating or querying the database'; // Fall back error message
+  let errorMessage = defaultErrorMessage;
 
   if (!pipelineTemplate) {
     thereWasAnError = true;
