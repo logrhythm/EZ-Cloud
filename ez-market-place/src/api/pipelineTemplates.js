@@ -256,6 +256,7 @@ router.post('/', async (req, res) => {
             (
               \`uid\`,
               \`publisher_uid\`,
+              \`name\`,
               \`collection_configuration\`,
               \`mapping_configuration\`,
               \`stats\`
@@ -264,6 +265,7 @@ router.post('/', async (req, res) => {
             (
               :pipelineTemplateUid,
               :publisherUid,
+              :templateName,
               :templateCollectionConfiguration,
               :templateMappingConfiguration,
               :templateStats
@@ -274,6 +276,7 @@ router.post('/', async (req, res) => {
       // Named parameters
       pipelineTemplateUid: pipelineTemplate.pipelineTemplateUid,
       publisherUid,
+      templateName: pipelineTemplate.name,
       templateCollectionConfiguration: pipelineTemplate.collectionConfiguration || {},
       templateMappingConfiguration: pipelineTemplate.fieldsMapping || {},
       templateStats: pipelineTemplate.stats || {}
