@@ -79,6 +79,10 @@
 **v0.8.2**
 - [v0.8.2] Collection - Add support for LogRhythm Webhook Beat (HTTP only)
 - [v0.8.2] General - Error messages - Change "Error updating persistance layer" to a less misleading and more generic message
+- [v0.8.2] Installer and Backend - Add support for EZ Market Place
+  - Deployment UID randomly generated at installation time
+  - URL for the EZ Market Place stored in configuration file
+  - Publisher UID column added to user table
 - [v0.8.🚧] 
 
 ## What has been fixed in this release?
@@ -102,9 +106,12 @@
 
 **v0.8.2**
 - [v0.8.2] Security - CVE-2020-26301 - Upgrade `simple-ssh` to v1.1.0 to benefit from `ssh2` v1.5.0
+- [v0.8.2] Security - CVE-2022-0122, CVE-2022-0155, Sonatype-2012-0022 - Upgrade several Frontend packages
+- [v0.8.2] Security - CVE-2021-23566, CVE-2022-0355, CVE-2022-0155 - Upgrade several Backend packages
 - [v0.8.2] Security - Fix/upgrade several dependencies with low and medium risks
 - [v0.8.2] Security - Fix several low and medium security risks in EZ Backend source code
 - [v0.8.2] Shipper installer - Content Security Policy prevents download of `shippers_url.json` from GitHub
+- [v0.8.2] Collection Editor - Provide default value for `cursor_header_type` for Genericbeat
 - [v0.8.🚧] 
 
 ## Know issues :bug: :beetle:
