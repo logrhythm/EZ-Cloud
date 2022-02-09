@@ -109,6 +109,7 @@ router.get('/', async (req, res) => {
           pipeline_templates.created,
           pipeline_templates.modified,
           publishers.display_name AS publisher,
+          pipeline_templates.name,
           NULL AS collection_configuration,
           NULL AS mapping_configuration,
           pipeline_templates.stats
@@ -170,6 +171,7 @@ router.get('/:id', async (req, res) => {
             pipeline_templates.created,
             pipeline_templates.modified,
             publishers.display_name AS publisher,
+            pipeline_templates.name,
             NULL AS collection_configuration,
             NULL AS mapping_configuration,
             pipeline_templates.stats
