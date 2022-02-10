@@ -14,12 +14,36 @@ const { logToSystem } = require('../shared/systemLogging');
 // Import SQL Utilities
 const { getDataFromSql, createSqlVariables } = require('../shared/sqlUtils');
 
+const { encryptStringWithRsaPublicKey } = require('../shared/crypto');
+
+const ezMarketConfig = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'ez-market-place.json'), 'utf8'));
+const deploymentUid = ezMarketConfig.deploymentUid || '';
+const ezMarketServer = ezMarketConfig.server || {};
+
 // Get JWT Secret and TTL
 const jwtConfig = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'jwt.json'), 'utf8'));
 const jwtSecret = (jwtConfig && jwtConfig.secret ? jwtConfig.secret : '');
 const jwtTtl = (jwtConfig && jwtConfig.ttl ? jwtConfig.ttl : '1h');
 
-const createTokenSendResponse = (user, roles, isUserPrivileged, res, next) => {
+/**
+ * Create the JWT Token and sends it via res
+ * @param {String} user User login
+ * @param {Array} roles List of the users's Roles
+ * @param {Boolean} isUserPrivileged True if the user is part of a Privileged Role
+ * @param {String} publisherUid User's Publisher UID
+ * @param {BigInteger} masterId SIEM Master ID
+ * @param {*} res Express Router's response
+ * @param {*} next Express Router's Next function
+ */
+const createTokenSendResponse = (
+  user,
+  roles,
+  isUserPrivileged,
+  publisherUid,
+  masterId,
+  res,
+  next
+) => {
   const payload = {
     username: user || '',
     roles: roles || [],
@@ -41,7 +65,15 @@ const createTokenSendResponse = (user, roles, isUserPrivileged, res, next) => {
         res.json({
           payload: { token }, // null (unchecked) or object with token
           errors: [], // array of all the errors
-          outputs: [] // array of all the outputs
+          outputs: [], // array of all the outputs
+          deployment: {
+            uid: deploymentUid, // string with the Deployment UID
+            version: process.env.VERSION
+          },
+          publisher: {
+            publisherUid, // string with the Publisher UID
+            ezMarketUid: encryptStringWithRsaPublicKey(`${deploymentUid}:${publisherUid}:${masterId}`)
+          }
         });
       }
     }
@@ -75,6 +107,8 @@ router.post('/Login', async (req, res, next) => {
       const userRolesFromSql = {};
       const userRoles = [];
       let isUserPrivileged = false;
+      let publisherUid = '';
+      let masterId = 0;
 
       await getDataFromSql({
         targetVariable: userRolesFromSql,
@@ -84,9 +118,12 @@ router.post('/Login', async (req, res, next) => {
           -- ,[rbacRoles].[uid] AS 'roleUid'
           ,[rbacRoles].[name] AS 'roleName'
           ,[rbacRoles].[isPrivileged] AS 'roleIsPrivileged'
+          ,[rbacUserToRole].[publisherUid] AS 'publisherUid'
+          ,[get_SIEM_Master_ID].[MasterID] AS 'masterId'
         FROM [EZ].[dbo].[rbacRoles]
           RIGHT OUTER JOIN [EZ].[dbo].[rbacUserToRole] ON [rbacRoles].[uid] = [rbacUserToRole].[roleUid]
-        WHERE [rbacUserToRole].[login] = @username
+          LEFT OUTER JOIN [EZ].[dbo].[get_SIEM_Master_ID] ON [get_SIEM_Master_ID].[MasterID] IS NOT NULL
+          WHERE [rbacUserToRole].[login] = @username
         `,
         variables: createSqlVariables(
           req,
@@ -117,6 +154,10 @@ router.post('/Login', async (req, res, next) => {
             if (item.roleIsPrivileged === 1) {
               isUserPrivileged = true;
             }
+            // Grab the Publisher UID
+            publisherUid = item.publisherUid;
+            // Grab the SIEM Master ID
+            masterId = item.masterId;
           }
         });
       }
@@ -131,6 +172,8 @@ router.post('/Login', async (req, res, next) => {
           checkedCreds.username, // Login name
           userRoles, // Array of Roles
           isUserPrivileged, // True or False
+          publisherUid, // The Publisher UID assigned to the User
+          masterId, // The SIEM Master ID
           res,
           next
         );

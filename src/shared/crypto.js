@@ -18,6 +18,34 @@ function aesDecrypt(toDecrypt = '') {
   return decryptedBytes.toString(CryptoJS.enc.Utf8);
 }
 
+// For RSA encryption for EZ Market Place
+const crypto = require('crypto');
+
+const ezMarketServer = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'ez-market-place.json'), 'utf8')).server;
+const ezMarketPublicKey = (
+  ezMarketServer
+  && ezMarketServer.publicKey
+    ? ezMarketServer.publicKey
+    : null
+);
+
+if (!(ezMarketPublicKey && ezMarketPublicKey.length)) {
+  // eslint-disable-next-line no-console
+  console.warn('\x1b[31m%s\x1b[0m', 'WARNING - server.publicKey not set in config/ez-market-place.json. This will impact communication with EZ Market Plance. DO FIX THIS ASAP.');
+}
+
+function encryptStringWithRsaPublicKey(toEncrypt) {
+  let base64EncodedEncryptedMessage = '';
+  try {
+    const buffer = Buffer.from(toEncrypt);
+    const encrypted = crypto.publicEncrypt(ezMarketPublicKey, buffer);
+    base64EncodedEncryptedMessage = encrypted.toString('base64');
+  } catch (error) {
+    // Fail silenctly
+  }
+  return base64EncodedEncryptedMessage;
+}
+
 // Calling external LogRhythm tool to obfuscate secrets in configuration files
 
 const spawn = require('cross-spawn');
@@ -37,5 +65,6 @@ function lrObfuscateSecret(toObfuscate = '') {
 module.exports = {
   aesEncrypt,
   aesDecrypt,
+  encryptStringWithRsaPublicKey,
   lrObfuscateSecret
 };
