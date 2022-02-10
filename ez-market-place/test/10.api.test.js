@@ -1,7 +1,7 @@
 const request = require('supertest');
+const { v4: uuidv4 } = require('uuid');
 
 const app = require('../src/app');
-const { v4: uuidv4 } = require('uuid');
 
 const pipelineTemplateUid = uuidv4();
 const ezPublisherHeaderValue = '33f66b74-7cea-4a0e-b981-249c01ae1138:baac1908-8daf-40e3-952f-f0b17c93fe4c'
