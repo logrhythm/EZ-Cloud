@@ -5,6 +5,9 @@ private/
 # See config.sample/ for example of config files
 config/
 
+# Private key of the Market place
+ez-market-place/certificates/ez-market-place.key.pem
+
 # Build from webpack
 dist/
 
