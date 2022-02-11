@@ -20,6 +20,10 @@ def is_matching:
       ."@metadata".device_type == "{{EZ_stream_name_placeholder}}"
       or
       ."@metadata".device_type == "{{EZ_compact_stream_name_placeholder}}"
+      or
+      .device_type == "{{EZ_stream_name_placeholder}}"
+      or
+      .device_type == "{{EZ_compact_stream_name_placeholder}}"
     )
 ;
 `
@@ -91,7 +95,7 @@ def add_field($input_field; output_field):
 def get_io_format:
     {
         "input": .,
-        "message": .message | fromjson,
+        "message": if .message != null then (.message | fromjson) else {} end,
 {{EZ_flatten_array_placeholder}}
         "output": {
             "original_message": {{EZ_original_message_placeholder}}
