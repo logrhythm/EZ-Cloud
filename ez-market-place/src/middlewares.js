@@ -4,6 +4,9 @@ const yup = require('yup');
 // Load the System Logging functions
 const { logToSystem } = require('./shared/systemLogging');
 
+// Load the RSA decrypter
+const { decryptStringWithRsaPrivateKey } = require('./shared/crypto');
+
 // -------
 // LOGGING
 
@@ -92,7 +95,8 @@ function setContentSecurityPolicy(req, res, next) {
 const headerUidsSchema = yup.object().shape(
   {
     deploymentUid: yup.string().uuid().required(),
-    publisherUid: yup.string().uuid().required()
+    publisherUid: yup.string().uuid().required(),
+    masterId: yup.number().integer().positive().required()
   }
 );
 
@@ -102,17 +106,24 @@ const headerUidsSchema = yup.object().shape(
  * @returns Object containing both UIDs
  */
 function extractHeaderUids(req) {
-  const ezPublisherHeader = (
+  const encryptedEzPublisherHeader = (
     req
     && req.headers
     && req.headers['ez-publisher']
       ? req.headers['ez-publisher']
-      : ':'
+      : ''
   );
-  const uids = ezPublisherHeader.split(':', 2);
+
+  // Decrypt the header
+  const ezPublisherHeader = decryptStringWithRsaPrivateKey(encryptedEzPublisherHeader);
+
+  // Split the data into its 3 components
+  const uids = String(ezPublisherHeader).split(':', 3);
+
   return {
     deploymentUid: uids[0],
-    publisherUid: uids[1]
+    publisherUid: uids[1],
+    masterId: Number(uids[2])
   };
 }
 
@@ -133,7 +144,8 @@ function safeHeaderUids(req) {
   // Fall back to existing but empty fields
   return {
     deploymentUid: '',
-    publisherUid: ''
+    publisherUid: '',
+    masterId: 0
   };
 }
 
