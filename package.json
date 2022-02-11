@@ -59,6 +59,7 @@
     "overrides": {
         "minimist": ">=1.2.5",
         "nanoid": ">=3.1.31",
-        "minimatch": ">=3.0.5"
+        "minimatch": ">=3.0.5",
+        "follow-redirects": ">=1.14.8"
     }
 }

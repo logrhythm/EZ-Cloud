@@ -42,7 +42,8 @@
     "markdown-it": ">=12.3.2",
     "node-forge": ">=1.2.1",
     "express": ">=4.17.2",
-    "minimatch": ">=3.0.5"
+    "minimatch": ">=3.0.5",
+    "follow-redirects": ">=1.14.8"
   },
   "browserslist": [
     "last 10 Chrome versions",
