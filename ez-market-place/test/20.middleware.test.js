@@ -82,7 +82,7 @@ describe('Middlewares test', () => {
 
     // encryptedEzPublisherValues.forEach()
     ezPublisherHeaderValues.forEach(ezPublisherHeaderValueToTest => {
-      it(`${(ezPublisherHeaderValueToTest.good ? 'extract' : 'discard')} Deployment and Publisher UIDs and Master ID - ${(ezPublisherHeaderValueToTest.good ? 'Acceptable' : 'Unacceptable')} value: "${ezPublisherHeaderValueToTest.clear}"`, (done) => {
+      it(`${(ezPublisherHeaderValueToTest.good ? 'extracts' : 'discards')} Deployment and Publisher UIDs and Master ID - ${(ezPublisherHeaderValueToTest.good ? 'Acceptable' : 'Unacceptable')} value: "${ezPublisherHeaderValueToTest.clear}"`, (done) => {
         request.headers['ez-publisher'] = ezPublisherHeaderValueToTest.encrypted;
         /**
          * Middlewares expects to be passed 3 arguments: request, response, and next.
