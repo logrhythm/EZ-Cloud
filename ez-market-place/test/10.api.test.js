@@ -1,10 +1,17 @@
+const path = require('path');
 const request = require('supertest');
 const { v4: uuidv4 } = require('uuid');
+
+// Define the base directory name of the process
+process.env.baseDirname = process.env.baseDirname || path.join(__dirname, '..');
 
 const app = require('../src/app');
 
 const pipelineTemplateUid = uuidv4();
-const ezPublisherHeaderValue = '33f66b74-7cea-4a0e-b981-249c01ae1138:baac1908-8daf-40e3-952f-f0b17c93fe4c'
+
+// const nzPublisherHeaderValue = '33f66b74-7cea-4a0e-b981-249c01ae1138:baac1908-8daf-40e3-952f-f0b17c93fe4c';
+// 33f66b74-7cea-4a0e-b981-249c01ae1138:baac1908-8daf-40e3-952f-f0b17c93fe4c:2748491
+const encryptedEzPublisherHeaderValue = 'LDiYHGd1w44xVqf17RWncZ3I6IYjfh3R3TVwWerX7j6R6uCKiDipf4W73M/HqOXDZxSaVok6qJWVrXsediAS03N2/WF1G/bAwj5a53qJ349twJ2NkpgMI/sgAE2pIp2plK1dSjN8w2unTa+R37CCK2V1K/+ducTa4dvXWME2hCcduQ8pH2BtHjEoWMZ7OgM7veJ/MnLujFISekLpmNertLYGJUEttazYQhsPEwyr/HzlFgErJgqz+d1nuUh4LXUcYW7kOT1/QUFRsnK+WJD382/hz6gZij5M+kp2GlrQoydhZouZUutVlZwczOXM5L9TlUBrtdoYur8JKXbyu/g0KQ==';
 
 function hasNoErrorFieldInBody(res) {
   if ('error' in res.body) throw new Error('endpoint returned an error');
@@ -15,7 +22,7 @@ describe('GET /api/v1', () => {
     request(app)
       .get('/api/v1')
       .trustLocalhost()
-      .set('EZ-Publisher', ezPublisherHeaderValue)
+      .set('EZ-Publisher', encryptedEzPublisherHeaderValue)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -30,7 +37,7 @@ describe('GET /api/v1/pipelineTemplates', async () => {
     request(app)
       .get('/api/v1/pipelineTemplates')
       .trustLocalhost()
-      .set('EZ-Publisher', ezPublisherHeaderValue)
+      .set('EZ-Publisher', encryptedEzPublisherHeaderValue)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -51,7 +58,7 @@ describe('GET /api/v1/pipelineTemplates/{id}', async () => {
     request(app)
       .get('/api/v1/pipelineTemplates/79af3507-038d-4128-acea-b8e5fd15d3d8')
       .trustLocalhost()
-      .set('EZ-Publisher', ezPublisherHeaderValue)
+      .set('EZ-Publisher', encryptedEzPublisherHeaderValue)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -72,7 +79,7 @@ describe('GET /api/v1/pipelineTemplates/{id}', async () => {
     request(app)
       .get('/api/v1/pipelineTemplates/00000000-0000-0000-0000-000000000000')
       .trustLocalhost()
-      .set('EZ-Publisher', ezPublisherHeaderValue)
+      .set('EZ-Publisher', encryptedEzPublisherHeaderValue)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -93,7 +100,7 @@ describe('GET /api/v1/pipelineTemplates/{id}', async () => {
     request(app)
       .get('/api/v1/pipelineTemplates/bogus-malformed-uuid-0000')
       .trustLocalhost()
-      .set('EZ-Publisher', ezPublisherHeaderValue)
+      .set('EZ-Publisher', encryptedEzPublisherHeaderValue)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -125,7 +132,7 @@ describe('POST /api/v1/pipelineTemplates/', async () => {
         }
       )
       .trustLocalhost()
-      .set('EZ-Publisher', ezPublisherHeaderValue)
+      .set('EZ-Publisher', encryptedEzPublisherHeaderValue)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -155,7 +162,7 @@ describe('GET /api/v1/pipelineTemplates/{id}', async () => {
     request(app)
       .get(`/api/v1/pipelineTemplates/${pipelineTemplateUid}`)
       .trustLocalhost()
-      .set('EZ-Publisher', ezPublisherHeaderValue)
+      .set('EZ-Publisher', encryptedEzPublisherHeaderValue)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -195,7 +202,7 @@ describe('POST /api/v1/pipelineTemplates/', async () => {
         }
       )
       .trustLocalhost()
-      .set('EZ-Publisher', ezPublisherHeaderValue)
+      .set('EZ-Publisher', encryptedEzPublisherHeaderValue)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -235,7 +242,7 @@ describe('PUT /api/v1/pipelineTemplates/{id}', async () => {
         }
       )
       .trustLocalhost()
-      .set('EZ-Publisher', ezPublisherHeaderValue)
+      .set('EZ-Publisher', encryptedEzPublisherHeaderValue)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -265,7 +272,7 @@ describe('GET /api/v1/pipelineTemplates/{id}', async () => {
     request(app)
       .get(`/api/v1/pipelineTemplates/${pipelineTemplateUid}`)
       .trustLocalhost()
-      .set('EZ-Publisher', ezPublisherHeaderValue)
+      .set('EZ-Publisher', encryptedEzPublisherHeaderValue)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -305,7 +312,7 @@ describe('PUT /api/v1/pipelineTemplates/{id}', async () => {
         }
       )
       .trustLocalhost()
-      .set('EZ-Publisher', ezPublisherHeaderValue)
+      .set('EZ-Publisher', encryptedEzPublisherHeaderValue)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -346,7 +353,7 @@ describe('PUT /api/v1/pipelineTemplates/{id}   (non-existing UID)', async () => 
         }
       )
       .trustLocalhost()
-      .set('EZ-Publisher', ezPublisherHeaderValue)
+      .set('EZ-Publisher', encryptedEzPublisherHeaderValue)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -376,7 +383,7 @@ describe('DELETE /api/v1/pipelineTemplates/{id}   (non-existing UID)', async () 
     request(app)
       .delete(`/api/v1/pipelineTemplates/${tempUuid}`)
       .trustLocalhost()
-      .set('EZ-Publisher', ezPublisherHeaderValue)
+      .set('EZ-Publisher', encryptedEzPublisherHeaderValue)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -405,7 +412,7 @@ describe('DELETE /api/v1/pipelineTemplates/{id}', async () => {
     request(app)
       .delete(`/api/v1/pipelineTemplates/${pipelineTemplateUid}`)
       .trustLocalhost()
-      .set('EZ-Publisher', ezPublisherHeaderValue)
+      .set('EZ-Publisher', encryptedEzPublisherHeaderValue)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
