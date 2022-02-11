@@ -16,9 +16,10 @@ const { getDataFromSql, createSqlVariables } = require('../shared/sqlUtils');
 
 const { encryptStringWithRsaPublicKey } = require('../shared/crypto');
 
+// EZ Market Place configuration
 const ezMarketConfig = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'ez-market-place.json'), 'utf8'));
-const deploymentUid = ezMarketConfig.deploymentUid || '';
-const ezMarketServer = ezMarketConfig.server || {};
+const deploymentUid = (ezMarketConfig && ezMarketConfig.deploymentUid ? ezMarketConfig.deploymentUid : '');
+const ezMarketServer = (ezMarketConfig && ezMarketConfig.server ? ezMarketConfig.server : {});
 
 // Get JWT Secret and TTL
 const jwtConfig = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'jwt.json'), 'utf8'));
@@ -63,17 +64,23 @@ const createTokenSendResponse = (
       } else {
         // login all good
         res.json({
-          payload: { token }, // null (unchecked) or object with token
-          errors: [], // array of all the errors
-          outputs: [], // array of all the outputs
-          deployment: {
-            uid: deploymentUid, // string with the Deployment UID
-            version: process.env.VERSION
+          payload: {
+            token, // null (unchecked) or object with token
+            deployment: {
+              uid: deploymentUid, // string with the Deployment UID
+              version: process.env.VERSION
+            },
+            publisher: {
+              publisherUid, // string with the Publisher UID
+              ezMarketUid: encryptStringWithRsaPublicKey(`${deploymentUid}:${publisherUid}:${masterId}`)
+            },
+            ezMarketServer: {
+              baseUrl: ezMarketServer.baseUrl,
+              baseApiPath: ezMarketServer.baseApiPath
+            }
           },
-          publisher: {
-            publisherUid, // string with the Publisher UID
-            ezMarketUid: encryptStringWithRsaPublicKey(`${deploymentUid}:${publisherUid}:${masterId}`)
-          }
+          errors: [], // array of all the errors
+          outputs: [] // array of all the outputs
         });
       }
     }
