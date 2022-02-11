@@ -22,6 +22,7 @@
     "eslint-plugin-import": "^2.25.4",
     "genversion": "^3.0.2",
     "mocha": "^9.2.0",
+    "node-mocks-http": "^1.11.0",
     "nodemon": "^2.0.15",
     "supertest": "^6.2.2"
   },
