@@ -9,6 +9,9 @@ const middlewares = require('../src/middlewares');
 let request = {};
 let response = {};
 
+// Set one default good values for the `ez-publisher` HTTP Header
+const ezPublisherHeaderDefaultGoodValue = 'EhrEJMHUHdwC0gTonRU8HCLIJm/OIzaxT1fqAvOL9iG0ejbz05YGp1NsbGWfw0/5gKPnWTZxoZQxcle6X+ddAse1b1M/b10ydnDRIa015+reXvOwq7KifRRoAlKmme89Ez4au6brpwzMvhrwn/0XygVzVY5401rUeX0mf6MilY/9Ulk2cCK2i4cotgbZcsyNxondKz3ZvGEhKz/8D+QDghslp3BjKz9BoDTcAnhFJkYrmBWm8Umb+XYKL3YuxvClZiS7iXp83gSoS/3K1asAz0pEwRKygexvnsoz6uUiGVv4cqFlWKkaZD9HOqe+ZahuHbkjLkc5t8ss0MI8sJw8vg==';
+
 // Set of good and bad values for the `ez-publisher` HTTP Header
 const ezPublisherHeaderValues = [
   {
@@ -59,7 +62,8 @@ const ezPublisherHeaderValues = [
 ];
 
 describe('Middlewares test', () => {
-  context('Deployment and Publisher UIDs and Master ID are extracted from HTTP Headers and match defined schema (middlewares.extractDeploymentAndPublishUids)', () => {
+  // eslint-disable-next-line no-undef
+  context('Deployment and Publisher UIDs and Master ID are extracted from HTTP Headers and match defined schema (middlewares.extractDeploymentAndPublishUids) or discarded otherwise', () => {
     beforeEach((done) => {
       /**
        * before each test, reset the REQUEST and RESPONSE variables
@@ -67,21 +71,17 @@ describe('Middlewares test', () => {
        */
       request = httpMocks.createRequest({
         headers: {
-          'ez-publisher': 'EhrEJMHUHdwC0gTonRU8HCLIJm/OIzaxT1fqAvOL9iG0ejbz05YGp1NsbGWfw0/5gKPnWTZxoZQxcle6X+ddAse1b1M/b10ydnDRIa015+reXvOwq7KifRRoAlKmme89Ez4au6brpwzMvhrwn/0XygVzVY5401rUeX0mf6MilY/9Ulk2cCK2i4cotgbZcsyNxondKz3ZvGEhKz/8D+QDghslp3BjKz9BoDTcAnhFJkYrmBWm8Umb+XYKL3YuxvClZiS7iXp83gSoS/3K1asAz0pEwRKygexvnsoz6uUiGVv4cqFlWKkaZD9HOqe+ZahuHbkjLkc5t8ss0MI8sJw8vg=='
+          'ez-publisher': ezPublisherHeaderDefaultGoodValue
         },
         method: 'GET',
         url: '/api/v1'
-        // query: {
-        //   myid: '312'
-        // }
       });
       response = httpMocks.createResponse();
 
       done(); // call done so that the next test can run
     });
 
-    // encryptedEzPublisherValues.forEach()
-    ezPublisherHeaderValues.forEach(ezPublisherHeaderValueToTest => {
+    ezPublisherHeaderValues.forEach((ezPublisherHeaderValueToTest) => {
       it(`${(ezPublisherHeaderValueToTest.good ? 'extracts' : 'discards')} Deployment and Publisher UIDs and Master ID - ${(ezPublisherHeaderValueToTest.good ? 'Acceptable' : 'Unacceptable')} value: "${ezPublisherHeaderValueToTest.clear}"`, (done) => {
         request.headers['ez-publisher'] = ezPublisherHeaderValueToTest.encrypted;
         /**
