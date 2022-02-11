@@ -1,4 +1,8 @@
+const path = require('path');
 const request = require('supertest');
+
+// Define the base directory name of the process
+process.env.baseDirname = process.env.baseDirname || path.join(__dirname, '..');
 
 const app = require('../src/app');
 
