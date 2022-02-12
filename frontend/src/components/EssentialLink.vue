@@ -3,12 +3,21 @@
     clickable
     tag="a"
     :href="link"
+    v-if="title !== null"
   >
     <q-item-section
       v-if="icon"
-      avatar
+      side
     >
-      <q-icon :name="icon" :color="(isPageActive ? 'primary' : '')" />
+      <q-avatar size="24px" text-color="white" class="q-pa-none">
+        <q-icon :name="icon" size="sm" :color="(isPageActive ? 'primary' : '')" />
+        <q-badge
+          v-if="notification !== null"
+          floating
+          color="orange"
+          :label="notification"
+        />
+      </q-avatar>
     </q-item-section>
 
     <q-item-section>
@@ -18,6 +27,13 @@
       </q-item-label> -->
     </q-item-section>
   </q-item>
+
+  <q-item
+    v-else-if="spacer === true"
+  >
+  </q-item>
+
+  <q-separator v-else-if="separator === true" class="q-my-xs" />
 </template>
 
 <script>
@@ -26,7 +42,8 @@ export default {
   props: {
     title: {
       type: String,
-      required: true
+      // required: true,
+      default: null
     },
 
     caption: {
@@ -42,6 +59,22 @@ export default {
     icon: {
       type: String,
       default: ''
+    },
+
+    notification: {
+      // type: can be a String or a Number
+      type: [String, Number],
+      default: null
+    },
+
+    spacer: {
+      type: Boolean,
+      default: false
+    },
+
+    separator: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {

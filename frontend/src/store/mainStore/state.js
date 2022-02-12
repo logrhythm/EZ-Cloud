@@ -266,6 +266,20 @@ export default function () {
     userAccounts: [], // EZ Users on EZ Server
     userRoles: [], // Roles for EZ Users on EZ Server
     errorWikiUrlBase: 'https://github.com/TonyMasse/EZ-Cloud/wiki/Error-Messages#',
-    helpWikiUrlBase: 'https://github.com/TonyMasse/EZ-Cloud/wiki/Help#'
+    helpWikiUrlBase: 'https://github.com/TonyMasse/EZ-Cloud/wiki/Help#',
+    deployment: {
+      uid: null, // UID of the EZ Server
+      version: null // EZ Server's version
+    },
+    ezMarket: { // Details necessary to connect to the EZ Market Place
+      server: {
+        baseUrl: null,
+        baseApiPath: null
+      },
+      publisherUid: null,
+      ezMarketUid: null
+    },
+    ezMarketNotification: null, // Number (can be short text too) of notifications from EZ Market Place for the User // XXXX
+    ezMarketNotifications: [] // Notifications from EZ Market Place for the User
   }
 }

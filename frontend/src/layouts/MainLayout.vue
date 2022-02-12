@@ -48,10 +48,10 @@
             <q-item-label class="text-orange">Disconnected</q-item-label>
           </q-item-section>
         </q-item>
-        <q-separator class="q-my-md" v-if="!socket.connected"/>
+        <q-separator class="q-my-xs" v-if="!socket.connected"/>
         <EssentialLink
-          v-for="link in lowLinks"
-          :key="link.title"
+          v-for="(link, index) in lowLinks"
+          :key="index"
           v-bind="link"
           v-show="!link.needsPriviledge || (link.needsPriviledge && loggedInUserIsPrivileged)"
         />
@@ -148,6 +148,16 @@ export default {
       ],
       lowLinks: [
         {
+          title: 'EZ Market Place',
+          icon: 'storefront',
+          link: '#/MarketPlace',
+          id: 'ezMarketPlace',
+          notification: 5
+        },
+        {
+          separator: true
+        },
+        {
           title: 'Admin',
           icon: 'admin_panel_settings',
           link: '#/Admin',
@@ -157,6 +167,9 @@ export default {
           title: 'Settings',
           icon: 'settings',
           link: '#/Settings'
+        },
+        {
+          separator: true
         },
         {
           title: 'Log Out',
@@ -170,7 +183,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('mainStore', ['loggedInUser', 'loggedInUserIsPrivileged', 'errorWikiUrlBase'])
+    ...mapState('mainStore', ['loggedInUser', 'loggedInUserIsPrivileged', 'errorWikiUrlBase', 'ezMarketNotification'])
   },
   methods: {
     sanitiseWikiLinks (rawLinkRef) {
@@ -307,6 +320,20 @@ export default {
       this.errorPanelDetails.forEach(error => {
         console.log('📜 [LOG] |', error.timestampIso, '| Code:', error.code, '| Message:', error.message, '| WikiLink:', error.wikiLink)
       })
+    },
+    updateEzMarketNotification (payload) {
+      const ezMarketPlaceLink = this.lowLinks.find((link) => link.id === 'ezMarketPlace')
+      if (ezMarketPlaceLink) {
+        ezMarketPlaceLink.notification = payload
+      }
+    }
+  },
+  watch: {
+    ezMarketNotification: {
+      handler (newValue) {
+        this.updateEzMarketNotification(newValue)
+      },
+      immediate: true
     }
   },
   mounted () {

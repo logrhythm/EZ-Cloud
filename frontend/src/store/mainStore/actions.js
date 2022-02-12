@@ -566,6 +566,47 @@ export function deleteUserRole ({ state }, payload) {
   }
 }
 
+// ######################################################################
+// EZ MARKET PLACE
+// ######################################################################
+
+export function updateEzMarketNotification ({ commit }, payload) {
+  commit('updateEzMarketNotification', payload)
+}
+
+export function reloadEzMarketNotifications ({ state, commit }, payload) {
+  console.log('☁️ Downloading Notifications from EZ Cloud Market Place...')
+
+  // Building the full URL of the API root
+  const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+  // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+  fetch(ezMarketApiBaseUrl + '/notifications', {
+    credentials: 'omit',
+    referrerPolicy: 'no-referrer'
+
+    // ADD THE HEADER XXXX
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok.')
+      }
+      return response.json()
+    })
+    .then(data => {
+      if (data && Array.isArray(data)) {
+        commit('updateEzMarketNotification', data.length)
+        commit('updateEzMarketNotifications', data)
+        console.log('✔️ [API SUCCESS] Succesfully loaded ' + data.length + ' Notifications.')
+      } else {
+        throw new Error('Returned data wasn\'t a proper JSON array.')
+      }
+    })
+    .catch(error => {
+      console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+    })
+}
+
 //           ###    ########  ####       ##     ## ######## #### ##       #### ######## #### ########  ######
 //          ## ##   ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
 //         ##   ##  ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##

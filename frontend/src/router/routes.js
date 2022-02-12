@@ -117,6 +117,17 @@ const routes = [
     beforeEnter: isLoggedIn
   },
 
+  {
+    path: '/MarketPlace',
+    meta: { title: 'EZ Market Place' },
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/MarketPlace/Index.vue') }
+      // { path: 'Users', component: () => import('pages/MarketPlace/Users.vue') },
+      // { path: 'Roles', component: () => import('pages/MarketPlace/Roles.vue') }
+    ]
+  },
+
   // Always leave this as last one,
   // but you can also remove it
   {

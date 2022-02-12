@@ -135,6 +135,9 @@ export function updateJwtToken (state, payload) {
     } catch (err) {
       //
     }
+
+    // Gather EZ Market Place details
+    updateEzMarketDetails(state, payload)
   }
 }
 
@@ -161,5 +164,34 @@ export function getUserAccounts (state, payload) {
 export function getUserRoles (state, payload) {
   if (payload && Array.isArray(payload)) {
     state.userRoles = payload
+  }
+}
+
+// EZ Market Place
+
+export function updateEzMarketDetails (state, payload) {
+  if (payload) {
+    if (payload.ezMarketServer) {
+      state.ezMarket.server.baseUrl = payload.ezMarketServer.baseUrl
+      state.ezMarket.server.baseApiPath = payload.ezMarketServer.baseApiPath
+    }
+    if (payload.publisher) {
+      state.ezMarket.publisherUid = payload.publisher.publisherUid
+      state.ezMarket.ezMarketUid = payload.publisher.ezMarketUid
+    }
+    if (payload.deployment) {
+      state.deployment.uid = payload.deployment.uid
+      state.deployment.version = payload.deployment.version
+    }
+  }
+}
+
+export function updateEzMarketNotification (state, payload) {
+  state.ezMarketNotification = payload
+}
+
+export function updateEzMarketNotifications (state, payload) {
+  if (payload && Array.isArray(payload)) {
+    state.ezMarketNotifications = payload
   }
 }
