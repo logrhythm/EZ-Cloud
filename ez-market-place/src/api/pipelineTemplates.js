@@ -3,94 +3,15 @@ const express = require('express');
 
 const router = express.Router();
 
-// Schema validation
-const yup = require('yup');
-
 // Database connection
 const db = require('../shared/database-connector');
 
-// Define input schemas
-
-// UID of the Pipeline Template to query/manipulate. Passed via HTTP Parameter (URL or Body).
-const pipelineTemplateUidSchema = yup.string().uuid().required();
-
-// Structure for a Pipeline Template creation or update
-const pipelineTemplateSchema = yup.object().shape(
-  {
-    pipelineTemplateUid: yup.string().uuid().required(),
-    name: yup.string().required(),
-    collectionConfiguration: yup.object(),
-    fieldsMapping: yup.object(),
-    stats: yup.object()
-  }
-);
-
-// Fall back error message
-const defaultErrorMessage = 'Error updating or querying the database';
-
-/**
- * Double check the parameter exists in the request. If not, provide the provided defaultValue.
- * @param {*} req Express Router's request object
- * @param {*} param Name of the parameter to look for in the request
- * @param {*} defaultValue Optional fall back value if the parameter is not found
- * @returns Value of the found parameter, or the provided default value
- */
-function reqParam(req, param, defaultValue = undefined) {
-  return (
-    // eslint-disable-next-line no-nested-ternary
-    req
-    && req.params
-      ? (
-        req.params[param] !== undefined
-          ? req.params[param]
-          : defaultValue
-      )
-      : defaultValue
-  );
-}
-
-/**
- * Extract and sanitise Pipeline Template UID
- * @param {*} req Express Router's request object
- * @param {*} idParamName Name of the parameter to look for in the request
- * @returns Sanitised Pipeline Template UID
- */
-function safePipelineTemplateUid(req, idParamName) {
-  // Get the raw UID
-  const pipelineTemplateUid = reqParam(req, idParamName);
-
-  // Check validity
-  if (pipelineTemplateUidSchema.isValidSync(pipelineTemplateUid)) {
-    return pipelineTemplateUid;
-  }
-
-  // Fall back to a NULL UID
-  return null;
-}
-
-/**
- * Extract and sanitise Pipeline Template object
- * @param {*} req Express Router's request object
- * @returns Sanitised Pipeline Template object
- */
-function safePipelineTemplateObject(req) {
-  // Get the raw Pipeline Template object
-  const pipelineTemplateObject = (
-    req
-    && req.body
-    && req.body.pipelineTemplate
-      ? req.body.pipelineTemplate
-      : null
-  );
-
-  // Check validity
-  if (pipelineTemplateSchema.isValidSync(pipelineTemplateObject)) {
-    return pipelineTemplateObject;
-  }
-
-  // Fall back to a NULL object
-  return null;
-}
+// API Helpers
+const {
+  defaultErrorMessage,
+  safePipelineTemplateUid,
+  safePipelineTemplateObject
+} = require('../shared/api-helpers');
 
 /**
  * Get the list of Pipeline Templates
