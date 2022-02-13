@@ -570,8 +570,8 @@ export function deleteUserRole ({ state }, payload) {
 // EZ MARKET PLACE
 // ######################################################################
 
-export function updateEzMarketNotification ({ commit }, payload) {
-  commit('updateEzMarketNotification', payload)
+export function updateEzMarketNotificationNumber ({ commit }, payload) {
+  commit('updateEzMarketNotificationNumber', payload)
 }
 
 export function reloadEzMarketNotifications ({ state, commit }, payload) {
@@ -583,9 +583,10 @@ export function reloadEzMarketNotifications ({ state, commit }, payload) {
   // Using Fetch here, instead of getDataFromSite to avoid CORS problems
   fetch(ezMarketApiBaseUrl + '/notifications', {
     credentials: 'omit',
-    referrerPolicy: 'no-referrer'
-
-    // ADD THE HEADER XXXX
+    referrerPolicy: 'no-referrer',
+    headers: {
+      'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : '')
+    }
   })
     .then(response => {
       if (!response.ok) {
@@ -594,10 +595,12 @@ export function reloadEzMarketNotifications ({ state, commit }, payload) {
       return response.json()
     })
     .then(data => {
-      if (data && Array.isArray(data)) {
-        commit('updateEzMarketNotification', data.length)
-        commit('updateEzMarketNotifications', data)
-        console.log('✔️ [API SUCCESS] Succesfully loaded ' + data.length + ' Notifications.')
+      if (data && data.records && Array.isArray(data.records)) {
+        // Only flag the ones that are Unread
+        const unReadMessages = data.records.filter((notification) => notification && notification.statusName && notification.statusName === 'Unread').length
+        // Push the whole lot to the State
+        commit('updateEzMarketNotifications', data.records)
+        console.log(`✔️ [API SUCCESS] Succesfully loaded ${data.records.length} Notifications. Of which ${unReadMessages} are marked as Unread.`)
       } else {
         throw new Error('Returned data wasn\'t a proper JSON array.')
       }
@@ -605,6 +608,130 @@ export function reloadEzMarketNotifications ({ state, commit }, payload) {
     .catch(error => {
       console.log('⚠️ [API ERROR] Loading error: ' + error.message)
     })
+}
+
+export function loadEzMarketNotificationById ({ state, commit }, messageUid) {
+  // Building the full URL of the API root
+  const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+  if (messageUid && messageUid.length && state.ezMarketNotifications.find((notif) => notif && notif.messageUid === messageUid)) {
+    console.log('☁️ Downloading Notification from EZ Cloud Market Place...')
+
+    // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+    fetch(ezMarketApiBaseUrl + '/notifications/' + messageUid, {
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+      headers: {
+        'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : '')
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok.')
+        }
+        return response.json()
+      })
+      .then(data => {
+        if (data && data.records && Array.isArray(data.records)) {
+          // Only flag the ones that are Unread
+          const unReadMessages = data.records.filter((notification) => notification && notification.statusName && notification.statusName === 'Unread').length
+          // Push the whole lot to the State
+          commit('updateEzMarketNotificationsSubset', data.records)
+          console.log(`✔️ [API SUCCESS] Succesfully loaded ${data.records.length} Notifications. Of which ${unReadMessages} are marked as Unread.`)
+        } else {
+          throw new Error('Returned data wasn\'t a proper JSON array.')
+        }
+      })
+      .catch(error => {
+        console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+      })
+  }
+}
+
+export function updateEzMarketNotificationStatusTo ({ state, commit }, payload) {
+  const { messageUid, toStatus } = payload
+  if (messageUid && messageUid.length && toStatus && toStatus.length) {
+    const notification = state.ezMarketNotifications.find((notif) => notif && notif.messageUid === messageUid)
+    if (notification) {
+      // Building the full URL of the API root
+      const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+      // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+      fetch(ezMarketApiBaseUrl + '/notifications/' + messageUid, {
+        method: 'PUT',
+        credentials: 'omit',
+        referrerPolicy: 'no-referrer',
+        headers: {
+          'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          notification: {
+            messageUid: messageUid,
+            status: toStatus
+          }
+        })
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok.')
+          }
+          return response.json()
+        })
+        .then(data => {
+          if (data && data.result) {
+            console.log(`✔️ [API SUCCESS] Succesfully updated ${data.result.affectedRows || 0} Notification(s).`)
+            // Reload the item in question
+            loadEzMarketNotificationById({ state, commit }, messageUid)
+          } else {
+            throw new Error('Returned data wasn\'t a proper JSON array.')
+          }
+        })
+        .catch(error => {
+          console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+        })
+    }
+  }
+}
+export function deleteEzMarketNotificationById ({ state, commit }, messageUid) {
+  console.log('deleteEzMarketNotificationById', messageUid)
+  if (messageUid && messageUid.length && state.ezMarketNotifications.find((notif) => notif && notif.messageUid === messageUid)) {
+    console.log('☁️ Deleting Notification from EZ Cloud Market Place...')
+
+    // Building the full URL of the API root
+    const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+    // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+    fetch(ezMarketApiBaseUrl + '/notifications/' + messageUid, {
+      method: 'DELETE',
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+      headers: {
+        'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : '')
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok.')
+        }
+        return response.json()
+      })
+      .then(data => {
+        if (data && data.result) {
+          const affectedRows = data.result.affectedRows || 0
+          console.log(`✔️ [API SUCCESS] Succesfully deleted ${affectedRows} Notification(s).`)
+          if (affectedRows === 1) {
+            // Delete the item in question from the State
+            commit('deleteEzMarketNotificationById', messageUid)
+          }
+        } else {
+          throw new Error('Returned data wasn\'t a proper JSON array.')
+        }
+      })
+      .catch(error => {
+        console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+      })
+  }
 }
 
 //           ###    ########  ####       ##     ## ######## #### ##       #### ######## #### ########  ######

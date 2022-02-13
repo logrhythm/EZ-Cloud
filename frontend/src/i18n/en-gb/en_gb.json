@@ -89,6 +89,13 @@
   "Importing Shared Fields Mapping file...": "Importing Shared Fields Mapping file...",
   "Shared Fields Mapping file imported": "Shared Fields Mapping file imported",
   "Problem while importing Shared Fields Mapping file": "Problem while importing Shared Fields Mapping file",
+  "Notifications": "Notifications",
+  "You've got no notifications (yet...)": "You've got no notifications (yet...)",
   "Clear notifications": "Clear notifications",
-  "Reload": "Reload"
+  "Mark All Notifications as Read": "Mark All Notifications as Read",
+  "Reload": "Reload",
+  "Mark as Read": "Mark as Read",
+  "Mark as Unread": "Mark as Unread",
+  "Delete": "Delete",
+  "Confirm": "Confirm"
 }

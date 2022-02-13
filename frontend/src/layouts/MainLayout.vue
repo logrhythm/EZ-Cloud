@@ -152,7 +152,9 @@ export default {
           icon: 'storefront',
           link: '#/MarketPlace',
           id: 'ezMarketPlace',
-          notification: 5
+          notification: 5,
+          notificationColor: 'green',
+          notificationTextColor: 'white'
         },
         {
           separator: true
@@ -321,7 +323,7 @@ export default {
         console.log('📜 [LOG] |', error.timestampIso, '| Code:', error.code, '| Message:', error.message, '| WikiLink:', error.wikiLink)
       })
     },
-    updateEzMarketNotification (payload) {
+    updateEzMarketNotificationNumber (payload) {
       const ezMarketPlaceLink = this.lowLinks.find((link) => link.id === 'ezMarketPlace')
       if (ezMarketPlaceLink) {
         ezMarketPlaceLink.notification = payload
@@ -331,7 +333,7 @@ export default {
   watch: {
     ezMarketNotification: {
       handler (newValue) {
-        this.updateEzMarketNotification(newValue)
+        this.updateEzMarketNotificationNumber(newValue)
       },
       immediate: true
     }

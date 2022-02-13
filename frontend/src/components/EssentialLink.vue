@@ -9,12 +9,14 @@
       v-if="icon"
       side
     >
-      <q-avatar size="24px" text-color="white" class="q-pa-none">
+      <q-avatar size="24px" class="q-pa-none">
         <q-icon :name="icon" size="sm" :color="(isPageActive ? 'primary' : '')" />
         <q-badge
           v-if="notification !== null"
           floating
-          color="orange"
+          rounded
+          :color="notificationColor"
+          :text-color="notificationTextColor"
           :label="notification"
         />
       </q-avatar>
@@ -65,6 +67,16 @@ export default {
       // type: can be a String or a Number
       type: [String, Number],
       default: null
+    },
+
+    notificationColor: {
+      type: String,
+      default: 'orange'
+    },
+
+    notificationTextColor: {
+      type: String,
+      default: 'white'
     },
 
     spacer: {
