@@ -585,7 +585,8 @@ export function reloadEzMarketNotifications ({ state, commit }, payload) {
     credentials: 'omit',
     referrerPolicy: 'no-referrer',
     headers: {
-      'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : '')
+      'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+      'ez-version': (state.deployment && state.deployment.version ? state.deployment.version : '')
     }
   })
     .then(response => {
@@ -622,7 +623,8 @@ export function loadEzMarketNotificationById ({ state, commit }, messageUid) {
       credentials: 'omit',
       referrerPolicy: 'no-referrer',
       headers: {
-        'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : '')
+        'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+        'ez-version': (state.deployment && state.deployment.version ? state.deployment.version : '')
       }
     })
       .then(response => {
@@ -707,7 +709,8 @@ export function deleteEzMarketNotificationById ({ state, commit }, messageUid) {
       credentials: 'omit',
       referrerPolicy: 'no-referrer',
       headers: {
-        'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : '')
+        'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+        'ez-version': (state.deployment && state.deployment.version ? state.deployment.version : '')
       }
     })
       .then(response => {
