@@ -94,6 +94,7 @@
 - [v0.8.2] Frontend - Update Favicons with the new LogRhythm logo
 - [v0.8.2] Installer - Provides a SHA256 checksum of the installation file
 - [v0.8.2] Installer - Prevent overiding exisiting configuration files, HTTPS certificates and `.env` file
+- [v0.8.2] Move EZ-Cloud Repository from TonyMasse GitHub account to LogRhythm GitHub Corp account
 - [v0.8.🚧] 
 
 ## What has been fixed in this release?
