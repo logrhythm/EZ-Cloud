@@ -20,7 +20,7 @@ then
 cd "$EZ_API_ROOT/"
 
 # Use the bundled NodeJS  to start the EZ API service
-"$EZ_API_ROOT/bin/node/bin/node" "$EZ_API_ROOT/src/index.js" "$@"
+"$EZ_API_ROOT/bin/node/bin/node" "$EZ_API_ROOT/src/index.js" "$@" 2>&1 >> /var/log/ez-market-place.log
 
 else
 
@@ -28,6 +28,6 @@ cd "$EZ_API_ROOT/"
 
 # Use the system-wide NodeJS (if any) to start the EZ API service
 node --version >/dev/null 2>/dev/null || echo -e "CRITICAL: NodeJS not present. Exiting." ; exit 42;
-node "$EZ_API_ROOT/src/index.js" "$@"
+node "$EZ_API_ROOT/src/index.js" "$@" 2>&1 >> /var/log/ez-market-place.log
 
 fi
