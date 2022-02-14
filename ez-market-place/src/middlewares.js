@@ -17,7 +17,7 @@ const { decryptStringWithRsaPrivateKey } = require('./shared/crypto');
  * @param {*} next Express Router's next function
  */
 function logHttpToSystem(req, res, next) {
-  logToSystem('Verbose', `HTTP Request | client_ip: ${(req.socket && req.socket._peername && req.socket._peername.address ? req.socket._peername.address : '-')} | client_port: ${(req.socket && req.socket._peername && req.socket._peername.port ? req.socket._peername.port : '-')} | deployment_uid: ${(req.ezPublisherHeader && req.ezPublisherHeader.deploymentUid ? req.ezPublisherHeader.deploymentUid : '-')} | publisher_uid: ${(req.ezPublisherHeader && req.ezPublisherHeader.publisherUid ? req.ezPublisherHeader.publisherUid : '-')} | method: ${(req.method ? req.method : '-')} | path: ${(req.url ? req.url : '-')}`);
+  logToSystem('Verbose', `HTTP Request | client_ip: ${(req.socket && req.socket._peername && req.socket._peername.address ? req.socket._peername.address : '-')} | client_port: ${(req.socket && req.socket._peername && req.socket._peername.port ? req.socket._peername.port : '-')} | deployment_uid: ${(req.ezPublisherHeader && req.ezPublisherHeader.deploymentUid ? req.ezPublisherHeader.deploymentUid : '-')} | deployment_master_id: ${(req.ezPublisherHeader && req.ezPublisherHeader.masterId ? req.ezPublisherHeader.masterId : '-')} | publisher_uid: ${(req.ezPublisherHeader && req.ezPublisherHeader.publisherUid ? req.ezPublisherHeader.publisherUid : '-')} | method: ${(req.method ? req.method : '-')} | path: ${(req.url ? req.url : '-')}`);
   next();
 }
 
