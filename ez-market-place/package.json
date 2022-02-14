@@ -38,6 +38,6 @@
     "yup": "^0.32.11"
   },
   "overrides": {
-    "minimatch": ">=3.0.5"
+    "minimatch": "^3.0.5"
   }
 }
