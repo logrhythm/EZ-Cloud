@@ -8,7 +8,7 @@
     "dev": "npm run buildVersion && nodemon src/index.js",
     "lint": "eslint --fix src",
     "test": "mocha --exit",
-    "start": "node src/index.js"
+    "start": "npm run buildVersion && node src/index.js"
   },
   "author": "Tony Massé",
   "license": "MIT",
