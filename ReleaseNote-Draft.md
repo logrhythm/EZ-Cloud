@@ -83,7 +83,17 @@
   - Deployment UID randomly generated at installation time
   - URL for the EZ Market Place stored in configuration file
   - Publisher UID column added to user table
+  - Pass all the necessary details to Frontend to connect to EZ Market Place
 - [v0.8.2] Mapping Editor - Provide password to Sudo commands during Tail operations
+- [v0.8.2] EZ Market - First version
+  - Database structure
+  - API endpoints:
+    - PipelinesTemplate
+    - Notifications
+- [v0.8.2] Frontend - Integrate EZ Market Place, Market Icon, Market Page, Market Notifications
+- [v0.8.2] Frontend - Update Favicons with the new LogRhythm logo
+- [v0.8.2] Installer - Provides a SHA256 checksum of the installation file
+- [v0.8.2] Installer - Prevent overiding exisiting configuration files, HTTPS certificates and `.env` file
 - [v0.8.🚧] 
 
 ## What has been fixed in this release?
@@ -109,10 +119,15 @@
 - [v0.8.2] Security - CVE-2020-26301 - Upgrade `simple-ssh` to v1.1.0 to benefit from `ssh2` v1.5.0
 - [v0.8.2] Security - CVE-2022-0122, CVE-2022-0155, Sonatype-2012-0022 - Upgrade several Frontend packages
 - [v0.8.2] Security - CVE-2021-23566, CVE-2022-0355, CVE-2022-0155 - Upgrade several Backend packages
+- [v0.8.2] Security - CVE-2022-0536 - Upgrade `follow-redirects` to ^1.14.8 on both Backend and Frontend
+- [v0.8.2] Security - sonatype-2021-4879 - Upgrade `minimatch` to ^3.0.5 on both Backend, Frontend and Market
 - [v0.8.2] Security - Fix/upgrade several dependencies with low and medium risks
 - [v0.8.2] Security - Fix several low and medium security risks in EZ Backend source code
 - [v0.8.2] Shipper installer - Content Security Policy prevents download of `shippers_url.json` from GitHub
 - [v0.8.2] Collection Editor - Provide default value for `cursor_header_type` for Genericbeat
+- [v0.8.2] Frontend - Fix JQ Filter and JQ Transform
+  - Filter in on `device_type` from multiple locations
+  - Parse `.message` only if present
 - [v0.8.🚧] 
 
 ## Know issues :bug: :beetle:
