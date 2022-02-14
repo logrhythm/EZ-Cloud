@@ -6,7 +6,7 @@ After=network-online.target
 StartLimitIntervalSec=0
 
 [Service]
-ExecStart=/usr/local/bin/start.sh
+ExecStart=/usr/local/ez-market-place/EZ-Cloud/ez-market-place/bin/start.sh
 Restart=always
 RestartSec=5
 Type=simple
