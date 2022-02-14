@@ -54,15 +54,15 @@ Name: openConfigFileHttps_key_tmp; Description: "HTTPS Encrypted Key file"; Grou
 
 [Files]
 Source: "{#DistSubDirectory}\bin\*"; DestDir: "{app}\bin"; Components: ezCloudServer ezCloudUpgradeServer; AfterInstall: FileReplaceTokenByConstant('{app}\bin\ezcloudserver.xml', 'ROOT_PATH_EZ-Cloud', '{app}')
-Source: "{#DistSubDirectory}\config\database.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceSqlCreds('{app}\config\database.json')
-Source: "{#DistSubDirectory}\config\ez-market-place.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceTokenByV4Uuid('{app}\config\ez-market-place.json', 'CHANGE_ME_WITH_A_UUID')
-Source: "{#DistSubDirectory}\config\jwt.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceTokenIfTaskSelected('{app}\config\jwt.json', 'CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS', 50, 'autoGenerateTokens\jwt')
-Source: "{#DistSubDirectory}\config\secure.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceTokenIfTaskSelected('{app}\config\secure.json', 'CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS', 120, 'autoGenerateTokens\aes')
-Source: "{#DistSubDirectory}\config\https.*"; DestDir: "{app}\config"; Components: ezCloudServer
+Source: "{#DistSubDirectory}\config\database.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceSqlCreds('{app}\config\database.json'); Flags: onlyifdoesntexist
+Source: "{#DistSubDirectory}\config\ez-market-place.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceTokenByV4Uuid('{app}\config\ez-market-place.json', 'CHANGE_ME_WITH_A_UUID'); Flags: onlyifdoesntexist
+Source: "{#DistSubDirectory}\config\jwt.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceTokenIfTaskSelected('{app}\config\jwt.json', 'CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS', 50, 'autoGenerateTokens\jwt'); Flags: onlyifdoesntexist
+Source: "{#DistSubDirectory}\config\secure.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceTokenIfTaskSelected('{app}\config\secure.json', 'CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS', 120, 'autoGenerateTokens\aes'); Flags: onlyifdoesntexist
+Source: "{#DistSubDirectory}\config\https.*"; DestDir: "{app}\config"; Components: ezCloudServer; Flags: onlyifdoesntexist
 Source: "{#DistSubDirectory}\config.sample\*"; DestDir: "{app}\config.sample"; Components: ezCloudServer ezCloudUpgradeServer
 Source: "{#DistSubDirectory}\database\*"; DestDir: "{app}\database"; Components: ezCloudServer ezCloudUpgradeServer
 Source: "{#DistSubDirectory}\resources\*"; DestDir: "{app}\resources"; Components: ezCloudServer ezCloudUpgradeServer
-Source: "{#DistSubDirectory}\.env"; DestDir: "{app}"; Components: ezCloudServer
+Source: "{#DistSubDirectory}\.env"; DestDir: "{app}"; Components: ezCloudServer; Flags: onlyifdoesntexist
 Source: "{#DistSubDirectory}\.env.sample"; DestDir: "{app}"; Components: ezCloudServer ezCloudUpgradeServer
 Source: "{#DistSubDirectory}\public_web_root\*"; DestDir: "{app}\public_web_root"; Components: ezCloudFrontend ezCloudUpgradeFrontend; Flags: recursesubdirs
 ; For NodeJS Installation
