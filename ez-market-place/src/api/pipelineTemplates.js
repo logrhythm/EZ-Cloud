@@ -176,7 +176,7 @@ router.post('/', async (req, res) => {
         namedPlaceholders: true,
         sql: `
           INSERT
-            INTO \`ez-market-place\`.\`pipeline_templates\`
+            INTO \`pipeline_templates\`
               (
                 \`uid\`,
                 \`publisher_uid\`,
@@ -276,7 +276,7 @@ router.put('/:id', async (req, res) => {
         namedPlaceholders: true,
         sql: `
           UPDATE
-            \`ez-market-place\`.\`pipeline_templates\`
+            \`pipeline_templates\`
             SET
               \`name\` = :templateName,
               ${pipelineTemplate.collectionConfiguration ? '`collection_configuration` = :templateCollectionConfiguration,' : '/* No Collection Configuration present */'}
@@ -344,7 +344,7 @@ router.delete('/:id', async (req, res) => {
         sql: `
           DELETE
             FROM
-              \`ez-market-place\`.\`pipeline_templates\`
+              \`pipeline_templates\`
             WHERE
               \`uid\` = :pipelineTemplateUid
               AND

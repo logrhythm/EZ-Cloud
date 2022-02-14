@@ -255,7 +255,7 @@ router.put('/:id', async (req, res) => {
         namedPlaceholders: true,
         sql: `
           UPDATE
-            \`ez-market-place\`.\`messages\`
+            \`messages\`
             SET
               ${notification.status ? '`status` = :notificationStatusAsInt' : '/* No Status present */'}
               ${notification.status && notification.flags ? ',' : ''}
@@ -320,7 +320,7 @@ router.delete('/:id', async (req, res) => {
         sql: `
           DELETE
             FROM
-              \`ez-market-place\`.\`messages\`
+              \`messages\`
             WHERE
               \`uid\` = :notificationUid
               AND
