@@ -16,6 +16,9 @@ const api = require('./api');
 
 // Extract the deployment and publisher UIDs from the "ez-publisher" Header
 app.use(middlewares.extractDeploymentAndPublishUids);
+// Extract the Version numbers of EZ Server and EZ Client from the "ez-server-version"
+// and "ez-client-version" Headers
+app.use(middlewares.extractServerAndClientVersions);
 
 // Log the Web requests / responses to the System Journal
 app.use(middlewares.logHttpToSystem);

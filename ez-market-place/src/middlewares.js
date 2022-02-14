@@ -17,7 +17,7 @@ const { decryptStringWithRsaPrivateKey } = require('./shared/crypto');
  * @param {*} next Express Router's next function
  */
 function logHttpToSystem(req, res, next) {
-  logToSystem('Verbose', `HTTP Request | client_ip: ${(req.socket && req.socket._peername && req.socket._peername.address ? req.socket._peername.address : '-')} | client_port: ${(req.socket && req.socket._peername && req.socket._peername.port ? req.socket._peername.port : '-')} | deployment_uid: ${(req.ezPublisherHeader && req.ezPublisherHeader.deploymentUid ? req.ezPublisherHeader.deploymentUid : '-')} | deployment_master_id: ${(req.ezPublisherHeader && req.ezPublisherHeader.masterId ? req.ezPublisherHeader.masterId : '-')} | publisher_uid: ${(req.ezPublisherHeader && req.ezPublisherHeader.publisherUid ? req.ezPublisherHeader.publisherUid : '-')} | method: ${(req.method ? req.method : '-')} | path: ${(req.url ? req.url : '-')}`);
+  logToSystem('Verbose', `HTTP Request | client_ip: ${(req.socket && req.socket._peername && req.socket._peername.address ? req.socket._peername.address : '-')} | client_port: ${(req.socket && req.socket._peername && req.socket._peername.port ? req.socket._peername.port : '-')} | deployment_uid: ${(req.ezPublisherHeader && req.ezPublisherHeader.deploymentUid ? req.ezPublisherHeader.deploymentUid : '-')} | deployment_master_id: ${(req.ezPublisherHeader && req.ezPublisherHeader.masterId ? req.ezPublisherHeader.masterId : '-')} | publisher_uid: ${(req.ezPublisherHeader && req.ezPublisherHeader.publisherUid ? req.ezPublisherHeader.publisherUid : '-')} | server_version: ${(req.ezVersions && req.ezVersions.server ? req.ezVersions.server : '-')} | client_version: ${(req.ezVersions && req.ezVersions.client ? req.ezVersions.client : '-')} | method: ${(req.method ? req.method : '-')} | path: ${(req.url ? req.url : '-')}`);
   next();
 }
 
@@ -87,7 +87,7 @@ function setContentSecurityPolicy(req, res, next) {
 }
 
 // -----------------------------------
-// EXTRACTION OF THE UIDs FROM HEADERS
+// EXTRACTION OF THE UIDs and Versions FROM HEADERS
 
 // Define input schemas
 
@@ -99,6 +99,9 @@ const headerUidsSchema = yup.object().shape(
     masterId: yup.number().integer().positive().required()
   }
 );
+
+// Version numbers of EZ Server and EZ Client. Passed via HTTP Header.
+const headerVersionSchema = yup.string().required().matches(/\d+\.\d+\.\d+/);
 
 /**
  * Extract the UIDs of Deployement and Publisher
@@ -161,11 +164,76 @@ function extractDeploymentAndPublishUids(req, res, next) {
   next();
 }
 
+/**
+ * Extract the Version numbers of EZ Server and EZ Client
+ * @param {*} req Express Router's request object
+ * @returns Object containing both Versions
+ */
+function extractHeaderVersions(req) {
+  const rawServerVersionHeader = (
+    req
+    && req.headers
+    && req.headers['ez-server-version']
+      ? req.headers['ez-server-version']
+      : ''
+  );
+
+  const rawClientVersionHeader = (
+    req
+    && req.headers
+    && req.headers['ez-client-version']
+      ? req.headers['ez-client-version']
+      : ''
+  );
+
+  return {
+    server: rawServerVersionHeader || '',
+    client: rawClientVersionHeader || ''
+  };
+}
+
+/**
+ * Safely extract the Version numbers of EZ Server and EZ Client
+ * @param {*} req Express Router's request object
+ * @returns Object containing both UIDs
+ */
+function safeHeaderVersions(req) {
+  // Get the raw UIDs
+  const headerVersions = extractHeaderVersions(req);
+  const cleanVersionsHeader = {
+    server: null,
+    client: null
+  };
+
+  // Check validity
+  if (headerVersionSchema.isValidSync(headerVersions.server)) {
+    cleanVersionsHeader.server = headerVersions.server;
+  }
+  if (headerVersionSchema.isValidSync(headerVersions.client)) {
+    cleanVersionsHeader.client = headerVersions.client;
+  }
+
+  return cleanVersionsHeader;
+}
+
+/**
+ * Extract the Version numbers of EZ Server and EZ Client from the "ez-server-version"
+ * and "ez-client-version" Headers and store them in req.ezVersions
+ * @param {*} req Express Router's request object
+ * @param {*} res Express Router's response object
+ * @param {*} next Express Router's next function
+ */
+function extractServerAndClientVersions(req, res, next) {
+  req.ezVersions = safeHeaderVersions(req);
+  next();
+}
+
 module.exports = {
   logHttpToSystem,
   notFound,
   errorHandler,
   setXFrameOptions,
   setContentSecurityPolicy,
-  extractDeploymentAndPublishUids
+  extractDeploymentAndPublishUids,
+  extractServerAndClientVersions
 };
