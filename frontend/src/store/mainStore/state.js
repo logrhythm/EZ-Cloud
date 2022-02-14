@@ -265,8 +265,8 @@ export default function () {
     openCollectorLogSources: [],
     userAccounts: [], // EZ Users on EZ Server
     userRoles: [], // Roles for EZ Users on EZ Server
-    errorWikiUrlBase: 'https://github.com/TonyMasse/EZ-Cloud/wiki/Error-Messages#',
-    helpWikiUrlBase: 'https://github.com/TonyMasse/EZ-Cloud/wiki/Help#',
+    errorWikiUrlBase: 'https://github.com/logrhythm/EZ-Cloud/wiki/Error-Messages#',
+    helpWikiUrlBase: 'https://github.com/logrhythm/EZ-Cloud/wiki/Help#',
     deployment: {
       uid: null, // UID of the EZ Server
       version: null // EZ Server's version

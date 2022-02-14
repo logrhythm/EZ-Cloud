@@ -42,6 +42,13 @@
   - [x] Update API endpoint `UpdatePipeline`
   - [x] Update API endpoint `GetPipeline`
 - [x] SQL - Log an error when SQL fails to connect
+- [x] Move Repository to LogRhythm Corp GitHub account
+  - [x] Transfer Repo's ownership
+  - [x] Check move
+  - [x] Check Repo is still Public
+  - [x] Check Wiki is still Visible and Public
+  - [x] Check "Pages" is still Visible and Public
+  - [x] Update source code to swap any mention of `github.com/TonyMasse/EZ-Cloud` to `github.com/logrhythm/EZ-Cloud`
 
 ## TO FIX
 - [x] URL might contain directory traversal attempt

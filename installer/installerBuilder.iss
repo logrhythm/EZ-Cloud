@@ -1,4 +1,4 @@
-#define RepoURL 'https://github.com/TonyMasse/EZ-Cloud'
+#define RepoURL 'https://github.com/logrhythm/EZ-Cloud'
 #define NodeJsURL 'https://nodejs.org/dist/v14.17.6/node-v14.17.6-x64.msi'
 #define NodeJsSHA 'e72ceb05c7596a6e381172369dce1c374a2b09ee739dca330be58f3977b5c03d'
 #define NodeJsFilename 'node-v14.17.6-x64.msi'
@@ -77,7 +77,7 @@ Name: "{app}\public_web_root"; Components: ezCloudServer
 [Icons]
 Name: "{group}\Open Configuration Folder"; Filename: "{app}\config"
 Name: "{group}\Open Configuration Sample Folder"; Filename: "{app}\config.sample"
-Name: "{group}\Access Source Code on GitHub"; Filename: "https://github.com/TonyMasse/EZ-Cloud/"
+Name: "{group}\Access Source Code on GitHub"; Filename: "https://github.com/logrhythm/EZ-Cloud/"
 Name: "{group}\Uninstall EZ Cloud Server"; Filename: "{uninstallexe}"
 
 [Run]

@@ -1,6 +1,6 @@
 [Unit]
 Description=The API service for the EZ Cloud Market Place
-Documentation=https://github.com/TonyMasse/EZ-Cloud
+Documentation=https://github.com/logrhythm/EZ-Cloud
 Wants=network-online.target
 After=network-online.target
 StartLimitIntervalSec=0

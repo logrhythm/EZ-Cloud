@@ -5,7 +5,7 @@ Vue.prototype.globalConstants = {
     website: '',
     api: '/API/v1',
     socket: '',
-    shippersUrls: 'https://raw.githubusercontent.com/TonyMasse/EZ-Cloud/main/resources/shippers_url.json'
+    shippersUrls: 'https://raw.githubusercontent.com/logrhythm/EZ-Cloud/main/resources/shippers_url.json'
   }
 }
 

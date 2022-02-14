@@ -13,7 +13,7 @@
 ### Microsoft Windows
 
 #### 1. Download and Install
-- Get [EZ-Cloud.v0.8.🚧.Server-Installer.exe](https://github.com/TonyMasse/EZ-Cloud/releases/download/v0.8.🚧/EZ-Cloud.v0.8.🚧.Server-Installer.exe)
+- Get [EZ-Cloud.v0.8.🚧.Server-Installer.exe](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.8.🚧/EZ-Cloud.v0.8.🚧.Server-Installer.exe)
 - Run it
 
 #### 2. Create your configuration
@@ -36,9 +36,9 @@
 - Log back in as the new non-privileged user
 
 ## Where is the documentation?
-- Wiki: [Home](https://github.com/TonyMasse/EZ-Cloud/wiki/)
-- Wiki: [Getting Started](https://github.com/TonyMasse/EZ-Cloud/wiki/Help#getting-started)
-- Wiki: [Troubleshooting](https://github.com/TonyMasse/EZ-Cloud/wiki/Troubleshooting)
+- Wiki: [Home](https://github.com/logrhythm/EZ-Cloud/wiki/)
+- Wiki: [Getting Started](https://github.com/logrhythm/EZ-Cloud/wiki/Help#getting-started)
+- Wiki: [Troubleshooting](https://github.com/logrhythm/EZ-Cloud/wiki/Troubleshooting)
 
 ## What's new in this release?
 **v0.8.0**
@@ -66,7 +66,7 @@
       - As an Array of Logs per file
       - As an Set of Logs
       - Offer to direct to a Wiki help page to explain the difference
-        - https://github.com/TonyMasse/EZ-Cloud/wiki/Help#ref-whatsthedifferencefileimport
+        - https://github.com/logrhythm/EZ-Cloud/wiki/Help#ref-whatsthedifferencefileimport
 
 **v0.8.1**
 - [v0.8.1] Pipelines - Import/Export of Collection and Mapping
@@ -138,7 +138,7 @@
 - HA and DR deployments of LogRhythm SIEM are not supported
 
 ## Report a bug or issue
-- Use the [Issues](https://github.com/TonyMasse/EZ-Cloud/issues) on GitHub
+- Use the [Issues](https://github.com/logrhythm/EZ-Cloud/issues) on GitHub
 
 Enjoy,
 

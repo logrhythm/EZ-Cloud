@@ -19,7 +19,7 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/TonyMasse/EZ-Cloud.git"
+        "url": "https://github.com/logrhythm/EZ-Cloud.git"
     },
     "dependencies": {
         "cors": "^2.8.5",

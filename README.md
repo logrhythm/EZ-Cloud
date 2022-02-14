@@ -1,10 +1,10 @@
-[![Last Release](https://badgen.net/badge/release/v0.6.0/green)](https://github.com/TonyMasse/EZ-Cloud/releases)
-[![Dev Version](https://badgen.net/badge/dev/v0.8.1/orange)](https://github.com/TonyMasse/EZ-Cloud/tree/v0.8.1)
+[![Last Release](https://badgen.net/badge/release/v0.6.0/green)](https://github.com/logrhythm/EZ-Cloud/releases)
+[![Dev Version](https://badgen.net/badge/dev/v0.8.2/orange)](https://github.com/logrhythm/EZ-Cloud/tree/v0.8.2)
 
 # EZ-Cloud
  EZ-Cloud for Legacy SIEM
 
-Check [Releases](https://github.com/TonyMasse/EZ-Cloud/releases) for version specific instructions.
+Check [Releases](https://github.com/logrhythm/EZ-Cloud/releases) for version specific instructions.
 
 # Backend:
 
@@ -13,13 +13,13 @@ Check [Releases](https://github.com/TonyMasse/EZ-Cloud/releases) for version spe
 - MS SQL (v2016 or above)
 
 ## Setup
-See [Releases](https://github.com/TonyMasse/EZ-Cloud/releases) for version specific installation instructions
+See [Releases](https://github.com/logrhythm/EZ-Cloud/releases) for version specific installation instructions
 
 ## Know issues :bug: :beetle:
-See [Releases](https://github.com/TonyMasse/EZ-Cloud/releases) for version specific issues
+See [Releases](https://github.com/logrhythm/EZ-Cloud/releases) for version specific issues
 
 ## Report a bug or issue
-- Use the [Issues](https://github.com/TonyMasse/EZ-Cloud/issues) on GitHub
+- Use the [Issues](https://github.com/logrhythm/EZ-Cloud/issues) on GitHub
 
 ## Development
 
