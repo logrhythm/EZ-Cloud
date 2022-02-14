@@ -45,8 +45,17 @@
                     <q-item-section side top>
                       <div>
                         <div>
-                          <span class="text-bold">Sent:</span><br>
-                          {{ notification.sentOn }}
+                          <q-tooltip content-style="font-size: 1rem;">
+                            <div>
+                              <span class="text-bold">Sent:</span><br>
+                              {{ notification.sentOn }}
+                            </div>
+                            <div>
+                              <span class="text-bold">Last updated:</span><br>
+                              {{ notification.updatedOn }}
+                            </div>
+                          </q-tooltip>
+                          <span class="text-bold">{{ timeAgo(notification.sentOn) }}</span>
                         </div>
                         <q-separator />
                         <div class="justify-around row">
@@ -162,6 +171,9 @@
 import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import { toSvg } from 'jdenticon'
+import TimeAgo from 'javascript-time-ago'
+import en from 'javascript-time-ago/locale/en.json'
+TimeAgo.addDefaultLocale(en)
 
 export default {
   name: 'PageAdmin',
@@ -180,6 +192,18 @@ export default {
     ...mapActions('mainStore', ['updateEzMarketNotificationNumber', 'reloadEzMarketNotifications', 'updateEzMarketNotificationStatusTo', 'deleteEzMarketNotificationById']),
     identicon (name) {
       return toSvg(name, 50)
+    },
+    timeAgo (timestamp) {
+      let formattedTimeAgo = 'Some time ago'
+      try {
+        // Create formatter (English).
+        const timeAgo = new TimeAgo('en-US')
+        // Format the time
+        formattedTimeAgo = timeAgo.format(new Date(timestamp))
+      } catch (error) {
+        // Fails silently
+      }
+      return formattedTimeAgo
     }
   }
 }
