@@ -190,12 +190,25 @@ export function updateEzMarketNotificationNumber (state, payload) {
   state.ezMarketNotification = payload
 }
 
+function calculateNotificationNumber (state) {
+  const count = state.ezMarketNotifications.filter(
+    (notification) =>
+      notification &&
+      notification.statusName &&
+      notification.statusName === 'Unread' &&
+      // Ignore the broadcasted ones, as the user has no way to mark these as Read
+      notification.recipient !== null
+  ).length
+  return (count > 0 ? count : null)
+}
+
 export function updateEzMarketNotifications (state, payload) {
   if (payload && Array.isArray(payload)) {
     state.ezMarketNotifications = payload
   }
   // Only flag the ones that are Unread
-  state.ezMarketNotification = state.ezMarketNotifications.filter((notification) => notification && notification.statusName && notification.statusName === 'Unread').length
+  // state.ezMarketNotification = state.ezMarketNotifications.filter((notification) => notification && notification.statusName && notification.statusName === 'Unread').length
+  state.ezMarketNotification = calculateNotificationNumber(state)
 }
 
 export function updateEzMarketNotificationsSubset (state, payload) {
@@ -213,7 +226,8 @@ export function updateEzMarketNotificationsSubset (state, payload) {
     }
   }
   // Only flag the ones that are Unread
-  state.ezMarketNotification = state.ezMarketNotifications.filter((notification) => notification && notification.statusName && notification.statusName === 'Unread').length
+  // state.ezMarketNotification = state.ezMarketNotifications.filter((notification) => notification && notification.statusName && notification.statusName === 'Unread').length
+  state.ezMarketNotification = calculateNotificationNumber(state)
 }
 
 export function deleteEzMarketNotificationById (state, messageUid) {
@@ -226,6 +240,7 @@ export function deleteEzMarketNotificationById (state, messageUid) {
       state.ezMarketNotifications = JSON.parse(JSON.stringify(state.ezMarketNotifications))
     }
   }
+
   // Only flag the ones that are Unread
-  state.ezMarketNotification = state.ezMarketNotifications.filter((notification) => notification && notification.statusName && notification.statusName === 'Unread').length
+  state.ezMarketNotification = calculateNotificationNumber(state)
 }
