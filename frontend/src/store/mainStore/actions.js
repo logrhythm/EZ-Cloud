@@ -1,5 +1,6 @@
 import { uid } from 'quasar'
 import { i18n } from 'boot/i18n'
+import { version } from '../../../package.json'
 
 // ######################################################################
 // AUTHENTICATION
@@ -586,7 +587,8 @@ export function reloadEzMarketNotifications ({ state, commit }, payload) {
     referrerPolicy: 'no-referrer',
     headers: {
       'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
-      'ez-version': (state.deployment && state.deployment.version ? state.deployment.version : '')
+      'ez-server-version': (state.deployment && state.deployment.version ? state.deployment.version : ''),
+      'ez-client-version': (version || '')
     }
   })
     .then(response => {
@@ -624,7 +626,8 @@ export function loadEzMarketNotificationById ({ state, commit }, messageUid) {
       referrerPolicy: 'no-referrer',
       headers: {
         'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
-        'ez-version': (state.deployment && state.deployment.version ? state.deployment.version : '')
+        'ez-server-version': (state.deployment && state.deployment.version ? state.deployment.version : ''),
+        'ez-client-version': (version || '')
       }
     })
       .then(response => {
@@ -710,7 +713,8 @@ export function deleteEzMarketNotificationById ({ state, commit }, messageUid) {
       referrerPolicy: 'no-referrer',
       headers: {
         'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
-        'ez-version': (state.deployment && state.deployment.version ? state.deployment.version : '')
+        'ez-server-version': (state.deployment && state.deployment.version ? state.deployment.version : ''),
+        'ez-client-version': (version || '')
       }
     })
       .then(response => {
