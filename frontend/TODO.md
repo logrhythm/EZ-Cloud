@@ -67,9 +67,10 @@
 - [x] Warn user if Socket is not connected to Backend (as some features needs it)
   - [x] On Shipper deployment
 - [ ] Market Place
-  - [ ] Find a Free-tiered public database
-  - [ ] Find a Free-tiered public hosting (for Admin and API)
-  - [ ] Find / register domain
+  - [ ] ~~Find a Free-tiered public database~~ (👈 using journey.logrhythm.com)
+  - [ ] ~~Find a Free-tiered public hosting (for Admin and API)~~ (👈 using journey.logrhythm.com)
+  - [ ] ~~Find / register domain~~ (👈 using journey.logrhythm.com)
+  - [x] Get notifications from the Market Place
   - [x] List available Collection Templates
   - [ ] Import Collection Template
   - [ ] Export to Market Place
