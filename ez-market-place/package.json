@@ -1,6 +1,6 @@
 {
   "name": "ez-market-place",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "API Backend for the EZ Market Place",
   "main": "src/index.js",
   "scripts": {
