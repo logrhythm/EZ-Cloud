@@ -11,6 +11,7 @@ GO
 -- Update date: 2021-07-21 - Remove unnecessary parameter (@OpenCollectorLogSourceTypeID)
 -- Update date: 2021-07-21 - Change separator between OC Log Source and Virtual LS (adding spaces around the dash: '-' -> ' - ')
 -- Update date: 2021-11-08 - Change type for @VirtualSourceTemplateItemRegex to handle RegEx properly ('nvarchar(100)' -> 'varchar(max)')
+-- Update date: 2022-02-15 - Collect Log Source Identifiers for the OC Log Source, to then re-apply them after they get deleted
 -- =============================================
 
 CREATE PROCEDURE [dbo].[upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource] 
@@ -283,6 +284,19 @@ BEGIN
 			SELECT CONCAT(N'Virtualised Log Source named "', @UpsertedVirtualLogSourceName, N'" already defined for UID: "', @uid, N'". Doing nothing.') as Error;
 		ELSE
 		BEGIN
+			-- Prepare the temporary table to store the list of Identifiers for the parent LS (OC)
+			DECLARE @temp_HostIdentifiers TABLE (
+				HostIdentifierID int,
+				[Type] tinyint,
+				[Value] varchar(255),
+				MsgSourceID int
+				)
+
+			-- Gather the Identifiers for the parent LS
+			INSERT INTO @temp_HostIdentifiers
+				EXEC [LogRhythmEMDB].[dbo].[LogRhythm_EMDB_GetHostIdentifier_ByMsgSourceID]
+					@MsgSourceID=@OpenCollectorMotherLogSourceID,
+					@UseRestrictedAdmin=1
 
 			-- Get the @UpsertedVirtualSourceSortOrder
 			DECLARE @UpsertedVirtualSourceSortOrder int
@@ -441,6 +455,45 @@ ___________  DO NOT MODIFY THE LINE BELOW  __________
 			-- Delete HostIdentifierToMsgSource records for a MsgSourceID (looks safe to re-run)
 
 			EXEC [LogRhythmEMDB].[dbo].[LogRhythm_EMDB_HostIdentifierToMsgSource_DeleteByMsgSourceID] @MsgSourceID=@MsgSourceID
+
+			-- If we found any, do re-apply Identifiers to the parent LS (OC)
+			IF EXISTS (SELECT * FROM @temp_HostIdentifiers)
+			BEGIN
+				DECLARE @HostIdentifierID int
+				DECLARE @Type tinyint
+				DECLARE @Value varchar(255)
+				DECLARE @TmpMsgSourceID int
+
+				-- Clean up (should not exist in real life, but when testing this can be annoying)
+				DROP TABLE IF EXISTS #keyed_temp_HostIdentifiers;
+
+				-- Fill in the Host Identifiers into a Keyed temporary table
+				SELECT NULL active_key, * INTO #keyed_temp_HostIdentifiers FROM @temp_HostIdentifiers
+
+				-- Flag the first record as active
+				UPDATE TOP (1) #keyed_temp_HostIdentifiers set active_key = 1
+				
+				WHILE @@rowcount > 0
+					BEGIN
+						-- Grab first active record (there should be only one)
+						SELECT TOP 1
+							@HostIdentifierID = HostIdentifierID,
+							@Type = [Type],
+							@Value = [Value],
+							@TmpMsgSourceID = MsgSourceID
+						FROM #keyed_temp_HostIdentifiers WHERE active_key = 1
+
+						-- Add the identifier, only if @HostIdentifierID is not null, as it otherwhise cause an error
+						IF @HostIdentifierID IS NOT NULL
+							exec LogRhythm_EMDB_HostIdentifierToMsgSource_Insert @HostIdentifierID=@HostIdentifierID,@MsgSourceID=@TmpMsgSourceID,@MsgSourceFormat=1
+
+						-- Remove the processed item
+						DELETE TOP (1) #keyed_temp_HostIdentifiers where active_key = 1
+						-- Flag the next (now first) record as active
+						UPDATE TOP (1) #keyed_temp_HostIdentifiers set active_key = 1
+						-- And keep on looping! Baby!
+					END -- WHILE @@rowcount > 0
+			END -- IF EXISTS (SELECT * FROM @temp_HostIdentifiers)
 
 			-- Push to Agent
 
