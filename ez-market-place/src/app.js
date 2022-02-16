@@ -22,6 +22,8 @@ app.use(middlewares.extractServerAndClientVersions);
 
 // Log the Web requests / responses to the System Journal
 app.use(middlewares.logHttpToSystem);
+// Track statistics into database
+app.use(middlewares.trackStatsToDatabase);
 
 // To protect against clickjacking
 app.use(middlewares.setXFrameOptions);
