@@ -14,4 +14,4 @@ It's right [there](https://github.com/logrhythm/EZ-Cloud/wiki).
 
 ### Support or Contact
 
-Having trouble? Check out our [wiki](https://github.com/logrhythm/EZ-Cloud/wiki) or raise an [Issue](https://github.com/TonyMasse/EZ-Cloud/issues).
+Having trouble? Check out our [wiki](https://github.com/logrhythm/EZ-Cloud/wiki) or raise an [Issue](https://github.com/logrhythm/EZ-Cloud/issues).
