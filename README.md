@@ -1,5 +1,5 @@
 [![Last Release](https://badgen.net/badge/release/v0.8.2/green)](https://github.com/logrhythm/EZ-Cloud/releases)
-[![Dev Version](https://badgen.net/badge/dev/v0.8.3/orange)](https://github.com/logrhythm/EZ-Cloud/tree/v0.8.2)
+[![Dev Version](https://badgen.net/badge/dev/v0.8.3/orange)](https://github.com/logrhythm/EZ-Cloud/tree/v0.8)
 
 # EZ-Cloud
  EZ-Cloud On-Boarder for Core SIEM
