@@ -95,6 +95,11 @@
 - [v0.8.2] Installer - Provides a SHA256 checksum of the installation file
 - [v0.8.2] Installer - Prevent overiding exisiting configuration files, HTTPS certificates and `.env` file
 - [v0.8.2] Move EZ-Cloud Repository from TonyMasse GitHub account to LogRhythm GitHub Corp account
+
+**v0.8.3**
+- [v0.8.3] Market - Provide public statistics
+  - Market high level statitics: total hits, number of unique deployments, number of unique users
+  - Statitics about the Pipeline Templates: number of created pipeline templates, number of unique publishers
 - [v0.8.🚧] 
 
 ## What has been fixed in this release?
@@ -114,7 +119,6 @@
 - [v0.8.1] SQL Connection seem not to close automatically, and time out only after +/-50 minutes
 - [v0.8.1] Privileged access is only valid if member of Role `Admin`. Needs to change to use `isPrivileged` instead
 - [v0.8.1] No version number showing in logs when in Production
-- [v0.8.🚧] 
 
 **v0.8.2**
 - [v0.8.2] Security - CVE-2020-26301 - Upgrade `simple-ssh` to v1.1.0 to benefit from `ssh2` v1.5.0
@@ -129,6 +133,9 @@
 - [v0.8.2] Frontend - Fix JQ Filter and JQ Transform
   - Filter in on `device_type` from multiple locations
   - Parse `.message` only if present
+
+**v0.8.3**
+- [v0.8.3] Backend - Increased the API timeout value (multiplied by 3), changed `maxCheckInterval` from 20 seconds to 60 seconds
 - [v0.8.🚧] 
 
 ## Know issues :bug: :beetle:
