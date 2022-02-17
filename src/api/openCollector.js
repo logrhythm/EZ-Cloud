@@ -27,7 +27,7 @@ function waitMilliseconds(delay = 250) {
   });
 }
 
-const maxCheckInterval = 20; // Check once every X seconds max, and/or timeout after X seconds
+const maxCheckInterval = 60; // Check once every X seconds max, and/or timeout after X seconds
 
 router.get('/', (req, res) => {
   res.json({
