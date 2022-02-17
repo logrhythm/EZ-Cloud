@@ -34,11 +34,15 @@ const notificationSchema = yup.object().shape(
   }
 );
 
+// Number of days to look back. Passed via HTTP Parameter (URL or Body).
+const daysLookBackSchema = yup.number().required();
+
 // Fall back error message
 const defaultErrorMessage = 'Error updating or querying the database';
 
 /**
- * Double check the parameter exists in the request. If not, provide the provided defaultValue.
+ * Double check the parameter exists in the request's parameters (as per the Route).
+ * If not, provide the provided defaultValue.
  * @param {*} req Express Router's request object
  * @param {*} param Name of the parameter to look for in the request
  * @param {*} defaultValue Optional fall back value if the parameter is not found
@@ -52,6 +56,28 @@ function reqParam(req, param, defaultValue = undefined) {
       ? (
         req.params[param] !== undefined
           ? req.params[param]
+          : defaultValue
+      )
+      : defaultValue
+  );
+}
+
+/**
+ * Double check the parameter exists in the request's query (as per HTTP URL query).
+ * If not, provide the provided defaultValue.
+ * @param {*} req Express Router's request object
+ * @param {*} param Name of the parameter to look for in the request
+ * @param {*} defaultValue Optional fall back value if the parameter is not found
+ * @returns Value of the found parameter, or the provided default value
+ */
+function reqQuery(req, param, defaultValue = undefined) {
+  return (
+    // eslint-disable-next-line no-nested-ternary
+    req
+    && req.query
+      ? (
+        req.query[param] !== undefined
+          ? req.query[param]
           : defaultValue
       )
       : defaultValue
@@ -144,15 +170,37 @@ function safeNotificationObject(req) {
   return null;
 }
 
+/**
+ * Extract and sanitise Days Look Back
+ * @param {*} req Express Router's request object
+ * @param {*} idParamName Name of the parameter to look for in the request
+ * @returns Sanitised Pipeline Days Look Back
+ */
+function safeDaysLookBackUid(req, idParamName) {
+  // Get the raw Days Look Back
+  const daysLookBack = reqQuery(req, idParamName);
+
+  // Check validity
+  if (daysLookBackSchema.isValidSync(daysLookBack)) {
+    return daysLookBack;
+  }
+
+  // Fall back to NULL
+  return null;
+}
+
 module.exports = {
   pipelineTemplateUidSchema,
   pipelineTemplateSchema,
   notificationUidSchema,
   notificationSchema,
+  daysLookBackSchema,
   defaultErrorMessage,
   reqParam,
+  reqQuery,
   safePipelineTemplateUid,
   safePipelineTemplateObject,
   safeNotificationUid,
-  safeNotificationObject
+  safeNotificationObject,
+  safeDaysLookBackUid
 };
