@@ -110,12 +110,12 @@ export default {
         {
           title: '',
           icon: 'home',
-          link: '#/Welcome'
+          link: '/Welcome'
         },
         {
           title: 'Stats',
           icon: 'dashboard',
-          link: '#/Stats'
+          link: '/Stats'
         },
         {
           separator: true
@@ -123,7 +123,7 @@ export default {
         {
           title: 'Admin',
           icon: 'admin_panel_settings',
-          link: '#/Admin'
+          link: '/Admin'
           // needsPriviledge: true
         }
       ],
@@ -131,7 +131,7 @@ export default {
         {
           title: 'Settings',
           icon: 'settings',
-          link: '#/Settings'
+          link: '/Settings'
         },
         {
           separator: true
@@ -139,7 +139,7 @@ export default {
         {
           title: 'Log Out',
           icon: 'logout',
-          link: '#/Logout'
+          link: '/Logout'
         }
       ],
       version: version,
