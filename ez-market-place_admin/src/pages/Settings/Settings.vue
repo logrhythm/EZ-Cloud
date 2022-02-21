@@ -67,8 +67,8 @@ export default {
       localStorage.setItem('settings.ezMarketBackend.url.website', this.ezMarketBackendBaseUrlWeb)
       this.globalConstants.baseUrl.api = this.ezMarketBackendBaseUrlApi
       localStorage.setItem('settings.ezMarketBackend.url.api', this.ezMarketBackendBaseUrlApi)
-      this.globalConstants.baseUrl.socket = this.ezMarketBackendBaseUrlSocket
-      localStorage.setItem('settings.ezMarketBackend.url.socket', this.ezMarketBackendBaseUrlSocket)
+      // this.globalConstants.baseUrl.socket = this.ezMarketBackendBaseUrlSocket
+      // localStorage.setItem('settings.ezMarketBackend.url.socket', this.ezMarketBackendBaseUrlSocket)
     }
   },
   mounted () {
@@ -80,10 +80,10 @@ export default {
     if ((this.ezMarketBackendBaseUrlApi === null) || (this.ezMarketBackendBaseUrlApi === '')) {
       this.ezMarketBackendBaseUrlApi = this.globalConstants.baseUrl.api
     }
-    this.ezMarketBackendBaseUrlSocket = localStorage.getItem('settings.ezMarketBackend.url.socket')
-    if ((this.ezMarketBackendBaseUrlSocket === null) || (this.ezMarketBackendBaseUrlSocket === '')) {
-      this.ezMarketBackendBaseUrlSocket = this.globalConstants.baseUrl.socket
-    }
+    // this.ezMarketBackendBaseUrlSocket = localStorage.getItem('settings.ezMarketBackend.url.socket')
+    // if ((this.ezMarketBackendBaseUrlSocket === null) || (this.ezMarketBackendBaseUrlSocket === '')) {
+    //   this.ezMarketBackendBaseUrlSocket = this.globalConstants.baseUrl.socket
+    // }
   }
 }
 </script>
