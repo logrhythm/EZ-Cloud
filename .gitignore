@@ -9,7 +9,7 @@ config/
 ez-market-place/certificates/ez-market-place.key.pem
 
 # Build from webpack
-dist/
+/dist/
 
 # Dist/Built front end
 # src/public_web_root/js/*
