@@ -1,3 +1,5 @@
+import { LoginCallback } from '@okta/okta-vue'
+
 import { Store } from '../store/index.js'
 import { productName } from '../../package.json'
 
@@ -46,6 +48,12 @@ const routes = [
   },
 
   {
+    // Okta Login Call Back path
+    path: '/mfa',
+    component: LoginCallback
+  },
+
+  {
     path: '/Stats',
     meta: { title: 'Statistics' },
     component: () => import('layouts/MainLayout.vue'),
@@ -83,7 +91,10 @@ const routes = [
 
   {
     path: '/Admin',
-    meta: { title: 'Admin' },
+    meta: {
+      title: 'Admin',
+      requiresAuth: true
+    },
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/Admin/Index.vue') },

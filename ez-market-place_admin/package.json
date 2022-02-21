@@ -15,6 +15,8 @@
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
+    "@okta/okta-auth-js": "^4.9.2",
+    "@okta/okta-vue": "^3.1.0",
     "@quasar/cli": "^1.2.2",
     "@quasar/extras": "^1.11.1",
     "axios": "^0.21.4",

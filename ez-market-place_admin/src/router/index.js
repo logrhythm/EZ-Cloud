@@ -1,9 +1,20 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import OktaVue from '@okta/okta-vue'
+import { OktaAuth } from '@okta/okta-auth-js'
 
 import { routes, updateTitle } from './routes'
 
 Vue.use(VueRouter)
+
+const oktaAuth = new OktaAuth({
+  issuer: 'https://logrhythm.okta.com/oauth2/default',
+  clientId: '0oa61883szm5bX5T02p7',
+  redirectUri: window.location.origin + '/mfa',
+  scopes: ['openid', 'profile', 'email']
+})
+
+Vue.use(OktaVue, { oktaAuth })
 
 /*
  * If not building with SSR mode, you can
