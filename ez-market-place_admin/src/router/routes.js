@@ -36,6 +36,11 @@ function updateTitle (to, from, next) {
   next()
 }
 
+// Update the tab/window's title
+function updateUser (to, from) {
+
+}
+
 const routes = [
 
   {
@@ -127,5 +132,6 @@ const routes = [
 
 export {
   routes,
-  updateTitle
+  updateTitle,
+  updateUser
 }

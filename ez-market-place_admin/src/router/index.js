@@ -3,7 +3,7 @@ import VueRouter from 'vue-router'
 import OktaVue from '@okta/okta-vue'
 import { OktaAuth } from '@okta/okta-auth-js'
 
-import { routes, updateTitle } from './routes'
+import { routes, updateTitle, updateUser } from './routes'
 
 Vue.use(VueRouter)
 
@@ -39,6 +39,7 @@ export default function (/* { store, ssrContext } */) {
 
   // Update the Tab title on page change
   Router.beforeEach(updateTitle)
+  Router.afterEach(updateUser)
 
   return Router
 }

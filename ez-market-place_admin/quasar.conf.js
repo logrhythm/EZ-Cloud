@@ -49,6 +49,7 @@ module.exports = function (/* ctx */) {
     // Full list of options: https://v1.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-build
     build: {
       vueRouterMode: 'history', // available values: 'hash', 'history'
+      publicPath: '/EZ/',
 
       // transpile: false,
 
@@ -90,18 +91,6 @@ module.exports = function (/* ctx */) {
       https: false,
       port: 8081,
       open: true // opens browser window automatically
-
-      // To get the proxying of the Server:8400
-      // 👉 doesn't work, so commenting out... 😡
-      // proxy: {
-      //   '/API': {
-      //     target: 'https://127.0.0.1:8400/API',
-      //     changeOrigin: true,
-      //     pathRewrite: {
-      //       '^/API': ''
-      //     }
-      //   }
-      // }
     },
 
     // https://v1.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-framework
