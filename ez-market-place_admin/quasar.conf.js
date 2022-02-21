@@ -76,14 +76,6 @@ module.exports = function (/* ctx */) {
 
       // To help with VS Code Debugging
       devtool: 'source-map'
-
-      // To get the proxying of the Server:8400 over self signed HTTPS to work
-      // 👉 doesn't work, so commenting out... 😡
-      // env: {
-      //   NODE_TLS_REJECT_UNAUTHORIZED: ctx.dev
-      //     ? 1
-      //     : 0
-      // }
     },
 
     // Full list of options: https://v1.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-devServer
