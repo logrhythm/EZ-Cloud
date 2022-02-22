@@ -8,12 +8,17 @@ import { routes, updateTitle, updateUser } from './routes'
 Vue.use(VueRouter)
 
 const oktaAuth = new OktaAuth({
-  // issuer: 'https://logrhythm.okta.com/oauth2/default', // Getting CORS issues with this
-  issuer: 'https://logrhythm.okta.com/',
-  clientId: '0oa61883szm5bX5T02p7',
-  redirectUri: window.location.origin + '/EZ/mfa'
-  // ,
-  // scopes: ['openid', 'profile', 'email']
+  // // issuer: 'https://logrhythm.okta.com/oauth2/default', // Getting CORS issues with this
+  // issuer: 'https://logrhythm.okta.com/',
+  // // tokenUrl: 'https://logrhythm.okta.com/api/v1/token',
+  // clientId: '0oa61883szm5bX5T02p7',
+
+  // DEV
+  issuer: 'https://dev-409406.okta.com/oauth2/default',
+  clientId: '0oag7kq6jiQNJ7o6c357',
+  redirectUri: window.location.origin + '/EZ/mfa',
+  scopes: ['openid', 'profile', 'email']
+  // scopes: ['openid']
 })
 
 Vue.use(OktaVue, { oktaAuth })
