@@ -141,9 +141,15 @@ const routes = [
     },
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/Admin/Index.vue') },
-      { path: 'Users', component: () => import('pages/Admin/Users.vue') },
-      { path: 'Roles', component: () => import('pages/Admin/Roles.vue') }
+      { path: '', component: () => import('pages/Error404.vue') },
+
+      // RBAC
+      { path: 'RBAC', component: () => import('pages/Admin/RBAC/Index.vue') },
+      { path: 'RBAC/Users', component: () => import('pages/Admin/RBAC/Users.vue') },
+      { path: 'RBAC/Roles', component: () => import('pages/Admin/RBAC/Roles.vue') },
+
+      // Pipelines Templates
+      { path: 'Templates', component: () => import('pages/Admin/Templates/Index.vue') }
     ]
     // ,
     // beforeEnter: isLoggedIn

@@ -121,9 +121,15 @@ export default {
           separator: true
         },
         {
-          title: 'Admin',
+          title: 'Admin Pipelines',
+          icon: 'verified_user',
+          link: 'Admin/Templates'
+          // needsPriviledge: true
+        },
+        {
+          title: 'Admin Users',
           icon: 'admin_panel_settings',
-          link: 'Admin'
+          link: 'Admin/RBAC'
           // needsPriviledge: true
         }
       ],
