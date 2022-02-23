@@ -143,7 +143,13 @@ const routes = [
       { path: 'RBAC/Roles', component: () => import('pages/Admin/RBAC/Roles.vue') },
 
       // Pipelines Templates
-      { path: 'Templates', component: () => import('pages/Admin/Templates/Index.vue') }
+      { path: 'Templates', component: () => import('pages/Admin/Templates/Index.vue') },
+
+      // Notifications
+      { path: 'Notifications', component: () => import('pages/Admin/Notifications/Index.vue') },
+
+      // Publishers
+      { path: 'Publishers', component: () => import('pages/Admin/Publishers/Index.vue') }
     ]
     // ,
     // beforeEnter: isLoggedIn

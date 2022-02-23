@@ -4,13 +4,12 @@
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
             <q-card-section class="text-h4">
-                RBAC
+                Publishers
             </q-card-section>
-            <q-card-section>
-              <q-btn color="primary" :label="$t('Manage User Accounts')" to="/Admin/Users" />
-            </q-card-section>
-            <q-card-section>
-              <q-btn color="primary" :label="$t('Manage User Roles')" to="/Admin/Roles" />
+            <q-card-section class="flex flex-center">
+              <div class="text-h2" style="opacity:.4">
+                Coming Soon
+              </div>
             </q-card-section>
           </q-card-section>
 

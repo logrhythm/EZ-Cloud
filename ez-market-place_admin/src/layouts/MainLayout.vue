@@ -41,9 +41,6 @@
       <div class="text-center">
         <span style="opacity:.4; font-size:.75em">v{{version}}</span>
       </div>
-      <div class="text-center">
-        <span style="font-size:.75em">{{userIsLoggedIn}}</span>
-      </div>
     </div>
   </q-drawer>
 
@@ -107,36 +104,6 @@ export default {
     return {
       drawerMenuOpen: false,
       miniState: true,
-      // mainLinks: [
-      //   {
-      //     title: '',
-      //     icon: 'home',
-      //     link: 'Welcome'
-      //   },
-      //   {
-      //     title: 'Stats',
-      //     icon: 'dashboard',
-      //     link: 'Stats'
-      //   },
-      //   {
-      //     separator: true
-      //   },
-      //   {
-      //     title: 'Admin Pipelines',
-      //     icon: 'verified_user',
-      //     link: 'Admin/Templates',
-      //     caption: 'Requires authentication',
-      //     needsPriviledge: true
-      //   },
-      //   {
-      //     title: 'Admin Users',
-      //     icon: 'admin_panel_settings',
-      //     link: 'Admin/RBAC',
-      //     caption: 'Requires authentication',
-      //     needsPriviledge: true
-      //   }
-      // ],
-      // lowLinks: [ // Moved to Computed
       version: version,
       showErrorPanel: false,
       errorPanelDetails: []
@@ -162,18 +129,32 @@ export default {
         },
         {
           title: 'Admin Pipelines',
-          icon: 'verified_user',
+          icon: 'account_tree',
           link: 'Admin/Templates',
           caption: (this.userIsLoggedIn ? 'Authenticated' : 'Requires authentication'),
           needsPriviledge: true
         },
         {
-          title: 'Admin Users',
-          icon: 'admin_panel_settings',
-          link: 'Admin/RBAC',
+          title: 'Admin Publishers',
+          icon: 'attribution',
+          link: 'Admin/Publishers',
+          caption: (this.userIsLoggedIn ? 'Authenticated' : 'Requires authentication'),
+          needsPriviledge: true
+        },
+        {
+          title: 'Admin Notifications',
+          icon: 'mail_outline',
+          link: 'Admin/Notifications',
           caption: (this.userIsLoggedIn ? 'Authenticated' : 'Requires authentication'),
           needsPriviledge: true
         }
+        // {
+        //   title: 'Admin Users',
+        //   icon: 'admin_panel_settings',
+        //   link: 'Admin/RBAC',
+        //   caption: (this.userIsLoggedIn ? 'Authenticated' : 'Requires authentication'),
+        //   needsPriviledge: true
+        // }
       ]
     },
     lowLinks () {
