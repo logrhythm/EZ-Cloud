@@ -7,7 +7,7 @@
         You have successfuly logged out.
       </div>
       <q-btn label="Log Back In" @click="login" color="primary" />
-      <q-btn label="Go to the public pages" to="/" color=""  />
+      <q-btn label="Go to the public pages" to="/" />
   </q-page>
 </template>
 
@@ -15,7 +15,7 @@
 import { mapActions } from 'vuex'
 
 export default {
-  name: 'PageLogout',
+  name: 'PageLoggedout',
   mixins: [
   ],
   methods: {

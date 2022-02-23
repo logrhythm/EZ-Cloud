@@ -8,7 +8,7 @@
         Logging you out.
       </div>
       <q-btn label="Log Back In" @click="login" color="primary" disabled />
-      <q-btn label="Go to the public pages" to="/" color="" disabled />
+      <q-btn label="Go to the public pages" to="/" disabled />
   </q-page>
 </template>
 
