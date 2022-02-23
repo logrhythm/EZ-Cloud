@@ -15,8 +15,9 @@ export function signIn ({ commit }, payload) {
 }
 
 export async function signOut ({ commit }, payload) {
-  // Blank any previous JWT token
+  // Blank any previous JWT token and User details
   commit('updateJwtToken', { token: '' })
+  commit('updateUserDetails', { userDetails: {} })
 
   // Empty the list of User Accounts and Roles
   commit('getUserAccounts', [])

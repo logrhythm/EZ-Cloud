@@ -27,7 +27,6 @@
               v-for="link in mainLinks"
               :key="link.title"
               v-bind="link"
-              v-show="!link.needsPriviledge || (link.needsPriviledge && loggedInUserIsPrivileged)"
             />
           </q-list>
         </q-scroll-area>
@@ -37,7 +36,6 @@
           v-for="(link, index) in lowLinks"
           :key="index"
           v-bind="link"
-          v-show="!link.needsPriviledge || (link.needsPriviledge && loggedInUserIsPrivileged)"
         />
       </q-list>
       <div class="text-center">
@@ -124,13 +122,11 @@ export default {
           title: 'Admin Pipelines',
           icon: 'verified_user',
           link: 'Admin/Templates'
-          // needsPriviledge: true
         },
         {
           title: 'Admin Users',
           icon: 'admin_panel_settings',
-          link: 'Admin/RBAC',
-          needsPriviledge: true
+          link: 'Admin/RBAC'
         }
       ],
       lowLinks: [
@@ -154,7 +150,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('mainStore', ['loggedInUser', 'loggedInUserIsPrivileged', 'errorWikiUrlBase', 'ezMarketNotification'])
+    ...mapState('mainStore', ['loggedInUser', 'errorWikiUrlBase', 'ezMarketNotification'])
   },
   methods: {
     sanitiseWikiLinks (rawLinkRef) {

@@ -38,10 +38,11 @@ function updateTitle (to, from, next) {
   next()
 }
 
-// Update the tab/window's title
+// Update the user details, if logged in
 async function updateUser (to, from) {
   // Get the previously stored JWT Token
   const token = (store() && store().state && store().state.mainStore && store().state.mainStore.jwtToken ? store().state.mainStore.jwtToken : '')
+
   // If none, check if we are Okta authenticated, and if we are, store the new token in Store
   if (!(token && token.length)) {
     if (Vue.prototype.$auth.isAuthenticated) {
@@ -55,7 +56,7 @@ async function updateUser (to, from) {
             console.log(error)
           }
         }
-        // Store the JWT token
+        // Store the JWT token and user details
         store().dispatch('mainStore/signIn', { token: oktaToken, userDetails })
       } catch (error) {
         console.log(error)

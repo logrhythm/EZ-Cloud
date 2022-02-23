@@ -1,9 +1,7 @@
 export default function () {
   return {
-    loggedInUser: '',
-    loggedInUserRoles: [], // Array of all the Roles of the logged in user (typically array of one value: "User" or "Admin")
-    loggedInUserIsPrivileged: false,
-    jwtToken: (process.env.DEV ? localStorage.getItem('jwtToken') || '' : ''), // Fetch jwtToken from LocalStorage if present and if we are in DEV mode. Saving from logging back in every 2 minutes...
+    loggedInUser: localStorage.getItem('ezMarketAdminLoggedInUser') || '', // Fetch loggedInUser from LocalStorage if present,
+    jwtToken: localStorage.getItem('ezMarketAdminJwtToken') || '', // Fetch jwtToken from LocalStorage if present
     openCollectors: [],
     pipelines: [],
     logSamples: [

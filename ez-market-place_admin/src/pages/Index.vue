@@ -14,12 +14,14 @@
         <div class="text-h4">
           Welcome back {{ loggedInUser }}
         </div>
+        <!--
         <div
           class="q-mt-md"
           v-if="!loggedInUserIsPrivileged"
         >
           You are logged in, but not privileged enough to access the Admin pages.
         </div>
+         -->
       </div>
     </div>
   </q-page>
@@ -37,7 +39,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('mainStore', ['loggedInUser', 'loggedInUserIsPrivileged'])
+    ...mapState('mainStore', ['loggedInUser'])
   }
 }
 </script>

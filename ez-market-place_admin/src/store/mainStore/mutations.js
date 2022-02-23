@@ -4,14 +4,12 @@
 // Authentication
 
 export function updateJwtToken (state, payload) {
+  console.log('COMMIT - updateJwtToken')
   if (payload) {
     state.jwtToken = payload.token
     try {
-      // Quick trick to save time while developping.
-      // Avoids from having to login all the time when modifying the code
-      if (process.env.DEV) {
-        localStorage.setItem('jwtToken', payload.token)
-      }
+      // Save token to local storate
+      localStorage.setItem('ezMarketAdminJwtToken', payload.token)
     } catch (err) {
       //
     }
@@ -19,6 +17,7 @@ export function updateJwtToken (state, payload) {
 }
 
 export function updateUserDetails (state, payload) {
+  console.log('COMMIT - updateUserDetails')
   // userDetails:
   //   email: "tony.masse@logrhythm.com"
   //   email_verified: true
@@ -31,10 +30,13 @@ export function updateUserDetails (state, payload) {
   //   updated_at: 1645568819
   //   zoneinfo: "America/Los_Angeles"
   if (payload) {
-    state.loggedInUser = (payload && payload.userDetails && payload.userDetails.name ? payload.userDetails.name : '')
-    state.loggedInUserRoles = (payload && payload.userDetails && payload.userDetails.preferred_username && payload.userDetails.preferred_username.length ? ['admin'] : [])
-    state.loggedInUserIsPrivileged = (!!(payload && payload.userDetails && payload.userDetails.preferred_username && payload.userDetails.preferred_username.length))
-    console.log('state.loggedInUserIsPrivileged', state.loggedInUserIsPrivileged)
+    state.loggedInUser = (payload.userDetails && payload.userDetails.name ? payload.userDetails.name : '')
+    try {
+      // Save token to local storate
+      localStorage.setItem('ezMarketAdminLoggedInUser', state.loggedInUser)
+    } catch (err) {
+      //
+    }
   }
 }
 
