@@ -4,11 +4,10 @@
         Bye bye
       </div>
       <div class="text-h6" style="opacity:.4">
-        <q-spinner class="q-mr-sm" />
-        Logging you out.
+        You have successfuly logged out.
       </div>
-      <q-btn label="Log Back In" @click="login" color="primary" disabled />
-      <q-btn label="Go to the public pages" to="/" color="" disabled />
+      <q-btn label="Log Back In" @click="login" color="primary" />
+      <q-btn label="Go to the public pages" to="/" color=""  />
   </q-page>
 </template>
 
@@ -28,7 +27,7 @@ export default {
   mounted () {
     // First remove any token from previous Login
     this.signOut({
-      signOutOkta: !!this.$auth.isAuthenticated
+      signOutOkta: false
     })
   }
 }

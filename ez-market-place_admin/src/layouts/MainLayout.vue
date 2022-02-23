@@ -129,8 +129,8 @@ export default {
         {
           title: 'Admin Users',
           icon: 'admin_panel_settings',
-          link: 'Admin/RBAC'
-          // needsPriviledge: true
+          link: 'Admin/RBAC',
+          needsPriviledge: true
         }
       ],
       lowLinks: [

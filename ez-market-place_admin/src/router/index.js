@@ -17,6 +17,7 @@ const oktaAuth = new OktaAuth({
   issuer: 'https://dev-409406.okta.com/oauth2/default',
   clientId: '0oag7kq6jiQNJ7o6c357',
   redirectUri: window.location.origin + '/EZ/mfa',
+  postLogoutRedirectUri: window.location.origin + '/EZ/Loggedout',
   scopes: ['openid', 'profile', 'email']
   // scopes: ['openid']
 })

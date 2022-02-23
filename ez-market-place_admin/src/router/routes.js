@@ -2,6 +2,7 @@ import Vue from 'vue'
 import { LoginCallback } from '@okta/okta-vue'
 
 // import { Store } from '../store/index.js'
+import store from '../store'
 import { productName } from '../../package.json'
 
 // // Check if we have a JWT token, and redirect to /Login if not
@@ -39,44 +40,27 @@ function updateTitle (to, from, next) {
 
 // Update the tab/window's title
 async function updateUser (to, from) {
-  // if (this.authState.isAuthenticated) {
-  //   this.activeUser = await this.$auth.getUser()
-  // }
-  try {
-    const oktaToken = await Vue.prototype.$auth.getAccessToken()
-    console.log('oktaToken:', oktaToken)
-    if (oktaToken) {
+  // Get the previously stored JWT Token
+  const token = (store() && store().state && store().state.mainStore && store().state.mainStore.jwtToken ? store().state.mainStore.jwtToken : '')
+  // If none, check if we are Okta authenticated, and if we are, store the new token in Store
+  if (!(token && token.length)) {
+    if (Vue.prototype.$auth.isAuthenticated) {
       try {
-        const u = await Vue.prototype.$auth.getUser()
-        console.log('getUser:', u)
+        const oktaToken = await Vue.prototype.$auth.getAccessToken()
+        let userDetails = null
+        if (oktaToken) {
+          try {
+            userDetails = await Vue.prototype.$auth.getUser()
+          } catch (error) {
+            console.log(error)
+          }
+        }
+        // Store the JWT token
+        store().dispatch('mainStore/signIn', { token: oktaToken, userDetails })
       } catch (error) {
         console.log(error)
       }
     }
-  } catch (error) {
-    console.log(error)
-  }
-
-  // try {
-  //   const u = await Vue.prototype.$auth.getUser()
-  //   console.log('getUser:', u)
-  // } catch (error) {
-  //   console.log(error)
-  // }
-  try {
-    console.log('$auth', Vue.prototype.$auth)
-  } catch (error) {
-    console.log(error)
-  }
-  try {
-    console.log('authState', Vue.prototype.authState)
-  } catch (error) {
-    console.log(error)
-  }
-  try {
-    console.log('getAccessToken', await Vue.prototype.$auth.getAccessToken())
-  } catch (error) {
-    console.log(error)
   }
 }
 
@@ -130,6 +114,15 @@ const routes = [
     component: () => import('layouts/PlainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/Login/Logout.vue') }
+    ]
+  },
+
+  {
+    path: '/Loggedout',
+    meta: { title: 'Logout' },
+    component: () => import('layouts/PlainLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/Login/Loggedout.vue') }
     ]
   },
 

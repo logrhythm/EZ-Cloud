@@ -1,3 +1,4 @@
+import Vue from 'vue'
 // import { uid } from 'quasar'
 import { i18n } from 'boot/i18n'
 // import { version } from '../../../package.json'
@@ -7,27 +8,24 @@ import { i18n } from 'boot/i18n'
 // ######################################################################
 
 export function signIn ({ commit }, payload) {
-  postDataToSite({
-    apiUrl: '/auth/Login',
-    commit: commit,
-    targetCommitName: 'updateJwtToken',
-    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
-    silent: true,
-    caller: (payload && payload.caller ? payload.caller : this._vm),
-    apiCallParams: (payload && payload.apiCallParams ? payload.apiCallParams : undefined),
-    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
-    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
-    debug: (payload && payload.debug ? payload.debug : false)
-  })
+  if (payload) {
+    commit('updateJwtToken', { token: payload.token || '' })
+    commit('updateUserDetails', { userDetails: payload.userDetails })
+  }
 }
 
-export function signOut ({ commit }, payload) {
+export async function signOut ({ commit }, payload) {
   // Blank any previous JWT token
   commit('updateJwtToken', { token: '' })
 
   // Empty the list of User Accounts and Roles
   commit('getUserAccounts', [])
   commit('getUserRoles', [])
+
+  // Logout from Okta
+  if (payload && payload.signOutOkta === true) {
+    await Vue.prototype.$auth.signOut()
+  }
 }
 
 // ######################################################################
