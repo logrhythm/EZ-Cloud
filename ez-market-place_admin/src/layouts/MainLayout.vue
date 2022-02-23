@@ -9,7 +9,7 @@
       @mouseout="miniState = true"
       mini-to-overlay
 
-      :width="200"
+      :width="250"
       :breakpoint="500"
       bordered
 
@@ -40,6 +40,9 @@
       </q-list>
       <div class="text-center">
         <span style="opacity:.4; font-size:.75em">v{{version}}</span>
+      </div>
+      <div class="text-center">
+        <span style="font-size:.75em">{{userIsLoggedIn}}</span>
       </div>
     </div>
   </q-drawer>
@@ -90,7 +93,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import EssentialLink from 'components/EssentialLink.vue'
 import { version } from '../../package.json'
 import { date } from 'quasar'
@@ -121,15 +124,51 @@ export default {
         {
           title: 'Admin Pipelines',
           icon: 'verified_user',
-          link: 'Admin/Templates'
+          link: 'Admin/Templates',
+          caption: 'Requires authentication',
+          needsPriviledge: true
         },
         {
           title: 'Admin Users',
           icon: 'admin_panel_settings',
-          link: 'Admin/RBAC'
+          link: 'Admin/RBAC',
+          caption: 'Requires authentication',
+          needsPriviledge: true
         }
       ],
-      lowLinks: [
+      // lowLinks: [
+      //   {
+      //     title: 'Settings',
+      //     icon: 'settings',
+      //     link: 'Settings'
+      //   },
+      //   {
+      //     separator: true
+      //   },
+      //   (
+      //     this.userIsLoggedIn
+      //       ? {
+      //           title: 'Log In',
+      //           icon: 'login',
+      //           link: 'Login'
+      //         }
+      //       : {
+      //           title: 'Log Out',
+      //           icon: 'logout',
+      //           link: 'Logout'
+      //         }
+      //   )
+      // ],
+      version: version,
+      showErrorPanel: false,
+      errorPanelDetails: []
+    }
+  },
+  computed: {
+    ...mapState('mainStore', ['loggedInUser', 'errorWikiUrlBase', 'ezMarketNotification']),
+    ...mapGetters('mainStore', ['userIsLoggedIn']),
+    lowLinks () {
+      return [
         {
           title: 'Settings',
           icon: 'settings',
@@ -138,19 +177,21 @@ export default {
         {
           separator: true
         },
-        {
-          title: 'Log Out',
-          icon: 'logout',
-          link: 'Logout'
-        }
-      ],
-      version: version,
-      showErrorPanel: false,
-      errorPanelDetails: []
+        (
+          this.userIsLoggedIn
+            ? {
+                title: 'Log Out',
+                icon: 'logout',
+                link: 'Logout'
+              }
+            : {
+                title: 'Log In',
+                icon: 'login',
+                link: 'Login'
+              }
+        )
+      ]
     }
-  },
-  computed: {
-    ...mapState('mainStore', ['loggedInUser', 'errorWikiUrlBase', 'ezMarketNotification'])
   },
   methods: {
     sanitiseWikiLinks (rawLinkRef) {

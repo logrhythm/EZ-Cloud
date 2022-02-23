@@ -23,10 +23,10 @@
     </q-item-section>
 
     <q-item-section>
-      <q-item-label :class="(isPageActive ? 'text-primary' : '')">{{ title }}</q-item-label>
-      <!-- <q-item-label caption>
+      <q-item-label :class="(isPageActive ? 'text-primary' : '')"><q-icon :name="(userIsLoggedIn ? 'lock_open' : 'lock')" size="1.5em" class="" left color="secondary" v-if="caption.length || !!needsPriviledge"/>{{ title }}</q-item-label>
+      <q-item-label caption v-if="caption.length || !!needsPriviledge" class="text-italic">
         {{ caption }}
-      </q-item-label> -->
+      </q-item-label>
     </q-item-section>
   </q-item>
 
@@ -39,6 +39,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
   name: 'EssentialLink',
   props: {
@@ -87,9 +89,15 @@ export default {
     separator: {
       type: Boolean,
       default: false
+    },
+
+    needsPriviledge: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
+    ...mapGetters('mainStore', ['userIsLoggedIn']),
     isPageActive () {
       if (this.$route.path && this.$route.path.length) {
         const cleanLink = this.link.replace('#/', '/')
