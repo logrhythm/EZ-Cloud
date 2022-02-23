@@ -9,7 +9,7 @@
       v-if="icon"
       side
     >
-      <q-avatar size="24px" class="q-pa-none">
+      <q-avatar size="24px" class="q-pa-none" square >
         <q-icon :name="icon" size="sm" :color="(isPageActive ? 'primary' : '')" />
         <q-badge
           v-if="notification !== null"
