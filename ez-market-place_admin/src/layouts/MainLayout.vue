@@ -107,7 +107,46 @@ export default {
     return {
       drawerMenuOpen: false,
       miniState: true,
-      mainLinks: [
+      // mainLinks: [
+      //   {
+      //     title: '',
+      //     icon: 'home',
+      //     link: 'Welcome'
+      //   },
+      //   {
+      //     title: 'Stats',
+      //     icon: 'dashboard',
+      //     link: 'Stats'
+      //   },
+      //   {
+      //     separator: true
+      //   },
+      //   {
+      //     title: 'Admin Pipelines',
+      //     icon: 'verified_user',
+      //     link: 'Admin/Templates',
+      //     caption: 'Requires authentication',
+      //     needsPriviledge: true
+      //   },
+      //   {
+      //     title: 'Admin Users',
+      //     icon: 'admin_panel_settings',
+      //     link: 'Admin/RBAC',
+      //     caption: 'Requires authentication',
+      //     needsPriviledge: true
+      //   }
+      // ],
+      // lowLinks: [ // Moved to Computed
+      version: version,
+      showErrorPanel: false,
+      errorPanelDetails: []
+    }
+  },
+  computed: {
+    ...mapState('mainStore', ['loggedInUser', 'errorWikiUrlBase', 'ezMarketNotification']),
+    ...mapGetters('mainStore', ['userIsLoggedIn']),
+    mainLinks () {
+      return [
         {
           title: '',
           icon: 'home',
@@ -125,48 +164,18 @@ export default {
           title: 'Admin Pipelines',
           icon: 'verified_user',
           link: 'Admin/Templates',
-          caption: 'Requires authentication',
+          caption: (this.userIsLoggedIn ? 'Authenticated' : 'Requires authentication'),
           needsPriviledge: true
         },
         {
           title: 'Admin Users',
           icon: 'admin_panel_settings',
           link: 'Admin/RBAC',
-          caption: 'Requires authentication',
+          caption: (this.userIsLoggedIn ? 'Authenticated' : 'Requires authentication'),
           needsPriviledge: true
         }
-      ],
-      // lowLinks: [
-      //   {
-      //     title: 'Settings',
-      //     icon: 'settings',
-      //     link: 'Settings'
-      //   },
-      //   {
-      //     separator: true
-      //   },
-      //   (
-      //     this.userIsLoggedIn
-      //       ? {
-      //           title: 'Log In',
-      //           icon: 'login',
-      //           link: 'Login'
-      //         }
-      //       : {
-      //           title: 'Log Out',
-      //           icon: 'logout',
-      //           link: 'Logout'
-      //         }
-      //   )
-      // ],
-      version: version,
-      showErrorPanel: false,
-      errorPanelDetails: []
-    }
-  },
-  computed: {
-    ...mapState('mainStore', ['loggedInUser', 'errorWikiUrlBase', 'ezMarketNotification']),
-    ...mapGetters('mainStore', ['userIsLoggedIn']),
+      ]
+    },
     lowLinks () {
       return [
         {
