@@ -125,6 +125,7 @@
   - [x] UI
 - [x] Change typical message ('Error updating persistance layer') when API returns an error to a more generic, or more specific if necessary
 - [x] Shipper installer - Content Security Policy prevents download of `shippers_url.json` from GitHub
+- [x] Square avatars for navigation bar
 
 ## TO TEST
 - [ ] Fan Out feature
