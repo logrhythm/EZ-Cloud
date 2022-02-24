@@ -11,7 +11,7 @@ const db = require('./shared/database-connector');
 const { decryptStringWithRsaPrivateKey } = require('./shared/crypto');
 
 // Load the Okta token checker
-const { checkJwTokenAndSetUser } = require('./shared/checkOktaToken');
+const { checkOktaJwtToken } = require('./shared/checkOktaToken');
 
 // -------
 // LOGGING
@@ -299,6 +299,29 @@ function extractServerAndClientVersions(req, res, next) {
 
 // --------
 // AUTHENTICATION
+
+/**
+ * Check for Authentication token, and if a valid one is found, extract the username from it
+ * @param {*} req Express Router's request object
+ * @param {*} res Express Router's response object
+ * @param {*} next Express Router's next function
+ */
+async function checkJwTokenAndSetUser(req, res, next) {
+  const authHeader = req.get('Authorization');
+  if (authHeader && authHeader.length) {
+    const token = String(authHeader).replace(/^Bearer /, '');
+    if (token) {
+      // logToSystem('Debug', `checkJwTokenAndSetUser - ${token}`);
+      const checkedCreds = await checkOktaJwtToken(token);
+      logToSystem('Debug', `checkJwTokenAndSetUser - Response - ${JSON.stringify(checkedCreds)}`);
+      // Push it to the req.user if all good
+      if (checkedCreds && !!checkedCreds.valid) {
+        req.user = checkedCreds;
+      }
+    }
+  }
+  next();
+}
 
 /**
  * Check the user is logged in

@@ -9,7 +9,7 @@ Vue.prototype.globalConstants = {
 
 if (process.env.DEV) {
   Vue.prototype.globalConstants.baseUrl.website = 'http://localhost:8442/EZ'
-  Vue.prototype.globalConstants.baseUrl.api = 'http://localhost:8442/EZ/API/v1'
+  Vue.prototype.globalConstants.baseUrl.api = 'http://localhost:8442/API/v1'
 }
 
 // Load from locally stored values

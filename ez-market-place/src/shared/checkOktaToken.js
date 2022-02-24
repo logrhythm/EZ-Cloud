@@ -9,67 +9,35 @@ const oktaJwtVerifier = new OktaJwtVerifier({
 // Load the System Logging functions
 const { logToSystem } = require('./systemLogging');
 
-// Check if the Creds are valid, by trying checking them with Okta
-async function checkCredentials(oktaToken) {
+/**
+ * Check if the Creds are valid, by trying checking them with Okta
+ * @param {String} oktaToken Okta minted/provided JWT token
+ * @returns A response object with {String} username, {Boolean} valid, {Object} verifierFullResponse
+ */
+async function checkOktaJwtToken(oktaToken) {
   const response = {
     username: '',
-    valid: false
+    valid: false,
+    verifierFullResponse: null
   };
-  // logToSystem('Debug', `checkCredentials - ${oktaToken}`);
+  logToSystem('Debug', `Okta Credentials Verification - Provided Okta Token: ${oktaToken}`);
   if (oktaToken && oktaToken.length) {
     try {
       const oktaVerifier = await oktaJwtVerifier.verifyAccessToken(oktaToken, 'api://default');
-      logToSystem('Debug', `checkCredentials - oktaVerifier - ${JSON.stringify(oktaVerifier)}`);
+      logToSystem('Debug', `Okta Credentials Verification - oktaJwtVerifier response: ${JSON.stringify(oktaVerifier)}`);
       // Check if the oktaVerifier is valid
-      if (oktaVerifier) { // XXXX
-        response.username = 'boop'; // XXXX
+      if (oktaVerifier) {
+        response.username = (oktaVerifier.claims ? oktaVerifier.claims.sub : '') || '';
         response.valid = true;
+        response.verifierFullResponse = oktaVerifier;
       }
     } catch (error) {
-      // logToSystem('Error', `checkCredentials - oktaJwtVerifier - ${JSON.stringify(error)}`);
-      logToSystem('Error', `checkCredentials - oktaJwtVerifier - ${error.message}`);
+      logToSystem('Error', `Okta Credentials Verification - ${error.name} - ${error.message} - ${JSON.stringify(error.innerError)}`);
     }
   }
   return response;
 }
 
-// Check for Authentication token, and if a valid one is found, extract the username from it
-function checkJwTokenAndSetUser(req, res, next) {
-  const authHeader = req.get('Authorization');
-  if (authHeader && authHeader.length) {
-    const token = String(authHeader).replace(/^Bearer /, '');
-    if (token) {
-      // logToSystem('Debug', `checkJwTokenAndSetUser - ${token}`);
-      const checkedCreds = checkCredentials(token);
-      logToSystem('Debug', `checkJwTokenAndSetUser - Response - ${JSON.stringify(checkedCreds)}`);
-    }
-  }
-  next();
-
-  // const authHeader = req.get('Authorization');
-  // if (authHeader && authHeader.length && configJwt && configJwt.secret && configJwt.secret.length) {
-  //   const token = String(authHeader).replace(/^Bearer /, '');
-  //   if (token) {
-  //     // use jwt lib to decode
-  //     jwt.verify(token, configJwt.secret, (error, decodedPayload) => {
-  //       // decodedPayload should contain something like:
-  //       // {"username":"tmasse","roles":["Admin"],"iat":1637363428,"exp":1637449828}
-  //       if (error) {
-  //         logToSystem('Error', error);
-  //       }
-  //       logToSystem('Debug', `checkJwTokenAndSetUser - ${JSON.stringify(decodedPayload)}`);
-  //       req.user = decodedPayload;
-  //       next();
-  //     });
-  //   } else {
-  //     next();
-  //   }
-  // } else {
-  //   next();
-  // }
-}
-
 module.exports = {
-  checkCredentials,
-  checkJwTokenAndSetUser
+  checkOktaJwtToken
 };
