@@ -20,6 +20,9 @@ app.use(middlewares.extractDeploymentAndPublishUids);
 // and "ez-client-version" Headers
 app.use(middlewares.extractServerAndClientVersions);
 
+// Check for JWT token in the headers, and if found populate the req object accordingly
+app.use(middlewares.checkJwTokenAndSetUser);
+
 // Log the Web requests / responses to the System Journal
 app.use(middlewares.logHttpToSystem);
 // Track statistics into database

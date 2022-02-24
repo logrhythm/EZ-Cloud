@@ -10,6 +10,9 @@ const db = require('./shared/database-connector');
 // Load the RSA decrypter
 const { decryptStringWithRsaPrivateKey } = require('./shared/crypto');
 
+// Load the Okta token checker
+const { checkJwTokenAndSetUser } = require('./shared/checkOktaToken');
+
 // -------
 // LOGGING
 
@@ -79,7 +82,7 @@ async function trackStatsToDatabase(req, res, next) {
 // ERROR HANDLING
 
 /**
- * Return 404-Not
+ * Returns 404-Not Found
  * @param {*} req Express Router's request object
  * @param {*} res Express Router's response object
  * @param {*} next Express Router's next function
@@ -87,6 +90,18 @@ async function trackStatsToDatabase(req, res, next) {
 function notFound(req, res, next) {
   res.status(404);
   const error = new Error('Not Found');
+  next(error);
+}
+
+/**
+ * Returns 401-Access Denied error
+ * @param {*} req Express Router's request object
+ * @param {*} res Express Router's response object
+ * @param {*} next Express Router's next function
+ */
+function accessDenied(res, next) {
+  const error = new Error('Access Denied');
+  res.status(401);
   next(error);
 }
 
@@ -282,6 +297,23 @@ function extractServerAndClientVersions(req, res, next) {
   next();
 }
 
+// --------
+// AUTHENTICATION
+
+/**
+ * Check the user is logged in
+ * @param {*} req Express Router's request object
+ * @param {*} res Express Router's response object
+ * @param {*} next Express Router's next function
+ */
+function isLoggedIn(req, res, next) {
+  if (req.user) {
+    next();
+  } else {
+    accessDenied(res, next);
+  }
+}
+
 module.exports = {
   logHttpToSystem,
   trackStatsToDatabase,
@@ -290,5 +322,7 @@ module.exports = {
   setXFrameOptions,
   setContentSecurityPolicy,
   extractDeploymentAndPublishUids,
-  extractServerAndClientVersions
+  extractServerAndClientVersions,
+  checkJwTokenAndSetUser,
+  isLoggedIn
 };
