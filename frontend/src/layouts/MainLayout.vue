@@ -57,6 +57,10 @@
         />
       </q-list>
       <div class="text-center">
+        <q-tooltip content-style="font-size: 1em">
+          <span class="text-bold">EZ Client version:</span> v{{version}}<br>
+          <span class="text-bold">EZ Server version:</span> v{{serverVersion}}
+        </q-tooltip>
         <span style="opacity:.4; font-size:.75em">v{{version}}</span>
       </div>
     </div>
@@ -185,7 +189,10 @@ export default {
     }
   },
   computed: {
-    ...mapState('mainStore', ['loggedInUser', 'loggedInUserIsPrivileged', 'errorWikiUrlBase', 'ezMarketNotification'])
+    ...mapState('mainStore', ['loggedInUser', 'loggedInUserIsPrivileged', 'errorWikiUrlBase', 'ezMarketNotification', 'deployment']),
+    serverVersion () {
+      return (this.deployment && this.deployment.version ? this.deployment.version : '?.?.?')
+    }
   },
   methods: {
     sanitiseWikiLinks (rawLinkRef) {
