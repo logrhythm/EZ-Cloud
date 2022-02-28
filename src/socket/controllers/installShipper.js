@@ -350,6 +350,12 @@ function installShipper(socket, payload) {
                   in: step.stdin || '',
                   exit(code) {
                     let continueToNextStep = true;
+
+                    // Make sure steps[stepCounter] exists
+                    if (installStepsStatus[payload.jobId].steps[stepCounter] == null) {
+                      installStepsStatus[payload.jobId].steps[stepCounter] = {};
+                    }
+
                     installStepsStatus[payload.jobId].steps[stepCounter].exited = true;
                     installStepsStatus[payload.jobId].steps[stepCounter].endTime = Date.now();
 
