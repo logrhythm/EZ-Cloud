@@ -289,6 +289,8 @@ async function tailInit(socket, payload) {
               }
             }
           })
+          // eslint-disable-next-line max-len
+          // .exec(`./lrctl --versions-file versions.yml genericbeat start --fqbn ${logRhythmFullyQualifiedBeatName} >&2`, { // To test new/special Beats
           .exec(`./lrctl genericbeat start --fqbn ${logRhythmFullyQualifiedBeatName} >&2`, {
             err(stderr) {
               // console.log('STDERR:::' + stderr);
