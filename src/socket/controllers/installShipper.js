@@ -106,22 +106,25 @@ function installShipper(socket, payload) {
                   command: (
                     // eslint-disable-next-line no-nested-ternary
                     payload.installerSource.installer === 'DEB'
-                      ? `sudo dpkg -i /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.filename}`
+                      ? `sudo -S dpkg -i /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.filename}`
                       : (
                         payload.installerSource.installer === 'RPM'
-                          ? `sudo rpm -vi /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.filename}`
+                          ? `sudo -S rpm -vi /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.filename}`
                           : `echo -e "Unknown Package Manager (${payload.installerSource.installer}). Exiting."; exit 42;`
                       )
-                  )
+                  ),
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Create new Input folder to drop dynamic input files into',
-                  command: 'sudo mkdir -p /etc/filebeat/inputs.d'
+                  command: 'sudo -S mkdir -p /etc/filebeat/inputs.d',
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Backup default configuration file',
-                  command: 'sudo -- sh -c \'[ -f "/etc/filebeat/filebeat.yml" ] && mv -f /etc/filebeat/filebeat.yml /etc/filebeat/filebeat.original.yml\'',
-                  continueOnFailure: true
+                  command: 'sudo -S -- sh -c \'[ -f "/etc/filebeat/filebeat.yml" ] && mv -f /etc/filebeat/filebeat.yml /etc/filebeat/filebeat.original.yml\'',
+                  continueOnFailure: true,
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Create configuration file',
@@ -130,11 +133,13 @@ function installShipper(socket, payload) {
                 },
                 {
                   action: 'Move configuration file into place',
-                  command: `sudo cp -f /tmp/ez-shipper-install-${payload.jobId}/filebeat.yml /etc/filebeat/filebeat.yml`
+                  command: `sudo -S cp -f /tmp/ez-shipper-install-${payload.jobId}/filebeat.yml /etc/filebeat/filebeat.yml`,
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Set configuration file the correct access rights',
-                  command: 'sudo chmod 700 /etc/filebeat/filebeat.yml'
+                  command: 'sudo -S chmod 700 /etc/filebeat/filebeat.yml',
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'List the files of the temporary directory',
@@ -146,11 +151,13 @@ function installShipper(socket, payload) {
                 },
                 {
                   action: 'Dump Shipper\'s configuration file',
-                  command: 'sudo cat /etc/filebeat/filebeat.yml'
+                  command: 'sudo -S cat /etc/filebeat/filebeat.yml',
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Start Shipper service',
-                  command: 'sudo service filebeat start',
+                  command: 'sudo -S service filebeat start',
+                  stdin: (sshConfig.pass ? sshConfig.pass : ''),
                   continueOnFailure: true
                 },
                 {
@@ -192,16 +199,19 @@ function installShipper(socket, payload) {
                 },
                 {
                   action: 'Move jsBeat to /opt/',
-                  command: `sudo mv /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.jsBeat.folderName} /opt/`
+                  command: `sudo -S mv /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.jsBeat.folderName} /opt/`,
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Remove previous symbolic link to older version, if any',
-                  command: 'sudo rm -f /opt/jsBeat',
+                  command: 'sudo -S rm -f /opt/jsBeat',
+                  stdin: (sshConfig.pass ? sshConfig.pass : ''),
                   continueOnFailure: true
                 },
                 {
                   action: 'Create a symbolic link to this version',
-                  command: `sudo ln --symbolic ${payload.installerSource.jsBeat.folderName} /opt/jsBeat`
+                  command: `sudo -S ln --symbolic ${payload.installerSource.jsBeat.folderName} /opt/jsBeat`,
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Create configuration file',
@@ -222,7 +232,8 @@ function installShipper(socket, payload) {
                 },
                 {
                   action: 'Run the Shipper post-install script',
-                  command: 'sudo /usr/bin/env bash /opt/jsBeat/bin/post_install.sh'
+                  command: 'sudo -S /usr/bin/env bash /opt/jsBeat/bin/post_install.sh',
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Clean up. Remove the temporary directory and its content',
@@ -271,12 +282,14 @@ function installShipper(socket, payload) {
                 },
                 {
                   action: 'Remove previous symbolic link to older version, if any',
-                  command: 'sudo rm -f /opt/jsBeat/lib/node',
-                  continueOnFailure: true
+                  command: 'sudo -S rm -f /opt/jsBeat/lib/node',
+                  continueOnFailure: true,
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Create a symbolic link to this version',
-                  command: `sudo ln --symbolic ${payload.installerSource.nodeJs.folderName} /opt/jsBeat/lib/node`
+                  command: `sudo -S ln --symbolic ${payload.installerSource.nodeJs.folderName} /opt/jsBeat/lib/node`,
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'List the files of the Shipper Lib directory',
@@ -294,13 +307,15 @@ function installShipper(socket, payload) {
               steps.push(
                 {
                   action: 'Start Shipper service',
-                  command: 'sudo service jsbeat start',
-                  continueOnFailure: true
+                  command: 'sudo -S service jsbeat start',
+                  continueOnFailure: true,
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Check Shipper service Status',
-                  command: 'sudo service jsbeat status',
-                  continueOnFailure: true
+                  command: 'sudo -S service jsbeat status',
+                  continueOnFailure: true,
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 }
               );
             } // if (payload.installerSource.jsBeat)
