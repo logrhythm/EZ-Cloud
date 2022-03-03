@@ -79,7 +79,7 @@ export default function () {
       },
       {
         value: 'webhookbeat',
-        label: 'LogRhythm Webhook Beat (🚧 - Stub)',
+        label: 'LogRhythm Webhook Beat (👁‍🗨 - Preview - Missing HTTPS)',
         icon: 'logrhythm-webhookbeat',
         outputFormat: 'yaml'
       },
@@ -87,12 +87,6 @@ export default function () {
         value: 'filebeat',
         label: 'Filebeat',
         icon: 'filebeat',
-        outputFormat: 'yaml'
-      },
-      {
-        value: 'webhookbeat',
-        label: 'LogRhythm Webhook Beat',
-        icon: 'logrhythm-webhookbeat',
         outputFormat: 'yaml'
       }
     ], // collectionShippersOptions
