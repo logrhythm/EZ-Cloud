@@ -34,7 +34,8 @@ export async function signOut ({ commit }, payload) {
 // ######################################################################
 
 export function getUserAccounts ({ state, commit }, payload) {
-  getDataFromSite({
+  apiCall({
+    httpVerb: 'GET',
     apiUrl: '/admin/GetUsersList',
     dataLabel: 'Accounts',
     countDataLabel: true,
@@ -54,7 +55,8 @@ export function getUserAccounts ({ state, commit }, payload) {
 
 export function updateUserAccount ({ state }, payload) {
   if (payload && payload.roleUid) {
-    postDataToSite({
+    apiCall({
+      httpVerb: 'POST',
       apiUrl: '/admin/UpdateUser',
       dataLabel: 'Account',
       apiCallParams: {
@@ -78,7 +80,8 @@ export function updateUserAccount ({ state }, payload) {
 
 export function deleteUserAccount ({ state }, payload) {
   if (payload && payload.userId != null) {
-    postDataToSite({
+    apiCall({
+      httpVerb: 'POST',
       apiUrl: '/admin/DeleteUser',
       dataLabel: 'Account',
       apiCallParams: { userId: payload.userId },
@@ -96,7 +99,8 @@ export function deleteUserAccount ({ state }, payload) {
 }
 
 export function getUserRoles ({ state, commit }, payload) {
-  getDataFromSite({
+  apiCall({
+    httpVerb: 'GET',
     apiUrl: '/admin/GetRolesList',
     dataLabel: 'Roles',
     countDataLabel: true,
@@ -116,7 +120,8 @@ export function getUserRoles ({ state, commit }, payload) {
 
 export function updateUserRole ({ state }, payload) {
   if (payload && payload.roleUid && payload.roleUid.length && payload.roleName && payload.roleName.length) {
-    postDataToSite({
+    apiCall({
+      httpVerb: 'POST',
       apiUrl: '/admin/UpdateRole',
       dataLabel: 'Role',
       apiCallParams: {
@@ -139,7 +144,8 @@ export function updateUserRole ({ state }, payload) {
 
 export function deleteUserRole ({ state }, payload) {
   if (payload && payload.roleUid && payload.roleUid.length) {
-    postDataToSite({
+    apiCall({
+      httpVerb: 'POST',
       apiUrl: '/admin/DeleteRole',
       dataLabel: 'Role',
       apiCallParams: { uid: payload.roleUid },
@@ -175,7 +181,7 @@ export function getDataFromSite (params = {
   loadingVariableName: '',
   apiCallParams: {},
   apiHeaders: {},
-  silent: false,
+    silent: false,
   logToConsole: true,
   caller: this,
   debug: false,
@@ -207,7 +213,7 @@ export function getDataFromSite (params = {
 
   if (params.debug) {
     console.log('getDataFromSite -- BEGIN')
-  }
+}
 
   if (!params.silent && params.caller && params.caller.$q) {
     notificationPopupId = params.caller.$q.notify({
@@ -218,7 +224,7 @@ export function getDataFromSite (params = {
   }
   if (params.logToConsole) {
     console.log('☁️ ' + i18n.t('Downloading') + ' ' + params.dataLabel + '...')
-  }
+}
 
   // If a loadingVariable is provided, set it to true
   if (params.loadingVariableName.length) {
@@ -231,119 +237,88 @@ export function getDataFromSite (params = {
   params.caller.$axios.get((params.isUrlExternal ? params.apiUrl : params.caller.globalConstants.baseUrl.api + params.apiUrl), {
     params: params.apiCallParams,
     headers: params.apiHeaders
-  })
+    })
     .then(function (response) {
       if (params.debug) {
         console.log('getDataFromSite -- Then')
-      }
+  }
       if (params.debug) {
         console.log(response)
-      }
-      apiResponse = response
-      if (response.data && response.data.payload) {
-        // Assign to targetObject
-        if (params.targetObjectName.length) {
-          params.caller[params.targetObjectName] = response.data.payload
-        }
-        // Commit to targetCommitName
-        if (typeof params.commit === 'function' && params.targetCommitName.length) {
-          params.commit(params.targetCommitName, response.data.payload)
-        }
-        if (response.data.errors && Array.isArray(response.data.errors) && response.data.errors.length > 0) {
-          queryResultedInError = true
-          messageForLogAndPopup = i18n.t('Error querying persistance layer.')
-          if (process.env.DEV) {
-            captionForLogAndPopup = response.data.errors.join(' / ')
-          }
-        } else {
-          queryResultedInError = false
-          if (params.countDataLabel && Array.isArray(response.data.payload)) {
-            messageForLogAndPopup = i18n.t('Succesfully loaded') + ' ' + response.data.payload.length + ' ' + params.dataLabel + '.'
-          } else {
-            messageForLogAndPopup = i18n.t('Succesfully loaded') + ' ' + params.dataLabel + '.'
-          }
-        }
-      } else {
-        messageForLogAndPopup = i18n.t('Invalid response') + '.'
-        captionForLogAndPopup = i18n.t('No "response" object in AJAX response')
-        queryResultedInError = true
-      }
-    })
-    .catch(function (errorMessage) {
-      if (params.debug) {
-        console.log('getDataFromSite -- Catch')
-      }
-      messageForLogAndPopup = i18n.t('Loading error') + ': ' + (typeof errorMessage !== 'object' ? errorMessage : JSON.stringify(errorMessage))
-      queryResultedInError = true
-    })
-    .finally(() => {
-      if (params.debug) {
-        console.log('getDataFromSite -- Finally')
-      }
+}
 
-      if (queryResultedInError) {
-        if (params.logToConsole) {
-          console.log('⚠️ ' + i18n.t('[API ERROR]') + ' ' + messageForLogAndPopup)
-        }
-        if (!params.silent && notificationPopupId) {
-          notificationPopupId({
-            type: 'negative',
-            color: 'negative',
-            icon: 'report_problem',
-            message: messageForLogAndPopup,
-            caption: captionForLogAndPopup,
-            timeout: 4000
-          })
-        }
-        if (typeof params.onErrorCallBack === 'function') {
-          if (params.debug) {
-            console.log('getDataFromSite -- onErrorCallBack')
-          }
-          params.onErrorCallBack({
-            data: (apiResponse && apiResponse.data ? apiResponse.data : undefined),
-            success: false,
-            params,
-            messageForLogAndPopup
-          })
-        }
-      } else {
-        if (params.logToConsole) {
-          console.log('✔️ ' + i18n.t('[API SUCCESS]') + ' ' + messageForLogAndPopup)
-        }
-        if (!params.silent && notificationPopupId) {
-          notificationPopupId({
-            type: 'positive',
-            color: 'positive',
-            icon: 'check',
-            message: messageForLogAndPopup,
-            caption: captionForLogAndPopup
-          })
-        }
-        if (typeof params.onSuccessCallBack === 'function') {
-          if (params.debug) {
-            console.log('getDataFromSite -- onSuccessCallBack')
-          }
-          params.onSuccessCallBack({
-            data: (apiResponse && apiResponse.data ? apiResponse.data : undefined),
-            success: true,
-            params,
-            messageForLogAndPopup
-          })
-        }
-      }
-      // If a loadingVariableName is provided, set it to false
-      if (params.loadingVariableName.length) {
-        params.caller[params.loadingVariableName] = false
-      }
+//           ###    ########  ####       ##     ## ######## #### ##       #### ######## #### ########  ######
+//          ## ##   ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
+//         ##   ##  ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##
+//        ##     ## ########   ##        ##     ##    ##     ##  ##        ##     ##     ##  ######    ######
+//        ######### ##         ##        ##     ##    ##     ##  ##        ##     ##     ##  ##             ##
+//        ##     ## ##         ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
+//        ##     ## ##        ####        #######     ##    #### ######## ####    ##    #### ########  ######
 
-      if (params.debug) {
-        console.log('getDataFromSite -- END')
-      }
-    })
-} // getDataFromSite
+/**
+ * Select the right Axios function and parameters and call it
+ * @param {*} params Parameter object
+ * @returns A Promise
+ */
+async function axiosFunction (params) {
+  if (params) {
+    let axiosFunctionToCall = null
+    let axiosSendData = false
 
-// postDataToSite: Call API endpoint to post data to it, and optionally get data from it
-export function postDataToSite (params = {
+    if (params.httpVerb === 'GET') {
+      axiosFunctionToCall = params.caller.$axios.get
+      axiosSendData = false
+    }
+    if (params.httpVerb === 'HEAD') {
+      axiosFunctionToCall = params.caller.$axios.head
+      axiosSendData = false
+    }
+    if (params.httpVerb === 'POST') {
+      axiosFunctionToCall = params.caller.$axios.post
+      axiosSendData = true
+    }
+    if (params.httpVerb === 'PUT') {
+      axiosFunctionToCall = params.caller.$axios.put
+      axiosSendData = true
+    }
+    if (params.httpVerb === 'DELETE') {
+      axiosFunctionToCall = params.caller.$axios.delete
+      axiosSendData = false
+    }
+    if (params.httpVerb === 'OPTIONS') {
+      axiosFunctionToCall = params.caller.$axios.options
+      axiosSendData = false
+    }
+    if (params.httpVerb === 'PATCH') {
+      axiosFunctionToCall = params.caller.$axios.patch
+      axiosSendData = true
+    }
+
+    if (axiosSendData) {
+      return axiosFunctionToCall(
+        (params.isUrlExternal ? params.apiUrl : params.caller.globalConstants.baseUrl.api + params.apiUrl),
+        params.apiCallParams,
+        {
+          headers: params.apiHeaders
+        }
+      )
+    } else {
+      return axiosFunctionToCall(
+        (params.isUrlExternal ? params.apiUrl : params.caller.globalConstants.baseUrl.api + params.apiUrl),
+        {
+          params: params.apiCallParams,
+          headers: params.apiHeaders
+        }
+      )
+    }
+  }
+}
+
+/**
+ * Call API endpoint to get/post/put/delete data from/to it
+ * @param {object} params Parameter object
+ */
+export function apiCall (params = {
+  httpVerb: '',
   apiUrl: '',
   isUrlExternal: false,
   dataLabel: '',
@@ -367,6 +342,8 @@ export function postDataToSite (params = {
   let notificationPopupId = null
   let apiResponse = {}
 
+  if (typeof params.httpVerb === 'undefined') { params.httpVerb = '' }
+  params.httpVerb = String(params.httpVerb).toUpperCase()
   if (typeof params.apiUrl === 'undefined') { params.apiUrl = '' }
   if (typeof params.isUrlExternal === 'undefined') { params.isUrlExternal = false }
   if (typeof params.dataLabel === 'undefined') { params.dataLabel = '' }
@@ -385,18 +362,43 @@ export function postDataToSite (params = {
   if (typeof params.onErrorCallBack === 'undefined') { params.onErrorCallBack = null }
 
   if (params.debug) {
-    console.log('postDataToSite -- BEGIN')
+    console.log('apiCall -- BEGIN')
   }
+
+  const messageAction = (
+    params.httpVerb === 'POST' ||
+    params.httpVerb === 'PUT' ||
+    params.httpVerb === 'DELETE' ||
+    params.httpVerb === 'PATCH'
+      ? i18n.t('Uploading')
+      : i18n.t('Downloading')
+  )
+
+  const messageResult = (
+    params.httpVerb === 'POST' ||
+    params.httpVerb === 'PUT' ||
+    params.httpVerb === 'DELETE' ||
+    params.httpVerb === 'PATCH'
+      ? i18n.t('uploaded')
+      : i18n.t('loaded')
+  )
 
   if (!params.silent && params.caller && params.caller.$q) {
     notificationPopupId = params.caller.$q.notify({
-      icon: 'cloud_upload',
-      message: i18n.t('Uploading') + ' ' + params.dataLabel + '...',
+      icon: (
+        params.httpVerb === 'POST' ||
+        params.httpVerb === 'PUT' ||
+        params.httpVerb === 'DELETE' ||
+        params.httpVerb === 'PATCH'
+          ? 'cloud_upload'
+          : 'cloud_download'
+      ),
+      message: messageAction + ' ' + params.dataLabel + '...',
       type: 'ongoing'
     })
   }
   if (params.logToConsole) {
-    console.log('☁️ ' + i18n.t('Uploading') + ' ' + params.dataLabel + '...')
+    console.log('☁️ ' + messageAction + ' ' + params.dataLabel + '...')
   }
 
   // If a loadingVariable is provided, set it to true
@@ -405,31 +407,28 @@ export function postDataToSite (params = {
   }
 
   if (params.debug) {
-    console.log('postDataToSite -- POST')
+    console.log(`apiCall -- ${params.httpVerb}`)
   }
-  params.caller.$axios.post(
-    (params.isUrlExternal ? params.apiUrl : params.caller.globalConstants.baseUrl.api + params.apiUrl),
-    params.apiCallParams,
-    {
-      headers: params.apiHeaders
-    }
-  )
+
+  axiosFunction(params)
     .then(function (response) {
       if (params.debug) {
-        console.log('postDataToSite -- Then')
+        console.log('apiCall -- Then')
       }
       if (params.debug) {
         console.log(response)
       }
 
       apiResponse = response
-      if (response.data && response.data.payload) {
+      if (response.data && response.data.records) {
+        // Check if we were meant to load data in a target
         if (params.targetObjectName.length) {
           // Assign to targetObject
-          params.caller[params.targetObjectName] = response.data.payload
+          params.caller[params.targetObjectName] = response.data.records
 
-          if (params.countDataLabel && Array.isArray(response.data.payload)) {
-            captionForLogAndPopup = i18n.t('Succesfully loaded') + ' ' + response.data.payload.length + ' ' + params.dataLabel + '.'
+          // Update caption message
+          if (params.countDataLabel && Array.isArray(response.data.records)) {
+            captionForLogAndPopup = i18n.t('Succesfully loaded') + ' ' + response.data.records.length + ' ' + params.dataLabel + '.'
           } else {
             captionForLogAndPopup = i18n.t('Succesfully loaded') + ' ' + params.dataLabel + '.'
           }
@@ -437,12 +436,12 @@ export function postDataToSite (params = {
 
         // Commit to targetCommitName
         if (typeof params.commit === 'function' && params.targetCommitName.length) {
-          params.commit(params.targetCommitName, response.data.payload)
+          params.commit(params.targetCommitName, response.data.records)
         }
 
         if (response.data.errors && Array.isArray(response.data.errors) && response.data.errors.length > 0) {
           queryResultedInError = true
-          messageForLogAndPopup = i18n.t('EZ Server API returned an error.')
+          messageForLogAndPopup = i18n.t('EZ Market API returned an error.')
           if (process.env.DEV) {
             captionForLogAndPopup = response.data.errors.reduce((errorsAccumulatorArray, errorMessage) => {
               errorsAccumulatorArray.push(typeof errorMessage !== 'object' ? errorMessage : JSON.stringify(errorMessage))
@@ -451,23 +450,25 @@ export function postDataToSite (params = {
           }
         } else {
           queryResultedInError = false
-          messageForLogAndPopup = i18n.t('Succesfully updated') + ' ' + params.dataLabel + '.'
+          messageForLogAndPopup = messageForLogAndPopup + ' / ' + i18n.t(`Succesfully ${messageResult}`) + ' ' + params.dataLabel + '.'
         }
       } else {
         queryResultedInError = true
-        messageForLogAndPopup = i18n.t('Invalid response') + '. ' + i18n.t('No "response" object in AJAX response')
+        messageForLogAndPopup = i18n.t('Invalid response') + '.'
+        captionForLogAndPopup = i18n.t('No "response" object in AJAX response')
       }
     })
     .catch(function (errorMessage) {
       if (params.debug) {
-        console.log('postDataToSite -- Catch')
+        console.log('apiCall -- Catch')
       }
-      messageForLogAndPopup = i18n.t('Update error') + ': ' + (typeof errorMessage !== 'object' ? errorMessage : JSON.stringify(errorMessage))
+      messageForLogAndPopup = i18n.t('EZ Market API returned an error.')
+      captionForLogAndPopup = (typeof errorMessage !== 'object' ? errorMessage : JSON.stringify(errorMessage))
       queryResultedInError = true
     })
     .finally(() => {
       if (params.debug) {
-        console.log('postDataToSite -- Finally')
+        console.log('apiCall -- Finally')
       }
       if (queryResultedInError) {
         if (params.logToConsole) {
@@ -485,7 +486,7 @@ export function postDataToSite (params = {
         }
         if (typeof params.onErrorCallBack === 'function') {
           if (params.debug) {
-            console.log('postDataToSite -- onErrorCallBack')
+            console.log('apiCall -- onErrorCallBack')
           }
           params.onErrorCallBack({
             data: (apiResponse && apiResponse.data ? apiResponse.data : undefined),
@@ -510,7 +511,7 @@ export function postDataToSite (params = {
         }
         if (typeof params.onSuccessCallBack === 'function') {
           if (params.debug) {
-            console.log('postDataToSite -- onSuccessCallBack')
+            console.log('apiCall -- onSuccessCallBack')
           }
           params.onSuccessCallBack({
             data: (apiResponse && apiResponse.data ? apiResponse.data : undefined),
@@ -526,7 +527,7 @@ export function postDataToSite (params = {
         params.caller[params.loadingVariableName] = false
       }
       if (params.debug) {
-        console.log('postDataToSite -- END')
+        console.log('apiCall -- END')
       }
     })
-} // postDataToSite
+} // apiCall
