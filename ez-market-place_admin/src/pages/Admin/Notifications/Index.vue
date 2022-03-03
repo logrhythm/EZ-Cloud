@@ -11,6 +11,18 @@
                 Coming Soon
               </div>
             </q-card-section>
+            <q-card-section class="flex flex-center">
+              <q-btn dense color="primary" icon="refresh" :loading="notificationsLoading" @click="loadNotifications()">
+                <q-tooltip content-style="font-size: 1em">
+                  Reload the list of Notifications.
+                </q-tooltip>
+              </q-btn>
+            </q-card-section>
+            <q-card-section class="flex flex-center">
+              <div class="">
+                {{ ezMarketNotifications }}
+              </div>
+            </q-card-section>
           </q-card-section>
 
         </q-card-section>
@@ -19,12 +31,33 @@
 </template>
 
 <script>
+import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 
 export default {
-  name: 'PageAdmin',
+  name: 'PageAdminNotifications',
   mixins: [
     mixinSharedDarkMode // Shared computed to access and update the DarkMode
-  ]
+  ],
+  data () {
+    return {
+      notificationsLoading: false
+    }
+  }, // data
+  computed: {
+    ...mapState('mainStore', ['ezMarketNotifications'])
+  },
+  methods: {
+    ...mapActions('mainStore', ['getNotifications']),
+    loadNotifications () {
+      this.getNotifications(
+        {
+          loadingVariableName: 'notificationsLoading',
+          caller: this,
+          debug: true
+        }
+      )
+    }
+  }
 }
 </script>
