@@ -53,3 +53,11 @@ export function getUserRoles (state, payload) {
     state.userRoles = payload
   }
 }
+
+// Notifications
+
+export function getNotifications (state, payload) {
+  if (payload && Array.isArray(payload)) {
+    state.ezMarketNotifications = payload
+  }
+}

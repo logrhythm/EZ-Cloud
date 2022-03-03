@@ -162,88 +162,72 @@ export function deleteUserRole ({ state }, payload) {
   }
 }
 
-//           ###    ########  ####       ##     ## ######## #### ##       #### ######## #### ########  ######
-//          ## ##   ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
-//         ##   ##  ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##
-//        ##     ## ########   ##        ##     ##    ##     ##  ##        ##     ##     ##  ######    ######
-//        ######### ##         ##        ##     ##    ##     ##  ##        ##     ##     ##  ##             ##
-//        ##     ## ##         ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
-//        ##     ## ##        ####        #######     ##    #### ######## ####    ##    #### ########  ######
+// ********************************
+// Notifications
+// ********************************
 
-export function getDataFromSite (params = {
-  apiUrl: '',
-  isUrlExternal: false,
-  dataLabel: '',
-  countDataLabel: false,
-  targetObjectName: '',
-  commit: null,
-  targetCommitName: '',
-  loadingVariableName: '',
-  apiCallParams: {},
-  apiHeaders: {},
+export function getNotifications ({ state, commit }, payload) {
+  apiCall({
+    httpVerb: 'GET',
+    apiUrl: '/admin/notifications',
+    dataLabel: 'Notifications',
+    countDataLabel: true,
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    commit: commit,
+    targetCommitName: 'getNotifications',
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
     silent: false,
-  logToConsole: true,
-  caller: this,
-  debug: false,
-  onSuccessCallBack: null,
-  onErrorCallBack: null
-}) {
-  let messageForLogAndPopup = ''
-  let captionForLogAndPopup = ''
-  let queryResultedInError = false
-  let notificationPopupId = null
-  let apiResponse = {}
-
-  if (typeof params.apiUrl === 'undefined') { params.apiUrl = '' }
-  if (typeof params.isUrlExternal === 'undefined') { params.isUrlExternal = false }
-  if (typeof params.dataLabel === 'undefined') { params.dataLabel = '' }
-  if (typeof params.countDataLabel === 'undefined') { params.countDataLabel = false }
-  if (typeof params.targetObjectName === 'undefined') { params.targetObjectName = '' }
-  if (typeof params.commit === 'undefined') { params.commit = null }
-  if (typeof params.targetCommitName === 'undefined') { params.targetCommitName = '' }
-  if (typeof params.loadingVariableName === 'undefined') { params.loadingVariableName = '' }
-  if (typeof params.apiCallParams === 'undefined') { params.apiCallParams = {} }
-  if (typeof params.apiHeaders === 'undefined') { params.apiHeaders = {} }
-  if (typeof params.silent === 'undefined') { params.silent = false }
-  if (typeof params.logToConsole === 'undefined') { params.logToConsole = true }
-  if (typeof params.caller === 'undefined') { params.caller = this }
-  if (typeof params.debug === 'undefined') { params.debug = false }
-  if (typeof params.onSuccessCallBack === 'undefined') { params.onSuccessCallBack = null }
-  if (typeof params.onErrorCallBack === 'undefined') { params.onErrorCallBack = null }
-
-  if (params.debug) {
-    console.log('getDataFromSite -- BEGIN')
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: (payload && payload.debug ? payload.debug : false)
+  })
 }
 
-  if (!params.silent && params.caller && params.caller.$q) {
-    notificationPopupId = params.caller.$q.notify({
-      icon: 'cloud_download',
-      message: i18n.t('Downloading') + ' ' + params.dataLabel + '...',
-      type: 'ongoing'
+export function updateNotification ({ state }, payload) {
+  if (payload && payload.roleUid && payload.roleUid.length && payload.roleName && payload.roleName.length) {
+    apiCall({
+      httpVerb: 'POST',
+      apiUrl: '/admin/notifications',
+      dataLabel: 'Notification',
+      apiCallParams: {
+        uid: payload.roleUid,
+        name: payload.roleName,
+        isPrivileged: payload.roleIsPrivileged
+      },
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      silent: false,
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: (payload && payload.debug ? payload.debug : false)
     })
   }
-  if (params.logToConsole) {
-    console.log('☁️ ' + i18n.t('Downloading') + ' ' + params.dataLabel + '...')
 }
 
-  // If a loadingVariable is provided, set it to true
-  if (params.loadingVariableName.length) {
-    params.caller[params.loadingVariableName] = true
-  }
-
-  if (params.debug) {
-    console.log('getDataFromSite -- GET')
-  }
-  params.caller.$axios.get((params.isUrlExternal ? params.apiUrl : params.caller.globalConstants.baseUrl.api + params.apiUrl), {
-    params: params.apiCallParams,
-    headers: params.apiHeaders
+export function deleteNotification ({ state }, payload) {
+  if (payload && payload.roleUid && payload.roleUid.length) {
+    apiCall({
+      httpVerb: 'DELETE',
+      apiUrl: '/admin/notifications',
+      dataLabel: 'Notification',
+      apiCallParams: { uid: payload.roleUid },
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      silent: false,
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: (payload && payload.debug ? payload.debug : false)
     })
-    .then(function (response) {
-      if (params.debug) {
-        console.log('getDataFromSite -- Then')
   }
-      if (params.debug) {
-        console.log(response)
 }
 
 //           ###    ########  ####       ##     ## ######## #### ##       #### ######## #### ########  ######

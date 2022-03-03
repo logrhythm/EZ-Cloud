@@ -249,7 +249,7 @@ export default function () {
       publisherUid: null,
       ezMarketUid: null
     },
-    ezMarketNotification: null, // Number (can be short text too) of notifications from EZ Market Place for the User // XXXX
-    ezMarketNotifications: [] // Notifications from EZ Market Place for the User
+    // ezMarketNotification: null, // Number (can be short text too) of notifications from EZ Market Place for the User // XXXX
+    ezMarketNotifications: [] // Notifications from EZ Market Place for all the users
   }
 }
