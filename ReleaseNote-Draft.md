@@ -13,6 +13,7 @@
 ### Microsoft Windows
 
 #### 1. Download and Install
+- If upgrading a previous version, it's a good idea to backup your `\Program Files\EZ Server\config` folder
 - Get [EZ-Cloud.v0.8.🚧.Server-Installer.exe](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.8.🚧/EZ-Cloud.v0.8.🚧.Server-Installer.exe)
 - Run it
 
@@ -100,7 +101,17 @@
 - [v0.8.3] Market - Provide public statistics
   - Market high level statitics: total hits, number of unique deployments, number of unique users
   - Statitics about the Pipeline Templates: number of created pipeline templates, number of unique publishers
+- [v0.8.3] Market Admin - Initial Admin UI
+  - Layout and pages placeholders
+  - Enable Okta Authentication
+- [v0.8.3] Backend - Install Shipper - Deal with `sudo` command by providing password
+
+**v0.8.4**
+- [v0.8.4] Frontend - Display EZ server version on rollover
+- [v0.8.4] Market Admin - API Functions - Consolidate Axios functions
+- [v0.8.4] Market Admin - Code clean-up
 - [v0.8.🚧] 
+
 
 ## What has been fixed in this release?
 **v0.8.1**
@@ -136,10 +147,14 @@
 
 **v0.8.3**
 - [v0.8.3] Backend - Increased the API timeout value (multiplied by 3), changed `maxCheckInterval` from 20 seconds to 60 seconds
+- [v0.8.3] Backend - Install Shipper - Prevent error if `steps[stepCounter]` doesn't exist
+- [v0.8.3] Frontend - Square avatars for navigation bar
+
+**v0.8.4**
+- [v0.8.4] Frontend - Remove Webhook shipper duplicate entry
 - [v0.8.🚧] 
 
 ## Know issues :bug: :beetle:
-- Will fail silently (start Tail, Deploy, etc...) if SSH Credentials are incorrect
 - Will fail to deploy log shippers if not using the `root` account or an account with full `sudo` access
 - If using the Fan Out feature - OpenCollector will refuse to import JQ Transform
 - Open Collector machines running older versions of Docker (anything below v20) will fail to Tail
