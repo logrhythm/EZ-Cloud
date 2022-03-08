@@ -42,6 +42,49 @@
 - Wiki: [Troubleshooting](https://github.com/logrhythm/EZ-Cloud/wiki/Troubleshooting)
 
 ## What's new in this release?
+**v0.8.4**
+- [v0.8.4] Frontend - Display EZ server version on rollover
+- [v0.8.4] Market Admin - API Functions - Consolidate Axios functions
+- [v0.8.4] Market Admin - Code clean-up
+- [v0.8.🚧] 
+
+**v0.8.3**
+- [v0.8.3] Market - Provide public statistics
+  - Market high level statitics: total hits, number of unique deployments, number of unique users
+  - Statitics about the Pipeline Templates: number of created pipeline templates, number of unique publishers
+- [v0.8.3] Market Admin - Initial Admin UI
+  - Layout and pages placeholders
+  - Enable Okta Authentication
+- [v0.8.3] Backend - Install Shipper - Deal with `sudo` command by providing password
+
+**v0.8.2**
+- [v0.8.2] Collection - Add support for LogRhythm Webhook Beat (HTTP only)
+- [v0.8.2] General - Error messages - Change "Error updating persistance layer" to a less misleading and more generic message
+- [v0.8.2] Installer and Backend - Add support for EZ Market Place
+  - Deployment UID randomly generated at installation time
+  - URL for the EZ Market Place stored in configuration file
+  - Publisher UID column added to user table
+  - Pass all the necessary details to Frontend to connect to EZ Market Place
+- [v0.8.2] Mapping Editor - Provide password to Sudo commands during Tail operations
+- [v0.8.2] EZ Market - First version
+  - Database structure
+  - API endpoints:
+    - PipelinesTemplate
+    - Notifications
+- [v0.8.2] Frontend - Integrate EZ Market Place, Market Icon, Market Page, Market Notifications
+- [v0.8.2] Frontend - Update Favicons with the new LogRhythm logo
+- [v0.8.2] Installer - Provides a SHA256 checksum of the installation file
+- [v0.8.2] Installer - Prevent overiding exisiting configuration files, HTTPS certificates and `.env` file
+- [v0.8.2] Move EZ-Cloud Repository from TonyMasse GitHub account to LogRhythm GitHub Corp account
+
+**v0.8.1**
+- [v0.8.1] Pipelines - Import/Export of Collection and Mapping
+- [v0.8.1] Mapping Editor - Persist the "Extract Beat's .message" option
+- [v0.8.1] Mapping Editor - Resurface the `.message` feature (UI, API and JQ)
+- [v0.8.1] Provide feedback if failing to connect over SSH, in Open Collectors list page
+  - On version check
+  - On Shipper deployment
+
 **v0.8.0**
 - [v0.8.0] Role Based Access Control
   - Users can belong to different types of Roles (by default `Admin` or `User`)
@@ -69,51 +112,30 @@
       - Offer to direct to a Wiki help page to explain the difference
         - https://github.com/logrhythm/EZ-Cloud/wiki/Help#ref-whatsthedifferencefileimport
 
-**v0.8.1**
-- [v0.8.1] Pipelines - Import/Export of Collection and Mapping
-- [v0.8.1] Mapping Editor - Persist the "Extract Beat's .message" option
-- [v0.8.1] Mapping Editor - Resurface the `.message` feature (UI, API and JQ)
-- [v0.8.1] Provide feedback if failing to connect over SSH, in Open Collectors list page
-  - On version check
-  - On Shipper deployment
-
-**v0.8.2**
-- [v0.8.2] Collection - Add support for LogRhythm Webhook Beat (HTTP only)
-- [v0.8.2] General - Error messages - Change "Error updating persistance layer" to a less misleading and more generic message
-- [v0.8.2] Installer and Backend - Add support for EZ Market Place
-  - Deployment UID randomly generated at installation time
-  - URL for the EZ Market Place stored in configuration file
-  - Publisher UID column added to user table
-  - Pass all the necessary details to Frontend to connect to EZ Market Place
-- [v0.8.2] Mapping Editor - Provide password to Sudo commands during Tail operations
-- [v0.8.2] EZ Market - First version
-  - Database structure
-  - API endpoints:
-    - PipelinesTemplate
-    - Notifications
-- [v0.8.2] Frontend - Integrate EZ Market Place, Market Icon, Market Page, Market Notifications
-- [v0.8.2] Frontend - Update Favicons with the new LogRhythm logo
-- [v0.8.2] Installer - Provides a SHA256 checksum of the installation file
-- [v0.8.2] Installer - Prevent overiding exisiting configuration files, HTTPS certificates and `.env` file
-- [v0.8.2] Move EZ-Cloud Repository from TonyMasse GitHub account to LogRhythm GitHub Corp account
-
-**v0.8.3**
-- [v0.8.3] Market - Provide public statistics
-  - Market high level statitics: total hits, number of unique deployments, number of unique users
-  - Statitics about the Pipeline Templates: number of created pipeline templates, number of unique publishers
-- [v0.8.3] Market Admin - Initial Admin UI
-  - Layout and pages placeholders
-  - Enable Okta Authentication
-- [v0.8.3] Backend - Install Shipper - Deal with `sudo` command by providing password
-
+## What has been fixed in this release?
 **v0.8.4**
-- [v0.8.4] Frontend - Display EZ server version on rollover
-- [v0.8.4] Market Admin - API Functions - Consolidate Axios functions
-- [v0.8.4] Market Admin - Code clean-up
+- [v0.8.4] Frontend - Remove Webhook shipper duplicate entry
 - [v0.8.🚧] 
 
+**v0.8.3**
+- [v0.8.3] Backend - Increased the API timeout value (multiplied by 3), changed `maxCheckInterval` from 20 seconds to 60 seconds
+- [v0.8.3] Backend - Install Shipper - Prevent error if `steps[stepCounter]` doesn't exist
+- [v0.8.3] Frontend - Square avatars for navigation bar
 
-## What has been fixed in this release?
+**v0.8.2**
+- [v0.8.2] Security - CVE-2020-26301 - Upgrade `simple-ssh` to v1.1.0 to benefit from `ssh2` v1.5.0
+- [v0.8.2] Security - CVE-2022-0122, CVE-2022-0155, Sonatype-2012-0022 - Upgrade several Frontend packages
+- [v0.8.2] Security - CVE-2021-23566, CVE-2022-0355, CVE-2022-0155 - Upgrade several Backend packages
+- [v0.8.2] Security - CVE-2022-0536 - Upgrade `follow-redirects` to ^1.14.8 on both Backend and Frontend
+- [v0.8.2] Security - sonatype-2021-4879 - Upgrade `minimatch` to ^3.0.5 on both Backend, Frontend and Market
+- [v0.8.2] Security - Fix/upgrade several dependencies with low and medium risks
+- [v0.8.2] Security - Fix several low and medium security risks in EZ Backend source code
+- [v0.8.2] Shipper installer - Content Security Policy prevents download of `shippers_url.json` from GitHub
+- [v0.8.2] Collection Editor - Provide default value for `cursor_header_type` for Genericbeat
+- [v0.8.2] Frontend - Fix JQ Filter and JQ Transform
+  - Filter in on `device_type` from multiple locations
+  - Parse `.message` only if present
+
 **v0.8.1**
 - [v0.8.1] Security - URL might contain directory traversal attempt
 - [v0.8.1] Security - Error message returned to client is too complete:
@@ -130,29 +152,6 @@
 - [v0.8.1] SQL Connection seem not to close automatically, and time out only after +/-50 minutes
 - [v0.8.1] Privileged access is only valid if member of Role `Admin`. Needs to change to use `isPrivileged` instead
 - [v0.8.1] No version number showing in logs when in Production
-
-**v0.8.2**
-- [v0.8.2] Security - CVE-2020-26301 - Upgrade `simple-ssh` to v1.1.0 to benefit from `ssh2` v1.5.0
-- [v0.8.2] Security - CVE-2022-0122, CVE-2022-0155, Sonatype-2012-0022 - Upgrade several Frontend packages
-- [v0.8.2] Security - CVE-2021-23566, CVE-2022-0355, CVE-2022-0155 - Upgrade several Backend packages
-- [v0.8.2] Security - CVE-2022-0536 - Upgrade `follow-redirects` to ^1.14.8 on both Backend and Frontend
-- [v0.8.2] Security - sonatype-2021-4879 - Upgrade `minimatch` to ^3.0.5 on both Backend, Frontend and Market
-- [v0.8.2] Security - Fix/upgrade several dependencies with low and medium risks
-- [v0.8.2] Security - Fix several low and medium security risks in EZ Backend source code
-- [v0.8.2] Shipper installer - Content Security Policy prevents download of `shippers_url.json` from GitHub
-- [v0.8.2] Collection Editor - Provide default value for `cursor_header_type` for Genericbeat
-- [v0.8.2] Frontend - Fix JQ Filter and JQ Transform
-  - Filter in on `device_type` from multiple locations
-  - Parse `.message` only if present
-
-**v0.8.3**
-- [v0.8.3] Backend - Increased the API timeout value (multiplied by 3), changed `maxCheckInterval` from 20 seconds to 60 seconds
-- [v0.8.3] Backend - Install Shipper - Prevent error if `steps[stepCounter]` doesn't exist
-- [v0.8.3] Frontend - Square avatars for navigation bar
-
-**v0.8.4**
-- [v0.8.4] Frontend - Remove Webhook shipper duplicate entry
-- [v0.8.🚧] 
 
 ## Know issues :bug: :beetle:
 - Will fail to deploy log shippers if not using the `root` account or an account with full `sudo` access
