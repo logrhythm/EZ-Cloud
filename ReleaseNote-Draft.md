@@ -43,6 +43,15 @@
 
 ## What's new in this release?
 **v0.8.4**
+- [v0.8.4] Backend - Installer able to separate SQL from EZ Server
+  - If you want to use this:
+    - Run the installer on the SQL server first
+    - Select `Only SQL Database and configuration (EZ Database)` in the drop down list on the **Select Components** screen
+    - Finish the install
+    - Run the installer on the Windows server where you want to run the EZ Server
+    - Select `Full installation (EZ Cloud Server + EZ Database + Frontend + NodeJS)` (or whichever is the most appropriate for you) in the drop down list
+    - Untick `EZ Database and SQL User` in the list of **Components**
+    - Finish the install
 - [v0.8.4] Frontend - Display EZ server version on rollover
 - [v0.8.4] Market Admin - API Functions - Consolidate Axios functions
 - [v0.8.4] Market Admin - Code clean-up
