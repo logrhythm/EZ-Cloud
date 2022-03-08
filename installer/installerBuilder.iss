@@ -18,17 +18,19 @@ LicenseFile="{#DistSubDirectory}\License.txt"
 ; SignTool=MicrosoftSigningTool "{#InstallerHelper}\signtool.exe" sign /f "{#InstallerHelper}\Installer_Wizard_Code_Signing_Certificate.crt" /tr http://timestamp.sectigo.com /td sha256 /fd sha256 /a $p
 
 [Types]
-Name: "full"; Description: "Full installation (EZ Cloud Server + Frontend + NodeJS)"
-Name: "lrCloud"; Description: "LR Cloud installation (EZ Cloud Server + NodeJS)"
-Name: "compact"; Description: "Compact installation (EZ Cloud Server + Frontend)"
-Name: "minimal"; Description: "Minimal installation (EZ Cloud Server)"
+Name: "full"; Description: "Full installation (EZ Cloud Server + EZ Database + Frontend + NodeJS)"
+Name: "lrCloud"; Description: "LR Cloud installation (EZ Cloud Server + EZ Database + NodeJS)"
+Name: "compact"; Description: "Compact installation (EZ Cloud Server + EZ Database + Frontend)"
+Name: "minimal"; Description: "Minimal installation (EZ Cloud Server + EZ Database)"
+Name: "sqlonly"; Description: "Only SQL Database and configuration (EZ Database)"
 ; Name: "upgrade"; Description: "Full upgrade to {#Version} (EZ Cloud Server + Frontend)"
 ; Name: "upgradeBackend"; Description: "Backend upgrade to {#Version} (EZ Cloud Server)"
 ; Name: "upgradeFrontend"; Description: "Frontend upgrade to {#Version} (EZ Frontend)"
 Name: "custom"; Description: "Custom installation / upgrade"; Flags: iscustom
 
 [Components]
-Name: "ezCloudServer"; Description: "EZ Cloud Server"; Types: full lrCloud compact minimal custom; Flags: fixed
+Name: "ezCloudServer"; Description: "EZ Cloud Server"; Types: full lrCloud compact minimal custom
+Name: "sqlDatabase"; Description: "EZ Database and SQL User"; Types: full lrCloud compact minimal sqlonly custom
 Name: "ezCloudFrontend"; Description: "EZ Cloud Frontend"; Types: full compact custom
 Name: "nodeJs"; Description: "NodeJS"; Types: full lrCloud custom; ExtraDiskSpaceRequired: 56700928
 ; NodeJS:
@@ -38,7 +40,7 @@ Name: "nodeJs"; Description: "NodeJS"; Types: full lrCloud custom; ExtraDiskSpac
 ; Name: "ezCloudUpgradeFrontend"; Description: "Upgrade EZ Cloud Frontend to {#Version}"; Types: upgrade upgradeFrontend custom
 
 [Tasks]
-Name: createDatabase; Description: "Create / Update and Configure [EZ] SQL Database"; GroupDescription: "Database:"; Components: ezCloudServer
+Name: createDatabase; Description: "Create / Update and Configure [EZ] SQL Database"; GroupDescription: "Database:"; Components: sqlDatabase
 Name: installNodeJs; Description: "Install NodeJS {#NodeJsVersionLabel} (>>> Can take up to 2 minutes to install in the background)"; GroupDescription: "NodeJS:"; Components: nodeJs
 Name: serviceSetup; Description: "Configure EZ Server Service"; GroupDescription: "Service:"; Components: ezCloudServer
 Name: serviceStart; Description: "Start EZ Server Service immediately"; GroupDescription: "Service:"; Components: ezCloudServer
@@ -60,7 +62,7 @@ Source: "{#DistSubDirectory}\config\jwt.json"; DestDir: "{app}\config"; Componen
 Source: "{#DistSubDirectory}\config\secure.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceTokenIfTaskSelected('{app}\config\secure.json', 'CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS', 120, 'autoGenerateTokens\aes'); Flags: onlyifdoesntexist
 Source: "{#DistSubDirectory}\config\https.*"; DestDir: "{app}\config"; Components: ezCloudServer; Flags: onlyifdoesntexist
 Source: "{#DistSubDirectory}\config.sample\*"; DestDir: "{app}\config.sample"; Components: ezCloudServer
-Source: "{#DistSubDirectory}\database\*"; DestDir: "{app}\database"; Components: ezCloudServer
+Source: "{#DistSubDirectory}\database\*"; DestDir: "{app}\database"; Components: sqlDatabase
 Source: "{#DistSubDirectory}\resources\*"; DestDir: "{app}\resources"; Components: ezCloudServer
 Source: "{#DistSubDirectory}\.env"; DestDir: "{app}"; Components: ezCloudServer; Flags: onlyifdoesntexist
 Source: "{#DistSubDirectory}\.env.sample"; DestDir: "{app}"; Components: ezCloudServer
@@ -68,8 +70,8 @@ Source: "{#DistSubDirectory}\public_web_root\*"; DestDir: "{app}\public_web_root
 ; For NodeJS Installation
 Source: "{#distDirectory}\NodeJS_Installer\{#NodeJsFilename}"; DestDir: "{tmp}"; Components: nodeJs
 ; For EzAdmin account creation
-Source: "{#DistSubDirectory}\database\20211111.17 - Create User - EzAdmin.sql"; DestDir: "{tmp}"; Components: ezCloudServer; AfterInstall: FileReplaceEzAdminCreds('{tmp}\20211111.17 - Create User - EzAdmin.sql')
-Source: "{#DistSubDirectory}\database\create_ezadmin.bat"; DestDir: "{tmp}"; Components: ezCloudServer
+Source: "{#DistSubDirectory}\database\20211111.17 - Create User - EzAdmin.sql"; DestDir: "{tmp}"; Components: sqlDatabase; AfterInstall: FileReplaceEzAdminCreds('{tmp}\20211111.17 - Create User - EzAdmin.sql')
+Source: "{#DistSubDirectory}\database\create_ezadmin.bat"; DestDir: "{tmp}"; Components: sqlDatabase
 
 [Dirs]
 Name: "{app}\public_web_root"; Components: ezCloudServer
@@ -365,6 +367,9 @@ begin
   // // Skip the EzAdmin Credential Page if Component neither ezCloudServer nor ezCloudUpgradeServer is selected
   // if (PageID = wcpEzAdminCredentialsQueryPage) and not WizardIsComponentSelected('ezCloudServer ezCloudUpgradeServer') then
   //   Result := True;
+  // Skip the EzAdmin Credential Page if Component sqlDatabase is not selected
+  if (PageID = wcpEzAdminCredentialsQueryPage) and not WizardIsComponentSelected('sqlDatabase') then
+    Result := True;
 
   // Skip the SQL Credential Page if Component ezCloudServer is not selected
   if (PageID = wcpSqlCredentialsQueryPage) and not WizardIsComponentSelected('ezCloudServer') then
