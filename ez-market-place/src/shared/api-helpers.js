@@ -1,3 +1,6 @@
+// Database connection
+const db = require('./database-connector');
+
 // Schema validation
 const yup = require('yup');
 
@@ -189,6 +192,40 @@ function safeDaysLookBackUid(req, idParamName) {
   return null;
 }
 
+/**
+ * Get the list of Statuses
+ * @returns The list of Statuses
+ */
+async function getStatuses() {
+  let foundRecords = [];
+  let thereWasAnError = false;
+
+  try {
+    // Query the DB
+    foundRecords = await db.pool.query({
+      namedPlaceholders: true,
+      sql: `
+      SELECT
+        statuses.id,
+        statuses.name,
+        statuses.description
+      FROM
+        statuses
+      ORDER BY
+        statuses.id
+      `
+    },
+    {
+      // No params
+    });
+  } catch (error) {
+    thereWasAnError = true;
+  }
+
+  // Fall back to NULL
+  return (!thereWasAnError ? foundRecords : null);
+}
+
 module.exports = {
   pipelineTemplateUidSchema,
   pipelineTemplateSchema,
@@ -202,5 +239,6 @@ module.exports = {
   safePipelineTemplateObject,
   safeNotificationUid,
   safeNotificationObject,
-  safeDaysLookBackUid
+  safeDaysLookBackUid,
+  getStatuses
 };
