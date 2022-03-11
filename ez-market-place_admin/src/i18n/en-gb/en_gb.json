@@ -28,5 +28,8 @@
   "Close": "Close",
   "Reload": "Reload",
   "Delete": "Delete",
-  "Confirm": "Confirm"
+  "Confirm": "Confirm",
+  "Downloading": "Downloading",
+  "loaded": "loaded",
+  "Succesfully loaded": "Succesfully loaded"
 }
