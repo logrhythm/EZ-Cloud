@@ -8,13 +8,17 @@ import { routes, updateTitle, updateUser } from './routes'
 Vue.use(VueRouter)
 
 const oktaAuth = new OktaAuth({
-  // Production
-  // issuer: 'https://logrhythm.okta.com/oauth2/default',
-  // clientId: '0oaf2smx7rYpOteFy2p7',
+  issuer: (
+    process.env.DEV
+      ? 'https://dev-409406.okta.com/oauth2/default' // Dev
+      : 'https://logrhythm.okta.com/oauth2/default' // Production
+  ),
 
-  // DEV
-  issuer: 'https://dev-409406.okta.com/oauth2/default',
-  clientId: '0oag7kq6jiQNJ7o6c357',
+  clientId: (
+    process.env.DEV
+      ? '0oag7kq6jiQNJ7o6c357' // Dev
+      : '0oaf2smx7rYpOteFy2p7' // Production
+  ),
 
   redirectUri: window.location.origin + '/EZ/mfa',
   postLogoutRedirectUri: window.location.origin + '/EZ/Loggedout',
