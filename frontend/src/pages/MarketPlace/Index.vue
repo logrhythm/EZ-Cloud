@@ -37,7 +37,7 @@
                     <q-item-section>
                       <q-item-label lines="1"><span class="text-bold">From: </span><span :class="(notification.sender == null ? 'text-italic' : '')">{{ notification.sender || '*** Platform ***' }}</span></q-item-label>
                       <q-item-label caption lines="1" class="q-mb-md"><span class="text-bold">To: </span><span :class="(notification.recipient == null ? 'text-italic' : '')">{{ notification.recipient || '*** Broadcast ***' }}</span></q-item-label>
-                      <q-item-label lines="20">
+                      <q-item-label lines="20" style="white-space: pre-line;">
                         {{ notification.messageContent }}
                       </q-item-label>
                     </q-item-section>
