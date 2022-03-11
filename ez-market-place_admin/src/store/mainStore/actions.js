@@ -163,6 +163,30 @@ export function deleteUserRole ({ state }, payload) {
 }
 
 // ********************************
+// Statuses
+// ********************************
+
+export function getStatuses ({ state, commit }, payload) {
+  apiCall({
+    httpVerb: 'GET',
+    apiUrl: '/admin/statuses',
+    dataLabel: 'Statuses',
+    countDataLabel: true,
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    commit: commit,
+    targetCommitName: 'getStatuses',
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    silent: false,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: (payload && payload.debug ? payload.debug : false)
+  })
+}
+
+// ********************************
 // Notifications
 // ********************************
 

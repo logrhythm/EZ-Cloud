@@ -54,6 +54,14 @@ export function getUserRoles (state, payload) {
   }
 }
 
+// Statuses
+
+export function getStatuses (state, payload) {
+  if (payload && Array.isArray(payload)) {
+    state.ezMarketStatuses = payload
+  }
+}
+
 // Notifications
 
 export function getNotifications (state, payload) {

@@ -12,6 +12,18 @@
               </div>
             </q-card-section>
             <q-card-section class="flex flex-center">
+              <q-btn dense color="primary" icon="refresh" :loading="statusesLoading" @click="loadStatuses()">
+                <q-tooltip content-style="font-size: 1em">
+                  Reload the list of Statuses.
+                </q-tooltip>
+              </q-btn>
+            </q-card-section>
+            <q-card-section class="flex flex-center">
+              <div class="">
+                {{ ezMarketStatuses }}
+              </div>
+            </q-card-section>
+            <q-card-section class="flex flex-center">
               <q-btn dense color="primary" icon="refresh" :loading="notificationsLoading" @click="loadNotifications()">
                 <q-tooltip content-style="font-size: 1em">
                   Reload the list of Notifications.
@@ -41,14 +53,24 @@ export default {
   ],
   data () {
     return {
+      statusesLoading: false,
       notificationsLoading: false
     }
   }, // data
   computed: {
-    ...mapState('mainStore', ['ezMarketNotifications'])
+    ...mapState('mainStore', ['ezMarketNotifications', 'ezMarketStatuses'])
   },
   methods: {
-    ...mapActions('mainStore', ['getNotifications']),
+    ...mapActions('mainStore', ['getStatuses', 'getNotifications']),
+    loadStatuses () {
+      this.getStatuses(
+        {
+          loadingVariableName: 'statusesLoading',
+          caller: this,
+          debug: true
+        }
+      )
+    },
     loadNotifications () {
       this.getNotifications(
         {
@@ -58,6 +80,9 @@ export default {
         }
       )
     }
+  },
+  mounted () {
+    this.loadStatuses()
   }
 }
 </script>
