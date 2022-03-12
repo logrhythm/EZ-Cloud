@@ -251,6 +251,7 @@ export default function () {
     },
     // ezMarketNotification: null, // Number (can be short text too) of notifications from EZ Market Place for the User // XXXX
     ezMarketNotifications: [], // Notifications from EZ Market Place for all the users
-    ezMarketStatuses: [] // Statuses for Notifications/Pipeline Templates/etc... from EZ Market Place
+    ezMarketStatuses: [], // Statuses for Notifications/Pipeline Templates/etc... from EZ Market Place
+    ezMarketPublishers: [] // Publishers from EZ Market Place
   }
 }

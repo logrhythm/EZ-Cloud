@@ -62,10 +62,53 @@ export function getStatuses (state, payload) {
   }
 }
 
+// getPublishers
+
+export function getPublishers (state, payload) {
+  if (payload && Array.isArray(payload)) {
+    try {
+      const publishers = JSON.parse(JSON.stringify(payload))
+      // Parse the flags (as they are stored as stringified JSON in the database)
+      if (publishers && Array.isArray(publishers)) {
+        publishers.forEach((publisher) => {
+          try {
+            publisher.value = publisher.uid
+            publisher.label = publisher.display_name
+          } catch (error) {
+            // Ignore item
+          }
+        })
+      }
+      // And assign
+      state.ezMarketPublishers = publishers
+    } catch (error) {
+      // Fall back on the raw data
+      state.ezMarketPublishers = payload
+    }
+  }
+}
+
 // Notifications
 
 export function getNotifications (state, payload) {
   if (payload && Array.isArray(payload)) {
-    state.ezMarketNotifications = payload
+    try {
+      const notifications = JSON.parse(JSON.stringify(payload))
+      // Parse the flags (as they are stored as stringified JSON in the database)
+      if (notifications && Array.isArray(notifications)) {
+        notifications.forEach((notification) => {
+          try {
+            notification.messageFlags = JSON.parse(notification.messageFlags) || []
+          } catch (error) {
+            notification.messageFlags = []
+          }
+        })
+      }
+      // And assign
+      state.ezMarketNotifications = notifications
+    } catch (error) {
+      // Fall back on the raw data
+      state.ezMarketNotifications = payload
+    }
   }
 }

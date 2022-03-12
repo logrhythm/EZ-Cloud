@@ -187,6 +187,30 @@ export function getStatuses ({ state, commit }, payload) {
 }
 
 // ********************************
+// Publishers
+// ********************************
+
+export function getPublishers ({ state, commit }, payload) {
+  apiCall({
+    httpVerb: 'GET',
+    apiUrl: '/admin/publishers',
+    dataLabel: 'Publishers',
+    countDataLabel: true,
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    commit: commit,
+    targetCommitName: 'getPublishers',
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    silent: false,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: (payload && payload.debug ? payload.debug : false)
+  })
+}
+
+// ********************************
 // Notifications
 // ********************************
 
@@ -211,15 +235,22 @@ export function getNotifications ({ state, commit }, payload) {
 }
 
 export function updateNotification ({ state }, payload) {
-  if (payload && payload.roleUid && payload.roleUid.length && payload.roleName && payload.roleName.length) {
+  if (payload) {
+    const newNotification = !(payload.messageUid && payload.messageUid.length)
     apiCall({
-      httpVerb: 'POST',
-      apiUrl: '/admin/notifications',
+      httpVerb: (newNotification ? 'POST' : 'PUT'),
+      apiUrl: '/admin/notifications' + (newNotification ? '' : `/${payload.messageUid}`), // Append Message UID if updating
       dataLabel: 'Notification',
       apiCallParams: {
-        uid: payload.roleUid,
-        name: payload.roleName,
-        isPrivileged: payload.roleIsPrivileged
+        notification: {
+          messageUid: payload.messageUid || undefined,
+          senderUid: payload.senderUid,
+          recipientUid: payload.recipientUid,
+          statusId: (payload.statusId !== null ? payload.statusId : undefined),
+          messageContent: payload.messageContent || undefined,
+          relatedPipelineTemplate: payload.relatedPipelineTemplate || undefined,
+          flags: payload.messageFlags || undefined
+        }
       },
       apiHeaders: {
         authorization: 'Bearer ' + state.jwtToken
@@ -235,12 +266,12 @@ export function updateNotification ({ state }, payload) {
 }
 
 export function deleteNotification ({ state }, payload) {
-  if (payload && payload.roleUid && payload.roleUid.length) {
+  if (payload && payload.messageUid && payload.messageUid.length) {
     apiCall({
       httpVerb: 'DELETE',
-      apiUrl: '/admin/notifications',
+      apiUrl: `/admin/notifications/${payload.messageUid}`,
       dataLabel: 'Notification',
-      apiCallParams: { uid: payload.roleUid },
+      // apiCallParams: { uid: payload.messageUid },
       apiHeaders: {
         authorization: 'Bearer ' + state.jwtToken
       },
