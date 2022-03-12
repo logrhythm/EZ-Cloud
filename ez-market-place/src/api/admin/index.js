@@ -5,6 +5,7 @@ const version = require('../../shared/version'); // Version file is generated at
 // const pipelineTemplates = require('./pipelineTemplates');
 const notifications = require('./notifications');
 const statuses = require('./statuses');
+const publishers = require('./publishers');
 // const stats = require('./stats');
 
 const router = express.Router();
@@ -19,6 +20,7 @@ router.get('/', (req, res) => {
 // router.use('/pipelineTemplates', pipelineTemplates);
 router.use('/notifications', notifications);
 router.use('/statuses', statuses);
+router.use('/publishers', publishers);
 // router.use('/stats', stats);
 
 router.get('/GetRolesList', (req, res) => {
