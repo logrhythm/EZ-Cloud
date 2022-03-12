@@ -1,8 +1,8 @@
-// Database connection
-const db = require('./database-connector');
-
 // Schema validation
 const yup = require('yup');
+
+// Database connection
+const db = require('./database-connector');
 
 // Define input schemas
 
@@ -27,13 +27,14 @@ const notificationUidSchema = yup.string().uuid().required();
 const notificationSchema = yup.object().shape(
   {
     messageUid: yup.string().uuid(), // Only required for Updates
-    senderUid: yup.string().uuid(),
-    recipientUid: yup.string().uuid(),
+    senderUid: yup.string().uuid().nullable(),
+    recipientUid: yup.string().uuid().nullable(),
     status: yup.string(),
+    statusId: yup.number(),
     messageContent: yup.string(),
     messageTemplateCode: yup.string(),
     relatedPipelineTemplate: yup.string().uuid(),
-    flags: yup.object()
+    flags: yup.array()
   }
 );
 
