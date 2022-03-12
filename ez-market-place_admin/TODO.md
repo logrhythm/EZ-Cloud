@@ -33,20 +33,25 @@
   - [ ] Delete Pipeline
   - [ ] Sends Message/Notification to Pipeline's Publisher
 - Admin Publishers
+  - [x] Get Publishers
+  - [ ] Review Publishers
   - [ ] Add Publisher
   - [ ] Modify Publisher Name
   - [ ] Delete Publisher(s)
 - Admin Notifications
-  - [ ] Review Notification
-  - [ ] Sends Message/Notification
-    - [ ] To specific Publisher
-    - [ ] To all users
-  - [ ] Modify Notification(s)
-    - [ ] Sender
-    - [ ] Recipient
-    - [ ] Message
-    - [ ] Status / Visibility
-  - [ ] Delete Notification(s)
+  - [x] Get Statuses
+  - [x] Review Notifications
+  - [x] Sends Message/Notification
+    - [x] To specific Publisher
+    - [x] To all users
+  - [x] Modify Notification
+    - [x] Sender
+    - [x] Recipient
+    - [x] Message
+    - [x] Status / Visibility
+  - [x] Delete Notification
+- Error Handling
+  - [ ] Detect errors in API response
 
 ## TO FIX
 
