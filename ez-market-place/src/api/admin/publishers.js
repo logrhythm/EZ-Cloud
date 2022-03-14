@@ -82,11 +82,11 @@ router.get('/:id', async (req, res) => {
         namedPlaceholders: true,
         sql: `
         SELECT
-        publishers.uid,
-        publishers.display_name
-      FROM publishers
-        WHERE
-          uid = :publisherUid
+          publishers.uid AS publisherUid,
+          publishers.display_name AS displayName
+        FROM publishers
+          WHERE
+            uid = :publisherUid
         `
       },
       {
@@ -225,7 +225,7 @@ router.put('/:id', async (req, res) => {
         \`publishers\`
         SET
           \`uid\` = \`uid\` /* Bogus line. Will change nothing. But help with commas for the subsequent lines. */
-          ${publisher.displayName !== null ? ', `diaplay_name` = :publisherDisplayName' : '/* No Display Name present */'}
+          ${publisher.displayName !== null ? ', `display_name` = :publisherDisplayName' : '/* No Display Name present */'}
         WHERE
           \`uid\`=:publisherUid;
       `;
