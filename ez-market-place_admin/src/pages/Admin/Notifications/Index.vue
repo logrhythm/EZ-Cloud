@@ -417,6 +417,18 @@ export default {
         })
       }
       return options
+    },
+    publishersOptions () {
+      const options = []
+      if (this.ezMarketPublishers && Array.isArray(this.ezMarketPublishers) && this.ezMarketPublishers.length) {
+        this.ezMarketPublishers.forEach((publisher) => {
+          options.push({
+            value: publisher.publisherUid,
+            label: publisher.displayName
+          })
+        })
+      }
+      return options
     }
   },
   methods: {
@@ -441,13 +453,13 @@ export default {
     publishersLoaded () {
       console.log('publishersLoaded')
       // Build the list of Publishers
-      this.sendersOptions = this.ezMarketPublishers
-      this.recipientsOptions = this.ezMarketPublishers
+      this.sendersOptions = this.publishersOptions
+      this.recipientsOptions = this.publishersOptions
     },
     filterSendersOptions (val, update, abort) {
       const tmpSendersOptions = [
         ...this.senderTopEntries,
-        ...this.ezMarketPublishers
+        ...this.publishersOptions
       ]
       if (val === '') {
         update(() => {
@@ -463,7 +475,7 @@ export default {
     filterRecipientsOptions (val, update, abort) {
       const tmpRecipientsOptions = [
         ...this.recipientTopEntries,
-        ...this.ezMarketPublishers
+        ...this.publishersOptions
       ]
       if (val === '') {
         update(() => {
@@ -594,20 +606,11 @@ export default {
     }
   },
   mounted () {
-    this.sendersOptions = this.ezMarketPublishers
-    this.recipientsOptions = this.ezMarketPublishers
+    this.sendersOptions = this.publishersOptions
+    this.recipientsOptions = this.publishersOptions
     this.loadStatuses()
     this.loadPublishers()
     this.loadNotifications()
-  },
-  watch: {
-    // ezMarketPublishers: {
-    //   handler () {
-    //     console.log('HANDLER - ezMarketPublishers')
-    //     this.publishersLoaded()
-    //   },
-    //   deep: true
-    // }
   }
 }
 </script>

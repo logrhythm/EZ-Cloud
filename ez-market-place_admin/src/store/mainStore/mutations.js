@@ -66,25 +66,7 @@ export function getStatuses (state, payload) {
 
 export function getPublishers (state, payload) {
   if (payload && Array.isArray(payload)) {
-    try {
-      const publishers = JSON.parse(JSON.stringify(payload))
-      // Parse the flags (as they are stored as stringified JSON in the database)
-      if (publishers && Array.isArray(publishers)) {
-        publishers.forEach((publisher) => {
-          try {
-            publisher.value = publisher.uid
-            publisher.label = publisher.display_name
-          } catch (error) {
-            // Ignore item
-          }
-        })
-      }
-      // And assign
-      state.ezMarketPublishers = publishers
-    } catch (error) {
-      // Fall back on the raw data
-      state.ezMarketPublishers = payload
-    }
+    state.ezMarketPublishers = payload
   }
 }
 
