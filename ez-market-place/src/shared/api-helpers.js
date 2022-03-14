@@ -38,6 +38,17 @@ const notificationSchema = yup.object().shape(
   }
 );
 
+// UID of the Publisher to query/manipulate. Passed via HTTP Parameter (URL or Body).
+const publisherUidSchema = yup.string().uuid().required();
+
+// Structure for a Publisher creation or update
+const publisherSchema = yup.object().shape(
+  {
+    publisherUid: yup.string().uuid().nullable(), // Only required for Updates
+    displayName: yup.string().nullable()
+  }
+);
+
 // Number of days to look back. Passed via HTTP Parameter (URL or Body).
 const daysLookBackSchema = yup.number().required();
 
@@ -175,6 +186,49 @@ function safeNotificationObject(req) {
 }
 
 /**
+ * Extract and sanitise Publisher UID
+ * @param {*} req Express Router's request object
+ * @param {*} idParamName Name of the parameter to look for in the request
+ * @returns Sanitised Publisher UID
+ */
+function safePublisherUid(req, idParamName) {
+  // Get the raw UID
+  const publisherUid = reqParam(req, idParamName);
+
+  // Check validity
+  if (publisherUidSchema.isValidSync(publisherUid)) {
+    return publisherUid;
+  }
+
+  // Fall back to a NULL UID
+  return null;
+}
+
+/**
+ * Extract and sanitise Publisher object
+ * @param {*} req Express Router's request object
+ * @returns Sanitised Publisher object
+ */
+function safePublisherObject(req) {
+  // Get the raw Publisher object
+  const publisherObject = (
+    req
+    && req.body
+    && req.body.publisher
+      ? req.body.publisher
+      : null
+  );
+
+  // Check validity
+  if (publisherSchema.isValidSync(publisherObject)) {
+    return publisherObject;
+  }
+
+  // Fall back to a NULL object
+  return null;
+}
+
+/**
  * Extract and sanitise Days Look Back
  * @param {*} req Express Router's request object
  * @param {*} idParamName Name of the parameter to look for in the request
@@ -232,6 +286,8 @@ module.exports = {
   pipelineTemplateSchema,
   notificationUidSchema,
   notificationSchema,
+  publisherUidSchema,
+  publisherSchema,
   daysLookBackSchema,
   defaultErrorMessage,
   reqParam,
@@ -240,6 +296,8 @@ module.exports = {
   safePipelineTemplateObject,
   safeNotificationUid,
   safeNotificationObject,
+  safePublisherUid,
+  safePublisherObject,
   safeDaysLookBackUid,
   getStatuses
 };

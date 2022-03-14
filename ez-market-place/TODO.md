@@ -23,9 +23,9 @@
   - [ ] Delete Pipeline
 - Admin Publishers
   - [x] List Publishers
-  - [ ] Add Publisher
-  - [ ] Modify Publisher Name
-  - [ ] Delete Publisher(s)
+  - [x] Add Publisher
+  - [x] Modify Publisher Name
+  - [x] Delete Publisher
 - Admin Notifications
   - [x] List Notification
   - [x] Add Message/Notification
