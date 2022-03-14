@@ -6,6 +6,9 @@ const router = express.Router();
 // Database connection
 const db = require('../../shared/database-connector');
 
+// Load the System Logging functions
+const { logToSystem } = require('../../shared/systemLogging');
+
 // API Helpers
 const {
   defaultErrorMessage,
@@ -21,6 +24,7 @@ router.get('/', async (req, res) => {
 
   let foundRecords = [];
   let thereWasAnError = false;
+  let errorMessage = defaultErrorMessage;
 
   try {
     // Query the DB
@@ -57,6 +61,13 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     thereWasAnError = true;
+    errorMessage = `Error querying the database. Code: ${(error && error.code ? error.code : 'N/A')}`;
+    logToSystem('Debug', `${errorMessage} // ${JSON.stringify(error)}`, true);
+  }
+
+  // Log potential Error
+  if (thereWasAnError) {
+    logToSystem('Error', errorMessage, true);
   }
 
   // Ship it out!
@@ -69,7 +80,7 @@ router.get('/', async (req, res) => {
       found: foundRecords.length,
       returned: foundRecords.length,
       records: foundRecords,
-      error: (thereWasAnError ? 'Error querying the database' : undefined)
+      error: (thereWasAnError ? errorMessage : undefined)
     }
   );
 });
@@ -82,6 +93,7 @@ router.get('/:id', async (req, res) => {
 
   let foundRecords = [];
   let thereWasAnError = false;
+  let errorMessage = defaultErrorMessage;
 
   if (notificationUid && notificationUid.length) {
     // Query the DB
@@ -117,7 +129,17 @@ router.get('/:id', async (req, res) => {
       });
     } catch (error) {
       thereWasAnError = true;
+      errorMessage = `Error querying the database. Code: ${(error && error.code ? error.code : 'N/A')}`;
+      logToSystem('Debug', `${errorMessage} // ${JSON.stringify(error)}`, true);
     }
+  } else {
+    thereWasAnError = true;
+    errorMessage = 'Missing or invalid Notification `UID` provided in the HTTP Query.';
+  }
+
+  // Log potential Error
+  if (thereWasAnError) {
+    logToSystem('Error', errorMessage, true);
   }
 
   res.json(
@@ -197,9 +219,13 @@ router.post('/', async (req, res) => {
     } catch (error) {
       thereWasAnError = true;
       errorMessage = `Error updating the database. Code: ${(error && error.code ? error.code : 'N/A')}`;
-      console.log('💥💥💥', errorMessage); // XXXX
-      console.log('💥💥💥', error); // XXXX
+      logToSystem('Debug', `${errorMessage} // ${JSON.stringify(error)}`, true);
     }
+  }
+
+  // Log potential Error
+  if (thereWasAnError) {
+    logToSystem('Error', errorMessage, true);
   }
 
   res.json(
@@ -290,9 +316,13 @@ router.put('/:id', async (req, res) => {
     } catch (error) {
       thereWasAnError = true;
       errorMessage = `Error updating the database. Code: ${(error && error.code ? error.code : 'N/A')}`;
-      console.log('💥💥💥', errorMessage); // XXXX
-      console.log('💥💥💥', error); // XXXX
+      logToSystem('Debug', `${errorMessage} // ${JSON.stringify(error)}`, true);
     }
+  }
+
+  // Log potential Error
+  if (thereWasAnError) {
+    logToSystem('Error', errorMessage, true);
   }
 
   res.json(
@@ -345,7 +375,13 @@ router.delete('/:id', async (req, res) => {
     } catch (error) {
       thereWasAnError = true;
       errorMessage = `Error updating the database. Code: ${(error && error.code ? error.code : 'N/A')}`;
+      logToSystem('Debug', `${errorMessage} // ${JSON.stringify(error)}`, true);
     }
+  }
+
+  // Log potential Error
+  if (thereWasAnError) {
+    logToSystem('Error', errorMessage, true);
   }
 
   res.json(
