@@ -31,6 +31,8 @@
   - [x] Add Message/Notification
   - [x] Modify Notification
   - [x] Delete Notification
+- Database
+  - [x] Create default entries for `messages` and `publishers`
 
 ## TO FIX
 
