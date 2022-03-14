@@ -524,14 +524,11 @@ export function apiCall (params = {
           params.commit(params.targetCommitName, response.data.records)
         }
 
-        if (response.data.errors && Array.isArray(response.data.errors) && response.data.errors.length > 0) {
+        if (response.data.error && response.data.error.length > 0) {
           queryResultedInError = true
           messageForLogAndPopup = i18n.t('EZ Market API returned an error.')
           if (process.env.DEV) {
-            captionForLogAndPopup = response.data.errors.reduce((errorsAccumulatorArray, errorMessage) => {
-              errorsAccumulatorArray.push(typeof errorMessage !== 'object' ? errorMessage : JSON.stringify(errorMessage))
-              return errorsAccumulatorArray
-            }, []).join(' / ')
+            captionForLogAndPopup = response.data.error
           }
         } else {
           queryResultedInError = false

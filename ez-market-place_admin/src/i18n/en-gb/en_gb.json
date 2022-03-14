@@ -11,6 +11,7 @@
   "[API SUCCESS]": "[API SUCCESS]",
   "[API ERROR]": "[API ERROR]",
   "Error querying persistance layer.": "Error querying persistance layer.",
+  "EZ Market API returned an error.": "EZ Market API returned an error.",
   "Invalid response": "Invalid response",
   "No \"response\" object in AJAX response": "No \"response\" object in AJAX response",
   "Loading error": "Loading error",
