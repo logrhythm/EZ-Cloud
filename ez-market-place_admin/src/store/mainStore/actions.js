@@ -532,7 +532,7 @@ export function apiCall (params = {
           }
         } else {
           queryResultedInError = false
-          messageForLogAndPopup = messageForLogAndPopup + ' / ' + i18n.t(`Succesfully ${messageResult}`) + ' ' + params.dataLabel + '.'
+          messageForLogAndPopup = (messageForLogAndPopup && messageForLogAndPopup.length ? messageForLogAndPopup + ' / ' : '') + i18n.t(`Succesfully ${messageResult}`) + ' ' + params.dataLabel + '.'
         }
       } else {
         queryResultedInError = true
