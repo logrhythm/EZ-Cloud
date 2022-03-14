@@ -30,8 +30,8 @@ router.get('/', async (req, res) => {
       namedPlaceholders: true,
       sql: `
       SELECT
-        publishers.uid,
-        publishers.display_name
+        publishers.uid AS publisherUid,
+        publishers.display_name AS displayName
       FROM publishers
       `
     },
