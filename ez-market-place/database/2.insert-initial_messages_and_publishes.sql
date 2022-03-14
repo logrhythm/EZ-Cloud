@@ -10,7 +10,7 @@ INSERT IGNORE
 
 
 -- Default Publishers
-INSERT IGNORE
-    INTO `publishers` (`uid`, `display_name`) VALUES 
-        ('3dd874fe-cb07-4cf1-b79d-cc45fd7d23d5', 'Anonymous'),
-        ('1ed06be7-7a9e-4409-8c0c-b33fb0be2d67', 'EZ Market Admin');
+-- INSERT IGNORE
+--     INTO `publishers` (`uid`, `display_name`) VALUES 
+--         ('3dd874fe-cb07-4cf1-b79d-cc45fd7d23d5', 'Anonymous'),
+--         ('1ed06be7-7a9e-4409-8c0c-b33fb0be2d67', 'EZ Market Admin');
