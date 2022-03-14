@@ -210,6 +210,52 @@ export function getPublishers ({ state, commit }, payload) {
   })
 }
 
+export function updatePublisher ({ state }, payload) {
+  if (payload) {
+    const newPublisher = !(payload.publisherUid && payload.publisherUid.length)
+    apiCall({
+      httpVerb: (newPublisher ? 'POST' : 'PUT'),
+      apiUrl: '/admin/publishers' + (newPublisher ? '' : `/${payload.publisherUid}`), // Append Publisher UID if updating
+      dataLabel: 'Publisher',
+      apiCallParams: {
+        publisher: {
+          publisherUid: payload.publisherUid || undefined,
+          displayName: payload.displayName || undefined
+        }
+      },
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      silent: false,
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: (payload && payload.debug ? payload.debug : false)
+    })
+  }
+}
+
+export function deletePublisher ({ state }, payload) {
+  if (payload && payload.publisherUid && payload.publisherUid.length) {
+    apiCall({
+      httpVerb: 'DELETE',
+      apiUrl: `/admin/publishers/${payload.publisherUid}`,
+      dataLabel: 'Publisher',
+      // apiCallParams: { uid: payload.publisherUid },
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      silent: false,
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: (payload && payload.debug ? payload.debug : false)
+    })
+  }
+}
+
 // ********************************
 // Notifications
 // ********************************

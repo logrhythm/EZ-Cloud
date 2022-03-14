@@ -34,10 +34,10 @@
   - [ ] Sends Message/Notification to Pipeline's Publisher
 - Admin Publishers
   - [x] Get Publishers
-  - [ ] Review Publishers
-  - [ ] Add Publisher
-  - [ ] Modify Publisher Name
-  - [ ] Delete Publisher(s)
+  - [x] Review Publishers
+  - [x] Add Publisher
+  - [x] Modify Publisher Display Name
+  - [x] Delete Publisher
 - Admin Notifications
   - [x] Get Statuses
   - [x] Review Notifications

@@ -40,5 +40,11 @@
   "Update Notification": "Update Notification",
   "Edit Notification": "Edit Notification",
   "Status should only be 'Read', 'Unread' or 'To be Deleted'": "Status should only be 'Read', 'Unread' or 'To be Deleted'",
-  "Message cannot be empty": "Message cannot be empty"
+  "Message cannot be empty": "Message cannot be empty",
+  "New Publisher": "New Publisher",
+  "Add new Publisher": "Add new Publisher",
+  "Update Publisher": "Update Publisher",
+  "Edit Publisher": "Edit Publisher",
+  "Rename Publisher": "Rename Publisher",
+  "Display Name cannot be empty": "Display Name cannot be empty"
 }
