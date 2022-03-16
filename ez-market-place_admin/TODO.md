@@ -42,6 +42,8 @@
 - Admin Notifications
   - [x] Get Statuses
   - [x] Review Notifications
+    - [x] Add Identicons avatars
+    - [x] Display timestamps as "Time ago"
   - [x] Sends Message/Notification
     - [x] To specific Publisher
     - [x] To all users

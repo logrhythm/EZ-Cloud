@@ -179,6 +179,46 @@
                   </q-td>
                 </template>
 
+                <template v-slot:body-cell-sender="props">
+                  <q-td :props="props">
+                    <div v-html="identicon(props.value)"></div>
+                    <div>
+                      {{ props.value }}
+                    </div>
+                  </q-td>
+                </template>
+
+                <template v-slot:body-cell-recipient="props">
+                  <q-td :props="props">
+                    <div v-html="identicon(props.value)"></div>
+                    <div>
+                      {{ props.value }}
+                    </div>
+                  </q-td>
+                </template>
+
+                <template v-slot:body-cell-sentOn="props">
+                  <q-td :props="props">
+                    <div>
+                      <q-tooltip content-style="font-size: 1rem;">
+                        {{ props.value }}
+                      </q-tooltip>
+                      {{ timeAgo(props.value) }}
+                    </div>
+                  </q-td>
+                </template>
+
+                <template v-slot:body-cell-updatedOn="props">
+                  <q-td :props="props">
+                    <div>
+                      <q-tooltip content-style="font-size: 1rem;">
+                        {{ props.value }}
+                      </q-tooltip>
+                      {{ timeAgo(props.value) }}
+                    </div>
+                  </q-td>
+                </template>
+
               </q-table>
             </q-card-section>
 
@@ -326,6 +366,10 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import { toSvg } from 'jdenticon'
+import TimeAgo from 'javascript-time-ago'
+import en from 'javascript-time-ago/locale/en.json'
+TimeAgo.addDefaultLocale(en)
 
 export default {
   name: 'PageAdminNotifications',
@@ -357,8 +401,8 @@ export default {
         { name: 'updatedOn', align: 'center', label: 'Updated', field: 'updatedOn', sortable: true }
       ],
       pagination: {
-        sortBy: 'roleName',
-        descending: false,
+        sortBy: 'sentOn',
+        descending: true, // Most recent on top
         rowsPerPage: 20
       },
       statusesLoading: false,
@@ -603,6 +647,21 @@ export default {
       // Pop this to the screen (via MainLayout)
       this.$root.$emit('addAndShowErrorToErrorPanel', payload)
       this.loadNotifications()
+    },
+    identicon (name) {
+      return toSvg(name, 50)
+    },
+    timeAgo (timestamp) {
+      let formattedTimeAgo = 'Some time ago'
+      try {
+        // Create formatter (English).
+        const timeAgo = new TimeAgo('en-US')
+        // Format the time
+        formattedTimeAgo = timeAgo.format(new Date(timestamp))
+      } catch (error) {
+        // Fails silently
+      }
+      return formattedTimeAgo
     }
   },
   mounted () {
