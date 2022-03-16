@@ -23,7 +23,7 @@
     </q-item-section>
 
     <q-item-section>
-      <q-item-label :class="(isPageActive ? 'text-primary' : '')"><q-icon :name="(userIsLoggedIn ? 'lock_open' : 'lock')" size="1.5em" class="" left color="secondary" v-if="caption.length || !!needsPriviledge"/>{{ title }}</q-item-label>
+      <q-item-label :class="(isPageActive ? 'text-primary' : '')"><q-icon :name="(userIsLoggedIn ? 'lock_open' : 'lock')" size="1.5em" class="" left :color="(userIsLoggedIn ? 'secondary' : 'negative')" v-if="caption.length || !!needsPriviledge"/>{{ title }}</q-item-label>
       <q-item-label caption v-if="caption.length || !!needsPriviledge" class="text-italic">
         {{ caption }}
       </q-item-label>
