@@ -4,7 +4,7 @@
 ## Requirements
 - a non-HA and non-DR LogRhythm deployment (v7.5 or above)
 - NodeJS (v12.16 or above) 👈 Installer will offer to install NodeJS v14.17.6-x64 for you
-- MS SQL (v2012 or above)
+- MS SQL (v2012 or above) 👈 The one of your LogRhythm XM or PM
 - Microsoft Windows (v2012 or above)
 - Ideally, one or more already configured, running and collected Open Collectors
   - Docker version 20 or above (on the Open Collectors)
