@@ -12,7 +12,7 @@
   - [x] Integrate with Okta Dev
   - [x] Integrate with Okta Production
   - [x] Admin pages to provide Okta token to Admin API endpoints
-- ~~RBAC~~
+- ~~RBAC~~ (👈 Managed in Okta MFA)
   - [ ] ~~Add User Admin page~~
   - [ ] ~~Add Roles Admin page~~
   - [ ] ~~Add landing Admin page~~
