@@ -23,6 +23,7 @@
   - [ ] Delete Pipeline
 - Admin Publishers
   - [x] List Publishers
+    - [x] Include stats about received and send messages and published templates
   - [x] Add Publisher
   - [x] Modify Publisher Name
   - [x] Delete Publisher

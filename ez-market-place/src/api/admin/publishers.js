@@ -31,7 +31,10 @@ router.get('/', async (req, res) => {
       sql: `
       SELECT
         publishers.uid AS publisherUid,
-        publishers.display_name AS displayName
+        publishers.display_name AS displayName,
+        (SELECT COUNT(uid) FROM messages WHERE sender_Uid = publishers.uid) AS messagesSent,
+        (SELECT COUNT(uid) FROM messages WHERE recipient_Uid = publishers.uid) AS messagesReceived,
+        (SELECT COUNT(uid) FROM pipeline_templates WHERE publisher_uid = publishers.uid) AS pipelineTemplatesAuthored
       FROM publishers
       `
     },
