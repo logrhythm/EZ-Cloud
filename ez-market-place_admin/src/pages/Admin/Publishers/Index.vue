@@ -127,16 +127,22 @@ export default {
     return {
       // {
       //   "publisherUid":"361670bc-8c29-11ec-88fe-00155d005a03",
-      //   "displayName":"Rodeo 25"
+      //   "displayName":"Rodeo 25",
+      //   "messagesSent": 1,
+      //   "messagesReceived": 3,
+      //   "pipelineTemplatesAuthored": 5
       // }
       searchFilter: '',
       columns: [
         { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
-        { name: 'publisherUid', align: 'left', label: 'UID', field: 'publisherUid', sortable: true },
-        { name: 'displayName', align: 'left', label: 'Display Name', field: 'displayName', sortable: true, classes: '', style: 'white-space: pre-line;' }
+        { name: 'publisherUid', align: 'center', label: 'UID', field: 'publisherUid', sortable: true },
+        { name: 'displayName', align: 'center', label: 'Display Name', field: 'displayName', sortable: true, classes: '', style: 'white-space: pre-line;' },
+        { name: 'pipelineTemplatesAuthored', align: 'center', label: 'Published Pipeline Templates', field: 'pipelineTemplatesAuthored', sortable: true },
+        { name: 'messagesSent', align: 'center', label: 'Sent Messages', field: 'messagesSent', sortable: true },
+        { name: 'messagesReceived', align: 'center', label: 'Received Messages', field: 'messagesReceived', sortable: true }
       ],
       pagination: {
-        sortBy: 'display_name',
+        sortBy: 'displayName',
         descending: false,
         rowsPerPage: 20
       },

@@ -35,6 +35,7 @@
 - Admin Publishers
   - [x] Get Publishers
   - [x] Review Publishers
+    - [x] Display stats about received and send messages and published templates
   - [x] Add Publisher
   - [x] Modify Publisher Display Name
   - [x] Delete Publisher
