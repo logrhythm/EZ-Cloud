@@ -143,7 +143,7 @@ const routes = [
       { path: 'RBAC/Roles', component: () => import('pages/Admin/RBAC/Roles.vue') },
 
       // Pipelines Templates
-      { path: 'Templates', component: () => import('pages/Admin/Templates/Index.vue') },
+      { path: 'PipelineTemplates', component: () => import('pages/Admin/PipelineTemplates/Index.vue') },
 
       // Notifications
       { path: 'Notifications', component: () => import('pages/Admin/Notifications/Index.vue') },

@@ -22,7 +22,7 @@
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 
 export default {
-  name: 'PageAdminTemplates',
+  name: 'PageAdminPipelineTemplates',
   mixins: [
     mixinSharedDarkMode // Shared computed to access and update the DarkMode
   ]

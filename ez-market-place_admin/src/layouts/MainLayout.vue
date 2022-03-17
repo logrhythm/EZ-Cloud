@@ -130,7 +130,7 @@ export default {
         {
           title: 'Admin Pipelines',
           icon: 'account_tree',
-          link: 'Admin/Templates',
+          link: 'Admin/PipelineTemplates',
           caption: (this.userIsLoggedIn ? 'Authenticated' : 'Requires authentication'),
           needsPriviledge: true
         },
