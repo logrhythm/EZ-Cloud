@@ -277,7 +277,9 @@ router.put('/:id', async (req, res) => {
     } catch (error) {
       // Fail silently
     }
-    console.log(notification); // XXXX
+
+    logToSystem('Debug', `Admin - Update a specific Notification / Message (update_notification_and_message__admin) - Notification // ${JSON.stringify(notification)}`, true);
+
     // Update the item
     try {
       const sql = `
@@ -293,7 +295,7 @@ router.put('/:id', async (req, res) => {
         WHERE
           \`uid\`=:notificationUid;
       `;
-      console.log(sql); // XXXX
+
       const parameters = {
         // Named parameters
         notificationUid: notification.messageUid,
@@ -303,7 +305,9 @@ router.put('/:id', async (req, res) => {
         messageContent: notification.messageContent,
         templateFlags // Already parsed above
       };
-      console.log(parameters); // XXXX
+
+      logToSystem('Debug', `Admin - Update a specific Notification / Message (update_notification_and_message__admin) - SQL and Parameters // ${JSON.stringify(sql)} // ${JSON.stringify(parameters)}`, true);
+
       // Update some of provided fields. If absent, they are left as is.
       recordUpdateResult = await db.pool.query({
         namedPlaceholders: true,
