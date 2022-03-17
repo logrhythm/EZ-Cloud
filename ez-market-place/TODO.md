@@ -11,16 +11,16 @@
   - [x] Integrate with Okta Production
   - [x] Check Okta token for Admin API endpoints
 - Admin Pipelines
-  - [ ] List Pipeline
-  - [ ] Add Pipeline
-  - [ ] Modify Pipeline
-    - [ ] Name
-    - [ ] Publisher
-    - [ ] Collection
-    - [ ] Mapping
-    - [ ] Stats
-    - [ ] Status / Visibility
-  - [ ] Delete Pipeline
+  - [x] List Pipeline
+  - [x] Add Pipeline
+  - [x] Modify Pipeline
+    - [x] Name
+    - [x] Publisher
+    - [x] Collection
+    - [x] Mapping
+    - [x] Stats
+    - [x] Status / Visibility
+  - [x] Delete Pipeline
 - Admin Publishers
   - [x] List Publishers
     - [x] Include stats about received and send messages and published templates

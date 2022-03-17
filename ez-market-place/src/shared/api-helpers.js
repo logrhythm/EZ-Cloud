@@ -13,9 +13,10 @@ const pipelineTemplateUidSchema = yup.string().uuid().required();
 const pipelineTemplateSchema = yup.object().shape(
   {
     pipelineTemplateUid: yup.string().uuid().required(),
+    publisherUid: yup.string().uuid().nullable(), // Only used for Admin APIs
     name: yup.string().required(),
-    collectionConfiguration: yup.object(),
-    fieldsMapping: yup.object(),
+    collectionConfiguration: yup.object().nullable(),
+    fieldsMapping: yup.object().nullable(),
     stats: yup.object()
   }
 );
