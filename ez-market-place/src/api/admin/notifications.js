@@ -20,8 +20,6 @@ const {
  * Get the list of Notifications / Messages for a given Producer UID
  */
 router.get('/', async (req, res) => {
-  const { publisherUid } = req.ezPublisherHeader;
-
   let foundRecords = [];
   let thereWasAnError = false;
   let errorMessage = defaultErrorMessage;
@@ -57,7 +55,6 @@ router.get('/', async (req, res) => {
     },
     {
       // Named parameters
-      publisherUid
     });
   } catch (error) {
     thereWasAnError = true;
