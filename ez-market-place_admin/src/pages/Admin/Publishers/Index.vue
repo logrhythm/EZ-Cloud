@@ -146,9 +146,9 @@ export default {
         { name: 'publisherUid', align: 'center', label: 'UID', field: 'publisherUid', sortable: true },
         { name: 'identicon', align: 'center', label: 'Identicon', field: 'displayName', sortable: true },
         { name: 'displayName', align: 'center', label: 'Display Name', field: 'displayName', sortable: true, classes: '', style: 'white-space: pre-line;' },
-        { name: 'pipelineTemplatesAuthored', align: 'center', label: 'Published Pipeline Templates', field: 'pipelineTemplatesAuthored', sortable: true },
-        { name: 'messagesSent', align: 'center', label: 'Sent Messages', field: 'messagesSent', sortable: true },
-        { name: 'messagesReceived', align: 'center', label: 'Received Messages', field: 'messagesReceived', sortable: true }
+        { name: 'pipelineTemplatesAuthored', align: 'center', label: 'Published Pipeline Templates', field: 'pipelineTemplatesAuthored', sortable: true, format: val => (val > 0 ? val : '\u00b7') },
+        { name: 'messagesSent', align: 'center', label: 'Sent Messages', field: 'messagesSent', sortable: true, format: val => (val > 0 ? val : '\u00b7') },
+        { name: 'messagesReceived', align: 'center', label: 'Received Messages', field: 'messagesReceived', sortable: true, format: val => (val > 0 ? val : '\u00b7') }
       ],
       pagination: {
         sortBy: 'displayName',
