@@ -18,19 +18,22 @@
   - [ ] ~~Add landing Admin page~~
   - [ ] ~~Add navigation in Users and Roles Admin pages~~
 - Admin Pipelines
+  - [x] Get Pipelines
+  - [x] List Pipelines
   - [ ] Review Pipeline
     - [ ] Collection
       - [ ] Check for sensitive information
     - [ ] Mapping
-  - [ ] Add Pipeline
+      - [ ] Check for sensitive information
+  - [x] Add Pipeline
   - [ ] Modify Pipeline
-    - [ ] Name
-    - [ ] Publisher
+    - [x] Name
+    - [x] Publisher
     - [ ] Collection
     - [ ] Mapping
     - [ ] Stats
-    - [ ] Status / Visibility
-  - [ ] Delete Pipeline
+    - [x] Status / Visibility
+  - [x] Delete Pipeline
   - [ ] Sends Message/Notification to Pipeline's Publisher
 - Admin Publishers
   - [x] Get Publishers

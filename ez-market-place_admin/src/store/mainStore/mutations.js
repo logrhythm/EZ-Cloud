@@ -94,3 +94,28 @@ export function getNotifications (state, payload) {
     }
   }
 }
+
+// Pipeline Templates
+
+export function getPipelineTemplates (state, payload) {
+  if (payload && Array.isArray(payload)) {
+    try {
+      const pipelineTemplates = JSON.parse(JSON.stringify(payload))
+      // Parse the stats (as they are stored as stringified JSON in the database)
+      if (pipelineTemplates && Array.isArray(pipelineTemplates)) {
+        pipelineTemplates.forEach((pipelineTemplate) => {
+          try {
+            pipelineTemplate.pipelineTemplateStats = JSON.parse(pipelineTemplate.pipelineTemplateStats) || {}
+          } catch (error) {
+            pipelineTemplate.pipelineTemplateStats = {}
+          }
+        })
+      }
+      // And assign
+      state.ezMarketPipelineTemplates = pipelineTemplates
+    } catch (error) {
+      // Fall back on the raw data
+      state.ezMarketPipelineTemplates = payload
+    }
+  }
+}

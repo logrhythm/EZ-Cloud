@@ -1,5 +1,5 @@
 import Vue from 'vue'
-// import { uid } from 'quasar'
+import { uid } from 'quasar'
 import { i18n } from 'boot/i18n'
 // import { version } from '../../../package.json'
 
@@ -318,6 +318,80 @@ export function deleteNotification ({ state }, payload) {
       apiUrl: `/admin/notifications/${payload.messageUid}`,
       dataLabel: 'Notification',
       // apiCallParams: { uid: payload.messageUid },
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      silent: false,
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: (payload && payload.debug ? payload.debug : false)
+    })
+  }
+}
+
+// ********************************
+// PipelineTemplates
+// ********************************
+
+export function getPipelineTemplates ({ state, commit }, payload) {
+  apiCall({
+    httpVerb: 'GET',
+    apiUrl: '/admin/pipelineTemplates',
+    dataLabel: 'Pipeline Templates',
+    countDataLabel: true,
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    commit: commit,
+    targetCommitName: 'getPipelineTemplates',
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    silent: false,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: (payload && payload.debug ? payload.debug : false)
+  })
+}
+
+export function updatePipelineTemplate ({ state }, payload) {
+  if (payload) {
+    const newPipelineTemplate = !(payload.pipelineTemplateUid && payload.pipelineTemplateUid.length)
+    apiCall({
+      httpVerb: (newPipelineTemplate ? 'POST' : 'PUT'),
+      apiUrl: '/admin/pipelineTemplates' + (newPipelineTemplate ? '' : `/${payload.pipelineTemplateUid}`), // Append Pipeline Template UID if updating
+      dataLabel: 'Pipeline Template',
+      apiCallParams: {
+        pipelineTemplate: {
+          pipelineTemplateUid: payload.pipelineTemplateUid || uid(), // In case of new Pipeline, generate new UUID
+          publisherUid: payload.publisherUid,
+          statusId: (payload.statusId !== null ? payload.statusId : undefined),
+          name: payload.name || undefined,
+          collectionConfiguration: payload.collectionConfiguration || undefined,
+          fieldsMapping: payload.fieldsMapping || undefined,
+          stats: payload.pipelineTemplateStats || undefined
+        }
+      },
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      silent: false,
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: (payload && payload.debug ? payload.debug : false)
+    })
+  }
+}
+
+export function deletePipelineTemplate ({ state }, payload) {
+  if (payload && payload.pipelineTemplateUid && payload.pipelineTemplateUid.length) {
+    apiCall({
+      httpVerb: 'DELETE',
+      apiUrl: `/admin/pipelineTemplates/${payload.pipelineTemplateUid}`,
+      dataLabel: 'Pipeline Template',
       apiHeaders: {
         authorization: 'Bearer ' + state.jwtToken
       },

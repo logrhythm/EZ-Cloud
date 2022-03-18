@@ -47,5 +47,12 @@
   "Update Publisher": "Update Publisher",
   "Edit Publisher": "Edit Publisher",
   "Rename Publisher": "Rename Publisher",
-  "Display Name cannot be empty": "Display Name cannot be empty"
+  "Display Name cannot be empty": "Display Name cannot be empty",
+  "Status should only be 'Visible', 'Pending review', 'Failed Review', 'Hidden' or 'To be Deleted'": "Status should only be 'Visible', 'Pending review', 'Failed Review', 'Hidden' or 'To be Deleted'",
+  "New Pipeline Template": "New Pipeline Template",
+  "Add new Pipeline Template": "Add new Pipeline Template",
+  "Update Pipeline Template": "Update Pipeline Template",
+  "Edit Pipeline Template": "Edit Pipeline Template",
+  "Rename Pipeline Template": "Rename Pipeline Template",
+  "Review Pipeline Template": "Review Pipeline Template"
 }
