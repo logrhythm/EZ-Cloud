@@ -76,6 +76,12 @@
                     </q-btn>
                   </q-td>
                 </template>
+
+                <template v-slot:body-cell-identicon="props">
+                  <q-td :props="props">
+                    <Identicon :identity="props.value" />
+                  </q-td>
+                </template>
               </q-table>
             </q-card-section>
           </q-card-section>
@@ -117,12 +123,14 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import Identicon from 'components/Publisher/Identicon.vue'
 
 export default {
   name: 'PageAdminPublishers',
   mixins: [
     mixinSharedDarkMode // Shared computed to access and update the DarkMode
   ],
+  components: { Identicon },
   data () {
     return {
       // {
@@ -136,6 +144,7 @@ export default {
       columns: [
         { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
         { name: 'publisherUid', align: 'center', label: 'UID', field: 'publisherUid', sortable: true },
+        { name: 'identicon', align: 'center', label: 'Identicon', field: 'displayName', sortable: true },
         { name: 'displayName', align: 'center', label: 'Display Name', field: 'displayName', sortable: true, classes: '', style: 'white-space: pre-line;' },
         { name: 'pipelineTemplatesAuthored', align: 'center', label: 'Published Pipeline Templates', field: 'pipelineTemplatesAuthored', sortable: true },
         { name: 'messagesSent', align: 'center', label: 'Sent Messages', field: 'messagesSent', sortable: true },
