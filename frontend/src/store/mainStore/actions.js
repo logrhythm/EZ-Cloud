@@ -868,7 +868,7 @@ export function getDataFromSite (params = {
 
       if (queryResultedInError) {
         if (params.logToConsole) {
-          console.log('⚠️ ' + i18n.t('[API ERROR]') + ' ' + messageForLogAndPopup)
+          console.log('⚠️ ' + i18n.t('[API ERROR]') + ' ' + messageForLogAndPopup + (captionForLogAndPopup && captionForLogAndPopup.length ? ' // ' + captionForLogAndPopup : ''))
         }
         if (!params.silent && notificationPopupId) {
           notificationPopupId({
@@ -893,7 +893,7 @@ export function getDataFromSite (params = {
         }
       } else {
         if (params.logToConsole) {
-          console.log('✔️ ' + i18n.t('[API SUCCESS]') + ' ' + messageForLogAndPopup)
+          console.log('✔️ ' + i18n.t('[API SUCCESS]') + ' ' + messageForLogAndPopup + (captionForLogAndPopup && captionForLogAndPopup.length ? ' // ' + captionForLogAndPopup : ''))
         }
         if (!params.silent && notificationPopupId) {
           notificationPopupId({
@@ -1056,7 +1056,7 @@ export function postDataToSite (params = {
       }
       if (queryResultedInError) {
         if (params.logToConsole) {
-          console.log('⚠️ ' + i18n.t('[API ERROR]') + ' ' + messageForLogAndPopup + ' // ' + captionForLogAndPopup)
+          console.log('⚠️ ' + i18n.t('[API ERROR]') + ' ' + messageForLogAndPopup + (captionForLogAndPopup && captionForLogAndPopup.length ? ' // ' + captionForLogAndPopup : ''))
         }
         if (!params.silent && notificationPopupId) {
           notificationPopupId({
@@ -1082,7 +1082,7 @@ export function postDataToSite (params = {
         }
       } else {
         if (params.logToConsole) {
-          console.log('✔️ ' + i18n.t('[API SUCCESS]') + ' ' + messageForLogAndPopup + ' // ' + captionForLogAndPopup)
+          console.log('✔️ ' + i18n.t('[API SUCCESS]') + ' ' + messageForLogAndPopup + (captionForLogAndPopup && captionForLogAndPopup.length ? ' // ' + captionForLogAndPopup : ''))
         }
         if (!params.silent && notificationPopupId) {
           notificationPopupId({
