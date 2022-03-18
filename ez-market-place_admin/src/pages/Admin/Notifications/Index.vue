@@ -41,7 +41,7 @@
               <q-table
                 :data="tableData"
                 :columns="columns"
-                row-key="roleUid"
+                row-key="messageUid"
                 dense
                 no-data-label="No Notification to display."
                 :filter="searchFilter"
