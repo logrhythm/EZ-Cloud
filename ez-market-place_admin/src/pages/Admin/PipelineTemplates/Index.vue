@@ -41,7 +41,6 @@
                           </template>
                         </q-input>
                       </div>
-                      <!-- <q-separator vertical dark color="orange" /> -->
                       <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadPipelineTemplates()">
                         <q-tooltip content-style="font-size: 1em">
                           Reload the list of Pipeline Templates.
@@ -73,28 +72,6 @@
                         {{ $t('Review Pipeline Template') }}
                       </q-tooltip>
                     </q-btn>
-                    <!-- <q-btn
-                      icon="mark_email_read"
-                      flat
-                      dense
-                      :disabled="props.row.statusName === 'Read'"
-                      @click="updatePipelineTemplateStatusTo({pipelineTemplateFullDetails: props.row, toStatus: 'Read'})"
-                    >
-                      <q-tooltip content-style="font-size: 1rem;" v-if="props.row.statusName === 'Unread'">
-                        {{ $t('Mark as Read') }}
-                      </q-tooltip>
-                    </q-btn>
-                    <q-btn
-                      icon="mark_email_unread"
-                      flat
-                      dense
-                      :disabled="props.row.statusName === 'Unread'"
-                      @click="updatePipelineTemplateStatusTo({pipelineTemplateFullDetails: props.row, toStatus: 'Unread'})"
-                    >
-                      <q-tooltip content-style="font-size: 1rem;" v-if="props.row.statusName === 'Read'">
-                        {{ $t('Mark as Unread') }}
-                      </q-tooltip>
-                    </q-btn> -->
                     <q-btn
                       icon="delete"
                       flat
@@ -202,10 +179,6 @@
             map-options
             :rules="[val => goodStatusOptions.includes(val) || $t('Status should only be \'Visible\', \'Pending review\', \'Failed Review\', \'Hidden\' or \'To be Deleted\'')]"
           />
-        </q-card-section>
-
-        <q-card-section class="q-pt-none">
-          editingStats: <pre>-{{ editingStats }}-</pre>
         </q-card-section>
 
         <q-card-section class="q-pt-none">
@@ -461,7 +434,6 @@ export default {
       )
     },
     updatePipelineTemplateStatusTo (payload) {
-      // console.log('updatePipelineTemplateStatusTo', payload) // XXXX
       let statusId
       if (
         payload &&
@@ -491,7 +463,6 @@ export default {
       }
     },
     deletePipelineTemplateById (pipelineTemplateUid) {
-      // console.log('deletePipelineTemplateById', pipelineTemplateUid) // XXXX
       this.deletePipelineTemplate(
         {
           pipelineTemplateUid,
@@ -504,7 +475,6 @@ export default {
       )
     },
     addNewOrUpdatePipelineTemplate () {
-      console.log('addNewOrUpdatePipelineTemplate') // XXXX
       this.updatePipelineTemplate(
         {
           pipelineTemplateUid: this.editingPipelineTemplateUid,
