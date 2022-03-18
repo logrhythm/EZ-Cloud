@@ -181,7 +181,7 @@
 
                 <template v-slot:body-cell-sender="props">
                   <q-td :props="props">
-                    <div v-html="identicon(props.value)"></div>
+                    <Identicon :identity="props.value" />
                     <div>
                       {{ props.value }}
                     </div>
@@ -190,7 +190,7 @@
 
                 <template v-slot:body-cell-recipient="props">
                   <q-td :props="props">
-                    <div v-html="identicon(props.value)"></div>
+                    <Identicon :identity="props.value" />
                     <div>
                       {{ props.value }}
                     </div>
@@ -366,7 +366,7 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
-import { toSvg } from 'jdenticon'
+import Identicon from 'components/Publisher/Identicon.vue'
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en.json'
 TimeAgo.addDefaultLocale(en)
@@ -376,6 +376,7 @@ export default {
   mixins: [
     mixinSharedDarkMode // Shared computed to access and update the DarkMode
   ],
+  components: { Identicon },
   data () {
     return {
       // {
@@ -647,9 +648,6 @@ export default {
       // Pop this to the screen (via MainLayout)
       this.$root.$emit('addAndShowErrorToErrorPanel', payload)
       this.loadNotifications()
-    },
-    identicon (name) {
-      return toSvg(name, 50)
     },
     timeAgo (timestamp) {
       let formattedTimeAgo = 'Some time ago'
