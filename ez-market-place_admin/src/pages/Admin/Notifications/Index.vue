@@ -168,7 +168,7 @@
                       <q-icon name="mark_email_read" style="opacity: .5;" size="md" v-else-if="props.value === 'Read'" />
                       <q-icon name="visibility_off" color="orange" style="opacity: .5;" size="md" v-else-if="props.value === 'Hidden'" />
                       <q-icon name="visibility" color="orange" size="md" v-else-if="props.value === 'Visible'" />
-                      <q-icon name="auto_delete" color="negative" style="opacity: .75;" size="md" v-else-if="props.value === 'To be deleted'" />
+                      <q-icon name="auto_delete" color="negative" style="opacity: .5;" size="md" v-else-if="props.value === 'To be deleted'" />
                       <q-icon name="question_mark" color="orange" size="md" v-else />
                       <q-tooltip content-style="font-size: 1em">
                         {{ props.row.statusDescription }}
