@@ -187,20 +187,20 @@ router.post('/', async (req, res) => {
               (
                 \`uid\`
                 ${pipelineTemplate.statusId !== null ? ', `status`' : '/* No Status present */'}
-                ${pipelineTemplate.publisher_uid !== undefined ? ', `publisher_uid`' : '/* No Publisher UID present */'}
+                ${pipelineTemplate.publisherUid !== undefined ? ', `publisher_uid`' : '/* No Publisher UID present */'}
                 ${pipelineTemplate.name !== undefined ? ', `name`' : '/* No Name present */'}
-                ${pipelineTemplate.collection_configuration ? ', `collection_configuration`' : '/* No Collection Configuration present */'}
-                ${pipelineTemplate.mapping_configuration ? ', `mapping_configuration`' : '/* No Mapping Configuration present */'}
+                ${pipelineTemplate.collectionConfiguration ? ', `collection_configuration`' : '/* No Collection Configuration present */'}
+                ${pipelineTemplate.fieldsMapping ? ', `mapping_configuration`' : '/* No Mapping Configuration present */'}
                 ${pipelineTemplate.stats ? ', `stats`' : '/* No Stats present */'}
               )
             VALUES
               (
                 :pipelineTemplateUid
                 ${pipelineTemplate.statusId !== null ? ', :pipelineTemplateStatusAsInt' : '/* No Status present */'}
-                ${pipelineTemplate.publisher_uid !== undefined ? ', :publisher_uid' : '/* No Publisher UID present */'}
+                ${pipelineTemplate.publisherUid !== undefined ? ', :publisher_uid' : '/* No Publisher UID present */'}
                 ${pipelineTemplate.name !== undefined ? ', :name' : '/* No Name present */'}
-                ${pipelineTemplate.collection_configuration ? ', :collection_configuration' : '/* No Collection Configuration present */'}
-                ${pipelineTemplate.mapping_configuration ? ', :mapping_configuration' : '/* No Mapping Configuration present */'}
+                ${pipelineTemplate.collectionConfiguration ? ', :collection_configuration' : '/* No Collection Configuration present */'}
+                ${pipelineTemplate.fieldsMapping ? ', :mapping_configuration' : '/* No Mapping Configuration present */'}
                 ${pipelineTemplate.stats ? ', :stats' : '/* No Stats present */'}
               );
           `
@@ -288,10 +288,10 @@ router.put('/:id', async (req, res) => {
         SET
           \`uid\` = \`uid\` /* Bogus line. Will change nothing. But help with commas for the subsequent lines. */
           ${pipelineTemplate.statusId !== null ? ', `status` = :pipelineTemplateStatusAsInt' : '/* No Status present */'}
-          ${pipelineTemplate.publisher_uid !== undefined ? ', `publisher_uid` = :publisher_uid' : '/* No Publisher UID present */'}
+          ${pipelineTemplate.publisherUid !== undefined ? ', `publisher_uid` = :publisher_uid' : '/* No Publisher UID present */'}
           ${pipelineTemplate.name !== undefined ? ', `name` = :name' : '/* No Name present */'}
-          ${pipelineTemplate.collection_configuration ? ', `collection_configuration` = :collection_configuration' : '/* No Collection Configuration present */'}
-          ${pipelineTemplate.mapping_configuration ? ', `mapping_configuration` = :mapping_configuration' : '/* No Mapping Configuration present */'}
+          ${pipelineTemplate.collectionConfiguration ? ', `collection_configuration` = :collection_configuration' : '/* No Collection Configuration present */'}
+          ${pipelineTemplate.fieldsMapping ? ', `mapping_configuration` = :mapping_configuration' : '/* No Mapping Configuration present */'}
           ${pipelineTemplate.stats ? ', `stats` = :stats' : '/* No Stats present */'}
 
           

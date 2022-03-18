@@ -2,7 +2,7 @@ const express = require('express');
 
 // Service name and version
 const version = require('../../shared/version'); // Version file is generated at build time
-// const pipelineTemplates = require('./pipelineTemplates');
+const pipelineTemplates = require('./pipelineTemplates');
 const notifications = require('./notifications');
 const statuses = require('./statuses');
 const publishers = require('./publishers');
@@ -17,7 +17,7 @@ router.get('/', (req, res) => {
   });
 });
 
-// router.use('/pipelineTemplates', pipelineTemplates);
+router.use('/pipelineTemplates', pipelineTemplates);
 router.use('/notifications', notifications);
 router.use('/statuses', statuses);
 router.use('/publishers', publishers);

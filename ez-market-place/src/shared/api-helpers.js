@@ -14,6 +14,7 @@ const pipelineTemplateSchema = yup.object().shape(
   {
     pipelineTemplateUid: yup.string().uuid().required(),
     publisherUid: yup.string().uuid().nullable(), // Only used for Admin APIs
+    statusId: yup.number(), // Only used for Admin APIs
     name: yup.string().required(),
     collectionConfiguration: yup.object().nullable(),
     fieldsMapping: yup.object().nullable(),
