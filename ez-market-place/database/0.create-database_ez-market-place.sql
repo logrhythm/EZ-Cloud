@@ -47,6 +47,8 @@ CREATE TABLE IF NOT EXISTS `pipeline_templates` (
   `modified` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `publisher_uid` char(40) DEFAULT NULL,
   `name` varchar(50) DEFAULT NULL,
+	`readmeMarkdown` LONGTEXT NULL DEFAULT NULL,
+	`iconPicture` LONGTEXT NULL DEFAULT NULL,
   `collection_configuration` longtext DEFAULT NULL,
   `mapping_configuration` longtext DEFAULT NULL,
   `stats` longtext DEFAULT NULL,
