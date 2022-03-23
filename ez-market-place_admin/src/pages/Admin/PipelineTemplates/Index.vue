@@ -132,6 +132,15 @@
                   </q-td>
                 </template>
 
+                <template v-slot:body-cell-pipelineTemplateIconPicture="props">
+                  <q-td :props="props">
+                    <IconPicture
+                      :pngBase64="props.value"
+                      :size="70"
+                    />
+                  </q-td>
+                </template>
+
                 <template v-slot:body-cell-pipelineTemplateCreatedOn="props">
                   <q-td :props="props">
                     <div>
@@ -245,6 +254,7 @@
 import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import Identicon from 'components/Publisher/Identicon.vue'
+import IconPicture from 'components/Pipelines/IconPicture.vue'
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en.json'
 TimeAgo.addDefaultLocale(en)
@@ -254,7 +264,7 @@ export default {
   mixins: [
     mixinSharedDarkMode // Shared computed to access and update the DarkMode
   ],
-  components: { Identicon },
+  components: { Identicon, IconPicture },
   data () {
     return {
       // {
@@ -275,8 +285,9 @@ export default {
       columns: [
         { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
         { name: 'statusName', align: 'center', label: 'Status', field: 'statusName', sortable: true },
-        { name: 'pipelineTemplateUid', align: 'center', label: 'UID', field: 'pipelineTemplateUid', sortable: true },
         { name: 'publisherName', align: 'center', label: 'Publisher', field: 'publisherName', sortable: true },
+        { name: 'pipelineTemplateUid', align: 'center', label: 'UID', field: 'pipelineTemplateUid', sortable: true },
+        { name: 'pipelineTemplateIconPicture', align: 'center', label: 'Icon / Logo', field: 'pipelineTemplateIconPicture', sortable: false },
         { name: 'pipelineTemplateName', align: 'center', label: 'Pipeline Template Name', field: 'pipelineTemplateName', sortable: true, classes: '', style: 'white-space: pre-line;' },
         { name: 'pipelineTemplateStats', align: 'center', label: 'Stats', field: 'pipelineTemplateStats', sortable: false },
         { name: 'pipelineTemplateCreatedOn', align: 'center', label: 'Created', field: 'pipelineTemplateCreatedOn', sortable: true },
