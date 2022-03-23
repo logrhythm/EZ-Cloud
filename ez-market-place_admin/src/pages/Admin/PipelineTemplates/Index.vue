@@ -67,6 +67,7 @@
                       icon="content_paste_search"
                       flat
                       dense
+                      :to="`PipelineTemplates/${props.row.pipelineTemplateUid}/Review`"
                     >
                       <q-tooltip content-style="font-size: 1rem;">
                         {{ $t('Review Pipeline Template') }}

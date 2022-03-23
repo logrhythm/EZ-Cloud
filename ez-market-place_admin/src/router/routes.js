@@ -144,6 +144,7 @@ const routes = [
 
       // Pipelines Templates
       { path: 'PipelineTemplates', component: () => import('pages/Admin/PipelineTemplates/Index.vue') },
+      { path: 'PipelineTemplates/:pipelineTemplateUid/Review', component: () => import('pages/Admin/PipelineTemplates/Review.vue') },
 
       // Notifications
       { path: 'Notifications', component: () => import('pages/Admin/Notifications/Index.vue') },
