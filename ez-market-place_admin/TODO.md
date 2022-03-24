@@ -21,6 +21,9 @@
   - [x] Get Pipelines
   - [x] List Pipelines
   - [ ] Review Pipeline
+    - [ ] Action bar (with Return to List button/link)
+    - [ ] Icon/logo/visual
+    - [ ] ReadMe
     - [ ] Collection
       - [ ] Check for sensitive information
     - [ ] Mapping
@@ -31,6 +34,8 @@
     - [x] Publisher
     - [ ] Collection
     - [ ] Mapping
+    - [ ] Icon/logo/visual
+    - [ ] ReadMe
     - [ ] Stats
     - [x] Status / Visibility
   - [x] Delete Pipeline
