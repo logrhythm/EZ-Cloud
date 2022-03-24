@@ -143,14 +143,14 @@ const routes = [
       { path: 'RBAC/Roles', component: () => import('pages/Admin/RBAC/Roles.vue') },
 
       // Pipelines Templates
-      { path: 'PipelineTemplates', component: () => import('pages/Admin/PipelineTemplates/Index.vue') },
-      { path: 'PipelineTemplates/:pipelineTemplateUid/Review', component: () => import('pages/Admin/PipelineTemplates/Review.vue') },
+      { path: 'PipelineTemplates', component: () => import('pages/Admin/PipelineTemplates/Index.vue'), meta: { title: 'Admin - Templates' } },
+      { path: 'PipelineTemplates/:pipelineTemplateUid/Review', component: () => import('pages/Admin/PipelineTemplates/Review.vue'), meta: { title: 'Admin - Templates - Review' } },
 
       // Notifications
-      { path: 'Notifications', component: () => import('pages/Admin/Notifications/Index.vue') },
+      { path: 'Notifications', component: () => import('pages/Admin/Notifications/Index.vue'), meta: { title: 'Admin - Notifications' } },
 
       // Publishers
-      { path: 'Publishers', component: () => import('pages/Admin/Publishers/Index.vue') }
+      { path: 'Publishers', component: () => import('pages/Admin/Publishers/Index.vue'), meta: { title: 'Admin - Publishers' } }
     ]
     // ,
     // beforeEnter: isLoggedIn
