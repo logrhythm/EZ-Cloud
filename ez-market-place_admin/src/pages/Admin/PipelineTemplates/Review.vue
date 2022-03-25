@@ -210,7 +210,7 @@ export default {
       pictureEditorContent: '',
       pictureEditorContentPngBase64Extracted: '',
       pictureEditorContentPngBase64ExtractedAccepted: '',
-      pictureImportPanel: true,
+      pictureImportPanel: false,
       pictureImportPictureFound: false,
       pictureImportPictureIsPng: false
     }
@@ -288,14 +288,49 @@ export default {
         } catch (error) {
           // Fall back on an empty object
           this.pipelineTemplate = {}
+        } finally {
+          this.discardAcceptedPictureEditorContentPngBase64()
         }
       }
     },
     save () {
-      //
+      if (
+        this.pipelineTemplateUid &&
+        this.pipelineTemplateUid.length &&
+        this.pipelineTemplate &&
+        this.pipelineTemplate.pipelineTemplateUid &&
+        this.pipelineTemplate.pipelineTemplateUid.length &&
+        this.pipelineTemplateUid === this.pipelineTemplate.pipelineTemplateUid
+      ) {
+        this.updatePipelineTemplate(
+          {
+            pipelineTemplateUid: this.pipelineTemplateUid,
+            statusId: this.pipelineTemplate.statusId,
+            name: this.pipelineTemplate.pipelineTemplateName,
+            pipelineTemplateIconPicture: (
+              this.pictureEditorContentPngBase64ExtractedAccepted && this.pictureEditorContentPngBase64ExtractedAccepted.length
+                ? this.pictureEditorContentPngBase64ExtractedAccepted
+                : undefined
+            ),
+            // publisherUid: this.pipelineTemplate.xxx,
+            // pipelineTemplateStats: this.pipelineTemplate.xxx,
+
+            loadingVariableName: 'pipelineTemplateLoading',
+            caller: this,
+            onSuccessCallBack: this.loadPipelineTemplate,
+            onErrorCallBack: this.updatePipelineTemplateFailure,
+            debug: true
+          }
+        )
+      }
     },
     reverseToLastSaved () {
       this.loadPipelineTemplate()
+    },
+    updatePipelineTemplateFailure (payload) {
+      // Pop this to the screen (via MainLayout)
+      this.$root.$emit('addAndShowErrorToErrorPanel', payload)
+      this.loadPipelineTemplates()
     },
     extractPictureEditorContentPngBase64 (newValue) {
       // <img src="data:image/png;base64,iVBORw0KGgoAA...Uawz9YIPMfeaw" alt="">

@@ -388,6 +388,7 @@ export function updatePipelineTemplate ({ state }, payload) {
           publisherUid: payload.publisherUid,
           statusId: (payload.statusId !== null ? payload.statusId : undefined),
           name: payload.name || undefined,
+          iconPicture: payload.pipelineTemplateIconPicture || undefined,
           collectionConfiguration: payload.collectionConfiguration || undefined,
           fieldsMapping: payload.fieldsMapping || undefined,
           stats: payload.pipelineTemplateStats || undefined
