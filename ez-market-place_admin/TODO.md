@@ -21,8 +21,8 @@
   - [x] Get Pipelines
   - [x] List Pipelines
   - [ ] Review Pipeline
-    - [ ] Action bar (with Return to List button/link)
-    - [ ] Icon/logo/visual
+    - [x] Action bar (with Return to List button/link)
+    - [x] Icon/logo/visual
     - [ ] ReadMe
     - [ ] Collection
       - [ ] Check for sensitive information
