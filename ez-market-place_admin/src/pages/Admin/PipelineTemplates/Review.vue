@@ -301,12 +301,10 @@ export default {
       // <img src="data:image/png;base64,iVBORw0KGgoAA...Uawz9YIPMfeaw" alt="">
       try {
         const rawHtml = newValue || ''
-        console.log(rawHtml)
         // this.loadImageFromUrl('https://cdn.quasar.dev/logo-v2/svg/logo.svg')
         // this.loadImageFromUrl('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAALCAYAAACksgdhAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAF1SURBVChTLZFbTwMhEIUPDHStWp+Mmnip1vgDjO/+tv5MfdN4SYzxUrvd0gUGD5smDLfhcD4Yc3t3X/zIYzI5wOHREWbXNzg+OUUqQOgjYgbnFtkIivVIsJCLs7N5yRGaEzT2yGmDsAkoRTHeaaAcU0zIOXMPQ8jF+eVcOUspITLZ9z1FGx4ucM4jpoysCqUDjGUTyHR6Na9qZSLTre8TuhDQrQPadkURgSj2oxGc9xBxsGItnFhY3lIRVu0SXx+feHl6xuPDA95f37DpOhh61XP1vFxOZ3PLiTUGhsKKlbWA5nTPaJqGLs2AlpSfQhqZEc+JEIFBsdKtoiqFOfP2LVKhV31bYtjC2+qXiAFFhsGRrp4oIy/QFIm8wOL3G8vFD7r2D1aVX01hdWAHQy7LzlOwNx4Pb1mv2kGw/NuKSkVhnWpdDCGqkxBXBleuSVD3ackaRuQYYGt9hsJVTCYdVc5ZrhUhrAfX/f1dHEwmGDcezhj8A/VF6czzvVvtAAAAAElFTkSuQmCC')
 
         const matches = rawHtml.match(/<img .*?src="([^"]*)"/)
-        console.log(matches)
         if (matches && Array.isArray(matches) && matches.length >= 2) {
           this.pictureImportPictureFound = true
           this.loadImageFromUrl((matches && Array.isArray(matches) && matches.length >= 2 ? matches[1] : ''))
@@ -333,10 +331,7 @@ export default {
           reader.readAsDataURL(imageBlob)
           reader.onloadend = () => {
             const base64data = reader.result
-            console.log(base64data)
-
             const matchesEmbeddedPng = base64data.match(/data:image\/png;base64,(.*)/)
-            console.log(matchesEmbeddedPng)
             if (matchesEmbeddedPng && Array.isArray(matchesEmbeddedPng) && matchesEmbeddedPng.length >= 2) {
               this.pictureEditorContentPngBase64Extracted = (matchesEmbeddedPng && Array.isArray(matchesEmbeddedPng) && matchesEmbeddedPng.length >= 2 ? matchesEmbeddedPng[1] : '')
               this.pictureImportPictureIsPng = true
