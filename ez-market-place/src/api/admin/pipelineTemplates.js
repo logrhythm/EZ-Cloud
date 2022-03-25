@@ -108,7 +108,7 @@ router.get('/:id', async (req, res) => {
             pipeline_templates.publisher_uid AS publisherUid,
             publishers.display_name AS publisherName,
             pipeline_templates.name AS pipelineTemplateName,
-            pipeline_templates.readmeMarkdown AS pipelineTemplateReadmeMardown,
+            pipeline_templates.readmeMardown AS pipelineTemplateReadmeMardown,
             pipeline_templates.iconPicture AS pipelineTemplateIconPicture,
             pipeline_templates.collection_configuration AS pipelineTemplateCollectionConfiguration,
             pipeline_templates.mapping_configuration AS pipelineTemplateMappingConfiguration,
@@ -193,7 +193,7 @@ router.post('/', async (req, res) => {
                 ${pipelineTemplate.statusId !== null ? ', `status`' : '/* No Status present */'}
                 ${pipelineTemplate.publisherUid !== undefined ? ', `publisher_uid`' : '/* No Publisher UID present */'}
                 ${pipelineTemplate.name !== undefined ? ', `name`' : '/* No Name present */'}
-                ${pipelineTemplate.readmeMarkdown ? ', `readmeMarkdown`' : '/* No Readme present */'}
+                ${pipelineTemplate.readmeMardown ? ', `readmeMardown`' : '/* No Readme present */'}
                 ${pipelineTemplate.iconPicture ? ', `iconPicture`' : '/* No Icon Picture present */'}
                 ${pipelineTemplate.collectionConfiguration ? ', `collection_configuration`' : '/* No Collection Configuration present */'}
                 ${pipelineTemplate.fieldsMapping ? ', `mapping_configuration`' : '/* No Mapping Configuration present */'}
@@ -205,7 +205,7 @@ router.post('/', async (req, res) => {
                 ${pipelineTemplate.statusId !== null ? ', :pipelineTemplateStatusAsInt' : '/* No Status present */'}
                 ${pipelineTemplate.publisherUid !== undefined ? ', :publisher_uid' : '/* No Publisher UID present */'}
                 ${pipelineTemplate.name !== undefined ? ', :name' : '/* No Name present */'}
-                ${pipelineTemplate.readmeMarkdown ? ', :readmeMarkdown' : '/* No Readme present */'}
+                ${pipelineTemplate.readmeMardown ? ', :readmeMardown' : '/* No Readme present */'}
                 ${pipelineTemplate.iconPicture ? ', :iconPicture' : '/* No Icon Picture present */'}
                 ${pipelineTemplate.collectionConfiguration ? ', :collection_configuration' : '/* No Collection Configuration present */'}
                 ${pipelineTemplate.fieldsMapping ? ', :mapping_configuration' : '/* No Mapping Configuration present */'}
@@ -219,7 +219,7 @@ router.post('/', async (req, res) => {
         pipelineTemplateStatusAsInt: pipelineTemplate.statusId,
         publisher_uid: pipelineTemplate.publisherUid,
         name: pipelineTemplate.name,
-        readmeMarkdown: pipelineTemplate.readmeMarkdown,
+        readmeMardown: pipelineTemplate.readmeMardown,
         iconPicture: pipelineTemplate.iconPicture,
         collection_configuration: pipelineTemplate.collectionConfiguration,
         mapping_configuration: pipelineTemplate.fieldsMapping,
@@ -300,7 +300,7 @@ router.put('/:id', async (req, res) => {
           ${pipelineTemplate.statusId !== null ? ', `status` = :pipelineTemplateStatusAsInt' : '/* No Status present */'}
           ${pipelineTemplate.publisherUid !== undefined ? ', `publisher_uid` = :publisher_uid' : '/* No Publisher UID present */'}
           ${pipelineTemplate.name !== undefined ? ', `name` = :name' : '/* No Name present */'}
-          ${pipelineTemplate.readmeMarkdown !== undefined ? ', `readmeMarkdown` = :readmeMarkdown' : '/* No Readme present */'}
+          ${pipelineTemplate.readmeMardown !== undefined ? ', `readmeMardown` = :readmeMardown' : '/* No Readme present */'}
           ${pipelineTemplate.iconPicture !== undefined ? ', `iconPicture` = :iconPicture' : '/* No Icon Picture present */'}
           ${pipelineTemplate.collectionConfiguration ? ', `collection_configuration` = :collection_configuration' : '/* No Collection Configuration present */'}
           ${pipelineTemplate.fieldsMapping ? ', `mapping_configuration` = :mapping_configuration' : '/* No Mapping Configuration present */'}
@@ -317,7 +317,7 @@ router.put('/:id', async (req, res) => {
         pipelineTemplateStatusAsInt: pipelineTemplate.statusId,
         publisher_uid: pipelineTemplate.publisherUid,
         name: pipelineTemplate.name,
-        readmeMarkdown: pipelineTemplate.readmeMarkdown,
+        readmeMardown: pipelineTemplate.readmeMardown,
         iconPicture: pipelineTemplate.iconPicture,
         collection_configuration: pipelineTemplate.collectionConfiguration,
         mapping_configuration: pipelineTemplate.fieldsMapping,
