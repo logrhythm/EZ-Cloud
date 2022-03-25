@@ -21,9 +21,9 @@ def is_matching:
       or
       ."@metadata".device_type == "{{EZ_compact_stream_name_placeholder}}"
       or
-      .device_type == "{{EZ_stream_name_placeholder}}"
+      (.device_type | ascii_downcase) == ("{{EZ_device_name_placeholder}}" | ascii_downcase)
       or
-      .device_type == "{{EZ_compact_stream_name_placeholder}}"
+      (.device_type | ascii_downcase) == "{{EZ_compact_stream_name_placeholder}}"
     )
 ;
 `

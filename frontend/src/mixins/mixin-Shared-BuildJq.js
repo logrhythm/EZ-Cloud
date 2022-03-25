@@ -18,6 +18,7 @@ export default {
         .replace(/{{EZ_stream_name_placeholder}}/g, pipelineName)
         .replace(/{{EZ_stream_id_placeholder}}/g, pipelineUid)
         .replace(/{{EZ_compact_stream_name_placeholder}}/g, String(pipelineName).replace(/[^a-zA-Z0-9]/g, '_').toLowerCase())
+        .replace(/{{EZ_device_name_placeholder}}/g, beatName)
         .replace(/{{EZ_beat_name_placeholder}}/g, beatName)
 
       // And ship it back
@@ -34,6 +35,7 @@ export default {
         .replace(/{{EZ_stream_name_placeholder}}/g, pipelineName)
         .replace(/{{EZ_stream_id_placeholder}}/g, pipelineUid)
         .replace(/{{EZ_compact_stream_name_placeholder}}/g, String(pipelineName).replace(/[^a-zA-Z0-9]/g, '_').toLowerCase())
+        .replace(/{{EZ_device_name_placeholder}}/g, beatName)
         .replace(/{{EZ_beat_name_placeholder}}/g, beatName)
 
       // What do we use for original_message?
