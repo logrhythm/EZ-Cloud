@@ -355,6 +355,26 @@ export function getPipelineTemplates ({ state, commit }, payload) {
   })
 }
 
+export function getPipelineTemplateByUid ({ state, commit }, payload) {
+  if (payload) {
+    apiCall({
+      httpVerb: 'GET',
+      apiUrl: `/admin/pipelineTemplates/${payload.pipelineTemplateUid}`,
+      dataLabel: 'Pipeline Template',
+      countDataLabel: true,
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      silent: false,
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: (payload && payload.debug ? payload.debug : false)
+    })
+  }
+}
+
 export function updatePipelineTemplate ({ state }, payload) {
   if (payload) {
     const newPipelineTemplate = !(payload.pipelineTemplateUid && payload.pipelineTemplateUid.length)
