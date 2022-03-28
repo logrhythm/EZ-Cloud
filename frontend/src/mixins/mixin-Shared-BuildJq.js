@@ -65,7 +65,8 @@ export default {
       const flattenArrayAddFieldPlaceholder = [] // multiple strings
 
       // Mapping of the Timestamp field(s)
-      const timestampAddFieldPlaceholderTemplate = '    add_field(({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}{{EZ_date_parser_placeholder}}); .output.normal_msg_date) |'
+      // const timestampAddFieldPlaceholderTemplate = '    add_field(({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}{{EZ_date_parser_placeholder}}); .output.normal_msg_date) |'
+      const timestampAddFieldPlaceholderTemplate = '    add_field((if {{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}} != null then ({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}{{EZ_date_parser_placeholder}}) else null end); .output.normal_msg_date) |'
       const dateParserIso8601Template = ' | fromdate' // Used for Timestamp - ISO8601 format
       const timestampAddFieldPlaceholder = [] // multiple strings
 
