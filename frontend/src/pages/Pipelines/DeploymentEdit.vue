@@ -839,7 +839,7 @@ export default {
                   caller.loggedInUser && caller.loggedInUser.length // &&
                   // caller.pipeline.fieldsMapping
                     // ? this.buildJqTransformFromParams(caller.pipeline.uid, caller.pipeline.name, caller.beatName, caller.loggedInUser, false /* Hardcoding extractMessageFieldOnly */, (caller.pipeline.fieldsMapping || []))
-                    ? this.buildJqTransformFromParams(caller.pipeline.uid, caller.pipeline.name, caller.beatName, caller.loggedInUser, (caller.pipeline.extractMessageFieldOnly === true), (caller.pipeline.fieldsMapping || []))
+                    ? this.buildJqTransformFromParams(caller.pipeline.uid, caller.pipeline.name, caller.beatName, caller.loggedInUser, (caller.pipeline.options && caller.pipeline.options.extractMessageFieldOnly === true), (caller.pipeline.fieldsMapping || []))
                     : undefined
                 )
               }
