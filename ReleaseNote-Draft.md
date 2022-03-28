@@ -42,6 +42,45 @@
 - Wiki: [Troubleshooting](https://github.com/logrhythm/EZ-Cloud/wiki/Troubleshooting)
 
 ## What's new in this release?
+**v0.8.5**
+_(Below "Market" relates to the backend API of the Market Place, and "Market Admin" to the frontend UI of the Market place administrative website)_
+- [v0.8.5] Market - Admin - New API endpoints
+  - Statuses
+    - Get Statuses
+  - Publishers
+    - Add Publisher, Modify Publisher Name, Delete Publisher
+  - Notifications
+    - List Notification, Add Message/Notification, Modify Notification, Delete Notification
+  - Pipelines
+    - List Pipeline, Add Pipeline, Modify Pipeline, Delete Pipeline
+- [v0.8.5] Market - Admin Publishers - List Publishers - Include stats about received and send messages and published templates
+- [v0.8.5] Market - Admin Notifications - Better logging
+- [v0.8.5] Market - SQL - Add `readmeMarkdown` and `iconPicture` fields to `pipeline_templates`
+  - `readmeMarkdown` is going to be used to store the user provided ReadMe of their own Pipeline Template submissions
+  - `iconPicture` is going to be used to store the picture/icon/visual of the Pipeline Template submissions
+- [v0.8.5] Market - Admin - Get templates to return `readmeMarkdown` and `iconPicture` fields
+- [v0.8.5] Market Admin - MFA - Update code to deal with both Dev and Prod Okta environments
+- [v0.8.5] Market Admin - Better API error handling
+- [v0.8.5] Market Admin - Better logging in Console on API call responses
+- [v0.8.5] Market Admin - Clean up popup messages
+- [v0.8.5] Market Admin - Better tab titles for Admin pages
+- [v0.8.5] Market Admin - Notifications - Get Publishers, Get Statuses, Review Notifications, Sends Message/Notification, Modify Notification, Delete Notification
+- [v0.8.5] Market Admin - Notifications - Better management of the Publishers
+- [v0.8.5] Market Admin - Notification - Change opacity of `to be deleted` icon to match Pipeline Templates admin page
+- [v0.8.5] Market Admin - Publishers - Review Publishers, Add Publisher, Modify Publisher Display Name, Delete Publisher
+- [v0.8.5] Market Admin - Publishers - Review Publishers - Display stats about received and send messages and published templates
+- [v0.8.5] Market Admin - Notification - Add Identicons avatars, Display timestamps as "Time ago"
+- [v0.8.5] Market Admin - Change locker's colour depending on authentication status for authenticated pages
+- [v0.8.5] Market Admin - Pipeline Templates - Move page to better path
+- [v0.8.5] Market Admin - Pipeline Templates - Get Pipelines, List Pipelines, Add Pipeline, part Modify Pipeline, Delete Pipeline
+- [v0.8.5] Market Admin - Pipeline Templates - Use IconPicture to display the Icon/logo/visual of the Pipeline Template
+- [v0.8.5] Market Admin - Pipeline Templates Review - Page stub, Route, Link to Review page from Pipeline Templates
+- [v0.8.5] Market Admin - Pipeline Template Review - Icon/logo/visual - Save Picture/Logo
+- [v0.8.5] Frontend - Better logging in Console on API call responses
+- [v0.8.5] Frontend - Implement more robust timestamp parsing in JQ Transform
+- [v0.8.5] Frontend - Notifications - Multi lines support
+- [v0.8.🚧] 
+
 **v0.8.4**
 - [v0.8.4] Backend - Installer able to separate SQL from EZ Server
   - If you want to use this:
@@ -55,7 +94,6 @@
 - [v0.8.4] Frontend - Display EZ server version on rollover
 - [v0.8.4] Market Admin - API Functions - Consolidate Axios functions
 - [v0.8.4] Market Admin - Code clean-up
-- [v0.8.🚧] 
 
 **v0.8.3**
 - [v0.8.3] Market - Provide public statistics
@@ -123,8 +161,12 @@
 
 ## What has been fixed in this release?
 **v0.8.4**
-- [v0.8.4] Frontend - Remove Webhook shipper duplicate entry
+- [v0.8.5] Frontend - Fix #8 (JQ Filter doesn't catch on logs coming from LR Webhook Beat) - Add filtering by `.fullyqualifiedbeatname` in JQ Filter
+- [v0.8.5] Frontend - Fix - `DeploymentEdit` page didn't implement `extractMessageFieldOnly` correctly when producing the JQ Transform at deployment time
 - [v0.8.🚧] 
+
+**v0.8.4**
+- [v0.8.4] Frontend - Remove Webhook shipper duplicate entry
 
 **v0.8.3**
 - [v0.8.3] Backend - Increased the API timeout value (multiplied by 3), changed `maxCheckInterval` from 20 seconds to 60 seconds
