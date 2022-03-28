@@ -24,6 +24,8 @@ def is_matching:
       .device_type == "{{EZ_stream_name_placeholder}}"
       or
       .device_type == "{{EZ_compact_stream_name_placeholder}}"
+      or
+      .fullyqualifiedbeatname == "{{EZ_beat_fully_distinguished_name_placeholder}}"
     )
 ;
 `

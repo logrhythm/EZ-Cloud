@@ -10,6 +10,18 @@ export default {
   methods: {
     buildJqFilterFromParams (pipelineUid, pipelineName, beatName, loggedInUser) {
       let jqFilter = ''
+      // webhookbeat_254_EH_254a3
+      const beatFullyDistinguishedName =
+        String(beatName).toLowerCase() +
+        '_' +
+        String(
+          pipelineUid.substring(0, 3) +
+          '_' +
+          pipelineName.replace(/[^a-zA-Z0-9]/g, '_') +
+          '_' +
+          pipelineUid
+        )
+          .substring(0, 12)
 
       // First pass to change the headers and static fields
       jqFilter = this.jqFilterTemplate
@@ -19,6 +31,7 @@ export default {
         .replace(/{{EZ_stream_id_placeholder}}/g, pipelineUid)
         .replace(/{{EZ_compact_stream_name_placeholder}}/g, String(pipelineName).replace(/[^a-zA-Z0-9]/g, '_').toLowerCase())
         .replace(/{{EZ_beat_name_placeholder}}/g, beatName)
+        .replace(/{{EZ_beat_fully_distinguished_name_placeholder}}/g, beatFullyDistinguishedName)
 
       // And ship it back
       return jqFilter
