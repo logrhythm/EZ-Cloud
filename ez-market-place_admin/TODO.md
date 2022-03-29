@@ -34,8 +34,8 @@
     - [x] Publisher
     - [ ] Collection
     - [ ] Mapping
-    - [ ] Icon/logo/visual
-    - [ ] ReadMe
+    - [x] Icon/logo/visual
+    - [x] ReadMe
     - [ ] Stats
     - [x] Status / Visibility
   - [x] Delete Pipeline
