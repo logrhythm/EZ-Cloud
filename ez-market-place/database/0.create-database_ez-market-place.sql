@@ -14,7 +14,7 @@
 
 
 -- Dumping database structure for ez-market-place
-CREATE DATABASE IF NOT EXISTS `ez-market-place` /*!40100 DEFAULT CHARACTER SET utf8mb3 */;
+CREATE DATABASE IF NOT EXISTS `ez-market-place` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
 USE `ez-market-place`;
 
 -- Dumping structure for table ez-market-place.messages
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS `messages` (
   CONSTRAINT `FK_messages_publishers` FOREIGN KEY (`recipient_Uid`) REFERENCES `publishers` (`uid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_messages_publishers_2` FOREIGN KEY (`sender_Uid`) REFERENCES `publishers` (`uid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_messages_statuses` FOREIGN KEY (`status`) REFERENCES `statuses` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Dumping data for table ez-market-place.messages: ~7 rows (approximately)
 
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS `pipeline_templates` (
   KEY `FK_pipeline_templates_publishers` (`publisher_uid`),
   CONSTRAINT `FK_pipeline_templates_publishers` FOREIGN KEY (`publisher_uid`) REFERENCES `publishers` (`uid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_pipeline_templates_statuses` FOREIGN KEY (`status`) REFERENCES `statuses` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Dumping data for table ez-market-place.pipeline_templates: ~11 rows (approximately)
 
@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS `publishers` (
   `display_name` varchar(200) NOT NULL DEFAULT '',
   PRIMARY KEY (`uid`),
   UNIQUE KEY `display_name` (`display_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Dumping data for table ez-market-place.publishers: ~3 rows (approximately)
 
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS `statuses` (
   `name` varchar(50) NOT NULL DEFAULT '',
   `description` varchar(500) DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Dumping data for table ez-market-place.statuses: ~7 rows (approximately)
 /*!40000 ALTER TABLE `statuses` DISABLE KEYS */;
