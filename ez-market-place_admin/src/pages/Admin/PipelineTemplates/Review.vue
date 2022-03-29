@@ -33,8 +33,14 @@
       <q-card class="q-pa-md q-mx-none">
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
-            <q-card-section class="text-h4">
+            <q-card-section class="text-h4 row">
                 Icon / Logo
+              <q-space />
+              <q-icon name="save_as" color="positive" v-if="pictureNeedsSaving">
+                <q-tooltip content-style="font-size: 1rem;">
+                  Needs saving
+                </q-tooltip>
+              </q-icon>
             </q-card-section>
             <q-card-section class="row q-gutter-x-lg">
               <div>
@@ -200,6 +206,80 @@
           </q-card-actions>
         </q-card-section>
       </q-card>
+
+      <q-card class="q-pa-md q-mx-none">
+        <q-card-section horizontal>
+          <q-card-section class="col q-ma-none q-pa-none">
+              <q-card-section class="text-h4 row">
+                Readme
+              <q-space />
+              <q-icon name="save_as" color="positive" v-if="readmeNeedsSaving">
+                <q-tooltip content-style="font-size: 1rem;">
+                  Needs saving
+                </q-tooltip>
+              </q-icon>
+            </q-card-section>
+
+            <q-card-section >
+              <q-editor
+                v-model="readmeContentEditor"
+                min-height="20rem"
+                :dense="$q.screen.lt.md"
+                :toolbar="[
+                  ['bold', 'italic', 'strike'],
+                  [
+                    {
+                      label: $q.lang.editor.formatting,
+                      icon: $q.iconSet.editor.formatting,
+                      list: 'no-icons',
+                      options: [
+                        'h1',
+                        'h2',
+                        'h3',
+                        'h4',
+                        'h5',
+                        'h6',
+                        'p',
+                        'code'
+                      ]
+                    },
+                    'removeFormat'
+                  ],
+                  [
+                    {
+                      label: $q.lang.editor.align,
+                      icon: $q.iconSet.editor.align,
+                      fixedLabel: true,
+                      options: ['left', 'center', 'right', 'justify']
+                    }
+                  ],
+                  ['hr', 'link'],
+                  ['quote', 'unordered', 'ordered', 'outdent', 'indent'],
+                  ['print', 'fullscreen'],
+                  ['undo', 'redo']
+                ]"
+              />
+            </q-card-section>
+          </q-card-section>
+
+          <q-separator vertical />
+
+          <q-card-actions vertical class="justify-around q-px-md">
+              <q-btn icon="delete" :loading="dataLoading">
+                <q-tooltip content-style="font-size: 1rem;">
+                  Remove Readme content
+                </q-tooltip>
+                <q-menu content-class="bg-negative text-white" anchor="top end" self="top start">
+                  <q-list>
+                    <q-item clickable v-close-popup @click="removeReadme()">
+                      <q-item-section>Confirm</q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-menu>
+              </q-btn>
+          </q-card-actions>
+        </q-card-section>
+      </q-card>
     </div>
   </q-page>
 </template>
@@ -209,9 +289,23 @@ import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import Identicon from 'components/Publisher/Identicon.vue'
 import IconPicture from 'components/Pipelines/IconPicture.vue'
+
+// Time stamps as Time Ago
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en.json'
 TimeAgo.addDefaultLocale(en)
+
+// Readme HTML <-> Markdown
+import { marked } from 'marked'
+import { NodeHtmlMarkdown } from 'node-html-markdown'
+
+const nhm = new NodeHtmlMarkdown(
+  /* options (optional) */ {
+    keepDataImages: true
+  },
+  /* customTransformers (optional) */ undefined,
+  /* customCodeBlockTranslators (optional) */ undefined
+)
 
 export default {
   name: 'PageAdminPipelineTemplateReview',
@@ -230,7 +324,9 @@ export default {
       pipelineTemplateIconPictureToBeDeleted: false,
       pictureImportPanel: false,
       pictureImportPictureFound: false,
-      pictureImportPictureIsPng: false
+      pictureImportPictureIsPng: false,
+      readmeContentHtml: '', // Direct translation from the Markdown, untouched
+      readmeContentEditor: '' // Version edited by the user
     }
   },
   computed: {
@@ -239,10 +335,20 @@ export default {
       return this.pipelineTemplateLoading
     },
     needsSaving () {
+      return (
+        this.pictureNeedsSaving ||
+        this.readmeNeedsSaving
+      )
+    },
+    pictureNeedsSaving () {
       return !!(
         (this.pictureEditorContentPngBase64ExtractedAccepted && this.pictureEditorContentPngBase64ExtractedAccepted.length) ||
         (this.pipelineTemplateIconPictureToBeDeleted === true)
-        // || (...)
+      )
+    },
+    readmeNeedsSaving () {
+      return !!(
+        (this.readmeContentEditor !== this.readmeContentHtml)
       )
     },
     pipelineTemplateName () {
@@ -259,6 +365,18 @@ export default {
         })
       }
       return options
+    },
+    readmeContentEditorAsMarkdown () {
+      if (this.readmeNeedsSaving) {
+        try {
+          const editedReadmeAsMd = nhm.translate(this.readmeContentEditor)
+          return editedReadmeAsMd
+        } catch {
+          // Fails silently
+        }
+      }
+      // Fall back to the loaded data
+      return this.pipelineTemplate.pipelineTemplateReadmeMarkdown
     }
   },
   methods: {
@@ -310,6 +428,7 @@ export default {
         } finally {
           this.discardAcceptedPictureEditorContentPngBase64()
           this.pipelineTemplateIconPictureToBeDeleted = false
+          this.discardEditedReadmeContent()
         }
       }
     },
@@ -336,6 +455,11 @@ export default {
                       : undefined
                   )
             ),
+            pipelineTemplateReadmeMarkdown: (
+              this.readmeNeedsSaving
+                ? this.readmeContentEditorAsMarkdown
+                : undefined
+            ),
             // publisherUid: this.pipelineTemplate.xxx,
             // pipelineTemplateStats: this.pipelineTemplate.xxx,
 
@@ -354,7 +478,7 @@ export default {
     updatePipelineTemplateFailure (payload) {
       // Pop this to the screen (via MainLayout)
       this.$root.$emit('addAndShowErrorToErrorPanel', payload)
-      this.loadPipelineTemplates()
+      this.loadPipelineTemplate()
     },
     extractPictureEditorContentPngBase64 (newValue) {
       // <img src="data:image/png;base64,iVBORw0KGgoAA...Uawz9YIPMfeaw" alt="">
@@ -418,6 +542,18 @@ export default {
     },
     discardIconPictureToBeDeleted () {
       this.pipelineTemplateIconPictureToBeDeleted = false
+    },
+    removeReadme () {
+      this.readmeContentEditor = ''
+    },
+    discardEditedReadmeContent () {
+      try {
+        this.readmeContentHtml = marked.parse(this.pipelineTemplate.pipelineTemplateReadmeMarkdown)
+      } catch (error) {
+        // Fails silently
+      } finally {
+        this.readmeContentEditor = this.readmeContentHtml
+      }
     }
   },
   mounted () {
