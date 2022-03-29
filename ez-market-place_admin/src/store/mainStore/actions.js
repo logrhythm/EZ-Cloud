@@ -388,8 +388,8 @@ export function updatePipelineTemplate ({ state }, payload) {
           publisherUid: payload.publisherUid,
           statusId: (payload.statusId !== null ? payload.statusId : undefined),
           name: payload.name || undefined,
-          readmeMarkdown: payload.pipelineTemplateIconPicture || undefined,
-          iconPicture: payload.pipelineTemplateIconPicture || undefined,
+          readmeMarkdown: payload.pipelineTemplateReadmeMarkdown, // Allowing for NULL to be passed in
+          iconPicture: payload.pipelineTemplateIconPicture, // Allowing for NULL to be passed in
           collectionConfiguration: payload.collectionConfiguration || undefined,
           fieldsMapping: payload.fieldsMapping || undefined,
           stats: payload.pipelineTemplateStats || undefined

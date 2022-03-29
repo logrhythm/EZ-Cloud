@@ -156,6 +156,23 @@
                   Discard
                 </q-btn>
               </div>
+
+              <q-separator vertical v-if="pipelineTemplateIconPictureToBeDeleted" />
+
+              <div v-if="pipelineTemplateIconPictureToBeDeleted" class="column" style="max-height: 300px">
+                <div class="text-h6 text-center text-negative">
+                  To be deleted at next save.
+                </div>
+                <q-space />
+                <q-btn
+                  class="self-end full-width"
+                  color="positive"
+                  icon="undo"
+                  @click="discardIconPictureToBeDeleted()"
+                >
+                  Undo
+                </q-btn>
+              </div>
             </q-card-section>
           </q-card-section>
 
@@ -173,8 +190,8 @@
                 </q-tooltip>
                 <q-menu content-class="bg-negative text-white" anchor="top end" self="top start">
                   <q-list>
-                    <!-- <q-item clickable v-close-popup @click="removePicture()"> -->
-                    <q-item v-close-popup @click="removePicture()" disabled>
+                    <!-- <q-item v-close-popup @click="removePicture()" disabled> -->
+                    <q-item clickable v-close-popup @click="removePicture()">
                       <q-item-section>Confirm</q-item-section>
                     </q-item>
                   </q-list>
@@ -210,6 +227,7 @@ export default {
       pictureEditorContent: '',
       pictureEditorContentPngBase64Extracted: '',
       pictureEditorContentPngBase64ExtractedAccepted: '',
+      pipelineTemplateIconPictureToBeDeleted: false,
       pictureImportPanel: false,
       pictureImportPictureFound: false,
       pictureImportPictureIsPng: false
@@ -222,7 +240,8 @@ export default {
     },
     needsSaving () {
       return !!(
-        (this.pictureEditorContentPngBase64ExtractedAccepted && this.pictureEditorContentPngBase64ExtractedAccepted.length)
+        (this.pictureEditorContentPngBase64ExtractedAccepted && this.pictureEditorContentPngBase64ExtractedAccepted.length) ||
+        (this.pipelineTemplateIconPictureToBeDeleted === true)
         // || (...)
       )
     },
@@ -290,6 +309,7 @@ export default {
           this.pipelineTemplate = {}
         } finally {
           this.discardAcceptedPictureEditorContentPngBase64()
+          this.pipelineTemplateIconPictureToBeDeleted = false
         }
       }
     },
@@ -309,8 +329,12 @@ export default {
             name: this.pipelineTemplate.pipelineTemplateName,
             pipelineTemplateIconPicture: (
               this.pictureEditorContentPngBase64ExtractedAccepted && this.pictureEditorContentPngBase64ExtractedAccepted.length
-                ? this.pictureEditorContentPngBase64ExtractedAccepted
-                : undefined
+                ? this.pictureEditorContentPngBase64ExtractedAccepted // To replace with picture with the selected one
+                : (
+                    this.pipelineTemplateIconPictureToBeDeleted === true
+                      ? null // To remove the Picture
+                      : undefined
+                  )
             ),
             // publisherUid: this.pipelineTemplate.xxx,
             // pipelineTemplateStats: this.pipelineTemplate.xxx,
@@ -383,9 +407,17 @@ export default {
     },
     acceptPictureEditorContentPngBase64 () {
       this.pictureEditorContentPngBase64ExtractedAccepted = this.pictureEditorContentPngBase64Extracted
+      this.discardIconPictureToBeDeleted()
     },
     discardAcceptedPictureEditorContentPngBase64 () {
       this.pictureEditorContentPngBase64ExtractedAccepted = ''
+    },
+    removePicture () {
+      this.pipelineTemplateIconPictureToBeDeleted = true
+      this.discardAcceptedPictureEditorContentPngBase64()
+    },
+    discardIconPictureToBeDeleted () {
+      this.pipelineTemplateIconPictureToBeDeleted = false
     }
   },
   mounted () {
