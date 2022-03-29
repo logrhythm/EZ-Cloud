@@ -23,7 +23,7 @@
   - [ ] Review Pipeline
     - [x] Action bar (with Return to List button/link)
     - [x] Icon/logo/visual
-    - [ ] ReadMe
+    - [x] ReadMe
     - [ ] Collection
       - [ ] Check for sensitive information
     - [ ] Mapping
