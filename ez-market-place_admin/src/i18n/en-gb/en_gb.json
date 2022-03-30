@@ -54,5 +54,16 @@
   "Update Pipeline Template": "Update Pipeline Template",
   "Edit Pipeline Template": "Edit Pipeline Template",
   "Rename Pipeline Template": "Rename Pipeline Template",
-  "Review Pipeline Template": "Review Pipeline Template"
+  "Review Pipeline Template": "Review Pipeline Template",
+  "Downloading Importable Collection Configuration file...": "Downloading Importable Collection Configuration file...",
+  "Importable Collection Configuration file downloaded": "Importable Collection Configuration file downloaded",
+  "Import EZ Cloud Collection Configuration": "Import EZ Cloud Collection Configuration",
+  "Import Configuration": "Import Configuration",
+  "Importing Shared Collection Configuration file...": "Importing Shared Collection Configuration file...",
+  "Importing Shared Fields Mapping file...": "Importing Shared Fields Mapping file...",
+  "Problem while downloading Importable Collection Configuration file:": "Problem while downloading Importable Collection Configuration file:",
+  "Shared Collection Configuration file imported": "Shared Collection Configuration file imported",
+  "Problem while importing Shared Collection Configuration file": "Problem while importing Shared Collection Configuration file",
+  "Shared Fields Mapping file imported": "Shared Fields Mapping file imported",
+  "Problem while importing Shared Fields Mapping file": "Problem while importing Shared Fields Mapping file"
 }

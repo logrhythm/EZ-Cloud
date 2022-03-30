@@ -21,10 +21,16 @@
               <span class="text-bold">pipelineTemplateUid:</span> {{ pipelineTemplateUid }}
             </q-card-section>
             <q-card-section>
+              Raw data:
               <pre>{{ pipelineTemplate }}</pre>
             </q-card-section>
             <q-card-section>
+              Publisher's IdentIcon:
               <Identicon :identity="pipelineTemplate.publisherName" />
+            </q-card-section>
+            <q-card-section>
+              New Stats:
+              <pre>{{ pipelineTemplateStats }}</pre>
             </q-card-section>
           </q-card-section>
         </q-card-section>
@@ -281,12 +287,183 @@
           </q-card-actions>
         </q-card-section>
       </q-card>
+
+      <q-card class="q-pa-md q-mx-none">
+        <q-card-section horizontal>
+          <q-card-section class="col q-ma-none q-pa-none">
+            <q-card-section class="text-h4 row">
+              Options
+              <q-space />
+              <q-icon name="save_as" color="positive" v-if="optionsNeedsSaving">
+                <q-tooltip content-style="font-size: 1rem;">
+                  Needs saving
+                </q-tooltip>
+              </q-icon>
+            </q-card-section>
+
+            <q-card-section>
+              <q-toggle
+                v-if="optionsToBeSaved"
+                v-model="optionsToBeSaved.extractMessageFieldOnly"
+                label="Extract Beat's '.message' only"
+              />
+            </q-card-section>
+
+          </q-card-section>
+
+          <q-separator vertical />
+
+          <q-card-actions vertical class="justify-around q-px-md">
+            <q-btn icon="delete" :loading="dataLoading">
+              <q-tooltip content-style="font-size: 1rem;">
+                Delete Options
+              </q-tooltip>
+              <q-menu content-class="bg-negative text-white" anchor="top end" self="top start">
+                <q-list>
+                  <q-item clickable  v-close-popup @click="removeOptions()" >
+                    <q-item-section>Confirm</q-item-section>
+                  </q-item>
+                </q-list>
+              </q-menu>
+            </q-btn>
+          </q-card-actions>
+        </q-card-section>
+      </q-card>
+
+      <q-card class="q-pa-md q-mx-none">
+        <q-card-section horizontal>
+          <q-card-section class="col q-ma-none q-pa-none">
+            <q-card-section class="text-h4 row">
+              Collection Configuration
+              <q-space />
+              <q-icon name="save_as" color="positive" v-if="collectionConfigurationNeedsSaving">
+                <q-tooltip content-style="font-size: 1rem;">
+                  Needs saving
+                </q-tooltip>
+              </q-icon>
+            </q-card-section>
+
+            <q-card-section>
+              <div class="row">
+                <q-separator vertical size="4px" :color="(collectionConfigurationEditableAsTextIsInvalid ? 'negative' : 'positive')" class="q-mr-sm"/>
+                <div class="col">
+                  <pre
+                    v-if="editCollectionConfiguration"
+                  ><q-input
+                      v-model="collectionConfigurationEditableAsText"
+                      outlined
+                      type="textarea"
+                      debounce="100"
+                      input-style="min-height: 20rem;"
+                    /></pre>
+                </div>
+              </div>
+              <pre v-if="!editCollectionConfiguration">{{ collectionConfigurationToBeSaved }}</pre>
+            </q-card-section>
+          </q-card-section>
+
+          <q-separator vertical />
+
+          <q-card-actions vertical class="justify-around q-px-md">
+            <q-btn icon="edit" color="primary" @click="editCollectionConfiguration = !editCollectionConfiguration">
+                <q-tooltip content-style="font-size: 1rem;">
+                  Edit Collection Configuration
+                </q-tooltip>
+              </q-btn>
+              <q-btn icon="share">
+                <q-tooltip content-style="font-size: 1rem;">
+                  Share and Import Collection Configuration
+                </q-tooltip>
+                <q-menu>
+                  <q-list style="min-width: 400px">
+                    <q-item clickable v-close-popup @click="downloadCollectionAsEZImportableConfigFile()">
+                      <q-item-section avatar top>
+                        <q-avatar icon="share" color="green-10" text-color="white" >
+                          <q-badge color="primary" floating transparent>
+                            <q-icon name="insert_drive_file" color="white" />
+                          </q-badge>
+                        </q-avatar>
+                      </q-item-section>
+
+                      <q-item-section>
+                        <q-item-label lines="1">Share as a Local File</q-item-label>
+                        <q-item-label caption>As an importable EZ Cloud Collection Configuration file</q-item-label>
+                      </q-item-section>
+                    </q-item>
+
+                    <!-- <q-separator /> -->
+
+                    <q-item clickable v-close-popup @click="collectionConfigurationImportFileInput = null ; showCollectionFileImportPopup = true">
+                      <q-item-section avatar top>
+                        <q-avatar icon="input" color="purple-10" text-color="white" >
+                          <q-badge color="primary" floating transparent>
+                            <q-icon name="insert_drive_file" color="white" />
+                          </q-badge>
+                        </q-avatar>
+                      </q-item-section>
+
+                      <q-item-section>
+                        <q-item-label lines="1">Import from Local File</q-item-label>
+                        <q-item-label caption>Import a shared EZ Cloud Collection Configuration file</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-menu>
+              </q-btn>
+              <q-btn icon="delete" :loading="dataLoading">
+                <q-tooltip content-style="font-size: 1rem;">
+                  Delete Collection Configuration
+                </q-tooltip>
+                <q-menu content-class="bg-negative text-white" anchor="top end" self="top start">
+                  <q-list>
+                    <q-item clickable  v-close-popup @click="removeCollectionConfiguration()" >
+                      <q-item-section>Confirm</q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-menu>
+              </q-btn>
+          </q-card-actions>
+        </q-card-section>
+      </q-card>
     </div>
+
+    <q-dialog v-model="showCollectionFileImportPopup" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h6">{{ $t('Import EZ Cloud Collection Configuration') }}</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-file
+            filled
+            bottom-slots
+            v-model="collectionConfigurationImportFileInput"
+            label="Click or Drop a .ezCollection file here"
+            input-style="min-width: 24em;min-height: 14em;"
+            accept=".ezCollection"
+            @rejected="onRejectedCollectionFile"
+          >
+            <template v-slot:append>
+              <q-icon v-if="collectionConfigurationImportFileInput !== null" name="close" @click.stop="collectionConfigurationImportFileInput = null" class="cursor-pointer" />
+              <q-icon name="note_add" @click.stop />
+            </template>
+          </q-file>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right" >
+          <q-btn color="primary" flat :label="$t('Cancel')" v-close-popup />
+          <q-btn color="primary" :label="$t('Import Configuration')" v-close-popup :disabled="collectionConfigurationImportFileInput === null" @click="importCollectionFromEZImportableConfigFile(collectionConfigurationImportFileInput)" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
 <script>
 import { mapState, mapActions } from 'vuex'
+import { exportFile /*, copyToClipboard */ } from 'quasar'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import Identicon from 'components/Publisher/Identicon.vue'
 import IconPicture from 'components/Pipelines/IconPicture.vue'
@@ -308,6 +485,8 @@ const nhm = new NodeHtmlMarkdown(
   /* customCodeBlockTranslators (optional) */ undefined
 )
 
+import deepEqual from 'deep-equal'
+
 export default {
   name: 'PageAdminPipelineTemplateReview',
   mixins: [
@@ -327,7 +506,13 @@ export default {
       pictureImportPictureFound: false,
       pictureImportPictureIsPng: false,
       readmeContentHtml: '', // Direct translation from the Markdown, untouched
-      readmeContentEditor: '' // Version edited by the user
+      readmeContentEditor: '', // Version edited by the user
+      showCollectionFileImportPopup: false, // Governs the display of the Popup to import shared collection config file
+      collectionConfigurationImportFileInput: null, // File to import shared collection config from
+      optionsToBeSaved: null, // Stores edited value of Options
+      collectionConfigurationToBeSaved: null, // Stores edited value of Collection Configuation
+      editCollectionConfiguration: false, // Show the Collection Configuration editor
+      collectionConfigurationEditableAsTextIsInvalid: false
     }
   },
   computed: {
@@ -338,7 +523,9 @@ export default {
     needsSaving () {
       return (
         this.pictureNeedsSaving ||
-        this.readmeNeedsSaving
+        this.readmeNeedsSaving ||
+        this.optionsNeedsSaving ||
+        this.collectionConfigurationNeedsSaving
       )
     },
     pictureNeedsSaving () {
@@ -350,6 +537,22 @@ export default {
     readmeNeedsSaving () {
       return !!(
         (this.readmeContentEditor !== this.readmeContentHtml)
+      )
+    },
+    optionsNeedsSaving () {
+      return !(
+        deepEqual(
+          this.optionsToBeSaved,
+          (this.pipelineTemplate && this.pipelineTemplate.pipelineTemplateCollectionConfiguration ? this.pipelineTemplate.pipelineTemplateCollectionConfiguration.options : undefined)
+        )
+      )
+    },
+    collectionConfigurationNeedsSaving () {
+      return !(
+        deepEqual(
+          this.collectionConfigurationToBeSaved,
+          (this.pipelineTemplate && this.pipelineTemplate.pipelineTemplateCollectionConfiguration ? this.pipelineTemplate.pipelineTemplateCollectionConfiguration.collectionConfig : {})
+        )
       )
     },
     pipelineTemplateName () {
@@ -378,6 +581,26 @@ export default {
       }
       // Fall back to the loaded data
       return this.pipelineTemplate.pipelineTemplateReadmeMarkdown
+    },
+    pipelineTemplateStats () {
+      return {
+        collectionShipper: (this.collectionConfigurationToBeSaved && this.collectionConfigurationToBeSaved.collectionShipper ? this.collectionConfigurationToBeSaved.collectionShipper : undefined),
+        collectionMethod: (this.collectionConfigurationToBeSaved && this.collectionConfigurationToBeSaved.collectionMethod ? this.collectionConfigurationToBeSaved.collectionMethod : undefined)
+      }
+    },
+    collectionConfigurationEditableAsText: {
+      get () {
+        return JSON.stringify(this.collectionConfigurationToBeSaved, undefined, '  ')
+      },
+      set (newValue) {
+        try {
+          this.collectionConfigurationToBeSaved = JSON.parse(newValue)
+          this.collectionConfigurationEditableAsTextIsInvalid = false
+        } catch (error) {
+          this.collectionConfigurationEditableAsTextIsInvalid = true
+          // Fails silently
+        }
+      }
     }
   },
   methods: {
@@ -415,10 +638,29 @@ export default {
           const pipelineTemplate = JSON.parse(JSON.stringify(payload.data.records[0]))
           // Parse the stats (as they are stored as stringified JSON in the database)
           if (pipelineTemplate) {
+            // Stats
             try {
               pipelineTemplate.pipelineTemplateStats = JSON.parse(pipelineTemplate.pipelineTemplateStats) || {}
             } catch (error) {
               pipelineTemplate.pipelineTemplateStats = {}
+            }
+            // Collection config Raw
+            try {
+              pipelineTemplate.pipelineTemplateCollectionConfiguration = JSON.parse(pipelineTemplate.pipelineTemplateCollectionConfiguration) || {}
+            } catch (error) {
+              pipelineTemplate.pipelineTemplateCollectionConfiguration = {}
+            }
+            // Options (they are stored as part of the pipelineTemplateCollectionConfiguration)
+            try {
+              this.optionsToBeSaved = JSON.parse(JSON.stringify(pipelineTemplate.pipelineTemplateCollectionConfiguration.options))
+            } catch (error) {
+              this.optionsToBeSaved = null
+            }
+            // Collection Configuration (they are stored as part of the pipelineTemplateCollectionConfiguration)
+            try {
+              this.collectionConfigurationToBeSaved = JSON.parse(JSON.stringify(pipelineTemplate.pipelineTemplateCollectionConfiguration.collectionConfig))
+            } catch (error) {
+              this.collectionConfigurationToBeSaved = null
             }
           }
           // And assign
@@ -461,8 +703,24 @@ export default {
                 ? this.readmeContentEditorAsMarkdown
                 : undefined
             ),
+            collectionConfiguration: (
+              this.collectionConfigurationNeedsSaving || this.optionsNeedsSaving
+                ? {
+                    options: (
+                      this.optionsNeedsSaving
+                        ? this.optionsToBeSaved
+                        : (this.pipelineTemplate.pipelineTemplateCollectionConfiguration ? this.pipelineTemplate.pipelineTemplateCollectionConfiguration.options : undefined)
+                    ),
+                    collectionConfig: (
+                      this.collectionConfigurationNeedsSaving
+                        ? this.collectionConfigurationToBeSaved
+                        : (this.pipelineTemplate.pipelineTemplateCollectionConfiguration ? this.pipelineTemplate.pipelineTemplateCollectionConfiguration.collectionConfig : undefined)
+                    )
+                  }
+                : undefined
+            ),
             // publisherUid: this.pipelineTemplate.xxx,
-            // pipelineTemplateStats: this.pipelineTemplate.xxx,
+            pipelineTemplateStats: this.pipelineTemplateStats || null,
 
             loadingVariableName: 'pipelineTemplateLoading',
             caller: this,
@@ -555,6 +813,212 @@ export default {
       } finally {
         this.readmeContentEditor = this.readmeContentHtml
       }
+    },
+    downloadCollectionAsEZImportableConfigFile () {
+      // Fallback file extension and Mime type (if not possible to assign a better one based on Shipper)
+      const fileExtension = '.ezCollection'
+      const fileMimeType = 'application/json'
+
+      const fileName = 'input.' + this.pipelineTemplate.pipelineTemplateName + '_' + this.pipelineTemplate.pipelineTemplateUid + fileExtension
+
+      const notificationPopupId = this.$q.notify({
+        icon: 'cloud_download',
+        message: this.$t('Downloading Importable Collection Configuration file...'),
+        caption: fileName,
+        type: 'ongoing'
+      })
+
+      // Push file out
+      const status = exportFile(
+        fileName,
+        JSON.stringify(
+          this.pipelineTemplate &&
+          this.pipelineTemplate.pipelineTemplateCollectionConfiguration
+            ? this.pipelineTemplate.pipelineTemplateCollectionConfiguration.collectionConfig
+            : {}
+        ),
+        fileMimeType
+      )
+
+      if (status === true) {
+        notificationPopupId({
+          type: 'positive',
+          color: 'positive',
+          icon: 'check',
+          message: this.$t('Importable Collection Configuration file downloaded'),
+          caption: fileName
+        })
+      } else {
+        notificationPopupId({
+          type: 'negative',
+          color: 'negative',
+          icon: 'report_problem',
+          message: this.$t('Problem while downloading Importable Collection Configuration file:'),
+          caption: status
+        })
+        console.log('Error: ' + status)
+      }
+    },
+    onRejectedCollectionFile (rejectedEntries) {
+      const badFileName = (
+        rejectedEntries &&
+        Array.isArray(rejectedEntries) &&
+        rejectedEntries[0] &&
+        rejectedEntries[0].file &&
+        rejectedEntries[0].file.name
+          ? rejectedEntries[0].file.name
+          : ''
+      )
+      this.$root.$emit('addAndShowErrorToErrorPanel',
+        {
+          code: 'BadFileExtentionImportCollection',
+          messageForLogAndPopup: `Only .ezCollection files are accepted. You tried to import "${badFileName}".`
+        }
+      )
+    },
+    async importCollectionFromEZImportableConfigFile (filesInput) {
+      let fileName
+
+      if (filesInput == null) {
+        console.log('[importCollectionFromEZImportableConfigFile] - 🟠 - No file selected.')
+      } else {
+        // Deal with multiple or single file(s)
+        if (Array.isArray(filesInput)) {
+          this.$root.$emit('addAndShowErrorToErrorPanel',
+            {
+              code: 'TooManyFilesImportCollection',
+              messageForLogAndPopup: `Only one .ezCollection file is accepted. You tried to import ${filesInput.length} files.`
+            }
+          )
+        } else {
+          // Get the file name
+          fileName = (
+            filesInput &&
+            filesInput.name &&
+            filesInput.name.length
+              ? filesInput.name
+              : undefined
+          )
+
+          const notificationPopupId = this.$q.notify({
+            icon: 'cloud_download',
+            message: this.$t('Importing Shared Collection Configuration file...'),
+            caption: fileName,
+            type: 'ongoing'
+          })
+
+          let thereWasAnError = false
+
+          try {
+            // Read the Import file
+            const fileContent = await filesInput.text()
+
+            // Parse it out and import
+            let parsedFileContent = {}
+            try {
+              // Parse
+              parsedFileContent = JSON.parse(fileContent)
+
+              // Extract Shipper and Method
+              const collectionShipper = (
+                parsedFileContent &&
+                parsedFileContent.collectionShipper &&
+                parsedFileContent.collectionShipper.length
+                  ? parsedFileContent.collectionShipper
+                  : null
+              )
+              // eslint-disable-next-line no-unused-vars
+              const collectionMethod = (
+                parsedFileContent &&
+                parsedFileContent.collectionMethod &&
+                parsedFileContent.collectionMethod.length
+                  ? parsedFileContent.collectionMethod
+                  : null
+              )
+
+              // Replace Pipeline identifiers
+
+              // Beat: filebeat
+              if (collectionShipper === 'filebeat') {
+                // Ensure we have the .fields branch
+                parsedFileContent.fields = parsedFileContent.fields || {}
+
+                parsedFileContent.fields.stream_id = this.pipelineTemplate.pipelineTemplateUid
+                parsedFileContent.fields.stream_name = this.pipelineTemplate.pipelineTemplateName
+              }
+              // Beat: jsBeat
+              if (collectionShipper === 'jsBeat') {
+                // Ensure we have the .fields branch
+                parsedFileContent.filterHelpers = parsedFileContent.filterHelpers || {}
+
+                parsedFileContent.filterHelpers.stream_id = this.pipelineTemplate.pipelineTemplateUid
+                parsedFileContent.filterHelpers.stream_name = this.pipelineTemplate.pipelineTemplateName
+                parsedFileContent.uid = this.pipelineTemplate.pipelineTemplateUid
+                parsedFileContent.name = this.pipelineTemplate.pipelineTemplateName
+              }
+
+              // LogRhythm Beats
+              if (
+                [
+                  'genericbeat',
+                  'webhookbeat'
+                ].includes(collectionShipper)
+              ) {
+                parsedFileContent.beatIdentifier = String(this.pipelineTemplate.pipelineTemplateUid.substring(0, 3) + '_' + this.pipelineTemplate.pipelineTemplateName.replace(/[^a-zA-Z0-9]/g, '_') + '_' + this.pipelineTemplate.pipelineTemplateUid).substring(0, 12)
+                parsedFileContent.logsource_name = this.pipelineTemplate.pipelineTemplateName
+              }
+
+              // Update Pipeline Template to be saved
+              try {
+                this.collectionConfigurationToBeSaved = JSON.parse(JSON.stringify(parsedFileContent))
+              } catch (error) {
+                this.collectionConfigurationToBeSaved = null
+              }
+
+              notificationPopupId({
+                type: 'positive',
+                color: 'positive',
+                icon: 'check',
+                message: this.$t('Shared Collection Configuration file imported'),
+                caption: fileName
+              })
+            } catch (error) {
+              thereWasAnError = true
+              this.$root.$emit('addAndShowErrorToErrorPanel',
+                {
+                  code: 'CantParseFileImportCollection',
+                  messageForLogAndPopup: `Error trying to parse the content of ${filesInput.length} file. Error: ${error.message}`
+                }
+              )
+            }
+          } catch (error) {
+            thereWasAnError = true
+            this.$root.$emit('addAndShowErrorToErrorPanel',
+              {
+                code: 'CantReadFileImportCollection',
+                messageForLogAndPopup: `Error trying to open ${filesInput.length} file. Error: ${error.message}`
+              }
+            )
+          }
+
+          if (thereWasAnError) {
+            notificationPopupId({
+              type: 'negative',
+              color: 'negative',
+              icon: 'report_problem',
+              message: this.$t('Problem while importing Shared Collection Configuration file'),
+              caption: fileName
+            })
+            console.log('Error: Problem while importing Shared Collection Configuration file')
+          }
+        }
+      }
+    },
+    removeOptions () {
+      this.optionsToBeSaved = null
+    },
+    removeCollectionConfiguration () {
+      this.collectionConfigurationToBeSaved = null
     }
   },
   mounted () {

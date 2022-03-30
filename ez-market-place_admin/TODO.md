@@ -24,7 +24,9 @@
     - [x] Action bar (with Return to List button/link)
     - [x] Icon/logo/visual
     - [x] ReadMe
-    - [ ] Collection
+    - [x] Options
+      - [x] Extract Beat's '.message' only
+    - [x] Collection
       - [ ] Check for sensitive information
     - [ ] Mapping
       - [ ] Check for sensitive information
