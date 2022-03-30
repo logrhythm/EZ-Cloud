@@ -224,6 +224,7 @@
               <q-editor
                 v-model="readmeContentEditor"
                 min-height="20rem"
+                max-height="calc(100vh - 15rem)"
                 :dense="$q.screen.lt.md"
                 :toolbar="[
                   ['bold', 'italic', 'strike'],
