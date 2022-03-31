@@ -28,8 +28,12 @@
       - [x] Extract Beat's '.message' only
     - [x] Collection
       - [ ] Check for sensitive information
+        - [x] Basic
+        - [ ] Better UI
     - [ ] Mapping
       - [ ] Check for sensitive information
+        - [ ] Basic
+        - [ ] Better UI
   - [x] Add Pipeline
   - [ ] Modify Pipeline
     - [x] Name
