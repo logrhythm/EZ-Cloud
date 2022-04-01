@@ -26,6 +26,9 @@
     - [x] ReadMe
     - [x] Options
       - [x] Extract Beat's '.message' only
+    - [x] Stats
+      - [x] Automatically calculate and update
+      - [ ] ~~Manual update~~ (👈 Deferred)
     - [x] Collection
       - [ ] Check for sensitive information
         - [x] Basic
@@ -38,11 +41,11 @@
   - [ ] Modify Pipeline
     - [x] Name
     - [x] Publisher
-    - [ ] Collection
+    - [x] Collection
     - [ ] Mapping
     - [x] Icon/logo/visual
     - [x] ReadMe
-    - [ ] Stats
+    - [x] Stats
     - [x] Status / Visibility
   - [x] Delete Pipeline
   - [ ] Sends Message/Notification to Pipeline's Publisher
