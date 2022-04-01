@@ -12,6 +12,8 @@ const filterTemplate = `# -------------------------------------------
 def is_matching:
     (."@metadata".beat | ascii_downcase == ("{{EZ_beat_name_placeholder}}" | ascii_downcase))
     and
+    (.heartbeat == null)
+    and
     (
       ."@metadata".fields.stream_id == "{{EZ_stream_id_placeholder}}"
       or
