@@ -288,48 +288,6 @@
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
             <q-card-section class="text-h4 row">
-              Options
-              <q-space />
-              <q-icon name="save_as" color="positive" v-if="optionsNeedsSaving">
-                <q-tooltip content-style="font-size: 1rem;">
-                  Needs saving
-                </q-tooltip>
-              </q-icon>
-            </q-card-section>
-
-            <q-card-section>
-              <q-toggle
-                v-if="optionsToBeSaved"
-                v-model="optionsToBeSaved.extractMessageFieldOnly"
-                label="Extract Beat's '.message' only"
-              />
-            </q-card-section>
-
-          </q-card-section>
-
-          <q-separator vertical />
-
-          <q-card-actions vertical class="justify-around q-px-md">
-            <q-btn icon="delete" :loading="dataLoading">
-              <q-tooltip content-style="font-size: 1rem;">
-                Delete Options
-              </q-tooltip>
-              <q-menu content-class="bg-negative text-white" anchor="top end" self="top start">
-                <q-list>
-                  <q-item clickable  v-close-popup @click="removeOptions()" >
-                    <q-item-section>Confirm</q-item-section>
-                  </q-item>
-                </q-list>
-              </q-menu>
-            </q-btn>
-          </q-card-actions>
-        </q-card-section>
-      </q-card>
-
-      <q-card class="q-pa-md q-mx-none">
-        <q-card-section horizontal>
-          <q-card-section class="col q-ma-none q-pa-none">
-            <q-card-section class="text-h4 row">
               Collection Configuration
               <q-space />
               <q-icon name="save_as" color="positive" v-if="collectionConfigurationNeedsSaving">
@@ -421,6 +379,49 @@
           </q-card-actions>
         </q-card-section>
       </q-card>
+
+      <q-card class="q-pa-md q-mx-none">
+        <q-card-section horizontal>
+          <q-card-section class="col q-ma-none q-pa-none">
+            <q-card-section class="text-h4 row">
+              Options
+              <q-space />
+              <q-icon name="save_as" color="positive" v-if="optionsNeedsSaving">
+                <q-tooltip content-style="font-size: 1rem;">
+                  Needs saving
+                </q-tooltip>
+              </q-icon>
+            </q-card-section>
+
+            <q-card-section>
+              <q-toggle
+                v-if="optionsToBeSaved"
+                v-model="optionsToBeSaved.extractMessageFieldOnly"
+                label="Extract Beat's '.message' only"
+              />
+            </q-card-section>
+
+          </q-card-section>
+
+          <q-separator vertical />
+
+          <q-card-actions vertical class="justify-around q-px-md">
+            <q-btn icon="delete" :loading="dataLoading">
+              <q-tooltip content-style="font-size: 1rem;">
+                Delete Options
+              </q-tooltip>
+              <q-menu content-class="bg-negative text-white" anchor="top end" self="top start">
+                <q-list>
+                  <q-item clickable  v-close-popup @click="removeOptions()" >
+                    <q-item-section>Confirm</q-item-section>
+                  </q-item>
+                </q-list>
+              </q-menu>
+            </q-btn>
+          </q-card-actions>
+        </q-card-section>
+      </q-card>
+
       <q-card class="q-pa-md q-mx-none">
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
@@ -521,7 +522,8 @@ export default {
       optionsToBeSaved: null, // Stores edited value of Options
       collectionConfigurationToBeSaved: null, // Stores edited value of Collection Configuation
       editCollectionConfiguration: false, // Show the Collection Configuration editor
-      collectionConfigurationEditableAsTextIsInvalid: false
+      collectionConfigurationEditableAsTextIsInvalid: false,
+      fieldsMappingToBeSaved: null // Stores edited value of Fields Mapping
     }
   },
   computed: {
@@ -561,6 +563,14 @@ export default {
         deepEqual(
           this.collectionConfigurationToBeSaved,
           (this.pipelineTemplate && this.pipelineTemplate.pipelineTemplateCollectionConfiguration ? this.pipelineTemplate.pipelineTemplateCollectionConfiguration.collectionConfig : {})
+        )
+      )
+    },
+    fieldsMappingNeedsSaving () {
+      return !(
+        deepEqual(
+          this.fieldsMappingToBeSaved,
+          (this.pipelineTemplate && this.pipelineTemplate.pipelineTemplateMappingConfiguration ? this.pipelineTemplate.pipelineTemplateMappingConfiguration.fieldsMapping : {})
         )
       )
     },
@@ -653,23 +663,37 @@ export default {
             } catch (error) {
               pipelineTemplate.pipelineTemplateStats = {}
             }
+
             // Collection config Raw
             try {
               pipelineTemplate.pipelineTemplateCollectionConfiguration = JSON.parse(pipelineTemplate.pipelineTemplateCollectionConfiguration) || {}
             } catch (error) {
               pipelineTemplate.pipelineTemplateCollectionConfiguration = {}
             }
-            // Options (they are stored as part of the pipelineTemplateCollectionConfiguration)
-            try {
-              this.optionsToBeSaved = JSON.parse(JSON.stringify(pipelineTemplate.pipelineTemplateCollectionConfiguration.options))
-            } catch (error) {
-              this.optionsToBeSaved = null
-            }
             // Collection Configuration (they are stored as part of the pipelineTemplateCollectionConfiguration)
             try {
               this.collectionConfigurationToBeSaved = JSON.parse(JSON.stringify(pipelineTemplate.pipelineTemplateCollectionConfiguration.collectionConfig))
             } catch (error) {
               this.collectionConfigurationToBeSaved = null
+            }
+
+            // Field Mapping Raw
+            try {
+              pipelineTemplate.pipelineTemplateMappingConfiguration = JSON.parse(pipelineTemplate.pipelineTemplateMappingConfiguration) || {}
+            } catch (error) {
+              pipelineTemplate.pipelineTemplateMappingConfiguration = {}
+            }
+            // Options (they are stored as part of the pipelineTemplateMappingConfiguration)
+            try {
+              this.optionsToBeSaved = JSON.parse(JSON.stringify(pipelineTemplate.pipelineTemplateMappingConfiguration.options))
+            } catch (error) {
+              this.optionsToBeSaved = null
+            }
+            // Field Mapping (they are stored as part of the pipelineTemplateMappingConfiguration)
+            try {
+              this.fieldsMappingToBeSaved = JSON.parse(JSON.stringify(pipelineTemplate.pipelineTemplateMappingConfiguration.fieldsMapping))
+            } catch (error) {
+              this.fieldsMappingToBeSaved = null
             }
           }
           // And assign
@@ -713,17 +737,28 @@ export default {
                 : undefined
             ),
             collectionConfiguration: (
+              this.collectionConfigurationNeedsSaving
+                ? {
+                    collectionConfig: (
+                      this.collectionConfigurationNeedsSaving
+                        ? this.collectionConfigurationToBeSaved
+                        : (this.pipelineTemplate.pipelineTemplateCollectionConfiguration ? this.pipelineTemplate.pipelineTemplateCollectionConfiguration.collectionConfig : undefined)
+                    )
+                  }
+                : undefined
+            ),
+            fieldsMapping: (
               this.collectionConfigurationNeedsSaving || this.optionsNeedsSaving
                 ? {
                     options: (
                       this.optionsNeedsSaving
                         ? this.optionsToBeSaved
-                        : (this.pipelineTemplate.pipelineTemplateCollectionConfiguration ? this.pipelineTemplate.pipelineTemplateCollectionConfiguration.options : undefined)
+                        : (this.pipelineTemplate.pipelineTemplateMappingConfiguration ? this.pipelineTemplate.pipelineTemplateMappingConfiguration.options : undefined)
                     ),
-                    collectionConfig: (
-                      this.collectionConfigurationNeedsSaving
+                    fieldsMapping: (
+                      this.fieldsMappingNeedsSaving
                         ? this.collectionConfigurationToBeSaved
-                        : (this.pipelineTemplate.pipelineTemplateCollectionConfiguration ? this.pipelineTemplate.pipelineTemplateCollectionConfiguration.collectionConfig : undefined)
+                        : (this.pipelineTemplate.pipelineTemplateMappingConfiguration ? this.pipelineTemplate.pipelineTemplateMappingConfiguration.fieldsMapping : undefined)
                     )
                   }
                 : undefined
