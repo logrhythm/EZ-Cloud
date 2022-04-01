@@ -33,16 +33,16 @@
       - [ ] Check for sensitive information
         - [x] Basic
         - [ ] Better UI
-    - [ ] Mapping
-      - [ ] Check for sensitive information
-        - [ ] Basic
+    - [x] Mapping
+      - [x] Check for sensitive information
+        - [x] Basic
         - [ ] Better UI
   - [x] Add Pipeline
-  - [ ] Modify Pipeline
+  - [x] Modify Pipeline
     - [x] Name
     - [x] Publisher
     - [x] Collection
-    - [ ] Mapping
+    - [x] Mapping
     - [x] Icon/logo/visual
     - [x] ReadMe
     - [x] Stats

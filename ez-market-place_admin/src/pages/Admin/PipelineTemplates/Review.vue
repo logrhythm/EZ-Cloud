@@ -425,6 +425,150 @@
       <q-card class="q-pa-md q-mx-none">
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
+            <q-card-section class="text-h4 row">
+              Fields Mapping
+              <q-space />
+              <q-icon name="save_as" color="positive" v-if="fieldsMappingNeedsSaving">
+                <q-tooltip content-style="font-size: 1rem;">
+                  Needs saving
+                </q-tooltip>
+              </q-icon>
+            </q-card-section>
+
+            <q-card-section>
+              <div class="row">
+                <q-separator vertical size="4px" :color="(fieldsMappingEditableAsTextIsInvalid ? 'negative' : 'positive')" class="q-mr-sm"/>
+                <div class="col">
+                  <pre
+                    v-if="editFieldsMapping"
+                  ><q-input
+                      v-model="fieldsMappingEditableAsText"
+                      outlined
+                      type="textarea"
+                      debounce="100"
+                      input-style="min-height: 20rem; height: calc(100vh - 15rem);"
+                    /></pre>
+                </div>
+              </div>
+              <q-scroll-area
+                style="height: calc(100vh - 15rem);"
+                v-if="!editFieldsMapping"
+              >
+                <pre>{{ fieldsMappingToBeSaved }}</pre>
+              </q-scroll-area>
+            </q-card-section>
+          </q-card-section>
+
+          <q-separator vertical />
+
+          <q-card-actions vertical class="justify-around q-px-md">
+            <q-btn icon="edit" color="primary" @click="editFieldsMapping = !editFieldsMapping">
+                <q-tooltip content-style="font-size: 1rem;">
+                  Edit Fields Mapping
+                </q-tooltip>
+              </q-btn>
+              <q-btn icon="share">
+                <q-tooltip content-style="font-size: 1rem;">
+                  Share and Import Mapping
+                </q-tooltip>
+                <q-menu content-style="min-width: 420px">
+                  <q-list style="min-width: 400px">
+                    <q-item-label header>Sanitisation</q-item-label>
+                    <q-item tag="label" v-ripple>
+                      <q-item-section>
+                        <q-item-label>Share Field Frequencies</q-item-label>
+                        <q-item-label caption>Include the frequency statistics for each field</q-item-label>
+                      </q-item-section>
+                      <q-item-section avatar>
+                        <q-toggle v-model="shareFieldFrequencies" />
+                      </q-item-section>
+                    </q-item>
+
+                    <q-item tag="label" v-ripple>
+                      <q-item-section>
+                        <q-item-label>Share Field Values</q-item-label>
+                        <q-item-label caption>Include all the observed values for each field</q-item-label>
+                        <q-item-label caption class="text-bold text-italic"><q-icon name="warning" class="q-ma-none q-mr-xs" color="orange" />This could lead to sharing sensitive information</q-item-label>
+                      </q-item-section>
+                      <q-item-section avatar>
+                        <q-toggle color="orange" v-model="shareFieldValues" />
+                      </q-item-section>
+                    </q-item>
+
+                    <q-item tag="label" v-ripple>
+                      <q-item-section>
+                        <q-item-label>Share Field SIEM Mapping</q-item-label>
+                        <q-item-label caption>Include the SIEM tags mapping for each field</q-item-label>
+                      </q-item-section>
+                      <q-item-section avatar>
+                        <q-toggle v-model="shareFieldMapping" />
+                      </q-item-section>
+                    </q-item>
+
+                    <q-item tag="label" v-ripple>
+                      <q-item-section>
+                        <q-item-label>Share Field Modifiers</q-item-label>
+                        <q-item-label caption>Include the modifiers for each field</q-item-label>
+                      </q-item-section>
+                      <q-item-section avatar>
+                        <q-toggle v-model="shareFieldModifiers" />
+                      </q-item-section>
+                    </q-item>
+
+                    <q-separator />
+
+                    <q-item clickable v-close-popup @click="downloadMappingAsEZImportableConfigFile()">
+                      <q-item-section avatar top>
+                        <q-avatar icon="share" color="green-10" text-color="white" >
+                          <q-badge color="primary" floating transparent>
+                            <q-icon name="insert_drive_file" color="white" />
+                          </q-badge>
+                        </q-avatar>
+                      </q-item-section>
+
+                      <q-item-section>
+                        <q-item-label lines="1">Share as a Local File</q-item-label>
+                        <q-item-label caption>As an importable EZ Cloud Mapping file</q-item-label>
+                      </q-item-section>
+                    </q-item>
+
+                    <q-item clickable v-close-popup @click="collectionConfigurationImportFileInput = null ; showMappingFileImportPopup = true">
+                      <q-item-section avatar top>
+                        <q-avatar icon="input" color="purple-10" text-color="white" >
+                          <q-badge color="primary" floating transparent>
+                            <q-icon name="insert_drive_file" color="white" />
+                          </q-badge>
+                        </q-avatar>
+                      </q-item-section>
+
+                      <q-item-section>
+                        <q-item-label lines="1">Import from Local File</q-item-label>
+                        <q-item-label caption>Import a shared EZ Cloud Mapping file</q-item-label>
+                      </q-item-section>
+                    </q-item>
+
+                  </q-list>
+                </q-menu>
+              </q-btn>
+              <q-btn icon="delete" :loading="dataLoading">
+                <q-tooltip content-style="font-size: 1rem;">
+                  Delete Fields Mapping
+                </q-tooltip>
+                <q-menu content-class="bg-negative text-white" anchor="top end" self="top start">
+                  <q-list>
+                    <q-item clickable  v-close-popup @click="removeFieldsMapping()" >
+                      <q-item-section>Confirm</q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-menu>
+              </q-btn>
+          </q-card-actions>
+        </q-card-section>
+      </q-card>
+
+      <q-card class="q-pa-md q-mx-none">
+        <q-card-section horizontal>
+          <q-card-section class="col q-ma-none q-pa-none">
             <q-card-section class="text-h4">
                 Raw data
             </q-card-section>
@@ -522,8 +666,14 @@ export default {
       optionsToBeSaved: null, // Stores edited value of Options
       collectionConfigurationToBeSaved: null, // Stores edited value of Collection Configuation
       editCollectionConfiguration: false, // Show the Collection Configuration editor
-      collectionConfigurationEditableAsTextIsInvalid: false,
-      fieldsMappingToBeSaved: null // Stores edited value of Fields Mapping
+      collectionConfigurationEditableAsTextIsInvalid: false, // Flag invalid JSON format for the editable Collection Configuration
+      fieldsMappingToBeSaved: null, // Stores edited value of Fields Mapping
+      editFieldsMapping: false, // Show the Fields Mapping editor
+      fieldsMappingEditableAsTextIsInvalid: false, // Flag invalid JSON format for the editable Fields Mapping
+      shareFieldFrequencies: true, // Include field frequencies when sharing?
+      shareFieldValues: false, // Include field values when sharing? Default FALSE as risk of sharing sensitive info
+      shareFieldMapping: true, // Include field SIEM tags mapping when sharing?
+      shareFieldModifiers: true // Include field modifiers when sharing?
     }
   },
   computed: {
@@ -536,7 +686,8 @@ export default {
         this.pictureNeedsSaving ||
         this.readmeNeedsSaving ||
         this.optionsNeedsSaving ||
-        this.collectionConfigurationNeedsSaving
+        this.collectionConfigurationNeedsSaving ||
+        this.fieldsMappingNeedsSaving
       )
     },
     pictureNeedsSaving () {
@@ -554,7 +705,7 @@ export default {
       return !(
         deepEqual(
           this.optionsToBeSaved,
-          (this.pipelineTemplate && this.pipelineTemplate.pipelineTemplateCollectionConfiguration ? this.pipelineTemplate.pipelineTemplateCollectionConfiguration.options : undefined)
+          (this.pipelineTemplate && this.pipelineTemplate.pipelineTemplateMappingConfiguration ? this.pipelineTemplate.pipelineTemplateMappingConfiguration.options : undefined)
         )
       )
     },
@@ -617,6 +768,20 @@ export default {
           this.collectionConfigurationEditableAsTextIsInvalid = false
         } catch (error) {
           this.collectionConfigurationEditableAsTextIsInvalid = true
+          // Fails silently
+        }
+      }
+    },
+    fieldsMappingEditableAsText: {
+      get () {
+        return JSON.stringify(this.fieldsMappingToBeSaved, undefined, '  ')
+      },
+      set (newValue) {
+        try {
+          this.fieldsMappingToBeSaved = JSON.parse(newValue)
+          this.fieldsMappingEditableAsTextIsInvalid = false
+        } catch (error) {
+          this.fieldsMappingEditableAsTextIsInvalid = true
           // Fails silently
         }
       }
@@ -748,7 +913,7 @@ export default {
                 : undefined
             ),
             fieldsMapping: (
-              this.collectionConfigurationNeedsSaving || this.optionsNeedsSaving
+              this.fieldsMappingNeedsSaving || this.optionsNeedsSaving
                 ? {
                     options: (
                       this.optionsNeedsSaving
@@ -757,7 +922,7 @@ export default {
                     ),
                     fieldsMapping: (
                       this.fieldsMappingNeedsSaving
-                        ? this.collectionConfigurationToBeSaved
+                        ? this.fieldsMappingToBeSaved
                         : (this.pipelineTemplate.pipelineTemplateMappingConfiguration ? this.pipelineTemplate.pipelineTemplateMappingConfiguration.fieldsMapping : undefined)
                     )
                   }
@@ -1063,6 +1228,166 @@ export default {
     },
     removeCollectionConfiguration () {
       this.collectionConfigurationToBeSaved = null
+    },
+    downloadMappingAsEZImportableConfigFile () {
+      // Fallback file extension and Mime type (if not possible to assign a better one based on Shipper)
+      const fileExtension = '.ezFieldsMapping'
+      const fileMimeType = 'application/json'
+
+      const fileName = 'input.' + this.pipelineTemplate.pipelineTemplateName + '_' + this.pipelineTemplate.pipelineTemplateUid + fileExtension
+
+      const notificationPopupId = this.$q.notify({
+        icon: 'cloud_download',
+        message: this.$t('Downloading Importable Fields Mapping file...'),
+        caption: fileName,
+        type: 'ongoing'
+      })
+
+      // Sanitise the Mapping before export
+      const sanitisedFieldsMapping = JSON.parse(
+        JSON.stringify(
+          this.pipelineTemplate &&
+          this.pipelineTemplate.pipelineTemplateMappingConfiguration
+            ? this.pipelineTemplate.pipelineTemplateMappingConfiguration.fieldsMapping
+            : {}
+        )
+      )
+      if (
+        this.shareFieldFrequencies !== true ||
+        this.shareFieldValues !== true ||
+        this.shareFieldMapping !== true ||
+        this.shareFieldModifiers !== true
+      ) {
+        sanitisedFieldsMapping.forEach(fieldMapping => {
+          fieldMapping.seenInLogCount = (this.shareFieldFrequencies !== true ? 1 : fieldMapping.seenInLogCount)
+          fieldMapping.values = (this.shareFieldValues !== true ? [] : fieldMapping.values)
+          fieldMapping.mappedField = (this.shareFieldMapping !== true ? undefined : fieldMapping.mappedField)
+          fieldMapping.modifiers = (this.shareFieldModifiers !== true ? undefined : fieldMapping.modifiers)
+        })
+      }
+
+      // Add the relevant Options
+      const sanitisedFieldsMappingWithOptions = {
+        options: {
+          extractMessageFieldOnly: (this.optionsToBeSaved ? this.optionsToBeSaved.extractMessageFieldOnly : undefined)
+        },
+        fieldsMapping: sanitisedFieldsMapping
+      }
+
+      // Push file out
+      const status = exportFile(fileName, JSON.stringify(sanitisedFieldsMappingWithOptions), fileMimeType)
+
+      if (status === true) {
+        notificationPopupId({
+          type: 'positive',
+          color: 'positive',
+          icon: 'check',
+          message: this.$t('Importable Fields Mapping file downloaded'),
+          caption: fileName
+        })
+      } else {
+        notificationPopupId({
+          type: 'negative',
+          color: 'negative',
+          icon: 'report_problem',
+          message: this.$t('Problem while downloading Importable Fields Mapping file:'),
+          caption: status
+        })
+        console.log('Error: ' + status)
+      }
+    },
+    async importMappingFromEZImportableConfigFile (filesInput) {
+      let fileName
+
+      if (filesInput == null) {
+        console.log('[importMappingFromEZImportableConfigFile] - 🟠 - No file selected.')
+      } else {
+        // Deal with multiple or single file(s)
+        if (Array.isArray(filesInput)) {
+          this.$root.$emit('addAndShowErrorToErrorPanel',
+            {
+              code: 'TooManyFilesImportMapping',
+              messageForLogAndPopup: `Only one .ezFieldsMapping file is accepted. You tried to import ${filesInput.length} files.`
+            }
+          )
+        } else {
+          // Get the file name
+          fileName = (
+            filesInput &&
+            filesInput.name &&
+            filesInput.name.length
+              ? filesInput.name
+              : undefined
+          )
+
+          const notificationPopupId = this.$q.notify({
+            icon: 'cloud_download',
+            message: this.$t('Importing Shared Fields Mapping file...'),
+            caption: fileName,
+            type: 'ongoing'
+          })
+
+          let thereWasAnError = false
+
+          try {
+            // Read the Import file
+            const fileContent = await filesInput.text()
+
+            // Parse it out and import
+            let parsedFileContent = {}
+            try {
+              // Parse
+              parsedFileContent = JSON.parse(fileContent)
+
+              // Update Pipeline Template
+              // this.pipelineTemplate.pipelineTemplateCollectionConfiguration.pipelineTemplateMappingConfiguration = parsedFileContent.fieldsMapping || null
+              try {
+                this.fieldsMappingToBeSaved = JSON.parse(JSON.stringify(parsedFileContent.fieldsMapping || null))
+              } catch (error) {
+                this.fieldsMappingToBeSaved = null
+              }
+              // Update Pipeline Template to be saved
+              notificationPopupId({
+                type: 'positive',
+                color: 'positive',
+                icon: 'check',
+                message: this.$t('Shared Fields Mapping file imported'),
+                caption: fileName
+              })
+            } catch (error) {
+              thereWasAnError = true
+              this.$root.$emit('addAndShowErrorToErrorPanel',
+                {
+                  code: 'CantParseFileImportMapping',
+                  messageForLogAndPopup: `Error trying to parse the content of ${filesInput.length} file. Error: ${error.message}`
+                }
+              )
+            }
+          } catch (error) {
+            thereWasAnError = true
+            this.$root.$emit('addAndShowErrorToErrorPanel',
+              {
+                code: 'CantReadFileImportMapping',
+                messageForLogAndPopup: `Error trying to open ${filesInput.length} file. Error: ${error.message}`
+              }
+            )
+          }
+
+          if (thereWasAnError) {
+            notificationPopupId({
+              type: 'negative',
+              color: 'negative',
+              icon: 'report_problem',
+              message: this.$t('Problem while importing Shared Fields Mapping file'),
+              caption: fileName
+            })
+            console.log('Error: Problem while importing Shared Fields Mapping file')
+          }
+        }
+      }
+    },
+    removeFieldsMapping () {
+      this.fieldsMappingToBeSaved = null
     }
   },
   mounted () {
