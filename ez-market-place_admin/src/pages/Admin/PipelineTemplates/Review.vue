@@ -532,7 +532,7 @@
                       </q-item-section>
                     </q-item>
 
-                    <q-item clickable v-close-popup @click="collectionConfigurationImportFileInput = null ; showMappingFileImportPopup = true">
+                    <q-item clickable v-close-popup @click="fieldsMappingImportFileInput = null ; showFieldsMappingFileImportPopup = true">
                       <q-item-section avatar top>
                         <q-avatar icon="input" color="purple-10" text-color="white" >
                           <q-badge color="primary" floating transparent>
@@ -619,6 +619,38 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <q-dialog v-model="showFieldsMappingFileImportPopup" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h6">{{ $t('Import EZ Cloud Fields Mapping') }}</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-file
+            filled
+            bottom-slots
+            v-model="fieldsMappingImportFileInput"
+            label="Click or Drop a .ezFieldsMapping file here"
+            input-style="min-width: 24em;min-height: 14em;"
+            accept=".ezFieldsMapping"
+            @rejected="onRejectedFieldsMappingFile"
+          >
+            <template v-slot:append>
+              <q-icon v-if="fieldsMappingImportFileInput !== null" name="close" @click.stop="fieldsMappingImportFileInput = null" class="cursor-pointer" />
+              <q-icon name="note_add" @click.stop />
+            </template>
+          </q-file>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right" >
+          <q-btn color="primary" flat :label="$t('Cancel')" v-close-popup />
+          <q-btn color="primary" :label="$t('Import Fields Mapping')" v-close-popup :disabled="fieldsMappingImportFileInput === null" @click="importMappingFromEZImportableConfigFile(fieldsMappingImportFileInput)" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -680,7 +712,9 @@ export default {
       shareFieldFrequencies: true, // Include field frequencies when sharing?
       shareFieldValues: false, // Include field values when sharing? Default FALSE as risk of sharing sensitive info
       shareFieldMapping: true, // Include field SIEM tags mapping when sharing?
-      shareFieldModifiers: true // Include field modifiers when sharing?
+      shareFieldModifiers: true, // Include field modifiers when sharing?
+      fieldsMappingImportFileInput: null, // File to import shared fields mapping from
+      showFieldsMappingFileImportPopup: false // Governs the display of the Popup to import shared fields mapping file
     }
   },
   computed: {
@@ -1302,6 +1336,23 @@ export default {
         })
         console.log('Error: ' + status)
       }
+    },
+    onRejectedFieldsMappingFile (rejectedEntries) {
+      const badFileName = (
+        rejectedEntries &&
+        Array.isArray(rejectedEntries) &&
+        rejectedEntries[0] &&
+        rejectedEntries[0].file &&
+        rejectedEntries[0].file.name
+          ? rejectedEntries[0].file.name
+          : ''
+      )
+      this.$root.$emit('addAndShowErrorToErrorPanel',
+        {
+          code: 'BadFileExtentionImportMapping',
+          messageForLogAndPopup: `Only .ezFieldsMapping files are accepted. You tried to import "${badFileName}".`
+        }
+      )
     },
     async importMappingFromEZImportableConfigFile (filesInput) {
       let fileName

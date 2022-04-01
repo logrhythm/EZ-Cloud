@@ -66,5 +66,7 @@
   "Problem while importing Shared Collection Configuration file": "Problem while importing Shared Collection Configuration file",
   "Shared Fields Mapping file imported": "Shared Fields Mapping file imported",
   "Problem while importing Shared Fields Mapping file": "Problem while importing Shared Fields Mapping file",
-  "Downloading Importable Fields Mapping file...": "Downloading Importable Fields Mapping file..."
+  "Downloading Importable Fields Mapping file...": "Downloading Importable Fields Mapping file...",
+  "Import EZ Cloud Fields Mapping": "Import EZ Cloud Fields Mapping",
+  "Import Fields Mapping": "Import Fields Mapping"
 }
