@@ -17,6 +17,17 @@
             <q-card-section class="text-h4">
                 Properties
             </q-card-section>
+            <!--
+              pipelineTemplateUid": "b340e6a6-d63e-4358-aa3c-6103ab1eb8f0",
+              "statusId": 2,
+              "statusName": "Failed Review",
+              "statusDescription": "The item has been reviewed negatively",
+              "pipelineTemplateCreatedOn": "2022-02-04T15:53:40.000Z",
+              "pipelineTemplateModifiedOn": "2022-04-01T23:06:45.000Z",
+              "publisherUid": "e5b8cc39-ae9d-4f1c-aa57-7a0950f4a3b1",
+              "publisherName": "Biloute",
+              "pipelineTemplateName": "EH -",
+              -->
             <q-card-section>
               <span class="text-bold">pipelineTemplateUid:</span> {{ pipelineTemplateUid }}
             </q-card-section>
