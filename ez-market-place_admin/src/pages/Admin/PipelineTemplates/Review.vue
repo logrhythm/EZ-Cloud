@@ -573,7 +573,14 @@
                 Raw data
             </q-card-section>
             <q-card-section>
-              <pre>{{ pipelineTemplate }}</pre>
+              <q-expansion-item
+                expand-separator
+                icon="raw_on"
+                label="Expand to see full RAW record"
+                caption="As stored in DB"
+              >
+                <pre>{{ pipelineTemplate }}</pre>
+              </q-expansion-item>
             </q-card-section>
           </q-card-section>
         </q-card-section>
