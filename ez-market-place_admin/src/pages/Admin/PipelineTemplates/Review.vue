@@ -21,10 +21,6 @@
               <span class="text-bold">pipelineTemplateUid:</span> {{ pipelineTemplateUid }}
             </q-card-section>
             <q-card-section>
-              Raw data:
-              <pre>{{ pipelineTemplate }}</pre>
-            </q-card-section>
-            <q-card-section>
               Publisher's IdentIcon:
               <Identicon :identity="pipelineTemplate.publisherName" />
             </q-card-section>
@@ -425,6 +421,19 @@
           </q-card-actions>
         </q-card-section>
       </q-card>
+      <q-card class="q-pa-md q-mx-none">
+        <q-card-section horizontal>
+          <q-card-section class="col q-ma-none q-pa-none">
+            <q-card-section class="text-h4">
+                Raw data
+            </q-card-section>
+            <q-card-section>
+              <pre>{{ pipelineTemplate }}</pre>
+            </q-card-section>
+          </q-card-section>
+        </q-card-section>
+      </q-card>
+
     </div>
 
     <q-dialog v-model="showCollectionFileImportPopup" persistent>
