@@ -17,23 +17,88 @@
             <q-card-section class="text-h4">
                 Properties
             </q-card-section>
-            <!--
-              pipelineTemplateUid": "b340e6a6-d63e-4358-aa3c-6103ab1eb8f0",
-              "statusId": 2,
-              "statusName": "Failed Review",
-              "statusDescription": "The item has been reviewed negatively",
-              "pipelineTemplateCreatedOn": "2022-02-04T15:53:40.000Z",
-              "pipelineTemplateModifiedOn": "2022-04-01T23:06:45.000Z",
-              "publisherUid": "e5b8cc39-ae9d-4f1c-aa57-7a0950f4a3b1",
-              "publisherName": "Biloute",
-              "pipelineTemplateName": "EH -",
-              -->
-            <q-card-section>
-              <span class="text-bold">pipelineTemplateUid:</span> {{ pipelineTemplateUid }}
+            <q-card-section class="row">
+              <div>
+                <IconPicture
+                  :pngBase64="pipelineTemplate.pipelineTemplateIconPicture"
+                  :size="150"
+                />
+              </div>
+              <div class="q-ml-md col">
+                <div class="row">
+                  <div>
+                    <div class="text-h5">
+                      {{ pipelineTemplate.pipelineTemplateName }}
+                    </div>
+                    <div class="text-caption text-italic">
+                      {{ pipelineTemplate.pipelineTemplateUid }}
+                    </div>
+                  </div>
+
+                  <q-space />
+
+                  <div class="row">
+                    <div>
+                      <q-icon name="visibility" color="positive" size="lg" v-if="pipelineTemplate.statusName === 'Visible'" />
+                      <q-icon name="visibility_off" style="opacity: .5;" size="lg" v-else-if="pipelineTemplate.statusName === 'Hidden'" />
+                      <q-icon name="pending_actions" color="primary" size="lg" v-else-if="pipelineTemplate.statusName === 'Pending review'" />
+                      <q-icon name="assignment_late" color="negative" style="opacity: .75;" size="lg" v-else-if="pipelineTemplate.statusName === 'Failed Review'" />
+                      <q-icon name="auto_delete" color="negative" style="opacity: .5;" size="lg" v-else-if="pipelineTemplate.statusName === 'To be deleted'" />
+                      <q-icon name="question_mark" color="orange" size="lg" v-else />
+                      <q-tooltip content-style="font-size: 1em">
+                        <span class="text-bold">Status ID:</span> {{ pipelineTemplate.statusId }}
+                      </q-tooltip>
+                    </div>
+                    <div class="q-ml-sm">
+                      <div class="text-bold">
+                        {{ pipelineTemplate.statusName }}
+                      </div>
+                      <div class="text-caption">
+                        {{ pipelineTemplate.statusDescription }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <q-separator spaced />
+
+                <div class="row justify-between">
+                  <div class="">
+                    <div class="">
+                      <span class="text-bold">Created:</span> {{ pipelineTemplate.pipelineTemplateCreatedOn }}
+                    </div>
+                    <div class="">
+                      <span class="text-bold">Modified:</span> {{ pipelineTemplate.pipelineTemplateModifiedOn }}
+                    </div>
+                  </div>
+                  <div class="text-h6">
+                    by
+                  </div>
+                  <div class="">
+                    <div class="row">
+                      <Identicon :identity="pipelineTemplate.publisherName" />
+                      <div class="q-ml-sm">
+                        <div class="text-bold">
+                          {{ pipelineTemplate.publisherName }}
+                        </div>
+                        <div class="text-caption text-italic">
+                          {{ pipelineTemplate.publisherUid }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </q-card-section>
-            <q-card-section>
-              Publisher's IdentIcon:
-              <Identicon :identity="pipelineTemplate.publisherName" />
+          </q-card-section>
+        </q-card-section>
+      </q-card>
+
+      <q-card class="q-pa-md q-mx-none">
+        <q-card-section horizontal>
+          <q-card-section class="col q-ma-none q-pa-none">
+            <q-card-section class="text-h4">
+                Stats
             </q-card-section>
             <q-card-section>
               New Stats:
