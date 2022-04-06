@@ -19,6 +19,10 @@ def is_matching:
       or
       ."@metadata".fields.stream_name == "{{EZ_stream_name_placeholder}}"
       or
+      ."@metadata".filter_helpers.stream_id == "{{EZ_stream_id_placeholder}}"
+      or
+      ."@metadata".filter_helpers.stream_name == "{{EZ_stream_name_placeholder}}"
+      or
       ."@metadata".device_type == "{{EZ_stream_name_placeholder}}"
       or
       ."@metadata".device_type == "{{EZ_compact_stream_name_placeholder}}"
