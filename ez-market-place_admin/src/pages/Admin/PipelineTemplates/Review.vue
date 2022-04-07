@@ -100,12 +100,28 @@
             <q-card-section class="text-h4">
                 Stats
             </q-card-section>
-            <q-card-section>
-              New Stats:
-              <pre>{{ pipelineTemplateStats }}</pre>
+            <q-card-section class="row justify-between">
+              <div>
+                Current Stats:
+                <pre>{{ pipelineTemplate.pipelineTemplateStats }}</pre>
+              </div>
+              <div>
+                New Stats:
+                <pre>{{ pipelineTemplateStats }}</pre>
+              </div>
             </q-card-section>
           </q-card-section>
+          <q-separator vertical />
+
+          <q-card-actions vertical class="justify-around q-px-md">
+              <q-btn icon="published_with_changes" color="primary" @click="save()">
+                <q-tooltip content-style="font-size: 1rem;">
+                  Force save new Stats
+                </q-tooltip>
+              </q-btn>
+          </q-card-actions>
         </q-card-section>
+
       </q-card>
 
       <q-card class="q-pa-md q-mx-none">
@@ -870,9 +886,17 @@ export default {
       return this.pipelineTemplate.pipelineTemplateReadmeMarkdown
     },
     pipelineTemplateStats () {
+      const fieldsMappingToBeSavedIsArray = !!(this.fieldsMappingToBeSaved && this.fieldsMappingToBeSaved && Array.isArray(this.fieldsMappingToBeSaved))
+      const fieldsMappingToBeSavedIsArrayWithData = !!(fieldsMappingToBeSavedIsArray && this.fieldsMappingToBeSaved.length > 0)
       return {
         collectionShipper: (this.collectionConfigurationToBeSaved && this.collectionConfigurationToBeSaved.collectionShipper ? this.collectionConfigurationToBeSaved.collectionShipper : undefined),
-        collectionMethod: (this.collectionConfigurationToBeSaved && this.collectionConfigurationToBeSaved.collectionMethod ? this.collectionConfigurationToBeSaved.collectionMethod : undefined)
+        collectionMethod: (this.collectionConfigurationToBeSaved && this.collectionConfigurationToBeSaved.collectionMethod ? this.collectionConfigurationToBeSaved.collectionMethod : undefined),
+        detectedFields: (fieldsMappingToBeSavedIsArray ? this.fieldsMappingToBeSaved.length : undefined),
+        mappedFields: (fieldsMappingToBeSavedIsArrayWithData ? this.fieldsMappingToBeSaved.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0) : undefined),
+        sharedFieldFrequencies: (fieldsMappingToBeSavedIsArrayWithData ? this.fieldsMappingToBeSaved.reduce((count, fm) => (fm.seenInLogCount > 1 ? count + 1 : count), 0) : undefined) > 0,
+        sharedFieldValues: (fieldsMappingToBeSavedIsArrayWithData ? this.fieldsMappingToBeSaved.reduce((count, fm) => (fm.values && Array.isArray(fm.values) && fm.values.length ? count + 1 : count), 0) : undefined) > 0,
+        sharedFieldMapping: (fieldsMappingToBeSavedIsArrayWithData ? this.fieldsMappingToBeSaved.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0) : undefined) > 0,
+        sharedFieldModifiers: (fieldsMappingToBeSavedIsArrayWithData ? this.fieldsMappingToBeSaved.reduce((count, fm) => (fm.modifiers && Array.isArray(fm.modifiers) && fm.modifiers.length ? count + 1 : count), 0) : undefined) > 0
       }
     },
     collectionConfigurationEditableAsText: {
