@@ -18,6 +18,8 @@
     - [x] Publisher
     - [x] Collection
     - [x] Mapping
+    - [x] Icon / Visual
+    - [x] Readme
     - [x] Stats
     - [x] Status / Visibility
   - [x] Delete Pipeline
