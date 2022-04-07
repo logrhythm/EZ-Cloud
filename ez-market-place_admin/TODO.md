@@ -22,11 +22,11 @@
   - [x] List Pipelines
   - [ ] Review Pipeline
     - [x] Action bar (with Return to List button/link)
-    - [ ] Properties
-      - [ ] Name
-      - [ ] Status
-      - [ ] Created / Modified on
-      - [ ] Publisher
+    - [x] Properties
+      - [x] Name
+      - [x] Status
+      - [x] Created / Modified on
+      - [x] Publisher
     - [x] Icon/logo/visual
     - [x] ReadMe
     - [x] Options
