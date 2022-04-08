@@ -177,7 +177,7 @@
                       sharedFieldModifiers -->
                       <div class="column q-gutter-y-xs">
                         <q-badge :color="(props.row.pipelineTemplateStats && props.row.pipelineTemplateStats.sharedFieldFrequencies ? 'positive' : 'grey')" text-color="black" label="Shared Frequency" />
-                        <q-badge :color="(props.row.pipelineTemplateStats && props.row.pipelineTemplateStats.sharedFieldValues ? 'orange' : 'positive')" text-color="black" label="Shared Values" />
+                        <q-badge :color="(props.row.pipelineTemplateStats && props.row.pipelineTemplateStats.sharedFieldValues ? 'orange' : 'grey')" text-color="black" label="Shared Values" />
                         <q-badge :color="(props.row.pipelineTemplateStats && props.row.pipelineTemplateStats.sharedFieldMapping ? 'positive' : 'grey')" text-color="black" label="Shared Mapping" />
                         <q-badge :color="(props.row.pipelineTemplateStats && props.row.pipelineTemplateStats.sharedFieldModifiers ? 'positive' : 'grey')" text-color="black" label="Shared Modifiers" />
                       </div>
