@@ -71,21 +71,26 @@
   - [ ] ~~Find a Free-tiered public hosting (for Admin and API)~~ (👈 using journey.logrhythm.com)
   - [ ] ~~Find / register domain~~ (👈 using journey.logrhythm.com)
   - [x] Get notifications from the Market Place
-  - [x] List available Collection Templates
-  - [ ] Import Collection Template
+  - [ ] List available Pipeline Templates
+  - [ ] Import Pipeline Template
+    - [ ] Collection
+    - [ ] Mapping
   - [ ] Export to Market Place
-    - [ ] Sanitization of secrets
-    - [ ] Export to Market Place
-  - [ ] Market Place Admin
-    - [ ] Approval / Review / Moderation of submissions
-    - [ ] Change Status of submission
+    - [ ] Icon / Visual
+    - [ ] Readme
+    - [ ] Collection
+      - [ ] Sanitization of secrets
+    - [ ] Fields Mapping
+  - [x] Market Place Admin
+    - [x] Approval / Review / Moderation of submissions
+    - [x] Change Status of submission
       - Under review
       - Rejected
       - Approved
-    - [ ] Change Visibility of submission
+    - [x] Change Visibility of submission
       - Visible
       - Hidden
-    - [ ] Delete submission
+    - [x] Delete submission
 - [x] Import/Export of Collection
   - [x] Import Collection from file
   - [ ] ~~Import Collection from Copy/Paste~~
