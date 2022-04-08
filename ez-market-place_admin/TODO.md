@@ -1,5 +1,30 @@
 # TODO - EZ Market Place Admin
 
+### Target: v1.1
+
+## TO DO
+- Statistics
+  - [ ] Add Stats landing page
+  - [ ] Add graph for
+    - [ ] High level Market stats
+    - [ ] Pipeline Templates stats
+- Admin Pipelines
+  - [ ] Review Pipeline
+    - [ ] Collection
+      - [ ] Check for sensitive information
+        - [ ] Better UI
+    - [ ] Mapping
+      - [ ] Check for sensitive information
+        - [ ] Better UI
+  - [ ] Sends Message/Notification to Pipeline's Publisher
+
+## TO FIX
+- Multi Factor Authentication
+  - [ ] Fix redirection problem
+
+## TO TEST
+
+
 ### Target: v1.0
 
 ## TO DO
