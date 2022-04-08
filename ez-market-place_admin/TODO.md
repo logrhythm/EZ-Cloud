@@ -31,10 +31,10 @@
     - [x] ReadMe
     - [x] Options
       - [x] Extract Beat's '.message' only
-    - [ ] Stats
-      - [ ] Automatically calculate and update
+    - [x] Stats
+      - [x] Automatically calculate and update
         - [x] For Collection Configuration
-        - [ ] For Fields Mapping
+        - [x] For Fields Mapping
       - [ ] ~~Manual update~~ (👈 Deferred)
     - [x] Collection
       - [ ] Check for sensitive information
