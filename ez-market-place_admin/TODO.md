@@ -78,7 +78,7 @@
     - [x] Status / Visibility
   - [x] Delete Notification
 - Error Handling
-  - [ ] Detect errors in API response
+  - [x] Detect errors in API response
 
 ## TO FIX
 
