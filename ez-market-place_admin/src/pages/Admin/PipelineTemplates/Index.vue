@@ -141,30 +141,21 @@
                     <!-- {{props.value}} -->
                     <div
                       v-if="props.value"
-                      class="row q-gutter-x-md"
+                      class="row q-gutter-x-md items-center"
                     >
                       <q-tooltip content-style="font-size: 1em">
                         <span>Detected fields: {{ props.row.pipelineTemplateStats.detectedFields }}</span><br>
                         <span>Mapped fields: {{ props.row.pipelineTemplateStats.mappedFields }}</span>&nbsp;(<span class="text-bold">{{ Math.round(props.value * 100) / 100 }}%</span>)
                       </q-tooltip>
                       <q-circular-progress
-                        show-value
                         :value="Math.round(props.value)"
-                        size="4em"
+                        show-value
+                        :font-size="(props.value < 100 ? '0.5em' : '0.4em')"
+                        size="2.8em"
                         :thickness="0.2"
                         :color="(darkMode ? 'blue-3' : 'blue-10')"
                         :track-color="(darkMode ? 'grey-9' : 'grey-3')"
-                      >
-                        <q-circular-progress
-                          :value="Math.round(props.value)"
-                          show-value
-                          :font-size="(props.value < 100 ? '0.5em' : '0.4em')"
-                          size="2.8em"
-                          :thickness="0.2"
-                          :color="(darkMode ? 'blue-3' : 'blue-10')"
-                          :track-color="(darkMode ? 'grey-9' : 'grey-3')"
-                        />
-                      </q-circular-progress>
+                      />
                       <div class="column q-gutter-y-xs">
                         <q-badge :color="(props.row.pipelineTemplateStats && props.row.pipelineTemplateStats.sharedFieldFrequencies ? 'positive' : 'grey')" text-color="black" label="Shared Frequency" />
                         <q-badge :color="(props.row.pipelineTemplateStats && props.row.pipelineTemplateStats.sharedFieldValues ? 'orange' : 'grey')" text-color="black" label="Shared Values" />
