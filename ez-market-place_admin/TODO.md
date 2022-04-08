@@ -1,6 +1,6 @@
 # TODO - EZ Market Place Admin
 
-### Target: v1.1
+### Target: v1.5
 
 ## TO DO
 - Statistics
