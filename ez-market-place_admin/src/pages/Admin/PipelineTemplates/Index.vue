@@ -57,12 +57,6 @@
                         {{ $t('Edit Pipeline Template') }}
                       </q-tooltip>
                     </q-btn>
-                    <!--
-                      assignment
-                      rule
-                      thumbs_up_down
-                      content_paste_search
-                     -->
                     <q-btn
                       icon="content_paste_search"
                       flat
@@ -171,10 +165,6 @@
                           :track-color="(darkMode ? 'grey-9' : 'grey-3')"
                         />
                       </q-circular-progress>
-                      <!-- sharedFieldFrequencies
-                      sharedFieldValues
-                      sharedFieldMapping
-                      sharedFieldModifiers -->
                       <div class="column q-gutter-y-xs">
                         <q-badge :color="(props.row.pipelineTemplateStats && props.row.pipelineTemplateStats.sharedFieldFrequencies ? 'positive' : 'grey')" text-color="black" label="Shared Frequency" />
                         <q-badge :color="(props.row.pipelineTemplateStats && props.row.pipelineTemplateStats.sharedFieldValues ? 'orange' : 'grey')" text-color="black" label="Shared Values" />
@@ -336,7 +326,6 @@ export default {
         { name: 'pipelineTemplateUid', align: 'center', label: 'UID', field: 'pipelineTemplateUid', sortable: true },
         { name: 'pipelineTemplateIconPicture', align: 'center', label: 'Icon / Logo', field: 'pipelineTemplateIconPicture', sortable: false },
         { name: 'pipelineTemplateName', align: 'center', label: 'Pipeline Template Name', field: 'pipelineTemplateName', sortable: true, classes: '', style: 'white-space: pre-line;' },
-        // { name: 'pipelineTemplateStats', align: 'center', label: 'Stats', field: row => JSON.stringify(row.pipelineTemplateStats), sortable: false },
         { name: 'pipelineTemplateCollectionStats', align: 'center', label: 'Collection', field: row => (row.pipelineTemplateStats ? `${row.pipelineTemplateStats.collectionShipper || ''} - ${row.pipelineTemplateStats.collectionMethod || ''}` : null), sortable: true },
         { name: 'pipelineTemplateFieldsMappingStats', align: 'center', label: 'Fields Mapping', field: row => (row.pipelineTemplateStats && row.pipelineTemplateStats.detectedFields > 0 ? (row.pipelineTemplateStats.mappedFields || 0) / row.pipelineTemplateStats.detectedFields * 100 : null), sortable: true },
         { name: 'pipelineTemplateCreatedOn', align: 'center', label: 'Created', field: 'pipelineTemplateCreatedOn', sortable: true },
@@ -350,17 +339,6 @@ export default {
       statusesLoading: false,
       pipelineTemplatesLoading: false,
       showPipelineTemplateEdit: false,
-      // const pipelineTemplateSchema = yup.object().shape(
-      //   {
-      //     pipelineTemplateUid: yup.string().uuid().required(),
-      //     publisherUid: yup.string().uuid().nullable(), // Only used for Admin APIs
-      //     statusId: yup.number(), // Only used for Admin APIs
-      //     name: yup.string().required(),
-      //     collectionConfiguration: yup.object().nullable(),
-      //     fieldsMapping: yup.object().nullable(),
-      //     stats: yup.object()
-      //   }
-      // );
       editingPipelineTemplateUid: null,
       editingCreatedOn: null,
       editingModifiedOn: null,
