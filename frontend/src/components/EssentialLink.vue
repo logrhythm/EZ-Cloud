@@ -1,8 +1,8 @@
 <template>
   <q-item
     clickable
-    tag="a"
-    :href="link"
+    :tag="(subMenus && subMenus.length ? undefined : 'a')"
+    :href="(subMenus && subMenus.length ? undefined : link)"
     v-if="title !== null"
   >
     <q-item-section
@@ -28,6 +28,16 @@
         {{ caption }}
       </q-item-label> -->
     </q-item-section>
+
+    <q-menu auto-close anchor="center left" self="center start" v-if="subMenus && subMenus.length">
+      <q-list padding class="">
+        <EssentialLink
+          v-for="subMenu in subMenus"
+          :key="subMenu.title"
+          v-bind="subMenu"
+        />
+      </q-list>
+    </q-menu>
   </q-item>
 
   <q-item
@@ -77,6 +87,11 @@ export default {
     notificationTextColor: {
       type: String,
       default: 'white'
+    },
+
+    subMenus: {
+      type: Array,
+      default: null
     },
 
     spacer: {
