@@ -158,7 +158,19 @@ export default {
           id: 'ezMarketPlace',
           notification: 5,
           notificationColor: 'green',
-          notificationTextColor: 'white'
+          notificationTextColor: 'white',
+          subMenus: [
+            {
+              title: 'Notifications',
+              icon: 'mail_outline',
+              link: '#/MarketPlace/Notifications'
+            },
+            {
+              title: 'Pipeline Templates',
+              icon: 'account_tree',
+              link: '#/MarketPlace/PipelineTemplates'
+            }
+          ]
         },
         {
           separator: true

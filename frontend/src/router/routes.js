@@ -122,9 +122,9 @@ const routes = [
     meta: { title: 'EZ Market Place' },
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/MarketPlace/Index.vue') }
-      // { path: 'Users', component: () => import('pages/MarketPlace/Users.vue') },
-      // { path: 'Roles', component: () => import('pages/MarketPlace/Roles.vue') }
+      { path: '', component: () => import('pages/MarketPlace/Index.vue') },
+      { path: 'Notifications', component: () => import('pages/MarketPlace/Notifications.vue') },
+      { path: 'PipelineTemplates', component: () => import('pages/MarketPlace/PipelineTemplates.vue') }
     ]
   },
 

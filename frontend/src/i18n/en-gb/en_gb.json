@@ -97,5 +97,7 @@
   "Mark as Read": "Mark as Read",
   "Mark as Unread": "Mark as Unread",
   "Delete": "Delete",
-  "Confirm": "Confirm"
+  "Confirm": "Confirm",
+  "View Notifications": "View Notifications",
+  "View Pipeline Templates": "View Pipeline Templates"
 }
