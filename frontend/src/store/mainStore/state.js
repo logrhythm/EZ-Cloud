@@ -274,6 +274,8 @@ export default function () {
       ezMarketUid: null
     },
     ezMarketNotification: null, // Number (can be short text too) of notifications from EZ Market Place for the User // XXXX
-    ezMarketNotifications: [] // Notifications from EZ Market Place for the User
+    ezMarketNotifications: [], // Notifications from EZ Market Place for the User
+    ezMarketPipelineTemplates: [], // Pipeline Templates from EZ Market Place for the User
+    ezMarketPipelineTemplate: {} // Pipeline Template fully loaded from EZ Market Place by UID
   }
 }

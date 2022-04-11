@@ -741,6 +741,80 @@ export function deleteEzMarketNotificationById ({ state, commit }, messageUid) {
   }
 }
 
+export function reloadEzMarketPipelineTemplates ({ state, commit }, payload) {
+  console.log('☁️ Downloading Pipeline Templates from EZ Cloud Market Place...')
+
+  // Building the full URL of the API root
+  const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+  // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+  fetch(ezMarketApiBaseUrl + '/pipelineTemplates', {
+    credentials: 'omit',
+    referrerPolicy: 'no-referrer',
+    headers: {
+      'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+      'ez-server-version': (state.deployment && state.deployment.version ? state.deployment.version : ''),
+      'ez-client-version': (version || '')
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok.')
+      }
+      return response.json()
+    })
+    .then(data => {
+      if (data && data.records && Array.isArray(data.records)) {
+        // Push the whole lot to the State
+        commit('updateEzMarketPipelineTemplates', data.records)
+        console.log(`✔️ [API SUCCESS] Succesfully loaded ${data.records.length} Pipeline Templates.`)
+      } else {
+        throw new Error('Returned data wasn\'t a proper JSON array.')
+      }
+    })
+    .catch(error => {
+      console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+    })
+}
+
+export function loadEzMarketPipelineTemplateById ({ state, commit }, pipelineTemplateUid) {
+  // Building the full URL of the API root
+  const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+  if (pipelineTemplateUid && pipelineTemplateUid.length && state.ezMarketPipelineTemplates.find((pipelineTemplate) => pipelineTemplate && pipelineTemplate.uid === pipelineTemplateUid)) {
+    console.log('☁️ Downloading Pipeline Template from EZ Cloud Market Place...')
+
+    // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+    fetch(ezMarketApiBaseUrl + '/pipelineTemplates/' + pipelineTemplateUid, {
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+      headers: {
+        'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+        'ez-server-version': (state.deployment && state.deployment.version ? state.deployment.version : ''),
+        'ez-client-version': (version || '')
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok.')
+        }
+        return response.json()
+      })
+      .then(data => {
+        if (data && data.records && Array.isArray(data.records)) {
+          // Push the whole lot to the State
+          commit('updateEzMarketPipelineTemplateById', data.records)
+          console.log(`✔️ [API SUCCESS] Succesfully loaded ${data.records.length} Pipeline Template.`)
+        } else {
+          throw new Error('Returned data wasn\'t a proper JSON array.')
+        }
+      })
+      .catch(error => {
+        console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+      })
+  }
+}
+
 //           ###    ########  ####       ##     ## ######## #### ##       #### ######## #### ########  ######
 //          ## ##   ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
 //         ##   ##  ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##

@@ -30,10 +30,13 @@ router.get('/', async (req, res) => {
         SELECT
           pipeline_templates.uid,
           statuses.name AS status,
+          statuses.description AS statusDescription,
           pipeline_templates.created,
           pipeline_templates.modified,
           publishers.display_name AS publisher,
           pipeline_templates.name,
+          NULL AS readmeMarkdown,
+          pipeline_templates.iconPicture AS iconPicture,
           NULL AS collection_configuration,
           NULL AS mapping_configuration,
           pipeline_templates.stats
@@ -92,12 +95,15 @@ router.get('/:id', async (req, res) => {
           SELECT
             pipeline_templates.uid,
             statuses.name AS status,
+            statuses.description AS statusDescription,
             pipeline_templates.created,
             pipeline_templates.modified,
             publishers.display_name AS publisher,
             pipeline_templates.name,
-            NULL AS collection_configuration,
-            NULL AS mapping_configuration,
+            pipeline_templates.readmeMarkdown,
+            pipeline_templates.iconPicture,
+            pipeline_templates.collection_configuration,
+            pipeline_templates.mapping_configuration,
             pipeline_templates.stats
           FROM
             pipeline_templates
@@ -108,7 +114,7 @@ router.get('/:id', async (req, res) => {
           WHERE
             pipeline_templates.uid = :pipelineTemplateUid
             AND (
-              statuses.id <= 1 -- Visible and Pending Review
+              statuses.id = 0 -- Visible only
               OR
               pipeline_templates.publisher_uid = :publisherUid -- Items's publisher can see it no matter the item's status
             )

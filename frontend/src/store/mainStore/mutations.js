@@ -244,3 +244,48 @@ export function deleteEzMarketNotificationById (state, messageUid) {
   // Only flag the ones that are Unread
   state.ezMarketNotification = calculateNotificationNumber(state)
 }
+
+export function updateEzMarketPipelineTemplates (state, payload) {
+  if (payload && Array.isArray(payload)) {
+    try {
+      const pipelineTemplates = JSON.parse(JSON.stringify(payload))
+      // Parse the stats (as they are stored as stringified JSON in the database)
+      if (pipelineTemplates && Array.isArray(pipelineTemplates)) {
+        pipelineTemplates.forEach((pipelineTemplate) => {
+          try {
+            pipelineTemplate.stats = JSON.parse(pipelineTemplate.stats) || {}
+          } catch (error) {
+            pipelineTemplate.stats = {}
+          }
+        })
+      }
+      // And assign
+      state.ezMarketPipelineTemplates = pipelineTemplates
+    } catch (error) {
+      // Fall back on the raw data
+      state.ezMarketPipelineTemplates = payload
+    }
+  }
+}
+
+export function updateEzMarketPipelineTemplateById (state, payload) {
+  // Clear any existing one
+  state.ezMarketPipelineTemplate = {}
+
+  if (payload && Array.isArray(payload)) {
+    try {
+      const pipelineTemplate = JSON.parse(JSON.stringify(payload[0] || {}))
+      // Parse the stats (as they are stored as stringified JSON in the database)
+      try {
+        pipelineTemplate.stats = JSON.parse(pipelineTemplate.stats) || {}
+      } catch (error) {
+        pipelineTemplate.stats = {}
+      }
+      // And assign
+      state.ezMarketPipelineTemplate = pipelineTemplate
+    } catch (error) {
+      // Fall back on the raw data
+      state.ezMarketPipelineTemplate = payload[0] || {}
+    }
+  }
+}
