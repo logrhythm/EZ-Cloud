@@ -94,6 +94,36 @@
       <q-card-section horizontal>
         <q-card-section class="col q-ma-none q-pa-none">
           <q-card-section class="text-h4">
+              Collection
+          </q-card-section>
+          <q-card-section class="row items-center">
+            <span class="text-bold">Shipper and Method: </span>
+            <div class="q-ml-md text-center">
+              <img v-if="collectionShipperOption.icon && collectionShipperOption.icon.length" :src="'/shippers/' + collectionShipperOption.icon + '.svg'" width="64px">
+              <div>{{ collectionShipperOption.label }}</div>
+            </div>
+            <div class="q-ml-xl text-center">
+              <q-icon :name="collectionMethodOption.icon" size="64px" />
+              <div>{{ collectionMethodOption.label }}</div>
+            </div>
+          </q-card-section>
+            <q-card-section>
+              <div class="">
+                <div class="text-bold">Collection Configuration:</div>
+                <div class="row q-my-sm">
+                  <q-separator vertical size="2px" color="teal" />
+                  <div class="q-ml-sm"><pre>{{ collectionConfigOutput }}</pre></div>
+                </div>
+              </div>
+            </q-card-section>
+        </q-card-section>
+      </q-card-section>
+    </q-card>
+
+    <q-card class="q-pa-md q-mx-none q-mb-md">
+      <q-card-section horizontal>
+        <q-card-section class="col q-ma-none q-pa-none">
+          <q-card-section class="text-h4">
               Read Me
           </q-card-section>
           <q-card-section class="">
@@ -125,6 +155,7 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 import Identicon from 'components/Publisher/Identicon.vue'
 import IconPicture from 'components/Pipelines/IconPicture.vue'
 import TimeAgo from 'javascript-time-ago'
@@ -134,7 +165,8 @@ TimeAgo.addDefaultLocale(en)
 export default {
   name: 'PageMarketPipelineTemplateProperties',
   mixins: [
-    mixinSharedDarkMode // Shared computed to access and update the DarkMode
+    mixinSharedDarkMode, // Shared computed to access and update the DarkMode
+    mixinSharedShipperAndCollectionsHelpers // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
   ],
   components: { Identicon, IconPicture },
   data () {
@@ -144,9 +176,50 @@ export default {
     }
   },
   computed: {
-    ...mapState('mainStore', ['ezMarketPipelineTemplate']),
+    ...mapState('mainStore', ['collectionMethodsOptions', 'collectionShippersOptions', 'ezMarketPipelineTemplate']),
     readmeMarkdown () {
       return (this.ezMarketPipelineTemplate && this.ezMarketPipelineTemplate.readmeMarkdown ? this.ezMarketPipelineTemplate.readmeMarkdown : '')
+    },
+    collectionMethod () {
+      return (this.ezMarketPipelineTemplate.collection_configuration && this.ezMarketPipelineTemplate.collection_configuration.collectionConfig && this.ezMarketPipelineTemplate.collection_configuration.collectionConfig.collectionMethod ? this.ezMarketPipelineTemplate.collection_configuration.collectionConfig.collectionMethod : '')
+    },
+    collectionShipper () {
+      return (this.ezMarketPipelineTemplate.collection_configuration && this.ezMarketPipelineTemplate.collection_configuration.collectionConfig && this.ezMarketPipelineTemplate.collection_configuration.collectionConfig.collectionShipper ? this.ezMarketPipelineTemplate.collection_configuration.collectionConfig.collectionShipper : '')
+    },
+    collectionMethodOption () {
+      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'help_center' }
+      if (this.collectionMethod && this.collectionMethod.length) {
+        return this.collectionMethodsOptions.find(cmo => cmo.value && cmo.value === this.collectionMethod) || fallbackValue
+      } else {
+        return fallbackValue
+      }
+    },
+    collectionShipperOption () {
+      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'unknown', outputFormat: 'json' }
+      if (this.collectionShipper && this.collectionShipper.length) {
+        return this.collectionShippersOptions.find(cso => cso.value && cso.value === this.collectionShipper) || fallbackValue
+      } else {
+        return fallbackValue
+      }
+    },
+    collectionConfigOutput () {
+      let output = ''
+      // Transform the JSON config into Yaml
+      if (this.collectionShipper && this.collectionShipper.length) {
+        if (this.collectionShipperOption && this.collectionShipperOption.outputFormat && this.collectionShipperOption.outputFormat.length) {
+          if (this.collectionMethod && this.collectionMethod.length) {
+            // Calling collectionConfigOutputFor from Mixin mixin-Shared-ShipperAndCollectionsHelpers
+            output = this.collectionConfigOutputFor(this.collectionShipperOption.outputFormat, this.ezMarketPipelineTemplate.collection_configuration.collectionConfig)
+          } else {
+            output = '# No Collection Method configured.'
+          }
+        } else {
+          output = '# Unknown output format.'
+        }
+      } else {
+        output = '# No Collecting Shipper configured.'
+      }
+      return output
     }
   }, // computed
   methods: {
