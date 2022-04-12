@@ -281,6 +281,21 @@ export function updateEzMarketPipelineTemplateById (state, payload) {
       } catch (error) {
         pipelineTemplate.stats = {}
       }
+
+      // Parse the Collection Configuration (as it's are stored as stringified JSON in the database)
+      try {
+        pipelineTemplate.collection_configuration = JSON.parse(pipelineTemplate.collection_configuration) || {}
+      } catch (error) {
+        pipelineTemplate.collection_configuration = {}
+      }
+
+      // Parse the Fields Mapping (as it's are stored as stringified JSON in the database)
+      try {
+        pipelineTemplate.mapping_configuration = JSON.parse(pipelineTemplate.mapping_configuration) || {}
+      } catch (error) {
+        pipelineTemplate.mapping_configuration = {}
+      }
+
       // And assign
       state.ezMarketPipelineTemplate = pipelineTemplate
     } catch (error) {
