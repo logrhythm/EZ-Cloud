@@ -124,6 +124,19 @@
       <q-card-section horizontal>
         <q-card-section class="col q-ma-none q-pa-none">
           <q-card-section class="text-h4">
+              Fields Mapping
+          </q-card-section>
+          <q-card-section class="">
+            XXXX
+          </q-card-section>
+        </q-card-section>
+      </q-card-section>
+    </q-card>
+
+    <q-card class="q-pa-md q-mx-none q-mb-md">
+      <q-card-section horizontal>
+        <q-card-section class="col q-ma-none q-pa-none">
+          <q-card-section class="text-h4">
               Read Me
           </q-card-section>
           <q-card-section class="">
