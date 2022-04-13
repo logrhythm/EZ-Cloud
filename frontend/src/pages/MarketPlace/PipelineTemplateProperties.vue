@@ -127,7 +127,7 @@
               Fields Mapping
           </q-card-section>
           <q-card-section class="">
-            XXXXX
+            XXXXXX
           </q-card-section>
         </q-card-section>
       </q-card-section>
