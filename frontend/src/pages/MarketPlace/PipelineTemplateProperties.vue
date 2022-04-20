@@ -123,11 +123,33 @@
     <q-card class="q-pa-md q-mx-none q-mb-md">
       <q-card-section horizontal>
         <q-card-section class="col q-ma-none q-pa-none">
-          <q-card-section class="text-h4">
+          <q-card-section class="row wrap justify-between">
+            <div class="text-h4">
               Fields Mapping
+            </div>
+            <div class="row q-gutter-md">
+              <div style="width:300px;">
+                <q-input outlined dense debounce="300" v-model="searchFilter" placeholder="Search">
+                  <template v-slot:append>
+                    <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
+                    <q-icon name="search" />
+                  </template>
+                </q-input>
+              </div>
+            </div>
           </q-card-section>
           <q-card-section class="">
-            XXXXXX
+            <q-table
+              :data="tableData"
+              :columns="columns"
+              row-key="name"
+              dense
+              no-data-label="No Fields to display."
+              :filter="searchFilter"
+              :loading="dataLoading"
+              rows-per-page-label="Fields per page:"
+              :pagination.sync="pagination"
+            />
           </q-card-section>
         </q-card-section>
       </q-card-section>
@@ -150,7 +172,7 @@
       </q-card-section>
     </q-card>
 
-    <q-card class="q-pa-md q-mx-none q-mb-md">
+    <!-- <q-card class="q-pa-md q-mx-none q-mb-md">
       <q-card-section horizontal>
         <q-card-section class="col q-ma-none q-pa-none">
           <q-card-section class="text-h4">
@@ -161,7 +183,7 @@
           </q-card-section>
         </q-card-section>
       </q-card-section>
-    </q-card>
+    </q-card> -->
   </q-page>
 </template>
 
@@ -185,6 +207,18 @@ export default {
   data () {
     return {
       pipelineTemplateUid: '',
+      searchFilter: '',
+      columns: [
+        { name: 'frequency', align: 'center', label: 'Frequency', field: 'seenInLogCount', sortable: true },
+        { name: 'Fields', align: 'left', label: 'Field Full Paths', field: 'name', sortable: true, classes: '', style: 'font-family: monospace; white-space: pre-line;' },
+        { name: 'mapping', align: 'center', label: 'Mappings', field: 'mappedField', sortable: true },
+        { name: 'modifiers', align: 'center', label: 'Modifiers', field: 'modifiers', sortable: true }
+      ],
+      pagination: {
+        sortBy: 'mapping',
+        descending: true, // Mapped fields first
+        rowsPerPage: 25
+      },
       dataLoading: false
     }
   },
@@ -233,6 +267,15 @@ export default {
         output = '# No Collecting Shipper configured.'
       }
       return output
+    },
+    tableData () {
+      return (
+        this.ezMarketPipelineTemplate &&
+        this.ezMarketPipelineTemplate.mapping_configuration &&
+        this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping
+          ? this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping
+          : []
+      )
     }
   }, // computed
   methods: {
