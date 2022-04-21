@@ -94,6 +94,23 @@
       <q-card-section horizontal>
         <q-card-section class="col q-ma-none q-pa-none">
           <q-card-section class="text-h4">
+              Read Me
+          </q-card-section>
+          <q-card-section class="">
+            <q-markdown
+              class="col"
+              :src="readmeMarkdown"
+              no-heading-anchor-links
+            />
+          </q-card-section>
+        </q-card-section>
+      </q-card-section>
+    </q-card>
+
+    <q-card class="q-pa-md q-mx-none q-mb-md">
+      <q-card-section horizontal>
+        <q-card-section class="col q-ma-none q-pa-none">
+          <q-card-section class="text-h4">
               Collection
           </q-card-section>
           <q-card-section class="row items-center">
@@ -149,23 +166,6 @@
               :loading="dataLoading"
               rows-per-page-label="Fields per page:"
               :pagination.sync="pagination"
-            />
-          </q-card-section>
-        </q-card-section>
-      </q-card-section>
-    </q-card>
-
-    <q-card class="q-pa-md q-mx-none q-mb-md">
-      <q-card-section horizontal>
-        <q-card-section class="col q-ma-none q-pa-none">
-          <q-card-section class="text-h4">
-              Read Me
-          </q-card-section>
-          <q-card-section class="">
-            <q-markdown
-              class="col"
-              :src="readmeMarkdown"
-              no-heading-anchor-links
             />
           </q-card-section>
         </q-card-section>
