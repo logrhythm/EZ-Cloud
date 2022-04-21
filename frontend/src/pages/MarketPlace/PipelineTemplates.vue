@@ -33,15 +33,6 @@
                       Pipeline Templates
                     </div>
                     <div class="row q-gutter-md">
-                      <div class="col" >
-                        <q-btn rounded dense color="primary" icon="add" label="Add New Pipeline Template" style="min-width:14rem;" @click="addNewPipelineTemplate()" >
-                          <q-tooltip content-style="font-size: 1em">
-                            Create a new Pipeline Template.
-                          </q-tooltip>
-                        </q-btn>
-                      </div>
-                    </div>
-                    <div class="row q-gutter-md">
                       <div style="width:300px;">
                         <q-input outlined dense debounce="300" v-model="searchFilter" placeholder="Search">
                           <template v-slot:append>
@@ -50,7 +41,7 @@
                           </template>
                         </q-input>
                       </div>
-                      <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadPipelineTemplates()">
+                      <q-btn dense outline icon="refresh" :loading="dataLoading" @click="reloadEzMarketPipelineTemplates()">
                         <q-tooltip content-style="font-size: 1em">
                           Reload the list of Pipeline Templates.
                         </q-tooltip>
@@ -117,18 +108,37 @@
                   </q-td>
                 </template>
 
-                <template v-slot:body-cell-pipelineTemplateFieldsMappingStats="props">
+                <template v-slot:body-cell-pipelineTemplateCollectionStats="props">
                   <q-td :props="props">
-                    <!-- {{props.value}} -->
+                    <q-tooltip content-style="font-size: 1em">
+                      <span class="text-bold">Shipper:</span> {{ collectionShipperByValue(props.row.stats.collectionShipper).label }}<br>
+                      <span class="text-bold">Method:</span> {{ collectionMethodByValue(props.row.stats.collectionMethod).label }}
+                    </q-tooltip>
                     <div
                       v-if="props.value"
-                      class="row q-gutter-x-md items-center"
+                      class="row items-center justify-evenly"
+                    >
+                      <img v-if="collectionShipperByValue(props.row.stats.collectionShipper).icon.length" :src="'/shippers/' + collectionShipperByValue(props.row.stats.collectionShipper).icon + '.svg'" width="60px">
+                      <q-icon :name="collectionMethodByValue(props.row.stats.collectionMethod).icon" size="60px" />
+                    </div>
+                    <div v-else>
+                      -
+                    </div>
+                  </q-td>
+                </template>
+
+                <template v-slot:body-cell-pipelineTemplateFieldsMappingStats="props">
+                  <q-td :props="props">
+                    <div
+                      v-if="props.value"
+                      class="row items-center justify-center"
                     >
                       <q-tooltip content-style="font-size: 1em">
                         <span>Detected fields: {{ props.row.stats.detectedFields }}</span><br>
                         <span>Mapped fields: {{ props.row.stats.mappedFields }}</span>&nbsp;(<span class="text-bold">{{ Math.round(props.value * 100) / 100 }}%</span>)
                       </q-tooltip>
                       <q-circular-progress
+                        class="q-mr-md"
                         :value="Math.round(props.value)"
                         show-value
                         :font-size="(props.value < 100 ? '0.5em' : '0.4em')"
@@ -139,7 +149,7 @@
                       />
                       <div class="column q-gutter-y-xs">
                         <q-badge :color="(props.row.stats && props.row.stats.sharedFieldFrequencies ? 'positive' : 'grey')" text-color="black" label="Shared Frequency" />
-                        <q-badge :color="(props.row.stats && props.row.stats.sharedFieldValues ? 'orange' : 'grey')" text-color="black" label="Shared Values" />
+                        <!-- <q-badge :color="(props.row.stats && props.row.stats.sharedFieldValues ? 'orange' : 'grey')" text-color="black" label="Shared Values" /> -->
                         <q-badge :color="(props.row.stats && props.row.stats.sharedFieldMapping ? 'positive' : 'grey')" text-color="black" label="Shared Mapping" />
                         <q-badge :color="(props.row.stats && props.row.stats.sharedFieldModifiers ? 'positive' : 'grey')" text-color="black" label="Shared Modifiers" />
                       </div>
@@ -216,7 +226,8 @@ export default {
         { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
         { name: 'iconPicture', align: 'center', label: 'Icon / Logo', field: 'iconPicture', sortable: false },
         { name: 'name', align: 'center', label: 'Pipeline Template Name', field: 'name', sortable: true, classes: '', style: 'white-space: pre-line;' },
-        { name: 'pipelineTemplateCollectionStats', align: 'center', label: 'Collection', field: row => (row.stats ? `${row.stats.collectionShipper || ''} - ${row.stats.collectionMethod || ''}` : null), sortable: true },
+        // { name: 'pipelineTemplateCollectionStats', align: 'center', label: 'Collection', field: row => (row.stats ? `${row.stats.collectionShipper || ''} - ${row.stats.collectionMethod || ''}` : null), sortable: true },
+        { name: 'pipelineTemplateCollectionStats', align: 'center', label: 'Collection', field: row => (row.stats ? `${row.stats.collectionShipper || ''}${row.stats.collectionMethod || ''}` : null), sortable: true },
         { name: 'pipelineTemplateFieldsMappingStats', align: 'center', label: 'Fields Mapping', field: row => (row.stats && row.stats.detectedFields > 0 ? (row.stats.mappedFields || 0) / row.stats.detectedFields * 100 : null), sortable: true },
         { name: 'publisher', align: 'center', label: 'Publisher', field: 'publisher', sortable: true },
         { name: 'created', align: 'center', label: 'Created', field: 'created', sortable: true },
@@ -232,7 +243,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('mainStore', ['ezMarketPipelineTemplates']),
+    ...mapState('mainStore', ['collectionMethodsOptions', 'collectionShippersOptions', 'ezMarketPipelineTemplates']),
     tableData () {
       return this.ezMarketPipelineTemplates
     }
@@ -250,6 +261,22 @@ export default {
         // Fails silently
       }
       return formattedTimeAgo
+    },
+    collectionShipperByValue (value) {
+      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'unknown', outputFormat: 'json' }
+      if (value && value.length) {
+        return this.collectionShippersOptions.find(cso => cso.value && cso.value === value) || fallbackValue
+      } else {
+        return fallbackValue
+      }
+    },
+    collectionMethodByValue (value) {
+      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'help_center' }
+      if (value && value.length) {
+        return this.collectionMethodsOptions.find(cmo => cmo.value && cmo.value === value) || fallbackValue
+      } else {
+        return fallbackValue
+      }
     }
   },
   mounted () {
