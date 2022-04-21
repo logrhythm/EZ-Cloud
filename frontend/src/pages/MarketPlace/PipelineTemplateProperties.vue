@@ -166,13 +166,26 @@
               :loading="dataLoading"
               rows-per-page-label="Fields per page:"
               :pagination.sync="pagination"
-            />
+            >
+
+              <template v-slot:body-cell-frequency="props">
+                <q-td :props="props" style="width: 3em;">
+                  <div>
+                    <q-tooltip content-style="font-size: 1em;">
+                      Seen in <span style="font-weight: bold;">{{ (maxSeenInLog != 0 ? Math.round(props.value / maxSeenInLog * 100) : 0) }}%</span> of logs in the sample ({{ props.value }}&nbsp;/&nbsp;{{ maxSeenInLog }}).
+                    </q-tooltip>
+                    <q-linear-progress :value="props.value / maxSeenInLog" :color="(darkMode ? 'blue-10' : 'blue-7')" rounded size="1em" />
+                  </div>
+                </q-td>
+              </template>
+
+            </q-table>
           </q-card-section>
         </q-card-section>
       </q-card-section>
     </q-card>
 
-    <!-- <q-card class="q-pa-md q-mx-none q-mb-md">
+    <q-card class="q-pa-md q-mx-none q-mb-md">
       <q-card-section horizontal>
         <q-card-section class="col q-ma-none q-pa-none">
           <q-card-section class="text-h4">
@@ -183,7 +196,7 @@
           </q-card-section>
         </q-card-section>
       </q-card-section>
-    </q-card> -->
+    </q-card>
   </q-page>
 </template>
 
@@ -276,6 +289,15 @@ export default {
           ? this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping
           : []
       )
+    },
+    maxSeenInLog () {
+      let max = 0
+      this.tableData.forEach(row => {
+        if (row.seenInLogCount > max) {
+          max = row.seenInLogCount
+        }
+      })
+      return max
     }
   }, // computed
   methods: {
