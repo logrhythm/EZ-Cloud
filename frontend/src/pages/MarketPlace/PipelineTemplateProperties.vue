@@ -7,7 +7,6 @@
         <q-btn no-caps flat dense icon="input" color="primary" label="Import" >
           <q-menu>
             <q-list style="min-width: 20rem">
-            <!-- <q-list> -->
               <q-item clickable v-close-popup @click="doPromptForNewPipelineDetails()">
                 <q-item-section avatar top>
                   <q-avatar icon="add" color="primary" text-color="white" >
@@ -422,15 +421,6 @@ export default {
     ImportIntoNewPipeline () {
       if (this.newPipelineName.length && (this.importCollectionConfiguration || this.importFieldsMapping)) {
         this.showImportPopupNewPipeline = false
-        console.log({
-          uid: this.newPipelineUid,
-          name: this.newPipelineName,
-          status: (this.newPipelineStatus && this.newPipelineStatus.length ? this.newPipelineStatus : 'New'),
-          primaryOpenCollector: (this.newPipelineOpenCollector && this.newPipelineOpenCollector.length ? this.newPipelineOpenCollector : null),
-          fieldsMapping: (this.importFieldsMapping && this.ezMarketPipelineTemplate && this.ezMarketPipelineTemplate.mapping_configuration && this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping)) : null),
-          collectionConfig: (this.importCollectionConfiguration && this.ezMarketPipelineTemplate && this.ezMarketPipelineTemplate.collection_configuration && this.ezMarketPipelineTemplate.collection_configuration.collectionConfig ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.collection_configuration.collectionConfig)) : null),
-          options: (this.ezMarketPipelineTemplate && this.ezMarketPipelineTemplate.mapping_configuration && this.ezMarketPipelineTemplate.mapping_configuration.options ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.mapping_configuration.options)) : null)
-        })
         this.upsertPipeline(
           {
             pushToApi: true,
