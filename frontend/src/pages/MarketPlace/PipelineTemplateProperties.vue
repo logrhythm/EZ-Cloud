@@ -9,22 +9,22 @@
             <q-list style="min-width: 20rem">
               <q-item clickable v-close-popup @click="doPromptForNewPipelineDetails()">
                 <q-item-section avatar top>
-                  <q-avatar icon="add" color="primary" text-color="white" >
+                  <q-avatar icon="auto_awesome" color="primary" text-color="white" >
                   </q-avatar>
                 </q-item-section>
                 <q-item-section>
-                  <q-item-label lines="1">Import into new Pipeline</q-item-label>
+                  <q-item-label lines="1">Into new Pipeline</q-item-label>
                   <q-item-label caption>Create a new Pipeline and import this Template</q-item-label>
                 </q-item-section>
               </q-item>
 
-              <q-item clickable v-close-popup>
+              <q-item v-close-popup disabled>
                 <q-item-section avatar top>
                   <q-avatar icon="input" color="purple-10" text-color="white" >
                   </q-avatar>
                 </q-item-section>
                 <q-item-section>
-                  <q-item-label lines="1">Import into existing Pipeline</q-item-label>
+                  <q-item-label lines="1">Into existing Pipeline</q-item-label>
                   <q-item-label caption>Override parts of an existing Pipeline with this Template</q-item-label>
                 </q-item-section>
               </q-item>
@@ -231,7 +231,7 @@
         </q-card-section>
 
         <q-card-section class="q-pt-none">
-          <q-input dense v-model="newPipelineName" autofocus label="Pipeline Name" @keyup.esc="promptForNewPipelineDetails = false" @keyup.enter="ImportIntoNewPipeline()" :rules="[val => !!val || $t('Pipeline name cannot be empty')]" />
+          <q-input dense v-model="newPipelineName" autofocus label="Pipeline Name" @keyup.esc="showImportPopupNewPipeline = false" @keyup.enter="ImportIntoNewPipeline()" :rules="[val => !!val || $t('Pipeline name cannot be empty')]" />
         </q-card-section>
 
         <q-card-section class="q-pt-none">
