@@ -4,7 +4,34 @@
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
         <q-btn no-caps flat dense icon="arrow_back" label="Return to Market Place Pipeline Templates" :to="'/MarketPlace/PipelineTemplates'" />
         <q-separator spaced vertical />
-        <q-btn no-caps flat dense icon="input" color="primary" label="Import" disabled />
+        <q-btn no-caps flat dense icon="input" color="primary" label="Import" >
+          <q-menu>
+            <q-list style="min-width: 20rem">
+            <!-- <q-list> -->
+              <q-item clickable v-close-popup @click="doPromptForNewPipelineDetails()">
+                <q-item-section avatar top>
+                  <q-avatar icon="add" color="primary" text-color="white" >
+                  </q-avatar>
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label lines="1">Import into new Pipeline</q-item-label>
+                  <q-item-label caption>Create a new Pipeline and import this Template</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-close-popup>
+                <q-item-section avatar top>
+                  <q-avatar icon="input" color="purple-10" text-color="white" >
+                  </q-avatar>
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label lines="1">Import into existing Pipeline</q-item-label>
+                  <q-item-label caption>Override parts of an existing Pipeline with this Template</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-btn>
         <q-toolbar-title style="opacity:.4" class="text-center">EZ Market Place : Pipeline Templates : {{ ezMarketPipelineTemplate.name }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
@@ -163,7 +190,7 @@
               dense
               no-data-label="No Fields to display."
               :filter="searchFilter"
-              :loading="dataLoading"
+              :loading="pipelineTemplateLoading"
               rows-per-page-label="Fields per page:"
               :pagination.sync="pagination"
             >
@@ -197,6 +224,53 @@
         </q-card-section>
       </q-card-section>
     </q-card>
+
+    <q-dialog v-model="showImportPopupNewPipeline" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h6">{{ $t('Import Template into a new Pipeline') }}</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-input dense v-model="newPipelineName" autofocus label="Pipeline Name" @keyup.esc="promptForNewPipelineDetails = false" @keyup.enter="ImportIntoNewPipeline()" :rules="[val => !!val || $t('Pipeline name cannot be empty')]" />
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-select dense v-model="newPipelineOpenCollector" :options="openCollectorsOptions" label="Primary Open Collector" emit-value map-options />
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-list style="min-width: 400px">
+            <q-item-label header>Import Options</q-item-label>
+            <q-item tag="label" v-ripple>
+              <q-item-section>
+                <q-item-label>Import Collection Configuation</q-item-label>
+                <q-item-label caption>Include the Shipper's Collection Configuation</q-item-label>
+              </q-item-section>
+              <q-item-section avatar>
+                <q-toggle v-model="importCollectionConfiguration" />
+              </q-item-section>
+            </q-item>
+
+            <q-item tag="label" v-ripple>
+              <q-item-section>
+                <q-item-label>Import Fields Mapping</q-item-label>
+                <q-item-label caption>Include the Shipper's Collection Configuation</q-item-label>
+              </q-item-section>
+              <q-item-section avatar>
+                <q-toggle v-model="importFieldsMapping" />
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-card-section>
+
+        <q-card-actions align="right" class="text-primary q-mt-md">
+          <q-btn flat :label="$t('Cancel')" v-close-popup />
+          <q-btn color="primary" :label="$t('Create from Template')" v-close-popup :disabled="!(newPipelineName.length && (importCollectionConfiguration || importFieldsMapping))" @click="ImportIntoNewPipeline()" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
   </q-page>
 </template>
 
@@ -204,6 +278,7 @@
 import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
+import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import Identicon from 'components/Publisher/Identicon.vue'
 import IconPicture from 'components/Pipelines/IconPicture.vue'
 import TimeAgo from 'javascript-time-ago'
@@ -214,7 +289,8 @@ export default {
   name: 'PageMarketPipelineTemplateProperties',
   mixins: [
     mixinSharedDarkMode, // Shared computed to access and update the DarkMode
-    mixinSharedShipperAndCollectionsHelpers // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
+    mixinSharedShipperAndCollectionsHelpers, // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
+    mixinSharedLoadCollectorsAndPipelines // Shared functions to load the Collectors and Pipelines
   ],
   components: { Identicon, IconPicture },
   data () {
@@ -232,7 +308,14 @@ export default {
         descending: true, // Mapped fields first
         rowsPerPage: 25
       },
-      dataLoading: false
+      pipelineTemplateLoading: false,
+      showImportPopupNewPipeline: false,
+      newPipelineUid: null,
+      newPipelineName: '',
+      newPipelineOpenCollector: null,
+      newPipelineStatus: null,
+      importCollectionConfiguration: true,
+      importFieldsMapping: true
     }
   },
   computed: {
@@ -298,10 +381,22 @@ export default {
         }
       })
       return max
+    },
+    openCollectorsOptions () {
+      const options = []
+      this.openCollectors.forEach(oc => {
+        options.push(
+          {
+            value: oc.uid,
+            label: oc.name + ' (' + oc.hostname + ')'
+          }
+        )
+      })
+      return options
     }
   }, // computed
   methods: {
-    ...mapActions('mainStore', ['loadEzMarketPipelineTemplateById']),
+    ...mapActions('mainStore', ['loadEzMarketPipelineTemplateById', 'upsertPipeline']),
     timeAgo (timestamp) {
       let formattedTimeAgo = 'Some time ago'
       try {
@@ -313,6 +408,46 @@ export default {
         // Fails silently
       }
       return formattedTimeAgo
+    },
+    doPromptForNewPipelineDetails () {
+      this.newPipelineUid = null
+      this.newPipelineName = ''
+      this.newPipelineOpenCollector = null
+      this.newPipelineStatus = null
+      this.importCollectionConfiguration = true
+      this.importFieldsMapping = true
+
+      this.showImportPopupNewPipeline = true
+    },
+    ImportIntoNewPipeline () {
+      if (this.newPipelineName.length && (this.importCollectionConfiguration || this.importFieldsMapping)) {
+        this.showImportPopupNewPipeline = false
+        console.log({
+          uid: this.newPipelineUid,
+          name: this.newPipelineName,
+          status: (this.newPipelineStatus && this.newPipelineStatus.length ? this.newPipelineStatus : 'New'),
+          primaryOpenCollector: (this.newPipelineOpenCollector && this.newPipelineOpenCollector.length ? this.newPipelineOpenCollector : null),
+          fieldsMapping: (this.importFieldsMapping && this.ezMarketPipelineTemplate && this.ezMarketPipelineTemplate.mapping_configuration && this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping)) : null),
+          collectionConfig: (this.importCollectionConfiguration && this.ezMarketPipelineTemplate && this.ezMarketPipelineTemplate.collection_configuration && this.ezMarketPipelineTemplate.collection_configuration.collectionConfig ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.collection_configuration.collectionConfig)) : null),
+          options: (this.ezMarketPipelineTemplate && this.ezMarketPipelineTemplate.mapping_configuration && this.ezMarketPipelineTemplate.mapping_configuration.options ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.mapping_configuration.options)) : null)
+        })
+        this.upsertPipeline(
+          {
+            pushToApi: true,
+            caller: this,
+            pipeline:
+            {
+              uid: this.newPipelineUid,
+              name: this.newPipelineName,
+              status: (this.newPipelineStatus && this.newPipelineStatus.length ? this.newPipelineStatus : 'New'),
+              primaryOpenCollector: (this.newPipelineOpenCollector && this.newPipelineOpenCollector.length ? this.newPipelineOpenCollector : null),
+              fieldsMapping: (this.importFieldsMapping && this.ezMarketPipelineTemplate && this.ezMarketPipelineTemplate.mapping_configuration && this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping)) : null),
+              collectionConfig: (this.importCollectionConfiguration && this.ezMarketPipelineTemplate && this.ezMarketPipelineTemplate.collection_configuration && this.ezMarketPipelineTemplate.collection_configuration.collectionConfig ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.collection_configuration.collectionConfig)) : null),
+              options: (this.ezMarketPipelineTemplate && this.ezMarketPipelineTemplate.mapping_configuration && this.ezMarketPipelineTemplate.mapping_configuration.options ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.mapping_configuration.options)) : null)
+            }
+          }
+        )
+      }
     }
   },
   mounted () {

@@ -99,5 +99,7 @@
   "Delete": "Delete",
   "Confirm": "Confirm",
   "View Notifications": "View Notifications",
-  "View Pipeline Templates": "View Pipeline Templates"
+  "View Pipeline Templates": "View Pipeline Templates",
+  "Import Template into a new Pipeline": "Import Template into a new Pipeline",
+  "Create from Template": "Create from Template"
 }

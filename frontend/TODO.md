@@ -71,10 +71,12 @@
   - [ ] ~~Find a Free-tiered public hosting (for Admin and API)~~ (👈 using journey.logrhythm.com)
   - [ ] ~~Find / register domain~~ (👈 using journey.logrhythm.com)
   - [x] Get notifications from the Market Place
-  - [ ] List available Pipeline Templates
+  - [x] List available Pipeline Templates
   - [ ] Import Pipeline Template
     - [ ] Collection
+      - [x] In new Pipeline
     - [ ] Mapping
+      - [x] In new Pipeline
   - [ ] Export to Market Place
     - [ ] Icon / Visual
     - [ ] Readme
