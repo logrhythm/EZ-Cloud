@@ -11,9 +11,21 @@
     <q-card class="q-pa-md q-mx-none">
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
-            <q-card-section class="text-h4">
-                Pipeline Templates
-            </q-card-section>
+            <q-card-section class="row wrap justify-between">
+            <div class="text-h4">
+              Pipeline Templates
+            </div>
+            <div class="row q-gutter-md">
+              <div style="width:300px;">
+                <q-input outlined dense debounce="300" v-model="searchFilter" placeholder="Search">
+                  <template v-slot:append>
+                    <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
+                    <q-icon name="search" />
+                  </template>
+                </q-input>
+              </div>
+            </div>
+          </q-card-section>
 
             <q-card-section>
               <q-table
@@ -27,28 +39,6 @@
                 rows-per-page-label="Pipeline Templates per page:"
                 :pagination.sync="pagination"
               >
-                <template v-slot:top>
-                  <div class="full-width row wrap justify-between">
-                    <div class="q-table__title">
-                      Pipeline Templates
-                    </div>
-                    <div class="row q-gutter-md">
-                      <div style="width:300px;">
-                        <q-input outlined dense debounce="300" v-model="searchFilter" placeholder="Search">
-                          <template v-slot:append>
-                            <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
-                            <q-icon name="search" />
-                          </template>
-                        </q-input>
-                      </div>
-                      <q-btn dense outline icon="refresh" :loading="dataLoading" @click="reloadEzMarketPipelineTemplates()">
-                        <q-tooltip content-style="font-size: 1em">
-                          Reload the list of Pipeline Templates.
-                        </q-tooltip>
-                      </q-btn>
-                    </div>
-                  </div>
-                </template>
 
                 <template v-slot:body-cell-actions="props">
                   <q-td :props="props">
