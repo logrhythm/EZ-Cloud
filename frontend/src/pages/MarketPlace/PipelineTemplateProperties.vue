@@ -300,7 +300,7 @@ export default {
         { name: 'frequency', align: 'center', label: 'Frequency', field: 'seenInLogCount', sortable: true },
         { name: 'Fields', align: 'left', label: 'Field Full Paths', field: 'name', sortable: true, classes: '', style: 'font-family: monospace; white-space: pre-line;' },
         { name: 'mapping', align: 'center', label: 'Mappings', field: 'mappedField', sortable: true },
-        { name: 'modifiers', align: 'center', label: 'Modifiers', field: 'modifiers', sortable: true }
+        { name: 'modifiers', align: 'center', label: 'Modifiers', field: row => (row.modifiers && Array.isArray(row.modifiers) ? row.modifiers.join(', ') : null), sortable: true }
       ],
       pagination: {
         sortBy: 'mapping',
