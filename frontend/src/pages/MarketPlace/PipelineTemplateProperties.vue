@@ -425,7 +425,7 @@ export default {
             caller: this,
             pipeline:
             {
-              uid: null,
+              uid: '',
               name: this.newPipelineName,
               status: (this.newPipelineStatus && this.newPipelineStatus.length ? this.newPipelineStatus : 'New'),
               primaryOpenCollector: (this.newPipelineOpenCollector && this.newPipelineOpenCollector.length ? this.newPipelineOpenCollector : null),
