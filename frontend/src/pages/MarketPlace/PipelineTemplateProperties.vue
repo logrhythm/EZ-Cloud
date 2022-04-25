@@ -18,7 +18,7 @@
                 </q-item-section>
               </q-item>
 
-              <q-item v-close-popup disabled>
+              <q-item clickable v-close-popup @click="doPromptForExistingPipelineDetails()">
                 <q-item-section avatar top>
                   <q-avatar icon="input" color="purple-10" text-color="white" >
                   </q-avatar>
@@ -270,6 +270,125 @@
       </q-card>
     </q-dialog>
 
+    <q-dialog v-model="showImportPopupExistingPipeline" persistent>
+      <q-card style="min-width: 800px">
+        <q-card-section>
+          <div class="text-h6">{{ $t('Import Template into an existing Pipeline') }}</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-table
+            title="Existing Pipelines"
+            :data="existingPipelineTableData"
+            :columns="existingPipelineTableColumns"
+            row-key="uid"
+            dense
+            no-data-label="No Pipeline to display."
+            :filter="existingPipelineTableSearchFilter"
+            :loading="dataLoading"
+            rows-per-page-label="Pipelines per page:"
+            :pagination.sync="existingPipelineTablePagination"
+          >
+
+            <template v-slot:top>
+              <div class="full-width row wrap justify-between">
+                <div class="q-table__title">
+                  Existing Pipelines
+                </div>
+                <div class="row q-gutter-md">
+                  <div style="width:300px;">
+                    <q-input outlined dense debounce="300" v-model="existingPipelineTableSearchFilter" placeholder="Search">
+                      <template v-slot:append>
+                        <q-btn v-if="existingPipelineTableSearchFilter.length" dense flat icon="close" @click="existingPipelineTableSearchFilter=''" />
+                        <q-icon name="search" />
+                      </template>
+                    </q-input>
+                  </div>
+                  <q-btn dense outline icon="refresh" @click="loadPipelines()">
+                    <q-tooltip content-style="font-size: 1em">
+                      Reload the list of Pipelines.
+                    </q-tooltip>
+                  </q-btn>
+                </div>
+              </div>
+            </template>
+            <template v-slot:body-cell-actions="props">
+              <q-td :props="props">
+                <q-btn dense icon="input" color="primary" class="q-mr-sm" @click="ImportIntoExistingPipeline(props.row, { importCollectionConfiguration: true, importFieldsMapping: true })">
+                  <q-tooltip content-style="font-size: 1em">
+                    {{ $t('Import Collection and Fields Mapping') }}
+                  </q-tooltip>
+                </q-btn>
+                <q-btn flat dense icon="mediation" @click="ImportIntoExistingPipeline(props.row, { importCollectionConfiguration: true, importFieldsMapping: false })">
+                  <q-tooltip content-style="font-size: 1em">
+                    {{ $t('Import Collection only') }}
+                  </q-tooltip>
+                </q-btn>
+                <q-btn flat dense icon="account_tree" @click="ImportIntoExistingPipeline(props.row, { importCollectionConfiguration: false, importFieldsMapping: true })">
+                  <q-tooltip content-style="font-size: 1em">
+                    {{ $t('Import Fields Mapping only') }}
+                  </q-tooltip>
+                </q-btn>
+              </q-td>
+            </template>
+            <template v-slot:body-cell-status="props">
+              <q-td :props="props">
+                <q-icon name="arrow_circle_up" color="green" size="md" v-if="props.value === 'Ready'" />
+                <q-icon name="construction" :color="(darkMode ? 'green-3' : 'green-10')" size="md" v-else-if ="props.value === 'Dev'" />
+                <q-icon name="auto_awesome" size="md" v-else-if ="props.value === 'New'" />
+                <q-icon name="help_center" color="grey" size="md" v-else />
+                <q-tooltip content-style="font-size: 1em">
+                  {{ props.value }}
+                </q-tooltip>
+              </q-td>
+            </template>
+            <template v-slot:body-cell-collectionShipper="props">
+              <q-td :props="props">
+                <img v-if="props.row && props.row.collectionConfig && props.row.collectionConfig.collectionShipper && props.row.collectionConfig.collectionShipper.length" :src="'/shippers/' + collectionShipperDetails(props.row.collectionConfig.collectionShipper).icon + '.svg'" width="32px">
+                <q-tooltip content-style="font-size: 1em">
+                  <span v-if="props.row && props.row.collectionConfig && props.row.collectionConfig.collectionShipper && props.row.collectionConfig.collectionShipper.length" >{{ collectionShipperDetails(props.row.collectionConfig.collectionShipper).label }}</span>
+                </q-tooltip>
+              </q-td>
+            </template>
+            <template v-slot:body-cell-collectionMethod="props">
+              <q-td :props="props">
+                <q-icon :name="collectionMethodDetails(props.row.collectionConfig.collectionShipper, props.row.collectionConfig.collectionMethod).icon" size="md" v-if="props.row && props.row.collectionConfig && props.row.collectionConfig.collectionShipper && props.row.collectionConfig.collectionShipper.length && props.row.collectionConfig.collectionMethod && props.row.collectionConfig.collectionMethod.length" />
+                <q-tooltip content-style="font-size: 1em">
+                  <span v-if="props.row && props.row.collectionConfig && props.row.collectionConfig.collectionShipper && props.row.collectionConfig.collectionShipper.length && props.row.collectionConfig.collectionMethod && props.row.collectionConfig.collectionMethod.length" >{{ collectionMethodDetails(props.row.collectionConfig.collectionShipper, props.row.collectionConfig.collectionMethod).label }}</span>
+                </q-tooltip>
+              </q-td>
+            </template>
+            <template v-slot:body-cell-mappingStats="props">
+              <q-td :props="props">
+                <!-- {{props.value}} -->
+                <div
+                  v-if="props.row.fieldsMapping && Array.isArray(props.row.fieldsMapping) && props.row.fieldsMapping.length"
+                >
+                  <q-circular-progress
+                    :value="Math.round(props.value)"
+                    show-value
+                    :font-size="(props.value < 100 ? '0.5em' : '0.4em')"
+                    size="2.8em"
+                    :thickness="0.2"
+                    :color="(darkMode ? 'blue-3' : 'blue-10')"
+                    :track-color="(darkMode ? 'grey-9' : 'grey-3')"
+                  />
+                  <q-tooltip content-style="font-size: 1em">
+                    <span>Detected fields: {{ props.row.fieldsMapping.length }}</span><br>
+                    <span>Mapped fields: {{ props.row.fieldsMapping.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0) }}</span>&nbsp;(<span class="text-bold">{{ Math.round(props.value * 100) / 100 }}%</span>)
+                  </q-tooltip>
+                </div>
+              </q-td>
+            </template>
+          </q-table>
+        </q-card-section>
+
+        <q-card-actions align="right" class="text-primary q-mt-md">
+          <q-btn flat :label="$t('Close')" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
   </q-page>
 </template>
 
@@ -297,10 +416,10 @@ export default {
       pipelineTemplateUid: '',
       searchFilter: '',
       columns: [
-        { name: 'frequency', align: 'center', label: 'Frequency', field: 'seenInLogCount', sortable: true },
-        { name: 'Fields', align: 'left', label: 'Field Full Paths', field: 'name', sortable: true, classes: '', style: 'font-family: monospace; white-space: pre-line;' },
-        { name: 'mapping', align: 'center', label: 'Mappings', field: 'mappedField', sortable: true },
-        { name: 'modifiers', align: 'center', label: 'Modifiers', field: row => (row.modifiers && Array.isArray(row.modifiers) ? row.modifiers.join(', ') : null), sortable: true }
+        { name: 'frequency', align: 'center', label: this.$t('Frequency'), field: 'seenInLogCount', sortable: true },
+        { name: 'Fields', align: 'left', label: this.$t('Field Full Paths'), field: 'name', sortable: true, classes: '', style: 'font-family: monospace; white-space: pre-line;' },
+        { name: 'mapping', align: 'center', label: this.$t('Mappings'), field: 'mappedField', sortable: true },
+        { name: 'modifiers', align: 'center', label: this.$t('Modifiers'), field: row => (row.modifiers && Array.isArray(row.modifiers) ? row.modifiers.join(', ') : null), sortable: true }
       ],
       pagination: {
         sortBy: 'mapping',
@@ -313,7 +432,22 @@ export default {
       newPipelineOpenCollector: null,
       newPipelineStatus: null,
       importCollectionConfiguration: true,
-      importFieldsMapping: true
+      importFieldsMapping: true,
+      showImportPopupExistingPipeline: false,
+      existingPipelineTableSearchFilter: '',
+      existingPipelineTableColumns: [
+        { name: 'actions', align: 'center', label: this.$t('Actions'), field: 'actions', sortable: false },
+        { name: 'status', align: 'center', label: this.$t('Status'), field: 'status', sortable: true, sort: (a, b, rowA, rowB) => this.statusTextToId(a) - this.statusTextToId(b) },
+        { name: 'name', align: 'center', label: this.$t('Pipeline Name'), field: 'name', sortable: true },
+        { name: 'collectionShipper', align: 'center', label: this.$t('Shipper'), field: row => row.collectionConfig.collectionShipper, sortable: true },
+        { name: 'collectionMethod', align: 'center', label: this.$t('Method'), field: row => row.collectionConfig.collectionMethod, sortable: true },
+        { name: 'mappingStats', align: 'center', label: this.$t('Mapping (%)'), field: row => (row.fieldsMapping && Array.isArray(row.fieldsMapping) && row.fieldsMapping.length > 0 ? row.fieldsMapping.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0) / row.fieldsMapping.length * 100 : null), sortable: true }
+      ],
+      existingPipelineTablePagination: {
+        sortBy: 'status',
+        descending: true,
+        rowsPerPage: 10
+      }
     }
   },
   computed: {
@@ -370,6 +504,16 @@ export default {
           ? this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping
           : []
       )
+    },
+    existingPipelineTableData () {
+      const list = []
+      this.pipelines.forEach(pipeline => {
+        const pipelineOpenCollector = this.openCollectors.find(oc => oc.uid === pipeline.primaryOpenCollector)
+        list.push(Object.assign({}, pipeline, {
+          openCollector: (pipelineOpenCollector && pipelineOpenCollector.name && pipelineOpenCollector.hostname ? pipelineOpenCollector.name + ' (' + pipelineOpenCollector.hostname + ')' : null)
+        }))
+      })
+      return list
     },
     maxSeenInLog () {
       let max = 0
@@ -435,6 +579,85 @@ export default {
             }
           }
         )
+      }
+    },
+    collectionMethodDetails (shipperId, methodId) {
+      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'help_center' }
+      if (shipperId && shipperId.length && methodId && methodId.length) {
+        return this.collectionMethodsOptions.find(cmo => cmo.shipper && cmo.shipper === shipperId && cmo.value && cmo.value === methodId) || fallbackValue
+      } else {
+        // return fallbackValue
+        return methodId
+      }
+    },
+    statusTextToId (statusName) {
+      let status = 0
+      if (statusName === 'Ready') {
+        status = 3
+      }
+      if (statusName === 'Dev') {
+        status = 2
+      }
+      if (statusName === 'New') {
+        status = 1
+      }
+      return status
+    },
+    doPromptForExistingPipelineDetails () {
+      this.showImportPopupExistingPipeline = true
+    },
+    ImportIntoExistingPipeline (selectedExistingPipeline, options) {
+      if (selectedExistingPipeline && selectedExistingPipeline.uid && selectedExistingPipeline.uid.length && options) {
+        const PipelineUid = selectedExistingPipeline.uid
+        const PipelineName = selectedExistingPipeline.name
+        const PipelineOpenCollector = selectedExistingPipeline.primaryOpenCollector || null
+        const PipelineStatus = selectedExistingPipeline.status
+        const importCollectionConfiguration = (options ? !!options.importCollectionConfiguration : false)
+        const importFieldsMapping = (options ? !!options.importFieldsMapping : false)
+
+        if (PipelineName.length && (importCollectionConfiguration || importFieldsMapping)) {
+          let confirmationMessage = ''
+          if (importCollectionConfiguration && importFieldsMapping) {
+            confirmationMessage = this.$t('This will overide any existing Collection Configuration and Fields Mapping in the selected Pipeline. Are you sure?')
+          } else if (importCollectionConfiguration) {
+            confirmationMessage = this.$t('This will overide any existing Collection Configuration in the selected Pipeline. Are you sure?')
+          } else if (importFieldsMapping) {
+            confirmationMessage = this.$t('This will overide any existing Fields Mapping in the selected Pipeline. Are you sure?')
+          }
+
+          this.$q.dialog({
+            title: this.$t('Confirm overide'),
+            message: confirmationMessage,
+            ok: {
+              push: true,
+              color: 'negative'
+            },
+            cancel: {
+              push: true,
+              color: 'positive'
+            },
+            persistent: true
+          }).onOk(() => {
+            this.upsertPipeline(
+              {
+                pushToApi: true,
+                caller: this,
+                pipeline:
+                {
+                  uid: PipelineUid,
+                  name: PipelineName,
+                  status: (PipelineStatus && PipelineStatus.length ? PipelineStatus : 'New'),
+                  primaryOpenCollector: (PipelineOpenCollector && PipelineOpenCollector.length ? PipelineOpenCollector : null),
+                  fieldsMapping: (importFieldsMapping && this.ezMarketPipelineTemplate && this.ezMarketPipelineTemplate.mapping_configuration && this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping)) : null),
+                  collectionConfig: (importCollectionConfiguration && this.ezMarketPipelineTemplate && this.ezMarketPipelineTemplate.collection_configuration && this.ezMarketPipelineTemplate.collection_configuration.collectionConfig ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.collection_configuration.collectionConfig)) : null),
+                  options: (this.ezMarketPipelineTemplate && this.ezMarketPipelineTemplate.mapping_configuration && this.ezMarketPipelineTemplate.mapping_configuration.options ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.mapping_configuration.options)) : null)
+                },
+                onSuccessCallBack: this.loadPipelines,
+                onErrorCallBack: this.loadPipelines
+              }
+            )
+          }) // }).onOk(() => {
+        }
       }
     }
   },

@@ -73,10 +73,13 @@
   - [x] Get notifications from the Market Place
   - [x] List available Pipeline Templates
   - [ ] Import Pipeline Template
-    - [ ] Collection
+    - [x] Collection
       - [x] In new Pipeline
-    - [ ] Mapping
+      - [x] In existing Pipeline
+    - [x] Mapping
       - [x] In new Pipeline
+      - [x] In existing Pipeline
+    - [ ] From the template itself
   - [ ] Export to Market Place
     - [ ] Icon / Visual
     - [ ] Readme
