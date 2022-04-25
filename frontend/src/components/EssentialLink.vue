@@ -29,7 +29,7 @@
       </q-item-label> -->
     </q-item-section>
 
-    <q-menu auto-close anchor="center left" self="center start" v-if="subMenus && subMenus.length">
+    <q-menu auto-close anchor="center start" self="center start" v-if="subMenus && subMenus.length">
       <q-list padding class="">
         <EssentialLink
           v-for="subMenu in subMenus"
