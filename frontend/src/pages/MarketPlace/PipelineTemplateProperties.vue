@@ -309,7 +309,6 @@ export default {
       },
       pipelineTemplateLoading: false,
       showImportPopupNewPipeline: false,
-      newPipelineUid: null,
       newPipelineName: '',
       newPipelineOpenCollector: null,
       newPipelineStatus: null,
@@ -409,7 +408,6 @@ export default {
       return formattedTimeAgo
     },
     doPromptForNewPipelineDetails () {
-      this.newPipelineUid = null
       this.newPipelineName = ''
       this.newPipelineOpenCollector = null
       this.newPipelineStatus = null
@@ -427,7 +425,7 @@ export default {
             caller: this,
             pipeline:
             {
-              uid: this.newPipelineUid,
+              uid: null,
               name: this.newPipelineName,
               status: (this.newPipelineStatus && this.newPipelineStatus.length ? this.newPipelineStatus : 'New'),
               primaryOpenCollector: (this.newPipelineOpenCollector && this.newPipelineOpenCollector.length ? this.newPipelineOpenCollector : null),
