@@ -784,7 +784,7 @@ export function loadEzMarketPipelineTemplateById ({ state, commit }, pipelineTem
   if (pipelineTemplateUid && pipelineTemplateUid.length && state.ezMarketPipelineTemplates.find((pipelineTemplate) => pipelineTemplate && pipelineTemplate.uid === pipelineTemplateUid)) {
     // Clear the currently loaded item, if different from the one we are about to load
     if (!(state.ezMarketPipelineTemplate && state.ezMarketPipelineTemplate.uid && state.ezMarketPipelineTemplate.uid === pipelineTemplateUid)) {
-      console.log('🧹 Clear the currently loaded item')
+      console.log('🧹 Clear the currently loaded Market Pipeline Template')
       commit('updateEzMarketPipelineTemplateById', [{}])
     }
 
