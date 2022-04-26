@@ -175,9 +175,9 @@
               </q-table>
             </q-card-section>
 
-            <q-card-section class="">
+            <!-- <q-card-section class="">
                 <pre>{{ ezMarketPipelineTemplates }}</pre>
-            </q-card-section>
+            </q-card-section> -->
           </q-card-section>
 
           <q-separator vertical />

@@ -211,7 +211,7 @@
       </q-card-section>
     </q-card>
 
-    <q-card class="q-pa-md q-mx-none q-mb-md">
+    <!-- <q-card class="q-pa-md q-mx-none q-mb-md">
       <q-card-section horizontal>
         <q-card-section class="col q-ma-none q-pa-none">
           <q-card-section class="text-h4">
@@ -222,7 +222,7 @@
           </q-card-section>
         </q-card-section>
       </q-card-section>
-    </q-card>
+    </q-card> -->
 
     <q-dialog v-model="showImportPopupNewPipeline" persistent>
       <q-card style="min-width: 350px">
