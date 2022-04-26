@@ -782,6 +782,12 @@ export function loadEzMarketPipelineTemplateById ({ state, commit }, pipelineTem
   const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
 
   if (pipelineTemplateUid && pipelineTemplateUid.length && state.ezMarketPipelineTemplates.find((pipelineTemplate) => pipelineTemplate && pipelineTemplate.uid === pipelineTemplateUid)) {
+    // Clear the currently loaded item, if different from the one we are about to load
+    if (!(state.ezMarketPipelineTemplate && state.ezMarketPipelineTemplate.uid && state.ezMarketPipelineTemplate.uid === pipelineTemplateUid)) {
+      console.log('🧹 Clear the currently loaded item')
+      commit('updateEzMarketPipelineTemplateById', [{}])
+    }
+
     console.log('☁️ Downloading Pipeline Template from EZ Cloud Market Place...')
 
     // Using Fetch here, instead of getDataFromSite to avoid CORS problems
