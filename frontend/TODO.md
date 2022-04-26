@@ -79,7 +79,9 @@
     - [x] Mapping
       - [x] In new Pipeline
       - [x] In existing Pipeline
-    - [ ] From the template itself
+    - [ ] From the target Pipeline itself
+      - [ ] Collection
+      - [ ] Mapping
   - [ ] Export to Market Place
     - [ ] Icon / Visual
     - [ ] Readme
