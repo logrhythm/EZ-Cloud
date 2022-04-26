@@ -552,7 +552,7 @@ export default {
       return formattedTimeAgo
     },
     doPromptForNewPipelineDetails () {
-      this.newPipelineName = ''
+      this.newPipelineName = this.ezMarketPipelineTemplate.name
       this.newPipelineOpenCollector = null
       this.newPipelineStatus = null
       this.importCollectionConfiguration = true
