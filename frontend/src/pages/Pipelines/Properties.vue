@@ -632,7 +632,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions('mainStore', ['upsertPipeline', 'deleteDeployment']),
+    ...mapActions('mainStore', ['upsertPipeline', 'deleteDeployment', 'adaptPipelineCollectionConfiguration']),
     editPipelineCollection () {
       this.$router.push({ path: '/Pipelines/' + this.pipelineUid + '/Collection/Edit' })
     }, // editPipelineCollection
@@ -875,54 +875,6 @@ export default {
               // Parse
               parsedFileContent = JSON.parse(fileContent)
 
-              // Extract Shipper and Method
-              const collectionShipper = (
-                parsedFileContent &&
-                parsedFileContent.collectionShipper &&
-                parsedFileContent.collectionShipper.length
-                  ? parsedFileContent.collectionShipper
-                  : null
-              )
-              // eslint-disable-next-line no-unused-vars
-              const collectionMethod = (
-                parsedFileContent &&
-                parsedFileContent.collectionMethod &&
-                parsedFileContent.collectionMethod.length
-                  ? parsedFileContent.collectionMethod
-                  : null
-              )
-
-              // Replace Pipeline identifiers
-              // Beat: genericbeat
-              if (collectionShipper === 'genericbeat') {
-                parsedFileContent.beatIdentifier = String(this.pipeline.uid.substring(0, 3) + '_' + this.pipeline.name.replace(/[^a-zA-Z0-9]/g, '_') + '_' + this.pipeline.uid).substring(0, 12)
-                parsedFileContent.logsource_name = this.pipeline.name
-              }
-              // Beat: filebeat
-              if (collectionShipper === 'filebeat') {
-                // Ensure we have the .fields branch
-                parsedFileContent.fields = parsedFileContent.fields || {}
-
-                parsedFileContent.fields.stream_id = this.pipeline.uid
-                parsedFileContent.fields.stream_name = this.pipeline.name
-              }
-              // Beat: jsBeat
-              if (collectionShipper === 'jsBeat') {
-                // Ensure we have the .fields branch
-                parsedFileContent.filterHelpers = parsedFileContent.filterHelpers || {}
-
-                parsedFileContent.filterHelpers.stream_id = this.pipeline.uid
-                parsedFileContent.filterHelpers.stream_name = this.pipeline.name
-                parsedFileContent.uid = this.pipeline.uid
-                parsedFileContent.name = this.pipeline.name
-              }
-
-              // Beat: webhookbeat
-              if (collectionShipper === 'webhookbeat') {
-                parsedFileContent.beatIdentifier = String(this.pipeline.uid.substring(0, 3) + '_' + this.pipeline.name.replace(/[^a-zA-Z0-9]/g, '_') + '_' + this.pipeline.uid).substring(0, 12)
-                parsedFileContent.logsource_name = this.pipeline.name
-              }
-
               // Update Pipeline and Persist
               this.upsertPipeline(
                 {
@@ -932,7 +884,12 @@ export default {
                   {
                     uid: this.pipelineUid,
                     status: (this.pipeline && this.pipeline.status && this.pipeline.status === 'Ready' ? this.pipeline.status : 'Dev'),
-                    collectionConfig: parsedFileContent
+                    collectionConfig: await this.adaptPipelineCollectionConfiguration(
+                      {
+                        importedCollectionConfiguration: parsedFileContent,
+                        targetDetails: { uid: this.pipelineUid, name: this.pipeline.name }
+                      }
+                    )
                   },
                   onSuccessCallBack: this.loadPipelines,
                   onErrorCallBack: this.loadPipelines
