@@ -274,7 +274,7 @@ export function upsertPipeline ({ state, commit }, payload) {
           caller: (payload && payload.caller ? payload.caller : this._vm),
           onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
           onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
-          debug: false
+          debug: (payload && payload.debug ? payload.debug : false)
         })
       }
     }
@@ -819,6 +819,74 @@ export function loadEzMarketPipelineTemplateById ({ state, commit }, pipelineTem
         console.log('⚠️ [API ERROR] Loading error: ' + error.message)
       })
   }
+}
+
+// ######################################################################
+// HELPERS
+// ######################################################################
+
+export function adaptPipelineCollectionConfiguration (dummy, payload) {
+  const importedCollectionConfiguration = payload.importedCollectionConfiguration || {}
+  const targetDetails = payload.targetDetails || {}
+  // Target Details should include:
+  // - uid
+  // - name
+
+  try {
+    // Parse
+    const parsedImportedCollectionConfiguration = (importedCollectionConfiguration ? JSON.parse(JSON.stringify(importedCollectionConfiguration)) : null)
+
+    // Extract UID and Name
+    const targetPipelineUid = targetDetails.uid
+    const targetPipelineName = targetDetails.name
+
+    // Extract Shipper and Method
+    const collectionShipper = (
+      parsedImportedCollectionConfiguration &&
+      parsedImportedCollectionConfiguration.collectionShipper &&
+      parsedImportedCollectionConfiguration.collectionShipper.length
+        ? parsedImportedCollectionConfiguration.collectionShipper
+        : null
+    )
+
+    // Replace Pipeline identifiers
+
+    // Beat: filebeat
+    if (collectionShipper === 'filebeat') {
+      // Ensure we have the .fields branch
+      parsedImportedCollectionConfiguration.fields = parsedImportedCollectionConfiguration.fields || {}
+
+      parsedImportedCollectionConfiguration.fields.stream_id = targetPipelineUid
+      parsedImportedCollectionConfiguration.fields.stream_name = targetPipelineName
+    }
+    // Beat: jsBeat
+    if (collectionShipper === 'jsBeat') {
+      // Ensure we have the .fields branch
+      parsedImportedCollectionConfiguration.filterHelpers = parsedImportedCollectionConfiguration.filterHelpers || {}
+
+      parsedImportedCollectionConfiguration.filterHelpers.stream_id = targetPipelineUid
+      parsedImportedCollectionConfiguration.filterHelpers.stream_name = targetPipelineName
+      parsedImportedCollectionConfiguration.uid = targetPipelineUid
+      parsedImportedCollectionConfiguration.name = targetPipelineName
+    }
+
+    // LogRhythm Beats
+    if (
+      [
+        'genericbeat',
+        'webhookbeat'
+      ].includes(collectionShipper)
+    ) {
+      parsedImportedCollectionConfiguration.beatIdentifier = String(targetPipelineUid.substring(0, 3) + '_' + targetPipelineName.replace(/[^a-zA-Z0-9]/g, '_') + '_' + targetPipelineUid).substring(0, 12)
+      parsedImportedCollectionConfiguration.logsource_name = targetPipelineName
+    }
+
+    // Pat on the back everyone! Job done.
+    return parsedImportedCollectionConfiguration
+  } catch (error) {
+    console.log('⚠️ [IMPORT] Parsing error: Could not parse or adapt Configuration Collection.', error.message)
+  }
+  return null
 }
 
 //           ###    ########  ####       ##     ## ######## #### ##       #### ######## #### ########  ######
