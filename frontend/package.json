@@ -1,6 +1,6 @@
 {
   "name": "ez-cloud-client",
-  "version": "0.8.5",
+  "version": "0.8.6",
   "description": "User Interface for EZ-Cloud for Legacy SIEM",
   "productName": "EZ Cloud Client",
   "author": "Tony Massé <tony.masse@logrhythm.com>",
