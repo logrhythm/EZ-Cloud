@@ -393,6 +393,7 @@
 </template>
 
 <script>
+import { uid } from 'quasar'
 import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
@@ -538,7 +539,7 @@ export default {
     }
   }, // computed
   methods: {
-    ...mapActions('mainStore', ['loadEzMarketPipelineTemplateById', 'upsertPipeline']),
+    ...mapActions('mainStore', ['loadEzMarketPipelineTemplateById', 'upsertPipeline', 'adaptPipelineCollectionConfiguration']),
     timeAgo (timestamp) {
       let formattedTimeAgo = 'Some time ago'
       try {
@@ -560,21 +561,44 @@ export default {
 
       this.showImportPopupNewPipeline = true
     },
-    ImportIntoNewPipeline () {
+    async ImportIntoNewPipeline () {
       if (this.newPipelineName.length && (this.importCollectionConfiguration || this.importFieldsMapping)) {
         this.showImportPopupNewPipeline = false
+
+        // Create new UID
+        const newPipelineUid = uid()
+
         this.upsertPipeline(
           {
             pushToApi: true,
             caller: this,
             pipeline:
             {
-              uid: '',
+              uid: newPipelineUid,
               name: this.newPipelineName,
               status: (this.newPipelineStatus && this.newPipelineStatus.length ? this.newPipelineStatus : 'New'),
               primaryOpenCollector: (this.newPipelineOpenCollector && this.newPipelineOpenCollector.length ? this.newPipelineOpenCollector : null),
-              fieldsMapping: (this.importFieldsMapping && this.ezMarketPipelineTemplate && this.ezMarketPipelineTemplate.mapping_configuration && this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping)) : null),
-              collectionConfig: (this.importCollectionConfiguration && this.ezMarketPipelineTemplate && this.ezMarketPipelineTemplate.collection_configuration && this.ezMarketPipelineTemplate.collection_configuration.collectionConfig ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.collection_configuration.collectionConfig)) : null),
+              fieldsMapping: (
+                this.importFieldsMapping &&
+                this.ezMarketPipelineTemplate &&
+                this.ezMarketPipelineTemplate.mapping_configuration &&
+                this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping
+                  ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping))
+                  : null
+              ),
+              collectionConfig: (
+                this.importCollectionConfiguration &&
+                this.ezMarketPipelineTemplate &&
+                this.ezMarketPipelineTemplate.collection_configuration &&
+                this.ezMarketPipelineTemplate.collection_configuration.collectionConfig
+                  ? await this.adaptPipelineCollectionConfiguration(
+                    {
+                      importedCollectionConfiguration: this.ezMarketPipelineTemplate.collection_configuration.collectionConfig,
+                      targetDetails: { uid: newPipelineUid, name: this.newPipelineName }
+                    }
+                  )
+                  : null
+              ),
               options: (this.ezMarketPipelineTemplate && this.ezMarketPipelineTemplate.mapping_configuration && this.ezMarketPipelineTemplate.mapping_configuration.options ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.mapping_configuration.options)) : null)
             }
           }
@@ -608,14 +632,14 @@ export default {
     },
     ImportIntoExistingPipeline (selectedExistingPipeline, options) {
       if (selectedExistingPipeline && selectedExistingPipeline.uid && selectedExistingPipeline.uid.length && options) {
-        const PipelineUid = selectedExistingPipeline.uid
-        const PipelineName = selectedExistingPipeline.name
-        const PipelineOpenCollector = selectedExistingPipeline.primaryOpenCollector || null
-        const PipelineStatus = selectedExistingPipeline.status
+        const pipelineUid = selectedExistingPipeline.uid
+        const pipelineName = selectedExistingPipeline.name
+        const pipelineOpenCollector = selectedExistingPipeline.primaryOpenCollector || null
+        const pipelineStatus = selectedExistingPipeline.status
         const importCollectionConfiguration = (options ? !!options.importCollectionConfiguration : false)
         const importFieldsMapping = (options ? !!options.importFieldsMapping : false)
 
-        if (PipelineName.length && (importCollectionConfiguration || importFieldsMapping)) {
+        if (pipelineName.length && (importCollectionConfiguration || importFieldsMapping)) {
           let confirmationMessage = ''
           if (importCollectionConfiguration && importFieldsMapping) {
             confirmationMessage = this.$t('This will overide any existing Collection Configuration and Fields Mapping in the selected Pipeline. Are you sure?')
@@ -637,19 +661,38 @@ export default {
               color: 'positive'
             },
             persistent: true
-          }).onOk(() => {
+          }).onOk(async () => {
             this.upsertPipeline(
               {
                 pushToApi: true,
                 caller: this,
                 pipeline:
                 {
-                  uid: PipelineUid,
-                  name: PipelineName,
-                  status: (PipelineStatus && PipelineStatus.length ? PipelineStatus : 'New'),
-                  primaryOpenCollector: (PipelineOpenCollector && PipelineOpenCollector.length ? PipelineOpenCollector : null),
-                  fieldsMapping: (importFieldsMapping && this.ezMarketPipelineTemplate && this.ezMarketPipelineTemplate.mapping_configuration && this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping)) : null),
-                  collectionConfig: (importCollectionConfiguration && this.ezMarketPipelineTemplate && this.ezMarketPipelineTemplate.collection_configuration && this.ezMarketPipelineTemplate.collection_configuration.collectionConfig ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.collection_configuration.collectionConfig)) : null),
+                  uid: pipelineUid,
+                  name: pipelineName,
+                  status: (pipelineStatus && pipelineStatus.length ? pipelineStatus : 'New'),
+                  primaryOpenCollector: (pipelineOpenCollector && pipelineOpenCollector.length ? pipelineOpenCollector : null),
+                  fieldsMapping: (
+                    importFieldsMapping &&
+                    this.ezMarketPipelineTemplate &&
+                    this.ezMarketPipelineTemplate.mapping_configuration &&
+                    this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping
+                      ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.mapping_configuration.fieldsMapping))
+                      : null
+                  ),
+                  collectionConfig: (
+                    importCollectionConfiguration &&
+                    this.ezMarketPipelineTemplate &&
+                    this.ezMarketPipelineTemplate.collection_configuration &&
+                    this.ezMarketPipelineTemplate.collection_configuration.collectionConfig
+                      ? await this.adaptPipelineCollectionConfiguration(
+                        {
+                          importedCollectionConfiguration: this.ezMarketPipelineTemplate.collection_configuration.collectionConfig,
+                          targetDetails: { uid: pipelineUid, name: pipelineName }
+                        }
+                      )
+                      : null
+                  ),
                   options: (this.ezMarketPipelineTemplate && this.ezMarketPipelineTemplate.mapping_configuration && this.ezMarketPipelineTemplate.mapping_configuration.options ? JSON.parse(JSON.stringify(this.ezMarketPipelineTemplate.mapping_configuration.options)) : null)
                 },
                 onSuccessCallBack: this.loadPipelines,
