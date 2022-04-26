@@ -16,6 +16,7 @@
     - [ ] Mapping
       - [ ] Check for sensitive information
         - [ ] Better UI
+      - [ ] Procedural scrubber to remove Shared Values
   - [ ] Sends Message/Notification to Pipeline's Publisher
 
 ## TO FIX
