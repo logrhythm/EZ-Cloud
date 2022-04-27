@@ -808,12 +808,42 @@ export function loadEzMarketPipelineTemplateById ({ state, commit }, { pipelineT
       })
       .then(data => {
         if (data && data.records && Array.isArray(data.records)) {
+          // Clean up to data
+          let pipelineTemplate
+          try {
+            pipelineTemplate = JSON.parse(JSON.stringify(data.records[0] || {}))
+            // Parse the stats (as they are stored as stringified JSON in the database)
+            try {
+              pipelineTemplate.stats = JSON.parse(pipelineTemplate.stats) || {}
+            } catch (error) {
+              pipelineTemplate.stats = {}
+            }
+
+            // Parse the Collection Configuration (as it's are stored as stringified JSON in the database)
+            try {
+              pipelineTemplate.collection_configuration = JSON.parse(pipelineTemplate.collection_configuration) || {}
+            } catch (error) {
+              pipelineTemplate.collection_configuration = {}
+            }
+
+            // Parse the Fields Mapping (as it's are stored as stringified JSON in the database)
+            try {
+              pipelineTemplate.mapping_configuration = JSON.parse(pipelineTemplate.mapping_configuration) || {}
+            } catch (error) {
+              pipelineTemplate.mapping_configuration = {}
+            }
+          } catch (error) {
+            // Fall back on the raw data
+            pipelineTemplate = data.records[0] || {}
+          }
+
           // Push the whole lot to the State
-          commit('updateEzMarketPipelineTemplateById', data.records)
+          commit('updateEzMarketPipelineTemplateById', pipelineTemplate)
+
           console.log(`✔️ [API SUCCESS] Succesfully loaded ${data.records.length} Pipeline Template.`)
           if (typeof onSuccessCallBack === 'function') {
             onSuccessCallBack({
-              data: (data && data.records ? data.records : undefined),
+              data: pipelineTemplate,
               success: true,
               params,
               messageForLogAndPopup: null
