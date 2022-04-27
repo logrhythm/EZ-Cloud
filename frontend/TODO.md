@@ -1,5 +1,41 @@
 # TODO - Frontend
 
+### Target: v0.9
+
+## TO DO
+- [ ] LogRhythm Beats mapping for Collection Configuration
+  - [ ] Azure Event Hub
+    - [ ] With custom Mapping
+    - [ ] Without custom Mapping
+  - [ ] S3
+  - [ ] Azure Event Hub
+    - [ ] With custom Mapping
+    - [ ] Without custom Mapping
+  - [ ] WebHook
+    - [ ] https
+  - [ ] PubSub
+  - [ ] Kafka
+  - ...
+- [ ] Add a simple Wizard from landing page
+  - [ ] Ask for name for Log Source
+  - [ ] Create collection configuation
+    - [ ] Pick Shipper
+    - [ ] Pick type of collection (Flat File, Syslog, REST, etc...)
+    - [ ] Configure it
+  - [ ] Pick up Open Collector
+    - [ ] Add one if none in the list
+    - [ ] Offer to deploy required Shipper if not already on OC
+  - [ ] Create field mapping
+    - [ ] Run pre-configured Tail
+  - [ ] Recap page
+    - [ ] Ability to rename Log Source
+    - [ ] Ability to assign Log Source to other Open Collectors
+    - [ ] Ability to Enable / Commit the Log Source creation
+
+## TO FIX
+
+## TO TEST
+
 ### Target: v0.8
 
 ## TO DO
@@ -43,21 +79,6 @@
       - [x] As an Set of Logs
       - [x] Write Wiki help page to explain the difference
         - https://github.com/TonyMasse/EZ-Cloud/wiki/Help#ref-whatsthedifferencefileimport
-- [ ] Add a simple Wizard from landing page
-  - [ ] Ask for name for Log Source
-  - [ ] Create collection configuation
-    - [ ] Pick Shipper
-    - [ ] Pick type of collection (Flat File, Syslog, REST, etc...)
-    - [ ] Configure it
-  - [ ] Pick up Open Collector
-    - [ ] Add one if none in the list
-    - [ ] Offer to deploy required Shipper if not already on OC
-  - [ ] Create field mapping
-    - [ ] Run pre-configured Tail
-  - [ ] Recap page
-    - [ ] Ability to rename Log Source
-    - [ ] Ability to assign Log Source to other Open Collectors
-    - [ ] Ability to Enable / Commit the Log Source creation
 - [ ] Provide feedback if failing to connect over SSH
   - [x] In Open Collectors list page
     - [x] On version check
@@ -108,14 +129,9 @@
   - [ ] ~~Import Mapping from Copy/Paste~~ (👈 low value, low priority. Might resurect if users demand)
   - [x] Export Mapping to file
   - [ ] ~~Export Mapping to Copy/Paste~~ (👈 low value, low priority. Might resurect if users demand)
-- [ ] LogRhythm Beats mapping for Collection Configuration
-  - [ ] Azure Event Hub
-  - [ ] S3
-  - [ ] WebHook
+- [x] LogRhythm Beats mapping for Collection Configuration
+  - [x] WebHook
     - [x] http (Contribution from @Jt3kt)
-    - [ ] https
-  - [ ] PubSub
-  - [ ] Kafka
   - ...
 - Open Collector Properties
   - [ ] ~~SUDO requirement~~ (👈 we are using a non-interactive TTY, so we can't provide any extra creds for `sudo`)
