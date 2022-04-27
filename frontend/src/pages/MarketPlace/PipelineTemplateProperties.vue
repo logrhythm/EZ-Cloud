@@ -712,7 +712,7 @@ export default {
     }
 
     if (!(this.ezMarketPipelineTemplates && this.ezMarketPipelineTemplates.length)) {
-      this.loadEzMarketPipelineTemplateById(this.pipelineTemplateUid)
+      this.loadEzMarketPipelineTemplateById({ pipelineTemplateUid: this.pipelineTemplateUid })
     }
   }
 }

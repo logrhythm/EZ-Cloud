@@ -777,7 +777,7 @@ export function reloadEzMarketPipelineTemplates ({ state, commit }, payload) {
     })
 }
 
-export function loadEzMarketPipelineTemplateById ({ state, commit }, pipelineTemplateUid) {
+export function loadEzMarketPipelineTemplateById ({ state, commit }, { pipelineTemplateUid, onSuccessCallBack, onErrorCallBack, params }) {
   // Building the full URL of the API root
   const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
 
@@ -811,7 +811,23 @@ export function loadEzMarketPipelineTemplateById ({ state, commit }, pipelineTem
           // Push the whole lot to the State
           commit('updateEzMarketPipelineTemplateById', data.records)
           console.log(`✔️ [API SUCCESS] Succesfully loaded ${data.records.length} Pipeline Template.`)
+          if (typeof onSuccessCallBack === 'function') {
+            onSuccessCallBack({
+              data: (data && data.records ? data.records : undefined),
+              success: true,
+              params,
+              messageForLogAndPopup: null
+            })
+          }
         } else {
+          if (typeof onErrorCallBack === 'function') {
+            onErrorCallBack({
+              data: (data && data.records ? data.records : undefined),
+              success: false,
+              params,
+              messageForLogAndPopup: 'Returned data wasn\'t a proper JSON array.'
+            })
+          }
           throw new Error('Returned data wasn\'t a proper JSON array.')
         }
       })
