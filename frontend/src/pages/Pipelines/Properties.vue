@@ -1557,29 +1557,23 @@ export default {
               parsedFileContent = JSON.parse(fileContent)
 
               // Update Pipeline and Persist
-              this.upsertPipeline(
-                {
-                  caller: this,
-                  pushToApi: true,
-                  pipeline:
-                  {
-                    uid: this.pipelineUid,
-                    status: (this.pipeline && this.pipeline.status && this.pipeline.status === 'Ready' ? this.pipeline.status : 'Dev'),
-                    fieldsMapping: parsedFileContent.fieldsMapping || [],
-                    // Update / Add extractMessageFieldOnly and any saved options to the Pipeline's Options
-                    options: { ...(this.pipeline && this.pipeline.options ? this.pipeline.options : {}), ...(parsedFileContent && parsedFileContent.options ? parsedFileContent.options : {}) }
-                  },
-                  onSuccessCallBack: this.loadPipelines,
-                  onErrorCallBack: this.loadPipelines
-                }
-              )
-              notificationPopupId({
-                type: 'positive',
-                color: 'positive',
-                icon: 'check',
-                message: this.$t('Shared Fields Mapping file imported'),
-                caption: fileName
-              })
+              if (
+                this.importFromEZImportableConfig(
+                  undefined,
+                  parsedFileContent.fieldsMapping || [],
+                  { ...(this.pipeline && this.pipeline.options ? this.pipeline.options : {}), ...(parsedFileContent && parsedFileContent.options ? parsedFileContent.options : {}) }
+                )
+              ) {
+                notificationPopupId({
+                  type: 'positive',
+                  color: 'positive',
+                  icon: 'check',
+                  message: this.$t('Shared Fields Mapping file imported'),
+                  caption: fileName
+                })
+              } else {
+                thereWasAnError = true
+              }
             } catch (error) {
               thereWasAnError = true
               this.$root.$emit('addAndShowErrorToErrorPanel',
