@@ -104,6 +104,7 @@
       - [x] Collection
       - [x] Mapping
   - [ ] Export to Market Place
+    - [ ] User's Pseudo-name
     - [ ] Icon / Visual
     - [ ] Readme
     - [ ] Collection
