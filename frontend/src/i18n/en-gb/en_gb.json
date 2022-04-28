@@ -122,5 +122,19 @@
   "Confirm overide": "Confirm overide",
   "This will overide any existing Collection Configuration and Fields Mapping in the selected Pipeline. Are you sure?": "This will overide any existing Collection Configuration and Fields Mapping in the selected Pipeline. Are you sure?",
   "This will overide any existing Collection Configuration in the selected Pipeline. Are you sure?": "This will overide any existing Collection Configuration in the selected Pipeline. Are you sure?",
-  "This will overide any existing Fields Mapping in the selected Pipeline. Are you sure?": "This will overide any existing Fields Mapping in the selected Pipeline. Are you sure?"
+  "This will overide any existing Fields Mapping in the selected Pipeline. Are you sure?": "This will overide any existing Fields Mapping in the selected Pipeline. Are you sure?",
+  "Open Pipeline Template full properties": "Open Pipeline Template full properties",
+  "Import EZ Cloud Pipeline Template": "Import EZ Cloud Pipeline Template",
+  "Importing Shared Collection Configuration from Template...": "Importing Shared Collection Configuration from Template...",
+  "Importing Shared Fields Mapping from Template...": "Importing Shared Fields Mapping from Template...",
+  "Importing Shared Collection Configuration and Fields Mapping from Template...": "Importing Shared Collection Configuration and Fields Mapping from Template...",
+  "Shared Collection Configuration imported from Template...": "Shared Collection Configuration imported from Template...",
+  "Shared Fields Mapping imported from Template...": "Shared Fields Mapping imported from Template...",
+  "Shared Collection Configuration and Fields Mapping imported from Template...": "Shared Collection Configuration and Fields Mapping imported from Template...",
+  "Problem while importing Shared Collection Configuration from Template.": "Problem while importing Shared Collection Configuration from Template.",
+  "Problem while importing Shared Fields Mapping from Template.": "Problem while importing Shared Fields Mapping from Template.",
+  "Problem while importing Shared Collection Configuration and Fields Mapping from Template.": "Problem while importing Shared Collection Configuration and Fields Mapping from Template.",
+  "This will overide any existing Collection Configuration and Fields Mapping in the current Pipeline. Are you sure?": "This will overide any existing Collection Configuration and Fields Mapping in the current Pipeline. Are you sure?",
+  "This will overide any existing Collection Configuration in the current Pipeline. Are you sure?": "This will overide any existing Collection Configuration in the current Pipeline. Are you sure?",
+  "This will overide any existing Fields Mapping in the current Pipeline. Are you sure?": "This will overide any existing Fields Mapping in the current Pipeline. Are you sure?"
 }

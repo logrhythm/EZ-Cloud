@@ -117,7 +117,7 @@
                       </q-item-section>
                     </q-item>
 
-                    <q-item clickable disabled>
+                    <q-item clickable v-close-popup @click="doShowMarketplaceImportPopup({importType: 'collection'})">
                       <q-item-section avatar top>
                         <q-avatar icon="input" color="purple-10" text-color="white" >
                           <q-badge color="primary" floating transparent>
@@ -286,7 +286,7 @@
                       </q-item-section>
                     </q-item>
 
-                    <q-item clickable disabled>
+                    <q-item clickable  v-close-popup @click="doShowMarketplaceImportPopup({importType: 'mapping'})">
                       <q-item-section avatar top>
                         <q-avatar icon="input" color="purple-10" text-color="white" >
                           <q-badge color="primary" floating transparent>
@@ -466,6 +466,226 @@
       </q-card>
     </q-dialog>
 
+    <q-dialog v-model="showMarketplaceImportPopup" persistent>
+      <q-card style="min-width: 900px">
+        <q-card-section>
+          <div class="text-h6" v-if="marketplaceImportPopupType === 'collection'">{{ $t('Import EZ Cloud Collection Configuration') }}</div>
+          <div class="text-h6" v-else-if="marketplaceImportPopupType === 'mapping'">{{ $t('Import EZ Cloud Fields Mapping') }}</div>
+          <div class="text-h6" v-else>{{ $t('Import EZ Cloud Pipeline Template') }}</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-table
+            title="Pipelines Templates"
+            :data="MarketplaceImportPopupTableData"
+            :columns="MarketplaceImportPopupColumns"
+            row-key="uid"
+            dense
+            no-data-label="No Pipeline Template to display."
+            :filter="MarketplaceImportPopupSearchFilter"
+            :loading="dataLoading"
+            rows-per-page-label="Pipeline Templates per page:"
+            :pagination.sync="MarketplaceImportPopupPagination"
+          >
+
+            <template v-slot:top>
+              <div class="full-width row wrap justify-between">
+                <div class="q-table__title">
+                  Pipeline Templates
+                </div>
+                <div class="row q-gutter-md">
+                  <div style="width:300px;">
+                    <q-input outlined dense debounce="300" v-model="MarketplaceImportPopupSearchFilter" placeholder="Search">
+                      <template v-slot:append>
+                        <q-btn v-if="MarketplaceImportPopupSearchFilter.length" dense flat icon="close" @click="MarketplaceImportPopupSearchFilter=''" />
+                        <q-icon name="search" />
+                      </template>
+                    </q-input>
+                  </div>
+                  <q-btn dense outline icon="refresh" @click="reloadEzMarketPipelineTemplates()">
+                    <q-tooltip content-style="font-size: 1em">
+                      Reload the list of Pipeline Templates.
+                    </q-tooltip>
+                  </q-btn>
+                </div>
+              </div>
+            </template>
+            <template v-slot:body-cell-actions="props">
+              <q-td :props="props">
+                <q-btn
+                  flat
+                  dense
+                  icon="launch"
+                  class="q-mr-sm"
+                  :to="'/MarketPlace/PipelineTemplates/' + props.row.uid + '/Properties'"
+                  :disable="!(props.row.status && props.row.status === 'Visible')"
+                >
+                  <q-tooltip content-style="font-size: 1em">
+                    {{ $t('Open Pipeline Template full properties') }}
+                  </q-tooltip>
+                </q-btn>
+                <q-btn
+                  icon="input"
+                  dense
+                  :flat="(marketplaceImportPopupType === 'collection' || marketplaceImportPopupType === 'mapping' ? false : true)"
+                  :color="(marketplaceImportPopupType === 'collection' || marketplaceImportPopupType === 'mapping' ? '' : 'primary')"
+                  @click="loadAndImportIntoCurrentPipelineFromTemplate(props.row, { importCollectionConfiguration: true, importFieldsMapping: true })"
+                >
+                  <q-tooltip content-style="font-size: 1em">
+                    {{ $t('Import Collection and Fields Mapping') }}
+                  </q-tooltip>
+                </q-btn>
+                <q-btn
+                  icon="mediation"
+                  dense
+                  :flat="(marketplaceImportPopupType === 'collection' ? false : true)"
+                  :color="(marketplaceImportPopupType === 'collection' ? 'primary' : '')"
+                  @click="loadAndImportIntoCurrentPipelineFromTemplate(props.row, { importCollectionConfiguration: true, importFieldsMapping: false })"
+                >
+                  <q-tooltip content-style="font-size: 1em">
+                    {{ $t('Import Collection only') }}
+                  </q-tooltip>
+                </q-btn>
+                <q-btn
+                  icon="account_tree"
+                  dense
+                  :flat="(marketplaceImportPopupType === 'mapping' ? false : true)"
+                  :color="(marketplaceImportPopupType === 'mapping' ? 'primary' : '')"
+                  @click="loadAndImportIntoCurrentPipelineFromTemplate(props.row, { importCollectionConfiguration: false, importFieldsMapping: true })"
+                >
+                  <q-tooltip content-style="font-size: 1em">
+                    {{ $t('Import Fields Mapping only') }}
+                  </q-tooltip>
+                </q-btn>
+              </q-td>
+            </template>
+
+            <template v-slot:body-cell-status="props">
+              <q-td :props="props">
+                <div>
+                  <q-icon name="visibility" color="positive" size="md" v-if="props.value === 'Visible'" />
+                  <q-icon name="visibility_off" style="opacity: .5;" size="md" v-else-if="props.value === 'Hidden'" />
+                  <q-icon name="pending_actions" color="primary" size="md" v-else-if="props.value === 'Pending review'" />
+                  <q-icon name="assignment_late" color="negative" style="opacity: .75;" size="md" v-else-if="props.value === 'Failed Review'" />
+                  <q-icon name="auto_delete" color="negative" style="opacity: .5;" size="md" v-else-if="props.value === 'To be deleted'" />
+                  <q-icon name="question_mark" color="orange" size="md" v-else />
+                  <q-tooltip content-style="font-size: 1em">
+                    {{ props.row.statusDescription }}
+                  </q-tooltip>
+                  <br>
+                  {{ props.value }}
+                </div>
+              </q-td>
+            </template>
+
+            <template v-slot:body-cell-publisher="props">
+              <q-td :props="props">
+                <Identicon :identity="props.value" />
+                <div>
+                  {{ props.value }}
+                </div>
+              </q-td>
+            </template>
+
+            <template v-slot:body-cell-iconPicture="props">
+              <q-td :props="props">
+                <IconPicture
+                  :pngBase64="props.value"
+                  :size="70"
+                />
+              </q-td>
+            </template>
+
+            <template v-slot:body-cell-pipelineTemplateCollectionStats="props">
+              <q-td :props="props">
+                <q-tooltip content-style="font-size: 1em">
+                  <span class="text-bold">Shipper:</span> {{ collectionShipperByValue(props.row.stats.collectionShipper).label }}<br>
+                  <span class="text-bold">Method:</span> {{ collectionMethodByValue(props.row.stats.collectionMethod).label }}
+                </q-tooltip>
+                <div
+                  v-if="props.value"
+                  class="row items-center justify-evenly"
+                >
+                  <img v-if="collectionShipperByValue(props.row.stats.collectionShipper).icon.length" :src="'/shippers/' + collectionShipperByValue(props.row.stats.collectionShipper).icon + '.svg'" width="40px">
+                  <q-icon :name="collectionMethodByValue(props.row.stats.collectionMethod).icon" size="40px" />
+                </div>
+                <div v-else>
+                  -
+                </div>
+              </q-td>
+            </template>
+
+            <template v-slot:body-cell-pipelineTemplateFieldsMappingStats="props">
+              <q-td :props="props">
+                <div
+                  v-if="props.value"
+                  class="row items-center justify-center"
+                >
+                  <q-tooltip content-style="font-size: 1em">
+                    <div class="column">
+                      <div>
+                        <span>Detected fields: {{ props.row.stats.detectedFields }}</span><br>
+                        <span>Mapped fields: {{ props.row.stats.mappedFields }}</span>&nbsp;(<span class="text-bold">{{ Math.round(props.value * 100) / 100 }}%</span>)
+                      </div>
+                      <q-separator spaced  />
+                      <div class="column q-gutter-y-xs">
+                        <q-badge :color="(props.row.stats && props.row.stats.sharedFieldFrequencies ? 'positive' : 'grey')" text-color="black" label="Shared Frequency" />
+                        <q-badge :color="(props.row.stats && props.row.stats.sharedFieldMapping ? 'positive' : 'grey')" text-color="black" label="Shared Mapping" />
+                        <q-badge :color="(props.row.stats && props.row.stats.sharedFieldModifiers ? 'positive' : 'grey')" text-color="black" label="Shared Modifiers" />
+                      </div>
+                    </div>
+                  </q-tooltip>
+                  <q-circular-progress
+                    class="q-mr-md"
+                    :value="Math.round(props.value)"
+                    show-value
+                    :font-size="(props.value < 100 ? '0.5em' : '0.4em')"
+                    size="2.8em"
+                    :thickness="0.2"
+                    :color="(darkMode ? 'blue-3' : 'blue-10')"
+                    :track-color="(darkMode ? 'grey-9' : 'grey-3')"
+                  />
+                </div>
+                <div v-else>
+                  -
+                </div>
+              </q-td>
+            </template>
+
+            <template v-slot:body-cell-created="props">
+              <q-td :props="props">
+                <div>
+                  <q-tooltip content-style="font-size: 1em;">
+                    <span class="text-bold">Created: </span>{{ props.value }}<br>
+                    <span class="text-bold">Modified: </span>{{ timeAgo(props.row.modified) }}<br>
+                    ({{ props.row.modified }})
+                  </q-tooltip>
+                  {{ timeAgo(props.value) }}
+                </div>
+              </q-td>
+            </template>
+
+            <template v-slot:body-cell-modified="props">
+              <q-td :props="props">
+                <div>
+                  <q-tooltip content-style="font-size: 1em;">
+                    {{ props.value }}
+                  </q-tooltip>
+                  {{ timeAgo(props.value) }}
+                </div>
+              </q-td>
+            </template>
+          </q-table>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right" >
+          <q-btn color="primary" flat :label="$t('Close')" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
     <q-dialog v-model="showMappingFileImportPopup" persistent>
       <q-card style="min-width: 350px">
         <q-card-section>
@@ -508,6 +728,11 @@ import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 // import { dump } from 'js-yaml'
 import { exportFile, copyToClipboard } from 'quasar'
+import Identicon from 'components/Publisher/Identicon.vue'
+import IconPicture from 'components/Pipelines/IconPicture.vue'
+import TimeAgo from 'javascript-time-ago'
+import en from 'javascript-time-ago/locale/en.json'
+TimeAgo.addDefaultLocale(en)
 
 export default {
   name: 'PagePipelineProperties',
@@ -517,6 +742,7 @@ export default {
     mixinSharedDarkMode, // Shared computed to access and update the DarkMode
     mixinSharedShipperAndCollectionsHelpers // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
   ],
+  components: { Identicon, IconPicture },
   data () {
     return {
       // pipelineUid: '7dc7d568-a90e-11eb-bcbc-0242ac130002'
@@ -539,12 +765,32 @@ export default {
       shareFieldFrequencies: true, // Include field frequencies when sharing?
       shareFieldValues: false, // Include field values when sharing? Default FALSE as risk of sharing sensitive info
       shareFieldMapping: true, // Include field SIEM tags mapping when sharing?
-      shareFieldModifiers: true // Include field modifiers when sharing?
+      shareFieldModifiers: true, // Include field modifiers when sharing?
+      showMarketplaceImportPopup: false, // Governs the display of the Popup to import shared collection config from Market Place
+      marketplaceImportPopupType: null, // Select the type of import for the popup. Either "collection" or "mapping"
+      MarketplaceImportPopupSearchFilter: '',
+      MarketplaceImportPopupColumns: [
+        { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
+        { name: 'iconPicture', align: 'center', label: 'Icon / Logo', field: 'iconPicture', sortable: false },
+        { name: 'name', align: 'center', label: 'Pipeline Template Name', field: 'name', sortable: true, classes: '', style: 'white-space: pre-line;' },
+        { name: 'pipelineTemplateCollectionStats', align: 'center', label: 'Collection', field: row => (row.stats ? `${row.stats.collectionShipper || ''}${row.stats.collectionMethod || ''}` : null), sortable: true },
+        { name: 'pipelineTemplateFieldsMappingStats', align: 'center', label: 'Mapping', field: row => (row.stats && row.stats.detectedFields > 0 ? (row.stats.mappedFields || 0) / row.stats.detectedFields * 100 : null), sortable: true },
+        { name: 'publisher', align: 'center', label: 'Publisher', field: 'publisher', sortable: true },
+        { name: 'created', align: 'center', label: 'Created', field: 'created', sortable: true }
+        // { name: 'modified', align: 'center', label: 'Modified', field: 'modified', sortable: true },
+        // { name: 'status', align: 'center', label: 'Status', field: 'status', sortable: true }
+      ],
+      MarketplaceImportPopupPagination: {
+        sortBy: 'created',
+        descending: true, // Most recent on top
+        rowsPerPage: 5
+      },
+      MarketplaceImportPopupDataLoading: false
     }
   },
   computed: {
     ...mapGetters('mainStore', ['openCollectors', 'pipelines']),
-    ...mapState('mainStore', ['collectionMethodsOptions', 'collectionShippersOptions', 'helpWikiUrlBase']),
+    ...mapState('mainStore', ['collectionMethodsOptions', 'collectionShippersOptions', 'ezMarketPipelineTemplates', 'helpWikiUrlBase']),
     pipeline () {
       const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
       return (pipeline || {
@@ -629,10 +875,13 @@ export default {
         }))
       })
       return list
+    },
+    MarketplaceImportPopupTableData () {
+      return this.ezMarketPipelineTemplates.filter(template => template.status === 'Visible')
     }
   },
   methods: {
-    ...mapActions('mainStore', ['upsertPipeline', 'deleteDeployment', 'adaptPipelineCollectionConfiguration']),
+    ...mapActions('mainStore', ['upsertPipeline', 'deleteDeployment', 'adaptPipelineCollectionConfiguration', 'reloadEzMarketPipelineTemplates', 'loadEzMarketPipelineTemplateById']),
     editPipelineCollection () {
       this.$router.push({ path: '/Pipelines/' + this.pipelineUid + '/Collection/Edit' })
     }, // editPipelineCollection
@@ -832,6 +1081,98 @@ export default {
         }
       )
     },
+    async importFromEZImportableConfig (newConfiguration, newMapping, newOptions) {
+      console.log('importFromEZImportableConfig') // XXXX
+      // console.log(JSON.parse(JSON.stringify(newConfiguration))) // XXXX
+      // console.log(JSON.parse(JSON.stringify(newMapping))) // XXXX
+      // console.log(JSON.parse(JSON.stringify(newOptions))) // XXXX
+      console.log(newConfiguration) // XXXX
+      console.log(newMapping) // XXXX
+      console.log(newOptions) // XXXX
+      let thereWasAnError = false
+      // Parse it out and import
+      try {
+        // Parse
+        const parsedNewConfigContent = (
+          newConfiguration
+            ? (
+                typeof newConfiguration === 'string'
+                  ? JSON.parse(newConfiguration)
+                  : JSON.parse(JSON.stringify(newConfiguration))
+              )
+            : undefined
+        )
+        console.log('parsedNewConfigContent', parsedNewConfigContent) // XXXX
+
+        const parsedNewMappingContent = (
+          newMapping
+            ? (
+                typeof newMapping === 'string'
+                  ? JSON.parse(newMapping)
+                  : JSON.parse(JSON.stringify(newMapping))
+              )
+            : undefined
+        )
+        console.log('parsedNewMappingContent', parsedNewMappingContent) // XXXX
+
+        const parsedNewOptionsContent = (
+          newOptions
+            ? (
+                typeof newOptions === 'string'
+                  ? JSON.parse(newOptions)
+                  : JSON.parse(JSON.stringify(newOptions))
+              )
+            : undefined
+        )
+        console.log('parsedNewOptionsContent', parsedNewOptionsContent) // XXXX
+
+        // Update Pipeline and Persist
+        this.upsertPipeline(
+          {
+            caller: this,
+            pushToApi: true,
+            pipeline:
+            {
+              uid: this.pipelineUid,
+              status: (this.pipeline && this.pipeline.status && this.pipeline.status === 'Ready' ? this.pipeline.status : 'Dev'),
+              collectionConfig: (
+                newConfiguration
+                  ? await this.adaptPipelineCollectionConfiguration(
+                    {
+                      importedCollectionConfiguration: parsedNewConfigContent,
+                      targetDetails: { uid: this.pipelineUid, name: this.pipeline.name }
+                    }
+                  )
+                  : undefined
+              ),
+              fieldsMapping: (
+                newMapping
+                  ? parsedNewMappingContent
+                  : undefined
+              ),
+              options: (
+                newOptions
+                  ? parsedNewOptionsContent
+                  : undefined
+              )
+
+            },
+            onSuccessCallBack: this.loadPipelines,
+            onErrorCallBack: this.loadPipelines
+          }
+        )
+      } catch (error) {
+        thereWasAnError = true
+        this.$root.$emit('addAndShowErrorToErrorPanel',
+          {
+            code: 'CantParseFileImportCollection',
+            messageForLogAndPopup: `Error trying to parse the content of the imported Collection Configuration file. Error: ${error.message}`
+          }
+        )
+      }
+
+      return !thereWasAnError
+    },
     async importCollectionFromEZImportableConfigFile (filesInput) {
       let fileName
 
@@ -870,31 +1211,7 @@ export default {
             const fileContent = await filesInput.text()
 
             // Parse it out and import
-            let parsedFileContent = {}
-            try {
-              // Parse
-              parsedFileContent = JSON.parse(fileContent)
-
-              // Update Pipeline and Persist
-              this.upsertPipeline(
-                {
-                  caller: this,
-                  pushToApi: true,
-                  pipeline:
-                  {
-                    uid: this.pipelineUid,
-                    status: (this.pipeline && this.pipeline.status && this.pipeline.status === 'Ready' ? this.pipeline.status : 'Dev'),
-                    collectionConfig: await this.adaptPipelineCollectionConfiguration(
-                      {
-                        importedCollectionConfiguration: parsedFileContent,
-                        targetDetails: { uid: this.pipelineUid, name: this.pipeline.name }
-                      }
-                    )
-                  },
-                  onSuccessCallBack: this.loadPipelines,
-                  onErrorCallBack: this.loadPipelines
-                }
-              )
+            if (this.importFromEZImportableConfig(fileContent, undefined, undefined)) {
               notificationPopupId({
                 type: 'positive',
                 color: 'positive',
@@ -902,14 +1219,8 @@ export default {
                 message: this.$t('Shared Collection Configuration file imported'),
                 caption: fileName
               })
-            } catch (error) {
+            } else {
               thereWasAnError = true
-              this.$root.$emit('addAndShowErrorToErrorPanel',
-                {
-                  code: 'CantParseFileImportCollection',
-                  messageForLogAndPopup: `Error trying to parse the content of ${filesInput.length} file. Error: ${error.message}`
-                }
-              )
             }
           } catch (error) {
             thereWasAnError = true
@@ -932,6 +1243,197 @@ export default {
             console.log('Error: Problem while importing Shared Collection Configuration file')
           }
         }
+      }
+    },
+    doShowMarketplaceImportPopup (options) {
+      this.marketplaceImportPopupType = options.importType || 'collection'
+      this.showMarketplaceImportPopup = true
+      if (!(this.ezMarketPipelineTemplates && this.ezMarketPipelineTemplates.length)) {
+        this.reloadEzMarketPipelineTemplates()
+      }
+    },
+    loadAndImportIntoCurrentPipelineFromTemplate (selectedPipelineTemplate, { importCollectionConfiguration, importFieldsMapping }) {
+      console.log('loadAndImportIntoCurrentPipelineFromTemplate', importCollectionConfiguration, importFieldsMapping, JSON.parse(JSON.stringify(selectedPipelineTemplate))) // XXXX
+      if (
+        selectedPipelineTemplate &&
+        selectedPipelineTemplate.uid &&
+        selectedPipelineTemplate.uid.length &&
+        (importCollectionConfiguration || importFieldsMapping)
+      ) {
+        // Get confirmation from the user before overiding anything
+        let confirmationMessage = ''
+        if (importCollectionConfiguration && importFieldsMapping) {
+          confirmationMessage = this.$t('This will overide any existing Collection Configuration and Fields Mapping in the current Pipeline. Are you sure?')
+        } else if (importCollectionConfiguration) {
+          confirmationMessage = this.$t('This will overide any existing Collection Configuration in the current Pipeline. Are you sure?')
+        } else if (importFieldsMapping) {
+          confirmationMessage = this.$t('This will overide any existing Fields Mapping in the current Pipeline. Are you sure?')
+        }
+
+        this.$q.dialog({
+          title: this.$t('Confirm overide'),
+          message: confirmationMessage,
+          ok: {
+            push: true,
+            color: 'negative'
+          },
+          cancel: {
+            push: true,
+            color: 'positive'
+          },
+          persistent: true
+        }).onOk(async () => {
+          // Load full details of the Template
+          // Import it once loaded
+          this.loadEzMarketPipelineTemplateById(
+            {
+              pipelineTemplateUid: selectedPipelineTemplate.uid,
+              onSuccessCallBack: this.importIntoCurrentPipelineFromTemplate,
+              // onErrorCallBack,
+              params: { selectedPipelineTemplate, importCollectionConfiguration, importFieldsMapping }
+            }
+          )
+        }) // }).onOk(() => {
+      }
+    },
+    // importIntoCurrentPipelineFromTemplate (selectedPipelineTemplate, { importCollectionConfiguration, importFieldsMapping }) {
+    importIntoCurrentPipelineFromTemplate ({ data, success, params, messageForLogAndPopup }) {
+      // This is called on success, using onSuccessCallBack. Which has got the following call:
+      // onSuccessCallBack({
+      //   data: (data && data.records ? data.records : undefined),
+      //   success: true,
+      //   params,
+      //   messageForLogAndPopup: null
+      // })
+
+      // Extract selectedPipelineTemplate, importCollectionConfiguration and importFieldsMapping back out of Params
+      const { selectedPipelineTemplate, importCollectionConfiguration, importFieldsMapping } = params
+      const loadedPipelineTemplateContent = data || {}
+      console.log('importIntoCurrentPipelineFromTemplate', importCollectionConfiguration, importFieldsMapping, JSON.parse(JSON.stringify(selectedPipelineTemplate))) // XXXX
+      console.log(JSON.parse(JSON.stringify(data))) // XXXX
+
+      if (success && selectedPipelineTemplate && loadedPipelineTemplateContent && (importCollectionConfiguration || importFieldsMapping)) {
+        const notificationPopupId = this.$q.notify({
+          icon: 'cloud_download',
+          message: (
+            importCollectionConfiguration
+              ? this.$t('Importing Shared Collection Configuration from Template...')
+              : (
+                  importFieldsMapping
+                    ? this.$t('Importing Shared Fields Mapping from Template...')
+                    : this.$t('Importing Shared Collection Configuration and Fields Mapping from Template...')
+                )
+          ),
+          caption: selectedPipelineTemplate.name,
+          type: 'ongoing'
+        })
+
+        let thereWasAnError = false
+
+        // Read the Imported Collection Configuration, if required
+        const pipelineTemplateCollectionConfigContent = (
+          importCollectionConfiguration
+            ? (
+                loadedPipelineTemplateContent &&
+                loadedPipelineTemplateContent.collection_configuration &&
+                loadedPipelineTemplateContent.collection_configuration.collectionConfig
+                  ? loadedPipelineTemplateContent.collection_configuration.collectionConfig
+                  : {}
+              )
+            : undefined
+        )
+
+        // Read the Imported Fields Mapping and Options, if required
+        const pipelineTemplateFieldsMappingContent = (
+          importFieldsMapping
+            ? (
+                loadedPipelineTemplateContent &&
+                loadedPipelineTemplateContent.mapping_configuration &&
+                loadedPipelineTemplateContent.mapping_configuration.fieldsMapping
+                  ? loadedPipelineTemplateContent.mapping_configuration.fieldsMapping
+                  : []
+              )
+            : undefined
+        )
+        const pipelineTemplateOptionsContent = (
+          importFieldsMapping
+            ? (
+                loadedPipelineTemplateContent &&
+                loadedPipelineTemplateContent.mapping_configuration &&
+                loadedPipelineTemplateContent.mapping_configuration.options
+                  ? loadedPipelineTemplateContent.mapping_configuration.options
+                  : {}
+              )
+            : undefined
+        )
+
+        // Parse it out and import
+        if (this.importFromEZImportableConfig(pipelineTemplateCollectionConfigContent, pipelineTemplateFieldsMappingContent, pipelineTemplateOptionsContent)) {
+          notificationPopupId({
+            type: 'positive',
+            color: 'positive',
+            icon: 'check',
+            message: (
+              importCollectionConfiguration
+                ? this.$t('Shared Collection Configuration imported from Template...')
+                : (
+                    importFieldsMapping
+                      ? this.$t('Shared Fields Mapping imported from Template...')
+                      : this.$t('Shared Collection Configuration and Fields Mapping imported from Template...')
+                  )
+            ),
+            caption: selectedPipelineTemplate.name
+          })
+        } else {
+          thereWasAnError = true
+        }
+
+        if (thereWasAnError) {
+          notificationPopupId({
+            type: 'negative',
+            color: 'negative',
+            icon: 'report_problem',
+            message: (
+              importCollectionConfiguration
+                ? this.$t('Problem while importing Shared Collection Configuration from Template.')
+                : (
+                    importFieldsMapping
+                      ? this.$t('Problem while importing Shared Fields Mapping from Template.')
+                      : this.$t('Problem while importing Shared Collection Configuration and Fields Mapping from Template.')
+                  )
+            ),
+            caption: selectedPipelineTemplate.name
+          })
+          console.log('Error: Problem while importing Shared Collection Configuration and/or Fields Mapping from Template')
+        }
+      }
+    },
+    timeAgo (timestamp) { // XXXX Move to its own Mixin
+      let formattedTimeAgo = 'Some time ago'
+      try {
+        // Create formatter (English).
+        const timeAgo = new TimeAgo('en-US')
+        // Format the time
+        formattedTimeAgo = timeAgo.format(new Date(timestamp))
+      } catch (error) {
+        // Fails silently
+      }
+      return formattedTimeAgo
+    },
+    collectionShipperByValue (value) { // XXXX Move to its own Mixin
+      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'unknown', outputFormat: 'json' }
+      if (value && value.length) {
+        return this.collectionShippersOptions.find(cso => cso.value && cso.value === value) || fallbackValue
+      } else {
+        return fallbackValue
+      }
+    },
+    collectionMethodByValue (value) { // XXXX Move to its own Mixin
+      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'help_center' }
+      if (value && value.length) {
+        return this.collectionMethodsOptions.find(cmo => cmo.value && cmo.value === value) || fallbackValue
+      } else {
+        return fallbackValue
       }
     },
     downloadMappingAsEZImportableConfigFile () {
