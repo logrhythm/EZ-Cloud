@@ -129,7 +129,7 @@
   - [ ] ~~Import Mapping from Copy/Paste~~ (👈 low value, low priority. Might resurect if users demand)
   - [x] Export Mapping to file
   - [ ] ~~Export Mapping to Copy/Paste~~ (👈 low value, low priority. Might resurect if users demand)
-  - [ ] Update Mapping import from File to re-use new `importFromEZImportableConfig` function
+  - [x] Update Mapping import from File to re-use new `importFromEZImportableConfig` function
 - [x] LogRhythm Beats mapping for Collection Configuration
   - [x] WebHook
     - [x] http (Contribution from @Jt3kt)
