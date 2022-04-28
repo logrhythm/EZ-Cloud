@@ -7,6 +7,7 @@ const middlewares = require('../middlewares');
 // API sub paths
 const pipelineTemplates = require('./pipelineTemplates');
 const notifications = require('./notifications');
+const publishers = require('./publishers');
 const admin = require('./admin');
 const stats = require('./stats');
 
@@ -21,6 +22,7 @@ router.get('/', (req, res) => {
 
 router.use('/pipelineTemplates', pipelineTemplates);
 router.use('/notifications', notifications);
+router.use('/publishers', publishers);
 router.use('/stats', stats);
 router.use('/admin', middlewares.isLoggedIn, admin);
 
