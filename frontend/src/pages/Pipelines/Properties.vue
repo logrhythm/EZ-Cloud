@@ -27,14 +27,6 @@
                 </div>
             </q-card-section>
             <q-card-section>
-              <!-- <div class="row">
-                <div class="col-6">
-                  Collection Params (JSON): <pre>{{ pipeline.collectionConfig }}</pre>
-                </div>
-                <div class="col-6">
-                  Collection Params (YML): <pre>{{ collectionConfigOutput }}</pre>
-                </div>
-              </div> -->
               <div class="">
                   <div class="text-bold">Collection Configuration:</div>
                   <div class="row q-my-sm">
@@ -48,7 +40,6 @@
           <q-separator vertical />
 
           <q-card-actions vertical class="justify-around q-px-md">
-              <!-- <q-btn label="Edit" color="primary" :to="'/Pipelines/' + this.pipelineUid + '/Collection/Edit'" /> -->
               <q-btn icon="edit" color="primary" :to="'/Pipelines/' + this.pipelineUid + '/Collection/Edit'" >
                 <q-tooltip content-style="font-size: 1rem;">
                   Edit Collection
@@ -147,11 +138,6 @@
                   </q-list>
                 </q-menu>
               </q-btn>
-              <!-- <q-btn icon="highlight_off" disable>
-                <q-tooltip content-style="font-size: 1rem;">
-                  Stop collection
-                </q-tooltip>
-              </q-btn> -->
               <q-btn icon="delete" text-color="negative" @click="deleteCollectionPrompt()">
                 <q-tooltip content-style="font-size: 1rem;">
                   Delete Collection Configuration
@@ -178,7 +164,6 @@
           <q-separator vertical />
 
           <q-card-actions vertical class="justify-around q-px-md">
-              <!-- <q-btn label="Edit" color="primary" :to="'/Pipelines/' + this.pipelineUid + '/Mapping/Edit'" /> -->
               <q-btn icon="edit" color="primary" :to="'/Pipelines/' + this.pipelineUid + '/Mapping/Edit'" >
                 <q-tooltip content-style="font-size: 1rem;">
                   Edit Mapping
@@ -366,7 +351,6 @@
                           </template>
                         </q-input>
                       </div>
-                      <!-- <q-separator vertical dark color="orange" /> -->
                       <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadOpenCollectorsAndPipelines()">
                         <q-tooltip content-style="font-size: 1em">
                           Reload the list of Pipelines.
@@ -405,20 +389,11 @@
                 </template>
               </q-table>
             </q-card-section>
-            <!-- <q-card-section>
-                <span class="text-bold">Table Data: </span>
-                <pre>{{ tableData }}</pre>
-            </q-card-section> -->
-            <!-- <q-card-section>
-                <span class="text-bold">Deployments: </span>
-                <pre>{{ deployments }}</pre>
-            </q-card-section> -->
           </q-card-section>
 
           <q-separator vertical />
 
           <q-card-actions vertical class="justify-around q-px-md">
-              <!-- <q-btn icon="add" color="primary" :to="'/Pipelines/' + this.pipelineUid + '/Deployments/Edit'" > -->
               <q-btn icon="add" color="primary" @click="addNewDeployment()" >
                 <q-tooltip content-style="font-size: 1rem;">
                   Add Deployment
@@ -1082,13 +1057,6 @@ export default {
       )
     },
     async importFromEZImportableConfig (newConfiguration, newMapping, newOptions) {
-      console.log('importFromEZImportableConfig') // XXXX
-      // console.log(JSON.parse(JSON.stringify(newConfiguration))) // XXXX
-      // console.log(JSON.parse(JSON.stringify(newMapping))) // XXXX
-      // console.log(JSON.parse(JSON.stringify(newOptions))) // XXXX
-      console.log(newConfiguration) // XXXX
-      console.log(newMapping) // XXXX
-      console.log(newOptions) // XXXX
       let thereWasAnError = false
       // Parse it out and import
       try {
@@ -1102,7 +1070,6 @@ export default {
               )
             : undefined
         )
-        console.log('parsedNewConfigContent', parsedNewConfigContent) // XXXX
 
         const parsedNewMappingContent = (
           newMapping
@@ -1113,7 +1080,6 @@ export default {
               )
             : undefined
         )
-        console.log('parsedNewMappingContent', parsedNewMappingContent) // XXXX
 
         const parsedNewOptionsContent = (
           newOptions
@@ -1124,7 +1090,6 @@ export default {
               )
             : undefined
         )
-        console.log('parsedNewOptionsContent', parsedNewOptionsContent) // XXXX
 
         // Update Pipeline and Persist
         this.upsertPipeline(
@@ -1253,7 +1218,6 @@ export default {
       }
     },
     loadAndImportIntoCurrentPipelineFromTemplate (selectedPipelineTemplate, { importCollectionConfiguration, importFieldsMapping }) {
-      console.log('loadAndImportIntoCurrentPipelineFromTemplate', importCollectionConfiguration, importFieldsMapping, JSON.parse(JSON.stringify(selectedPipelineTemplate))) // XXXX
       if (
         selectedPipelineTemplate &&
         selectedPipelineTemplate.uid &&
@@ -1296,7 +1260,6 @@ export default {
         }) // }).onOk(() => {
       }
     },
-    // importIntoCurrentPipelineFromTemplate (selectedPipelineTemplate, { importCollectionConfiguration, importFieldsMapping }) {
     importIntoCurrentPipelineFromTemplate ({ data, success, params, messageForLogAndPopup }) {
       // This is called on success, using onSuccessCallBack. Which has got the following call:
       // onSuccessCallBack({
@@ -1309,8 +1272,6 @@ export default {
       // Extract selectedPipelineTemplate, importCollectionConfiguration and importFieldsMapping back out of Params
       const { selectedPipelineTemplate, importCollectionConfiguration, importFieldsMapping } = params
       const loadedPipelineTemplateContent = data || {}
-      console.log('importIntoCurrentPipelineFromTemplate', importCollectionConfiguration, importFieldsMapping, JSON.parse(JSON.stringify(selectedPipelineTemplate))) // XXXX
-      console.log(JSON.parse(JSON.stringify(data))) // XXXX
 
       if (success && selectedPipelineTemplate && loadedPipelineTemplateContent && (importCollectionConfiguration || importFieldsMapping)) {
         const notificationPopupId = this.$q.notify({
