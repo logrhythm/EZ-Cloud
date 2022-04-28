@@ -103,8 +103,10 @@
     - [x] From the target Pipeline itself
       - [x] Collection
       - [x] Mapping
+  - [ ] Publisher profile's properties
+    - [ ] Create Publisher profile with user's Pseudo-name
+    - [ ] Edit Publisher profile
   - [ ] Export to Market Place
-    - [ ] User's Pseudo-name
     - [ ] Icon / Visual
     - [ ] Readme
     - [ ] Collection
