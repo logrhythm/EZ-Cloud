@@ -93,16 +93,16 @@
   - [ ] ~~Find / register domain~~ (👈 using journey.logrhythm.com)
   - [x] Get notifications from the Market Place
   - [x] List available Pipeline Templates
-  - [ ] Import Pipeline Template
+  - [x] Import Pipeline Template
     - [x] Collection
       - [x] In new Pipeline
       - [x] In existing Pipeline
     - [x] Mapping
       - [x] In new Pipeline
       - [x] In existing Pipeline
-    - [ ] From the target Pipeline itself
-      - [ ] Collection
-      - [ ] Mapping
+    - [x] From the target Pipeline itself
+      - [x] Collection
+      - [x] Mapping
   - [ ] Export to Market Place
     - [ ] Icon / Visual
     - [ ] Readme
@@ -129,6 +129,7 @@
   - [ ] ~~Import Mapping from Copy/Paste~~ (👈 low value, low priority. Might resurect if users demand)
   - [x] Export Mapping to file
   - [ ] ~~Export Mapping to Copy/Paste~~ (👈 low value, low priority. Might resurect if users demand)
+  - [ ] Update Mapping import from File to re-use new `importFromEZImportableConfig` function
 - [x] LogRhythm Beats mapping for Collection Configuration
   - [x] WebHook
     - [x] http (Contribution from @Jt3kt)
