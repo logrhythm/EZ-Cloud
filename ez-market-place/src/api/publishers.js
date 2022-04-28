@@ -232,7 +232,6 @@ router.put('/:id', async (req, res) => {
   }
 
   if (!thereWasAnError) {
-    console.log(publisher); // XXXX
     // Update the item
     try {
       const sql = `
@@ -244,13 +243,13 @@ router.put('/:id', async (req, res) => {
         WHERE
           \`uid\`=:publisherUid;
       `;
-      console.log(sql); // XXXX
+
       const parameters = {
         // Named parameters
         publisherUid,
         publisherDisplayName: publisher.displayName
       };
-      console.log(parameters); // XXXX
+
       // Update some of provided fields. If absent, they are left as is.
       recordUpdateResult = await db.pool.query(
         {
