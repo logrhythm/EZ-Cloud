@@ -125,7 +125,8 @@ const routes = [
       { path: '', component: () => import('pages/MarketPlace/Index.vue') },
       { path: 'Notifications', component: () => import('pages/MarketPlace/Notifications.vue') },
       { path: 'PipelineTemplates/:pipelineTemplateUid/Properties', component: () => import('pages/MarketPlace/PipelineTemplateProperties.vue') },
-      { path: 'PipelineTemplates', component: () => import('pages/MarketPlace/PipelineTemplates.vue') }
+      { path: 'PipelineTemplates', component: () => import('pages/MarketPlace/PipelineTemplates.vue') },
+      { path: 'PublisherProfile', component: () => import('pages/MarketPlace/PublisherProfile.vue') }
     ]
   },
 

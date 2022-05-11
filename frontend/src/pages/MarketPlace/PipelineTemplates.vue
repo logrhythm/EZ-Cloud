@@ -4,7 +4,8 @@
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
         <q-btn no-caps flat dense icon="arrow_back" label="Return to Market Place" :to="'/MarketPlace'" />
         <q-separator spaced vertical />
-        <q-btn no-caps flat dense icon="mail_outline" color="primary" label="View Notifications" :to="'/MarketPlace/Notifications'" />
+        <q-btn no-caps flat dense icon="mail_outline" color="primary" :label="$t('View Notifications')" to="/MarketPlace/Notifications" />
+        <q-btn no-caps flat dense icon='person' :label="$t('View My Profile')" to="/MarketPlace/PublisherProfile" />
         <q-toolbar-title style="opacity:.4" class="text-center">EZ Market Place : Pipeline Templates</q-toolbar-title>
       </q-toolbar>
     </q-header>

@@ -169,6 +169,11 @@ export default {
               title: 'Pipeline Templates',
               icon: 'account_tree',
               link: '#/MarketPlace/PipelineTemplates'
+            },
+            {
+              title: 'My Profile',
+              icon: 'person',
+              link: '#/MarketPlace/PublisherProfile'
             }
           ]
         },

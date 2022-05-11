@@ -276,3 +276,12 @@ export function updateEzMarketPipelineTemplateById (state, payload) {
     state.ezMarketPipelineTemplate = payload
   }
 }
+
+export function updateEzMarketPublisherDetails (state, payload) {
+  // Clear any existing one
+  state.ezMarketPublisherDetails = {}
+
+  if (payload) {
+    state.ezMarketPublisherDetails = payload
+  }
+}

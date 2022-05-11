@@ -136,5 +136,8 @@
   "Problem while importing Shared Collection Configuration and Fields Mapping from Template.": "Problem while importing Shared Collection Configuration and Fields Mapping from Template.",
   "This will overide any existing Collection Configuration and Fields Mapping in the current Pipeline. Are you sure?": "This will overide any existing Collection Configuration and Fields Mapping in the current Pipeline. Are you sure?",
   "This will overide any existing Collection Configuration in the current Pipeline. Are you sure?": "This will overide any existing Collection Configuration in the current Pipeline. Are you sure?",
-  "This will overide any existing Fields Mapping in the current Pipeline. Are you sure?": "This will overide any existing Fields Mapping in the current Pipeline. Are you sure?"
+  "This will overide any existing Fields Mapping in the current Pipeline. Are you sure?": "This will overide any existing Fields Mapping in the current Pipeline. Are you sure?",
+  "View My Profile": "View My Profile",
+  "My Publisher Profile": "My Publisher Profile",
+  "Publisher pseudo-name cannot be empty": "Publisher pseudo-name cannot be empty"
 }

@@ -698,6 +698,7 @@ export function updateEzMarketNotificationStatusTo ({ state, commit }, payload) 
     }
   }
 }
+
 export function deleteEzMarketNotificationById ({ state, commit }, messageUid) {
   console.log('deleteEzMarketNotificationById', messageUid)
   if (messageUid && messageUid.length && state.ezMarketNotifications.find((notif) => notif && notif.messageUid === messageUid)) {
@@ -855,6 +856,179 @@ export function loadEzMarketPipelineTemplateById ({ state, commit }, { pipelineT
               data: (data && data.records ? data.records : undefined),
               success: false,
               params,
+              messageForLogAndPopup: 'Returned data wasn\'t a proper JSON array.'
+            })
+          }
+          throw new Error('Returned data wasn\'t a proper JSON array.')
+        }
+      })
+      .catch(error => {
+        console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+      })
+  }
+}
+
+export function loadEzMarketPublisherDetails ({ state, commit }, { onSuccessCallBack, onErrorCallBack }) {
+  console.log('☁️ Downloading Publisher\'s details from EZ Cloud Market Place...')
+
+  // Building the full URL of the API root
+  const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+  // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+  fetch(ezMarketApiBaseUrl + '/publishers/' + state.ezMarket.publisherUid, {
+    credentials: 'omit',
+    referrerPolicy: 'no-referrer',
+    headers: {
+      'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+      'ez-server-version': (state.deployment && state.deployment.version ? state.deployment.version : ''),
+      'ez-client-version': (version || '')
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok.')
+      }
+      return response.json()
+    })
+    .then(data => {
+      if (data && data.records && Array.isArray(data.records)) {
+        // Extract up to data
+        let publisherDetails
+        try {
+          publisherDetails = JSON.parse(JSON.stringify(data.records[0] || {}))
+        } catch (error) {
+          // Fall back on the raw data
+          publisherDetails = data.records[0] || {}
+        }
+
+        // Push the whole lot to the State
+        commit('updateEzMarketPublisherDetails', publisherDetails)
+        console.log(`✔️ [API SUCCESS] Succesfully loaded ${data.records.length} Publishers details.`)
+        if (typeof onSuccessCallBack === 'function') {
+          onSuccessCallBack({
+            data: publisherDetails,
+            success: true,
+            params: null,
+            messageForLogAndPopup: null
+          })
+        }
+      } else {
+        if (typeof onErrorCallBack === 'function') {
+          onErrorCallBack({
+            data: (data && data.records ? data.records : undefined),
+            success: false,
+            params: null,
+            messageForLogAndPopup: 'Returned data wasn\'t a proper JSON array.'
+          })
+        }
+        throw new Error('Returned data wasn\'t a proper JSON array.')
+      }
+    })
+    .catch(error => {
+      console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+    })
+}
+
+export function createEzMarketPublisher ({ state, commit }, { toName, onSuccessCallBack, onErrorCallBack }) {
+  if (state.ezMarket && state.ezMarket.publisherUid && state.ezMarket.publisherUid.length && toName && toName.length) {
+    // Building the full URL of the API root
+    const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+    // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+    fetch(ezMarketApiBaseUrl + '/publishers', {
+      method: 'POST',
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+      headers: {
+        'ez-publisher': (state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        publisher: {
+          publisherUid: state.ezMarket.publisherUid,
+          displayName: toName
+        }
+      })
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok.')
+        }
+        return response.json()
+      })
+      .then(data => {
+        if (data && data.result) {
+          console.log(`✔️ [API SUCCESS] Succesfully created ${data.result.affectedRows || 0} Publisher(s) details.`)
+          if (typeof onSuccessCallBack === 'function') {
+            onSuccessCallBack({
+              data: (data && data.records ? data.records : undefined),
+              success: true,
+              params: null,
+              messageForLogAndPopup: null
+            })
+          }
+        } else {
+          if (typeof onErrorCallBack === 'function') {
+            onErrorCallBack({
+              data: (data && data.records ? data.records : undefined),
+              success: false,
+              params: null,
+              messageForLogAndPopup: 'Returned data wasn\'t a proper JSON array.'
+            })
+          }
+          throw new Error('Returned data wasn\'t a proper JSON array.')
+        }
+      })
+      .catch(error => {
+        console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+      })
+  }
+}
+
+export function updateEzMarketPublisherDetails ({ state, commit }, { toName, onSuccessCallBack, onErrorCallBack }) {
+  if (state.ezMarket && state.ezMarket.publisherUid && state.ezMarket.publisherUid.length && toName && toName.length) {
+    // Building the full URL of the API root
+    const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+    // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+    fetch(ezMarketApiBaseUrl + '/publishers/' + state.ezMarket.publisherUid, {
+      method: 'PUT',
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+      headers: {
+        'ez-publisher': (state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        publisher: {
+          publisherUid: state.ezMarket.publisherUid,
+          displayName: toName
+        }
+      })
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok.')
+        }
+        return response.json()
+      })
+      .then(data => {
+        if (data && data.result) {
+          console.log(`✔️ [API SUCCESS] Succesfully updated ${data.result.affectedRows || 0} Publisher(s) details.`)
+          if (typeof onSuccessCallBack === 'function') {
+            onSuccessCallBack({
+              data: (data && data.records ? data.records : undefined),
+              success: true,
+              params: null,
+              messageForLogAndPopup: null
+            })
+          }
+        } else {
+          if (typeof onErrorCallBack === 'function') {
+            onErrorCallBack({
+              data: (data && data.records ? data.records : undefined),
+              success: false,
+              params: null,
               messageForLogAndPopup: 'Returned data wasn\'t a proper JSON array.'
             })
           }
