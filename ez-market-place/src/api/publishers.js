@@ -151,6 +151,11 @@ router.post('/', async (req, res) => {
     errorMessage = 'Missing or invalid `publisher` provided in the HTTP Body.';
   }
 
+  if (publisher.publisherUid !== publisherUid) {
+    thereWasAnError = true;
+    errorMessage = 'Publisher can only be created by oneself.';
+  }
+
   if (!thereWasAnError) {
     // Insert the item
     try {
