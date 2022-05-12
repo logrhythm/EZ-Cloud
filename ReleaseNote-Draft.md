@@ -17,7 +17,7 @@
 - Get [EZ-Cloud.v0.8.🚧.Server-Installer.exe](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.8.🚧/EZ-Cloud.v0.8.🚧.Server-Installer.exe)
 - Run it
 
-It's possible to installer EZ Server onto a separate machine than the SQL Server (XM/PM)
+It's possible to install EZ Server onto a separate machine than the SQL Server (XM/PM)
   - If you want to use this:
     - Run the installer on the SQL server (XM/PM) first
     - Select `Only SQL Database and configuration (EZ Database)` in the drop down list on the **Select Components** screen
@@ -54,6 +54,7 @@ It's possible to installer EZ Server onto a separate machine than the SQL Server
 ## What's new in this release?
 **v0.8.5-0.8.6**
 _(Backend v0.8.5 / Frontend v0.8.6)_
+_(Below "Market" relates to the backend API of the Market Place, and "Market Admin" to the frontend UI of the Market place administrative website)_
 - [v0.8.5-0.8.6] Frontend - Exclude Beats' Heartbeat messages from custom parsing (based on presence of `.heartbeat`)
 - [v0.8.5-0.8.6] Frontend - Fix - JQ Filter template - Deal with jsBeat sending `stream_id` and `stream_name` in `."@metadata".filter_helpers`
 - [v0.8.5-0.8.6] Frontend - Allow for sub menus in drawer menu
