@@ -18,7 +18,8 @@
 
             <q-card-section class="q-pt-none" v-if="!editingPublisherName">
               <div class="text-bold">Pseudo Name:</div>
-              <div>{{ publisherDisplayName }}</div>
+              <div v-if="publisherDisplayName == null" class="text-italic" style="opacity: .6">You don't seem to have a profile yet</div>
+              <div v-else>{{ publisherDisplayName }}</div>
             </q-card-section>
 
             <q-card-section class="q-pt-none" v-if="editingPublisherName">
