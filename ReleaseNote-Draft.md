@@ -17,6 +17,16 @@
 - Get [EZ-Cloud.v0.8.🚧.Server-Installer.exe](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.8.🚧/EZ-Cloud.v0.8.🚧.Server-Installer.exe)
 - Run it
 
+It's possible to installer EZ Server onto a separate machine than the SQL Server (XM/PM)
+  - If you want to use this:
+    - Run the installer on the SQL server (XM/PM) first
+    - Select `Only SQL Database and configuration (EZ Database)` in the drop down list on the **Select Components** screen
+    - Finish the install
+    - Run the installer on the Windows server where you want to run the EZ Server
+    - Select `Full installation (EZ Cloud Server + EZ Database + Frontend + NodeJS)` (or whichever is the most appropriate for you) in the drop down list
+    - Untick `EZ Database and SQL User` in the list of **Components**
+    - Finish the install
+
 #### 2. Create your configuration
 - During the Install, if prompted, please provide the correct credentials for SQL
 - During the Install, if prompted, please provide the credentials for the new user ezAdmin
@@ -42,6 +52,37 @@
 - Wiki: [Troubleshooting](https://github.com/logrhythm/EZ-Cloud/wiki/Troubleshooting)
 
 ## What's new in this release?
+**v0.8.5-0.8.6**
+_(Backend v0.8.5 / Frontend v0.8.6)_
+- [v0.8.5-0.8.6] Frontend - Exclude Beats' Heartbeat messages from custom parsing (based on presence of `.heartbeat`)
+- [v0.8.5-0.8.6] Frontend - Fix - JQ Filter template - Deal with jsBeat sending `stream_id` and `stream_name` in `."@metadata".filter_helpers`
+- [v0.8.5-0.8.6] Frontend - Allow for sub menus in drawer menu
+- [v0.8.5-0.8.6] Frontend - Menu links - Make Sub-Menu LTR-RTL friendly
+- [v0.8.5-0.8.6] Frontend - Market Place - Split link into sub menues, Add and update Routes, Create separate page for Market, Notifications and Pipeline Templates
+- [v0.8.5-0.8.6] Frontend - Market Place - Pipeline Templates listing, Pipeline Template Properties
+- [v0.8.5-0.8.6] Frontend - parsing collection config and fields mapping when loading a Pipeline Template in mutation `updateEzMarketPipelineTemplateById`
+- [v0.8.5-0.8.6] Frontend - Market Place - Pipeline Template Properties - Add Collection Config
+- [v0.8.5-0.8.6] Frontend - Market Place - Pipeline Template Properties - Fiels Mapping
+- [v0.8.5-0.8.6] Frontend - Market Place - Pipeline Template Properties - Frequency stats
+- [v0.8.5-0.8.6] Frontend - Market Place - Pipeline Template - Import into new Pipeline
+- [v0.8.5-0.8.6] Frontend - Market Place - Pipeline Template - Import into existing Pipeline
+- [v0.8.5-0.8.6] Frontend - Pipeline Properties - Import Collection and Fields Mapping from Marketplace - Menu, Popup, Template listing, Get overide confirmation, Load Template, Import to current Pipeline
+- [v0.8.5-0.8.6] Frontend - Market - Publisher profile's properties - Create Publisher profile with user's Pseudo-name, Edit Publisher profile
+- [v0.8.5-0.8.6] Market Admin - Pipelines - Review - Delete Icon/logo/visual
+- [v0.8.5-0.8.6] Market Admin - Pipelines - Review - ReadMe - Edit and Save
+- [v0.8.5-0.8.6] Market Admin - Pipelines - Review - Options, Collection, Stats
+- [v0.8.5-0.8.6] Market Admin - Pipelines - Review - Fields Mapping
+- [v0.8.5-0.8.6] Market Admin - Pipelines - Review - Hide Raw data with Expansion item
+- [v0.8.5-0.8.6] Market Admin - Pipelines - Review - Properties
+- [v0.8.5-0.8.6] Market Admin - Move raw data to the bottom of the page
+- [v0.8.5-0.8.6] Market Admin - Move `options` from `pipelineTemplateCollectionConfiguration` to `pipelineTemplateMappingConfiguration`
+- [v0.8.5-0.8.6] Market Admin - Pipelines - Review - Calculate and display Statistics (`detectedFields`, `mappedFields`, `sharedFieldFrequencies`, `sharedFieldValues`, `sharedFieldMapping`, `sharedFieldModifiers`)
+- [v0.8.5-0.8.6] Market - Publishers - New `/publishers/` enpoints
+- [v0.8.5-0.8.6] Market - Update Test
+- [v0.8.5-0.8.6] Market - Publishers - Prevent the creation of Publisher other than themselves
+- [v0.8.🚧] 
+
+
 **v0.8.5**
 _(Below "Market" relates to the backend API of the Market Place, and "Market Admin" to the frontend UI of the Market place administrative website)_
 - [v0.8.5] Market - Admin - New API endpoints
@@ -79,7 +120,6 @@ _(Below "Market" relates to the backend API of the Market Place, and "Market Adm
 - [v0.8.5] Frontend - Better logging in Console on API call responses
 - [v0.8.5] Frontend - Implement more robust timestamp parsing in JQ Transform
 - [v0.8.5] Frontend - Notifications - Multi lines support
-- [v0.8.🚧] 
 
 **v0.8.4**
 - [v0.8.4] Backend - Installer able to separate SQL from EZ Server
