@@ -105,8 +105,19 @@ export default {
     },
     ezMarketPublisherDetailsLoaded (payload) {
       this.dataLoading = false
-      if (payload && payload.data) {
-        this.newPublisherName = payload.data.displayName
+      if (payload) {
+        if (payload.data) {
+          this.newPublisherName = payload.data.displayName
+        }
+        if (payload.success !== true) {
+          this.$q.notify({
+            type: 'negative',
+            color: 'negative',
+            icon: 'report_problem',
+            message: this.$t('Error loading Publisher\'s details'),
+            caption: payload.messageForLogAndPopup || ''
+          })
+        }
       }
     },
     editProfileDetails () {
