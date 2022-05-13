@@ -107,6 +107,7 @@
     - [x] Create Publisher profile with user's Pseudo-name
     - [x] Edit Publisher profile
   - [ ] Export to Market Place
+    - [x] Deal with non-existing Publisher Profile
     - [ ] Icon / Visual
     - [ ] Readme
     - [ ] Collection
