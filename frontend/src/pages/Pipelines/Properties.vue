@@ -76,7 +76,7 @@
                       </q-item-section>
                     </q-item>
 
-                    <q-item clickable disabled>
+                    <q-item clickable v-close-popup @click="doShowMarketplaceExportPopup({exportType: 'collection'})">
                       <q-item-section avatar top>
                         <q-avatar icon="share" color="green-10" text-color="white" >
                           <q-badge color="primary" floating transparent>
@@ -239,7 +239,7 @@
                       </q-item-section>
                     </q-item>
 
-                    <q-item clickable disabled>
+                    <q-item clickable v-close-popup @click="doShowMarketplaceExportPopup({exportType: 'mapping'})">
                       <q-item-section avatar top>
                         <q-avatar icon="share" color="green-10" text-color="white" >
                           <q-badge color="primary" floating transparent>
@@ -407,6 +407,14 @@
           </q-card-actions>
         </q-card-section>
       </q-card>
+
+      <q-card>
+        <q-card-section>
+          ezMarketPublisherDetails:
+          <q-btn color="primary" icon="refresh" @click="reloadEzMarketPublisherDetails()" :loading="loadingMarketPublisherDetails" />
+          {{ ezMarketPublisherDetails }}
+        </q-card-section>
+      </q-card>
     </div>
 
     <q-dialog v-model="showCollectionFileImportPopup" persistent>
@@ -453,14 +461,14 @@
           <q-table
             title="Pipelines Templates"
             :data="MarketplaceImportPopupTableData"
-            :columns="MarketplaceImportPopupColumns"
+            :columns="marketplaceImportPopupColumns"
             row-key="uid"
             dense
             no-data-label="No Pipeline Template to display."
-            :filter="MarketplaceImportPopupSearchFilter"
+            :filter="marketplaceImportPopupSearchFilter"
             :loading="dataLoading"
             rows-per-page-label="Pipeline Templates per page:"
-            :pagination.sync="MarketplaceImportPopupPagination"
+            :pagination.sync="marketplaceImportPopupPagination"
           >
 
             <template v-slot:top>
@@ -470,9 +478,9 @@
                 </div>
                 <div class="row q-gutter-md">
                   <div style="width:300px;">
-                    <q-input outlined dense debounce="300" v-model="MarketplaceImportPopupSearchFilter" placeholder="Search">
+                    <q-input outlined dense debounce="300" v-model="marketplaceImportPopupSearchFilter" placeholder="Search">
                       <template v-slot:append>
-                        <q-btn v-if="MarketplaceImportPopupSearchFilter.length" dense flat icon="close" @click="MarketplaceImportPopupSearchFilter=''" />
+                        <q-btn v-if="marketplaceImportPopupSearchFilter.length" dense flat icon="close" @click="marketplaceImportPopupSearchFilter=''" />
                         <q-icon name="search" />
                       </template>
                     </q-input>
@@ -692,6 +700,37 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <q-dialog v-model="showMarketplaceExportPopup" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h6" v-if="marketplaceExportPopupType === 'collection'">{{ $t('Export EZ Cloud Collection Configuration') }}</div>
+          <div class="text-h6" v-else-if="marketplaceExportPopupType === 'mapping'">{{ $t('Export EZ Cloud Fields Mapping') }}</div>
+          <div class="text-h6" v-else>{{ $t('Export EZ Cloud Pipeline Template') }}</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none column" v-if="publisherDisplayName == null">
+          <div class="text-bold">{{ $t('Your Publisher profile doesn\'t exist yet.') }}</div>
+          <div class="q-mb-md">{{ $t('You need one to be able to publish anything to the MarketPlace.') }}</div>
+          <q-btn color="primary" :label="$t('Edit My Profile')" to="/MarketPlace/PublisherProfile" :loading="loadingMarketPublisherDetails" />
+          <q-btn flat icon="refresh" @click="reloadEzMarketPublisherDetails()" :loading="loadingMarketPublisherDetails">
+            <q-tooltip content-style="font-size: 1rem;">
+              {{ $t('Reload Publisher Profile') }}
+            </q-tooltip>
+          </q-btn>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none" v-else>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right" >
+          <q-btn color="primary" flat :label="$t('Cancel')" v-close-popup />
+          <!-- <q-btn color="primary" :label="$t('Import Fields Mapping')" v-close-popup :disabled="mappingImportFileInput === null" @click="importMappingFromEZImportableConfigFile(mappingImportFileInput)" /> -->
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -743,8 +782,8 @@ export default {
       shareFieldModifiers: true, // Include field modifiers when sharing?
       showMarketplaceImportPopup: false, // Governs the display of the Popup to import shared collection config from Market Place
       marketplaceImportPopupType: null, // Select the type of import for the popup. Either "collection" or "mapping"
-      MarketplaceImportPopupSearchFilter: '',
-      MarketplaceImportPopupColumns: [
+      marketplaceImportPopupSearchFilter: '',
+      marketplaceImportPopupColumns: [
         { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
         { name: 'iconPicture', align: 'center', label: 'Icon / Logo', field: 'iconPicture', sortable: false },
         { name: 'name', align: 'center', label: 'Pipeline Template Name', field: 'name', sortable: true, classes: '', style: 'white-space: pre-line;' },
@@ -755,17 +794,20 @@ export default {
         // { name: 'modified', align: 'center', label: 'Modified', field: 'modified', sortable: true },
         // { name: 'status', align: 'center', label: 'Status', field: 'status', sortable: true }
       ],
-      MarketplaceImportPopupPagination: {
+      marketplaceImportPopupPagination: {
         sortBy: 'created',
         descending: true, // Most recent on top
         rowsPerPage: 5
       },
-      MarketplaceImportPopupDataLoading: false
+      marketplaceImportPopupDataLoading: false,
+      loadingMarketPublisherDetails: false,
+      showMarketplaceExportPopup: false, // Governs the display of the Popup to export shared collection config from Market Place
+      marketplaceExportPopupType: null // Select the type of import for the popup. Either "collection" or "mapping"
     }
   },
   computed: {
     ...mapGetters('mainStore', ['openCollectors', 'pipelines']),
-    ...mapState('mainStore', ['collectionMethodsOptions', 'collectionShippersOptions', 'ezMarketPipelineTemplates', 'helpWikiUrlBase']),
+    ...mapState('mainStore', ['collectionMethodsOptions', 'collectionShippersOptions', 'ezMarketPipelineTemplates', 'helpWikiUrlBase', 'ezMarketPublisherDetails']),
     pipeline () {
       const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
       return (pipeline || {
@@ -853,10 +895,13 @@ export default {
     },
     MarketplaceImportPopupTableData () {
       return this.ezMarketPipelineTemplates.filter(template => template.status === 'Visible')
+    },
+    publisherDisplayName () {
+      return (this.ezMarketPublisherDetails ? this.ezMarketPublisherDetails.displayName : null)
     }
   },
   methods: {
-    ...mapActions('mainStore', ['upsertPipeline', 'deleteDeployment', 'adaptPipelineCollectionConfiguration', 'reloadEzMarketPipelineTemplates', 'loadEzMarketPipelineTemplateById']),
+    ...mapActions('mainStore', ['upsertPipeline', 'deleteDeployment', 'adaptPipelineCollectionConfiguration', 'reloadEzMarketPipelineTemplates', 'loadEzMarketPipelineTemplateById', 'loadEzMarketPublisherDetails']),
     editPipelineCollection () {
       this.$router.push({ path: '/Pipelines/' + this.pipelineUid + '/Collection/Edit' })
     }, // editPipelineCollection
@@ -1395,6 +1440,34 @@ export default {
         return this.collectionMethodsOptions.find(cmo => cmo.value && cmo.value === value) || fallbackValue
       } else {
         return fallbackValue
+      }
+    },
+    doShowMarketplaceExportPopup (options) {
+      this.marketplaceExportPopupType = options.exportType || 'collection'
+      this.showMarketplaceExportPopup = true
+      if (!(this.ezMarketPublisherDetails && this.ezMarketPublisherDetails.displayName && this.ezMarketPublisherDetails.displayName.length)) {
+        this.reloadEzMarketPublisherDetails()
+      }
+    },
+    reloadEzMarketPublisherDetails () {
+      this.loadingMarketPublisherDetails = true
+      this.loadEzMarketPublisherDetails({
+        onSuccessCallBack: this.ezMarketPublisherDetailsLoaded,
+        onErrorCallBack: this.ezMarketPublisherDetailsLoaded
+      })
+    },
+    ezMarketPublisherDetailsLoaded (payload) {
+      this.loadingMarketPublisherDetails = false
+      if (payload) {
+        if (payload.success !== true) {
+          this.$q.notify({
+            type: 'negative',
+            color: 'negative',
+            icon: 'report_problem',
+            message: this.$t('Error loading Publisher\'s details'),
+            caption: payload.messageForLogAndPopup || ''
+          })
+        }
       }
     },
     downloadMappingAsEZImportableConfigFile () {

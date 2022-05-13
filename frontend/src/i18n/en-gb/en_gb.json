@@ -128,6 +128,9 @@
   "Importing Shared Collection Configuration from Template...": "Importing Shared Collection Configuration from Template...",
   "Importing Shared Fields Mapping from Template...": "Importing Shared Fields Mapping from Template...",
   "Importing Shared Collection Configuration and Fields Mapping from Template...": "Importing Shared Collection Configuration and Fields Mapping from Template...",
+  "Export EZ Cloud Collection Configuration": "Export EZ Cloud Collection Configuration",
+  "Export EZ Cloud Fields Mapping": "Export EZ Cloud Fields Mapping",
+  "Export EZ Cloud Pipeline Template": "Export EZ Cloud Pipeline Template",
   "Shared Collection Configuration imported from Template...": "Shared Collection Configuration imported from Template...",
   "Shared Fields Mapping imported from Template...": "Shared Fields Mapping imported from Template...",
   "Shared Collection Configuration and Fields Mapping imported from Template...": "Shared Collection Configuration and Fields Mapping imported from Template...",
@@ -139,5 +142,9 @@
   "This will overide any existing Fields Mapping in the current Pipeline. Are you sure?": "This will overide any existing Fields Mapping in the current Pipeline. Are you sure?",
   "View My Profile": "View My Profile",
   "My Publisher Profile": "My Publisher Profile",
-  "Publisher pseudo-name cannot be empty": "Publisher pseudo-name cannot be empty"
+  "Publisher pseudo-name cannot be empty": "Publisher pseudo-name cannot be empty",
+  "Reload Publisher Profile": "Reload Publisher Profile",
+  "Your Publisher profile doesn't exist yet.": "Your Publisher profile doesn't exist yet.",
+  "You need one to be able to publish anything to the MarketPlace.": "You need one to be able to publish anything to the MarketPlace.",
+  "Error loading Publisher's details": "Error loading Publisher's details"
 }
