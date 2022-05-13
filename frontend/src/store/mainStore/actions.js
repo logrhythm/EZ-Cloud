@@ -889,6 +889,14 @@ export function loadEzMarketPublisherDetails ({ state, commit }, { onSuccessCall
   })
     .then(response => {
       if (!response.ok) {
+        if (typeof onErrorCallBack === 'function') {
+          onErrorCallBack({
+            data: undefined,
+            success: false,
+            params: null,
+            messageForLogAndPopup: 'Network response was not ok.'
+          })
+        }
         throw new Error('Network response was not ok.')
       }
       return response.json()
@@ -955,6 +963,14 @@ export function createEzMarketPublisher ({ state, commit }, { toName, onSuccessC
     })
       .then(response => {
         if (!response.ok) {
+          if (typeof onErrorCallBack === 'function') {
+            onErrorCallBack({
+              data: undefined,
+              success: false,
+              params: null,
+              messageForLogAndPopup: 'Network response was not ok.'
+            })
+          }
           throw new Error('Network response was not ok.')
         }
         return response.json()
@@ -1011,6 +1027,14 @@ export function updateEzMarketPublisherDetails ({ state, commit }, { toName, onS
     })
       .then(response => {
         if (!response.ok) {
+          if (typeof onErrorCallBack === 'function') {
+            onErrorCallBack({
+              data: undefined,
+              success: false,
+              params: null,
+              messageForLogAndPopup: 'Network response was not ok.'
+            })
+          }
           throw new Error('Network response was not ok.')
         }
         return response.json()
