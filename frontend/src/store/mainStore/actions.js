@@ -32,6 +32,9 @@ export function signOut ({ commit }, payload) {
   // Empty the list of User Accounts and Roles
   commit('getUserAccounts', [])
   commit('getUserRoles', [])
+
+  // Empty Publisher details
+  commit('updateEzMarketPublisherDetails', {})
 }
 
 // ######################################################################
