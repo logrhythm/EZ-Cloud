@@ -141,10 +141,20 @@
   "This will overide any existing Collection Configuration in the current Pipeline. Are you sure?": "This will overide any existing Collection Configuration in the current Pipeline. Are you sure?",
   "This will overide any existing Fields Mapping in the current Pipeline. Are you sure?": "This will overide any existing Fields Mapping in the current Pipeline. Are you sure?",
   "View My Profile": "View My Profile",
+  "Edit My Profile": "Edit My Profile",
   "My Publisher Profile": "My Publisher Profile",
   "Publisher pseudo-name cannot be empty": "Publisher pseudo-name cannot be empty",
   "Reload Publisher Profile": "Reload Publisher Profile",
   "Your Publisher profile doesn't exist yet.": "Your Publisher profile doesn't exist yet.",
   "You need one to be able to publish anything to the MarketPlace.": "You need one to be able to publish anything to the MarketPlace.",
-  "Error loading Publisher's details": "Error loading Publisher's details"
+  "Error loading Publisher's details": "Error loading Publisher's details",
+  "Publish": "Publish",
+  "Publishing as:": "Publishing as:",
+  "Pipeline Template Details": "Pipeline Template Details",
+  "Name": "Name",
+  "Make sure to include vendor and product name.": "Make sure to include vendor and product name.",
+  "Export to EZ Market Place": "Export to EZ Market Place",
+  "Sanitisation": "Sanitisation",
+  "Data to be exported": "Data to be exported",
+  "Pipeline Template name cannot be empty": "Pipeline Template name cannot be empty"
 }

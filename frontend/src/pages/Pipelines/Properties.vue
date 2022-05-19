@@ -408,13 +408,6 @@
         </q-card-section>
       </q-card>
 
-      <q-card>
-        <q-card-section>
-          ezMarketPublisherDetails:
-          <q-btn color="primary" icon="refresh" @click="reloadEzMarketPublisherDetails()" :loading="loadingMarketPublisherDetails" />
-          {{ ezMarketPublisherDetails }}
-        </q-card-section>
-      </q-card>
     </div>
 
     <q-dialog v-model="showCollectionFileImportPopup" persistent>
@@ -701,7 +694,7 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="showMarketplaceExportPopup" persistent>
+    <q-dialog v-model="showMarketplaceExportPopup" persistent v-if="publisherDisplayName == null">
       <q-card style="min-width: 350px">
         <q-card-section>
           <div class="text-h6" v-if="marketplaceExportPopupType === 'collection'">{{ $t('Export EZ Cloud Collection Configuration') }}</div>
@@ -709,7 +702,7 @@
           <div class="text-h6" v-else>{{ $t('Export EZ Cloud Pipeline Template') }}</div>
         </q-card-section>
 
-        <q-card-section class="q-pt-none column" v-if="publisherDisplayName == null">
+        <q-card-section class="q-pt-none column">
           <div class="text-bold">{{ $t('Your Publisher profile doesn\'t exist yet.') }}</div>
           <div class="q-mb-md">{{ $t('You need one to be able to publish anything to the MarketPlace.') }}</div>
           <q-btn color="primary" :label="$t('Edit My Profile')" to="/MarketPlace/PublisherProfile" :loading="loadingMarketPublisherDetails" />
@@ -720,9 +713,6 @@
           </q-btn>
         </q-card-section>
 
-        <q-card-section class="q-pt-none" v-else>
-        </q-card-section>
-
         <q-separator />
 
         <q-card-actions align="right" >
@@ -730,6 +720,15 @@
           <!-- <q-btn color="primary" :label="$t('Import Fields Mapping')" v-close-popup :disabled="mappingImportFileInput === null" @click="importMappingFromEZImportableConfigFile(mappingImportFileInput)" /> -->
         </q-card-actions>
       </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="showMarketplaceExportPopup" persistent v-else>
+      <MarketPlaceExport
+        :exportRequestType="marketplaceExportPopupType"
+        :pipelineToExport="pipeline"
+        :collectionConfigOutput="collectionConfigOutput"
+        :publisherDisplayName="publisherDisplayName"
+      />
     </q-dialog>
   </q-page>
 </template>
@@ -742,6 +741,7 @@ import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 // import { dump } from 'js-yaml'
 import { exportFile, copyToClipboard } from 'quasar'
+import MarketPlaceExport from 'components/Pipelines/MarketPlace/Export.vue'
 import Identicon from 'components/Publisher/Identicon.vue'
 import IconPicture from 'components/Pipelines/IconPicture.vue'
 import TimeAgo from 'javascript-time-ago'
@@ -756,7 +756,7 @@ export default {
     mixinSharedDarkMode, // Shared computed to access and update the DarkMode
     mixinSharedShipperAndCollectionsHelpers // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
   ],
-  components: { Identicon, IconPicture },
+  components: { MarketPlaceExport, Identicon, IconPicture },
   data () {
     return {
       // pipelineUid: '7dc7d568-a90e-11eb-bcbc-0242ac130002'
@@ -802,7 +802,9 @@ export default {
       marketplaceImportPopupDataLoading: false,
       loadingMarketPublisherDetails: false,
       showMarketplaceExportPopup: false, // Governs the display of the Popup to export shared collection config from Market Place
-      marketplaceExportPopupType: null // Select the type of import for the popup. Either "collection" or "mapping"
+      marketplaceExportPopupType: null, // Select the type of import for the popup. Either "collection" or "mapping"
+      marketplaceExportConfiguration: false, // Include Collection Configuration in Market Place export?
+      marketplaceExporFieldsMapping: false // Include Fields Mapping in Market Place export?
     }
   },
   computed: {

@@ -108,11 +108,13 @@
     - [x] Edit Publisher profile
   - [ ] Export to Market Place
     - [x] Deal with non-existing Publisher Profile
-    - [ ] Icon / Visual
-    - [ ] Readme
-    - [ ] Collection
-      - [ ] Sanitization of secrets
-    - [ ] Fields Mapping
+    - [x] Pipeline name
+    - [x] Icon / Visual
+    - [x] Readme
+    - [x] Collection
+      - [x] Sanitization of secrets
+    - [x] Fields Mapping
+      - [x] Sanitization of export
   - [x] Market Place Admin
     - [x] Approval / Review / Moderation of submissions
     - [x] Change Status of submission
