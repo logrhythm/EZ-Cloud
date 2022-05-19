@@ -304,7 +304,7 @@
       <q-card class="q-pa-md q-mx-none">
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
-              <q-card-section class="text-h4 row">
+            <q-card-section class="text-h4 row">
                 Readme
               <q-space />
               <q-icon name="save_as" color="positive" v-if="readmeNeedsSaving">
