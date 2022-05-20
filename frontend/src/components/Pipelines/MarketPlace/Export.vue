@@ -1,59 +1,343 @@
 <template>
-  <q-card style="min-width: 80vw;/* height: 90vh; */max-height: 90vh;">
-    <q-card-section>
-      <!-- <div class="text-h6" v-if="exportRequestType === 'collection'">{{ $t('Export EZ Cloud Collection Configuration') }}</div>
-      <div class="text-h6" v-else-if="exportRequestType === 'mapping'">{{ $t('Export EZ Cloud Fields Mapping') }}</div>
-      <div class="text-h6" v-else>{{ $t('Export EZ Cloud Pipeline Template') }}</div> -->
-      <div class="text-h6">{{ $t('Export EZ Cloud Pipeline Template') }}</div>
-    </q-card-section>
+  <div style="min-width: 80vw;/* height: 90vh; */max-height: 90vh;">
+    <q-card style="min-width: 80vw;/* height: 90vh; */max-height: 90vh;">
+      <q-card-section>
+        <!-- <div class="text-h6" v-if="exportRequestType === 'collection'">{{ $t('Export EZ Cloud Collection Configuration') }}</div>
+        <div class="text-h6" v-else-if="exportRequestType === 'mapping'">{{ $t('Export EZ Cloud Fields Mapping') }}</div>
+        <div class="text-h6" v-else>{{ $t('Export EZ Cloud Pipeline Template') }}</div> -->
+        <div class="text-h6">{{ $t('Export EZ Cloud Pipeline Template') }}</div>
+      </q-card-section>
 
-    <q-card-section class="q-pa-none q-ma-none">
-      <q-scroll-area style="height: calc(90vh - 6rem);">
+      <q-card-section class="q-pa-none q-ma-none">
+        <q-scroll-area style="height: calc(90vh - 6rem);">
 
-        <q-card-section class="col q-ma-none q-pa-none">
-          <q-card-section class="text-h5">
-              {{ $t('Publish') }}
-          </q-card-section>
-          <q-card-section class="q-pt-none">
-            <div class="row q-gutter-x-md justify-evenly">
-              <div>
-                <q-toggle v-model="marketplaceExportConfiguration">
-                  <q-icon name="input" size="md" class="q-mx-xs" />
-                  Collection Configuration
-                </q-toggle>
+          <q-card-section class="col q-ma-none q-pa-none">
+            <q-card-section class="text-h5">
+                {{ $t('Publish') }}
+            </q-card-section>
+            <q-card-section class="q-pt-none">
+              <div class="row q-gutter-x-md justify-evenly">
+                <div>
+                  <q-toggle v-model="marketplaceExportConfiguration">
+                    <q-icon name="input" size="md" class="q-mx-xs" />
+                    Collection Configuration
+                  </q-toggle>
+                </div>
+                <div>
+                  <q-toggle v-model="marketplaceExporFieldsMapping">
+                    <q-icon name="mediation" size="md" class="q-mx-xs" />
+                    Fields Mapping
+                  </q-toggle>
+                </div>
               </div>
-              <div>
-                <q-toggle v-model="marketplaceExporFieldsMapping">
-                  <q-icon name="mediation" size="md" class="q-mx-xs" />
-                  Fields Mapping
-                </q-toggle>
-              </div>
-            </div>
+            </q-card-section>
+
+            <q-card-section class="q-pt-none">
+              <div class="text-bold">{{ $t('Publishing as:') }}</div>
+              <div>{{ publisherDisplayName }}</div>
+            </q-card-section>
           </q-card-section>
+
+          <q-separator size="2px" class="q-mx-sm q-my-lg" />
 
           <q-card-section class="q-pt-none">
-            <div class="text-bold">{{ $t('Publishing as:') }}</div>
-            <div>{{ publisherDisplayName }}</div>
+            <div class="text-h5">{{ $t('Sanitisation') }}</div>
           </q-card-section>
-        </q-card-section>
 
-        <q-separator size="2px" class="q-mx-sm q-my-lg" />
+          <!-- <q-card-section class="col q-ma-none q-pa-none">
+            <q-card-section class="text-h6">
+                Collection Configuration
+            </q-card-section>
+            <q-card-section class="row q-gutter-x-lg">
+              //
+            </q-card-section>
+          </q-card-section> -->
 
-        <q-card-section class="q-pt-none">
-          <div class="text-h5">{{ $t('Sanitisation') }}</div>
-        </q-card-section>
-
-        <!-- <q-card-section class="col q-ma-none q-pa-none">
-          <q-card-section class="text-h6">
-              Collection Configuration
+          <q-card-section class="col q-ma-none q-pa-none">
+            <q-card-section class="row q-gutter-x-lg"> <!-- XXXX -->
+              <q-expansion-item
+                dense
+                dense-toggle
+                expand-separator
+                style="min-width: 400px"
+                :value="marketplaceExportConfiguration"
+                :disabled="!marketplaceExportConfiguration"
+              >
+                <template v-slot:header>
+                  <div class="text-h6">
+                      Collection Configuration
+                  </div>
+                </template>
+                <div class="q-ml-md">
+                  <div>
+                    <q-icon name="label_important" color="accent" size="sm" class="q-mr-sm" />
+                    <span class="text-bold">IMPORTANT</span>
+                    <ol>
+                      <li>Do review the configurataion below</li>
+                      <li>Check for any token, credential or bits of information that the user of this Template will need to replace with their own values</li>
+                      <li>If not already done, replace each of them with the string "<span class="text-bold text-italic">CHANGE_ME</span>" or something similar</li>
+                      <ul>
+                        <li>If they are part of a field that requires to be obfuscated, leave them NON-obfuscated, so the next user can spot them easily</li>
+                      </ul>
+                      <li>In the <span class="text-bold">Configuration steps</span> section of the <span class="text-bold">Read Me</span> below, make sure to mention each of them what data to replace them with</li>
+                      <li>Once you are done. Double check again that no private information has been left in your configuration</li>
+                      <li>To alter the Collection Configuration below</li>
+                      <ol>
+                        <li>Close this by clicking the "<span class="text-bold">CANCEL</span>" button below</li>
+                        <li>Edit the Collection Configuration by clicking the "<span class="text-bold">Edit</span>" (<q-icon name="edit" />) button on right hand side action panel</li>
+                      </ol>
+                    </ol>
+                  </div>
+                  <div class="row q-my-sm">
+                    <q-separator vertical size="2px" color="teal" />
+                    <div class="q-ml-sm"><pre>{{ collectionConfigOutput }}</pre></div>
+                  </div>
+                </div>
+              </q-expansion-item>
+            </q-card-section>
           </q-card-section>
-          <q-card-section class="row q-gutter-x-lg">
-            //
-          </q-card-section>
-        </q-card-section> -->
 
-        <q-card-section class="col q-ma-none q-pa-none">
-          <q-card-section class="row q-gutter-x-lg"> <!-- XXXX -->
+          <q-card-section class="col q-ma-none q-pa-none">
+            <q-card-section class="row q-gutter-x-lg">
+              <q-expansion-item
+                dense
+                dense-toggle
+                expand-separator
+                style="min-width: 400px"
+                :value="marketplaceExporFieldsMapping"
+                :disabled="!marketplaceExporFieldsMapping"
+              >
+                <template v-slot:header>
+                  <div class="text-h6">
+                      Fields Mapping
+                  </div>
+                </template>
+                <q-list>
+                  <q-item tag="label" v-ripple>
+                    <q-item-section avatar>
+                      <q-toggle v-model="shareFieldFrequencies" :disable="!marketplaceExporFieldsMapping" />
+                    </q-item-section>
+                    <q-item-section>
+                      <q-item-label>Share Field Frequencies</q-item-label>
+                      <q-item-label caption>Include the frequency statistics for each field</q-item-label>
+                    </q-item-section>
+                  </q-item>
+
+                  <q-item tag="label" v-ripple disable>
+                    <q-item-section avatar>
+                      <q-toggle color="orange" :value="false" />
+                    </q-item-section>
+                    <q-item-section>
+                      <q-item-label>Share Field Values</q-item-label>
+                      <q-item-label caption>Include all the observed values for each field</q-item-label>
+                      <q-item-label caption class="text-bold text-italic"><q-icon name="dangerous" class="q-ma-none q-mr-xs" color="negative" />This is disabled for Market Place</q-item-label>
+                    </q-item-section>
+                  </q-item>
+
+                  <q-item tag="label" v-ripple>
+                    <q-item-section avatar>
+                      <q-toggle v-model="shareFieldMapping" :disable="!marketplaceExporFieldsMapping" />
+                    </q-item-section>
+                    <q-item-section>
+                      <q-item-label>Share Field SIEM Mapping</q-item-label>
+                      <q-item-label caption>Include the SIEM tags mapping for each field</q-item-label>
+                    </q-item-section>
+                  </q-item>
+
+                  <q-item tag="label" v-ripple>
+                    <q-item-section avatar>
+                      <q-toggle v-model="shareFieldModifiers" :disable="!marketplaceExporFieldsMapping" />
+                    </q-item-section>
+                    <q-item-section>
+                      <q-item-label>Share Field Modifiers</q-item-label>
+                      <q-item-label caption>Include the modifiers for each field</q-item-label>
+                    </q-item-section>
+                  </q-item>
+
+                </q-list>
+              </q-expansion-item>
+            </q-card-section>
+          </q-card-section>
+
+          <q-separator size="2px" class="q-mx-sm q-my-lg" />
+
+          <q-card-section class="q-pt-none">
+            <div class="text-h5">{{ $t('Pipeline Template Details') }}</div>
+          </q-card-section>
+
+          <q-card-section class="col q-ma-none q-pa-none">
+            <q-card-section class="text-h6">
+                {{ $t('Name') }}
+            </q-card-section>
+            <q-card-section class="q-pt-none">
+              <q-input
+                dense
+                outlined
+                v-model="newPipelineTemplateName"
+                :hint="$t('Make sure to include vendor and product name.')"
+                :rules="[val => !!val || $t('Pipeline Template name cannot be empty')]"
+                />
+            </q-card-section>
+          </q-card-section>
+
+          <q-card-section class="col q-ma-none q-pa-none">
+            <q-card-section class="text-h6">
+                Icon / Logo
+            </q-card-section>
+            <q-card-section class="row q-gutter-x-lg">
+              <div>
+                <div class="text-h6 text-center">
+                  Import PNG
+                </div>
+                <q-separator spaced />
+                <div class="row q-gutter-md">
+                  <div style="">
+                    <q-editor
+                      v-model="pictureEditorContent"
+                      min-height="200px"
+                      placeholder="Paste the PNG picture here"
+                      :toolbar="[]"
+                      style="min-width: 200px;"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <q-separator vertical />
+
+              <div class="column" style="max-height: 300px">
+                <div class="text-h6 text-center">
+                  Detected / Extracted
+                </div>
+                <q-separator spaced />
+                <div class="row q-gutter-md">
+                  <div class="text-center" style="min-width: 70px">
+                    <div>70x70</div>
+                    <IconPicture
+                      :pngBase64="pictureEditorContentPngBase64Extracted"
+                      :size="70"
+                    />
+                  </div>
+                  <div class="text-center" style="min-width: 150px">
+                    <div>150x150</div>
+                    <IconPicture
+                      :pngBase64="pictureEditorContentPngBase64Extracted"
+                      :size="150"
+                    />
+                  </div>
+                </div>
+                <div v-if="!pictureImportPictureFound" class="q-mt-xl text-negative">
+                  <q-icon name="image_not_supported" />
+                  No picture found in content
+                </div>
+                <div v-if="pictureImportPictureFound && !pictureImportPictureIsPng" class="q-mt-xl text-warning">
+                  <q-icon name="image_not_supported" />
+                  The <span style="text-decoration: underline;">first</span> picture is not in a PNG.
+                </div>
+                <q-space />
+                <q-btn
+                  :disabled="!(pictureEditorContentPngBase64Extracted && pictureEditorContentPngBase64Extracted.length && !(pictureEditorContentPngBase64ExtractedAccepted && pictureEditorContentPngBase64ExtractedAccepted.length))"
+                  class="self-end full-width"
+                  color="primary"
+                  icon="check_circle_outline"
+                  @click="acceptPictureEditorContentPngBase64()"
+                >
+                  Accept
+                </q-btn>
+              </div>
+
+              <q-separator vertical v-if="pictureEditorContentPngBase64ExtractedAccepted && pictureEditorContentPngBase64ExtractedAccepted.length" />
+
+              <div v-if="pictureEditorContentPngBase64ExtractedAccepted && pictureEditorContentPngBase64ExtractedAccepted.length" class="column" style="max-height: 300px">
+                <div class="text-h6 text-center">
+                  Icon to be published
+                </div>
+                <q-separator spaced />
+                <div class="row q-gutter-md">
+                  <div class="text-center" style="min-width: 70px">
+                    <div>70x70</div>
+                    <IconPicture
+                      :pngBase64="pictureEditorContentPngBase64ExtractedAccepted"
+                      :size="70"
+                    />
+                  </div>
+                  <div class="text-center" style="min-width: 150px">
+                    <div>150x150</div>
+                    <IconPicture
+                      :pngBase64="pictureEditorContentPngBase64ExtractedAccepted"
+                      :size="150"
+                    />
+                  </div>
+                </div>
+                <q-space />
+                <q-btn
+                  class="self-end full-width"
+                  color="negative"
+                  icon="close"
+                  @click="discardAcceptedPictureEditorContentPngBase64()"
+                >
+                  Discard
+                </q-btn>
+              </div>
+
+            </q-card-section>
+          </q-card-section>
+
+          <q-card-section class="col q-ma-none q-pa-none">
+            <q-card-section class="text-h6 row">
+                Readme
+            </q-card-section>
+
+            <q-card-section class="" >
+              <q-editor
+                v-model="readmeContentEditor"
+                min-height="20rem"
+                max-height="calc(70vh - 10rem)"
+                :dense="$q.screen.lt.md"
+                :toolbar="[
+                  ['bold', 'italic', 'strike'],
+                  [
+                    {
+                      label: $q.lang.editor.formatting,
+                      icon: $q.iconSet.editor.formatting,
+                      list: 'no-icons',
+                      options: [
+                        'h1',
+                        'h2',
+                        'h3',
+                        'h4',
+                        'h5',
+                        'h6',
+                        'p',
+                        'code'
+                      ]
+                    },
+                    'removeFormat'
+                  ],
+                  [
+                    {
+                      label: $q.lang.editor.align,
+                      icon: $q.iconSet.editor.align,
+                      fixedLabel: true,
+                      options: ['left', 'center', 'right', 'justify']
+                    }
+                  ],
+                  ['hr', 'link'],
+                  ['quote', 'unordered', 'ordered', 'outdent', 'indent'],
+                  ['print', 'fullscreen'],
+                  ['undo', 'redo']
+                ]"
+              />
+            </q-card-section>
+          </q-card-section>
+
+          <q-separator size="2px" class="q-mx-sm q-my-lg" />
+
+          <q-card-section class="q-pt-none">
+            <div class="text-h5">{{ $t('Data to be exported') }}</div>
+          </q-card-section>
+
+          <q-card-section class="col q-ma-none q-pa-none q-my-lg">
             <q-expansion-item
               dense
               dense-toggle
@@ -68,36 +352,33 @@
                 </div>
               </template>
               <div class="q-ml-md">
-                <div>
-                  <q-icon name="label_important" color="accent" size="sm" class="q-mr-sm" />
-                  <span class="text-bold">IMPORTANT</span>
-                  <ol>
-                    <li>Do review the configurataion below</li>
-                    <li>Check for any token, credential or bits of information that the user of this Template will need to replace with their own values</li>
-                    <li>If not already done, replace each of them with the string "<span class="text-bold text-italic">CHANGE_ME</span>" or something similar</li>
-                    <ul>
-                      <li>If they are part of a field that requires to be obfuscated, leave them NON-obfuscated, so the next user can spot them easily</li>
-                    </ul>
-                    <li>In the <span class="text-bold">Configuration steps</span> section of the <span class="text-bold">Read Me</span> below, make sure to mention each of them what data to replace them with</li>
-                    <li>Once you are done. Double check again that no private information has been left in your configuration</li>
-                    <li>To alter the Collection Configuration below</li>
-                    <ol>
-                      <li>Close this by clicking the "<span class="text-bold">CANCEL</span>" button below</li>
-                      <li>Edit the Collection Configuration by clicking the "<span class="text-bold">Edit</span>" (<q-icon name="edit" />) button on right hand side action panel</li>
-                    </ol>
-                  </ol>
-                </div>
-                <div class="row q-my-sm">
+                <div class="row q-my-sm" v-if="marketplaceExportConfiguration">
                   <q-separator vertical size="2px" color="teal" />
                   <div class="q-ml-sm"><pre>{{ collectionConfigOutput }}</pre></div>
                 </div>
+                <div v-else class="text-h5 text-italic">
+                  <q-icon name="info" />
+                  You selected not to export the Collection Configuration.
+                </div>
+
               </div>
             </q-expansion-item>
           </q-card-section>
-        </q-card-section>
 
-        <q-card-section class="col q-ma-none q-pa-none">
-          <q-card-section class="row q-gutter-x-lg">
+          <q-card-section class="col q-ma-none q-pa-none">
+            <q-card-section class="text-h6 row">
+                Options
+            </q-card-section>
+
+            <q-card-section class="" >
+              <q-toggle
+                :value="!!optionsToBeSaved.extractMessageFieldOnly"
+                label="Extract Beat's '.message' only"
+              />
+            </q-card-section>
+          </q-card-section>
+
+          <q-card-section class="col q-ma-none q-pa-none q-my-lg">
             <q-expansion-item
               dense
               dense-toggle
@@ -111,377 +392,130 @@
                     Fields Mapping
                 </div>
               </template>
-              <q-list>
-                <q-item tag="label" v-ripple>
-                  <q-item-section avatar>
-                    <q-toggle v-model="shareFieldFrequencies" :disable="!marketplaceExporFieldsMapping" />
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label>Share Field Frequencies</q-item-label>
-                    <q-item-label caption>Include the frequency statistics for each field</q-item-label>
-                  </q-item-section>
-                </q-item>
-
-                <q-item tag="label" v-ripple disable>
-                  <q-item-section avatar>
-                    <q-toggle color="orange" :value="false" />
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label>Share Field Values</q-item-label>
-                    <q-item-label caption>Include all the observed values for each field</q-item-label>
-                    <q-item-label caption class="text-bold text-italic"><q-icon name="dangerous" class="q-ma-none q-mr-xs" color="negative" />This is disabled for Market Place</q-item-label>
-                  </q-item-section>
-                </q-item>
-
-                <q-item tag="label" v-ripple>
-                  <q-item-section avatar>
-                    <q-toggle v-model="shareFieldMapping" :disable="!marketplaceExporFieldsMapping" />
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label>Share Field SIEM Mapping</q-item-label>
-                    <q-item-label caption>Include the SIEM tags mapping for each field</q-item-label>
-                  </q-item-section>
-                </q-item>
-
-                <q-item tag="label" v-ripple>
-                  <q-item-section avatar>
-                    <q-toggle v-model="shareFieldModifiers" :disable="!marketplaceExporFieldsMapping" />
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label>Share Field Modifiers</q-item-label>
-                    <q-item-label caption>Include the modifiers for each field</q-item-label>
-                  </q-item-section>
-                </q-item>
-
-              </q-list>
-            </q-expansion-item>
-          </q-card-section>
-        </q-card-section>
-
-        <q-separator size="2px" class="q-mx-sm q-my-lg" />
-
-        <q-card-section class="q-pt-none">
-          <div class="text-h5">{{ $t('Pipeline Template Details') }}</div>
-        </q-card-section>
-
-        <q-card-section class="col q-ma-none q-pa-none">
-          <q-card-section class="text-h6">
-              {{ $t('Name') }}
-          </q-card-section>
-          <q-card-section class="q-pt-none">
-            <q-input
-              dense
-              outlined
-              v-model="newPipelineTemplateName"
-              :hint="$t('Make sure to include vendor and product name.')"
-              :rules="[val => !!val || $t('Pipeline Template name cannot be empty')]"
-              />
-          </q-card-section>
-        </q-card-section>
-
-        <q-card-section class="col q-ma-none q-pa-none">
-          <q-card-section class="text-h6">
-              Icon / Logo
-          </q-card-section>
-          <q-card-section class="row q-gutter-x-lg">
-            <div>
-              <div class="text-h6 text-center">
-                Import PNG
-              </div>
-              <q-separator spaced />
-              <div class="row q-gutter-md">
-                <div style="">
-                  <q-editor
-                    v-model="pictureEditorContent"
-                    min-height="200px"
-                    placeholder="Paste the PNG picture here"
-                    :toolbar="[]"
-                    style="min-width: 200px;"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <q-separator vertical />
-
-            <div class="column" style="max-height: 300px">
-              <div class="text-h6 text-center">
-                Detected / Extracted
-              </div>
-              <q-separator spaced />
-              <div class="row q-gutter-md">
-                <div class="text-center" style="min-width: 70px">
-                  <div>70x70</div>
-                  <IconPicture
-                    :pngBase64="pictureEditorContentPngBase64Extracted"
-                    :size="70"
-                  />
-                </div>
-                <div class="text-center" style="min-width: 150px">
-                  <div>150x150</div>
-                  <IconPicture
-                    :pngBase64="pictureEditorContentPngBase64Extracted"
-                    :size="150"
-                  />
-                </div>
-              </div>
-              <div v-if="!pictureImportPictureFound" class="q-mt-xl text-negative">
-                <q-icon name="image_not_supported" />
-                No picture found in content
-              </div>
-              <div v-if="pictureImportPictureFound && !pictureImportPictureIsPng" class="q-mt-xl text-warning">
-                <q-icon name="image_not_supported" />
-                The <span style="text-decoration: underline;">first</span> picture is not in a PNG.
-              </div>
-              <q-space />
-              <q-btn
-                :disabled="!(pictureEditorContentPngBase64Extracted && pictureEditorContentPngBase64Extracted.length && !(pictureEditorContentPngBase64ExtractedAccepted && pictureEditorContentPngBase64ExtractedAccepted.length))"
-                class="self-end full-width"
-                color="primary"
-                icon="check_circle_outline"
-                @click="acceptPictureEditorContentPngBase64()"
-              >
-                Accept
-              </q-btn>
-            </div>
-
-            <q-separator vertical v-if="pictureEditorContentPngBase64ExtractedAccepted && pictureEditorContentPngBase64ExtractedAccepted.length" />
-
-            <div v-if="pictureEditorContentPngBase64ExtractedAccepted && pictureEditorContentPngBase64ExtractedAccepted.length" class="column" style="max-height: 300px">
-              <div class="text-h6 text-center">
-                Icon to be published
-              </div>
-              <q-separator spaced />
-              <div class="row q-gutter-md">
-                <div class="text-center" style="min-width: 70px">
-                  <div>70x70</div>
-                  <IconPicture
-                    :pngBase64="pictureEditorContentPngBase64ExtractedAccepted"
-                    :size="70"
-                  />
-                </div>
-                <div class="text-center" style="min-width: 150px">
-                  <div>150x150</div>
-                  <IconPicture
-                    :pngBase64="pictureEditorContentPngBase64ExtractedAccepted"
-                    :size="150"
-                  />
-                </div>
-              </div>
-              <q-space />
-              <q-btn
-                class="self-end full-width"
-                color="negative"
-                icon="close"
-                @click="discardAcceptedPictureEditorContentPngBase64()"
-              >
-                Discard
-              </q-btn>
-            </div>
-
-          </q-card-section>
-        </q-card-section>
-
-        <q-card-section class="col q-ma-none q-pa-none">
-          <q-card-section class="text-h6 row">
-              Readme
-          </q-card-section>
-
-          <q-card-section class="" >
-            <q-editor
-              v-model="readmeContentEditor"
-              min-height="20rem"
-              max-height="calc(70vh - 10rem)"
-              :dense="$q.screen.lt.md"
-              :toolbar="[
-                ['bold', 'italic', 'strike'],
-                [
-                  {
-                    label: $q.lang.editor.formatting,
-                    icon: $q.iconSet.editor.formatting,
-                    list: 'no-icons',
-                    options: [
-                      'h1',
-                      'h2',
-                      'h3',
-                      'h4',
-                      'h5',
-                      'h6',
-                      'p',
-                      'code'
-                    ]
-                  },
-                  'removeFormat'
-                ],
-                [
-                  {
-                    label: $q.lang.editor.align,
-                    icon: $q.iconSet.editor.align,
-                    fixedLabel: true,
-                    options: ['left', 'center', 'right', 'justify']
-                  }
-                ],
-                ['hr', 'link'],
-                ['quote', 'unordered', 'ordered', 'outdent', 'indent'],
-                ['print', 'fullscreen'],
-                ['undo', 'redo']
-              ]"
-            />
-          </q-card-section>
-        </q-card-section>
-
-        <q-separator size="2px" class="q-mx-sm q-my-lg" />
-
-        <q-card-section class="q-pt-none">
-          <div class="text-h5">{{ $t('Data to be exported') }}</div>
-        </q-card-section>
-
-        <q-card-section class="col q-ma-none q-pa-none q-my-lg">
-          <q-expansion-item
-            dense
-            dense-toggle
-            expand-separator
-            style="min-width: 400px"
-            :value="marketplaceExportConfiguration"
-            :disabled="!marketplaceExportConfiguration"
-          >
-            <template v-slot:header>
-              <div class="text-h6">
-                  Collection Configuration
-              </div>
-            </template>
-            <div class="q-ml-md">
-              <div class="row q-my-sm" v-if="marketplaceExportConfiguration">
-                <q-separator vertical size="2px" color="teal" />
-                <div class="q-ml-sm"><pre>{{ collectionConfigOutput }}</pre></div>
-              </div>
-              <div v-else class="text-h5 text-italic">
-                <q-icon name="info" />
-                You selected not to export the Collection Configuration.
-              </div>
-
-            </div>
-          </q-expansion-item>
-        </q-card-section>
-
-        <q-card-section class="col q-ma-none q-pa-none">
-          <q-card-section class="text-h6 row">
-              Options
-          </q-card-section>
-
-          <q-card-section class="" >
-            <q-toggle
-              :value="!!optionsToBeSaved.extractMessageFieldOnly"
-              label="Extract Beat's '.message' only"
-            />
-          </q-card-section>
-        </q-card-section>
-
-        <q-card-section class="col q-ma-none q-pa-none q-my-lg">
-          <q-expansion-item
-            dense
-            dense-toggle
-            expand-separator
-            style="min-width: 400px"
-            :value="marketplaceExporFieldsMapping"
-            :disabled="!marketplaceExporFieldsMapping"
-          >
-            <template v-slot:header>
-              <div class="text-h6">
-                  Fields Mapping
-              </div>
-            </template>
-            <div class="q-mx-md">
-              <q-table
-                :data="tableData"
-                :columns="columns"
-                row-key="name"
-                dense
-                no-data-label="No Fields to display."
-                :filter="searchFilter"
-                rows-per-page-label="Fields per page:"
-                :pagination.sync="pagination"
-                v-if="marketplaceExporFieldsMapping"
-              >
-                <template v-slot:top>
-                  <div class="full-width row wrap justify-end">
-                    <div class="row q-gutter-md">
-                      <div style="width:300px;">
-                        <q-input outlined dense debounce="300" v-model="searchFilter" placeholder="Search">
-                          <template v-slot:append>
-                            <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
-                            <q-icon name="search" />
-                          </template>
-                        </q-input>
+              <div class="q-mx-md">
+                <q-table
+                  :data="tableData"
+                  :columns="columns"
+                  row-key="name"
+                  dense
+                  no-data-label="No Fields to display."
+                  :filter="searchFilter"
+                  rows-per-page-label="Fields per page:"
+                  :pagination.sync="pagination"
+                  v-if="marketplaceExporFieldsMapping"
+                >
+                  <template v-slot:top>
+                    <div class="full-width row wrap justify-end">
+                      <div class="row q-gutter-md">
+                        <div style="width:300px;">
+                          <q-input outlined dense debounce="300" v-model="searchFilter" placeholder="Search">
+                            <template v-slot:append>
+                              <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
+                              <q-icon name="search" />
+                            </template>
+                          </q-input>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </template>
+                  </template>
 
-                <template v-slot:body-cell-frequency="props">
-                  <q-td :props="props" style="width: 3em;">
-                    <div>
-                      <q-tooltip content-style="font-size: 1em;">
-                        Seen in <span style="font-weight: bold;">{{ (maxSeenInLog != 0 ? Math.round(props.value / maxSeenInLog * 100) : 0) }}%</span> of logs in the sample ({{ props.value }}&nbsp;/&nbsp;{{ maxSeenInLog }}).
-                      </q-tooltip>
-                      <q-linear-progress :value="props.value / maxSeenInLog" :color="(darkMode ? 'blue-10' : 'blue-7')" rounded size="1em" />
-                    </div>
-                  </q-td>
-                </template>
+                  <template v-slot:body-cell-frequency="props">
+                    <q-td :props="props" style="width: 3em;">
+                      <div>
+                        <q-tooltip content-style="font-size: 1em;">
+                          Seen in <span style="font-weight: bold;">{{ (maxSeenInLog != 0 ? Math.round(props.value / maxSeenInLog * 100) : 0) }}%</span> of logs in the sample ({{ props.value }}&nbsp;/&nbsp;{{ maxSeenInLog }}).
+                        </q-tooltip>
+                        <q-linear-progress :value="props.value / maxSeenInLog" :color="(darkMode ? 'blue-10' : 'blue-7')" rounded size="1em" />
+                      </div>
+                    </q-td>
+                  </template>
 
-              </q-table>
-              <div v-else class="text-h5 text-italic">
-                <q-icon name="info" />
-                You selected not to export the Fields Mapping.
+                </q-table>
+                <div v-else class="text-h5 text-italic">
+                  <q-icon name="info" />
+                  You selected not to export the Fields Mapping.
+                </div>
               </div>
-            </div>
-          </q-expansion-item>
+            </q-expansion-item>
+          </q-card-section>
+
+          <q-card-section class=" q-ma-none q-pa-none q-my-lg">
+            <q-expansion-item
+              dense
+              dense-toggle
+              expand-separator
+            >
+              <template v-slot:header>
+                <div class="text-h6">
+                    Raw Pipeline Template to be Published
+                </div>
+              </template>
+              <pre class="q-ml-md">{{ pipelineTemplateToBePublished }}</pre>
+            </q-expansion-item>
+          </q-card-section>
+
+          <q-card-section> <!-- XXXX -->
+            <q-expansion-item
+              dense
+              dense-toggle
+              expand-separator
+              label="pipelineToExport"
+            >
+              <pre>{{ pipelineToExport }}</pre>
+            </q-expansion-item>
+          </q-card-section>
+
+        </q-scroll-area>
+      </q-card-section>
+
+      <q-separator />
+
+      <q-card-actions align="right" >
+        <!-- <q-btn color="primary" :label="$t('Export to EZ Market Place')" v-close-popup :disabled="mappingImportFileInput === null" @click="importMappingFromEZImportableConfigFile(mappingImportFileInput)" /> -->
+        <q-btn flat :label="$t('Cancel')" v-close-popup />
+        <q-btn
+          color="primary"
+          :label="$t('Export to EZ Market Place')"
+          :disabled="!(marketplaceExportConfiguration || marketplaceExporFieldsMapping)"
+          @click="showPublishConfirmationPopup()"
+          :loading="publishingToEzMarketPlace"
+          />
+          <!-- v-close-popup -->
+      </q-card-actions>
+    </q-card>
+
+    <q-dialog v-model="showPublishConfirmation" persistent transition-show="scale" transition-hide="scale">
+      <q-card class="">
+        <q-card-section>
+          <div class="text-h6">Please confirm</div>
         </q-card-section>
 
-        <q-card-section class=" q-ma-none q-pa-none q-my-lg">
-          <q-expansion-item
-            dense
-            dense-toggle
-            expand-separator
-          >
-            <template v-slot:header>
-              <div class="text-h6">
-                  Raw Pipeline Template to be Published
-              </div>
-            </template>
-            <pre class="q-ml-md">{{ pipelineTemplateToBePublished }}</pre>
-          </q-expansion-item>
+        <q-card-section class="q-pt-none">
+          <div class="text-bold">Check list:</div>
+          <div class="q-ml-sm q-gutter-y-xs">
+            <div class="flex no-wrap items-center"><q-icon name="check_circle" :color="(newPipelineTemplateName.length ? 'positive' : 'negative')" size="1.5em" /><span class="q-ml-sm">Name</span></div>
+            <div class="flex no-wrap items-center"><q-icon name="check_circle" :color="(pictureEditorContentPngBase64ExtractedAccepted.length ? 'positive' : 'warning')" size="1.5em" /><span class="q-ml-sm">Icon / Logo, imported and accepted</span></div>
+            <div class="flex no-wrap items-center"><q-icon name="check_circle" :color="(readmeContentEditorAsMarkdown.length ? 'positive' : 'negative')" size="1.5em" /><span class="q-ml-sm">Read Me / Instructions</span></div>
+            <div class="flex no-wrap items-center"><q-icon name="check_circle" :color="(confirmReadMeIsClearAndHelpful ? 'positive' : 'negative')" size="1.5em" /><q-toggle dense class="q-ml-sm" v-model="confirmReadMeIsClearAndHelpful" label="The instruction I wrote in the Read Me are clear and helpful" /></div>
+            <div class="flex no-wrap items-center" :disabled="!(marketplaceExportConfiguration)"><q-icon name="check_circle" :color="(confirmSanitisedCollectionConfiguration || !marketplaceExportConfiguration ? 'positive' : 'negative')" size="1.5em" /><q-toggle dense class="q-ml-sm" v-model="confirmSanitisedCollectionConfiguration" :disable="!(marketplaceExportConfiguration)" label="I have sanitised the Collection Configuration" /></div>
+            <div class="flex no-wrap items-center" :disabled="!(marketplaceExporFieldsMapping)"><q-icon name="check_circle" :color="(confirmSanitisedFieldsMapping || !marketplaceExporFieldsMapping ? 'positive' : 'negative')" size="1.5em" /><q-toggle dense class="q-ml-sm" v-model="confirmSanitisedFieldsMapping" :disable="!(marketplaceExporFieldsMapping)" label="I'm happy with the sanitisation settings for the Fields Mapping" /></div>
+            <div class="flex no-wrap items-center"><q-icon name="check_circle" :color="(confirmReviewedAll ? 'positive' : 'negative')" size="1.5em" /><q-toggle dense class="q-ml-sm" v-model="confirmReviewedAll" label="I have reviewed everything twice, and I'm very happy with my handywork" /></div>
+          </div>
         </q-card-section>
 
-        <q-card-section> <!-- XXXX -->
-          <q-expansion-item
-            dense
-            dense-toggle
-            expand-separator
-            label="pipelineToExport"
-          >
-            <pre>{{ pipelineToExport }}</pre>
-          </q-expansion-item>
-        </q-card-section>
-
-      </q-scroll-area>
-    </q-card-section>
-
-    <q-separator />
-
-    <q-card-actions align="right" >
-      <!-- <q-btn color="primary" :label="$t('Export to EZ Market Place')" v-close-popup :disabled="mappingImportFileInput === null" @click="importMappingFromEZImportableConfigFile(mappingImportFileInput)" /> -->
-      <q-btn color="primary" flat :label="$t('Cancel')" v-close-popup />
-      <q-btn
-        color="primary"
-        :label="$t('Export to EZ Market Place')"
-        :disabled="!(marketplaceExportConfiguration || marketplaceExporFieldsMapping)"
-        @click="publishToMarketPlace()"
-        :loading="publishingToEzMarketPlace"
-        />
-        <!-- v-close-popup -->
-    </q-card-actions>
-  </q-card>
+        <q-card-actions align="right">
+          <q-btn flat :label="$t('Cancel')" v-close-popup />
+          <q-btn
+            color="primary"
+            :label="$t('Export to EZ Market Place')"
+            :disabled="!checkListConfirmed"
+            @click="publishToMarketPlace()"
+            :loading="publishingToEzMarketPlace"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+  </div>
 </template>
 
 <script>
@@ -558,7 +592,12 @@ export default {
         descending: true, // Mapped fields first
         rowsPerPage: 15
       },
-      publishingToEzMarketPlace: false // Are we waiting for EZ Market while publishing the template
+      publishingToEzMarketPlace: false, // Are we waiting for EZ Market while publishing the template
+      showPublishConfirmation: false,
+      confirmReadMeIsClearAndHelpful: false,
+      confirmSanitisedCollectionConfiguration: false,
+      confirmSanitisedFieldsMapping: false,
+      confirmReviewedAll: false
     }
   },
   computed: {
@@ -645,6 +684,16 @@ export default {
       }
 
       return pipelineTemplate
+    },
+    checkListConfirmed () {
+      return (
+        this.newPipelineTemplateName.length &&
+        this.readmeContentEditorAsMarkdown.length &&
+        this.confirmReadMeIsClearAndHelpful &&
+        (this.confirmSanitisedCollectionConfiguration || !this.marketplaceExportConfiguration) &&
+        (this.confirmSanitisedFieldsMapping || !this.marketplaceExporFieldsMapping) &&
+        this.confirmReviewedAll
+      )
     }
   },
   methods: {
@@ -711,6 +760,14 @@ export default {
         this.readmeContentEditor = this.readmeContentHtml
       }
     },
+    showPublishConfirmationPopup () {
+      this.confirmReadMeIsClearAndHelpful = false
+      this.confirmSanitisedCollectionConfiguration = false
+      this.confirmSanitisedFieldsMapping = false
+      this.confirmReviewedAll = false
+
+      this.showPublishConfirmation = true
+    },
     publishToMarketPlace () {
       this.publishingToEzMarketPlace = true
       this.createEzMarketPipelineTemplate(
@@ -723,7 +780,26 @@ export default {
       )
     },
     publishedToMarketPlace (payload) {
+      console.log(payload)
       this.publishingToEzMarketPlace = false
+      this.showPublishConfirmation = false
+      if (payload.success === true) {
+        this.$q.notify({
+          type: 'positive',
+          color: 'positive',
+          icon: 'check',
+          message: this.$t('Successfully published Pipeline Template'),
+          caption: payload.messageForLogAndPopup || ''
+        })
+      } else {
+        this.$q.notify({
+          type: 'negative',
+          color: 'negative',
+          icon: 'report_problem',
+          message: this.$t('Error publishing Pipeline Template'),
+          caption: payload.messageForLogAndPopup || ''
+        })
+      }
     }
   },
   mounted () {
