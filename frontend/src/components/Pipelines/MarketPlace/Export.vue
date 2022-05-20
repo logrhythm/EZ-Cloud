@@ -454,24 +454,12 @@
             </q-expansion-item>
           </q-card-section>
 
-          <q-card-section> <!-- XXXX -->
-            <q-expansion-item
-              dense
-              dense-toggle
-              expand-separator
-              label="pipelineToExport"
-            >
-              <pre>{{ pipelineToExport }}</pre>
-            </q-expansion-item>
-          </q-card-section>
-
         </q-scroll-area>
       </q-card-section>
 
       <q-separator />
 
       <q-card-actions align="right" >
-        <!-- <q-btn color="primary" :label="$t('Export to EZ Market Place')" v-close-popup :disabled="mappingImportFileInput === null" @click="importMappingFromEZImportableConfigFile(mappingImportFileInput)" /> -->
         <q-btn flat :label="$t('Cancel')" v-close-popup />
         <q-btn
           color="primary"
@@ -480,7 +468,6 @@
           @click="showPublishConfirmationPopup()"
           :loading="publishingToEzMarketPlace"
           />
-          <!-- v-close-popup -->
       </q-card-actions>
     </q-card>
 
@@ -573,31 +560,31 @@ export default {
       marketplaceExportConfiguration: false, // Include Collection Configuration in Market Place export?
       marketplaceExporFieldsMapping: false, // Include Fields Mapping in Market Place export?
       newPipelineTemplateName: '',
-      pictureEditorContent: '', //
-      pictureEditorContentPngBase64Extracted: '', //
-      pictureEditorContentPngBase64ExtractedAccepted: '', //
-      pictureImportPictureFound: false, //
-      pictureImportPictureIsPng: false, //
+      pictureEditorContent: '', // Raw content of the editor
+      pictureEditorContentPngBase64Extracted: '', // Extracted PNG
+      pictureEditorContentPngBase64ExtractedAccepted: '', // Accepted PNG
+      pictureImportPictureFound: false, // Has a picture been found
+      pictureImportPictureIsPng: false, // Is the found picture a PNG
       readmeContentHtml: '', // Direct translation from the Markdown, untouched
       readmeContentEditor: '', // Version edited by the user
-      searchFilter: '',
+      searchFilter: '', // Fields Mapping table Search filter
       columns: [
         { name: 'frequency', align: 'center', label: this.$t('Frequency'), field: 'seenInLogCount', sortable: true },
         { name: 'Fields', align: 'left', label: this.$t('Field Full Paths'), field: 'name', sortable: true, classes: '', style: 'font-family: monospace; white-space: pre-line;' },
         { name: 'mapping', align: 'center', label: this.$t('Mappings'), field: 'mappedField', sortable: true },
         { name: 'modifiers', align: 'center', label: this.$t('Modifiers'), field: row => (row.modifiers && Array.isArray(row.modifiers) ? row.modifiers.join(', ') : null), sortable: true }
-      ],
+      ], // Fields Mapping table columns
       pagination: {
         sortBy: 'mapping',
         descending: true, // Mapped fields first
         rowsPerPage: 15
-      },
+      }, // Fields Mapping table Pagination
       publishingToEzMarketPlace: false, // Are we waiting for EZ Market while publishing the template
-      showPublishConfirmation: false,
-      confirmReadMeIsClearAndHelpful: false,
-      confirmSanitisedCollectionConfiguration: false,
-      confirmSanitisedFieldsMapping: false,
-      confirmReviewedAll: false
+      showPublishConfirmation: false, // Governs the display of the confirmation/checklist popup
+      confirmReadMeIsClearAndHelpful: false, // Checklist - ReadMe quality
+      confirmSanitisedCollectionConfiguration: false, // Checklist - Sanitisation Collection Config
+      confirmSanitisedFieldsMapping: false, // Checklist - Sanitisation Fields Mapping
+      confirmReviewedAll: false // Checklist - Final check
     }
   },
   computed: {
