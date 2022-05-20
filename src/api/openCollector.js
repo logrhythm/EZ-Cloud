@@ -16,6 +16,9 @@ const { lrObfuscateSecret } = require('../shared/crypto');
 // Load the System Logging functions
 const { logToSystem } = require('../shared/systemLogging');
 
+// Load the Sanitisation function(s)
+const { getSafeUidFrom } = require('../shared/sanitiser');
+
 function waitMilliseconds(delay = 250) {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -24,7 +27,7 @@ function waitMilliseconds(delay = 250) {
   });
 }
 
-const maxCheckInterval = 20; // Check once every X seconds max, and/or timeout after X seconds
+const maxCheckInterval = 60; // Check once every X seconds max, and/or timeout after X seconds
 
 router.get('/', (req, res) => {
   res.json({
@@ -109,8 +112,13 @@ function checkOSVersion(osVersion, uid) {
 }
 
 router.get('/CheckOSVersion', async (req, res) => {
-  if (req && req.query && req.query.uid && req.query.uid.length) {
-    const { uid } = req.query;
+  if (req
+    && req.query
+    && req.query.uid
+    && req.query.uid.length
+    && getSafeUidFrom(req.query).length
+  ) {
+    const uid = getSafeUidFrom(req.query);
 
     if (!osVersionArray[uid]) {
       // osVersionArray[uid] = Object.assign({}, osVersionTemplate);
@@ -209,8 +217,13 @@ function checkfbVersion(fbVersion, uid) {
 }
 
 router.get('/CheckFilebeatVersion', async (req, res) => {
-  if (req && req.query && req.query.uid && req.query.uid.length) {
-    const { uid } = req.query;
+  if (req
+    && req.query
+    && req.query.uid
+    && req.query.uid.length
+    && getSafeUidFrom(req.query).length
+  ) {
+    const uid = getSafeUidFrom(req.query);
 
     if (!fbVersionArray[uid]) {
       // fbVersionArray[uid] = Object.assign({}, fbVersionTemplate);
@@ -309,8 +322,13 @@ function checkOcBeatsVersion(ocAndBeatsVersion, uid) {
 }
 
 router.get('/CheckOpenCollectorAndBeatsVersions', async (req, res) => {
-  if (req && req.query && req.query.uid && req.query.uid.length) {
-    const { uid } = req.query;
+  if (req
+    && req.query
+    && req.query.uid
+    && req.query.uid.length
+    && getSafeUidFrom(req.query).length
+  ) {
+    const uid = getSafeUidFrom(req.query);
 
     if (!ocAndBeatsVersionArray[uid]) {
       ocAndBeatsVersionArray[uid] = JSON.parse(JSON.stringify(ocAndBeatsVersionTemplate));
@@ -413,8 +431,13 @@ function checkjsBeatVersion(jsBeatVersion, uid) {
 }
 
 router.get('/CheckJsBeatVersion', async (req, res) => {
-  if (req && req.query && req.query.uid && req.query.uid.length) {
-    const { uid } = req.query;
+  if (req
+    && req.query
+    && req.query.uid
+    && req.query.uid.length
+    && getSafeUidFrom(req.query).length
+  ) {
+    const uid = getSafeUidFrom(req.query);
 
     if (!jsBeatVersionArray[uid]) {
       jsBeatVersionArray[uid] = JSON.parse(JSON.stringify(jsBeatVersionTemplate));
@@ -751,8 +774,13 @@ function checkOCVersion(ocVersion, uid) {
 }
 
 router.get('/CheckOCVersion', async (req, res) => {
-  if (req && req.query && req.query.uid && req.query.uid.length) {
-    const { uid } = req.query;
+  if (req
+    && req.query
+    && req.query.uid
+    && req.query.uid.length
+    && getSafeUidFrom(req.query).length
+  ) {
+    const uid = getSafeUidFrom(req.query);
 
     if (!ocVersionArray[uid]) {
       ocVersionArray[uid] = JSON.parse(JSON.stringify(ocVersionTemplate));
@@ -1177,7 +1205,48 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
             },
             {
               action: 'Get GenericBeat logs for this instance (last 10 lines only)',
-              command: `./lrctl genericbeat logs --fqbn ${logRhythmFullyQualifiedBeatName} | tail --lines=10`
+              command: `docker logs --tail 10 "${logRhythmFullyQualifiedBeatName}"`
+            }
+          );
+          streamUpdateForBeatStatus.payload.steps = steps;
+        }
+
+        // ##########
+        // webhookbeat
+        // ##########
+        if (beat.name.toLowerCase() === 'webhookbeat') {
+          // logrhythmShipperBaseConfig
+          // Build the list of steps
+
+          // Import the Configuration (should only be one, but deal with all of them)
+          beat.config.forEach((config) => {
+            steps.push(
+              {
+                action: `Import Stream configuration for FQBN (${logRhythmFullyQualifiedBeatName})`,
+                command: `cat | ./lrctl webhookbeat config import --fqbn ${logRhythmFullyQualifiedBeatName}`,
+                stdin: (typeof config === 'string' ? `${config}\n${logrhythmShipperBaseConfig}` : `${JSON.stringify(config)}\n${logrhythmShipperBaseConfig}`)
+              }
+            );
+          });
+
+          // Wrap up
+          steps.push(
+            // We do a Stop - Start as a Restart would not do anything on a Beat not already running
+            {
+              action: 'Stop Webhookbeat',
+              command: `./lrctl webhookbeat stop --fqbn ${logRhythmFullyQualifiedBeatName}`
+            },
+            {
+              action: 'Start Webhookbeat to take new configuration into account',
+              command: `./lrctl webhookbeat start --fqbn ${logRhythmFullyQualifiedBeatName}`
+            },
+            {
+              action: 'Check Status for all Webhookbeat instances',
+              command: './lrctl webhookbeat status'
+            },
+            {
+              action: 'Get Webhookbeat logs for this instance (last 10 lines only)',
+              command: `docker logs --tail 10 "${logRhythmFullyQualifiedBeatName}"`
             }
           );
           streamUpdateForBeatStatus.payload.steps = steps;
@@ -1315,7 +1384,9 @@ router.post('/UpdateStreamConfigurationForBeat', async (req, res) => {
         streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].stillUpdating = true;
         updateStreamConfigurationForBeat(streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`], openCollector, beat, stream);
       }
-      const loopEndTime = Date.now() / 1000 + maxCheckInterval;
+
+      // Exceptionnaly, increase the timeout for this opeation (to 5 times the standard one)
+      const loopEndTime = Date.now() / 1000 + maxCheckInterval * 5;
 
       while (streamUpdateForBeatStatusArray[`${openCollector.uid}_${stream.uid}`].stillUpdating && (loopEndTime > (Date.now() / 1000))) {
         // Wait for 50 ms
@@ -1347,7 +1418,7 @@ router.post('/UpdateStreamConfigurationForBeat', async (req, res) => {
       errorMessages.push('Missing or malformed compulsory "stream" object.');
     }
 
-    res.json({ ...streamUpdateForBeatStatusTemplate, errors: errorMessages, requestBody: req.body });
+    res.json({ ...streamUpdateForBeatStatusTemplate, errors: errorMessages, requestBody: (process.env.NODE_ENV === 'development' ? req.body : undefined) });
   }
 });
 
@@ -1507,6 +1578,28 @@ function deleteStreamConfigurationForBeat(
           streamConfigDeleteForBeatStatus.payload.steps = steps;
         }
 
+        // ##########
+        // webhookbeat
+        // ##########
+        if (beat.name.toLowerCase() === 'webhookbeat') {
+          steps.push(
+            {
+              action: `Stop WebhookBeat instance (${logRhythmFullyQualifiedBeatName})`,
+              command: `./lrctl webhookbeat stop --fqbn ${logRhythmFullyQualifiedBeatName}`,
+              continueOnFailure: true
+            },
+            {
+              action: `Remove configuration for this WebhookBeat instance (${logRhythmFullyQualifiedBeatName})`,
+              command: `./lrctl webhookbeat config remove --yes --fqbn ${logRhythmFullyQualifiedBeatName}`
+            },
+            {
+              action: 'Check Status for all WebhookBeat instances',
+              command: './lrctl webhookbeat status'
+            }
+          );
+          streamConfigDeleteForBeatStatus.payload.steps = steps;
+        }
+
         // Add the Steps to the Exec stack
         steps.forEach((step, stepCounter) => {
           logToSystem('Debug', `deleteStreamConfigurationForBeat - Adding step: (${stepCounter}) ${step.action}...`);
@@ -1651,7 +1744,7 @@ router.post('/DeleteStreamConfigurationForBeat', async (req, res) => {
       errorMessages.push('Missing or malformed compulsory "stream" object.');
     }
 
-    res.json({ ...streamConfigDeleteForBeatStatusTemplate, errors: errorMessages, requestBody: req.body });
+    res.json({ ...streamConfigDeleteForBeatStatusTemplate, errors: errorMessages, requestBody: (process.env.NODE_ENV === 'development' ? req.body : undefined) });
   }
 });
 
@@ -1949,7 +2042,7 @@ router.post('/ImportPipelineForBeat', async (req, res) => {
       errorMessages.push('Missing or malformed compulsory "stream" object.');
     }
 
-    res.json({ ...pipelineImportForBeatStatusTemplate, errors: errorMessages, requestBody: req.body });
+    res.json({ ...pipelineImportForBeatStatusTemplate, errors: errorMessages, requestBody: (process.env.NODE_ENV === 'development' ? req.body : undefined) });
   }
 });
 
@@ -1986,7 +2079,7 @@ router.post('/ObfuscateSecret', async (req, res) => {
     if (missingSecret) {
       errorMessages.push('Missing or malformed compulsory "secretToObfuscate" string.');
     }
-    res.json({ ...obfuscateSecretTemplate, errors: errorMessages, requestBody: req.body });
+    res.json({ ...obfuscateSecretTemplate, errors: errorMessages, requestBody: (process.env.NODE_ENV === 'development' ? req.body : undefined) });
   }
 });
 

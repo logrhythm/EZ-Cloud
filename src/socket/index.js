@@ -7,8 +7,6 @@ const { logToSystem } = require('../shared/systemLogging');
 
 function socketConnect(socket) {
   // eslint-disable-next-line no-console
-  // console.log(`Socket.io => CONNECTION : ${socket.id} (Authenticated user: ${socket.handshake.auth.user})`); // XXX
-  // console.log('SOCKET', `/CONNECTION/_id/${socket.id}`, 200, '-', socket.handshake.auth.user, '-');
   logToSystem('Information', `SOCKET | ${socket.id} | ${socket.handshake.auth.user} | CONNECTION - Connection requested.`);
 
   // if (socket.connected) {
@@ -16,7 +14,6 @@ function socketConnect(socket) {
   // }
   socket.on('connect', () => {
     // eslint-disable-next-line no-console
-    // console.log('SOCKET', `/connect/_id/${socket.id}`, 200, '-', socket.handshake.auth.user, '-');
     logToSystem('Information', `SOCKET | ${socket.id} | ${socket.handshake.auth.user} | connect - Connection established.`);
   });
 
@@ -26,7 +23,6 @@ function socketConnect(socket) {
   // A new tail is requested
   socket.on('tail.init', (payload) => {
     // eslint-disable-next-line no-console
-    // console.log('SOCKET', `/tail.init/_id/${socket.id}`, 200, '-', socket.handshake.auth.user, '-');
     logToSystem('Information', `SOCKET | ${socket.id} | ${socket.handshake.auth.user} | tail.init - New Log Source Tail has been requested.`);
     tailInit(socket, payload);
   }); // On: tail.init
@@ -34,7 +30,6 @@ function socketConnect(socket) {
   // Killing an existing tail
   socket.on('tail.kill', (payload) => {
     // eslint-disable-next-line no-console
-    // console.log('SOCKET', `/tail.kill/_id/${socket.id}`, 200, '-', socket.handshake.auth.user, '-');
     logToSystem('Information', `SOCKET | ${socket.id} | ${socket.handshake.auth.user} | tail.kill - Log Source Tail termination has been requested.`);
     tailKill(socket, payload);
   }); // On: tail.showtaillist
@@ -45,7 +40,6 @@ function socketConnect(socket) {
   // A new Shipper Install is requested
   socket.on('shipper.install', (payload) => {
     // eslint-disable-next-line no-console
-    // console.log('SOCKET', `/shipper.install/_id/${socket.id}`, 200, '-', socket.handshake.auth.user, '-');
     logToSystem('Information', `SOCKET | ${socket.id} | ${socket.handshake.auth.user} | shipper.install - Installation of a log Shipper has been requested`);
     installShipper(socket, payload);
   }); // On: shipper.install

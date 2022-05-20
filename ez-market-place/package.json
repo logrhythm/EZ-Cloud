@@ -1,0 +1,44 @@
+{
+  "name": "ez-market-place",
+  "version": "0.9.0",
+  "description": "API Backend for the EZ Market Place",
+  "main": "src/index.js",
+  "scripts": {
+    "buildVersion": "npx genversion --semi --source ./package.json src/shared/version.js",
+    "dev": "npm run buildVersion && nodemon src/index.js",
+    "lint": "eslint --fix src",
+    "test": "mocha --exit",
+    "start": "npm run buildVersion && node src/index.js"
+  },
+  "author": "Tony Massé",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/logrhythm/EZ-Cloud.git"
+  },
+  "devDependencies": {
+    "eslint": "^8.8.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.4",
+    "genversion": "^3.0.2",
+    "mocha": "^9.2.0",
+    "node-mocks-http": "^1.11.0",
+    "nodemon": "^2.0.15",
+    "supertest": "^6.2.2"
+  },
+  "dependencies": {
+    "@okta/jwt-verifier": "^2.3.0",
+    "body-parser": "^1.19.1",
+    "cors": "^2.8.5",
+    "dotenv": "^15.0.0",
+    "express": "^4.17.2",
+    "helmet": "^5.0.2",
+    "mariadb": "^2.5.5",
+    "morgan": "^1.10.0",
+    "uuid": "^8.3.2",
+    "yup": "^0.32.11"
+  },
+  "overrides": {
+    "minimatch": "^3.0.5"
+  }
+}

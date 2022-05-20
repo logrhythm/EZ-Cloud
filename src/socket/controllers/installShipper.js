@@ -9,6 +9,7 @@ const { getSshConfigForCollector } = require('../../shared/collectorSshConfig');
 const { logToSystem } = require('../../shared/systemLogging');
 
 const installs = [];
+const installStepsStatus = [];
 
 function getInstallerUrls(socket, payload) {
   if (
@@ -68,7 +69,16 @@ function installShipper(socket, payload) {
         // Check the jobId doesn't already exist
         if (!installs[payload.jobId]) {
           getSshConfigForCollector({ uid: payload.uid }).then((sshConfig) => {
+            // Prep the Steps status
+            if (!installStepsStatus[payload.jobId]) {
+              installStepsStatus[payload.jobId] = {
+                steps: []
+              };
+            }
+
+            logToSystem('Debug', `installShipper - Creating SSH connection [${payload.jobId}]...`);
             installs[payload.jobId] = new SSH(JSON.parse(JSON.stringify(sshConfig)));
+            logToSystem('Debug', `installShipper - SSH session [${payload.jobId}] created.`);
 
             const steps = [];
 
@@ -96,22 +106,25 @@ function installShipper(socket, payload) {
                   command: (
                     // eslint-disable-next-line no-nested-ternary
                     payload.installerSource.installer === 'DEB'
-                      ? `sudo dpkg -i /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.filename}`
+                      ? `sudo -S dpkg -i /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.filename}`
                       : (
                         payload.installerSource.installer === 'RPM'
-                          ? `sudo rpm -vi /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.filename}`
+                          ? `sudo -S rpm -vi /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.filename}`
                           : `echo -e "Unknown Package Manager (${payload.installerSource.installer}). Exiting."; exit 42;`
                       )
-                  )
+                  ),
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Create new Input folder to drop dynamic input files into',
-                  command: 'sudo mkdir -p /etc/filebeat/inputs.d'
+                  command: 'sudo -S mkdir -p /etc/filebeat/inputs.d',
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Backup default configuration file',
-                  command: 'sudo -- sh -c \'[ -f "/etc/filebeat/filebeat.yml" ] && mv -f /etc/filebeat/filebeat.yml /etc/filebeat/filebeat.original.yml\'',
-                  continueOnFailure: true
+                  command: 'sudo -S -- sh -c \'[ -f "/etc/filebeat/filebeat.yml" ] && mv -f /etc/filebeat/filebeat.yml /etc/filebeat/filebeat.original.yml\'',
+                  continueOnFailure: true,
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Create configuration file',
@@ -120,11 +133,13 @@ function installShipper(socket, payload) {
                 },
                 {
                   action: 'Move configuration file into place',
-                  command: `sudo cp -f /tmp/ez-shipper-install-${payload.jobId}/filebeat.yml /etc/filebeat/filebeat.yml`
+                  command: `sudo -S cp -f /tmp/ez-shipper-install-${payload.jobId}/filebeat.yml /etc/filebeat/filebeat.yml`,
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Set configuration file the correct access rights',
-                  command: 'sudo chmod 700 /etc/filebeat/filebeat.yml'
+                  command: 'sudo -S chmod 700 /etc/filebeat/filebeat.yml',
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'List the files of the temporary directory',
@@ -136,24 +151,18 @@ function installShipper(socket, payload) {
                 },
                 {
                   action: 'Dump Shipper\'s configuration file',
-                  command: 'sudo cat /etc/filebeat/filebeat.yml'
+                  command: 'sudo -S cat /etc/filebeat/filebeat.yml',
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Start Shipper service',
-                  command: 'sudo service filebeat start',
+                  command: 'sudo -S service filebeat start',
+                  stdin: (sshConfig.pass ? sshConfig.pass : ''),
                   continueOnFailure: true
                 },
                 {
                   action: 'Clean up. Remove the temporary directory and its content',
                   command: `rm -rf /tmp/ez-shipper-install-${payload.jobId}/`
-                  // },
-                  // {
-                  //   action: 'Try to add some more text to the file in the temporary directory. This will fail.',
-                  //   command: `echo "Tony" > /tmp/ez-shipper-install-${payload.jobId}/test.txt`
-                  // },
-                  // {
-                  //   action: '',
-                  //   command: ``
                 }
               );
             } // Backward ocmpatibility : if (payload.installerSource.url)
@@ -190,16 +199,19 @@ function installShipper(socket, payload) {
                 },
                 {
                   action: 'Move jsBeat to /opt/',
-                  command: `sudo mv /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.jsBeat.folderName} /opt/`
+                  command: `sudo -S mv /tmp/ez-shipper-install-${payload.jobId}/${payload.installerSource.jsBeat.folderName} /opt/`,
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Remove previous symbolic link to older version, if any',
-                  command: 'sudo rm -f /opt/jsBeat',
+                  command: 'sudo -S rm -f /opt/jsBeat',
+                  stdin: (sshConfig.pass ? sshConfig.pass : ''),
                   continueOnFailure: true
                 },
                 {
                   action: 'Create a symbolic link to this version',
-                  command: `sudo ln --symbolic ${payload.installerSource.jsBeat.folderName} /opt/jsBeat`
+                  command: `sudo -S ln --symbolic ${payload.installerSource.jsBeat.folderName} /opt/jsBeat`,
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Create configuration file',
@@ -220,7 +232,8 @@ function installShipper(socket, payload) {
                 },
                 {
                   action: 'Run the Shipper post-install script',
-                  command: 'sudo /usr/bin/env bash /opt/jsBeat/bin/post_install.sh'
+                  command: 'sudo -S /usr/bin/env bash /opt/jsBeat/bin/post_install.sh',
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Clean up. Remove the temporary directory and its content',
@@ -269,12 +282,14 @@ function installShipper(socket, payload) {
                 },
                 {
                   action: 'Remove previous symbolic link to older version, if any',
-                  command: 'sudo rm -f /opt/jsBeat/lib/node',
-                  continueOnFailure: true
+                  command: 'sudo -S rm -f /opt/jsBeat/lib/node',
+                  continueOnFailure: true,
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Create a symbolic link to this version',
-                  command: `sudo ln --symbolic ${payload.installerSource.nodeJs.folderName} /opt/jsBeat/lib/node`
+                  command: `sudo -S ln --symbolic ${payload.installerSource.nodeJs.folderName} /opt/jsBeat/lib/node`,
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'List the files of the Shipper Lib directory',
@@ -292,29 +307,60 @@ function installShipper(socket, payload) {
               steps.push(
                 {
                   action: 'Start Shipper service',
-                  command: 'sudo service jsbeat start',
-                  continueOnFailure: true
+                  command: 'sudo -S service jsbeat start',
+                  continueOnFailure: true,
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 },
                 {
                   action: 'Check Shipper service Status',
-                  command: 'sudo service jsbeat status',
-                  continueOnFailure: true
+                  command: 'sudo -S service jsbeat status',
+                  continueOnFailure: true,
+                  stdin: (sshConfig.pass ? sshConfig.pass : '')
                 }
               );
             } // if (payload.installerSource.jsBeat)
 
             // Add the Steps to the Exec stack
+            if (socket.connected) {
+              socket.emit('shipper.install',
+                {
+                  jobId: payload.jobId,
+                  code: 'CONTROL.INFO',
+                  payload: 'Preparing steps for Shipper deployment job...',
+                  step: 0,
+                  totalSteps: steps.length
+                });
+            }
+
             steps.forEach((step, stepCounter) => {
-              // eslint-disable-next-line no-console
-              // console.log(`installShipper - Adding step: (${stepCounter}) ${step.action}...`);
-              logToSystem('Debug', `installShipper - Adding step: (${stepCounter}) ${step.action}...`);
+              logToSystem('Verbose', `installShipper - Adding step: (${stepCounter}) ${step.action}...`);
+              if (socket.connected) {
+                socket.emit('shipper.install',
+                  {
+                    jobId: payload.jobId,
+                    code: 'CONTROL.INFO',
+                    payload: `➕ Adding step: (${stepCounter}) ${step.action}...`,
+                    step: 0,
+                    totalSteps: steps.length
+                  });
+              }
+
               installs[payload.jobId]
                 .exec(step.command, {
                   in: step.stdin || '',
                   exit(code) {
                     let continueToNextStep = true;
 
+                    // Make sure steps[stepCounter] exists
+                    if (installStepsStatus[payload.jobId].steps[stepCounter] == null) {
+                      installStepsStatus[payload.jobId].steps[stepCounter] = {};
+                    }
+
+                    installStepsStatus[payload.jobId].steps[stepCounter].exited = true;
+                    installStepsStatus[payload.jobId].steps[stepCounter].endTime = Date.now();
+
                     if (code !== 0) {
+                      installStepsStatus[payload.jobId].steps[stepCounter].failed = true;
                       if (socket.connected) {
                         socket.emit('shipper.install',
                           {
@@ -382,9 +428,99 @@ function installShipper(socket, payload) {
                 });
             });
 
+            if (socket.connected) {
+              socket.emit('shipper.install',
+                {
+                  jobId: payload.jobId,
+                  code: 'CONTROL.INFO',
+                  payload: `${steps.length} steps have been prepared.`,
+                  step: 0,
+                  totalSteps: steps.length
+                });
+            }
+
+            // Timestamp of when the job is started
+            installStepsStatus[payload.jobId].kickOffTime = Date.now();
+
+            // Enable a fail safe timeout
+            const timeoutCheckCycleTime = 2000; // 2 seconds timeout check cycle
+            // 5 minutes (300 seconds) timeout max duration for a Step
+            const timeoutMaxDurationForStep = 300000;
+            if (installStepsStatus[payload.jobId].intervalId == null) {
+              installStepsStatus[payload.jobId].intervalId = setInterval(() => {
+                logToSystem('Debug', `installShipper - Job [${payload.jobId}] - Monitor cycle...`);
+                if (
+                  installStepsStatus[payload.jobId]
+                ) {
+                  // Check how long has the current step running for
+                  // (based on previous step end time)
+                  const currentStepTookMs = Date.now()
+                  - (
+                    // Check we are on Step 2 or more (so there is a step before)
+                    installStepsStatus[payload.jobId].steps
+                    && Array.isArray(installStepsStatus[payload.jobId].steps)
+                    && installStepsStatus[payload.jobId].steps.length > 1
+                      // If yes, use the endTime of the previous step
+                      ? (installStepsStatus[payload.jobId].steps[
+                        installStepsStatus[payload.jobId].steps.length - 2
+                      ].endTime || 0)
+                      // If not, return Job's kickOffTime
+                      : installStepsStatus[payload.jobId].kickOffTime
+                  );
+
+                  logToSystem('Debug', `installShipper - Job [${payload.jobId}] - Current step (${installStepsStatus[payload.jobId].steps.length}) took ${currentStepTookMs} ms.`);
+                  // If it took too long, complain and kill the job
+                  if (currentStepTookMs > timeoutMaxDurationForStep) {
+                    const errorMessage = (
+                      installStepsStatus[payload.jobId].steps.length < 1
+                        ? 'Timed out before Step 1. Check Open Collector Host details (host name/IP, port), and make sure it\'s reachable from the EZ Server.'
+                        : `Timed out at step: ${installStepsStatus[payload.jobId].steps.length}. As it took ${currentStepTookMs} ms.`
+                    );
+                    logToSystem('Error', `installShipper - Job [${payload.jobId}] - ${errorMessage}`);
+                    if (socket.connected) {
+                      socket.emit('shipper.install',
+                        {
+                          jobId: payload.jobId,
+                          code: 'FAILURE',
+                          // If we timed out on the first step, provide a more specific message.
+                          // eslint-disable-next-line max-len
+                          payload: errorMessage,
+                          step: null,
+                          totalSteps: steps.length
+                        });
+                    }
+                    // eslint-disable-next-line no-use-before-define
+                    killInstallShipper(socket, payload);
+                  }
+                }
+              }, timeoutCheckCycleTime);
+            }
+
+            logToSystem('Verbose', `installShipper - Job [${payload.jobId}] - Timeout for each step of the job, including initial SSH connection, is set to ${timeoutMaxDurationForStep / 1000} seconds.`);
+            logToSystem('Info', `installShipper - Kicking off Shipper deployment job [${payload.jobId}]...`);
+            if (socket.connected) {
+              socket.emit('shipper.install',
+                {
+                  jobId: payload.jobId,
+                  code: 'CONTROL.INFO',
+                  payload: `⏱ Timeout for each step of the job, including initial SSH connection, is set to ${timeoutMaxDurationForStep / 1000} seconds.`,
+                  step: 0,
+                  totalSteps: steps.length
+                });
+              socket.emit('shipper.install',
+                {
+                  jobId: payload.jobId,
+                  code: 'CONTROL.INFO',
+                  payload: '🚀 Kicking off Shipper deployment job...',
+                  step: 0,
+                  totalSteps: steps.length
+                });
+            }
+
             // Add Event handlers and start
             installs[payload.jobId]
               .on('end', (err) => {
+                logToSystem((err ? 'Error' : 'Info'), `installShipper - Job [${payload.jobId}] ended. Result: ${err || 'SUCCESS'}`);
                 // Cleanup the sessions
                 // eslint-disable-next-line no-use-before-define
                 killInstallShipper(socket, payload);
@@ -401,6 +537,7 @@ function installShipper(socket, payload) {
               })
               .start({
                 failure() {
+                  logToSystem('Error', `installShipper - Job [${payload.jobId}] failed to start.`);
                   // Cleanup the sessions
                   // eslint-disable-next-line no-use-before-define
                   killInstallShipper(socket, payload);
@@ -417,35 +554,44 @@ function installShipper(socket, payload) {
                 }
               });
           });
-        } else if (socket.connected) {
+        } else {
+          if (socket.connected) {
+            socket.emit('shipper.install',
+              {
+                jobId: payload.jobId,
+                code: 'FAILURE',
+                payload: 'A same job is still running with the same ID.',
+                step: null,
+                totalSteps: null
+              });
+          }
+          logToSystem('Warning', `installShipper - Job [${payload.jobId}] - Job could not start due to the same job is still running with the same ID.`);
+        }
+      } else {
+        if (socket.connected) {
           socket.emit('shipper.install',
             {
-              jobId: payload.jobId,
+              jobId: (payload ? payload.jobId : null),
               code: 'FAILURE',
-              payload: 'A same job is still running with the same ID.',
+              payload: 'Job could not start due to missing parameters',
               step: null,
               totalSteps: null
             });
         }
-      } else if (socket.connected) {
+        logToSystem('Error', `installShipper - Job [${payload.jobId}] - Job could not start due to missing parameters`);
+      }
+    } catch (error) {
+      if (socket.connected) {
         socket.emit('shipper.install',
           {
             jobId: payload.jobId,
             code: 'FAILURE',
-            payload: 'Job could not start due to missing parameters',
+            payload: `Job failed. Reason: ${error.message}`,
             step: null,
             totalSteps: null
           });
       }
-    } catch (error) {
-      socket.emit('shipper.install',
-        {
-          jobId: payload.jobId,
-          code: 'FAILURE',
-          payload: `Job failed. Reason: ${error.message}`,
-          step: null,
-          totalSteps: null
-        });
+      logToSystem('Error', `installShipper - Job [${payload.jobId}] - Job failed. Reason: ${error.message}`);
     } finally {
       // eslint-disable-next-line no-use-before-define
       killInstallShipper(socket, payload);
@@ -460,21 +606,42 @@ function uninstallShipper(socket, payload) {
 }
 
 function killInstallShipper(socket, payload) {
+  logToSystem('Verbose', `installShipper - Trying to end job [${(payload && payload.jobId ? payload.jobId : 'N/A')}]...`);
   if (
     payload
     && payload.jobId
     && payload.jobId.length > 0
   ) {
+    // Clearing out the Steps status
+    if (installStepsStatus[payload.jobId]) {
+      // Ending timeout monitor
+      if (installStepsStatus[payload.jobId].intervalId) {
+        try {
+          logToSystem('Verbose', `installShipper - Ending timeout monitor for job [${payload.jobId}]...`);
+          clearInterval(installStepsStatus[payload.jobId].intervalId);
+        } catch (error) {
+          logToSystem('Error', `installShipper - Failed to end timeout monitor for job [${payload.jobId}]. Error: ${error.message}`);
+        } finally {
+          installStepsStatus[payload.jobId].intervalId = null;
+        }
+      }
+      installStepsStatus[payload.jobId] = null;
+    }
+
     // Check the jobId exists
     if (installs[payload.jobId]) {
       try {
+        logToSystem('Verbose', `installShipper - Ending job [${payload.jobId}]...`);
         installs[payload.jobId].end();
       } catch (error) {
+        logToSystem('Error', `installShipper - Failed to end job [${payload.jobId}]. Error: ${error.message}`);
         //
       } finally {
         installs[payload.jobId] = null;
       }
     }
+  } else {
+    logToSystem('Warning', `installShipper - Failed to end job [${(payload && payload.jobId ? payload.jobId : 'N/A')}] as missing or empty Job ID.`);
   }
 } // killInstallShipper
 

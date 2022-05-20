@@ -1,0 +1,15 @@
+[Unit]
+Description=The API service for the EZ Cloud Market Place
+Documentation=https://github.com/logrhythm/EZ-Cloud
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+ExecStart=/usr/local/ez-market-place/EZ-Cloud/ez-market-place/bin/start.sh
+Restart=always
+RestartSec=5
+Type=simple
+
+[Install]
+WantedBy=multi-user.target

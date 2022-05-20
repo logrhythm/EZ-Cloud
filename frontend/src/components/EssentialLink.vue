@@ -1,14 +1,25 @@
 <template>
   <q-item
     clickable
-    tag="a"
-    :href="link"
+    :tag="(subMenus && subMenus.length ? undefined : 'a')"
+    :href="(subMenus && subMenus.length ? undefined : link)"
+    v-if="title !== null"
   >
     <q-item-section
       v-if="icon"
-      avatar
+      side
     >
-      <q-icon :name="icon" :color="(isPageActive ? 'primary' : '')" />
+      <q-avatar size="24px" class="q-pa-none" square>
+        <q-icon :name="icon" size="sm" :color="(isPageActive ? 'primary' : '')" />
+        <q-badge
+          v-if="notification !== null"
+          floating
+          rounded
+          :color="notificationColor"
+          :text-color="notificationTextColor"
+          :label="notification"
+        />
+      </q-avatar>
     </q-item-section>
 
     <q-item-section>
@@ -17,7 +28,24 @@
         {{ caption }}
       </q-item-label> -->
     </q-item-section>
+
+    <q-menu auto-close anchor="center start" self="center start" v-if="subMenus && subMenus.length">
+      <q-list padding class="">
+        <EssentialLink
+          v-for="subMenu in subMenus"
+          :key="subMenu.title"
+          v-bind="subMenu"
+        />
+      </q-list>
+    </q-menu>
   </q-item>
+
+  <q-item
+    v-else-if="spacer === true"
+  >
+  </q-item>
+
+  <q-separator v-else-if="separator === true" class="q-my-xs" />
 </template>
 
 <script>
@@ -26,7 +54,8 @@ export default {
   props: {
     title: {
       type: String,
-      required: true
+      // required: true,
+      default: null
     },
 
     caption: {
@@ -42,6 +71,37 @@ export default {
     icon: {
       type: String,
       default: ''
+    },
+
+    notification: {
+      // type: can be a String or a Number
+      type: [String, Number],
+      default: null
+    },
+
+    notificationColor: {
+      type: String,
+      default: 'orange'
+    },
+
+    notificationTextColor: {
+      type: String,
+      default: 'white'
+    },
+
+    subMenus: {
+      type: Array,
+      default: null
+    },
+
+    spacer: {
+      type: Boolean,
+      default: false
+    },
+
+    separator: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {

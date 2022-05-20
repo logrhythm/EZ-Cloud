@@ -6,6 +6,10 @@ const configSql = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 
 // Create SQL object
 const { Connection, Request, TYPES } = require('tedious');
 
+// Load the System Logging functions
+const { logToSystem } = require('./systemLogging');
+
+
 function waitMilliseconds(delay = 250) {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -51,6 +55,7 @@ async function getDataFromSql(parameters) {
         targetVariable.stillChecking = false;
         stillChecking = false;
         // throw connectionError;
+        logToSystem('Error', `Persistance Layer | Connection to database failed. | Details: ${JSON.stringify(connectionError)}`);
       }
 
       // Exec the query
@@ -63,6 +68,9 @@ async function getDataFromSql(parameters) {
         }
         targetVariable.stillChecking = false;
         stillChecking = false;
+
+        // And close the SQL connection
+        connection.close();
       });
 
       if (variables && Array.isArray(variables)) {

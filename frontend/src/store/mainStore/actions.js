@@ -1,5 +1,6 @@
 import { uid } from 'quasar'
 import { i18n } from 'boot/i18n'
+import { version } from '../../../package.json'
 
 // ######################################################################
 // AUTHENTICATION
@@ -27,6 +28,13 @@ export function signOut ({ commit }, payload) {
   // Empty the list of Collectors and Pipelines
   commit('getOpenCollectors', [])
   commit('getPipelines', [])
+
+  // Empty the list of User Accounts and Roles
+  commit('getUserAccounts', [])
+  commit('getUserRoles', [])
+
+  // Empty Publisher details
+  commit('updateEzMarketPublisherDetails', {})
 }
 
 // ######################################################################
@@ -267,7 +275,9 @@ export function upsertPipeline ({ state, commit }, payload) {
           loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
           silent: false,
           caller: (payload && payload.caller ? payload.caller : this._vm),
-          debug: false
+          onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+          onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+          debug: (payload && payload.debug ? payload.debug : false)
         })
       }
     }
@@ -433,6 +443,785 @@ export function obfuscateSecretForOpenCollector ({ state }, payload) {
   })
 }
 
+// ######################################################################
+// USER ACCOUNTS MANAGEMENT
+// ######################################################################
+
+export function getUserAccounts ({ state, commit }, payload) {
+  getDataFromSite({
+    apiUrl: '/admin/GetUsersList',
+    dataLabel: 'Accounts',
+    countDataLabel: true,
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    commit: commit,
+    targetCommitName: 'getUserAccounts',
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    silent: false,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: false
+  })
+}
+
+export function updateUserAccount ({ state }, payload) {
+  if (payload && payload.roleUid) {
+    postDataToSite({
+      apiUrl: '/admin/UpdateUser',
+      dataLabel: 'Account',
+      apiCallParams: {
+        userId: payload.userId,
+        userLogin: (payload.userId == null ? payload.userLogin : null), // Not sending Login nor Pass for new Users
+        userPassword: (payload.userId == null ? payload.userPassword : null), // Not sending Login nor Pass for new Users
+        roleUid: payload.roleUid
+      },
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      silent: false,
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: false
+    })
+  }
+}
+
+export function deleteUserAccount ({ state }, payload) {
+  if (payload && payload.userId != null) {
+    postDataToSite({
+      apiUrl: '/admin/DeleteUser',
+      dataLabel: 'Account',
+      apiCallParams: { userId: payload.userId },
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      silent: false,
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: false
+    })
+  }
+}
+
+export function getUserRoles ({ state, commit }, payload) {
+  getDataFromSite({
+    apiUrl: '/admin/GetRolesList',
+    dataLabel: 'Roles',
+    countDataLabel: true,
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    commit: commit,
+    targetCommitName: 'getUserRoles',
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    silent: false,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: false
+  })
+}
+
+export function updateUserRole ({ state }, payload) {
+  if (payload && payload.roleUid && payload.roleUid.length && payload.roleName && payload.roleName.length) {
+    postDataToSite({
+      apiUrl: '/admin/UpdateRole',
+      dataLabel: 'Role',
+      apiCallParams: {
+        uid: payload.roleUid,
+        name: payload.roleName,
+        isPrivileged: payload.roleIsPrivileged
+      },
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      silent: false,
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: false
+    })
+  }
+}
+
+export function deleteUserRole ({ state }, payload) {
+  if (payload && payload.roleUid && payload.roleUid.length) {
+    postDataToSite({
+      apiUrl: '/admin/DeleteRole',
+      dataLabel: 'Role',
+      apiCallParams: { uid: payload.roleUid },
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      silent: false,
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: false
+    })
+  }
+}
+
+// ######################################################################
+// EZ MARKET PLACE
+// ######################################################################
+
+export function updateEzMarketNotificationNumber ({ commit }, payload) {
+  commit('updateEzMarketNotificationNumber', payload)
+}
+
+export function reloadEzMarketNotifications ({ state, commit }, payload) {
+  console.log('☁️ Downloading Notifications from EZ Cloud Market Place...')
+
+  // Building the full URL of the API root
+  const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+  // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+  fetch(ezMarketApiBaseUrl + '/notifications', {
+    credentials: 'omit',
+    referrerPolicy: 'no-referrer',
+    headers: {
+      'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+      'ez-server-version': (state.deployment && state.deployment.version ? state.deployment.version : ''),
+      'ez-client-version': (version || '')
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok.')
+      }
+      return response.json()
+    })
+    .then(data => {
+      if (data && data.records && Array.isArray(data.records)) {
+        // Only flag the ones that are Unread
+        const unReadMessages = data.records.filter((notification) => notification && notification.statusName && notification.statusName === 'Unread').length
+        // Push the whole lot to the State
+        commit('updateEzMarketNotifications', data.records)
+        console.log(`✔️ [API SUCCESS] Succesfully loaded ${data.records.length} Notifications. Of which ${unReadMessages} are marked as Unread.`)
+      } else {
+        throw new Error('Returned data wasn\'t a proper JSON array.')
+      }
+    })
+    .catch(error => {
+      console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+    })
+}
+
+export function loadEzMarketNotificationById ({ state, commit }, messageUid) {
+  // Building the full URL of the API root
+  const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+  if (messageUid && messageUid.length && state.ezMarketNotifications.find((notif) => notif && notif.messageUid === messageUid)) {
+    console.log('☁️ Downloading Notification from EZ Cloud Market Place...')
+
+    // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+    fetch(ezMarketApiBaseUrl + '/notifications/' + messageUid, {
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+      headers: {
+        'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+        'ez-server-version': (state.deployment && state.deployment.version ? state.deployment.version : ''),
+        'ez-client-version': (version || '')
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok.')
+        }
+        return response.json()
+      })
+      .then(data => {
+        if (data && data.records && Array.isArray(data.records)) {
+          // Only flag the ones that are Unread
+          const unReadMessages = data.records.filter((notification) => notification && notification.statusName && notification.statusName === 'Unread').length
+          // Push the whole lot to the State
+          commit('updateEzMarketNotificationsSubset', data.records)
+          console.log(`✔️ [API SUCCESS] Succesfully loaded ${data.records.length} Notifications. Of which ${unReadMessages} are marked as Unread.`)
+        } else {
+          throw new Error('Returned data wasn\'t a proper JSON array.')
+        }
+      })
+      .catch(error => {
+        console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+      })
+  }
+}
+
+export function updateEzMarketNotificationStatusTo ({ state, commit }, payload) {
+  const { messageUid, toStatus } = payload
+  if (messageUid && messageUid.length && toStatus && toStatus.length) {
+    const notification = state.ezMarketNotifications.find((notif) => notif && notif.messageUid === messageUid)
+    if (notification) {
+      // Building the full URL of the API root
+      const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+      // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+      fetch(ezMarketApiBaseUrl + '/notifications/' + messageUid, {
+        method: 'PUT',
+        credentials: 'omit',
+        referrerPolicy: 'no-referrer',
+        headers: {
+          'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          notification: {
+            messageUid: messageUid,
+            status: toStatus
+          }
+        })
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok.')
+          }
+          return response.json()
+        })
+        .then(data => {
+          if (data && data.result) {
+            console.log(`✔️ [API SUCCESS] Succesfully updated ${data.result.affectedRows || 0} Notification(s).`)
+            // Reload the item in question
+            loadEzMarketNotificationById({ state, commit }, messageUid)
+          } else {
+            throw new Error('Returned data wasn\'t a proper JSON array.')
+          }
+        })
+        .catch(error => {
+          console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+        })
+    }
+  }
+}
+
+export function deleteEzMarketNotificationById ({ state, commit }, messageUid) {
+  console.log('deleteEzMarketNotificationById', messageUid)
+  if (messageUid && messageUid.length && state.ezMarketNotifications.find((notif) => notif && notif.messageUid === messageUid)) {
+    console.log('☁️ Deleting Notification from EZ Cloud Market Place...')
+
+    // Building the full URL of the API root
+    const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+    // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+    fetch(ezMarketApiBaseUrl + '/notifications/' + messageUid, {
+      method: 'DELETE',
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+      headers: {
+        'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+        'ez-server-version': (state.deployment && state.deployment.version ? state.deployment.version : ''),
+        'ez-client-version': (version || '')
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok.')
+        }
+        return response.json()
+      })
+      .then(data => {
+        if (data && data.result) {
+          const affectedRows = data.result.affectedRows || 0
+          console.log(`✔️ [API SUCCESS] Succesfully deleted ${affectedRows} Notification(s).`)
+          if (affectedRows === 1) {
+            // Delete the item in question from the State
+            commit('deleteEzMarketNotificationById', messageUid)
+          }
+        } else {
+          throw new Error('Returned data wasn\'t a proper JSON array.')
+        }
+      })
+      .catch(error => {
+        console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+      })
+  }
+}
+
+export function reloadEzMarketPipelineTemplates ({ state, commit }, payload) {
+  console.log('☁️ Downloading Pipeline Templates from EZ Cloud Market Place...')
+
+  // Building the full URL of the API root
+  const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+  // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+  fetch(ezMarketApiBaseUrl + '/pipelineTemplates', {
+    credentials: 'omit',
+    referrerPolicy: 'no-referrer',
+    headers: {
+      'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+      'ez-server-version': (state.deployment && state.deployment.version ? state.deployment.version : ''),
+      'ez-client-version': (version || '')
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok.')
+      }
+      return response.json()
+    })
+    .then(data => {
+      if (data && data.records && Array.isArray(data.records)) {
+        // Push the whole lot to the State
+        commit('updateEzMarketPipelineTemplates', data.records)
+        console.log(`✔️ [API SUCCESS] Succesfully loaded ${data.records.length} Pipeline Templates.`)
+      } else {
+        throw new Error('Returned data wasn\'t a proper JSON array.')
+      }
+    })
+    .catch(error => {
+      console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+    })
+}
+
+export function loadEzMarketPipelineTemplateById ({ state, commit }, { pipelineTemplateUid, onSuccessCallBack, onErrorCallBack, params }) {
+  // Building the full URL of the API root
+  const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+  if (pipelineTemplateUid && pipelineTemplateUid.length && state.ezMarketPipelineTemplates.find((pipelineTemplate) => pipelineTemplate && pipelineTemplate.uid === pipelineTemplateUid)) {
+    // Clear the currently loaded item, if different from the one we are about to load
+    if (!(state.ezMarketPipelineTemplate && state.ezMarketPipelineTemplate.uid && state.ezMarketPipelineTemplate.uid === pipelineTemplateUid)) {
+      console.log('🧹 Clear the currently loaded Market Pipeline Template')
+      commit('updateEzMarketPipelineTemplateById', [{}])
+    }
+
+    console.log('☁️ Downloading Pipeline Template from EZ Cloud Market Place...')
+
+    // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+    fetch(ezMarketApiBaseUrl + '/pipelineTemplates/' + pipelineTemplateUid, {
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+      headers: {
+        'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+        'ez-server-version': (state.deployment && state.deployment.version ? state.deployment.version : ''),
+        'ez-client-version': (version || '')
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok.')
+        }
+        return response.json()
+      })
+      .then(data => {
+        if (data && data.records && Array.isArray(data.records)) {
+          // Clean up to data
+          let pipelineTemplate
+          try {
+            pipelineTemplate = JSON.parse(JSON.stringify(data.records[0] || {}))
+            // Parse the stats (as they are stored as stringified JSON in the database)
+            try {
+              pipelineTemplate.stats = JSON.parse(pipelineTemplate.stats) || {}
+            } catch (error) {
+              pipelineTemplate.stats = {}
+            }
+
+            // Parse the Collection Configuration (as it's are stored as stringified JSON in the database)
+            try {
+              pipelineTemplate.collection_configuration = JSON.parse(pipelineTemplate.collection_configuration) || {}
+            } catch (error) {
+              pipelineTemplate.collection_configuration = {}
+            }
+
+            // Parse the Fields Mapping (as it's are stored as stringified JSON in the database)
+            try {
+              pipelineTemplate.mapping_configuration = JSON.parse(pipelineTemplate.mapping_configuration) || {}
+            } catch (error) {
+              pipelineTemplate.mapping_configuration = {}
+            }
+          } catch (error) {
+            // Fall back on the raw data
+            pipelineTemplate = data.records[0] || {}
+          }
+
+          // Push the whole lot to the State
+          commit('updateEzMarketPipelineTemplateById', pipelineTemplate)
+
+          console.log(`✔️ [API SUCCESS] Succesfully loaded ${data.records.length} Pipeline Template.`)
+          if (typeof onSuccessCallBack === 'function') {
+            onSuccessCallBack({
+              data: pipelineTemplate,
+              success: true,
+              params,
+              messageForLogAndPopup: null
+            })
+          }
+        } else {
+          if (typeof onErrorCallBack === 'function') {
+            onErrorCallBack({
+              data: (data && data.records ? data.records : undefined),
+              success: false,
+              params,
+              messageForLogAndPopup: 'Returned data wasn\'t a proper JSON array.'
+            })
+          }
+          throw new Error('Returned data wasn\'t a proper JSON array.')
+        }
+      })
+      .catch(error => {
+        console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+      })
+  }
+}
+
+export function createEzMarketPipelineTemplate ({ state, commit }, { pipelineTemplateToPublish, onSuccessCallBack, onErrorCallBack, params }) {
+  if (
+    pipelineTemplateToPublish &&
+    pipelineTemplateToPublish.pipelineTemplateUid &&
+    pipelineTemplateToPublish.pipelineTemplateUid.length &&
+    pipelineTemplateToPublish.name &&
+    pipelineTemplateToPublish.name.length
+  ) {
+    // Building the full URL of the API root
+    const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+    // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+    fetch(ezMarketApiBaseUrl + '/pipelineTemplates', {
+      method: 'POST',
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+      headers: {
+        'ez-publisher': (state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        pipelineTemplate: {
+          pipelineTemplateUid: pipelineTemplateToPublish.pipelineTemplateUid,
+          // publisherUid: null,
+          // statusId: null,
+          name: pipelineTemplateToPublish.name,
+          readmeMarkdown: pipelineTemplateToPublish.readmeMarkdown || undefined,
+          iconPicture: pipelineTemplateToPublish.iconPicture || undefined,
+          collectionConfiguration: pipelineTemplateToPublish.collectionConfiguration || undefined,
+          fieldsMapping: pipelineTemplateToPublish.fieldsMapping || undefined,
+          stats: pipelineTemplateToPublish.stats || undefined
+        }
+      })
+    })
+      .then(response => {
+        if (!response.ok) {
+          if (typeof onErrorCallBack === 'function') {
+            onErrorCallBack({
+              data: undefined,
+              success: false,
+              params: null,
+              messageForLogAndPopup: 'Network response was not ok.'
+            })
+          }
+          throw new Error('Network response was not ok.')
+        }
+        return response.json()
+      })
+      .then(data => {
+        if (data && data.result) {
+          console.log(`✔️ [API SUCCESS] Succesfully created ${data.result.affectedRows || 0} Pipeline Template(s).`)
+          if (typeof onSuccessCallBack === 'function') {
+            onSuccessCallBack({
+              data: (data && data.records ? data.records : undefined),
+              success: true,
+              params: params,
+              messageForLogAndPopup: null
+            })
+          }
+        } else {
+          if (typeof onErrorCallBack === 'function') {
+            onErrorCallBack({
+              data: data || undefined,
+              success: false,
+              params: params,
+              messageForLogAndPopup: 'Returned data wasn\'t a proper JSON array.'
+            })
+          }
+          throw new Error('Returned data wasn\'t a proper JSON array.')
+        }
+      })
+      .catch(error => {
+        console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+      })
+  } else {
+    if (typeof onErrorCallBack === 'function') {
+      onErrorCallBack({
+        data: undefined,
+        success: false,
+        params: null,
+        messageForLogAndPopup: 'Missing or incomplete parameter to function (need both Pipeline Template\'s UID and Name).'
+      })
+    }
+  }
+}
+
+export function loadEzMarketPublisherDetails ({ state, commit }, { onSuccessCallBack, onErrorCallBack }) {
+  console.log('☁️ Downloading Publisher\'s details from EZ Cloud Market Place...')
+
+  // Building the full URL of the API root
+  const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+  // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+  fetch(ezMarketApiBaseUrl + '/publishers/' + state.ezMarket.publisherUid, {
+    credentials: 'omit',
+    referrerPolicy: 'no-referrer',
+    headers: {
+      'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+      'ez-server-version': (state.deployment && state.deployment.version ? state.deployment.version : ''),
+      'ez-client-version': (version || '')
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        if (typeof onErrorCallBack === 'function') {
+          onErrorCallBack({
+            data: undefined,
+            success: false,
+            params: null,
+            messageForLogAndPopup: 'Network response was not ok.'
+          })
+        }
+        throw new Error('Network response was not ok.')
+      }
+      return response.json()
+    })
+    .then(data => {
+      if (data && data.records && Array.isArray(data.records)) {
+        // Extract up to data
+        let publisherDetails
+        try {
+          publisherDetails = JSON.parse(JSON.stringify(data.records[0] || {}))
+        } catch (error) {
+          // Fall back on the raw data
+          publisherDetails = data.records[0] || {}
+        }
+
+        // Push the whole lot to the State
+        commit('updateEzMarketPublisherDetails', publisherDetails)
+        console.log(`✔️ [API SUCCESS] Succesfully loaded ${data.records.length} Publishers details.`)
+        if (typeof onSuccessCallBack === 'function') {
+          onSuccessCallBack({
+            data: publisherDetails,
+            success: true,
+            params: null,
+            messageForLogAndPopup: null
+          })
+        }
+      } else {
+        if (typeof onErrorCallBack === 'function') {
+          onErrorCallBack({
+            data: (data && data.records ? data.records : undefined),
+            success: false,
+            params: null,
+            messageForLogAndPopup: 'Returned data wasn\'t a proper JSON array.'
+          })
+        }
+        throw new Error('Returned data wasn\'t a proper JSON array.')
+      }
+    })
+    .catch(error => {
+      console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+    })
+}
+
+export function createEzMarketPublisher ({ state, commit }, { toName, onSuccessCallBack, onErrorCallBack }) {
+  if (state.ezMarket && state.ezMarket.publisherUid && state.ezMarket.publisherUid.length && toName && toName.length) {
+    // Building the full URL of the API root
+    const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+    // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+    fetch(ezMarketApiBaseUrl + '/publishers', {
+      method: 'POST',
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+      headers: {
+        'ez-publisher': (state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        publisher: {
+          publisherUid: state.ezMarket.publisherUid,
+          displayName: toName
+        }
+      })
+    })
+      .then(response => {
+        if (!response.ok) {
+          if (typeof onErrorCallBack === 'function') {
+            onErrorCallBack({
+              data: undefined,
+              success: false,
+              params: null,
+              messageForLogAndPopup: 'Network response was not ok.'
+            })
+          }
+          throw new Error('Network response was not ok.')
+        }
+        return response.json()
+      })
+      .then(data => {
+        if (data && data.result) {
+          console.log(`✔️ [API SUCCESS] Succesfully created ${data.result.affectedRows || 0} Publisher(s) details.`)
+          if (typeof onSuccessCallBack === 'function') {
+            onSuccessCallBack({
+              data: (data && data.records ? data.records : undefined),
+              success: true,
+              params: null,
+              messageForLogAndPopup: null
+            })
+          }
+        } else {
+          if (typeof onErrorCallBack === 'function') {
+            onErrorCallBack({
+              data: (data && data.records ? data.records : undefined),
+              success: false,
+              params: null,
+              messageForLogAndPopup: 'Returned data wasn\'t a proper JSON array.'
+            })
+          }
+          throw new Error('Returned data wasn\'t a proper JSON array.')
+        }
+      })
+      .catch(error => {
+        console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+      })
+  }
+}
+
+export function updateEzMarketPublisherDetails ({ state, commit }, { toName, onSuccessCallBack, onErrorCallBack }) {
+  if (state.ezMarket && state.ezMarket.publisherUid && state.ezMarket.publisherUid.length && toName && toName.length) {
+    // Building the full URL of the API root
+    const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+    // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+    fetch(ezMarketApiBaseUrl + '/publishers/' + state.ezMarket.publisherUid, {
+      method: 'PUT',
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+      headers: {
+        'ez-publisher': (state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        publisher: {
+          publisherUid: state.ezMarket.publisherUid,
+          displayName: toName
+        }
+      })
+    })
+      .then(response => {
+        if (!response.ok) {
+          if (typeof onErrorCallBack === 'function') {
+            onErrorCallBack({
+              data: undefined,
+              success: false,
+              params: null,
+              messageForLogAndPopup: 'Network response was not ok.'
+            })
+          }
+          throw new Error('Network response was not ok.')
+        }
+        return response.json()
+      })
+      .then(data => {
+        if (data && data.result) {
+          console.log(`✔️ [API SUCCESS] Succesfully updated ${data.result.affectedRows || 0} Publisher(s) details.`)
+          if (typeof onSuccessCallBack === 'function') {
+            onSuccessCallBack({
+              data: (data && data.records ? data.records : undefined),
+              success: true,
+              params: null,
+              messageForLogAndPopup: null
+            })
+          }
+        } else {
+          if (typeof onErrorCallBack === 'function') {
+            onErrorCallBack({
+              data: (data && data.records ? data.records : undefined),
+              success: false,
+              params: null,
+              messageForLogAndPopup: 'Returned data wasn\'t a proper JSON array.'
+            })
+          }
+          throw new Error('Returned data wasn\'t a proper JSON array.')
+        }
+      })
+      .catch(error => {
+        console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+      })
+  }
+}
+
+// ######################################################################
+// HELPERS
+// ######################################################################
+
+export function adaptPipelineCollectionConfiguration (dummy, payload) {
+  const importedCollectionConfiguration = payload.importedCollectionConfiguration || {}
+  const targetDetails = payload.targetDetails || {}
+  // Target Details should include:
+  // - uid
+  // - name
+
+  try {
+    // Parse
+    const parsedImportedCollectionConfiguration = (importedCollectionConfiguration ? JSON.parse(JSON.stringify(importedCollectionConfiguration)) : null)
+
+    // Extract UID and Name
+    const targetPipelineUid = targetDetails.uid
+    const targetPipelineName = targetDetails.name
+
+    // Extract Shipper and Method
+    const collectionShipper = (
+      parsedImportedCollectionConfiguration &&
+      parsedImportedCollectionConfiguration.collectionShipper &&
+      parsedImportedCollectionConfiguration.collectionShipper.length
+        ? parsedImportedCollectionConfiguration.collectionShipper
+        : null
+    )
+
+    // Replace Pipeline identifiers
+
+    // Beat: filebeat
+    if (collectionShipper === 'filebeat') {
+      // Ensure we have the .fields branch
+      parsedImportedCollectionConfiguration.fields = parsedImportedCollectionConfiguration.fields || {}
+
+      parsedImportedCollectionConfiguration.fields.stream_id = targetPipelineUid
+      parsedImportedCollectionConfiguration.fields.stream_name = targetPipelineName
+    }
+    // Beat: jsBeat
+    if (collectionShipper === 'jsBeat') {
+      // Ensure we have the .fields branch
+      parsedImportedCollectionConfiguration.filterHelpers = parsedImportedCollectionConfiguration.filterHelpers || {}
+
+      parsedImportedCollectionConfiguration.filterHelpers.stream_id = targetPipelineUid
+      parsedImportedCollectionConfiguration.filterHelpers.stream_name = targetPipelineName
+      parsedImportedCollectionConfiguration.uid = targetPipelineUid
+      parsedImportedCollectionConfiguration.name = targetPipelineName
+    }
+
+    // LogRhythm Beats
+    if (
+      [
+        'genericbeat',
+        'webhookbeat'
+      ].includes(collectionShipper)
+    ) {
+      parsedImportedCollectionConfiguration.beatIdentifier = String(targetPipelineUid.substring(0, 3) + '_' + targetPipelineName.replace(/[^a-zA-Z0-9]/g, '_') + '_' + targetPipelineUid).substring(0, 12)
+      parsedImportedCollectionConfiguration.logsource_name = targetPipelineName
+    }
+
+    // Pat on the back everyone! Job done.
+    return parsedImportedCollectionConfiguration
+  } catch (error) {
+    console.log('⚠️ [IMPORT] Parsing error: Could not parse or adapt Configuration Collection.', error.message)
+  }
+  return null
+}
+
 //           ###    ########  ####       ##     ## ######## #### ##       #### ######## #### ########  ######
 //          ## ##   ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
 //         ##   ##  ##     ##  ##        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##
@@ -560,7 +1349,7 @@ export function getDataFromSite (params = {
 
       if (queryResultedInError) {
         if (params.logToConsole) {
-          console.log('⚠️ ' + i18n.t('[API ERROR]') + ' ' + messageForLogAndPopup)
+          console.log('⚠️ ' + i18n.t('[API ERROR]') + ' ' + messageForLogAndPopup + (captionForLogAndPopup && captionForLogAndPopup.length ? ' // ' + captionForLogAndPopup : ''))
         }
         if (!params.silent && notificationPopupId) {
           notificationPopupId({
@@ -585,7 +1374,7 @@ export function getDataFromSite (params = {
         }
       } else {
         if (params.logToConsole) {
-          console.log('✔️ ' + i18n.t('[API SUCCESS]') + ' ' + messageForLogAndPopup)
+          console.log('✔️ ' + i18n.t('[API SUCCESS]') + ' ' + messageForLogAndPopup + (captionForLogAndPopup && captionForLogAndPopup.length ? ' // ' + captionForLogAndPopup : ''))
         }
         if (!params.silent && notificationPopupId) {
           notificationPopupId({
@@ -719,7 +1508,7 @@ export function postDataToSite (params = {
 
         if (response.data.errors && Array.isArray(response.data.errors) && response.data.errors.length > 0) {
           queryResultedInError = true
-          messageForLogAndPopup = i18n.t('Error updating persistance layer.')
+          messageForLogAndPopup = i18n.t('EZ Server API returned an error.')
           if (process.env.DEV) {
             captionForLogAndPopup = response.data.errors.reduce((errorsAccumulatorArray, errorMessage) => {
               errorsAccumulatorArray.push(typeof errorMessage !== 'object' ? errorMessage : JSON.stringify(errorMessage))
@@ -748,7 +1537,7 @@ export function postDataToSite (params = {
       }
       if (queryResultedInError) {
         if (params.logToConsole) {
-          console.log('⚠️ ' + i18n.t('[API ERROR]') + ' ' + messageForLogAndPopup + ' // ' + captionForLogAndPopup)
+          console.log('⚠️ ' + i18n.t('[API ERROR]') + ' ' + messageForLogAndPopup + (captionForLogAndPopup && captionForLogAndPopup.length ? ' // ' + captionForLogAndPopup : ''))
         }
         if (!params.silent && notificationPopupId) {
           notificationPopupId({
@@ -774,7 +1563,7 @@ export function postDataToSite (params = {
         }
       } else {
         if (params.logToConsole) {
-          console.log('✔️ ' + i18n.t('[API SUCCESS]') + ' ' + messageForLogAndPopup + ' // ' + captionForLogAndPopup)
+          console.log('✔️ ' + i18n.t('[API SUCCESS]') + ' ' + messageForLogAndPopup + (captionForLogAndPopup && captionForLogAndPopup.length ? ' // ' + captionForLogAndPopup : ''))
         }
         if (!params.silent && notificationPopupId) {
           notificationPopupId({

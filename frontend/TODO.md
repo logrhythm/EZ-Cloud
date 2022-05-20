@@ -1,22 +1,21 @@
 # TODO - Frontend
 
-### Target: v?.?
+### Target: v0.9
 
 ## TO DO
-- Edit Deployment
-  - [ ] Offer action to un-deploy
-    - [ ] Backend API to remove config from Beat
-- Mapping Editor
-  - [ ] Handle Sub Rules
-  - [ ] Resurface the `.message` feature
-    - [ ] In UI (menu Settings)
-    - [ ] When generating JQ Transform
-      - [ ] In Field Mapping Editor
-      - [ ] In deployment
-    - [ ] Allow for different holder
-      - [ ] `.message`
-      - [ ] `.response`
-      - [ ] Configurable in the Collection Template
+- [ ] LogRhythm Beats mapping for Collection Configuration
+  - [ ] Azure Event Hub
+    - [ ] With custom Mapping
+    - [ ] Without custom Mapping
+  - [ ] S3
+  - [ ] Azure Event Hub
+    - [ ] With custom Mapping
+    - [ ] Without custom Mapping
+  - [ ] WebHook
+    - [ ] https
+  - [ ] PubSub
+  - [ ] Kafka
+  - ...
 - [ ] Add a simple Wizard from landing page
   - [ ] Ask for name for Log Source
   - [ ] Create collection configuation
@@ -25,18 +24,147 @@
     - [ ] Configure it
   - [ ] Pick up Open Collector
     - [ ] Add one if none in the list
+    - [ ] Offer to deploy required Shipper if not already on OC
   - [ ] Create field mapping
     - [ ] Run pre-configured Tail
   - [ ] Recap page
     - [ ] Ability to rename Log Source
     - [ ] Ability to assign Log Source to other Open Collectors
     - [ ] Ability to Enable / Commit the Log Source creation
+
+## TO FIX
+
+## TO TEST
+
+### Target: v0.8
+
+## TO DO
+- RBAC
+  - [x] Add User Admin page
+  - [x] Add Roles Admin page
+  - [x] Add landing Admin page
+  - [x] Add navigation in Users and Roles Admin pages
+- General
+  - [x] Settings - Only show Backend settings in Dev Mode
+  - [x] Error messages
+    - [x] Add pop up with error details and pointer to Wiki
+    - [x] Write Wiki with error explanation
+- Mapping Editor
+  - [x] Warn user if Socket is not connected to Backend (as Tail feature needs it)
+  - [x] ~~Automatically start Parsing when starting Tail~~
+    - [x] Revert this change, as better optimistion now in place
+  - [x] Optimise Parsing Start/Stop
+    - [x] Automatically start Parsing when entries are added to the Queue
+    - [x] Automatically stop Parsing when the Queue is fully processed
+  - [x] Change scheduling method for the Background Processing to allow changes in the Settings to be picked up once already running
+  - [x] Change 'Start/Stop background processing' button to a simple indicator, or remove
+  - [ ] ~~Handle Sub Rules~~ (👈 low value, low priority. Might resurect if users demand)
+  - [x] Resurface the `.message` feature
+    - [x] In UI (menu Settings)
+    - [x] Send to API when Saving
+    - [x] When generating JQ Transform
+      - [x] In Field Mapping Editor
+      - [x] In deployment
+    - [ ] ~~Allow for different holder~~ (👈 low value, low priority. Might resurect if users demand)
+      - [ ] ~~`.message`~~
+      - [ ] ~~`.response`~~
+      - [ ] ~~Configurable in the Collection Template~~
+  - [x] Externalise Collection Templates
+  - [x] Add a way to import log samples
+    - [x] Single log at a time, including Array of logs
+    - [x] Multiple logs at a time, as one per line
+    - [x] From file(s)
+      - [x] As a Single Log per file
+      - [x] As an Array of Logs per file
+      - [x] As an Set of Logs
+      - [x] Write Wiki help page to explain the difference
+        - https://github.com/TonyMasse/EZ-Cloud/wiki/Help#ref-whatsthedifferencefileimport
 - [ ] Provide feedback if failing to connect over SSH
-  - [ ] In Open Collectors list page
-    - [ ] On version check
-    - [ ] On Shipper deployment
+  - [x] In Open Collectors list page
+    - [x] On version check
+    - [x] On Shipper deployment
   - [ ] In Tail
   - [ ] In Deployment
+- [x] Warn user if Socket is not connected to Backend (as some features needs it)
+  - [x] On Shipper deployment
+- [ ] Market Place
+  - [ ] ~~Find a Free-tiered public database~~ (👈 using journey.logrhythm.com)
+  - [ ] ~~Find a Free-tiered public hosting (for Admin and API)~~ (👈 using journey.logrhythm.com)
+  - [ ] ~~Find / register domain~~ (👈 using journey.logrhythm.com)
+  - [x] Get notifications from the Market Place
+  - [x] List available Pipeline Templates
+  - [x] Import Pipeline Template
+    - [x] Collection
+      - [x] In new Pipeline
+      - [x] In existing Pipeline
+    - [x] Mapping
+      - [x] In new Pipeline
+      - [x] In existing Pipeline
+    - [x] From the target Pipeline itself
+      - [x] Collection
+      - [x] Mapping
+  - [x] Publisher profile's properties
+    - [x] Create Publisher profile with user's Pseudo-name
+    - [x] Edit Publisher profile
+  - [ ] Export to Market Place
+    - [x] Deal with non-existing Publisher Profile
+    - [x] Pipeline name
+    - [x] Icon / Visual
+    - [x] Readme
+    - [x] Collection
+      - [x] Sanitization of secrets
+    - [x] Fields Mapping
+      - [x] Sanitization of export
+  - [x] Market Place Admin
+    - [x] Approval / Review / Moderation of submissions
+    - [x] Change Status of submission
+      - Under review
+      - Rejected
+      - Approved
+    - [x] Change Visibility of submission
+      - Visible
+      - Hidden
+    - [x] Delete submission
+- [x] Import/Export of Collection
+  - [x] Import Collection from file
+  - [ ] ~~Import Collection from Copy/Paste~~
+  - [x] Export Collection to file
+  - [ ] ~~Export Collection to Copy/Paste~~ (👈 low value, low priority. Might resurect if users demand)
+- [x] Import/Export of Fields Mapping
+  - [x] Import Mapping from file
+  - [ ] ~~Import Mapping from Copy/Paste~~ (👈 low value, low priority. Might resurect if users demand)
+  - [x] Export Mapping to file
+  - [ ] ~~Export Mapping to Copy/Paste~~ (👈 low value, low priority. Might resurect if users demand)
+  - [x] Update Mapping import from File to re-use new `importFromEZImportableConfig` function
+- [x] LogRhythm Beats mapping for Collection Configuration
+  - [x] WebHook
+    - [x] http (Contribution from @Jt3kt)
+  - ...
+- Open Collector Properties
+  - [ ] ~~SUDO requirement~~ (👈 we are using a non-interactive TTY, so we can't provide any extra creds for `sudo`)
+    - [ ] ~~Collect optional SUDO Username~~ (👈 we are using a non-interactive TTY, so we can't provide any extra creds for `sudo`)
+    - [ ] ~~Collect optional SUDO Password~~ (👈 we are using a non-interactive TTY, so we can't provide any extra creds for `sudo`)
+- [ ] Pipeline - Deployment - Change Pipeline status to Ready when deployed successfully
+- Shipper Installation
+  - [x] Update Shippers list with jsBeat v1.1.5
+
+## TO FIX
+- [ ] ~~Fan Out feature - OC refuses to import JQ Transform~~ (👈 not an issue. Was only caused on Dev system)
+- [x] Admin - Roles - Creates new duplicated Role instead of updating existing one when changing the Priviledge
+- [x] Ability to collect data from external site (Github, ...)
+- [x] JQ small nags
+  - [x] .message is commented in Transform template
+  - [x] Filter uses un-cleaned Stream Name for `device_type`
+- [x] Change "priviledged" to "privileged", through out
+  - [x] Actions (Store)
+  - [x] UI
+- [x] Change typical message ('Error updating persistance layer') when API returns an error to a more generic, or more specific if necessary
+- [x] Shipper installer - Content Security Policy prevents download of `shippers_url.json` from GitHub
+- [x] Square avatars for navigation bar
+
+## TO TEST
+- [ ] Fan Out feature
+- [ ] `.message` feature
 
 ### Target: v0.7
 

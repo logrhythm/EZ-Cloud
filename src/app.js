@@ -15,9 +15,15 @@ const app = express();
 
 // eslint-disable-next-line max-len
 const httpsServer = https.createServer({ key: httpsKey, cert: httpsCert }, app);
+const socketIoCorsOrigin = (
+  process.env.NODE_ENV === 'development'
+    ? '*' // Allow all origins during Dev
+    : ['http://localhost:8080', 'https://localhost:8080', 'http://localhost:8400', 'https://localhost:8400']
+);
 const io = require('socket.io')(httpsServer, {
   cors: {
-    origin: ['http://localhost:8080', 'https://localhost:8080', 'http://localhost:8400', 'https://localhost:8400'],
+    // origin: ['http://localhost:8080', 'https://localhost:8080', 'http://localhost:8400', 'https://localhost:8400'],
+    origin: socketIoCorsOrigin,
     methods: ['GET', 'POST']
   }
 });
@@ -39,6 +45,9 @@ const api = require('./api');
 app.use(middlewares.checkJwTokenAndSetUser);
 // Log the Web requests / responses to the System Journal
 app.use(middlewares.logHttpToSystem);
+// To protect against clickjacking
+app.use(middlewares.setXFrameOptions);
+app.use(middlewares.setContentSecurityPolicy);
 
 app.get('/test', (req, res) => {
   res.json({
@@ -54,9 +63,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(process.env.baseDirname, 'public_web_root', 'index.html'));
 });
 // - Second, all the other files/pages
-app.get('/:file(*)', (req, res) => {
-  res.sendFile(path.join(process.env.baseDirname, 'public_web_root', req.params.file));
-});
+app.use('/:file(*)', middlewares.serveFileSafely);
 
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);

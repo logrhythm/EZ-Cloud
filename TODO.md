@@ -1,5 +1,71 @@
 # TODO - Backend
 
+### Target: v0.8
+
+## TO DO
+- Installer
+  - [x] Start the Service by default
+  - [x] Provide blank SQL password in prompt (instead of CHANGE_ME, as it confuses people thinking there is already a valid password)
+  - [x] ezAdmin account creation
+    - [x] Prompt for ezAdmin password
+    - [x] Create account in SQL
+- [x] RBAC
+  - [x] Create SQL Table
+    - [x] Roles
+      - Admin
+      - User
+    - [x] UserToRole
+  - [x] API
+    - [x] Embed Role in JWT token
+    - [x] Check for Role in each API query
+    - [x] Endpoints for
+      - [x] GetUsersList
+      - [x] UpdateUser
+      - [x] DeleteUser
+      - [x] GetRolesList
+      - [x] UpdateRole
+      - [x] DeleteRole
+  - [x] Create SQL Stored Procedures
+    - [x] upsert_RBAC_User
+      - [x] Update to deal with non EZ accounts
+    - [x] delete_RBAC_User
+      - [x] Update to deal with non EZ accounts
+    - [x] upsert_RBAC_Role
+    - [x] delete_RBAC_Role
+    - [x] Update create_database.bat
+- [x] Upgradable Install
+  - [x] Update SQL scripts to be runnable multiple times and ignore unnecessary tasks
+  - [x] Update/Complement Installer to allow for upgrade from previous versions
+- [x] More logging in the API for User and Role updates
+- [x] Persist the `pipeline.extractMessageFieldOnly` value, to save the `.message` feature
+  - [x] Update `[pipelines]` table creation script
+  - [x] Update API endpoint `UpdatePipeline`
+  - [x] Update API endpoint `GetPipeline`
+- [x] SQL - Log an error when SQL fails to connect
+- [x] Move Repository to LogRhythm Corp GitHub account
+  - [x] Transfer Repo's ownership
+  - [x] Check move
+  - [x] Check Repo is still Public
+  - [x] Check Wiki is still Visible and Public
+  - [x] Check "Pages" is still Visible and Public
+  - [x] Update source code to swap any mention of `github.com/TonyMasse/EZ-Cloud` to `github.com/logrhythm/EZ-Cloud`
+
+## TO FIX
+- [x] URL might contain directory traversal attempt
+- [x] Error message returned to client is too complete:
+  - [x] The value of the URL path filename is copied into the application's response.
+- [x] SQL Connection seem not to close automatically, and time out only after +/-50 minutes
+- [x] Privileged access is only valid if member of Role `Admin`. Needs to change to use `isPrivileged` instead
+- [x] No version number showing in logs when in Production
+- [x] Change "priviledged" to "privileged", through out
+  - [x] SQL Scripts
+  - [x] API
+  - [x] Rest of the source code
+
+## TO TEST
+
+---
+
 ### Target: v0.7
 
 ## TO DO

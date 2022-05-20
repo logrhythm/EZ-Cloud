@@ -9,6 +9,10 @@
         EZ Cloud Client
       </div>
       <div class="text-h6 text-right" style="opacity:.3">
+        <q-tooltip content-style="font-size: 1em">
+          <span class="text-bold">EZ Client version:</span> v{{version}}<br>
+          <span class="text-bold">EZ Server version:</span> v{{serverVersion}}
+        </q-tooltip>
         v{{ version }}
       </div>
     </div>
@@ -16,6 +20,7 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 import { version } from '../../package.json'
 
 export default {
@@ -23,6 +28,12 @@ export default {
   data () {
     return {
       version: version
+    }
+  },
+  computed: {
+    ...mapState('mainStore', ['deployment']),
+    serverVersion () {
+      return (this.deployment && this.deployment.version ? this.deployment.version : '?.?.?')
     }
   }
 }

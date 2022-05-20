@@ -72,6 +72,17 @@ const routes = [
   },
 
   {
+    path: '/Admin',
+    meta: { title: 'Admin' },
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/Admin/Index.vue') },
+      { path: 'Users', component: () => import('pages/Admin/Users.vue') },
+      { path: 'Roles', component: () => import('pages/Admin/Roles.vue') }
+    ]
+  },
+
+  {
     path: '/Settings',
     meta: { title: 'Settings' },
     component: () => import('layouts/MainLayout.vue'),
@@ -104,6 +115,19 @@ const routes = [
       { path: ':pipelineUid/Deployments/Edit', meta: { title: 'Pipeline - Deployments' }, component: () => import('src/pages/Pipelines/DeploymentEdit.vue') }
     ],
     beforeEnter: isLoggedIn
+  },
+
+  {
+    path: '/MarketPlace',
+    meta: { title: 'EZ Market Place' },
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/MarketPlace/Index.vue') },
+      { path: 'Notifications', component: () => import('pages/MarketPlace/Notifications.vue') },
+      { path: 'PipelineTemplates/:pipelineTemplateUid/Properties', component: () => import('pages/MarketPlace/PipelineTemplateProperties.vue') },
+      { path: 'PipelineTemplates', component: () => import('pages/MarketPlace/PipelineTemplates.vue') },
+      { path: 'PublisherProfile', component: () => import('pages/MarketPlace/PublisherProfile.vue') }
+    ]
   },
 
   // Always leave this as last one,

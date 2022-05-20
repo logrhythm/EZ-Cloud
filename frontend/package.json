@@ -1,13 +1,13 @@
 {
   "name": "ez-cloud-client",
-  "version": "0.7.0",
+  "version": "0.8.7",
   "description": "User Interface for EZ-Cloud for Legacy SIEM",
   "productName": "EZ Cloud Client",
   "author": "Tony Massé <tony.masse@logrhythm.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TonyMasse/EZ-Cloud.git"
+    "url": "https://github.com/logrhythm/EZ-Cloud.git"
   },
   "private": true,
   "scripts": {
@@ -15,11 +15,17 @@
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
+    "@quasar/cli": "^1.2.2",
     "@quasar/extras": "^1.11.1",
     "axios": "^0.21.4",
     "core-js": "^3.18.0",
+    "javascript-time-ago": "^2.3.13",
+    "jdenticon": "^3.1.1",
     "js-yaml": "^3.14.1",
-    "quasar": "^1.16.0",
+    "jwt-decode": "^3.1.2",
+    "marked": "^4.0.14",
+    "node-html-markdown": "^1.2.0",
+    "quasar": "^1.17.4",
     "socket.io-client": "^4.2.0",
     "vue-i18n": "^8.26.1",
     "vue2-filters": "^0.12.0"
@@ -35,6 +41,13 @@
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-vue": "^7.18.0",
     "eslint-webpack-plugin": "^2.4.0"
+  },
+  "overrides": {
+    "markdown-it": ">=12.3.2",
+    "node-forge": ">=1.2.1",
+    "express": ">=4.17.2",
+    "minimatch": ">=3.0.5",
+    "follow-redirects": ">=1.14.8"
   },
   "browserslist": [
     "last 10 Chrome versions",

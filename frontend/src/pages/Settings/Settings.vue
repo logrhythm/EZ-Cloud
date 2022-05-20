@@ -1,6 +1,6 @@
 <template>
   <q-page class="q-gutter-sm q-pa-xl">
-    <q-card class="q-pa-md q-mx-none">
+    <q-card class="q-pa-md q-mx-none" v-if="devMode">
       <q-card-section horizontal>
         <q-card-section class="col">
           <div class="text-h4">EZ Backend Base URLs</div>
@@ -56,6 +56,11 @@ export default {
       ezBackendBaseUrlSocket: ''
     }
   }, // data
+  computed: {
+    devMode () {
+      return !!(process.env.DEV)
+    }
+  },
   methods: {
     saveSettings () {
       this.globalConstants.baseUrl.website = this.ezBackendBaseUrlWeb

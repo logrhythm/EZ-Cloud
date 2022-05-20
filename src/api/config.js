@@ -5,20 +5,6 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 
-const configSql = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'database.json'), 'utf8')).config;
-// Create SQL object
-const { Connection, Request, TYPES } = require('tedious');
-
-function waitMilliseconds(delay = 250) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve();
-    }, delay);
-  });
-}
-
-const maxCheckInterval = 10; // Check once every X seconds max, and/or timeout after X seconds
-
 // For passwords and tokens cyphering
 const secretPlaceholder = '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **';
 const { aesEncrypt } = require('../shared/crypto');
@@ -157,6 +143,7 @@ router.get('/GetPipelines', async (req, res) => {
       ,p.[primaryOpenCollector]
       ,p.[fieldsMappingJson]
       ,p.[collectionConfigJson]
+      ,p.[optionsJson]
   FROM [dbo].[pipelines] p
   LEFT JOIN [dbo].[states] s
     ON s.[id] = p.[status]
@@ -177,6 +164,12 @@ router.get('/GetPipelines', async (req, res) => {
         delete pipeline.collectionConfigJson;
       } catch (error) {
         pipeline.collectionConfig = {};
+      }
+      try {
+        pipeline.options = JSON.parse((pipeline.optionsJson && pipeline.optionsJson.length > 0 ? pipeline.optionsJson : '{}'));
+        delete pipeline.optionsJson;
+      } catch (error) {
+        pipeline.options = {};
       }
       /* eslint-enable no-param-reassign */
     });
@@ -291,6 +284,7 @@ router.post('/UpdatePipeline', async (req, res) => {
       ,@primaryOpenCollector
       ,@fieldsMapping
       ,@collectionConfig
+      ,@options
       ;
     `,
     variables: createSqlVariables(
@@ -301,7 +295,8 @@ router.post('/UpdatePipeline', async (req, res) => {
         { name: 'status', type: 'NVarChar' },
         { name: 'primaryOpenCollector', type: 'NVarChar' },
         { name: 'fieldsMapping', type: 'NVarChar' },
-        { name: 'collectionConfig', type: 'NVarChar' }
+        { name: 'collectionConfig', type: 'NVarChar' },
+        { name: 'options', type: 'NVarChar' }
       ]
     )
   });

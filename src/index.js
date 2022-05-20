@@ -5,7 +5,7 @@
  * @author Tony Massé
  *
  * Created at     : 2021-04-07 15:00:00
- * Last modified  : 2021-05-25 12:55:56
+ * Last modified  : 2021-12-16 21:58:39
  */
 
 const path = require('path');
@@ -28,12 +28,20 @@ process.env.logForceToConsole = process.env.LOGFORCETOCONSOLE || false;
 // Push a log to the Windows Application logs
 function exitOnUncaughtException(err) {
   try {
-    logToSystem('Critical', `There was an uncaught error: (${err.code ? err.code : '__NO_CODE__'}) ${err.message ? err.message : '__NO_MESSAGE__'}`, true);
+    logToSystem('Critical', `There was an uncaught error: (${err.code ? err.code : '__NO_CODE__'}) ${err.message ? err.message : '__NO_MESSAGE__'} ${(process.env.NODE_ENV === 'development' ? ` // ${err.stack}` : '')}`, true);
   } catch (error) {
     // Last resort
     // eslint-disable-next-line no-console
     console.error('There was an uncaught error', err);
+    // eslint-disable-next-line no-console
     console.error('Could not log it on the system\'s journal', error);
+
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.error('Stack for uncaught error:', err.stack);
+      // eslint-disable-next-line no-console
+      console.error('Stack for logging error:', error.stack);
+    }
   }
   process.exit(1);
 }
@@ -50,8 +58,10 @@ const port = process.env.PORT || 8400;
 const host = process.env.HOST || 'localhost';
 
 // Service name and version
+const version = require('./shared/version'); // Version file is generated at build time
+
 process.env.NAME = 'EZ-Cloud Onboarding for Legacy SIEM';
-process.env.VERSION = process.env.npm_package_version;
+process.env.VERSION = version;
 
 logToSystem('Information', `${process.env.NAME} - Version: ${process.env.VERSION} - Started`, true);
 

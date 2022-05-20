@@ -1,8 +1,8 @@
 @echo off
 echo.
-echo  EZ Cloud Server - Database creation script 
+echo  EZ Cloud Server - Database creation and update script 
 echo.
-echo NOTE: This will attempt to create an EZ database on the local MS SQL server.
+echo NOTE: This will attempt to create or update the EZ database on the local MS SQL server. It is SAFE to run this script multiple times.
 echo.
 echo NOTE: It will use the current user in SQL Trusted mode. If the current user doesn't have Admin access onto SQL, please re-run this script as a local Administrator or provide it and the .SQL files to your DBA.
 echo.
@@ -33,6 +33,13 @@ osql -E -n -d EZ -i "20210714.13 - Create Stored Procedure - upsert_Log_Source_V
 osql -E -n -d EZ -i "20210715.14 - Create Stored Procedure - upsert_Log_Source_Virtualisation_Template_Item.sql"
 osql -E -n -d EZ -i "20210719.15 - Create View - list_OpenCollector_Log_Sources.sql"
 osql -E -n -d EZ -i "20210720.16 - Create Stored Procedure - upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource.sql"
+osql -E -n -d EZ -i "20211112.18 - Create Table - rbacRoles.sql"
+osql -E -n -d EZ -i "20211112.19 - Create Table - rbacUserToRoles.sql"
+osql -E -n -d EZ -i "20211122.20 - Create Stored Procedure - upsert_RBAC_User.sql"
+osql -E -n -d EZ -i "20211122.21 - Create Stored Procedure - delete_RBAC_User.sql"
+osql -E -n -d EZ -i "20211123.22 - Create Stored Procedure - upsert_RBAC_Role.sql"
+osql -E -n -d EZ -i "20211123.23 - Create Stored Procedure - delete_RBAC_Role.sql"
+osql -E -n -d EZ -i "20220209.24 - Create View - get_SIEM_Master_ID.sql"
 
 @echo off
 echo.

@@ -72,7 +72,7 @@ export default {
     ...mapState('mainStore', ['jwtToken'])
   }, // computed
   methods: {
-    ...mapActions('mainStore', ['signIn', 'signOut']),
+    ...mapActions('mainStore', ['signIn', 'signOut', 'reloadEzMarketNotifications']),
     checkCredentials () {
       if (this.lastAttemptFailedTimer) {
         clearTimeout(this.lastAttemptFailedTimer)
@@ -98,6 +98,8 @@ export default {
       if (this.jwtToken && this.jwtToken.length) {
         // Connect Socket.io
         this.connectSocket()
+        // Check for Notifications on EZ Cloud Market
+        this.reloadEzMarketNotifications()
         // And move to Welcome page
         this.$router.push('/Welcome')
       } else {

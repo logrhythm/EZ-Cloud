@@ -33,9 +33,16 @@
         <q-separator vertical />
         <q-btn no-caps flat dense icon="play_circle_outline" label="Start Live Tail" color="secondary" @click="tailEnabled = true" v-if="!tailEnabled" />
         <q-btn no-caps flat dense icon="stop" label="Stop Live Tail" @click="tailEnabled = false" v-else />
-        <q-separator vertical />
-        <q-btn no-caps flat dense icon="search" label="Start background processing" color="secondary" @click="processInBackground = true" v-if="!processInBackground" />
-        <q-btn no-caps flat dense icon="search_off" label="Stop background processing" @click="processInBackground = false" v-else />
+        <q-btn no-caps flat dense icon="playlist_add" label="Manual Import" @click="showManualImport = true" v-if="!showManualImport" >
+          <q-tooltip content-style="font-size: 1rem;">
+            Import log messages manually
+          </q-tooltip>
+        </q-btn>
+        <q-btn no-caps flat dense icon="visibility_off" label="Manual Import" @click="showManualImport = false" v-else >
+          <q-tooltip content-style="font-size: 1rem;">
+            Hide Manual Import panel
+          </q-tooltip>
+        </q-btn>
         <q-separator vertical />
         <q-btn no-caps flat dense icon="file_download" label="Export JQ" disable />
         <q-btn no-caps flat dense icon="visibility" label="Show JQ" v-if="!showJqOutput" @click="buildJqFilter(); buildJqTransform(); showJqOutput = true" />
@@ -69,9 +76,9 @@
                 <q-item class="q-pl-none" >
                 <q-toggle v-model="wrapSingleStringLog" label="Accept and Wrap non-JSON logs" />
                 </q-item>
-                <!-- <q-item class="q-pl-none" >
-                  <q-toggle v-model="extractMessageFieldOnly" label="Extract Filebeat '.message' only" />
-                </q-item> -->
+                <q-item class="q-pl-none" >
+                  <q-toggle v-model="extractMessageFieldOnly" label="Extract Beat's '.message' only" />
+                </q-item>
                 <q-item  style="width: 20rem;">
                   <q-item-section avatar>
                     <q-icon name="speed" />
@@ -152,28 +159,180 @@
       <!-- <div class="q-mt-md">
         <span class="text-bold">Queues / Stacks sizes: </span>{{ incomingLogCount }} / {{ queueIn.length }} / {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ processedLogs.length }}
       </div> -->
+      <q-card class="q-mt-md" v-show="showManualImport">
+      <!-- <q-card class="q-mt-md"> -->
+        <q-card-section class="text-h4" style="opacity:.4">
+          Manual import
+        </q-card-section>
+        <q-separator />
+        <q-card-section>
+          <q-tabs
+            v-model="manualImportMethod"
+            active-color="primary"
+            indicator-color="primary"
+            align="justify"
+            narrow-indicator
+          >
+            <q-tab name="single_log" label="Single Log" />
+            <q-tab name="multiple_logs" label="Multiple Logs" />
+            <q-tab name="log_file" label="File Import" />
+          </q-tabs>
+
+          <q-separator />
+
+          <q-tab-panels v-model="manualImportMethod" animated>
+            <q-tab-panel name="single_log">
+              <q-input
+                v-model="queueInDataEntrySingleLog"
+                filled
+                autogrow
+                input-style="min-height: 16em;"
+                label="One single JSON log at a time"
+                :rules="[ val => isProperJson(val) || 'JSON Syntax Error(s)' ]"
+                @keypress.shift.enter.prevent="queueInAdd({values: queueInDataEntrySingleLog, manualEntry: true});"
+              >
+                <template v-slot:after>
+                  <div class="full-height justify-around q-gutter-y-lg">
+                    <q-btn dense icon="playlist_add" color="primary" :disable="!isProperJson(queueInDataEntrySingleLog)" @click="queueInAdd({ values: queueInDataEntrySingleLog, manualEntry: true })" >
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                        Add to Queue
+                      </q-tooltip>
+                    </q-btn>
+                    <q-btn class="row" dense icon="content_copy" flat :disable="!queueInDataEntrySingleLog.length" @click="copyToClipboard(queueInDataEntrySingleLog)" >
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                        Copy to Clipboad
+                      </q-tooltip>
+                    </q-btn>
+                    <q-btn class="row" dense icon="close" flat :disable="!queueInDataEntrySingleLog.length" @click="queueInDataEntrySingleLog = ''" >
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                        Clear out
+                      </q-tooltip>
+                    </q-btn>
+                  </div>
+                </template>
+              </q-input>
+            </q-tab-panel>
+
+            <q-tab-panel name="multiple_logs">
+              <q-input
+                v-model="queueInDataEntryMultiLog"
+                filled
+                autogrow
+                input-style="min-height: 16em;"
+                label="One JSON entry per line"
+                :rules="[ val => val != null || 'Common, give me some JSON!' ]"
+                @keypress.shift.enter.prevent="queueInAdd({values: queueInDataEntryMultiLog, manualEntry: true});"
+              >
+                <template v-slot:after>
+                  <div class="full-height justify-around q-gutter-y-lg">
+                    <q-btn class="row" dense icon="playlist_add" color="primary" :disable="!queueInDataEntryMultiLog.length" @click="queueInAdd({ values: queueInDataEntryMultiLog, manualEntry: true, multiLogs: true })" >
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                        Add to Queue
+                      </q-tooltip>
+                    </q-btn>
+                    <q-btn class="row" dense icon="content_copy" flat :disable="!queueInDataEntryMultiLog.length" @click="copyToClipboard(queueInDataEntryMultiLog)" >
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                        Copy to Clipboad
+                      </q-tooltip>
+                    </q-btn>
+                    <q-btn class="row" dense icon="close" flat :disable="!queueInDataEntryMultiLog.length" @click="queueInDataEntryMultiLog = ''" >
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                        Clear out
+                      </q-tooltip>
+                    </q-btn>
+                  </div>
+                </template>
+              </q-input>
+            </q-tab-panel>
+
+            <q-tab-panel name="log_file">
+              <q-file
+                filled
+                bottom-slots
+                v-model="manualImportFileInput"
+                label="Click or Drop a file here"
+                multiple
+                counter
+                max-files="10"
+                input-style="min-height: 15.75em;"
+              >
+                <template v-slot:append>
+                  <q-icon v-if="manualImportFileInput !== null" name="close" @click.stop="manualImportFileInput = null" class="cursor-pointer" />
+                  <q-icon name="note_add" @click.stop />
+                </template>
+
+                <template v-slot:after>
+                  <div class="full-height justify-around q-gutter-y-lg">
+                    <q-btn class="row" dense icon="upload_file" color="primary" :disable="manualImportFileInput == null" >
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                       <span v-if="manualImportFileInput !== null && manualImportFileInput.length > 1" >Add Files Content to Queue</span>
+                       <span v-else >Add File Content to Queue</span>
+                      </q-tooltip>
+                      <q-menu>
+                        <q-list style="min-width: 400px">
+                          <q-item clickable v-close-popup @click="processFilesInput({ filesInput: manualImportFileInput, importAs: 'single_log_per_file' })">
+                            <q-item-section avatar top>
+                              <q-avatar icon="short_text" color="green-10" text-color="white" />
+                            </q-item-section>
+
+                            <q-item-section>
+                              <q-item-label lines="1">As a Single Log</q-item-label>
+                              <q-item-label caption>One JSON Log per file</q-item-label>
+                            </q-item-section>
+                          </q-item>
+                          <q-item clickable v-close-popup @click="processFilesInput({ filesInput: manualImportFileInput, importAs: 'log_array_per_file' })">
+                            <q-item-section avatar top>
+                              <q-avatar icon="data_array" color="purple-10" text-color="white" />
+                            </q-item-section>
+
+                            <q-item-section>
+                              <q-item-label lines="1">As an Array of Logs</q-item-label>
+                              <q-item-label caption>One JSON array of Logs per file</q-item-label>
+                            </q-item-section>
+                          </q-item>
+                          <q-item clickable v-close-popup @click="processFilesInput({ filesInput: manualImportFileInput, importAs: 'log_set_per_file' })">
+                            <q-item-section avatar top>
+                              <q-avatar icon="format_list_numbered" color="indigo-10" text-color="white" />
+                            </q-item-section>
+
+                            <q-item-section>
+                              <q-item-label lines="1">As a Set of Logs</q-item-label>
+                              <q-item-label caption>One JSON log per line</q-item-label>
+                            </q-item-section>
+                          </q-item>
+                          <!-- format_list_numbered -->
+                          <!-- format_align_left -->
+                          <q-separator />
+                          <q-item clickable v-close-popup tag="a" :href="wikiLink('ref-whatsthedifferencefileimport')" target="_blank" >
+                            <q-item-section avatar top>
+                              <q-avatar icon="help_outline" color="info" text-color="black" />
+                            </q-item-section>
+
+                            <q-item-section>
+                              <q-item-label lines="1">What's the difference?</q-item-label>
+                              <q-item-label caption>A quick peek at the Wiki</q-item-label>
+                            </q-item-section>
+                          </q-item>
+                        </q-list>
+                      </q-menu>
+                    </q-btn>
+                    <q-btn class="row" dense icon="close" flat :disable="manualImportFileInput == null" @click="manualImportFileInput = null" >
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                        Clear out file selection
+                      </q-tooltip>
+                    </q-btn>
+                  </div>
+                </template>
+              </q-file>
+            </q-tab-panel>
+          </q-tab-panels>
+        </q-card-section>
+      </q-card>
       <q-card class="q-mt-md" v-show="showQueues">
         <q-card-section class="text-h4" style="opacity:.4">
           Queues
         </q-card-section>
         <q-separator />
-        <q-card-section>
-          <div class="text-caption">
-            Manual input (one proper JSON log at a time)
-          </div>
-          <q-input
-            v-model="queueInDataEntry"
-            filled
-            autogrow
-            input-style="min-height: 4em;"
-            label="Manual Data Entry"
-            @keypress.shift.enter.prevent="queueInAdd({values: queueInDataEntry});"
-          >
-            <template v-slot:after>
-              <q-btn round dense flat icon="add" @click="queueInAdd({ values: queueInDataEntry })" />
-            </template>
-          </q-input>
-        </q-card-section>
         <q-card-section>
           <div class="text-caption">
             Input Queue
@@ -421,7 +580,7 @@
             type="textarea"
             filled
             readonly
-            :label="beatName + '.jq'"
+            :label="pipelineNameSafe + '.jq'"
             style="min-height: 20rem;"
             rows="32"
             class="fixed-font"
@@ -636,8 +795,7 @@ export default {
       showQueues: false, // Collapse / Hide the Queues panel if false (default)
       wrapSingleStringLog: false,
       incomingLogCount: 0, // Number of lines of logs sent over the socket
-      queueIn: [], // To feed from the Server Tail, or the queueInDataEntry field
-      queueInDataEntry: '{"timestamp":"20210422T16:40:00","id":"abcdef-1234","code":15,"destination":{"ip":"172.16.1.2","port":443},"source":{"ip":"192.168.0.1","port":44444},"bam":"boop","values":[{"type":"Object","count":4},{"type":"Plane","count":25,"value":"A320"}]}', // To enter log data by hand
+      queueIn: [], // To feed from the Server Tail, or the queueInDataEntrySingleLog field
       queueProcess: {}, // The one record we are working on (coming from the queueIn, one at a time)
       processedLogs: [], // The logs, once processed
       processedLogsCount: 0, // The count of processed logs
@@ -645,7 +803,7 @@ export default {
       tailEnabled: false, // Are we running a tail against the sample/capture file?
       // tailId: '', // UUID of the tail. Needed to be able to kill it on the server
       processInBackground: false,
-      processInBackgroundMaxRate: 1, // once per second by default
+      processInBackgroundMaxRate: 3, // How many queue items to process per second
       queueInMaxSize: 200, // Maximum number of log messages in queueIn
       processedLogsMaxSize: 200, // Maximum number of log messages in processedLogs
       bufferStdOut: '', // Buffer to concatenate incoming STDOUT data until we find a carriage return
@@ -656,11 +814,26 @@ export default {
       needsSaving: false, // Are there any un-saved changes
       saving: false, // Saving is still ongoing
       showCommunicationLog: false, // Collapse / Hide the logs about the Socket communication with the server
-      communicationLogsOutput: '' // The logs about the Socket communication, as text
+      communicationLogsOutput: '', // The logs about the Socket communication, as text
+      showManualImport: false, // Collapse / Hide Manual Import panel
+      manualImportMethod: 'single_log', // How is the user going to manually import Logs
+      queueInDataEntrySingleLog: `{
+  "timestamp":"20210422T16:40:00",
+  "destination":{
+    "ip":"172.16.1.2",
+    "port":443
+  },
+  "source":{
+    "ip":"192.168.0.1",
+    "port":44444
+  }
+}`, // To enter log data by hand
+      queueInDataEntryMultiLog: '{"timestamp":"20210422T16:40:00","id":"abcdef-1234"}\r{"timestamp":"20210422T16:43:00","id":"xyzmno-8754"}', // To enter log data by hand, one per line
+      manualImportFileInput: null // File
     }
   },
   computed: {
-    ...mapState('mainStore', ['loggedInUser', 'jqFilterTemplate', 'jqTransformTemplate']),
+    ...mapState('mainStore', ['loggedInUser', 'jqFilterTemplate', 'jqTransformTemplate', 'helpWikiUrlBase']),
     ...mapGetters('mainStore', ['pipelines']),
     pipeline () {
       return this.pipelines.find(p => p.uid === this.pipelineUid)
@@ -861,7 +1034,6 @@ export default {
         payload.tailId &&
         payload.tailId === this.pipelineUid
       ) {
-        console.error(payload.payload)
         this.addLineToCommunicationLog(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
         this.showNotificationWithActionToLogs(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
       }
@@ -953,6 +1125,76 @@ export default {
       }
     },
 
+    //     ##     ##    ###    ##    ## ##     ##    ###    ##             #### ##     ## ########   #######  ########  ########
+    //     ###   ###   ## ##   ###   ## ##     ##   ## ##   ##              ##  ###   ### ##     ## ##     ## ##     ##    ##
+    //     #### ####  ##   ##  ####  ## ##     ##  ##   ##  ##              ##  #### #### ##     ## ##     ## ##     ##    ##
+    //     ## ### ## ##     ## ## ## ## ##     ## ##     ## ##              ##  ## ### ## ########  ##     ## ########     ##
+    //     ##     ## ######### ##  #### ##     ## ######### ##              ##  ##     ## ##        ##     ## ##   ##      ##
+    //     ##     ## ##     ## ##   ### ##     ## ##     ## ##              ##  ##     ## ##        ##     ## ##    ##     ##
+    //     ##     ## ##     ## ##    ##  #######  ##     ## ########       #### ##     ## ##         #######  ##     ##    ##
+
+    isProperJson (value) {
+      let isValid = false
+      try {
+        JSON.parse(value)
+        isValid = true
+      } catch {
+        // Not proper JSON
+      }
+      return isValid
+    },
+
+    processFilesInput ({ filesInput, importAs }) {
+      // Import one or more files into the Queue
+
+      // importAs:
+      // - single_log_per_file
+      // - log_array_per_file
+      // - log_set_per_file
+
+      if (filesInput == null) {
+        console.log('[processFilesInput] - 🟠 - No file selected.')
+      } else {
+        // Deal with multiple or single file(s)
+        if (Array.isArray(filesInput)) {
+          filesInput.forEach(singleFileInput => {
+            this.processFileInput({ singleFileInput: singleFileInput, importAs })
+          })
+        } else {
+          this.processFileInput({ singleFileInput: filesInput, importAs })
+        }
+      }
+    },
+
+    async processFileInput ({ singleFileInput, importAs }) {
+      // Import one file into the Queue
+
+      // importAs:
+      // - single_log_per_file
+      // - log_array_per_file
+      // - log_set_per_file
+
+      if (singleFileInput) {
+        const fileContent = await singleFileInput.text()
+        if (importAs === 'single_log_per_file') {
+          this.queueInAdd({ values: fileContent, manualEntry: true, multiLogs: false })
+        } else if (importAs === 'log_array_per_file') {
+          try {
+            this.queueInAdd({ values: JSON.parse(fileContent), manualEntry: true, multiLogs: null })
+          } catch {
+            // Not proper JSON
+            console.log('[processFileInput] - 🟠 - File contentis not a proper JSON Array')
+          }
+        } else if (importAs === 'log_set_per_file') {
+          this.queueInAdd({ values: fileContent, manualEntry: true, multiLogs: true })
+        } else {
+          console.log(`[processFileInput] - 🟠 - Unknowm importAs "${importAs}".`)
+        }
+      } else {
+        console.log('[processFileInput] - 🟠 - No file selected.')
+      }
+    },
+
     //         #######  ##     ## ######## ##     ## ########
     //        ##     ## ##     ## ##       ##     ## ##
     //        ##     ## ##     ## ##       ##     ## ##
@@ -961,21 +1203,30 @@ export default {
     //        ##    ##  ##     ## ##       ##     ## ##
     //        ##### ##  #######  ########  #######  ########
 
-    queueInAdd ({ values }) {
+    queueInAdd ({ values, manualEntry, multiLogs }) {
       if (typeof values === 'string') {
         // deal with it as Strings
 
-        // Increase counter
-        this.incomingLogCount++
+        if (multiLogs === true) {
+          // Dealing with multiple Logs, one per line
 
-        // if (this.tailEnabled && (this.queueIn.length < this.queueInMaxSize)) {
-        if (values.length > 0) {
-          try {
-            // this.queueIn.push(JSON.parse(values))
-            this.queueInPush(JSON.parse(values))
-          } catch {
-            // Not proper JSON
-            console.log('String is not a proper JSON')
+          // Call itself while providing an Array of Strings
+          this.queueInAdd({ values: values.split('\r'), manualEntry })
+        } else {
+          // Dealing with Single Log
+
+          // Increase counter
+          this.incomingLogCount++
+
+          // if (this.tailEnabled && (this.queueIn.length < this.queueInMaxSize)) {
+          if (values.length > 0) {
+            try {
+              // this.queueIn.push(JSON.parse(values))
+              this.queueInPush(JSON.parse(values), manualEntry)
+            } catch {
+              // Not proper JSON
+              console.log('String is not a proper JSON')
+            }
           }
         }
       } else if (Array.isArray(values)) {
@@ -988,14 +1239,14 @@ export default {
           if (typeof value === 'string') {
             if (value.length > 0) {
               try {
-                this.queueInPush(JSON.parse(value))
+                this.queueInPush(JSON.parse(value), manualEntry)
               } catch {
                 // Not proper JSON
                 console.log('String is not a proper JSON')
               }
             }
           } else {
-            this.queueInPush(value)
+            this.queueInPush(value, manualEntry)
           }
         })
       } else if (typeof values === 'object') {
@@ -1004,25 +1255,39 @@ export default {
         // Increase counter
         this.incomingLogCount++
 
-        this.queueInPush(values)
+        this.queueInPush(values, manualEntry)
+      } else {
+        console.log('[queueInAdd] - UNKNOWN TYPE') // XXXX
       }
     }, // queueInAdd
 
-    queueInPush (value) {
-      if (this.tailEnabled && (this.queueIn.length < this.queueInMaxSize)) {
+    queueInPush (value, manualEntry = false) {
+      // `manualEntry` is designed to override standard flood protection
+      // and allow for a user to enter logs manually, if set to TRUE
+      if ((this.tailEnabled && (this.queueIn.length < this.queueInMaxSize)) | manualEntry) {
         if (this.extractMessageFieldOnly) {
           if (!value.message) {
             console.log('No .message found in log object')
           }
           try {
             this.queueIn.push(JSON.parse(value.message))
+            // Kick off the Background processing
+            if (this.processInBackground !== true) {
+              this.processInBackground = true
+            }
           } catch {
             // Not proper JSON
             console.log('Field .message does not contain proper JSON')
           }
         } else {
           this.queueIn.push(value)
+          // Kick off the Background processing
+          if (this.processInBackground !== true) {
+            this.processInBackground = true
+          }
         }
+      } else {
+        console.log('[queueInPush] Trying to push a value when Tail is disabled or queue is full')
       }
     },
 
@@ -1077,6 +1342,11 @@ export default {
           this.processedLogs.push(logSampleToProcess)
         } else {
           // Turning off the background processing of the logs
+          this.processInBackground = false
+        }
+
+        // Check the status of the QueueIn, and turn off the Background processing if it's empty
+        if (this.processInBackground === true && this.queueIn.length === 0) {
           this.processInBackground = false
         }
       }
@@ -1181,9 +1451,14 @@ export default {
       }
     }, // upsertToJsonPaths
 
-    processLogSampleInBackground ({ options }) {
+    processLogSampleInBackground () {
       this.queueProcessAdd({ fromArray: this.queueIn })
       this.processLogSample({ options: { cleanQueueProcessAfterProcess: true } })
+
+      // Schedule the next tick
+      if (this.processInBackground) {
+        this.scheduleNextBackgroundProcess()
+      }
     }, // processLogSampleInBackground
 
     //        ########    ###    #### ##
@@ -1256,7 +1531,9 @@ export default {
           {
             uid: this.pipelineUid,
             status: (this.pipeline && this.pipeline.status && this.pipeline.status === 'Ready' ? this.pipeline.status : 'Dev'),
-            fieldsMapping: this.jsonPathes
+            fieldsMapping: this.jsonPathes,
+            // Update / Add extractMessageFieldOnly to the Options
+            options: { ...(this.pipeline && this.pipeline.options ? this.pipeline.options : {}), extractMessageFieldOnly: this.extractMessageFieldOnly }
           }
         }
       )
@@ -1268,14 +1545,50 @@ export default {
         const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
         this.jsonPathes = (pipeline && pipeline.fieldsMapping && pipeline.fieldsMapping.length ? JSON.parse(JSON.stringify(pipeline.fieldsMapping)) : [])
 
+        // Bring back the `extractMessageFieldOnly` options
+        this.extractMessageFieldOnly = (pipeline && pipeline.options ? pipeline.options.extractMessageFieldOnly === true : false)
+
         // Try to resurect the processedLogsCount (failing to 0 if no logSample)
         this.processedLogsCount = (this.logSample ? this.logSample.length : 0)
 
         // Flag down the need to Save as data is fresh from last save now
         this.needsSaving = false
       } catch {
-        console.log('Can\'t parse JSON')
+        console.log('Error while trying to reverse to last saved version')
       }
+    },
+
+    //     ##      ## #### ##    ## ####
+    //     ##  ##  ##  ##  ##   ##   ##
+    //     ##  ##  ##  ##  ##  ##    ##
+    //     ##  ##  ##  ##  #####     ##
+    //     ##  ##  ##  ##  ##  ##    ##
+    //     ##  ##  ##  ##  ##   ##   ##
+    //      ###  ###  #### ##    ## ####
+
+    wikiLink (reference) {
+      // 'whatTheDifferenceLogArrayLogSet'
+      return this.helpWikiUrlBase + reference
+    },
+
+    //     ########     ###     ######  ##    ##  ######   ########   #######  ##     ## ##    ## ########      ######   ######  ##     ## ######## ########  ##     ## ##       ######## ########
+    //     ##     ##   ## ##   ##    ## ##   ##  ##    ##  ##     ## ##     ## ##     ## ###   ## ##     ##    ##    ## ##    ## ##     ## ##       ##     ## ##     ## ##       ##       ##     ##
+    //     ##     ##  ##   ##  ##       ##  ##   ##        ##     ## ##     ## ##     ## ####  ## ##     ##    ##       ##       ##     ## ##       ##     ## ##     ## ##       ##       ##     ##
+    //     ########  ##     ## ##       #####    ##   #### ########  ##     ## ##     ## ## ## ## ##     ##     ######  ##       ######### ######   ##     ## ##     ## ##       ######   ########
+    //     ##     ## ######### ##       ##  ##   ##    ##  ##   ##   ##     ## ##     ## ##  #### ##     ##          ## ##       ##     ## ##       ##     ## ##     ## ##       ##       ##   ##
+    //     ##     ## ##     ## ##    ## ##   ##  ##    ##  ##    ##  ##     ## ##     ## ##   ### ##     ##    ##    ## ##    ## ##     ## ##       ##     ## ##     ## ##       ##       ##    ##
+    //     ########  ##     ##  ######  ##    ##  ######   ##     ##  #######   #######  ##    ## ########      ######   ######  ##     ## ######## ########   #######  ######## ######## ##     ##
+
+    scheduleNextBackgroundProcess () {
+      this.backgroundProcessInterval = setTimeout(
+        this.processLogSampleInBackground
+        , 1000 / this.processInBackgroundMaxRate
+      )
+    },
+
+    unscheduleNextBackgroundProcess () {
+      clearTimeout(this.backgroundProcessInterval)
+      this.backgroundProcessInterval = null
     }
   },
 
@@ -1302,13 +1615,15 @@ export default {
     processInBackground: {
       handler () {
         if (this.processInBackground) {
-          this.backgroundProcessInterval = setInterval(() => {
-            if (this.processInBackground) {
-              this.processLogSampleInBackground({})
-            }
-          }, 1000 / this.processInBackgroundMaxRate)
+          // this.backgroundProcessInterval = setInterval(() => {
+          //   if (this.processInBackground) {
+          //     this.processLogSampleInBackground({})
+          //   }
+          // }, 1000 / this.processInBackgroundMaxRate)
+          this.scheduleNextBackgroundProcess()
         } else {
-          clearInterval(this.backgroundProcessInterval)
+          // clearInterval(this.backgroundProcessInterval)
+          this.unscheduleNextBackgroundProcess()
         }
       },
       deep: false
@@ -1324,10 +1639,30 @@ export default {
     }, // queueIn
     tailEnabled: {
       handler () {
-        if (this.tailEnabled) {
-          this.initTail()
-        } else {
-          this.killTail()
+        if (this.socket.connected) {
+          if (this.tailEnabled) {
+            // Kick off the Tail
+            this.initTail()
+          } else {
+            this.killTail()
+          }
+        } else { // No Socket. Tell the user.
+          this.tailEnabled = false
+          // Pop this to the screen (via MainLayout)
+          this.$root.$emit('addAndShowErrorToErrorPanel', {
+            data: {
+              errors: [
+                {
+                  code: 'NoLiveSocket',
+                  message: 'Live (Socket) connection with the EZ Server has been lost or is not currently established.'
+                },
+                {
+                  code: 'TailFailedToStart',
+                  message: 'Tail could not start due to no live socket available.'
+                }
+              ]
+            }
+          })
         }
       },
       deep: false

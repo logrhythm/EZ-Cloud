@@ -92,12 +92,31 @@
         <template v-slot:body-cell-osVersion="props">
           <q-td :props="props">
             {{ props.value }}
-            <q-spinner-dots
-              color="primary"
-              size="2em"
-              v-if="osVersionCheck && osVersionCheck[props.row.uid] && osVersionCheck[props.row.uid].checking"
-              class="q-ml-sm"
-            />
+            <div v-if="osVersionCheck && osVersionCheck[props.row.uid] && osVersionCheck[props.row.uid].checking">
+              <q-spinner-dots
+                color="primary"
+                size="2em"
+                class="q-ml-sm"
+              />
+            </div>
+            <div v-else-if="osVersionCheck && osVersionCheck[props.row.uid] && osVersionCheck[props.row.uid].error">
+              <q-tooltip content-style="font-size: 1rem;">
+                Failed to connect to the server.<br>
+                Check the Open Collector details and Credentials.
+              </q-tooltip>
+              <q-icon
+                name="cloud_off"
+                color="orange"
+                size="2em"
+                class="q-ml-sm"
+              />
+              <q-icon
+                name="warning_amber"
+                color="orange"
+                size="2em"
+                class="q-ml-sm"
+              />
+            </div>
           </q-td>
         </template>
         <!-- <template v-slot:body-cell-fbVersion="props">
@@ -271,7 +290,7 @@
         </q-card-section>
         <q-card-section v-for="(job, jobIndex) in shipperInstall" :key="jobIndex">
           <div class="row q-gutter-x-md items-center" v-if="job.collector">
-            <q-spinner-gears size="2em" color="teal" v-show="job.onGoing === true" />
+            <q-spinner-dots size="2em" color="teal" v-show="job.onGoing === true" />
             <q-icon name="thumb_up" size="2em" color="positive" v-show="job.onGoing === false && job.failed === false" >
               <q-tooltip content-style="font-size: 1em;" >Job completed successfuly</q-tooltip>
             </q-icon>
@@ -291,9 +310,11 @@
             <q-separator vertical size="2px" color="teal" />
             <div class="q-ml-sm col">
               <div v-for="(log, logIndex) in job.console" :key="logIndex">
+                <q-icon name="info" class="q-mr-sm" color="primary" v-if="log.msgCode === 'CONTROL.INFO'"/>
                 <q-icon name="subdirectory_arrow_right" class="q-mr-sm" color="primary" v-if="log.type === 'finished'"/>
                 <q-icon name="error" class="q-mr-sm" color="orange" v-if="log.type === 'error' && log.msgCode === 'ERROR'"/>
                 <q-icon name="error" class="q-mr-sm" color="orange" v-if="log.type === 'error' && log.msgCode === 'EXIT'"/>
+                <q-icon name="info" class="q-mr-sm" color="orange" v-if="log.msgCode === 'CONTROL.ERROR'"/>
                 <span
                   :class="(log.type === 'stdout' ? 'fixed-font-console' : '') + ' '
                     + (log.type === 'finished' ? 'text-positive' : '')
@@ -537,6 +558,7 @@ export default {
         const uid = (response.params && response.params.apiCallParams && response.params.apiCallParams.uid ? response.params.apiCallParams.uid : null)
         if (uid && this.osVersionCheck && this.osVersionCheck[uid]) {
           this.osVersionCheck[uid].checking = false
+          console.log('response', response) // XXXX
           if (response.success) {
             this.osVersionCheck[uid].error = false
 
@@ -798,10 +820,6 @@ export default {
     },
 
     installFilebeat (uid, shipperSource) {
-      console.log('installFilebeat:')
-      console.log(uid)
-      console.log(shipperSource)
-
       this.shipperInstall[uid] = {
         collector: this.tableData.find(c => c.uid === uid),
         onGoing: true,
@@ -818,6 +836,23 @@ export default {
           jobId: uid,
           uid,
           installerSource: shipperSource
+        })
+      } else { // No Socket. Tell the user.
+        this.tailEnabled = false
+        // Pop this to the screen (via MainLayout)
+        this.$root.$emit('addAndShowErrorToErrorPanel', {
+          data: {
+            errors: [
+              {
+                code: 'NoLiveSocket',
+                message: 'Live (Socket) connection with the EZ Server has been lost or is not currently established.'
+              },
+              {
+                code: 'ShipperInstallFailedToStart',
+                message: 'Shipper deployment could not start due to no live socket available.'
+              }
+            ]
+          }
         })
       }
     },
@@ -873,7 +908,19 @@ export default {
           }
         }
 
-        // If we are getting data from the remote job, breack it in multiple lines (if \n is found in it) and push it in the job's console
+        // Updating the Progress Bar
+        this.shipperInstall[payload.jobId].step = payload.step || this.shipperInstall[payload.jobId].step
+        this.shipperInstall[payload.jobId].totalSteps = payload.totalSteps || this.shipperInstall[payload.jobId].totalSteps
+
+        // If we are receiving Control information
+        if (payload.code === 'CONTROL.INFO') {
+          this.addLineToShipperInstallConsole(payload, 'info')
+        }
+        if (payload.code === 'CONTROL.ERROR') {
+          this.addLineToShipperInstallConsole(payload, 'error')
+        }
+
+        // If we are getting data from the remote job, break it in multiple lines (if \n is found in it) and push it in the job's console
         if (payload.code === 'STDOUT') {
           if (typeof payload.payload === 'string') {
             // Add new data to end of buffer
@@ -914,8 +961,6 @@ export default {
         // Moving along?
         if (payload.code === 'FINISHED') {
           // this.shipperInstall[payload.jobId].onGoing = true
-          this.shipperInstall[payload.jobId].step = payload.step || this.shipperInstall[payload.jobId].step
-          this.shipperInstall[payload.jobId].totalSteps = payload.totalSteps || this.shipperInstall[payload.jobId].totalSteps
           this.addLineToShipperInstallConsole(payload, 'finished')
         }
 
@@ -966,10 +1011,19 @@ export default {
     this.loadShippersUrls({ caller: this })
 
     // Event when Server sends output or updates from an Install/Uninstall job
+    this.socket.offAny(this.handleSocketOnShipperInstall)
+    this.socket.off('shipper.install')
     this.socket.on('shipper.install', this.handleSocketOnShipperInstall)
   },
   beforeDestroy () {
+    // Unsubscribe from Socket.io events
     this.socket.offAny(this.handleSocketOnShipperInstall)
+    this.socket.off('shipper.install')
+  },
+  destroyed () {
+    // Unsubscribe from Socket.io events
+    this.socket.offAny(this.handleSocketOnShipperInstall)
+    this.socket.off('shipper.install')
   }
 }
 
