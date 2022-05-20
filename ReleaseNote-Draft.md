@@ -52,6 +52,18 @@ It's possible to install EZ Server onto a separate machine than the SQL Server (
 - Wiki: [Troubleshooting](https://github.com/logrhythm/EZ-Cloud/wiki/Troubleshooting)
 
 ## What's new in this release?
+**v0.8.5-0.8.7**
+_(Backend v0.8.5 / Frontend v0.8.7)_
+- [v0.8.5-0.8.7] Frontend - Market - Export Pipeline to EZ Market Place
+  - Deal with non-existing Publisher Profile
+  - Pipeline name
+  - Icon / Visual
+  - Readme
+  - Sanitization of Collection
+  - Sanitization of Fields Mapping
+- [v0.8.5-0.8.7] Frontend - Empty Publisher details on Log-out
+- [v0.8.🚧] 
+
 **v0.8.5-0.8.6**
 _(Backend v0.8.5 / Frontend v0.8.6)_
 _(Below "Market" relates to the backend API of the Market Place, and "Market Admin" to the frontend UI of the Market place administrative website)_
@@ -81,8 +93,6 @@ _(Below "Market" relates to the backend API of the Market Place, and "Market Adm
 - [v0.8.5-0.8.6] Market - Publishers - New `/publishers/` enpoints
 - [v0.8.5-0.8.6] Market - Update Test
 - [v0.8.5-0.8.6] Market - Publishers - Prevent the creation of Publisher other than themselves
-- [v0.8.🚧] 
-
 
 **v0.8.5**
 _(Below "Market" relates to the backend API of the Market Place, and "Market Admin" to the frontend UI of the Market place administrative website)_
