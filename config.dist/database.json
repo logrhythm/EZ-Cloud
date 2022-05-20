@@ -9,7 +9,7 @@
             }
         },
         "options":{
-            "encrypt":false,
+            "encrypt":true,
             "port": 1433,
             "database":"EZ",
             "requestTimeout": 30000
