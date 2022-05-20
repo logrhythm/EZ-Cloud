@@ -1,4 +1,4 @@
-[![Last Release](https://badgen.net/badge/release/v0.8.5-0.8.7/green)](https://github.com/logrhythm/EZ-Cloud/releases)
+[![Last Release](https://badgen.net/badge/release/v0.8.5-0.8.7/green)](https://github.com/logrhythm/EZ-Cloud/releases/tag/v0.8.5-0.8.7)
 [![Dev Version](https://badgen.net/badge/dev/v0.9/orange)](https://github.com/logrhythm/EZ-Cloud/tree/v0.9)
 
 # EZ-Cloud
