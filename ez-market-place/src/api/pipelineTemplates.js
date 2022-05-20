@@ -169,9 +169,13 @@ router.post('/', async (req, res) => {
   // const pipelineTemplateSchema = yup.object().shape(
   //   {
   //     pipelineTemplateUid: yup.string().uuid().required(),
+  //     publisherUid: yup.string().uuid().nullable(), // Only used for Admin APIs
+  //     statusId: yup.number(), // Only used for Admin APIs
   //     name: yup.string().required(),
-  //     collectionConfiguration: yup.object(),
-  //     fieldsMapping: yup.object(),
+  //     readmeMarkdown: yup.string().nullable(),
+  //     iconPicture: yup.string().nullable(),
+  //     collectionConfiguration: yup.object().nullable(),
+  //     fieldsMapping: yup.object().nullable(),
   //     stats: yup.object()
   //   }
 
@@ -187,6 +191,8 @@ router.post('/', async (req, res) => {
                 \`uid\`,
                 \`publisher_uid\`,
                 \`name\`,
+                \`readmeMarkdown\`,
+                \`iconPicture\`,
                 \`collection_configuration\`,
                 \`mapping_configuration\`,
                 \`stats\`
@@ -196,6 +202,8 @@ router.post('/', async (req, res) => {
                 :pipelineTemplateUid,
                 :publisherUid,
                 :templateName,
+                :templateReadmeMarkdown,
+                :templateIconPicture,
                 :templateCollectionConfiguration,
                 :templateMappingConfiguration,
                 :templateStats
@@ -207,6 +215,8 @@ router.post('/', async (req, res) => {
         pipelineTemplateUid: pipelineTemplate.pipelineTemplateUid,
         publisherUid,
         templateName: pipelineTemplate.name,
+        templateReadmeMarkdown: pipelineTemplate.readmeMarkdown || '',
+        templateIconPicture: pipelineTemplate.iconPicture || '',
         templateCollectionConfiguration: pipelineTemplate.collectionConfiguration || {},
         templateMappingConfiguration: pipelineTemplate.fieldsMapping || {},
         templateStats: pipelineTemplate.stats || {}
