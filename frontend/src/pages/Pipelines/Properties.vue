@@ -697,9 +697,7 @@
     <q-dialog v-model="showMarketplaceExportPopup" persistent v-if="publisherDisplayName == null">
       <q-card style="min-width: 350px">
         <q-card-section>
-          <div class="text-h6" v-if="marketplaceExportPopupType === 'collection'">{{ $t('Export EZ Cloud Collection Configuration') }}</div>
-          <div class="text-h6" v-else-if="marketplaceExportPopupType === 'mapping'">{{ $t('Export EZ Cloud Fields Mapping') }}</div>
-          <div class="text-h6" v-else>{{ $t('Export EZ Cloud Pipeline Template') }}</div>
+          <div class="text-h6">{{ $t('Export EZ Cloud Pipeline Template to EZ Market Place') }}</div>
         </q-card-section>
 
         <q-card-section class="q-pt-none column">

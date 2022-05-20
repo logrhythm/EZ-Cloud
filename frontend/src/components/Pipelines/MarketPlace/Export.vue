@@ -2,10 +2,7 @@
   <div style="min-width: 80vw;/* height: 90vh; */max-height: 90vh;">
     <q-card style="min-width: 80vw;/* height: 90vh; */max-height: 90vh;">
       <q-card-section>
-        <!-- <div class="text-h6" v-if="exportRequestType === 'collection'">{{ $t('Export EZ Cloud Collection Configuration') }}</div>
-        <div class="text-h6" v-else-if="exportRequestType === 'mapping'">{{ $t('Export EZ Cloud Fields Mapping') }}</div>
-        <div class="text-h6" v-else>{{ $t('Export EZ Cloud Pipeline Template') }}</div> -->
-        <div class="text-h6">{{ $t('Export EZ Cloud Pipeline Template') }}</div>
+        <div class="text-h6">{{ $t('Export EZ Cloud Pipeline Template to EZ Market Place') }}</div>
       </q-card-section>
 
       <q-card-section class="q-pa-none q-ma-none">
@@ -43,15 +40,6 @@
           <q-card-section class="q-pt-none">
             <div class="text-h5">{{ $t('Sanitisation') }}</div>
           </q-card-section>
-
-          <!-- <q-card-section class="col q-ma-none q-pa-none">
-            <q-card-section class="text-h6">
-                Collection Configuration
-            </q-card-section>
-            <q-card-section class="row q-gutter-x-lg">
-              //
-            </q-card-section>
-          </q-card-section> -->
 
           <q-card-section class="col q-ma-none q-pa-none">
             <q-expansion-item
