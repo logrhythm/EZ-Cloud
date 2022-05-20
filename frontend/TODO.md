@@ -106,7 +106,7 @@
   - [x] Publisher profile's properties
     - [x] Create Publisher profile with user's Pseudo-name
     - [x] Edit Publisher profile
-  - [ ] Export to Market Place
+  - [x] Export to Market Place
     - [x] Deal with non-existing Publisher Profile
     - [x] Pipeline name
     - [x] Icon / Visual
