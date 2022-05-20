@@ -1,4 +1,4 @@
-# v0.8.🚧
+# v0.9.🚧
 *🚧🚧🚧🚧-🚧🚧-🚧🚧*
 
 ## Requirements
@@ -14,7 +14,7 @@
 
 #### 1. Download and Install
 - If upgrading a previous version, it's a good idea to backup your `\Program Files\EZ Server\config` folder
-- Get [EZ-Cloud.v0.8.🚧.Server-Installer.exe](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.8.🚧/EZ-Cloud.v0.8.🚧.Server-Installer.exe)
+- Get [EZ-Cloud.v0.9.🚧.Server-Installer.exe](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.9.🚧/EZ-Cloud.v0.9.🚧.Server-Installer.exe)
 - Run it
 
 It's possible to install EZ Server onto a separate machine than the SQL Server (XM/PM)
@@ -52,6 +52,10 @@ It's possible to install EZ Server onto a separate machine than the SQL Server (
 - Wiki: [Troubleshooting](https://github.com/logrhythm/EZ-Cloud/wiki/Troubleshooting)
 
 ## What's new in this release?
+**v0.9.0**
+- [v0.9.0] Backend - Make Encrypted SQL connection the default
+- [v0.9.🚧] 
+
 **v0.8.5-0.8.7**
 _(Backend v0.8.5 / Frontend v0.8.7)_
 - [v0.8.5-0.8.7] Frontend - Market - Export Pipeline to EZ Market Place
@@ -63,7 +67,6 @@ _(Backend v0.8.5 / Frontend v0.8.7)_
   - Sanitization of Fields Mapping
   - Pre-Submit Final Check-list
 - [v0.8.5-0.8.7] Frontend - Empty Publisher details on Log-out
-- [v0.8.🚧] 
 
 **v0.8.5-0.8.6**
 _(Backend v0.8.5 / Frontend v0.8.6)_
