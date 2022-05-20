@@ -871,6 +871,92 @@ export function loadEzMarketPipelineTemplateById ({ state, commit }, { pipelineT
   }
 }
 
+export function createEzMarketPipelineTemplate ({ state, commit }, { pipelineTemplateToPublish, onSuccessCallBack, onErrorCallBack, params }) {
+  if (
+    pipelineTemplateToPublish &&
+    pipelineTemplateToPublish.pipelineTemplateUid &&
+    pipelineTemplateToPublish.pipelineTemplateUid.length &&
+    pipelineTemplateToPublish.name &&
+    pipelineTemplateToPublish.name.length
+  ) {
+    // Building the full URL of the API root
+    const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+
+    // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+    fetch(ezMarketApiBaseUrl + '/pipelineTemplates', {
+      method: 'POST',
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+      headers: {
+        'ez-publisher': (state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        pipelineTemplate: {
+          pipelineTemplateUid: pipelineTemplateToPublish.pipelineTemplateUid,
+          // publisherUid: null,
+          // statusId: null,
+          name: pipelineTemplateToPublish.name,
+          readmeMarkdown: pipelineTemplateToPublish.readmeMarkdown || undefined,
+          iconPicture: pipelineTemplateToPublish.iconPicture || undefined,
+          collectionConfiguration: pipelineTemplateToPublish.collectionConfiguration || undefined,
+          fieldsMapping: pipelineTemplateToPublish.fieldsMapping || undefined,
+          stats: pipelineTemplateToPublish.stats || undefined
+        }
+      })
+    })
+      .then(response => {
+        if (!response.ok) {
+          if (typeof onErrorCallBack === 'function') {
+            onErrorCallBack({
+              data: undefined,
+              success: false,
+              params: null,
+              messageForLogAndPopup: 'Network response was not ok.'
+            })
+          }
+          throw new Error('Network response was not ok.')
+        }
+        return response.json()
+      })
+      .then(data => {
+        if (data && data.result) {
+          console.log(`✔️ [API SUCCESS] Succesfully created ${data.result.affectedRows || 0} Pipeline Template(s).`)
+          if (typeof onSuccessCallBack === 'function') {
+            onSuccessCallBack({
+              data: (data && data.records ? data.records : undefined),
+              success: true,
+              params: params,
+              messageForLogAndPopup: null
+            })
+          }
+        } else {
+          if (typeof onErrorCallBack === 'function') {
+            onErrorCallBack({
+              data: data || undefined,
+              success: false,
+              params: params,
+              messageForLogAndPopup: 'Returned data wasn\'t a proper JSON array.'
+            })
+          }
+          throw new Error('Returned data wasn\'t a proper JSON array.')
+        }
+      })
+      .catch(error => {
+        console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+      })
+  } else {
+    if (typeof onErrorCallBack === 'function') {
+      onErrorCallBack({
+        data: undefined,
+        success: false,
+        params: null,
+        messageForLogAndPopup: 'Missing or incomplete parameter to function (need both Pipeline Template\'s UID and Name).'
+      })
+    }
+  }
+}
+
 export function loadEzMarketPublisherDetails ({ state, commit }, { onSuccessCallBack, onErrorCallBack }) {
   console.log('☁️ Downloading Publisher\'s details from EZ Cloud Market Place...')
 

@@ -472,13 +472,20 @@
     <q-card-actions align="right" >
       <!-- <q-btn color="primary" :label="$t('Export to EZ Market Place')" v-close-popup :disabled="mappingImportFileInput === null" @click="importMappingFromEZImportableConfigFile(mappingImportFileInput)" /> -->
       <q-btn color="primary" flat :label="$t('Cancel')" v-close-popup />
-      <q-btn color="primary" :label="$t('Export to EZ Market Place')" v-close-popup :disabled="!(marketplaceExportConfiguration || marketplaceExporFieldsMapping)" />
+      <q-btn
+        color="primary"
+        :label="$t('Export to EZ Market Place')"
+        :disabled="!(marketplaceExportConfiguration || marketplaceExporFieldsMapping)"
+        @click="publishToMarketPlace()"
+        :loading="publishingToEzMarketPlace"
+        />
+        <!-- v-close-popup -->
     </q-card-actions>
   </q-card>
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import IconPicture from 'components/Pipelines/IconPicture.vue'
 import { uid } from 'quasar'
@@ -550,7 +557,8 @@ export default {
         sortBy: 'mapping',
         descending: true, // Mapped fields first
         rowsPerPage: 15
-      }
+      },
+      publishingToEzMarketPlace: false // Are we waiting for EZ Market while publishing the template
     }
   },
   computed: {
@@ -629,7 +637,9 @@ export default {
       const pipelineTemplate = {
         pipelineTemplateUid: uid(),
         name: this.newPipelineTemplateName,
-        collectionConfiguration: (this.marketplaceExportConfiguration ? this.pipelineToExport.collectionConfig : undefined),
+        readmeMarkdown: this.readmeContentEditorAsMarkdown,
+        iconPicture: this.pictureEditorContentPngBase64ExtractedAccepted,
+        collectionConfiguration: (this.marketplaceExportConfiguration ? { collectionConfig: this.pipelineToExport.collectionConfig } : undefined),
         fieldsMapping: (this.marketplaceExporFieldsMapping ? this.sanitisedFieldsMappingWithOptions : undefined),
         stats: this.pipelineTemplateStats
       }
@@ -638,7 +648,7 @@ export default {
     }
   },
   methods: {
-    // ...mapActions('mainStore', ['obfuscateSecretForOpenCollector'])
+    ...mapActions('mainStore', ['createEzMarketPipelineTemplate']),
     extractPictureEditorContentPngBase64 (newValue) {
       // <img src="data:image/png;base64,iVBORw0KGgoAA...Uawz9YIPMfeaw" alt="">
       try {
@@ -702,7 +712,18 @@ export default {
       }
     },
     publishToMarketPlace () {
-      //
+      this.publishingToEzMarketPlace = true
+      this.createEzMarketPipelineTemplate(
+        {
+          pipelineTemplateToPublish: this.pipelineTemplateToBePublished,
+          onSuccessCallBack: this.publishedToMarketPlace,
+          onErrorCallBack: this.publishedToMarketPlace,
+          params: undefined
+        }
+      )
+    },
+    publishedToMarketPlace (payload) {
+      this.publishingToEzMarketPlace = false
     }
   },
   mounted () {
