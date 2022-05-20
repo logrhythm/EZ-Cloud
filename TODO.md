@@ -1,5 +1,20 @@
 # TODO - Backend
 
+### Target: v0.9
+
+## TO DO
+- Installer
+  - [ ] Offer to use Trusted SQL Connection for run time
+  - [ ] Make SQL Trusted Connection the default
+- SQL
+  - [ ] Add configuration parameters to enable SQL Trusted Connection Auth
+  - [ ] Handle SQL Trusted Connection
+
+## TO FIX
+
+## TO TEST
+
+---
 ### Target: v0.8
 
 ## TO DO
