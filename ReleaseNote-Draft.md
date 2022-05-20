@@ -61,6 +61,7 @@ _(Backend v0.8.5 / Frontend v0.8.7)_
   - Readme
   - Sanitization of Collection
   - Sanitization of Fields Mapping
+  - Pre-Submit Final Check-list
 - [v0.8.5-0.8.7] Frontend - Empty Publisher details on Log-out
 - [v0.8.🚧] 
 
