@@ -54,109 +54,105 @@
           </q-card-section> -->
 
           <q-card-section class="col q-ma-none q-pa-none">
-            <q-card-section class="row q-gutter-x-lg"> <!-- XXXX -->
-              <q-expansion-item
-                dense
-                dense-toggle
-                expand-separator
-                style="min-width: 400px"
-                :value="marketplaceExportConfiguration"
-                :disabled="!marketplaceExportConfiguration"
-              >
-                <template v-slot:header>
-                  <div class="text-h6">
-                      Collection Configuration
-                  </div>
-                </template>
-                <div class="q-ml-md">
-                  <div>
-                    <q-icon name="label_important" color="accent" size="sm" class="q-mr-sm" />
-                    <span class="text-bold">IMPORTANT</span>
-                    <ol>
-                      <li>Do review the configurataion below</li>
-                      <li>Check for any token, credential or bits of information that the user of this Template will need to replace with their own values</li>
-                      <li>If not already done, replace each of them with the string "<span class="text-bold text-italic">CHANGE_ME</span>" or something similar</li>
-                      <ul>
-                        <li>If they are part of a field that requires to be obfuscated, leave them NON-obfuscated, so the next user can spot them easily</li>
-                      </ul>
-                      <li>In the <span class="text-bold">Configuration steps</span> section of the <span class="text-bold">Read Me</span> below, make sure to mention each of them what data to replace them with</li>
-                      <li>Once you are done. Double check again that no private information has been left in your configuration</li>
-                      <li>To alter the Collection Configuration below</li>
-                      <ol>
-                        <li>Close this by clicking the "<span class="text-bold">CANCEL</span>" button below</li>
-                        <li>Edit the Collection Configuration by clicking the "<span class="text-bold">Edit</span>" (<q-icon name="edit" />) button on right hand side action panel</li>
-                      </ol>
-                    </ol>
-                  </div>
-                  <div class="row q-my-sm">
-                    <q-separator vertical size="2px" color="teal" />
-                    <div class="q-ml-sm"><pre>{{ collectionConfigOutput }}</pre></div>
-                  </div>
+            <q-expansion-item
+              dense
+              dense-toggle
+              expand-separator
+              style="min-width: 400px"
+              :value="marketplaceExportConfiguration"
+              :disabled="!marketplaceExportConfiguration"
+            >
+              <template v-slot:header>
+                <div class="text-h6">
+                    Collection Configuration
                 </div>
-              </q-expansion-item>
-            </q-card-section>
+              </template>
+              <div class="q-ml-md">
+                <div>
+                  <q-icon name="label_important" color="accent" size="sm" class="q-mr-sm" />
+                  <span class="text-bold">IMPORTANT</span>
+                  <ol>
+                    <li>Do review the configurataion below</li>
+                    <li>Check for any token, credential or bits of information that the user of this Template will need to replace with their own values</li>
+                    <li>If not already done, replace each of them with the string "<span class="text-bold text-italic">CHANGE_ME</span>" or something similar</li>
+                    <ul>
+                      <li>If they are part of a field that requires to be obfuscated, leave them NON-obfuscated, so the next user can spot them easily</li>
+                    </ul>
+                    <li>In the <span class="text-bold">Configuration steps</span> section of the <span class="text-bold">Read Me</span> below, make sure to mention each of them what data to replace them with</li>
+                    <li>Once you are done. Double check again that no private information has been left in your configuration</li>
+                    <li>To alter the Collection Configuration below</li>
+                    <ol>
+                      <li>Close this by clicking the "<span class="text-bold">CANCEL</span>" button below</li>
+                      <li>Edit the Collection Configuration by clicking the "<span class="text-bold">Edit</span>" (<q-icon name="edit" />) button on right hand side action panel</li>
+                    </ol>
+                  </ol>
+                </div>
+                <div class="row q-my-sm">
+                  <q-separator vertical size="2px" color="teal" />
+                  <div class="q-ml-sm"><pre>{{ collectionConfigOutput }}</pre></div>
+                </div>
+              </div>
+            </q-expansion-item>
           </q-card-section>
 
           <q-card-section class="col q-ma-none q-pa-none">
-            <q-card-section class="row q-gutter-x-lg">
-              <q-expansion-item
-                dense
-                dense-toggle
-                expand-separator
-                style="min-width: 400px"
-                :value="marketplaceExporFieldsMapping"
-                :disabled="!marketplaceExporFieldsMapping"
-              >
-                <template v-slot:header>
-                  <div class="text-h6">
-                      Fields Mapping
-                  </div>
-                </template>
-                <q-list>
-                  <q-item tag="label" v-ripple>
-                    <q-item-section avatar>
-                      <q-toggle v-model="shareFieldFrequencies" :disable="!marketplaceExporFieldsMapping" />
-                    </q-item-section>
-                    <q-item-section>
-                      <q-item-label>Share Field Frequencies</q-item-label>
-                      <q-item-label caption>Include the frequency statistics for each field</q-item-label>
-                    </q-item-section>
-                  </q-item>
+            <q-expansion-item
+              dense
+              dense-toggle
+              expand-separator
+              style="min-width: 400px"
+              :value="marketplaceExporFieldsMapping"
+              :disabled="!marketplaceExporFieldsMapping"
+            >
+              <template v-slot:header>
+                <div class="text-h6">
+                    Fields Mapping
+                </div>
+              </template>
+              <q-list>
+                <q-item tag="label" v-ripple>
+                  <q-item-section avatar>
+                    <q-toggle v-model="shareFieldFrequencies" :disable="!marketplaceExporFieldsMapping" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>Share Field Frequencies</q-item-label>
+                    <q-item-label caption>Include the frequency statistics for each field</q-item-label>
+                  </q-item-section>
+                </q-item>
 
-                  <q-item tag="label" v-ripple disable>
-                    <q-item-section avatar>
-                      <q-toggle color="orange" :value="false" />
-                    </q-item-section>
-                    <q-item-section>
-                      <q-item-label>Share Field Values</q-item-label>
-                      <q-item-label caption>Include all the observed values for each field</q-item-label>
-                      <q-item-label caption class="text-bold text-italic"><q-icon name="dangerous" class="q-ma-none q-mr-xs" color="negative" />This is disabled for Market Place</q-item-label>
-                    </q-item-section>
-                  </q-item>
+                <q-item tag="label" v-ripple disable>
+                  <q-item-section avatar>
+                    <q-toggle color="orange" :value="false" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>Share Field Values</q-item-label>
+                    <q-item-label caption>Include all the observed values for each field</q-item-label>
+                    <q-item-label caption class="text-bold text-italic"><q-icon name="dangerous" class="q-ma-none q-mr-xs" color="negative" />This is disabled for Market Place</q-item-label>
+                  </q-item-section>
+                </q-item>
 
-                  <q-item tag="label" v-ripple>
-                    <q-item-section avatar>
-                      <q-toggle v-model="shareFieldMapping" :disable="!marketplaceExporFieldsMapping" />
-                    </q-item-section>
-                    <q-item-section>
-                      <q-item-label>Share Field SIEM Mapping</q-item-label>
-                      <q-item-label caption>Include the SIEM tags mapping for each field</q-item-label>
-                    </q-item-section>
-                  </q-item>
+                <q-item tag="label" v-ripple>
+                  <q-item-section avatar>
+                    <q-toggle v-model="shareFieldMapping" :disable="!marketplaceExporFieldsMapping" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>Share Field SIEM Mapping</q-item-label>
+                    <q-item-label caption>Include the SIEM tags mapping for each field</q-item-label>
+                  </q-item-section>
+                </q-item>
 
-                  <q-item tag="label" v-ripple>
-                    <q-item-section avatar>
-                      <q-toggle v-model="shareFieldModifiers" :disable="!marketplaceExporFieldsMapping" />
-                    </q-item-section>
-                    <q-item-section>
-                      <q-item-label>Share Field Modifiers</q-item-label>
-                      <q-item-label caption>Include the modifiers for each field</q-item-label>
-                    </q-item-section>
-                  </q-item>
+                <q-item tag="label" v-ripple>
+                  <q-item-section avatar>
+                    <q-toggle v-model="shareFieldModifiers" :disable="!marketplaceExporFieldsMapping" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>Share Field Modifiers</q-item-label>
+                    <q-item-label caption>Include the modifiers for each field</q-item-label>
+                  </q-item-section>
+                </q-item>
 
-                </q-list>
-              </q-expansion-item>
-            </q-card-section>
+              </q-list>
+            </q-expansion-item>
           </q-card-section>
 
           <q-separator size="2px" class="q-mx-sm q-my-lg" />
