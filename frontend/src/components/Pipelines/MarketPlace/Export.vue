@@ -53,7 +53,7 @@
         </q-card-section> -->
 
         <q-card-section class="col q-ma-none q-pa-none">
-          <q-card-section class="row q-gutter-x-lg">
+          <q-card-section class="row q-gutter-x-lg"> <!-- XXXX -->
             <q-expansion-item
               dense
               dense-toggle
@@ -438,6 +438,21 @@
           </q-expansion-item>
         </q-card-section>
 
+        <q-card-section class=" q-ma-none q-pa-none q-my-lg">
+          <q-expansion-item
+            dense
+            dense-toggle
+            expand-separator
+          >
+            <template v-slot:header>
+              <div class="text-h6">
+                  Raw Pipeline Template to be Published
+              </div>
+            </template>
+            <pre class="q-ml-md">{{ pipelineTemplateToBePublished }}</pre>
+          </q-expansion-item>
+        </q-card-section>
+
         <q-card-section> <!-- XXXX -->
           <q-expansion-item
             dense
@@ -466,6 +481,7 @@
 import { mapState } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import IconPicture from 'components/Pipelines/IconPicture.vue'
+import { uid } from 'quasar'
 
 // Readme HTML <-> Markdown
 import { marked } from 'marked'
@@ -571,6 +587,54 @@ export default {
       } catch (error) {
         return {}
       }
+    },
+    sanitisedFieldsMappingWithOptions () {
+      let sanitisedFieldsMappingWithOptions
+      if (this.marketplaceExporFieldsMapping) {
+        // Sanitise the Mapping before export
+        const sanitisedFieldsMapping = JSON.parse(JSON.stringify(this.pipelineToExport.fieldsMapping))
+        sanitisedFieldsMapping.forEach(fieldMapping => {
+          fieldMapping.seenInLogCount = (this.shareFieldFrequencies !== true ? 1 : fieldMapping.seenInLogCount)
+          fieldMapping.values = [] // We are not allowing anyone to share their values to EZ Market Place
+          fieldMapping.mappedField = (this.shareFieldMapping !== true ? undefined : fieldMapping.mappedField)
+          fieldMapping.modifiers = (this.shareFieldModifiers !== true ? undefined : fieldMapping.modifiers)
+        })
+
+        // Add the relevant Options
+        sanitisedFieldsMappingWithOptions = {
+          options: {
+            extractMessageFieldOnly: (this.pipelineToExport && this.pipelineToExport.options ? this.pipelineToExport.options.extractMessageFieldOnly : undefined)
+          },
+          fieldsMapping: sanitisedFieldsMapping
+        }
+      }
+
+      return sanitisedFieldsMappingWithOptions
+    },
+    pipelineTemplateStats () {
+      const fieldsMappingToBeSavedIsArray = !!(this.marketplaceExporFieldsMapping && this.sanitisedFieldsMappingWithOptions && this.sanitisedFieldsMappingWithOptions.fieldsMapping && Array.isArray(this.sanitisedFieldsMappingWithOptions.fieldsMapping))
+      const fieldsMappingToBeSavedIsArrayWithData = !!(fieldsMappingToBeSavedIsArray && this.sanitisedFieldsMappingWithOptions.fieldsMapping.length > 0)
+      return {
+        collectionShipper: (this.pipelineToExport.collectionConfig && this.pipelineToExport.collectionConfig.collectionShipper ? this.pipelineToExport.collectionConfig.collectionShipper : undefined),
+        collectionMethod: (this.pipelineToExport.collectionConfig && this.pipelineToExport.collectionConfig.collectionMethod ? this.pipelineToExport.collectionConfig.collectionMethod : undefined),
+        detectedFields: (fieldsMappingToBeSavedIsArray ? this.sanitisedFieldsMappingWithOptions.fieldsMapping.length : undefined),
+        mappedFields: (fieldsMappingToBeSavedIsArrayWithData ? this.sanitisedFieldsMappingWithOptions.fieldsMapping.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0) : undefined),
+        sharedFieldFrequencies: (fieldsMappingToBeSavedIsArrayWithData ? this.sanitisedFieldsMappingWithOptions.fieldsMapping.reduce((count, fm) => (fm.seenInLogCount > 1 ? count + 1 : count), 0) : undefined) > 0,
+        sharedFieldValues: false, // We are not allowing anyone to share their values to EZ Market Place
+        sharedFieldMapping: (fieldsMappingToBeSavedIsArrayWithData ? this.sanitisedFieldsMappingWithOptions.fieldsMapping.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0) : undefined) > 0,
+        sharedFieldModifiers: (fieldsMappingToBeSavedIsArrayWithData ? this.sanitisedFieldsMappingWithOptions.fieldsMapping.reduce((count, fm) => (fm.modifiers && Array.isArray(fm.modifiers) && fm.modifiers.length ? count + 1 : count), 0) : undefined) > 0
+      }
+    },
+    pipelineTemplateToBePublished () {
+      const pipelineTemplate = {
+        pipelineTemplateUid: uid(),
+        name: this.newPipelineTemplateName,
+        collectionConfiguration: (this.marketplaceExportConfiguration ? this.pipelineToExport.collectionConfig : undefined),
+        fieldsMapping: (this.marketplaceExporFieldsMapping ? this.sanitisedFieldsMappingWithOptions : undefined),
+        stats: this.pipelineTemplateStats
+      }
+
+      return pipelineTemplate
     }
   },
   methods: {
@@ -636,6 +700,9 @@ export default {
       } finally {
         this.readmeContentEditor = this.readmeContentHtml
       }
+    },
+    publishToMarketPlace () {
+      //
     }
   },
   mounted () {
