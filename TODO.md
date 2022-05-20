@@ -6,6 +6,8 @@
 - Installer
   - [ ] Offer to use Trusted SQL Connection for run time
   - [ ] Make SQL Trusted Connection the default
+  - [ ] Offer to use Encrypted Connection for run time
+  - [ ] Make Encrypted connection the default
 - SQL
   - [ ] Add configuration parameters to enable SQL Trusted Connection Auth
   - [ ] Handle SQL Trusted Connection
