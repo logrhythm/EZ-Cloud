@@ -1,6 +1,35 @@
-const { EventLogger } = require('node-windows');
+const os = require('os');
 
-const log = new EventLogger('EZ-Cloud Server');
+const isWindowsPlatform = os.platform() === 'win32';
+
+// For Windows platform, load the right module and create a logger for Windows Event Journal...
+const { EventLogger } = (
+  isWindowsPlatform
+    ? require('node-windows')
+    : { EventLogger: null }
+);
+
+const log = (
+  isWindowsPlatform
+    ? new EventLogger('EZ-Cloud Server')
+    : null
+);
+// ...Windows
+
+// For Non-Windows platforms...
+const fs = (
+  !isWindowsPlatform
+    ? require('fs-extra')
+    : null
+);
+
+// Stram handle
+let logStream;
+
+// End of line
+const eol = os.EOL;
+
+// ...Non-Windows
 
 const levelToInt = {
   Debug: 1,
@@ -44,8 +73,25 @@ function getIntToLevel(level) {
   return defaultLevel;
 }
 
+// For Non-Windows platforms, prepare the log file
+function openStream(logFilePath) {
+  if (logStream !== undefined) {
+    try {
+      logStream.end();
+    } catch (err) {
+      //
+    }
+  }
+  try {
+    fs.createFileSync(logFilePath);
+    logStream = fs.createWriteStream(logFilePath, { flags: 'a+' });
+  } catch (err) {
+    //
+  }
+}
+
 // Output the log to the system log
-function logToSystem(severity, message, copyToConsole = (false || process.env.logForceToConsole)) {
+function logToSystem(severity, message, copyToConsole = (false || String(process.env.logForceToConsole).toLowerCase().trim() === 'true')) {
   try {
     if (severity !== undefined && severity.length && message !== undefined && message.length) {
       const outSeverityInt = getLevelToInt(severity);
@@ -62,35 +108,45 @@ function logToSystem(severity, message, copyToConsole = (false || process.env.lo
 
         const outMessage = `${outTimestamp} | ${outSeverity} | ${message}`;
         // Send to Console
-        if (copyToConsole === true || copyToConsole === 'true') {
+        if (copyToConsole) {
           // eslint-disable-next-line no-console
           console.error(outMessage);
         }
 
-        // logger {
-        //   source: 'EZ-Cloud Server',
-        //   eventLog: [Getter/Setter],
-        //   info: [Function: value],
-        //   error: [Function: value],
-        //   warn: [Function: value],
-        //   auditSuccess: [Function: value],
-        //   auditFailure: [Function: value]
-        // }
-
         // Send to system logs
-        if (outSeverityInt >= 1 && outSeverityInt <= 3) {
-          // Debug
-          // Verbose
-          // Information
-          log.info(outMessage, outSeverityInt);
-        } else if (outSeverityInt <= 4) {
-          // Warning
-          log.warn(outMessage, outSeverityInt);
-        } else if (outSeverityInt <= 6) {
-          // Error
-          // Critical
-          log.error(outMessage, outSeverityInt);
+        if (isWindowsPlatform) {
+          // logger {
+          //   source: 'EZ-Cloud Server',
+          //   eventLog: [Getter/Setter],
+          //   info: [Function: value],
+          //   error: [Function: value],
+          //   warn: [Function: value],
+          //   auditSuccess: [Function: value],
+          //   auditFailure: [Function: value]
+          // }
+
+          // Send to system logs
+          if (outSeverityInt >= 1 && outSeverityInt <= 3) {
+            // Debug
+            // Verbose
+            // Information
+            log.info(outMessage, outSeverityInt);
+          } else if (outSeverityInt <= 4) {
+            // Warning
+            log.warn(outMessage, outSeverityInt);
+          } else if (outSeverityInt <= 6) {
+            // Error
+            // Critical
+            log.error(outMessage, outSeverityInt);
+          }
+        } else if (process.env.logFilePath && process.env.logFilePath.length) {
+          // Open the log file, if not already done
+          if (logStream === undefined) {
+            openStream(process.env.logFilePath);
+          }
+          logStream.write(`${outMessage}${eol}`);
         }
+        // }
       }
     }
   } catch (err) {

@@ -5,7 +5,7 @@
  * @author Tony Massé
  *
  * Created at     : 2021-04-07 15:00:00
- * Last modified  : 2021-12-16 21:58:39
+ * Last modified  : 2022-06-08 22:44:00
  */
 
 const path = require('path');
@@ -22,6 +22,7 @@ const { getLevelToInt, logToSystem } = require('./shared/systemLogging');
 
 // Bring in the Log Level as an integer
 process.env.logLevel = getLevelToInt(process.env.LOGLEVEL || 'Information');
+process.env.logFilePath = process.env.LOGFILEPATH || undefined;
 process.env.logForceToConsole = process.env.LOGFORCETOCONSOLE || false;
 
 // Error handling
