@@ -83,6 +83,10 @@ AS $BODY$
             ,"fbVersion" = "upsert_openCollector"."fbVersion"
             ,"installedShippers" = COALESCE("upsert_openCollector"."installedShippers", '[]')
     ;
+
+    -- Sort the Pipelines out (which should be provided as a JSON array)
+    -- TB DONE
+
 $BODY$;
 
 ALTER PROCEDURE public."upsert_openCollector"
