@@ -25,40 +25,40 @@ CREATE PROCEDURE public."upsert_openCollector"
 )
 LANGUAGE 'sql'
 AS $BODY$
-    -- INSERT INTO public."openCollectors"
-    -- (
-    --     "uid"
-    --     ,"name"
-    --     ,"hostname"
-    --     ,"port"
-    --     ,"authenticationMethod"
-    --     ,"username"
-    --     ,"password"
-    --     ,"privateKey"
-    --     ,"osVersion"
-    --     ,"ocInstalled"
-    --     ,"ocVersion"
-    --     ,"fbInstalled"
-    --     ,"fbVersion"
-    --     ,"installedShippers"
-    -- )
-    -- VALUES
-    -- (
-    --     "uid"
-    --     ,"name"
-    --     ,"hostname"
-    --     ,COALESCE("port", 0)
-    --     ,"authenticationMethod"
-    --     ,"username"
-    --     ,"password"
-    --     ,"privateKey"
-    --     ,"osVersion"
-    --     ,"ocInstalled"
-    --     ,"ocVersion"
-    --     ,"fbInstalled"
-    --     ,"fbVersion"
-    --     ,COALESCE("installedShippers", '[]')
-    -- );
+    INSERT INTO public."openCollectors"
+    (
+        "uid"
+        ,"name"
+        ,"hostname"
+        ,"port"
+        ,"authenticationMethod"
+        ,"username"
+        ,"password"
+        ,"privateKey"
+        ,"osVersion"
+        ,"ocInstalled"
+        ,"ocVersion"
+        ,"fbInstalled"
+        ,"fbVersion"
+        ,"installedShippers"
+    )
+    VALUES
+    (
+        "uid"
+        ,"name"
+        ,"hostname"
+        ,COALESCE("port", 0)
+        ,"authenticationMethod"
+        ,"username"
+        ,"password"
+        ,"privateKey"
+        ,"osVersion"
+        ,"ocInstalled" = 1
+        ,"ocVersion"
+        ,"fbInstalled" = 1
+        ,"fbVersion"
+        ,COALESCE("installedShippers", '[]')
+    );
 $BODY$;
 
 ALTER PROCEDURE public."upsert_openCollector"
