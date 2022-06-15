@@ -7,21 +7,21 @@ DROP PROCEDURE IF EXISTS public."upsert_openCollector";
 
 CREATE PROCEDURE public."upsert_openCollector"
 (
-    IN "_uid" character varying,
-    IN "_name" character varying,
-    IN "_hostname" character varying,
-    IN "_port" integer, --  DEFAULT 0
-    IN "_authenticationMethod" character varying,
-    IN "_username" character varying,
-    IN "_password" character varying,
-    IN "_privateKey" character varying,
-    IN "_osVersion" character varying,
-    IN "_ocInstalled" integer,
-    IN "_ocVersion" character varying,
-    IN "_fbInstalled" integer,
-    IN "_fbVersion" character varying,
-    IN "_pipelines" character varying,
-    IN "_installedShippers" text -- DEFAULT '[]'
+    IN "@uid" character varying,
+    IN "@name" character varying,
+    IN "@hostname" character varying,
+    IN "@port" integer, --  DEFAULT 0
+    IN "@authenticationMethod" character varying,
+    IN "@username" character varying,
+    IN "@password" character varying,
+    IN "@privateKey" character varying,
+    IN "@osVersion" character varying,
+    IN "@ocInstalled" integer,
+    IN "@ocVersion" character varying,
+    IN "@fbInstalled" integer,
+    IN "@fbVersion" character varying,
+    IN "@pipelines" character varying,
+    IN "@installedShippers" text -- DEFAULT '[]'
 )
 LANGUAGE 'plpgsql'
 AS $BODY$
@@ -45,36 +45,36 @@ BEGIN
     )
     VALUES
     (
-        "_uid"
-        ,"_name"
-        ,"_hostname"
-        ,COALESCE("_port", 0)
-        ,"_authenticationMethod"
-        ,"_username"
-        ,"_password"
-        ,"_privateKey"
-        ,"_osVersion"
-        ,"_ocInstalled" = 1
-        ,"_ocVersion"
-        ,"_fbInstalled" = 1
-        ,"_fbVersion"
-        ,COALESCE("_installedShippers", '[]')
+        "@uid"
+        ,"@name"
+        ,"@hostname"
+        ,COALESCE("@port", 0)
+        ,"@authenticationMethod"
+        ,"@username"
+        ,"@password"
+        ,"@privateKey"
+        ,"@osVersion"
+        ,"@ocInstalled" = 1
+        ,"@ocVersion"
+        ,"@fbInstalled" = 1
+        ,"@fbVersion"
+        ,COALESCE("@installedShippers", '[]')
     )
     ON CONFLICT ("uid") DO
         UPDATE SET
-            "name" = "_name"
-            ,"hostname" = "_hostname"
-            ,"port" = "_port"
-            ,"authenticationMethod" = "_authenticationMethod"
-            ,"username" = "_username"
-            ,"password" = CASE WHEN "_password" != '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' THEN "_password" ELSE oc."password" END
-            ,"privateKey" = CASE WHEN "_privateKey" != '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' THEN "_privateKey" ELSE oc."privateKey" END
-            ,"osVersion" = "_osVersion"
-            ,"ocInstalled" = "_ocInstalled" = 1
-            ,"ocVersion" = "_ocVersion"
-            ,"fbInstalled" = "_fbInstalled" = 1
-            ,"fbVersion" = "_fbVersion"
-            ,"installedShippers" = COALESCE("_installedShippers", '[]')
+            "name" = "@name"
+            ,"hostname" = "@hostname"
+            ,"port" = "@port"
+            ,"authenticationMethod" = "@authenticationMethod"
+            ,"username" = "@username"
+            ,"password" = CASE WHEN "@password" != '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' THEN "@password" ELSE oc."password" END
+            ,"privateKey" = CASE WHEN "@privateKey" != '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' THEN "@privateKey" ELSE oc."privateKey" END
+            ,"osVersion" = "@osVersion"
+            ,"ocInstalled" = "@ocInstalled" = 1
+            ,"ocVersion" = "@ocVersion"
+            ,"fbInstalled" = "@fbInstalled" = 1
+            ,"fbVersion" = "@fbVersion"
+            ,"installedShippers" = COALESCE("@installedShippers", '[]')
     ;
 
 
@@ -93,4 +93,3 @@ GRANT EXECUTE ON PROCEDURE public."upsert_openCollector"
 
 REVOKE ALL ON PROCEDURE public."upsert_openCollector"
     FROM PUBLIC;
-
