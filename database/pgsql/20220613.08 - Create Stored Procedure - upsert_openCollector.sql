@@ -23,7 +23,7 @@ CREATE PROCEDURE public."upsert_openCollector"
     IN "@pipelines" text,
     IN "@installedShippers" text -- DEFAULT '[]'
 )
-LANGUAGE 'plpgsql'
+LANGUAGE plpgsql
 AS $BODY$
 BEGIN
     INSERT INTO public."openCollectors" AS oc
@@ -77,9 +77,41 @@ BEGIN
             ,"installedShippers" = COALESCE("@installedShippers", '[]')
     ;
 
-
     -- Sort the Pipelines out (which should be provided as a JSON array)
-    -- TO BE DONE
+    DECLARE
+        pipelines_json json;
+        affected_rows bigint;
+    BEGIN
+        -- Extract the JSON is provided and valid, raise exception otherwise
+        pipelines_json := ("@pipelines"::json);
+        RAISE NOTICE 'JSON array of Pipeline objects was provided and valid';
+
+        -- Clean Up
+        DELETE FROM "public"."openCollectorsPipelines"
+            WHERE "openCollectorUid" = "@uid";
+        GET DIAGNOSTICS affected_rows = ROW_COUNT;
+        RAISE NOTICE 'Deleted openCollectorsPipelines %', affected_rows;
+
+        -- Inject back in
+        INSERT INTO public."openCollectorsPipelines"
+            SELECT 
+                "@uid" AS "openCollectorUid",
+                "uid" AS "pipelineUid",
+                "enabled" AS "state"
+            FROM json_to_recordset(pipelines_json)
+            AS x(
+                "uid" text,
+                "enabled" smallint
+                );
+        GET DIAGNOSTICS affected_rows = ROW_COUNT;
+        RAISE NOTICE 'Inserted openCollectorsPipelines %', affected_rows;
+
+        -- BOOM!
+        RAISE NOTICE 'Commited';
+    EXCEPTION
+        WHEN others THEN
+            NULL; -- Fails silently
+    END;
 
 END;
 $BODY$;
