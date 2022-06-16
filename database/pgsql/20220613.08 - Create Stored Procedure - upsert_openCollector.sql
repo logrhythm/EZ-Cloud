@@ -14,13 +14,13 @@ CREATE PROCEDURE public."upsert_openCollector"
     IN "@authenticationMethod" character varying,
     IN "@username" character varying,
     IN "@password" character varying,
-    IN "@privateKey" character varying,
+    IN "@privateKey" text,
     IN "@osVersion" character varying,
     IN "@ocInstalled" integer,
     IN "@ocVersion" character varying,
     IN "@fbInstalled" integer,
     IN "@fbVersion" character varying,
-    IN "@pipelines" character varying,
+    IN "@pipelines" text,
     IN "@installedShippers" text -- DEFAULT '[]'
 )
 LANGUAGE 'plpgsql'
