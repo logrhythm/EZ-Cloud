@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS public."openCollectorsPipelines"
 (
     "openCollectorUid" varchar(40) NOT NULL,
     "pipelineUid" varchar(40) NOT NULL,
-    "state" smallint NOT NULL DEFAULT 0
+    "state" smallint NOT NULL DEFAULT 0,
+    PRIMARY KEY ("openCollectorUid", "pipelineUid")
 );
 
 ALTER TABLE IF EXISTS public."openCollectorsPipelines"
