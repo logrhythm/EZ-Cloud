@@ -85,6 +85,7 @@ async function getMsSqlConfig() {
     try {
       const pgClient = new Client(getPgSqlConfig());
       await pgClient.connect();
+      // Get MS SQL configuration from Setting entry '6e5625e8-372d-4d4b-ac9a-615e370ac940'
       const res = await pgClient.query('SELECT "settingsJson" FROM public."settings" WHERE "uid" = $1;', ['6e5625e8-372d-4d4b-ac9a-615e370ac940']);
       await pgClient.end();
 
@@ -97,8 +98,18 @@ async function getMsSqlConfig() {
       ).config;
 
       // Decrypt secrets
-      // The MS SQL password is AES encrypted in PgSQL using private key specific to the deployment
+      // The MS SQL host, port, login and password are AES encrypted in PgSQL using
+      // the private AES key specific to the deployment
       if (sqlConfig && sqlConfig.authentication && sqlConfig.authentication.options) {
+        // Hostname
+        sqlConfig.server = aesDecrypt(
+          sqlConfig.server
+        );
+        // Login
+        sqlConfig.authentication.options.userName = aesDecrypt(
+          sqlConfig.authentication.options.userName
+        );
+        // Pass
         sqlConfig.authentication.options.password = aesDecrypt(
           sqlConfig.authentication.options.password
         );
