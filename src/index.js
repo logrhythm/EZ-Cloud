@@ -52,6 +52,12 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
+// Database mode
+// "mssql": All the database activities are done on the MS SQL engine of the PM/XM server
+// "pgsql": All the database activities are done on the PostreSQL engine containerised on the OC
+// "split": Configuration is stored in Postgres, SIEM integration through MS SQL
+process.env.databaseMode = String(process.env.DB_MODE || 'mssql').toLowerCase();
+
 // const app = require('./app');
 const httpsServer = require('./app');
 
