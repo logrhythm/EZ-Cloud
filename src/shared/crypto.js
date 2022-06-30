@@ -21,24 +21,11 @@ function aesDecrypt(toDecrypt = '') {
 // For RSA encryption for EZ Market Place
 const crypto = require('crypto');
 
-const ezMarketServer = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'ez-market-place.json'), 'utf8')).server;
-const ezMarketPublicKey = (
-  ezMarketServer
-  && ezMarketServer.publicKey
-    ? ezMarketServer.publicKey
-    : null
-);
-
-if (!(ezMarketPublicKey && ezMarketPublicKey.length)) {
-  // eslint-disable-next-line no-console
-  console.warn('\x1b[31m%s\x1b[0m', 'WARNING - server.publicKey not set in config/ez-market-place.json. This will impact communication with EZ Market Plance. DO FIX THIS ASAP.');
-}
-
-function encryptStringWithRsaPublicKey(toEncrypt) {
+function encryptStringWithRsaPublicKey(ezMarketRsaPublicKey, toEncrypt) {
   let base64EncodedEncryptedMessage = '';
   try {
     const buffer = Buffer.from(toEncrypt);
-    const encrypted = crypto.publicEncrypt(ezMarketPublicKey, buffer);
+    const encrypted = crypto.publicEncrypt(ezMarketRsaPublicKey, buffer);
     base64EncodedEncryptedMessage = encrypted.toString('base64');
   } catch (error) {
     // Fail silenctly

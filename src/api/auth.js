@@ -20,6 +20,17 @@ const { encryptStringWithRsaPublicKey } = require('../shared/crypto');
 const ezMarketConfig = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'ez-market-place.json'), 'utf8'));
 const deploymentUid = (ezMarketConfig && ezMarketConfig.deploymentUid ? ezMarketConfig.deploymentUid : '');
 const ezMarketServer = (ezMarketConfig && ezMarketConfig.server ? ezMarketConfig.server : {});
+const ezMarketRsaPublicKey = (
+  ezMarketServer
+  && ezMarketServer.publicKey
+    ? ezMarketServer.publicKey
+    : null
+);
+
+if (!(ezMarketRsaPublicKey && ezMarketRsaPublicKey.length)) {
+  // eslint-disable-next-line no-console
+  console.warn('\x1b[31m%s\x1b[0m', 'WARNING - server.publicKey not set in config/ez-market-place.json. This will impact communication with EZ Market Plance. DO FIX THIS ASAP.');
+}
 
 // Get JWT Secret and TTL
 const jwtConfig = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'jwt.json'), 'utf8'));
@@ -72,7 +83,7 @@ const createTokenSendResponse = (
             },
             publisher: {
               publisherUid, // string with the Publisher UID
-              ezMarketUid: encryptStringWithRsaPublicKey(`${deploymentUid}:${publisherUid}:${masterId}`)
+              ezMarketUid: encryptStringWithRsaPublicKey(ezMarketRsaPublicKey, `${deploymentUid}:${publisherUid}:${masterId}`)
             },
             ezMarketServer: {
               baseUrl: ezMarketServer.baseUrl,
