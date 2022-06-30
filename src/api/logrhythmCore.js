@@ -34,9 +34,9 @@ router.get('/', (req, res) => {
 //         #######     ##    #### ######## ####    ##    #### ########  ######
 
 const {
-  getDataFromSql,
-  createSqlVariables,
-  createSqlVariablesAndStoredProcParams
+  getDataFromMsSql,
+  createMsSqlVariables,
+  createMsSqlVariablesAndStoredProcParams
 } = require('../shared/sqlUtils');
 
 //        ########   #######  ##     ## ######## ########  ######
@@ -54,7 +54,7 @@ const {
 router.post('/UpdateLogSourceType', async (req, res) => {
   const updatedLogSourceType = {};
 
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: updatedLogSourceType,
     query: `
     EXECUTE [dbo].[upsert_LogSource_Type]
@@ -62,7 +62,7 @@ router.post('/UpdateLogSourceType', async (req, res) => {
       ,@name
       ;
     `,
-    variables: createSqlVariables(
+    variables: createMsSqlVariables(
       req,
       [
         { name: 'uid', type: 'NVarChar' },
@@ -81,7 +81,7 @@ router.post('/UpdateLogSourceType', async (req, res) => {
 router.post('/UpdateMpeRule', async (req, res) => {
   const updatedMpeRule = {};
 
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: updatedMpeRule,
     query: `
     EXECUTE [dbo].[clone_MPE_Rule]
@@ -89,7 +89,7 @@ router.post('/UpdateMpeRule', async (req, res) => {
       ,@name
       ;
     `,
-    variables: createSqlVariables(
+    variables: createMsSqlVariables(
       req,
       [
         { name: 'uid', type: 'NVarChar' },
@@ -109,7 +109,7 @@ router.post('/UpdateMpeSubRule', async (req, res) => {
   const updatedMpeSubRule = {};
 
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
-  const [sqlVariables, storedProcedureParams] = createSqlVariablesAndStoredProcParams(
+  const [sqlVariables, storedProcedureParams] = createMsSqlVariablesAndStoredProcParams(
     req,
     [
       { name: 'uid', type: 'NVarChar' },
@@ -133,7 +133,7 @@ router.post('/UpdateMpeSubRule', async (req, res) => {
   );
 
   // Ship it to SQL
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: updatedMpeSubRule,
     query: `
     EXECUTE [dbo].[upsert_MPE_SubRule]
@@ -154,7 +154,7 @@ router.post('/UpdateProcessingPolicy', async (req, res) => {
   const updatedProcessingPolicy = {};
 
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
-  const [sqlVariables, storedProcedureParams] = createSqlVariablesAndStoredProcParams(
+  const [sqlVariables, storedProcedureParams] = createMsSqlVariablesAndStoredProcParams(
     req,
     [
       { name: 'uid', type: 'NVarChar' }, // (40)
@@ -165,7 +165,7 @@ router.post('/UpdateProcessingPolicy', async (req, res) => {
   );
 
   // Ship it to SQL
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: updatedProcessingPolicy,
     query: `
     EXECUTE [dbo].[upsert_Processing_Policy]
@@ -186,7 +186,7 @@ router.post('/UpdateLogSourceVirtualisationTemplate', async (req, res) => {
   const updatedLogSourceVirtualisationTemplate = {};
 
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
-  const [sqlVariables, storedProcedureParams] = createSqlVariablesAndStoredProcParams(
+  const [sqlVariables, storedProcedureParams] = createMsSqlVariablesAndStoredProcParams(
     req,
     [
       { name: 'Virt_Template_UID', type: 'NVarChar' }, // (40) Default to '0d7544aa-5760-4c5e-be62-26262f3cd1db', --UID of the EZ Cloud Template
@@ -199,7 +199,7 @@ router.post('/UpdateLogSourceVirtualisationTemplate', async (req, res) => {
   );
 
   // Ship it to SQL
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: updatedLogSourceVirtualisationTemplate,
     query: `
     EXECUTE [dbo].[upsert_Log_Source_Virtualisation_Template]
@@ -220,7 +220,7 @@ router.post('/UpdateLogSourceVirtualisationTemplateItem', async (req, res) => {
   const updatedLogSourceVirtualisationTemplateItem = {};
 
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
-  const [sqlVariables, storedProcedureParams] = createSqlVariablesAndStoredProcParams(
+  const [sqlVariables, storedProcedureParams] = createMsSqlVariablesAndStoredProcParams(
     req,
     [
       { name: 'uid', type: 'NVarChar' }, // (40) UID of the Log Source
@@ -232,7 +232,7 @@ router.post('/UpdateLogSourceVirtualisationTemplateItem', async (req, res) => {
   );
 
   // Ship it to SQL
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: updatedLogSourceVirtualisationTemplateItem,
     query: `
     EXECUTE [dbo].[upsert_Log_Source_Virtualisation_Template_Item]
@@ -251,7 +251,7 @@ router.post('/UpdateLogSourceVirtualisationTemplateItem', async (req, res) => {
 
 router.get('/GetOpenCollectorLogSourcesList', async (req, res) => {
   const openCollectorLogSourcesList = {};
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: openCollectorLogSourcesList,
     query: `
     SELECT TOP (1000) [MsgSourceID] AS 'msgSourceID'
@@ -293,7 +293,7 @@ router.post('/UpdateOpenCollectorLogSourceWithLogSourceVirtualisation', async (r
   const updatedOpenCollectorLogSource = {};
 
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
-  const [sqlVariables, storedProcedureParams] = createSqlVariablesAndStoredProcParams(
+  const [sqlVariables, storedProcedureParams] = createMsSqlVariablesAndStoredProcParams(
     req,
     [
       { name: 'uid', type: 'NVarChar' }, // (40) UID of the Log Source
@@ -304,7 +304,7 @@ router.post('/UpdateOpenCollectorLogSourceWithLogSourceVirtualisation', async (r
   );
 
   // Ship it to SQL
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: updatedOpenCollectorLogSource,
     query: `
     EXECUTE [dbo].[upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource]

@@ -1,5 +1,5 @@
 // Get the SQL utils
-const { getDataFromSql, createSqlVariables } = require('./sqlUtils');
+const { getDataFromMsSql, createMsSqlVariables } = require('./sqlUtils');
 // Get the crypto tools to work with password and keys
 const { aesDecrypt } = require('./crypto');
 
@@ -11,7 +11,7 @@ async function getSshConfigForCollector(params) {
   const queryResult = {};
 
   if (params && params.uid && params.uid.length) {
-    await getDataFromSql({
+    await getDataFromMsSql({
       targetVariable: queryResult,
       query: `
       SELECT TOP 1
@@ -26,7 +26,7 @@ async function getSshConfigForCollector(params) {
       WHERE [uid] = @uid
       ;
       `,
-      variables: createSqlVariables(
+      variables: createMsSqlVariables(
         {
           body: {
             uid: params.uid
@@ -100,7 +100,7 @@ async function getCollectorSshConfigForPipeline(params) {
   let collectorUid = '';
 
   if (params && params.uid && params.uid.length) {
-    await getDataFromSql({
+    await getDataFromMsSql({
       targetVariable: queryResult,
       query: `
       SELECT TOP 1 [primaryOpenCollector]
@@ -108,7 +108,7 @@ async function getCollectorSshConfigForPipeline(params) {
       WHERE [uid] = @uid
       ;
       `,
-      variables: createSqlVariables(
+      variables: createMsSqlVariables(
         {
           body: {
             uid: params.uid

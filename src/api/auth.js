@@ -12,7 +12,7 @@ const checkCredentials = require('../shared/checkCredentials');
 const { logToSystem } = require('../shared/systemLogging');
 
 // Import SQL Utilities
-const { getDataFromSql, createSqlVariables } = require('../shared/sqlUtils');
+const { getDataFromMsSql, createMsSqlVariables } = require('../shared/sqlUtils');
 
 const { encryptStringWithRsaPublicKey } = require('../shared/crypto');
 
@@ -117,7 +117,7 @@ router.post('/Login', async (req, res, next) => {
       let publisherUid = '';
       let masterId = 0;
 
-      await getDataFromSql({
+      await getDataFromMsSql({
         targetVariable: userRolesFromSql,
         query: `
         SELECT -- [rbacUserToRole].[id] AS 'userID'
@@ -132,7 +132,7 @@ router.post('/Login', async (req, res, next) => {
           LEFT OUTER JOIN [EZ].[dbo].[get_SIEM_Master_ID] ON [get_SIEM_Master_ID].[MasterID] IS NOT NULL
           WHERE [rbacUserToRole].[login] = @username
         `,
-        variables: createSqlVariables(
+        variables: createMsSqlVariables(
           req,
           [
             { name: 'username', type: 'NVarChar' }

@@ -23,7 +23,7 @@ router.get('/', (req, res) => {
 //        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
 //         #######     ##    #### ######## ####    ##    #### ########  ######
 
-const { getDataFromSql, createSqlVariables } = require('../shared/sqlUtils');
+const { getDataFromMsSql, createMsSqlVariables } = require('../shared/sqlUtils');
 
 //        ########   #######  ##     ## ######## ########  ######
 //        ##     ## ##     ## ##     ##    ##    ##       ##    ##
@@ -42,7 +42,7 @@ const collectors = {};
 const collectorsPipelines = {};
 
 router.get('/GetCollectors', async (req, res) => {
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: collectorsPipelines,
     query: `
       SELECT [openCollectorUid]
@@ -52,7 +52,7 @@ router.get('/GetCollectors', async (req, res) => {
       `
   });
 
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: collectors,
     query: `
       SELECT [uid]
@@ -133,7 +133,7 @@ router.get('/GetCollectors', async (req, res) => {
 const pipelines = {};
 
 router.get('/GetPipelines', async (req, res) => {
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: pipelines,
     query: `
     SELECT p.[uid]
@@ -196,7 +196,7 @@ router.post('/UpdateCollector', async (req, res) => {
     myReq.body.privateKey = aesEncrypt(myReq.body.privateKey);
   }
 
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: collectorToUpdate,
     query: `
     EXECUTE [dbo].[upsert_openCollector] 
@@ -217,7 +217,7 @@ router.post('/UpdateCollector', async (req, res) => {
       ,@installedShippers
       ;
     `,
-    variables: createSqlVariables(
+    variables: createMsSqlVariables(
       myReq,
       [
         { name: 'uid', type: 'NVarChar' },
@@ -249,14 +249,14 @@ router.post('/UpdateCollector', async (req, res) => {
 const collectorToDelete = {};
 
 router.post('/DeleteCollector', async (req, res) => {
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: collectorToDelete,
     query: `
     DELETE FROM [dbo].[openCollectors]
       WHERE uid = @uid
       ;
     `,
-    variables: createSqlVariables(
+    variables: createMsSqlVariables(
       req,
       [
         { name: 'uid', type: 'NVarChar' }
@@ -274,7 +274,7 @@ router.post('/DeleteCollector', async (req, res) => {
 const pipelineToUpdate = {};
 
 router.post('/UpdatePipeline', async (req, res) => {
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: pipelineToUpdate,
     query: `
     EXECUTE [dbo].[upsert_Pipeline] 
@@ -287,7 +287,7 @@ router.post('/UpdatePipeline', async (req, res) => {
       ,@options
       ;
     `,
-    variables: createSqlVariables(
+    variables: createMsSqlVariables(
       req,
       [
         { name: 'uid', type: 'NVarChar' },
@@ -311,14 +311,14 @@ router.post('/UpdatePipeline', async (req, res) => {
 const pipelineToDelete = {};
 
 router.post('/DeletePipeline', async (req, res) => {
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: pipelineToDelete,
     query: `
     DELETE FROM [dbo].[pipelines]
       WHERE uid = @uid
       ;
     `,
-    variables: createSqlVariables(
+    variables: createMsSqlVariables(
       req,
       [
         { name: 'uid', type: 'NVarChar' }

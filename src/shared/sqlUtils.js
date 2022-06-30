@@ -9,7 +9,6 @@ const { Connection, Request, TYPES } = require('tedious');
 // Load the System Logging functions
 const { logToSystem } = require('./systemLogging');
 
-
 function waitMilliseconds(delay = 250) {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -29,14 +28,14 @@ const maxCheckInterval = 10; // Check once every X seconds max, and/or timeout a
 //         #######     ##    #### ######## ####    ##    #### ########  ######
 
 // ##########################################################################################
-// getDataFromSql
+// getDataFromMsSql
 // #########
 // Utilitarian function to get the data from
 // SQL using parameters.query and dump it in the
 // parameters.targetVariable
 // ##########################################################################################
 
-async function getDataFromSql(parameters) {
+async function getDataFromMsSql(parameters) {
   let stillChecking = true;
   if (parameters && parameters.query && parameters.query.length && parameters.targetVariable) {
     const { targetVariable, query, variables } = parameters;
@@ -148,14 +147,14 @@ async function getDataFromSql(parameters) {
 }
 
 // ##########################################################################################
-// createSqlVariables
+// createMsSqlVariables
 // #########
 // Utilitarian function to create the array of
 // fields type mapping to be provided to
-// getDataFromSql as parameters.targetVariable
+// getDataFromMsSql as parameters.targetVariable
 // ##########################################################################################
 
-function createSqlVariables(req, definitions) {
+function createMsSqlVariables(req, definitions) {
   const variables = [];
   if (req && (req.query || req.body) && definitions && Array.isArray(definitions)) {
     definitions.filter((def) => def.name && def.type && def.name.length && def.type.length)
@@ -181,12 +180,12 @@ function createSqlVariables(req, definitions) {
 }
 
 // ##########################################################################################
-// createSqlVariablesAndStoredProcParams
+// createMsSqlVariablesAndStoredProcParams
 // #########
 // Utilitarian function to create the array of
 // fields type mapping to be provided to
-// getDataFromSql as parameters.targetVariable
-// using createSqlVariables() and trimming any
+// getDataFromMsSql as parameters.targetVariable
+// using createMsSqlVariables() and trimming any
 // entry with a NULL or Undefined value.
 //
 // Useful when calling Stored Procedures that
@@ -194,13 +193,13 @@ function createSqlVariables(req, definitions) {
 // default values.
 // ##########################################################################################
 
-function createSqlVariablesAndStoredProcParams(req, definitions, weedOut = true) {
+function createMsSqlVariablesAndStoredProcParams(req, definitions, weedOut = true) {
   // Prep SQL Variables
-  const sqlVariablesRaw = createSqlVariables(req, definitions);
+  const sqlVariablesRaw = createMsSqlVariables(req, definitions);
 
   // Weed out all the ones with NULL or Undefined
   // This is done as the SQL Stored Procedure will use default values if a param is not provided
-  // But by default, createSqlVariables() puts NULL, and that's no good
+  // But by default, createMsSqlVariables() puts NULL, and that's no good
 
   const storedProcedureParams = [];
   const sqlVariables = [];
@@ -216,7 +215,7 @@ function createSqlVariablesAndStoredProcParams(req, definitions, weedOut = true)
 }
 
 module.exports = {
-  getDataFromSql,
-  createSqlVariables,
-  createSqlVariablesAndStoredProcParams
+  getDataFromMsSql,
+  createMsSqlVariables,
+  createMsSqlVariablesAndStoredProcParams
 };

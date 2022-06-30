@@ -20,9 +20,9 @@ router.get('/', (req, res) => {
 //         #######     ##    #### ######## ####    ##    #### ########  ######
 
 const {
-  getDataFromSql,
-  createSqlVariables,
-  createSqlVariablesAndStoredProcParams
+  getDataFromMsSql,
+  createMsSqlVariables,
+  createMsSqlVariablesAndStoredProcParams
 } = require('../shared/sqlUtils');
 
 //        ########   #######  ##     ## ######## ########  ######
@@ -45,7 +45,7 @@ const {
 
 router.get('/GetUsersList', async (req, res) => {
   const usersList = {};
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: usersList,
     query: `
     SELECT [rbacUserToRole].[id] AS 'userId'
@@ -75,7 +75,7 @@ router.post('/UpdateUser', async (req, res) => {
     logToSystem('Verbose', `Admin | Attempting to update User Account | User ID: ${req.body.userId} | Role UID: ${req.body.roleUid} | user: ${(req.user.username ? req.user.username : '-')}`);
   }
 
-  const [sqlVariables, storedProcedureParams] = createSqlVariablesAndStoredProcParams(
+  const [sqlVariables, storedProcedureParams] = createMsSqlVariablesAndStoredProcParams(
     req,
     [
       { name: 'userId', type: 'Int' },
@@ -86,7 +86,7 @@ router.post('/UpdateUser', async (req, res) => {
     true
   );
 
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: updatedUser,
     query: `
     EXECUTE [dbo].[upsert_RBAC_User]
@@ -138,14 +138,14 @@ router.post('/DeleteUser', async (req, res) => {
 
   logToSystem('Verbose', `Admin | Attempting to delete User Account | User ID: ${req.body.userId} | user: ${(req.user.username ? req.user.username : '-')}`);
 
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: deletedUser,
     query: `
     EXECUTE [dbo].[delete_RBAC_User]
        @userId
       ;
     `,
-    variables: createSqlVariables(
+    variables: createMsSqlVariables(
       req,
       [
         { name: 'userId', type: 'Int' }
@@ -175,7 +175,7 @@ router.post('/DeleteUser', async (req, res) => {
 
 router.get('/GetRolesList', async (req, res) => {
   const rolesList = {};
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: rolesList,
     query: `
     SELECT [uid] AS 'roleUid'
@@ -197,7 +197,7 @@ router.post('/UpdateRole', async (req, res) => {
 
   logToSystem('Verbose', `Admin | Attempting to create/update User Role | Role UID: ${req.body.uid} | Role Name: ${req.body.name} | Is Role Privileged: ${(req.body.isPrivileged === 1 ? 'Privileged' : 'Not privileged')} | user: ${(req.user.username ? req.user.username : '-')}`);
 
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: updatedRole,
     query: `
     EXECUTE [dbo].[upsert_RBAC_Role]
@@ -206,7 +206,7 @@ router.post('/UpdateRole', async (req, res) => {
       ,@isPrivileged
       ;
     `,
-    variables: createSqlVariables(
+    variables: createMsSqlVariables(
       req,
       [
         { name: 'uid', type: 'NVarChar' },
@@ -241,14 +241,14 @@ router.post('/DeleteRole', async (req, res) => {
 
   logToSystem('Verbose', `Admin | Attempting to delete User Role | Role UID: ${req.body.uid} | user: ${(req.user.username ? req.user.username : '-')}`);
 
-  await getDataFromSql({
+  await getDataFromMsSql({
     targetVariable: deletedRole,
     query: `
     EXECUTE [dbo].[delete_RBAC_Role]
        @uid
       ;
     `,
-    variables: createSqlVariables(
+    variables: createMsSqlVariables(
       req,
       [
         { name: 'uid', type: 'NVarChar' }
