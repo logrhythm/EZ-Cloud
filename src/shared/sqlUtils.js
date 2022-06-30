@@ -21,6 +21,9 @@ const { Client } = (
 // Load the System Logging functions
 const { logToSystem } = require('./systemLogging');
 
+// Get the crypto tools to work with password and keys
+const { aesDecrypt } = require('./crypto');
+
 function waitMilliseconds(delay = 250) {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -79,21 +82,37 @@ async function getMsSqlConfig() {
     process.env.databaseMode === 'pgsql'
     || process.env.databaseMode === 'split'
   ) {
-    const pgClient = new Client(getPgSqlConfig());
-    await pgClient.connect();
-    const res = await pgClient.query('SELECT "settingsJson" FROM public.settings WHERE uid = $1;', ['6e5625e8-372d-4d4b-ac9a-615e370ac940']);
-    // console.log(res.rows[0].settingsJson); // XXXX
-    await pgClient.end();
+    try {
+      const pgClient = new Client(getPgSqlConfig());
+      await pgClient.connect();
+      const res = await pgClient.query('SELECT "settingsJson" FROM public."settings" WHERE "uid" = $1;', ['6e5625e8-372d-4d4b-ac9a-615e370ac940']);
+      // console.log(res.rows[0].settingsJson); // XXXX
+      await pgClient.end();
 
-    return JSON.parse(
-      (
-        res && res.rows && Array.isArray(res.rows) && res.rows.length === 1
-          ? res.rows[0].settingsJson || { config: null }
-          : { config: null }
-      )
-    ).config;
+      const sqlConfig = JSON.parse(
+        (
+          res && res.rows && Array.isArray(res.rows) && res.rows.length === 1
+            ? res.rows[0].settingsJson || { config: null }
+            : { config: null }
+        )
+      ).config;
+
+      // Decrypt secrets
+      // The MS SQL password is AES encrypted in PgSQL using private key specific to the deployment
+      if (sqlConfig && sqlConfig.authentication && sqlConfig.authentication.options) {
+        sqlConfig.authentication.options.password = aesDecrypt(
+          sqlConfig.authentication.options.password
+        );
+      }
+
+      // And ship out!!
+      return sqlConfig;
+    } catch (error) {
+      logToSystem('Error', `Persistance Layer | Connection to database (Pg) failed. | Details: ${error.message}`);
+    }
   }
 
+  logToSystem('Error', 'Database mode couldn\'t be determined or other error. Not returning any MS SQL connection configuration.');
   // Fallback to a NULL value so it's easy for the caller to check validity of the config
   return null;
 }
@@ -115,102 +134,109 @@ async function getDataFromMsSql(parameters) {
     targetVariable.outputs = [];
     targetVariable.payload = [];
 
-    // Connect
-    const connection = new Connection(await getMsSqlConfig());
+    try {
+      // Connect
+      const connection = new Connection(await getMsSqlConfig());
 
-    // Connection event handler
-    connection.on('connect', (connectionError) => {
-      if (connectionError) {
-        targetVariable.errors.push('Connection to database failed');
-        targetVariable.stillChecking = false;
-        stillChecking = false;
-        // throw connectionError;
-        logToSystem('Error', `Persistance Layer | Connection to database failed. | Details: ${JSON.stringify(connectionError)}`);
-      }
-
-      // Exec the query
-      const request = new Request(query, (err, rowCount) => {
-        if (err) {
-          targetVariable.errors.push(err);
+      // Connection event handler
+      connection.on('connect', (connectionError) => {
+        if (connectionError) {
+          targetVariable.errors.push('Connection to database failed');
+          targetVariable.stillChecking = false;
+          stillChecking = false;
+          // throw connectionError;
+          logToSystem('Error', `Persistance Layer | Connection to database failed. | Details: ${JSON.stringify(connectionError)}`);
         }
-        if (rowCount) {
-          targetVariable.outputs.push(`${rowCount} row(s) returned`);
-        }
-        targetVariable.stillChecking = false;
-        stillChecking = false;
 
-        // And close the SQL connection
-        connection.close();
-      });
-
-      if (variables && Array.isArray(variables)) {
-        variables.forEach((variable) => {
-          if (variable.name && variable.name.length > 0) {
-            // request.addParameter(variable.name, TYPES[variable.type], (variable.value || null));
-            request.addParameter(
-              variable.name,
-              TYPES[variable.type],
-              (
-              // eslint-disable-next-line no-nested-ternary
-                (variable.value !== undefined) && (variable.value !== null)
-                  ? (
-                    typeof variable.value === 'object'
-                      ? JSON.stringify(variable.value)
-                      : variable.value
-                  )
-                  : null
-              )
-            );
-            // if (typeof variable.value === 'string') {
-            //   request.addParameter(variable.name, TYPES.NVarChar, (variable.value || null));
-            // }
-            // if (typeof variable.value === 'number') {
-            //   request.addParameter(variable.name, TYPES.Int, (variable.value || null));
-            // }
-            // if (typeof variable.value === 'boolean') {
-            //   request.addParameter(variable.name, TYPES.TinyInt, (variable.value > 0));
-            // }
-            // if (variable.value === null) {
-            //   request.addParameter(variable.name, TYPES.Null, null);
-            // }
+        // Exec the query
+        const request = new Request(query, (err, rowCount) => {
+          if (err) {
+            targetVariable.errors.push(err);
           }
-        });
-      }
+          if (rowCount) {
+            targetVariable.outputs.push(`${rowCount} row(s) returned`);
+          }
+          targetVariable.stillChecking = false;
+          stillChecking = false;
 
-      request.on('row', (columns) => {
-        // Make sure targetVariable.payload is an array
-        if (!targetVariable.payload || targetVariable.payload === null) {
-          targetVariable.payload = [];
+          // And close the SQL connection
+          connection.close();
+        });
+
+        if (variables && Array.isArray(variables)) {
+          variables.forEach((variable) => {
+            if (variable.name && variable.name.length > 0) {
+              // request.addParameter(variable.name, TYPES[variable.type], (variable.value || null));
+              request.addParameter(
+                variable.name,
+                TYPES[variable.type],
+                (
+                // eslint-disable-next-line no-nested-ternary
+                  (variable.value !== undefined) && (variable.value !== null)
+                    ? (
+                      typeof variable.value === 'object'
+                        ? JSON.stringify(variable.value)
+                        : variable.value
+                    )
+                    : null
+                )
+              );
+              // if (typeof variable.value === 'string') {
+              //   request.addParameter(variable.name, TYPES.NVarChar, (variable.value || null));
+              // }
+              // if (typeof variable.value === 'number') {
+              //   request.addParameter(variable.name, TYPES.Int, (variable.value || null));
+              // }
+              // if (typeof variable.value === 'boolean') {
+              //   request.addParameter(variable.name, TYPES.TinyInt, (variable.value > 0));
+              // }
+              // if (variable.value === null) {
+              //   request.addParameter(variable.name, TYPES.Null, null);
+              // }
+            }
+          });
         }
 
-        // Compile the row using all its columns
-        const row = {};
-        columns.forEach((column) => {
-          row[column.metadata.colName] = column.value;
+        request.on('row', (columns) => {
+          // Make sure targetVariable.payload is an array
+          if (!targetVariable.payload || targetVariable.payload === null) {
+            targetVariable.payload = [];
+          }
+
+          // Compile the row using all its columns
+          const row = {};
+          columns.forEach((column) => {
+            row[column.metadata.colName] = column.value;
+          });
+          targetVariable.payload.push(row);
         });
-        targetVariable.payload.push(row);
+
+        // And run it
+        connection.execSql(request);
       });
 
-      // And run it
-      connection.execSql(request);
-    });
+      // Kick it all off!
+      connection.connect();
 
-    // Kick it all off!
-    connection.connect();
+      // Wait, by default, for the query to happen (or fail) before returning to caller
+      if (!parameters.noWait) {
+        const loopEndTime = Date.now() / 1000 + maxCheckInterval;
 
-    // Wait, by default, for the query to happen (or fail) before returning to caller
-    if (!parameters.noWait) {
-      const loopEndTime = Date.now() / 1000 + maxCheckInterval;
-
-      // Waiting - Sync
-      while (targetVariable.stillChecking && (loopEndTime > (Date.now() / 1000))) {
-        // Wait for 50 ms
-        // eslint-disable-next-line no-await-in-loop
-        await waitMilliseconds(50);
+        // Waiting - Sync
+        while (targetVariable.stillChecking && (loopEndTime > (Date.now() / 1000))) {
+          // Wait for 50 ms
+          // eslint-disable-next-line no-await-in-loop
+          await waitMilliseconds(50);
+        }
+        if (stillChecking || targetVariable.stillChecking) {
+          targetVariable.errors.push('Timeout');
+        }
+        targetVariable.stillChecking = false;
+        stillChecking = false;
       }
-      if (stillChecking || targetVariable.stillChecking) {
-        targetVariable.errors.push('Timeout');
-      }
+    } catch (error) {
+      logToSystem('Error', `Persistance Layer | Connection to database failed. | Details: ${error.message}`);
+      targetVariable.errors.push('Connection to database failed');
       targetVariable.stillChecking = false;
       stillChecking = false;
     }
