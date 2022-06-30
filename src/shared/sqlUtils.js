@@ -166,7 +166,6 @@ async function getDataFromMsSql(parameters) {
         if (variables && Array.isArray(variables)) {
           variables.forEach((variable) => {
             if (variable.name && variable.name.length > 0) {
-              // request.addParameter(variable.name, TYPES[variable.type], (variable.value || null));
               request.addParameter(
                 variable.name,
                 TYPES[variable.type],
