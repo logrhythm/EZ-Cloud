@@ -13,7 +13,6 @@ CREATE PROCEDURE public."delete_RBAC_User"
 LANGUAGE plpgsql
 AS $BODY$
 DECLARE
-    "@sqlStatement" text;
     "@userLogin" character varying(500);
 BEGIN
     IF "@userID" IS NOT NULL
@@ -23,8 +22,6 @@ BEGIN
             INTO "@userLogin"
             FROM public."rbacUserToRole"
             WHERE "id" = "@userID";
-
-        RAISE DEBUG 'userLogin: "%"', "@userLogin"; -- XXXX
 
         IF "@userLogin" IS NOT NULL 
         THEN
