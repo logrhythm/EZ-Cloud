@@ -86,7 +86,6 @@ async function getMsSqlConfig() {
       const pgClient = new Client(getPgSqlConfig());
       await pgClient.connect();
       const res = await pgClient.query('SELECT "settingsJson" FROM public."settings" WHERE "uid" = $1;', ['6e5625e8-372d-4d4b-ac9a-615e370ac940']);
-      // console.log(res.rows[0].settingsJson); // XXXX
       await pgClient.end();
 
       const sqlConfig = JSON.parse(
