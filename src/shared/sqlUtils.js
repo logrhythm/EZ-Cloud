@@ -2,9 +2,21 @@
 const fs = require('fs');
 const path = require('path');
 
-const configSql = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'database.json'), 'utf8')).config;
-// Create SQL object
-const { Connection, Request, TYPES } = require('tedious');
+// Create MS SQL object
+const { Connection, Request, TYPES } = (
+  process.env.databaseMode === 'mssql'
+  || process.env.databaseMode === 'split'
+    ? require('tedious')
+    : { Connection: null, Request: null, TYPES: null }
+);
+
+// Create PostgreSQL object
+const { Client } = (
+  process.env.databaseMode === 'pgsql'
+  || process.env.databaseMode === 'split'
+    ? require('pg')
+    : { Client: null }
+);
 
 // Load the System Logging functions
 const { logToSystem } = require('./systemLogging');
@@ -28,6 +40,65 @@ const maxCheckInterval = 10; // Check once every X seconds max, and/or timeout a
 //         #######     ##    #### ######## ####    ##    #### ########  ######
 
 // ##########################################################################################
+// getPgSqlConfig
+// #########
+// Utilitarian function to get the configuration
+// necesary to be able to connect to PostgreSQL.
+// ##########################################################################################
+
+function getPgSqlConfig() {
+  return {
+    host: process.env.PG_HOST || 'localhost',
+    port: process.env.PG_PORT || 5432,
+    user: process.env.PG_USER || 'ez-backend',
+    password: process.env.PG_PASS || undefined,
+    database: process.env.PG_DB || 'ez',
+    application_name: `${process.env.NAME} - Version: ${process.env.VERSION}`
+  };
+}
+
+// ##########################################################################################
+// getMsSqlConfig
+// #########
+// Utilitarian function to get the configuration
+// necesary to be able to connect to MS SQL.
+// ##########################################################################################
+
+async function getMsSqlConfig() {
+  // Full MS SQL: Get config from File
+  if (process.env.databaseMode === 'mssql') {
+    return JSON.parse(
+      fs.readFileSync(
+        path.join(process.env.baseDirname, 'config', 'database.json'), 'utf8'
+      )
+    ).config;
+  }
+
+  // PgSQL and Split: Get config from PgSQL
+  if (
+    process.env.databaseMode === 'pgsql'
+    || process.env.databaseMode === 'split'
+  ) {
+    const pgClient = new Client(getPgSqlConfig());
+    await pgClient.connect();
+    const res = await pgClient.query('SELECT "settingsJson" FROM public.settings WHERE uid = $1;', ['6e5625e8-372d-4d4b-ac9a-615e370ac940']);
+    // console.log(res.rows[0].settingsJson); // XXXX
+    await pgClient.end();
+
+    return JSON.parse(
+      (
+        res && res.rows && Array.isArray(res.rows) && res.rows.length === 1
+          ? res.rows[0].settingsJson || { config: null }
+          : { config: null }
+      )
+    ).config;
+  }
+
+  // Fallback to a NULL value so it's easy for the caller to check validity of the config
+  return null;
+}
+
+// ##########################################################################################
 // getDataFromMsSql
 // #########
 // Utilitarian function to get the data from
@@ -45,7 +116,7 @@ async function getDataFromMsSql(parameters) {
     targetVariable.payload = [];
 
     // Connect
-    const connection = new Connection(configSql);
+    const connection = new Connection(await getMsSqlConfig());
 
     // Connection event handler
     connection.on('connect', (connectionError) => {
@@ -215,6 +286,7 @@ function createMsSqlVariablesAndStoredProcParams(req, definitions, weedOut = tru
 }
 
 module.exports = {
+  getMsSqlConfig,
   getDataFromMsSql,
   createMsSqlVariables,
   createMsSqlVariablesAndStoredProcParams
