@@ -104,3 +104,25 @@ BEGIN
     END IF;
 END;
 $BODY$;
+
+-- =============================================
+-- Tests
+-- =============================================
+
+-- -- Create a new user
+
+-- call public."upsert_RBAC_User" (
+--     NULL,
+--     'EZ_Test_User',
+--     'cb36e823-e68f-46aa-9dc1-71c35cae43b5', -- User role
+--     'P4ssw0rd!!Pa55word!!'
+-- );
+
+-- -- Update the User's RBAC role/group (assuming UserID is 15)
+
+-- call public."upsert_RBAC_User" (
+--     15,
+--     NULL,
+--     'abcde823-e68f-46aa-9dc1-71c35cae43b5', -- New User role
+--     NULL
+-- );
