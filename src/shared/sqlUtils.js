@@ -131,7 +131,7 @@ async function getMsSqlConfig() {
 // getDataFromMsSql
 // #########
 // Utilitarian function to get the data from
-// SQL using parameters.query and dump it in the
+// MS SQL using parameters.query and dump it in the
 // parameters.targetVariable
 // ##########################################################################################
 
@@ -286,6 +286,36 @@ function createMsSqlVariables(req, definitions) {
 }
 
 // ##########################################################################################
+// createPgSqlVariables
+// #########
+// Utilitarian function to create the array of
+// fields type mapping to be provided to
+// getDataFromPgSql as parameters.targetVariable
+// ##########################################################################################
+
+function createPgSqlVariables(req, definitions) {
+  const variables = [];
+  if (req && (req.query || req.body) && definitions && Array.isArray(definitions)) {
+    definitions.filter((def) => def.name && def.name.length)
+      .forEach((def) => {
+        variables.push(
+          (
+            // eslint-disable-next-line no-nested-ternary
+            req.body && (req.body[def.name] !== undefined)
+              ? req.body[def.name]
+              : (
+                req.query && (req.query[def.name] !== undefined)
+                  ? req.query[def.name]
+                  : null
+              )
+          )
+        );
+      });
+  }
+  return variables;
+}
+
+// ##########################################################################################
 // createMsSqlVariablesAndStoredProcParams
 // #########
 // Utilitarian function to create the array of
@@ -318,6 +348,45 @@ function createMsSqlVariablesAndStoredProcParams(req, definitions, weedOut = tru
   });
 
   return [sqlVariables, storedProcedureParams];
+}
+
+// ##########################################################################################
+// getDataFromPgSql
+// #########
+// Utilitarian function to get the data from
+// PostgreSQL using parameters.query and parameters.variables and dump it in the
+// parameters.targetVariable
+// ##########################################################################################
+
+async function getDataFromPgSql(parameters) {
+  if (parameters && parameters.query && parameters.query.length && parameters.targetVariable) {
+    const { targetVariable, query, variables } = parameters;
+    targetVariable.stillChecking = true;
+    targetVariable.errors = [];
+    targetVariable.outputs = [];
+    targetVariable.payload = [];
+
+    try {
+      // Connect
+      const pgClient = new Client(getPgSqlConfig());
+      await pgClient.connect();
+
+      // Exec the query
+      const res = await pgClient.query(
+        query,
+        variables
+      );
+      await pgClient.end();
+
+      // Push to targetVariable.payload
+      targetVariable.payload = res.rows;
+      targetVariable.stillChecking = false;
+    } catch (error) {
+      logToSystem('Error', `Persistance Layer | Connection to database failed. | Details: ${error.message}`);
+      targetVariable.errors.push('Connection to database failed');
+      targetVariable.stillChecking = false;
+    }
+  }
 }
 
 // ##########################################################################################
@@ -363,8 +432,10 @@ module.exports = {
   getPgSqlConfig,
   getMsSqlConfig,
   getDataFromMsSql,
+  getDataFromPgSql,
   getConfigDataFromSql,
   getSiemDataFromSql,
   createMsSqlVariables,
+  createPgSqlVariables,
   createMsSqlVariablesAndStoredProcParams
 };
