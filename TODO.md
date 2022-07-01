@@ -11,6 +11,24 @@
 - SQL
   - [ ] Add configuration parameters to enable SQL Trusted Connection Auth
   - [ ] Handle SQL Trusted Connection
+  - [x] Move EZ database to PostgreSQL
+    - [x] Tables
+    - [x] Stored Procedures
+    - [x] Functions
+  - [x] Move MS SQL connection configuration from JSON file to record in PostgreSQL Table
+- SQL Utils
+  - [ ] Split utilitarian functions to deal with both MS SQL and PostgreSQL
+- Multi-platform
+  - [x] Allow to run on:
+    - [x] Windows
+      - [x] Log to Event Journal Application
+    - [x] Linux
+      - [x] Log to flat file (`/var/log/ez`)
+    - [x] Containerised Linux
+- RBAC
+  - [ ] Use PostgreSQL for Authenticaion instead of MS SQL
+  - [x] Move RBAC tables and Stored Procedures to PostgreSQL
+  - [ ] Modify RBAC API enpoints to use PostgreSQL
 
 ## TO FIX
 
