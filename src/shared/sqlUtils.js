@@ -321,6 +321,7 @@ function createMsSqlVariablesAndStoredProcParams(req, definitions, weedOut = tru
 }
 
 module.exports = {
+  getPgSqlConfig,
   getMsSqlConfig,
   getDataFromMsSql,
   createMsSqlVariables,
