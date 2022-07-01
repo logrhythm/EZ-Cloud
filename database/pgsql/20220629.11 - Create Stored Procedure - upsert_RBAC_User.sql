@@ -99,7 +99,10 @@ BEGIN
                 WHERE "id" = "@userID";
         ELSE
                 INSERT INTO public."rbacUserToRole"
-                ("login", "roleUid") VALUES ("@tempUserLogin", "@roleUid");
+                ("login", "roleUid") VALUES ("@tempUserLogin", "@roleUid")
+                ON CONFLICT ("login") DO -- Rare edgecase where someone tries to create the same user again
+                    UPDATE SET
+                    "roleUid" = "@roleUid";
         END IF;
     END IF;
 END;
