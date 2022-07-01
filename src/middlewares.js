@@ -8,7 +8,10 @@ const path = require('path');
 // Load the System Logging functions
 const { logToSystem } = require('./shared/systemLogging');
 
-const configJwt = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'jwt.json'), 'utf8'));
+// Import Config Loaders
+const {
+  getJwtConfig
+} = require('./shared/loadConfigUtils');
 
 // Returns the Access Denied error
 function accessDenied(res, next) {
@@ -18,8 +21,11 @@ function accessDenied(res, next) {
 }
 
 // Check for Authentication token, and if a valid one is found, extract the username from it
-function checkJwTokenAndSetUser(req, res, next) {
+async function checkJwTokenAndSetUser(req, res, next) {
   const authHeader = req.get('Authorization');
+  // Get JWT Secret and TTL
+  const configJwt = await getJwtConfig();
+
   if (authHeader && authHeader.length && configJwt && configJwt.secret && configJwt.secret.length) {
     const token = String(authHeader).replace(/^Bearer /, '');
     if (token) {

@@ -1,14 +1,24 @@
 const jwt = require('jsonwebtoken');
 
-const fs = require('fs');
-const path = require('path');
+// const fs = require('fs');
+// const path = require('path');
 
-// Get JWT Secret and TTL
-const jwtSecret = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'jwt.json'), 'utf8')).secret;
+// Import Config Loaders
+const {
+  getJwtConfig
+} = require('../shared/loadConfigUtils');
 
-function isValidAuth(socket, next) {
+async function isValidAuth(socket, next) {
   const { token } = socket.handshake.auth;
   let validAuthToken = false;
+
+  // Get JWT Secret
+  const jwtToken = await getJwtConfig();
+  const jwtSecret = (
+    jwtToken
+      ? jwtToken.secret
+      : ''
+  );
 
   if (token && token.length && jwtSecret && jwtSecret.length) {
     // use jwt lib to decode
@@ -17,7 +27,7 @@ function isValidAuth(socket, next) {
         validAuthToken = true;
       }
       // eslint-disable-next-line no-param-reassign
-      socket.handshake.auth.user = user.username;
+      socket.handshake.auth.user = (user ? user.username : null);
     });
   }
 

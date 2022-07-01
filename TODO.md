@@ -27,12 +27,13 @@
     - [x] Containerised Linux
 - RBAC
   - [x] Move RBAC tables and Stored Procedures to PostgreSQL
-  - [ ] Use PostgreSQL for Authenticaion instead of MS SQL
+  - [x] Use PostgreSQL for Authenticaion instead of MS SQL
     - [x] Validate login with PgSQL or MS SQL depending on DB Mode
-    - [ ] Gather RBAC access rights from table of PgSQL instead of MS SQL
-  - [ ] Modify RBAC API enpoints to use PostgreSQL
+    - [x] Gather RBAC access rights from table of PgSQL instead of MS SQL, if DB Mode is Split or PgSQL
+  - [x] Collect JWT config from PgSQL instead of JSON file, if DB Mode is Split or PgSQL
+  - [ ] Modify RBAC API enpoints to use PostgreSQL, if DB Mode is Split or PgSQL
 - EZ Marketplace
-  - [ ] Collect EZ MArket Place config from PgSQL instead of JSON file if DB Mode is Split or PgSQL
+  - [x] Collect EZ Market Place config from PgSQL instead of JSON file if DB Mode is Split or PgSQL
 
 ## TO FIX
 
