@@ -27,6 +27,8 @@
     - [x] Containerised Linux
 - RBAC
   - [ ] Use PostgreSQL for Authenticaion instead of MS SQL
+    - [x] Validate login with PgSQL or MS SQL depending on DB Mode
+    - [ ] Gather RBAC access rights from table of PgSQL instead of MS SQL
   - [x] Move RBAC tables and Stored Procedures to PostgreSQL
   - [ ] Modify RBAC API enpoints to use PostgreSQL
 
