@@ -124,7 +124,8 @@ async function checkCredentials(creds) {
         }
 
         // Prep the Creds in the SQL config
-        configSql.user = creds.login;
+        configSql.user = String(creds.login).toLowerCase(); //  PgSQL is case sensitive,
+        //                                                      so bring all logins to lowercase
         configSql.password = creds.password;
 
         // Connect
