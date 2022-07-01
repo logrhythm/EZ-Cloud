@@ -31,6 +31,8 @@
     - [x] Validate login with PgSQL or MS SQL depending on DB Mode
     - [ ] Gather RBAC access rights from table of PgSQL instead of MS SQL
   - [ ] Modify RBAC API enpoints to use PostgreSQL
+- EZ Marketplace
+  - [ ] Collect EZ MArket Place config from PgSQL instead of JSON file if DB Mode is Split or PgSQL
 
 ## TO FIX
 
