@@ -34,7 +34,7 @@ router.get('/', (req, res) => {
 //         #######     ##    #### ######## ####    ##    #### ########  ######
 
 const {
-  getDataFromMsSql,
+  getSiemDataFromSql,
   createMsSqlVariables,
   createMsSqlVariablesAndStoredProcParams
 } = require('../shared/sqlUtils');
@@ -54,7 +54,7 @@ const {
 router.post('/UpdateLogSourceType', async (req, res) => {
   const updatedLogSourceType = {};
 
-  await getDataFromMsSql({
+  await getSiemDataFromSql({
     targetVariable: updatedLogSourceType,
     query: `
     EXECUTE [dbo].[upsert_LogSource_Type]
@@ -81,7 +81,7 @@ router.post('/UpdateLogSourceType', async (req, res) => {
 router.post('/UpdateMpeRule', async (req, res) => {
   const updatedMpeRule = {};
 
-  await getDataFromMsSql({
+  await getSiemDataFromSql({
     targetVariable: updatedMpeRule,
     query: `
     EXECUTE [dbo].[clone_MPE_Rule]
@@ -133,7 +133,7 @@ router.post('/UpdateMpeSubRule', async (req, res) => {
   );
 
   // Ship it to SQL
-  await getDataFromMsSql({
+  await getSiemDataFromSql({
     targetVariable: updatedMpeSubRule,
     query: `
     EXECUTE [dbo].[upsert_MPE_SubRule]
@@ -165,7 +165,7 @@ router.post('/UpdateProcessingPolicy', async (req, res) => {
   );
 
   // Ship it to SQL
-  await getDataFromMsSql({
+  await getSiemDataFromSql({
     targetVariable: updatedProcessingPolicy,
     query: `
     EXECUTE [dbo].[upsert_Processing_Policy]
@@ -199,7 +199,7 @@ router.post('/UpdateLogSourceVirtualisationTemplate', async (req, res) => {
   );
 
   // Ship it to SQL
-  await getDataFromMsSql({
+  await getSiemDataFromSql({
     targetVariable: updatedLogSourceVirtualisationTemplate,
     query: `
     EXECUTE [dbo].[upsert_Log_Source_Virtualisation_Template]
@@ -232,7 +232,7 @@ router.post('/UpdateLogSourceVirtualisationTemplateItem', async (req, res) => {
   );
 
   // Ship it to SQL
-  await getDataFromMsSql({
+  await getSiemDataFromSql({
     targetVariable: updatedLogSourceVirtualisationTemplateItem,
     query: `
     EXECUTE [dbo].[upsert_Log_Source_Virtualisation_Template_Item]
@@ -251,7 +251,7 @@ router.post('/UpdateLogSourceVirtualisationTemplateItem', async (req, res) => {
 
 router.get('/GetOpenCollectorLogSourcesList', async (req, res) => {
   const openCollectorLogSourcesList = {};
-  await getDataFromMsSql({
+  await getSiemDataFromSql({
     targetVariable: openCollectorLogSourcesList,
     query: `
     SELECT TOP (1000) [MsgSourceID] AS 'msgSourceID'
@@ -304,7 +304,7 @@ router.post('/UpdateOpenCollectorLogSourceWithLogSourceVirtualisation', async (r
   );
 
   // Ship it to SQL
-  await getDataFromMsSql({
+  await getSiemDataFromSql({
     targetVariable: updatedOpenCollectorLogSource,
     query: `
     EXECUTE [dbo].[upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource]
