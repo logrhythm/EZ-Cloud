@@ -20,7 +20,7 @@ router.get('/', (req, res) => {
 //         #######     ##    #### ######## ####    ##    #### ########  ######
 
 const {
-  getDataFromMsSql,
+  getConfigDataFromSql,
   createMsSqlVariables,
   createMsSqlVariablesAndStoredProcParams
 } = require('../shared/sqlUtils');
@@ -45,7 +45,7 @@ const {
 
 router.get('/GetUsersList', async (req, res) => {
   const usersList = {};
-  await getDataFromMsSql({
+  await getConfigDataFromSql({
     targetVariable: usersList,
     query: `
     SELECT [rbacUserToRole].[id] AS 'userId'
@@ -86,7 +86,7 @@ router.post('/UpdateUser', async (req, res) => {
     true
   );
 
-  await getDataFromMsSql({
+  await getConfigDataFromSql({
     targetVariable: updatedUser,
     query: `
     EXECUTE [dbo].[upsert_RBAC_User]
@@ -138,7 +138,7 @@ router.post('/DeleteUser', async (req, res) => {
 
   logToSystem('Verbose', `Admin | Attempting to delete User Account | User ID: ${req.body.userId} | user: ${(req.user.username ? req.user.username : '-')}`);
 
-  await getDataFromMsSql({
+  await getConfigDataFromSql({
     targetVariable: deletedUser,
     query: `
     EXECUTE [dbo].[delete_RBAC_User]
@@ -175,7 +175,7 @@ router.post('/DeleteUser', async (req, res) => {
 
 router.get('/GetRolesList', async (req, res) => {
   const rolesList = {};
-  await getDataFromMsSql({
+  await getConfigDataFromSql({
     targetVariable: rolesList,
     query: `
     SELECT [uid] AS 'roleUid'
@@ -197,7 +197,7 @@ router.post('/UpdateRole', async (req, res) => {
 
   logToSystem('Verbose', `Admin | Attempting to create/update User Role | Role UID: ${req.body.uid} | Role Name: ${req.body.name} | Is Role Privileged: ${(req.body.isPrivileged === 1 ? 'Privileged' : 'Not privileged')} | user: ${(req.user.username ? req.user.username : '-')}`);
 
-  await getDataFromMsSql({
+  await getConfigDataFromSql({
     targetVariable: updatedRole,
     query: `
     EXECUTE [dbo].[upsert_RBAC_Role]
@@ -241,7 +241,7 @@ router.post('/DeleteRole', async (req, res) => {
 
   logToSystem('Verbose', `Admin | Attempting to delete User Role | Role UID: ${req.body.uid} | user: ${(req.user.username ? req.user.username : '-')}`);
 
-  await getDataFromMsSql({
+  await getConfigDataFromSql({
     targetVariable: deletedRole,
     query: `
     EXECUTE [dbo].[delete_RBAC_Role]

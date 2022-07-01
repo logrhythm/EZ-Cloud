@@ -12,7 +12,7 @@ const checkCredentials = require('../shared/checkCredentials');
 const { logToSystem } = require('../shared/systemLogging');
 
 // Import SQL Utilities
-const { getDataFromMsSql, createMsSqlVariables } = require('../shared/sqlUtils');
+const { getConfigDataFromSql, createMsSqlVariables } = require('../shared/sqlUtils');
 
 const { encryptStringWithRsaPublicKey } = require('../shared/crypto');
 
@@ -128,7 +128,7 @@ router.post('/Login', async (req, res, next) => {
       let publisherUid = '';
       let masterId = 0;
 
-      await getDataFromMsSql({
+      await getConfigDataFromSql({
         targetVariable: userRolesFromSql,
         query: `
         SELECT -- [rbacUserToRole].[id] AS 'userID'
