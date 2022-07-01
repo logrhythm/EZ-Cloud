@@ -320,10 +320,51 @@ function createMsSqlVariablesAndStoredProcParams(req, definitions, weedOut = tru
   return [sqlVariables, storedProcedureParams];
 }
 
+// ##########################################################################################
+// getConfigDataFromSql
+// #########
+// Use `databaseMode` to determine which utilitarian function to use.
+// Designed to query the EZ database (the "config" DB), as opposed to the SIEM.
+// ##########################################################################################
+
+async function getConfigDataFromSql(parameters) {
+  if (
+    process.env.databaseMode === 'mssql'
+  ) {
+    // Use MS SQL
+    await getDataFromMsSql(parameters);
+  } else {
+    // Use PgSQL
+    await getDataFromMsSql(parameters); // XXXX MODIFY !!!!
+  }
+}
+
+// ##########################################################################################
+// getSiemDataFromSql
+// #########
+// Use `databaseMode` to determine which utilitarian function to use.
+// Designed to query the SIEM "EMDB" database, as opposed to the EZ "config" database.
+// ##########################################################################################
+
+async function getSiemDataFromSql(parameters) {
+  if (
+    process.env.databaseMode === 'mssql'
+    || process.env.databaseMode === 'split'
+  ) {
+    // Use MS SQL
+    await getDataFromMsSql(parameters);
+  } else {
+    // Use PgSQL
+    await getDataFromMsSql(parameters); // XXXX MODIFY !!!!
+  }
+}
+
 module.exports = {
   getPgSqlConfig,
   getMsSqlConfig,
   getDataFromMsSql,
+  getConfigDataFromSql,
+  getSiemDataFromSql,
   createMsSqlVariables,
   createMsSqlVariablesAndStoredProcParams
 };
