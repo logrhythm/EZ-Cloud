@@ -34,6 +34,9 @@
   - [x] Modify RBAC API enpoints to use PostgreSQL, if DB Mode is Split or PgSQL
 - EZ Marketplace
   - [x] Collect EZ Market Place config from PgSQL instead of JSON file if DB Mode is Split or PgSQL
+  - [ ] Create function to pull Master License ID from SIEM and store it in PgSQL, if DB Mode is Split or PgSQL
+- OpenCollectors and Pipeline API
+  - [ ] Modify API endpoints to use PostgreSQL, if DB Mode is Split or PgSQL
 
 ## TO FIX
 
