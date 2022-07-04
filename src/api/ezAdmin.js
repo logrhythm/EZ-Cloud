@@ -20,9 +20,11 @@ router.get('/', (req, res) => {
 //         #######     ##    #### ######## ####    ##    #### ########  ######
 
 const {
-  getConfigDataFromSql,
+  getDataFromMsSql,
   createMsSqlVariables,
-  createMsSqlVariablesAndStoredProcParams
+  createMsSqlVariablesAndStoredProcParams,
+  getDataFromPgSql,
+  createPgSqlVariables
 } = require('../shared/sqlUtils');
 
 //        ########   #######  ##     ## ######## ########  ######
@@ -45,18 +47,45 @@ const {
 
 router.get('/GetUsersList', async (req, res) => {
   const usersList = {};
-  await getConfigDataFromSql({
-    targetVariable: usersList,
-    query: `
-    SELECT [rbacUserToRole].[id] AS 'userId'
-      ,[rbacUserToRole].[login] AS 'userLogin'
-      ,[rbacRoles].[uid] AS 'roleUid'
-      ,[rbacRoles].[name] AS 'roleName'
-      ,[rbacRoles].[isPrivileged] AS 'roleIsPrivileged'
-    FROM [EZ].[dbo].[rbacRoles]
-      RIGHT OUTER JOIN [EZ].[dbo].[rbacUserToRole] ON [rbacRoles].[uid] = [rbacUserToRole].[roleUid]
-  `
-  });
+  if (
+    process.env.databaseMode === 'mssql'
+  ) {
+    // Use MS SQL
+    await getDataFromMsSql({
+      targetVariable: usersList,
+      query: `
+      SELECT [rbacUserToRole].[id] AS 'userId'
+        ,[rbacUserToRole].[login] AS 'userLogin'
+        ,[rbacRoles].[uid] AS 'roleUid'
+        ,[rbacRoles].[name] AS 'roleName'
+        ,[rbacRoles].[isPrivileged] AS 'roleIsPrivileged'
+      FROM [EZ].[dbo].[rbacRoles]
+        RIGHT OUTER JOIN [EZ].[dbo].[rbacUserToRole] ON [rbacRoles].[uid] = [rbacUserToRole].[roleUid]
+      ;
+      `
+    });
+  } else {
+    // Use PgSQL
+    await getDataFromPgSql({
+      targetVariable: usersList,
+      query: `
+      SELECT "rbacUserToRole"."id" AS "userId"
+        ,"rbacUserToRole"."login" AS "userLogin"
+        ,"rbacRoles"."uid" AS "roleUid"
+        ,"rbacRoles"."name" AS "roleName"
+        ,CASE
+          WHEN
+              "rbacRoles"."isPrivileged"=TRUE
+              THEN 1
+          ELSE
+              0
+      END AS "roleIsPrivileged"
+        FROM "rbacRoles"
+          RIGHT OUTER JOIN "rbacUserToRole" ON "rbacRoles"."uid" = "rbacUserToRole"."roleUid"
+      ;
+    `
+    });
+  }
 
   res.json(usersList);
 });
@@ -75,26 +104,57 @@ router.post('/UpdateUser', async (req, res) => {
     logToSystem('Verbose', `Admin | Attempting to update User Account | User ID: ${req.body.userId} | Role UID: ${req.body.roleUid} | user: ${(req.user.username ? req.user.username : '-')}`);
   }
 
-  const [sqlVariables, storedProcedureParams] = createMsSqlVariablesAndStoredProcParams(
-    req,
-    [
-      { name: 'userId', type: 'Int' },
-      { name: 'userLogin', type: 'NVarChar' },
-      { name: 'roleUid', type: 'NVarChar' },
-      { name: 'userPassword', type: 'NVarChar' }
-    ],
-    true
-  );
+  if (
+    process.env.databaseMode === 'mssql'
+  ) {
+    // Use MS SQL
 
-  await getConfigDataFromSql({
-    targetVariable: updatedUser,
-    query: `
-    EXECUTE [dbo].[upsert_RBAC_User]
-       ${storedProcedureParams.join(', ')}
-      ;
-    `,
-    variables: sqlVariables
-  });
+    const [sqlVariables, storedProcedureParams] = createMsSqlVariablesAndStoredProcParams(
+      req,
+      [
+        { name: 'userId', type: 'Int' },
+        { name: 'userLogin', type: 'NVarChar' },
+        { name: 'roleUid', type: 'NVarChar' },
+        { name: 'userPassword', type: 'NVarChar' }
+      ],
+      true
+    );
+
+    await getDataFromMsSql({
+      targetVariable: updatedUser,
+      query: `
+      EXECUTE [dbo].[upsert_RBAC_User]
+        ${storedProcedureParams.join(', ')}
+        ;
+      `,
+      variables: sqlVariables
+    });
+  } else {
+    // Use PgSQL
+
+    await getDataFromPgSql({
+      targetVariable: updatedUser,
+      query: `
+      CALL "upsert_RBAC_User"
+        (
+          $1, -- userId
+          $2, -- userLogin
+          $3, -- roleUid
+          $4  -- userPassword
+        )
+        ;
+      `,
+      variables: createPgSqlVariables(
+        req,
+        [
+          { name: 'userId' },
+          { name: 'userLogin' },
+          { name: 'roleUid' },
+          { name: 'userPassword' }
+        ]
+      )
+    });
+  }
 
   if (req.body.userId == null) { // User creation
     if (
@@ -138,20 +198,42 @@ router.post('/DeleteUser', async (req, res) => {
 
   logToSystem('Verbose', `Admin | Attempting to delete User Account | User ID: ${req.body.userId} | user: ${(req.user.username ? req.user.username : '-')}`);
 
-  await getConfigDataFromSql({
-    targetVariable: deletedUser,
-    query: `
-    EXECUTE [dbo].[delete_RBAC_User]
+  if (
+    process.env.databaseMode === 'mssql'
+  ) {
+    // Use MS SQL
+    await getDataFromMsSql({
+      targetVariable: deletedUser,
+      query: `
+      EXECUTE [dbo].[delete_RBAC_User]
        @userId
       ;
-    `,
-    variables: createMsSqlVariables(
-      req,
-      [
-        { name: 'userId', type: 'Int' }
-      ]
-    )
-  });
+      `,
+      variables: createMsSqlVariables(
+        req,
+        [
+          { name: 'userId', type: 'Int' }
+        ]
+      )
+    });
+  } else {
+    // Use PgSQL
+    await getDataFromPgSql({
+      targetVariable: deletedUser,
+      query: `
+      CALL "delete_RBAC_User"
+      (
+         $1
+      );
+      `,
+      variables: createPgSqlVariables(
+        req,
+        [
+          { name: 'userId' }
+        ]
+      )
+    });
+  }
 
   if (
     deletedUser
@@ -175,15 +257,37 @@ router.post('/DeleteUser', async (req, res) => {
 
 router.get('/GetRolesList', async (req, res) => {
   const rolesList = {};
-  await getConfigDataFromSql({
-    targetVariable: rolesList,
-    query: `
-    SELECT [uid] AS 'roleUid'
-      ,[name] AS 'roleName'
-      ,[isPrivileged] AS 'roleIsPrivileged'
-    FROM [EZ].[dbo].[rbacRoles]
-  `
-  });
+  if (
+    process.env.databaseMode === 'mssql'
+  ) {
+    // Use MS SQL
+    await getDataFromMsSql({
+      targetVariable: rolesList,
+      query: `
+        SELECT [uid] AS 'roleUid'
+        ,[name] AS 'roleName'
+        ,[isPrivileged] AS 'roleIsPrivileged'
+      FROM [EZ].[dbo].[rbacRoles]
+      `
+    });
+  } else {
+    // Use PgSQL
+    await getDataFromPgSql({
+      targetVariable: rolesList,
+      query: `
+      SELECT "uid" AS "roleUid"
+        ,"name" AS "roleName"
+        ,CASE
+          WHEN
+              "isPrivileged"=TRUE
+              THEN 1
+          ELSE
+              0
+      END AS "roleIsPrivileged"
+      FROM "rbacRoles"
+    `
+    });
+  }
 
   res.json(rolesList);
 });
@@ -197,24 +301,50 @@ router.post('/UpdateRole', async (req, res) => {
 
   logToSystem('Verbose', `Admin | Attempting to create/update User Role | Role UID: ${req.body.uid} | Role Name: ${req.body.name} | Is Role Privileged: ${(req.body.isPrivileged === 1 ? 'Privileged' : 'Not privileged')} | user: ${(req.user.username ? req.user.username : '-')}`);
 
-  await getConfigDataFromSql({
-    targetVariable: updatedRole,
-    query: `
-    EXECUTE [dbo].[upsert_RBAC_Role]
-       @uid
-      ,@name
-      ,@isPrivileged
-      ;
-    `,
-    variables: createMsSqlVariables(
-      req,
-      [
-        { name: 'uid', type: 'NVarChar' },
-        { name: 'name', type: 'NVarChar' },
-        { name: 'isPrivileged', type: 'TinyInt' }
-      ]
-    )
-  });
+  if (
+    process.env.databaseMode === 'mssql'
+  ) {
+    // Use MS SQL
+    await getDataFromMsSql({
+      targetVariable: updatedRole,
+      query: `
+      EXECUTE [dbo].[upsert_RBAC_Role]
+         @uid
+        ,@name
+        ,@isPrivileged
+        ;
+      `,
+      variables: createMsSqlVariables(
+        req,
+        [
+          { name: 'uid', type: 'NVarChar' },
+          { name: 'name', type: 'NVarChar' },
+          { name: 'isPrivileged', type: 'TinyInt' }
+        ]
+      )
+    });
+  } else {
+    // Use PgSQL
+    await getDataFromPgSql({
+      targetVariable: updatedRole,
+      query: `
+      CALL "upsert_RBAC_Role"
+      (
+         $1
+        ,$2
+        ,$3 = 1
+      );
+      `,
+      variables: createPgSqlVariables(
+        req,
+        [
+          { name: 'uid' },
+          { name: 'name' },
+          { name: 'isPrivileged' }
+        ]
+      )
+    });
+  }
 
   if (
     updatedRole
@@ -241,20 +371,42 @@ router.post('/DeleteRole', async (req, res) => {
 
   logToSystem('Verbose', `Admin | Attempting to delete User Role | Role UID: ${req.body.uid} | user: ${(req.user.username ? req.user.username : '-')}`);
 
-  await getConfigDataFromSql({
-    targetVariable: deletedRole,
-    query: `
-    EXECUTE [dbo].[delete_RBAC_Role]
+  if (
+    process.env.databaseMode === 'mssql'
+  ) {
+    // Use MS SQL
+    await getDataFromMsSql({
+      targetVariable: deletedRole,
+      query: `
+      EXECUTE [dbo].[delete_RBAC_Role]
        @uid
-      ;
-    `,
-    variables: createMsSqlVariables(
-      req,
-      [
-        { name: 'uid', type: 'NVarChar' }
-      ]
-    )
-  });
+        ;
+      `,
+      variables: createMsSqlVariables(
+        req,
+        [
+          { name: 'uid', type: 'NVarChar' }
+        ]
+      )
+    });
+  } else {
+    // Use PgSQL
+    await getDataFromPgSql({
+      targetVariable: deletedRole,
+      query: `
+      CALL "delete_RBAC_Role"
+      (
+         $1
+      );
+      `,
+      variables: createPgSqlVariables(
+        req,
+        [
+          { name: 'uid' }
+        ]
+      )
+    });
+  }
 
   if (
     deletedRole

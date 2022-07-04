@@ -31,7 +31,7 @@
     - [x] Validate login with PgSQL or MS SQL depending on DB Mode
     - [x] Gather RBAC access rights from table of PgSQL instead of MS SQL, if DB Mode is Split or PgSQL
   - [x] Collect JWT config from PgSQL instead of JSON file, if DB Mode is Split or PgSQL
-  - [ ] Modify RBAC API enpoints to use PostgreSQL, if DB Mode is Split or PgSQL
+  - [x] Modify RBAC API enpoints to use PostgreSQL, if DB Mode is Split or PgSQL
 - EZ Marketplace
   - [x] Collect EZ Market Place config from PgSQL instead of JSON file if DB Mode is Split or PgSQL
 
