@@ -35,11 +35,12 @@ const {
 //        ##    ##  ##     ## ##     ##    ##    ##       ##    ##
 //        ##     ##  #######   #######     ##    ########  ######
 
-// None so far
 // GetUsersList
 // UpdateUser
+// DeleteUser
 // GetRolesList
 // UpdateRole
+// DeleteRole
 
 // ##########################################################################################
 // GetUsersList
