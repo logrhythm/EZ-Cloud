@@ -1,7 +1,7 @@
+const express = require('express');
+
 // Load the System Logging functions
 const { logToSystem } = require('../shared/systemLogging');
-
-const express = require('express');
 
 const router = express.Router();
 
