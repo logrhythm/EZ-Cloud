@@ -31,6 +31,10 @@
     - [ ] Ability to rename Log Source
     - [ ] Ability to assign Log Source to other Open Collectors
     - [ ] Ability to Enable / Commit the Log Source creation
+- [ ] MS SQL Admin
+  - [ ] Add MS SQL Connection admin page
+  - [ ] Collect MS SQL credentials
+  - [ ] Push to API
 
 ## TO FIX
 
