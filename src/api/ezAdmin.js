@@ -80,7 +80,7 @@ router.get('/GetUsersList', async (req, res) => {
               THEN 1
           ELSE
               0
-      END AS "roleIsPrivileged"
+          END AS "roleIsPrivileged"
         FROM "rbacRoles"
           RIGHT OUTER JOIN "rbacUserToRole" ON "rbacRoles"."uid" = "rbacUserToRole"."roleUid"
       ;
@@ -284,7 +284,7 @@ router.get('/GetRolesList', async (req, res) => {
               THEN 1
           ELSE
               0
-      END AS "roleIsPrivileged"
+          END AS "roleIsPrivileged"
       FROM "rbacRoles"
     `
     });
