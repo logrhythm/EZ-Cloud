@@ -39,7 +39,16 @@ BEGIN
             ,"isPrivileged" = "@isPrivileged"
     ;
 END
-$BODY$
+$BODY$;
+
+ALTER PROCEDURE public."upsert_RBAC_Role"
+    OWNER TO "ez-backend";
+
+GRANT EXECUTE ON PROCEDURE public."upsert_RBAC_Role"
+    TO "ez-backend";
+
+REVOKE ALL ON PROCEDURE public."upsert_RBAC_Role"
+    FROM PUBLIC;
 
 -- =============================================
 -- Tests

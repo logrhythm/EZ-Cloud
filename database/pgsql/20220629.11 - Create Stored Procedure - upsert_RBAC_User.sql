@@ -13,6 +13,7 @@ CREATE PROCEDURE public."upsert_RBAC_User"
     "@userPassword" text = NULL -- Only used when creating a new User
 )
 LANGUAGE plpgsql
+SECURITY DEFINER
 AS $BODY$
 DECLARE
     "@sqlStatement" text;
@@ -108,6 +109,15 @@ BEGIN
     END IF;
 END;
 $BODY$;
+
+ALTER PROCEDURE public."upsert_RBAC_User"
+    OWNER TO "postgres";
+
+GRANT EXECUTE ON PROCEDURE public."upsert_RBAC_User"
+    TO "ez-backend";
+
+REVOKE ALL ON PROCEDURE public."upsert_RBAC_User"
+    FROM PUBLIC;
 
 -- =============================================
 -- Tests

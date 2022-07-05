@@ -19,7 +19,16 @@ BEGIN
 		DELETE FROM public."rbacRoles" WHERE "uid" = "@uid";
 	END IF;
 END
-$BODY$
+$BODY$;
+
+ALTER PROCEDURE public."delete_RBAC_Role"
+    OWNER TO "ez-backend";
+
+GRANT EXECUTE ON PROCEDURE public."delete_RBAC_Role"
+    TO "ez-backend";
+
+REVOKE ALL ON PROCEDURE public."delete_RBAC_Role"
+    FROM PUBLIC;
 
 -- =============================================
 -- Tests

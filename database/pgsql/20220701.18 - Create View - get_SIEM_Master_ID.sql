@@ -14,3 +14,5 @@ AS
         AND
         "settingsJson"::json->'MasterID' IS NOT NULL
 ;
+
+GRANT SELECT ON TABLE public."get_SIEM_Master_ID" TO "ez-backend";

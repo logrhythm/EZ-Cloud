@@ -17,10 +17,10 @@ ALTER TABLE IF EXISTS public."rbacUserToRole"
     OWNER to "ez-backend";
 
 -- Create the basic role mapping for ezAdmin
-INSERT
-    INTO public."rbacUserToRole"("login", "roleUid")
-    VALUES (
-        'ezAdmin'
-        ,'b7972c45-3546-4993-93ab-c0f1d9a0ffae'
-    )
-    ON CONFLICT ("login") DO NOTHING;
+-- INSERT
+--     INTO public."rbacUserToRole"("login", "roleUid")
+--     VALUES (
+--         'ezAdmin'
+--         ,'b7972c45-3546-4993-93ab-c0f1d9a0ffae'
+--     )
+--     ON CONFLICT ("login") DO NOTHING;

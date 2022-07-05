@@ -37,5 +37,13 @@ BEGIN
             ,"settingsJson" = COALESCE("@settingsJson", s."settingsJson") -- If provided NULL for these, we re-use the current value
     ;
 END
-$BODY$
+$BODY$;
 
+ALTER PROCEDURE public."upsert_Setting"
+    OWNER TO "ez-backend";
+
+GRANT EXECUTE ON PROCEDURE public."upsert_Setting"
+    TO "ez-backend";
+
+REVOKE ALL ON PROCEDURE public."upsert_Setting"
+    FROM PUBLIC;

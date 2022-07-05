@@ -49,3 +49,12 @@ BEGIN
     ;
 END;
 $BODY$;
+
+ALTER PROCEDURE public."upsert_Pipeline"
+    OWNER TO "ez-backend";
+
+GRANT EXECUTE ON PROCEDURE public."upsert_Pipeline"
+    TO "ez-backend";
+
+REVOKE ALL ON PROCEDURE public."upsert_Pipeline"
+    FROM PUBLIC;

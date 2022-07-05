@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS public."openCollectors"
     "fbVersion" varchar(100) NULL,
     "installedShippers" text NOT NULL,
     PRIMARY KEY ("uid")
-)
+);
 
 ALTER TABLE IF EXISTS public."openCollectors"
     OWNER to "ez-backend";

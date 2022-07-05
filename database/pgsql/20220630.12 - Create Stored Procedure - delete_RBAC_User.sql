@@ -42,7 +42,16 @@ BEGIN
         END IF;
     END IF;
 END
-$BODY$
+$BODY$;
+
+ALTER PROCEDURE public."delete_RBAC_User"
+    OWNER TO "postgres";
+
+GRANT EXECUTE ON PROCEDURE public."delete_RBAC_User"
+    TO "ez-backend";
+
+REVOKE ALL ON PROCEDURE public."delete_RBAC_User"
+    FROM PUBLIC;
 
 -- =============================================
 -- Tests
