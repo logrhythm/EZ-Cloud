@@ -16,9 +16,9 @@ CREATE PROCEDURE public."upsert_openCollector"
     IN "@password" character varying,
     IN "@privateKey" text,
     IN "@osVersion" character varying,
-    IN "@ocInstalled" integer,
+    IN "@ocInstalled" boolean,
     IN "@ocVersion" character varying,
-    IN "@fbInstalled" integer,
+    IN "@fbInstalled" boolean,
     IN "@fbVersion" character varying,
     IN "@pipelines" text,
     IN "@installedShippers" text -- DEFAULT '[]'
@@ -54,9 +54,9 @@ BEGIN
         ,"@password"
         ,"@privateKey"
         ,"@osVersion"
-        ,"@ocInstalled" = 1
+        ,"@ocInstalled"
         ,"@ocVersion"
-        ,"@fbInstalled" = 1
+        ,"@fbInstalled"
         ,"@fbVersion"
         ,COALESCE("@installedShippers", '[]')
     )
@@ -70,9 +70,9 @@ BEGIN
             ,"password" = CASE WHEN "@password" != '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' THEN "@password" ELSE oc."password" END
             ,"privateKey" = CASE WHEN "@privateKey" != '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' THEN "@privateKey" ELSE oc."privateKey" END
             ,"osVersion" = "@osVersion"
-            ,"ocInstalled" = "@ocInstalled" = 1
+            ,"ocInstalled" = "@ocInstalled"
             ,"ocVersion" = "@ocVersion"
-            ,"fbInstalled" = "@fbInstalled" = 1
+            ,"fbInstalled" = "@fbInstalled"
             ,"fbVersion" = "@fbVersion"
             ,"installedShippers" = COALESCE("@installedShippers", '[]')
     ;
