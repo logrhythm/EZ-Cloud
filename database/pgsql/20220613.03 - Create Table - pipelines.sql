@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS public."pipelines"
 (
     "uid" varchar(40) NOT NULL,
     "name" varchar(50) NULL,
-    "status" boolean NOT NULL,
+    "status" smallint NOT NULL,
     "primaryOpenCollector" varchar(40) NULL,
     "fieldsMappingJson" text NULL,
     "collectionConfigJson" text NULL,
