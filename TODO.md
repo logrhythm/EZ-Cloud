@@ -37,6 +37,10 @@
   - [ ] Create function to pull Master License ID from SIEM and store it in PgSQL, if DB Mode is Split or PgSQL
 - OpenCollectors and Pipeline API
   - [ ] Modify API endpoints to use PostgreSQL, if DB Mode is Split or PgSQL
+- MS SQL Admin
+  - [ ] Add API for MS SQL Connection admin page on Frontend
+  - [ ] Encrypt MS SQL credentials using deployment specific private key
+  - [ ] Store them safely in PgSQL
 
 ## TO FIX
 
