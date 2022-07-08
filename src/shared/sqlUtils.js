@@ -51,11 +51,11 @@ const maxCheckInterval = 10; // Check once every X seconds max, and/or timeout a
 
 function getPgSqlConfig() {
   return {
-    host: process.env.PG_HOST || 'localhost',
+    host: process.env.PG_HOST || 'oc-db',
     port: process.env.PG_PORT || 5432,
     user: process.env.PG_USER || 'oc-admin-backend',
     password: process.env.PG_PASS || undefined,
-    database: process.env.PG_DB || 'ez',
+    database: process.env.PG_DB || 'oc-admin',
     application_name: `${process.env.NAME} - Version: ${process.env.VERSION}`
   };
 }
