@@ -1,6 +1,7 @@
 -- =============================================
 -- Author:		Tony Massé
 -- Create date: 2022-06-13
+-- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
 -- =============================================
 
 CREATE TABLE IF NOT EXISTS public."rbacUserToRole"
@@ -14,7 +15,7 @@ CREATE TABLE IF NOT EXISTS public."rbacUserToRole"
 );
 
 ALTER TABLE IF EXISTS public."rbacUserToRole"
-    OWNER to "ez-backend";
+    OWNER to "oc-admin-backend";
 
 -- Create the basic role mapping for ezAdmin
 -- INSERT

@@ -53,7 +53,7 @@ function getPgSqlConfig() {
   return {
     host: process.env.PG_HOST || 'localhost',
     port: process.env.PG_PORT || 5432,
-    user: process.env.PG_USER || 'ez-backend',
+    user: process.env.PG_USER || 'oc-admin-backend',
     password: process.env.PG_PASS || undefined,
     database: process.env.PG_DB || 'ez',
     application_name: `${process.env.NAME} - Version: ${process.env.VERSION}`

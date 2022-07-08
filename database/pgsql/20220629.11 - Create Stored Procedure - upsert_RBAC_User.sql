@@ -1,8 +1,10 @@
 -- =============================================
 -- Author:		Tony Massé
 -- Create date: 2022-06-29
+-- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
 -- Description:	Create a User in SQL and Insert or Update it in `rbacUserToRole`, based on its ID
 -- =============================================
+
 DROP PROCEDURE IF EXISTS public."upsert_RBAC_User";
 
 CREATE PROCEDURE public."upsert_RBAC_User"
@@ -114,7 +116,7 @@ ALTER PROCEDURE public."upsert_RBAC_User"
     OWNER TO "postgres";
 
 GRANT EXECUTE ON PROCEDURE public."upsert_RBAC_User"
-    TO "ez-backend";
+    TO "oc-admin-backend";
 
 REVOKE ALL ON PROCEDURE public."upsert_RBAC_User"
     FROM PUBLIC;

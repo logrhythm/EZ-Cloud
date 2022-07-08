@@ -1,8 +1,10 @@
 -- =============================================
 -- Author:		Tony Massé
 -- Create date: 2022-06-24
+-- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
 -- Description:	Insert or Update a Pipeline, based on its UID
 -- =============================================
+
 DROP PROCEDURE IF EXISTS public."upsert_Pipeline";
 
 CREATE PROCEDURE public."upsert_Pipeline"
@@ -51,10 +53,10 @@ END;
 $BODY$;
 
 ALTER PROCEDURE public."upsert_Pipeline"
-    OWNER TO "ez-backend";
+    OWNER TO "oc-admin-backend";
 
 GRANT EXECUTE ON PROCEDURE public."upsert_Pipeline"
-    TO "ez-backend";
+    TO "oc-admin-backend";
 
 REVOKE ALL ON PROCEDURE public."upsert_Pipeline"
     FROM PUBLIC;

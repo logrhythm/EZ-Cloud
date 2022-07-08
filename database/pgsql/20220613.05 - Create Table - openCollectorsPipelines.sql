@@ -1,6 +1,7 @@
 -- =============================================
 -- Author:		Tony Massé
 -- Create date: 2022-06-13
+-- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
 -- =============================================
 
 CREATE TABLE IF NOT EXISTS public."openCollectorsPipelines"
@@ -12,7 +13,7 @@ CREATE TABLE IF NOT EXISTS public."openCollectorsPipelines"
 );
 
 ALTER TABLE IF EXISTS public."openCollectorsPipelines"
-    OWNER to "ez-backend";
+    OWNER to "oc-admin-backend";
 
 CREATE INDEX IF NOT EXISTS "IX_openCollectorsPipelines_openCollectorUid-pipelineUid"
     ON public."openCollectorsPipelines" USING btree

@@ -1,6 +1,7 @@
 -- =============================================
 -- Author:		Tony Massé
 -- Create date: 2022-06-30
+-- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
 -- Description:	Upsert Setting record, based on its UID
 -- =============================================
 
@@ -40,10 +41,10 @@ END
 $BODY$;
 
 ALTER PROCEDURE public."upsert_Setting"
-    OWNER TO "ez-backend";
+    OWNER TO "oc-admin-backend";
 
 GRANT EXECUTE ON PROCEDURE public."upsert_Setting"
-    TO "ez-backend";
+    TO "oc-admin-backend";
 
 REVOKE ALL ON PROCEDURE public."upsert_Setting"
     FROM PUBLIC;

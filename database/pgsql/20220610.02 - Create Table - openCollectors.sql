@@ -1,6 +1,7 @@
 -- =============================================
 -- Author:		Tony Massé
 -- Create date: 2022-06-10
+-- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
 -- =============================================
 
 CREATE TABLE IF NOT EXISTS public."openCollectors"
@@ -23,5 +24,5 @@ CREATE TABLE IF NOT EXISTS public."openCollectors"
 );
 
 ALTER TABLE IF EXISTS public."openCollectors"
-    OWNER to "ez-backend";
+    OWNER to "oc-admin-backend";
 

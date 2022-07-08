@@ -1,6 +1,7 @@
 -- =============================================
 -- Author:		Tony Massé
 -- Create date: 2022-06-30
+-- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
 -- Description: To store EZ app settings in SQL instead of flat files
 -- =============================================
 
@@ -14,7 +15,7 @@ CREATE TABLE IF NOT EXISTS public."settings"
 );
 
 ALTER TABLE IF EXISTS public."settings"
-    OWNER to "ez-backend";
+    OWNER to "oc-admin-backend";
 
 
 -- Default content

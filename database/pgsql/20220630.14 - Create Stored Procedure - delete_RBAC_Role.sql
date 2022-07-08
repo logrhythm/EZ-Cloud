@@ -1,6 +1,7 @@
 -- =============================================
 -- Author:		Tony Massé
 -- Create date: 2022-06-30
+-- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
 -- Description:	Delete Role record, based on its UID
 -- =============================================
 
@@ -22,10 +23,10 @@ END
 $BODY$;
 
 ALTER PROCEDURE public."delete_RBAC_Role"
-    OWNER TO "ez-backend";
+    OWNER TO "oc-admin-backend";
 
 GRANT EXECUTE ON PROCEDURE public."delete_RBAC_Role"
-    TO "ez-backend";
+    TO "oc-admin-backend";
 
 REVOKE ALL ON PROCEDURE public."delete_RBAC_Role"
     FROM PUBLIC;

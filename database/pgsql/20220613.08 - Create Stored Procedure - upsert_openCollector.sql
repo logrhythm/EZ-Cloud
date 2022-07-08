@@ -1,6 +1,7 @@
 -- =============================================
 -- Author:		Tony Massé
 -- Create date: 2022-06-13
+-- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
 -- =============================================
 
 DROP PROCEDURE IF EXISTS public."upsert_openCollector";
@@ -118,10 +119,10 @@ $BODY$;
 
 
 ALTER PROCEDURE public."upsert_openCollector"
-    OWNER TO "ez-backend";
+    OWNER TO "oc-admin-backend";
 
 GRANT EXECUTE ON PROCEDURE public."upsert_openCollector"
-    TO "ez-backend";
+    TO "oc-admin-backend";
 
 REVOKE ALL ON PROCEDURE public."upsert_openCollector"
     FROM PUBLIC;

@@ -1,6 +1,7 @@
 -- =============================================
 -- Author:		Tony Massé
 -- Create date: 2022-06-30
+-- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
 -- Description:	Delete a User in `rbacUserToRole`, based on its ID, and in SQL
 -- =============================================
 
@@ -48,7 +49,7 @@ ALTER PROCEDURE public."delete_RBAC_User"
     OWNER TO "postgres";
 
 GRANT EXECUTE ON PROCEDURE public."delete_RBAC_User"
-    TO "ez-backend";
+    TO "oc-admin-backend";
 
 REVOKE ALL ON PROCEDURE public."delete_RBAC_User"
     FROM PUBLIC;

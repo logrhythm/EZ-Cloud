@@ -1,6 +1,7 @@
 -- =============================================
 -- Author:		Tony Massé
 -- Create date: 2022-06-10
+-- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
 -- =============================================
 
 CREATE DATABASE "ez"
@@ -14,6 +15,6 @@ CREATE DATABASE "ez"
 
 GRANT ALL ON DATABASE "ez" TO postgres;
 
-GRANT TEMPORARY ON DATABASE "ez" TO "ez-backend";
+GRANT TEMPORARY ON DATABASE "ez" TO "oc-admin-backend";
 
 GRANT TEMPORARY, CONNECT ON DATABASE "ez" TO PUBLIC;
