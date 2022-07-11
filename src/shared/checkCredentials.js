@@ -7,6 +7,11 @@ const {
   getMsSqlConfig
 } = require('./sqlUtils');
 
+/**
+ * Wait for a given time
+ * @param {Number} delay Delay in miliseconds
+ * @returns Promise
+ */
 function waitMilliseconds(delay = 250) {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -33,7 +38,11 @@ const { Client } = (
 
 const timeoutSeconds = 5; // Timeout after X seconds
 
-// Check if the Creds are valid, by trying to authenticate against the SQL server
+/**
+ * Check if the Creds are valid, by trying to authenticate against the SQL server
+ * @param {Object} creds Credential object with `login` and `password`
+ * @returns Object with String `username` and Boolean `valid`
+ */
 async function checkCredentials(creds) {
   const response = {
     username: '',
