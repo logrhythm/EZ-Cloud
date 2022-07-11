@@ -10,6 +10,13 @@ const {
   getDataFromPgSql
 } = require('./sqlUtils');
 
+/**
+ * Gather the SQL connection configuration for MS SQL.
+ * If using MS SQL only, gather config from file, otherwise
+ * collect it from a Table in PostgreSQL
+ * @param {String} filename Full path to the database configuration file (for MS SQL)
+ * @returns SQL connection configuration as an Object
+ */
 async function getConfig(filename) {
   // Full MS SQL: Get config from File
   if (
@@ -74,6 +81,11 @@ async function getConfig(filename) {
 }
 
 let cachedJwtConfig;
+/**
+ * Gather JWT configuration
+ * @param {Boolean} ignoreCache True to not used the cachec value. Default False.
+ * @returns JWT configuration as Object
+ */
 async function getJwtConfig(ignoreCache = false) {
   if (!cachedJwtConfig || ignoreCache) {
     cachedJwtConfig = getConfig('jwt.json');

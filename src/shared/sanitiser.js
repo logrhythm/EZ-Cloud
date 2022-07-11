@@ -1,4 +1,8 @@
-// Get you the UID from the provided JSON Body, while checking the UID is of the right format
+/**
+ * Get you the UID from the provided JSON Body, while checking the UID is of the right format
+ * @param {Object} jsonBody Object containing `uid` String
+ * @returns Safe UID as a String
+ */
 function getSafeUidFrom(jsonBody) {
   // Fail safe with an empty UID
   if (jsonBody == null) {

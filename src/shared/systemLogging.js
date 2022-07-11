@@ -56,7 +56,11 @@ const maxLevelInt = 7;
 const defaultLevelInt = 2; // Verbose
 const defaultLevel = levelToInt[defaultLevelInt];
 
-// Get you the Integer level for a string level (Warning -> 4) Default to defaultLevelInt.
+/**
+ * Get you the Integer level for a string level (Warning -> 4) Default to defaultLevelInt.
+ * @param {String} level Log level as text
+ * @returns Log level as Integer
+ */
 function getLevelToInt(level) {
   if (level !== undefined && level.length) {
     return levelToInt[String(level).charAt(0).toUpperCase() + String(level).slice(1).toLowerCase()]
@@ -65,7 +69,11 @@ function getLevelToInt(level) {
   return defaultLevelInt;
 }
 
-// Get you the String level for a integer level (4 -> Warning). Default to defaultLevel.
+/**
+ * Get you the String level for a integer level (4 -> Warning). Default to defaultLevel.
+ * @param {Number} level Log level as Integer
+ * @returns Log level as String
+ */
 function getIntToLevel(level) {
   if (level !== undefined && level >= minLevelInt && level <= maxLevelInt) {
     return intToLevel[level] || defaultLevel;
@@ -73,7 +81,10 @@ function getIntToLevel(level) {
   return defaultLevel;
 }
 
-// For Non-Windows platforms, prepare the log file
+/**
+ * For Non-Windows platforms, prepare the log file
+ * @param {String} logFilePath Full path to the log file
+ */
 function openStream(logFilePath) {
   if (logStream !== undefined) {
     try {
@@ -90,7 +101,12 @@ function openStream(logFilePath) {
   }
 }
 
-// Output the log to the system log
+/**
+ * Output the log to the system log
+ * @param {String} severity Log level
+ * @param {String} message Log message
+ * @param {Boolean} copyToConsole True to print out to the Console in addition
+ */
 function logToSystem(severity, message, copyToConsole = (false || String(process.env.logForceToConsole).toLowerCase().trim() === 'true')) {
   try {
     if (severity !== undefined && severity.length && message !== undefined && message.length) {

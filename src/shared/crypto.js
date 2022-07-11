@@ -9,10 +9,20 @@ if (!(secret && secret.length)) {
   console.warn('\x1b[31m%s\x1b[0m', 'WARNING - aes_secret not set in config/secure.json. This will impact encryption of passwords and tokens. DO FIX THIS ASAP.');
 }
 
+/**
+ * Encrypt a string using AES private key
+ * @param {String} toEncrypt Value to encrypt
+ * @returns Encrypted value as String
+ */
 function aesEncrypt(toEncrypt = '') {
   return CryptoJS.AES.encrypt(toEncrypt, (secret || '')).toString();
 }
 
+/**
+ * Decrypt a string using AES private key
+ * @param {String} toDecrypt Value to decrypt
+ * @returns Decrypted value as String
+ */
 function aesDecrypt(toDecrypt = '') {
   const decryptedBytes = CryptoJS.AES.decrypt(toDecrypt, (secret || ''));
   return decryptedBytes.toString(CryptoJS.enc.Utf8);
@@ -21,6 +31,12 @@ function aesDecrypt(toDecrypt = '') {
 // For RSA encryption for EZ Market Place
 const crypto = require('crypto');
 
+/**
+ * Encrypts a value using RSA public key of EZ Market
+ * @param {String} ezMarketRsaPublicKey RSA public key of EZ Market
+ * @param {String} toEncrypt Value to encrypt
+ * @returns Encrypted value
+ */
 function encryptStringWithRsaPublicKey(ezMarketRsaPublicKey, toEncrypt) {
   let base64EncodedEncryptedMessage = '';
   try {
@@ -43,6 +59,11 @@ const encryptionToolPath = (
     : path.join(process.env.baseDirname, 'bin', 'encryptionTool.exe')
 );
 
+/**
+ * Obfuscate a secret/password using the external obfuscation tool
+ * @param {String} toObfuscate Value to obfuscate
+ * @returns Obfuscated value as a String
+ */
 function lrObfuscateSecret(toObfuscate = '') {
   const obfuscationResult = spawn.sync(encryptionToolPath, [toObfuscate, 'encrypt', ''], {});
   const obfuscatedSecret = (obfuscationResult && obfuscationResult.error === null && obfuscationResult.stdout ? obfuscationResult.stdout : '').toString().trim();

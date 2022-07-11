@@ -42,13 +42,11 @@ const maxCheckInterval = 10; // Check once every X seconds max, and/or timeout a
 //        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
 //         #######     ##    #### ######## ####    ##    #### ########  ######
 
-// ##########################################################################################
-// getPgSqlConfig
-// #########
-// Utilitarian function to get the configuration
-// necesary to be able to connect to PostgreSQL.
-// ##########################################################################################
-
+/**
+ * Returns the configuration necesary
+ * to be able to connect to PostgreSQL
+ * @returns PostgreSQL configuration object
+ */
 function getPgSqlConfig() {
   return {
     host: process.env.PG_HOST || 'oc-db',
@@ -60,13 +58,11 @@ function getPgSqlConfig() {
   };
 }
 
-// ##########################################################################################
-// getMsSqlConfig
-// #########
-// Utilitarian function to get the configuration
-// necesary to be able to connect to MS SQL.
-// ##########################################################################################
-
+/**
+ * Returns the configuration necesary
+ * to be able to connect to MS SQL.
+ * @returns MS SQL configuration object
+ */
 async function getMsSqlConfig() {
   // Full MS SQL: Get config from File
   if (process.env.databaseMode === 'mssql') {
@@ -127,14 +123,11 @@ async function getMsSqlConfig() {
   return null;
 }
 
-// ##########################################################################################
-// getDataFromMsSql
-// #########
-// Utilitarian function to get the data from
-// MS SQL using parameters.query and dump it in the
-// parameters.targetVariable
-// ##########################################################################################
-
+/**
+ * Gets the data from MS SQL using `parameters.query`
+ * and dump it in the `parameters.targetVariable`
+ * @param {*} parameters Object containing the target variable, query and variables (values)
+ */
 async function getDataFromMsSql(parameters) {
   let stillChecking = true;
   if (parameters && parameters.query && parameters.query.length && parameters.targetVariable) {
@@ -252,14 +245,13 @@ async function getDataFromMsSql(parameters) {
   }
 }
 
-// ##########################################################################################
-// createMsSqlVariables
-// #########
-// Utilitarian function to create the array of
-// fields type mapping to be provided to
-// getDataFromMsSql as parameters.targetVariable
-// ##########################################################################################
-
+/**
+ * Creates the array of fields type mapping to be
+ * provided to `getDataFromMsSql` as `parameters.targetVariable`
+ * @param {*} req Express Router's request object
+ * @param {Array} definitions List of field names and their types
+ * @returns Array of objects with name, type and value
+ */
 function createMsSqlVariables(req, definitions) {
   const variables = [];
   if (req && (req.query || req.body) && definitions && Array.isArray(definitions)) {
@@ -285,14 +277,13 @@ function createMsSqlVariables(req, definitions) {
   return variables;
 }
 
-// ##########################################################################################
-// createPgSqlVariables
-// #########
-// Utilitarian function to create the array of
-// fields type mapping to be provided to
-// getDataFromPgSql as parameters.targetVariable
-// ##########################################################################################
-
+/**
+ * Create the array of fields type mapping to be
+ * provided to `getDataFromPgSql` as `parameters.targetVariable`
+ * @param {*} req Express Router's request object
+ * @param {Array} definitions List of field names
+ * @returns Array of values
+ */
 function createPgSqlVariables(req, definitions) {
   const variables = [];
   if (req && (req.query || req.body) && definitions && Array.isArray(definitions)) {
@@ -315,20 +306,18 @@ function createPgSqlVariables(req, definitions) {
   return variables;
 }
 
-// ##########################################################################################
-// createMsSqlVariablesAndStoredProcParams
-// #########
-// Utilitarian function to create the array of
-// fields type mapping to be provided to
-// getDataFromMsSql as parameters.targetVariable
-// using createMsSqlVariables() and trimming any
-// entry with a NULL or Undefined value.
-//
-// Useful when calling Stored Procedures that
-// expect missing parameters to fall back on
-// default values.
-// ##########################################################################################
-
+/**
+ * Create the array of fields type mapping to be provided to
+ * getDataFromMsSql as `parameters.targetVariable` using `createMsSqlVariables()`
+ * and trimming any entry with a NULL or Undefined value.
+ *
+ * Useful when calling Stored Procedures that expect missing parameters to
+ * fall back on default values.
+ * @param {*} req Express Router's request object
+ * @param {Array} definitions List of field names
+ * @param {Boolean} weedOut True to weed out entries with NULL or Undefined values. Default True.
+ * @returns Array of variables and parameters for the Stored Procedure
+ */
 function createMsSqlVariablesAndStoredProcParams(req, definitions, weedOut = true) {
   // Prep SQL Variables
   const sqlVariablesRaw = createMsSqlVariables(req, definitions);
@@ -350,14 +339,11 @@ function createMsSqlVariablesAndStoredProcParams(req, definitions, weedOut = tru
   return [sqlVariables, storedProcedureParams];
 }
 
-// ##########################################################################################
-// getDataFromPgSql
-// #########
-// Utilitarian function to get the data from
-// PostgreSQL using parameters.query and parameters.variables and dump it in the
-// parameters.targetVariable
-// ##########################################################################################
-
+/**
+ * Gets the data from PostgreSQL using `parameters.query`
+ * and dump it in the `parameters.targetVariable`
+ * @param {Object} parameters Object containing the target variable, query and variables (values)
+ */
 async function getDataFromPgSql(parameters) {
   if (parameters && parameters.query && parameters.query.length && parameters.targetVariable) {
     const { targetVariable, query, variables } = parameters;
@@ -389,13 +375,12 @@ async function getDataFromPgSql(parameters) {
   }
 }
 
-// ##########################################################################################
-// getConfigDataFromSql
-// #########
-// Use `databaseMode` to determine which utilitarian function to use.
-// Designed to query the EZ database (the "config" DB), as opposed to the SIEM.
-// ##########################################################################################
-
+/**
+ * DEPRECIATED
+ * Use `databaseMode` to determine which utilitarian function to use.
+ * Designed to query the EZ database (the "config" DB), as opposed to the SIEM.
+ * @param {Object} parameters Object containing the target variable, query and variables (values)
+ */
 async function getConfigDataFromSql(parameters) {
   if (
     process.env.databaseMode === 'mssql'
@@ -408,13 +393,12 @@ async function getConfigDataFromSql(parameters) {
   }
 }
 
-// ##########################################################################################
-// getSiemDataFromSql
-// #########
-// Use `databaseMode` to determine which utilitarian function to use.
-// Designed to query the SIEM "EMDB" database, as opposed to the EZ "config" database.
-// ##########################################################################################
-
+/**
+ * DEPRECIATED
+ * Use `databaseMode` to determine which utilitarian function to use.
+ * Designed to query the SIEM "EMDB" database, as opposed to the EZ "config" database.
+ * @param {Object} parameters Object containing the target variable, query and variables (values)
+ */
 async function getSiemDataFromSql(parameters) {
   if (
     process.env.databaseMode === 'mssql'
