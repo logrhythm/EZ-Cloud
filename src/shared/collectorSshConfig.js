@@ -1,5 +1,13 @@
 // Get the SQL utils
-const { getConfigDataFromSql, createMsSqlVariables } = require('./sqlUtils');
+// const { getConfigDataFromSql, createMsSqlVariables } = require('./sqlUtils');
+const {
+  getDataFromMsSql,
+  createMsSqlVariables,
+  createMsSqlVariablesAndStoredProcParams,
+  getDataFromPgSql,
+  createPgSqlVariables
+} = require('../shared/sqlUtils');
+
 // Get the crypto tools to work with password and keys
 const { aesDecrypt } = require('./crypto');
 
@@ -11,32 +19,66 @@ async function getSshConfigForCollector(params) {
   const queryResult = {};
 
   if (params && params.uid && params.uid.length) {
-    await getConfigDataFromSql({
-      targetVariable: queryResult,
-      query: `
-      SELECT TOP 1
-        [uid]
-        ,[hostname]
-        ,[port]
-        ,[authenticationMethod]
-        ,[username]
-        ,[password]
-        ,[privateKey]
-      FROM [dbo].[openCollectors]
-      WHERE [uid] = @uid
-      ;
-      `,
-      variables: createMsSqlVariables(
-        {
-          body: {
-            uid: params.uid
-          }
-        },
-        [
-          { name: 'uid', type: 'NVarChar' }
-        ]
-      )
-    });
+    if (
+      process.env.databaseMode === 'mssql'
+    ) {
+      // Use MS SQL
+      await getDataFromMsSql({
+        targetVariable: queryResult,
+        query: `
+        SELECT TOP 1
+          [uid]
+          ,[hostname]
+          ,[port]
+          ,[authenticationMethod]
+          ,[username]
+          ,[password]
+          ,[privateKey]
+        FROM [dbo].[openCollectors]
+        WHERE [uid] = @uid
+        ;
+        `,
+        variables: createMsSqlVariables(
+          {
+            body: {
+              uid: params.uid
+            }
+          },
+          [
+            { name: 'uid', type: 'NVarChar' }
+          ]
+        )
+      });
+    } else {
+      // Use PgSQL
+      await getDataFromPgSql({
+        targetVariable: queryResult,
+        query: `
+        SELECT
+           "uid"
+          ,"hostname"
+          ,"port"
+          ,"authenticationMethod"
+          ,"username"
+          ,"password"
+          ,"privateKey"
+        FROM "openCollectors"
+        WHERE "uid" = $1
+        LIMIT 1
+        ;
+        `,
+        variables: createPgSqlVariables(
+          {
+            body: {
+              uid: params.uid
+            }
+          },
+          [
+            { name: 'uid' }
+          ]
+        )
+      });
+    }
 
     const collectorRecord = (
       queryResult
@@ -100,25 +142,54 @@ async function getCollectorSshConfigForPipeline(params) {
   let collectorUid = '';
 
   if (params && params.uid && params.uid.length) {
-    await getConfigDataFromSql({
-      targetVariable: queryResult,
-      query: `
-      SELECT TOP 1 [primaryOpenCollector]
-      FROM [dbo].[pipelines]
-      WHERE [uid] = @uid
-      ;
-      `,
-      variables: createMsSqlVariables(
-        {
-          body: {
-            uid: params.uid
-          }
-        },
-        [
-          { name: 'uid', type: 'NVarChar' }
-        ]
-      )
-    });
+    if (
+      process.env.databaseMode === 'mssql'
+    ) {
+      // Use MS SQL
+      await getDataFromMsSql({
+        targetVariable: queryResult,
+        query: `
+        SELECT TOP 1 
+          [primaryOpenCollector]
+          FROM [dbo].[pipelines]
+          WHERE [uid] = @uid
+        ;
+        `,
+        variables: createMsSqlVariables(
+          {
+            body: {
+              uid: params.uid
+            }
+          },
+          [
+            { name: 'uid', type: 'NVarChar' }
+          ]
+        )
+      });
+    } else {
+      // Use PgSQL
+      await getDataFromPgSql({
+        targetVariable: queryResult,
+        query: `
+        SELECT
+           "primaryOpenCollector"
+        FROM "pipelines"
+        WHERE "uid" = $1
+        LIMIT 1
+        ;
+        `,
+        variables: createPgSqlVariables(
+          {
+            body: {
+              uid: params.uid
+            }
+          },
+          [
+            { name: 'uid' }
+          ]
+        )
+      });
+    }
 
     const pipelineRecord = (
       queryResult
