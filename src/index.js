@@ -5,7 +5,7 @@
  * @author Tony Massé
  *
  * Created at     : 2021-04-07 15:00:00
- * Last modified  : 2022-06-08 22:44:00
+ * Last modified  : 2022-07-11 18:40:00
  */
 
 const path = require('path');
@@ -26,8 +26,10 @@ process.env.logLevel = getLevelToInt(process.env.LOGLEVEL || 'Information');
 process.env.logFilePath = process.env.LOGFILEPATH || undefined;
 process.env.logForceToConsole = process.env.LOGFORCETOCONSOLE || false;
 
-// Error handling
-// Push a log to the Windows Application logs
+/**
+ * Error handling - Push a log to the Windows Application logs
+ * @param {*} err Error object
+ */
 function exitOnUncaughtException(err) {
   try {
     logToSystem('Critical', `There was an uncaught error: (${err.code ? err.code : '__NO_CODE__'}) ${err.message ? err.message : '__NO_MESSAGE__'} ${(process.env.NODE_ENV === 'development' ? ` // ${err.stack}` : '')}`, true);

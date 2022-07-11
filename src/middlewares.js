@@ -13,14 +13,23 @@ const {
   getJwtConfig
 } = require('./shared/loadConfigUtils');
 
-// Returns the Access Denied error
+/**
+ * Returns the Access Denied error
+ * @param {*} res Express Router's response object
+ * @param {*} next Express Router's next function
+ */
 function accessDenied(res, next) {
   const error = new Error('Access Denied');
   res.status(401);
   next(error);
 }
 
-// Check for Authentication token, and if a valid one is found, extract the username from it
+/**
+ * Check for Authentication token, and if a valid one is found, extract the username from it
+ * @param {*} req Express Router's request object
+ * @param {*} res Express Router's response object
+ * @param {*} next Express Router's next function
+ */
 async function checkJwTokenAndSetUser(req, res, next) {
   const authHeader = req.get('Authorization');
   // Get JWT Secret and TTL
@@ -48,7 +57,12 @@ async function checkJwTokenAndSetUser(req, res, next) {
   }
 }
 
-// Check the user is logged in
+/**
+ * Check the user is logged in
+ * @param {*} req Express Router's request object
+ * @param {*} res Express Router's response object
+ * @param {*} next Express Router's next function
+ */
 function isLoggedIn(req, res, next) {
   if (req.user) {
     next();
@@ -57,7 +71,12 @@ function isLoggedIn(req, res, next) {
   }
 }
 
-// Check if the logged user is and Admin
+/**
+ * Check if the logged user is and Admin
+ * @param {*} req Express Router's request object
+ * @param {*} res Express Router's response object
+ * @param {*} next Express Router's next function
+ */
 function isAdmin(req, res, next) {
   if (req.user && req.user.isPrivileged === true) {
     next();
@@ -66,12 +85,23 @@ function isAdmin(req, res, next) {
   }
 }
 
-// Log the Web requests / responses to the System Journal
+/**
+ * Log the Web requests / responses to the System Journal
+ * @param {*} req Express Router's request object
+ * @param {*} res Express Router's response object
+ * @param {*} next Express Router's next function
+ */
 function logHttpToSystem(req, res, next) {
   logToSystem('Verbose', `HTTP Request | client_ip: ${(req.socket && req.socket._peername && req.socket._peername.address ? req.socket._peername.address : '-')} | client_port: ${(req.socket && req.socket._peername && req.socket._peername.port ? req.socket._peername.port : '-')} | username: ${(req.user && req.user.username ? req.user.username : '-')} | roles: ${(req.user && req.user.roles ? req.user.roles.join(',') : '-')} | method: ${(req.method ? req.method : '-')} | path: ${(req.url ? req.url : '-')}`);
   next();
 }
 
+/**
+ * Log the Web requests / responses to the System Journal
+ * @param {*} req Express Router's request object
+ * @param {*} res Express Router's response object
+ * @param {*} next Express Router's next function
+ */
 function notFound(req, res, next) {
   res.status(404);
   const error = new Error('Not Found');
@@ -79,13 +109,18 @@ function notFound(req, res, next) {
 }
 
 /* eslint-disable no-unused-vars */
+/**
+ * Return error and log the Web requests / responses to the System Journal
+ * @param {*} req Express Router's request object
+ * @param {*} res Express Router's response object
+ * @param {*} next Express Router's next function
+ */
 function errorHandler(err, req, res, next) {
   res.status(res.statusCode || 500);
 
   // Error code
   const code = err.code || `HTTP Return Code: ${res.statusCode}`;
 
-  /* eslint-enable no-unused-vars */
   res.json({
     code,
     message: process.env.NODE_ENV === 'production' ? '__REDACTED__' : err.message,
@@ -93,8 +128,15 @@ function errorHandler(err, req, res, next) {
   });
   logToSystem('Error', `HTTP Error | client_ip: ${(req.socket && req.socket._peername && req.socket._peername.address ? req.socket._peername.address : '-')} | client_port: ${(req.socket && req.socket._peername && req.socket._peername.port ? req.socket._peername.port : '-')} | username: ${(req.user && req.user.username ? req.user.username : '-')} | roles: ${(req.user && req.user.roles ? req.user.roles.join(',') : '-')} | method: ${(req.method ? req.method : '-')} | path: ${(req.url ? req.url : '-')} | error code: ${code}`);
 }
+/* eslint-enable no-unused-vars */
 
 /* eslint-disable no-unused-vars */
+/**
+ * Serve static file safetly, by stripping out potential directory traversal attacks
+ * @param {*} req Express Router's request object
+ * @param {*} res Express Router's response object
+ * @param {*} next Express Router's next function
+ */
 function serveFileSafely(req, res, next) {
   if (req && req.params && req.params.file) {
     if (String(req.params.file || '').indexOf('\0') !== -1) {
@@ -131,15 +173,25 @@ function serveFileSafely(req, res, next) {
   }
 }
 
-// To protect against clickjacking
-// (strongly) Inspired by https://auth0.com/blog/preventing-clickjacking-attacks/
+/**
+ * To protect against clickjacking
+ * (strongly) Inspired by https://auth0.com/blog/preventing-clickjacking-attacks/
+ * @param {*} req Express Router's request object
+ * @param {*} res Express Router's response object
+ * @param {*} next Express Router's next function
+ */
 function setXFrameOptions(req, res, next) {
   res.setHeader('X-Frame-Options', 'sameorigin');
   next();
 }
 
-// To protect against clickjacking
-// (strongly) Inspired by https://auth0.com/blog/preventing-clickjacking-attacks/
+/**
+ * To protect against clickjacking
+ * (strongly) Inspired by https://auth0.com/blog/preventing-clickjacking-attacks/
+ * @param {*} req Express Router's request object
+ * @param {*} res Express Router's response object
+ * @param {*} next Express Router's next function
+ */
 function setContentSecurityPolicy(req, res, next) {
   res.setHeader('Content-Security-Policy', "frame-ancestors 'self';");
   next();
