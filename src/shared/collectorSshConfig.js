@@ -3,10 +3,9 @@
 const {
   getDataFromMsSql,
   createMsSqlVariables,
-  createMsSqlVariablesAndStoredProcParams,
   getDataFromPgSql,
   createPgSqlVariables
-} = require('../shared/sqlUtils');
+} = require('./sqlUtils');
 
 // Get the crypto tools to work with password and keys
 const { aesDecrypt } = require('./crypto');
