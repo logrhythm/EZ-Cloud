@@ -10,6 +10,11 @@ const {
 // Get the crypto tools to work with password and keys
 const { aesDecrypt } = require('./crypto');
 
+/**
+ * Gather SSH configuration for a given Open Collector host
+ * @param {Object} params Object containing the UID as `uid` of the Collector
+ * @returns SSH configuration object with host port, user and password or private key
+ */
 async function getSshConfigForCollector(params) {
   const sshConfig = {
     host: '',
@@ -136,6 +141,11 @@ async function getSshConfigForCollector(params) {
   return sshConfig;
 }
 
+/**
+ * Gather SSH configuration for a Open Collector host for a given Pipeline
+ * @param {Object} params Object containing the UID as `uid` of the Pipeline
+ * @returns SSH configuration object with host port, user and password or private key
+ */
 async function getCollectorSshConfigForPipeline(params) {
   const queryResult = {};
   let collectorUid = '';
