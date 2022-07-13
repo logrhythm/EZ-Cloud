@@ -40,6 +40,8 @@
   - [x] Modify API endpoints to use PostgreSQL, if DB Mode is Split or PgSQL
 - MS SQL Admin
   - [ ] Add API for MS SQL Connection admin page on Frontend
+    - [x] Get MS SQL config
+    - [ ] Update MS SQL config
   - [ ] Encrypt MS SQL credentials using deployment specific private key
   - [ ] Store them safely in PgSQL
 

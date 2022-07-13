@@ -3,6 +3,9 @@ const express = require('express');
 // Load the System Logging functions
 const { logToSystem } = require('../shared/systemLogging');
 
+// Get the crypto tools to work with password and keys
+const { aesDecrypt } = require('../shared/crypto');
+
 const router = express.Router();
 
 router.get('/', (req, res) => {
@@ -444,9 +447,9 @@ router.get('/GetMsSqlConfig', async (req, res) => {
       returnSingleItem: true,
       query: `
       SELECT
-          "settingsJson"::json->'config'->>'server' as "server",
+          "settingsJson"::json->'config'->>'server' as "host",
           "settingsJson"::json->'config'->'authentication'->'options'->>'userName' as "username",
-          "settingsJson"::json->'config'->'authentication'->'options'->>'password' as "password",
+          -- "settingsJson"::json->'config'->'authentication'->'options'->>'password' as "password",
           "settingsJson"::json->'config'->'options'->'port' as "port",
           "settingsJson"::json->'config'->'options'->'encrypt' as "encrypt"
       FROM
@@ -457,9 +460,29 @@ router.get('/GetMsSqlConfig', async (req, res) => {
           ;
       `
     });
+
+    // Ensure we have a `payload` branch
+    if (!msSqlConfig.payload) {
+      msSqlConfig.payload = {};
+    }
+
     msSqlConfig.payload.isManagedOnBackend = false;
 
-    // Decrypt the values
+    // Decrypt secrets
+    // The MS SQL host, port, login and password are AES encrypted in PgSQL using
+    // the private AES key specific to the deployment
+    // Hostname
+    msSqlConfig.payload.host = aesDecrypt(
+      msSqlConfig.payload.host
+    );
+    // Login
+    msSqlConfig.payload.username = aesDecrypt(
+      msSqlConfig.payload.username
+    );
+    // Password, we send nothing if fresh conf, or a placeholder if configured
+    if (msSqlConfig.payload.host && msSqlConfig.payload.host.length) {
+      msSqlConfig.payload.password = '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **';
+    }
   }
 
   res.json(msSqlConfig);
