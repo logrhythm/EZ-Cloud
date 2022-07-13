@@ -7,10 +7,10 @@
                 RBAC
             </q-card-section>
             <q-card-section>
-              <q-btn color="primary" :label="$t('Manage User Accounts')" to="/Admin/Users" />
+              <q-btn color="primary" :label="$t('Manage User Accounts')" to="/Admin/RBAC/Users" />
             </q-card-section>
             <q-card-section>
-              <q-btn color="primary" :label="$t('Manage User Roles')" to="/Admin/Roles" />
+              <q-btn color="primary" :label="$t('Manage User Roles')" to="/Admin/RBAC/Roles" />
             </q-card-section>
           </q-card-section>
 

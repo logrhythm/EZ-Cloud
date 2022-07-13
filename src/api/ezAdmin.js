@@ -425,6 +425,44 @@ router.post('/DeleteRole', async (req, res) => {
   res.json(deletedRole);
 });
 
+// ##########################################################################################
+// GetMsSqlConfig
+// ##########################################################################################
+
+router.get('/GetMsSqlConfig', async (req, res) => {
+  const msSqlConfig = {
+    isManagedOnBackend: true // For MS SQL `databaseMode`, as the conf is on file
+  };
+  if (
+    process.env.databaseMode !== 'mssql'
+  ) {
+    // Use PgSQL
+    await getDataFromPgSql({
+      targetVariable: msSqlConfig,
+      returnSingleItem: true,
+      query: `
+      SELECT
+          "settingsJson"::json->'config'->>'server' as "server",
+          "settingsJson"::json->'config'->'authentication'->'options'->>'userName' as "username",
+          "settingsJson"::json->'config'->'authentication'->'options'->>'password' as "password",
+          "settingsJson"::json->'config'->'options'->'port' as "port",
+          "settingsJson"::json->'config'->'options'->'encrypt' as "encrypt"
+      FROM
+          public."settings"
+      WHERE 
+          "uid" = '6e5625e8-372d-4d4b-ac9a-615e370ac940'
+      LIMIT 1
+          ;
+      `
+    });
+    msSqlConfig.isManagedOnBackend = false;
+
+    // Decrypt the values
+  }
+
+  res.json(msSqlConfig);
+});
+
 //        ######## ##     ## ########   #######  ########  ########  ######
 //        ##        ##   ##  ##     ## ##     ## ##     ##    ##    ##    ##
 //        ##         ## ##   ##     ## ##     ## ##     ##    ##    ##
