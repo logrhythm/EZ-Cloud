@@ -431,7 +431,9 @@ router.post('/DeleteRole', async (req, res) => {
 
 router.get('/GetMsSqlConfig', async (req, res) => {
   const msSqlConfig = {
-    isManagedOnBackend: true // For MS SQL `databaseMode`, as the conf is on file
+    payload: {
+      isManagedOnBackend: true // For MS SQL `databaseMode`, as the conf is on file
+    }
   };
   if (
     process.env.databaseMode !== 'mssql'
@@ -455,7 +457,7 @@ router.get('/GetMsSqlConfig', async (req, res) => {
           ;
       `
     });
-    msSqlConfig.isManagedOnBackend = false;
+    msSqlConfig.payload.isManagedOnBackend = false;
 
     // Decrypt the values
   }
