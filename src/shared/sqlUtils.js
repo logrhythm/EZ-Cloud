@@ -346,7 +346,13 @@ function createMsSqlVariablesAndStoredProcParams(req, definitions, weedOut = tru
  */
 async function getDataFromPgSql(parameters) {
   if (parameters && parameters.query && parameters.query.length && parameters.targetVariable) {
-    const { targetVariable, query, variables } = parameters;
+    const {
+      targetVariable,
+      query,
+      variables,
+      returnSingleItem = false // False, returns full array. True, returns only first element
+    } = parameters;
+
     targetVariable.stillChecking = true;
     targetVariable.errors = [];
     targetVariable.outputs = [];
@@ -365,8 +371,19 @@ async function getDataFromPgSql(parameters) {
       await pgClient.end();
 
       // Push to targetVariable.payload
-      targetVariable.payload = res.rows;
+      if (!returnSingleItem) {
+        targetVariable.payload = res.rows;
+      } else {
+        targetVariable.payload = (
+          res.rows
+          && Array.isArray(res.rows)
+          && res.rows.length
+            ? res.rows[0]
+            : undefined
+        );
+      }
       targetVariable.stillChecking = false;
+      logToSystem('Debug', `Persistance Layer | targetVariable.payload | Details: ${JSON.stringify(targetVariable.payload)}`); // XXXX
     } catch (error) {
       logToSystem('Error', `Persistance Layer | Connection to database failed. | Details: ${error.message}`);
       targetVariable.errors.push('Connection to database failed');
