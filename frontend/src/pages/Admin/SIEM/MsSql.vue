@@ -6,6 +6,7 @@
         <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('Admin : SIEM : Manage MS SQL Connection') }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
+
     <q-card class="q-pa-md q-mx-none">
       <q-card-section horizontal>
         <q-card-section class="col q-ma-none q-pa-none">
@@ -13,55 +14,66 @@
               {{ $t('MS SQL Connection') }}
           </q-card-section>
 
-          <q-card-section class="q-pt-none">
-            <q-input dense v-model="siemMsSqlHost"
-              :label="$t('Hostname (XM or Platform Manager)')"
-              autofocus
-              :rules="[val => !!val || $t('Hostname cannot be empty')]"
-            />
-          </q-card-section>
+          <div v-if="managedOnBackend">
+            <q-card-section class="q-pt-none">
+              {{ $t('The MS SQL connection configuration is managed on the Backend.') }}
+            </q-card-section>
+            <q-card-section class="q-pt-none">
+              {{ $t('Nothing to do here.') }}
+            </q-card-section>
+          </div>
 
-          <q-card-section class="q-pt-none">
-            <q-input dense v-model="siemMsSqlPort"
-              :label="$t('MS SQL Port')"
-              type="number"
-              :rules="[
-                val => val !== null && val !== '' || $t('Port must be specified'),
-                val => val >= 1 && val <= 65535 || ('Port should be between 1 and 65535. Standard MS SQL port is 1433.')
-              ]"
-            />
-          </q-card-section>
+          <div v-else>
+            <q-card-section class="q-pt-none">
+              <q-input dense v-model="siemMsSqlHost"
+                :label="$t('Hostname (XM or Platform Manager)')"
+                autofocus
+                :rules="[val => !!val || $t('Hostname cannot be empty')]"
+              />
+            </q-card-section>
 
-          <q-card-section class="q-pt-none">
-            <q-input dense v-model="siemMsSqlUsername"
-              :label="$t('Username')"
-              :rules="[val => !!val || $t('Username cannot be empty')]"
-            />
-          </q-card-section>
+            <q-card-section class="q-pt-none">
+              <q-input dense v-model="siemMsSqlPort"
+                :label="$t('MS SQL Port')"
+                type="number"
+                :rules="[
+                  val => val !== null && val !== '' || $t('Port must be specified'),
+                  val => val >= 1 && val <= 65535 || ('Port should be between 1 and 65535. Standard MS SQL port is 1433.')
+                ]"
+              />
+            </q-card-section>
 
-          <q-card-section class="q-pt-none">
-            <q-input dense v-model="siemMsSqlPassword"
-              :label="$t('Password')"
-              :rules="[val => !!val || $t('Really?! An empty Password?')]"
-            />
-          </q-card-section>
+            <q-card-section class="q-pt-none">
+              <q-input dense v-model="siemMsSqlUsername"
+                :label="$t('Username')"
+                :rules="[val => !!val || $t('Username cannot be empty')]"
+              />
+            </q-card-section>
 
-          <q-card-section class="q-pt-none q-mb-md">
-            <q-toggle
-              v-model="siemMsSqlEncrypt"
-              :label="$t('Encrypt traffic')"
-              left-label
-              checked-icon="lock"
-              unchecked-icon="warning"
-              :color="(siemMsSqlEncrypt === true ? 'positive' : 'warning')"
-              keep-color
-              size="4rem"
-            >
-              <q-tooltip content-style="font-size: 1em">
-                {{ $t('Enable encryption between OC-Admin backend and MS SQL on the XM or Platform Manager (PM)') }}
-              </q-tooltip>
-            </q-toggle>
-          </q-card-section>
+            <q-card-section class="q-pt-none">
+              <q-input dense v-model="siemMsSqlPassword"
+                :label="$t('Password')"
+                :rules="[val => !!val || $t('Really?! An empty Password?')]"
+              />
+            </q-card-section>
+
+            <q-card-section class="q-pt-none q-mb-md">
+              <q-toggle
+                v-model="siemMsSqlEncrypt"
+                :label="$t('Encrypt traffic')"
+                left-label
+                checked-icon="lock"
+                unchecked-icon="warning"
+                :color="(siemMsSqlEncrypt === true ? 'positive' : 'warning')"
+                keep-color
+                size="4rem"
+              >
+                <q-tooltip content-style="font-size: 1em">
+                  {{ $t('Enable encryption between OC-Admin backend and MS SQL on the XM or Platform Manager (PM)') }}
+                </q-tooltip>
+              </q-toggle>
+            </q-card-section>
+          </div>
 
         </q-card-section>
 
@@ -114,7 +126,14 @@ export default {
         this.siemMsSqlPort >= 1 &&
         this.siemMsSqlPort <= 65535 &&
         this.siemMsSqlUsername &&
-        this.siemMsSqlUsername.length
+        this.siemMsSqlUsername.length &&
+        !this.managedOnBackend
+    },
+    managedOnBackend () {
+      return (
+        this.msSqlConfig &&
+        this.msSqlConfig.isManagedOnBackend === true
+      )
     }
   },
   methods: {

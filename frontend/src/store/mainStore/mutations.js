@@ -3,7 +3,7 @@ import { uid } from 'quasar'
 import jwt_decode from 'jwt-decode'
 
 export function getMsSqlConfig (state, payload) {
-  if (payload && Array.isArray(payload)) {
+  if (payload) {
     state.msSqlConfig = payload
   }
 }

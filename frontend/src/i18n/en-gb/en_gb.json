@@ -168,5 +168,7 @@
   "Really?! An empty Password?": "Really?! An empty Password?",
   "Encrypt traffic": "Encrypt traffic",
   "Enable encryption between OC-Admin backend and MS SQL on the XM or Platform Manager (PM)": "Enable encryption between OC-Admin backend and MS SQL on the XM or Platform Manager (PM)",
-  "Save settings": "Save settings"
+  "Save settings": "Save settings",
+  "The MS SQL connection configuration is managed on the Backend.": "The MS SQL connection configuration is managed on the Backend.",
+  "Nothing to do here.": "Nothing to do here."
 }

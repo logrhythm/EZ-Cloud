@@ -56,7 +56,7 @@ export function getMsSqlConfig ({ state, commit }, payload) {
     commit: commit,
     targetCommitName: 'getMsSqlConfig',
     loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
-    silent: false,
+    silent: true,
     caller: (payload && payload.caller ? payload.caller : this._vm),
     onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
     onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
