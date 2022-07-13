@@ -4,20 +4,21 @@
 
 ## TO DO
 - Installer
-  - [ ] Offer to use Trusted SQL Connection for run time
-  - [ ] Make SQL Trusted Connection the default
+  - [ ] ~~Offer to use Trusted SQL Connection for run time~~ (👈 Trusted mode not supported by Tedious)
+  - [ ] ~~Make SQL Trusted Connection the default~~ (👈 Trusted mode not supported by Tedious)
   - [ ] Offer to use Encrypted Connection for run time
   - [x] Make Encrypted SQL connection the default
 - SQL
-  - [ ] Add configuration parameters to enable SQL Trusted Connection Auth
-  - [ ] Handle SQL Trusted Connection
+  - [ ] ~~Add configuration parameters to enable SQL Trusted Connection Auth~~ (👈 Trusted mode not supported by Tedious)
+  - [ ] ~~Handle SQL Trusted Connection~~ (👈 Trusted mode not supported by Tedious)
   - [x] Move EZ database to PostgreSQL
     - [x] Tables
     - [x] Stored Procedures
     - [x] Functions
   - [x] Move MS SQL connection configuration from JSON file to record in PostgreSQL Table
 - SQL Utils
-  - [ ] Split utilitarian functions to deal with both MS SQL and PostgreSQL
+  - [x] Split utilitarian functions to deal with both MS SQL and PostgreSQL
+    - [ ] Depreciate said functions and force using MS SQL and PostgreSQL specific functions instead
 - Multi-platform
   - [x] Allow to run on:
     - [x] Windows
