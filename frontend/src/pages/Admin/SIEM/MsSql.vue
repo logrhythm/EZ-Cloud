@@ -52,8 +52,9 @@
               :label="$t('Encrypt traffic')"
               left-label
               checked-icon="lock"
-              unchecked-icon="lock_open"
+              unchecked-icon="warning"
               :color="(siemMsSqlEncrypt === true ? 'positive' : 'warning')"
+              keep-color
               size="4rem"
             >
               <q-tooltip content-style="font-size: 1em">
@@ -67,7 +68,7 @@
         <q-separator vertical />
 
         <q-card-actions vertical class="justify-around q-px-md">
-            <q-btn icon="save" color="primary" :loading="savingAction" @click="saveSettings()" >
+            <q-btn icon="save" color="primary" :loading="savingAction" @click="saveSettings()" :disabled="!readyToSave" >
               <q-tooltip content-style="font-size: 1rem;">
                 {{ $t('Save settings') }}
               </q-tooltip>
@@ -106,7 +107,15 @@ export default {
     }
   }, // data
   computed: {
-    ...mapState('mainStore', ['msSqlConfig'])
+    ...mapState('mainStore', ['msSqlConfig']),
+    readyToSave () {
+      return this.siemMsSqlHost &&
+        this.siemMsSqlHost.length &&
+        this.siemMsSqlPort >= 1 &&
+        this.siemMsSqlPort <= 65535 &&
+        this.siemMsSqlUsername &&
+        this.siemMsSqlUsername.length
+    }
   },
   methods: {
     ...mapActions('mainStore', ['getMsSqlConfig', 'updateMsSqlConfig']),
