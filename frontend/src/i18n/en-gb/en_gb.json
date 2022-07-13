@@ -154,5 +154,19 @@
   "Export to EZ Market Place": "Export to EZ Market Place",
   "Sanitisation": "Sanitisation",
   "Data to be exported": "Data to be exported",
-  "Pipeline Template name cannot be empty": "Pipeline Template name cannot be empty"
+  "Pipeline Template name cannot be empty": "Pipeline Template name cannot be empty",
+  "Manage MS SQL Connection": "Manage MS SQL Connection",
+  "Return to Admin": "Return to Admin",
+  "Admin : SIEM : Manage MS SQL Connection": "Admin : SIEM : Manage MS SQL Connection",
+  "MS SQL Connection": "MS SQL Connection",
+  "Hostname (XM or Platform Manager)": "Hostname (XM or Platform Manager)",
+  "Hostname cannot be empty": "Hostname cannot be empty",
+  "MS SQL Port": "MS SQL Port",
+  "Port must be specified": "Port must be specified",
+  "Port should be between 1 and 65535. Standard MS SQL port is 1433.": "Port should be between 1 and 65535. Standard MS SQL port is 1433.",
+  "Username cannot be empty": "Username cannot be empty",
+  "Really?! An empty Password?": "Really?! An empty Password?",
+  "Encrypt traffic": "Encrypt traffic",
+  "Enable encryption between OC-Admin backend and MS SQL on the XM or Platform Manager (PM)": "Enable encryption between OC-Admin backend and MS SQL on the XM or Platform Manager (PM)",
+  "Save settings": "Save settings"
 }

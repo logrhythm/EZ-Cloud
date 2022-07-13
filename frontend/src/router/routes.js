@@ -78,7 +78,8 @@ const routes = [
     children: [
       { path: '', component: () => import('pages/Admin/Index.vue') },
       { path: 'Users', component: () => import('pages/Admin/Users.vue') },
-      { path: 'Roles', component: () => import('pages/Admin/Roles.vue') }
+      { path: 'Roles', component: () => import('pages/Admin/Roles.vue') },
+      { path: 'SIEM/MsSql', component: () => import('pages/Admin/SIEM/MsSql.vue') }
     ]
   },
 

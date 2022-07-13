@@ -2,6 +2,12 @@ import { uid } from 'quasar'
 // eslint-disable-next-line camelcase
 import jwt_decode from 'jwt-decode'
 
+export function getMsSqlConfig (state, payload) {
+  if (payload && Array.isArray(payload)) {
+    state.msSqlConfig = payload
+  }
+}
+
 export function addOpenCollector (state, payload) {
   if (payload && payload.name && payload.name.length > 0) {
     const newOpenCollector = Object.assign({}, payload)
