@@ -1,7 +1,7 @@
 <template>
   <q-page class="flex flex-center">
     <form>
-      <q-card style="min-width: 350px" :class="(shakyClass ? 'computerSayNo' : '')">
+      <q-card style="min-width: 350px" :class="(shakyClass ? 'computerSaysNo' : '')">
         <q-card-section>
           <div class="text-h6">{{ $t('Sign in to EZ Cloud') }}</div>
         </q-card-section>
@@ -122,7 +122,7 @@ export default {
 </script>
 
 <style>
-.computerSayNo {
+.computerSaysNo {
   position: relative;
   animation-name: shakeLogin;
   animation-duration: 5s;
