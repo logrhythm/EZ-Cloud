@@ -37,7 +37,7 @@
   - [x] Push to API
 - [ ] Missing MS SQL configuration
   - [x] Check MS SQL needs configuration right after Login in
-  - [ ] Add warning in navigation bar
+  - [x] Add warning in navigation bar
   - [ ] Add notification on Admin menu icon
   - [ ] Add notification on Admin/SIEM/Manage MS SQL Connection button
 
