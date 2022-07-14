@@ -68,8 +68,7 @@ export default {
       return (this.deployment && this.deployment.version ? this.deployment.version : '?.?.?')
     },
     needToConfigureMsSql () {
-      // return this.extraInformation && this.extraInformation.msSqlConnectionConfigMissing
-      return true && !this.hideNeedToConfigureMsSqlPopup
+      return this.extraInformation && this.extraInformation.msSqlConnectionConfigMissing && !this.hideNeedToConfigureMsSqlPopup
     }
   },
   methods: {
