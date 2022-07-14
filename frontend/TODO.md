@@ -35,11 +35,11 @@
   - [x] Add MS SQL Connection admin page
   - [x] Collect MS SQL credentials
   - [x] Push to API
-- [ ] Missing MS SQL configuration
+- [x] Missing MS SQL configuration
   - [x] Check MS SQL needs configuration right after Login in
   - [x] Add warning in navigation bar
   - [x] Add notification on Admin menu icon
-  - [ ] Add notification on Admin/SIEM/Manage MS SQL Connection button
+  - [x] Add notification on Admin/SIEM/Manage MS SQL Connection button
 
 ## TO FIX
 
