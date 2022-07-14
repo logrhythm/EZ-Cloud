@@ -1,9 +1,5 @@
 <template>
   <q-page class="flex flex-center">
-    <!-- <img
-      alt="EZ Cloud"
-      src="~assets/ez-cloud-logo.svg"
-    > -->
     <div>
       <div class="text-h2" style="opacity:.4">
         EZ Cloud Client
@@ -14,12 +10,6 @@
           <span class="text-bold">EZ Server version:</span> v{{serverVersion}}
         </q-tooltip>
         v{{ version }}
-      </div>
-      <div>
-        <pre>{{ extraInformation }}</pre>
-      </div>
-      <div>
-        <pre>needToConfigureMsSql: {{ needToConfigureMsSql }}</pre>
       </div>
     </div>
 
