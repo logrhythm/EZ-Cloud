@@ -32,6 +32,24 @@
         </q-scroll-area>
       </div>
       <q-list class="col-auto">
+        <q-item v-if="needToConfigureMsSql">
+          <q-tooltip content-style="font-size: 1rem;">
+            The connection details to the SQL server on the SIEM are missing.<br>
+            A lot of things will not work until this is configred.
+          </q-tooltip>
+          <q-item-section
+            avatar
+          >
+            <q-icon name="link_off" color="orange">
+            </q-icon>
+          </q-item-section>
+
+          <q-item-section>
+            <q-item-label class="text-orange">Not configured</q-item-label>
+          </q-item-section>
+        </q-item>
+        <q-separator class="q-my-xs" v-if="needToConfigureMsSql"/>
+
         <q-item v-if="!socket.connected">
           <q-tooltip content-style="font-size: 1rem;">
             Live connection with server has been lost.<br>
@@ -49,6 +67,7 @@
           </q-item-section>
         </q-item>
         <q-separator class="q-my-xs" v-if="!socket.connected"/>
+
         <EssentialLink
           v-for="(link, index) in lowLinks"
           :key="index"
@@ -206,9 +225,12 @@ export default {
     }
   },
   computed: {
-    ...mapState('mainStore', ['loggedInUser', 'loggedInUserIsPrivileged', 'errorWikiUrlBase', 'ezMarketNotification', 'deployment']),
+    ...mapState('mainStore', ['loggedInUser', 'loggedInUserIsPrivileged', 'errorWikiUrlBase', 'ezMarketNotification', 'deployment', 'extraInformation']),
     serverVersion () {
       return (this.deployment && this.deployment.version ? this.deployment.version : '?.?.?')
+    },
+    needToConfigureMsSql () {
+      return this.extraInformation && this.extraInformation.msSqlConnectionConfigMissing
     }
   },
   methods: {
