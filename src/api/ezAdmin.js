@@ -4,7 +4,7 @@ const express = require('express');
 const { logToSystem } = require('../shared/systemLogging');
 
 // Get the crypto tools to work with password and keys
-const { aesDecrypt } = require('../shared/crypto');
+const { aesEncrypt, aesDecrypt } = require('../shared/crypto');
 
 const router = express.Router();
 
@@ -486,6 +486,123 @@ router.get('/GetMsSqlConfig', async (req, res) => {
   }
 
   res.json(msSqlConfig);
+});
+
+// ##########################################################################################
+// UpdateMsSqlConfig
+// ##########################################################################################
+
+router.post('/UpdateMsSqlConfig', async (req, res) => {
+  const updatedMsSqlConfig = {};
+  const currentMsSqlConfig = {};
+
+  // Data/fields sent forward:
+  // - host
+  // - port
+  // - username
+  // - password
+  // - encrypt
+
+  logToSystem('Verbose', `Admin | Attempting to save/update MS SQL Connnection Configuration | Host: ${req.body.host} | Port: ${req.body.port} | Traffic Is Encrypted: ${(req.body.encrypt === true ? 'Encrypted' : 'Not encrypted')} | user: ${(req.user.username ? req.user.username : '-')}`);
+
+  if (
+    process.env.databaseMode !== 'mssql'
+  ) {
+    // Use PgSQL
+    // Grab the current password (in its encrypted form)
+    await getDataFromPgSql({
+      targetVariable: currentMsSqlConfig,
+      returnSingleItem: true,
+      query: `
+      SELECT
+          "settingsJson"::json->'config'->'authentication'->'options'->>'password' as "password"
+      FROM
+          public."settings"
+      WHERE 
+          "uid" = '6e5625e8-372d-4d4b-ac9a-615e370ac940'
+      LIMIT 1
+      ;
+      `
+    });
+
+    // Ensure we have a `payload` branch and an encrypted password
+    if (
+      !(
+        currentMsSqlConfig
+        && currentMsSqlConfig.payload
+        && currentMsSqlConfig.payload.password
+        && currentMsSqlConfig.payload.password.length
+      )
+    ) {
+      // If not, just create a NULL one
+      currentMsSqlConfig.payload = {
+        password: null
+      };
+    }
+
+    // Build the new connection config
+    const msSqlConfig = {
+      config: {
+        server: aesEncrypt(req.body.host),
+        authentication: {
+          type: 'default',
+          options: {
+            userName: aesEncrypt(req.body.host),
+            password: (
+              // Check if we got sent the placeholder, indicating that
+              // the user did not change the password
+              req.body.password === '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **'
+                ? currentMsSqlConfig.payload.password // Keep the current encrypted password
+                : aesEncrypt(req.body.password) // Use the newly provided one
+            )
+          }
+        },
+        options: {
+          encrypt: !!req.body.encrypt, // Force boolean, failsafe to False if not provided
+          port: req.body.port || 1433, // Failsafe to default MS SQL port
+          database: 'EZ',
+          requestTimeout: 30000
+        }
+      }
+    };
+
+    try {
+      logToSystem('Debug', `Admin | Attempting to save/update MS SQL Connnection Configuration | Generated : ${JSON.stringify(msSqlConfig)} | user: ${(req.user.username ? req.user.username : '-')}`);
+
+      await getDataFromPgSql({
+        targetVariable: updatedMsSqlConfig,
+        query: `
+        CALL "upsert_Setting"
+        (
+          '6e5625e8-372d-4d4b-ac9a-615e370ac940' -- "@uid"
+          ,NULL -- "@name"
+          ,NULL -- "@description"
+          ,$1 -- "@settingsJson"
+        );
+        `,
+        variables: [
+          JSON.stringify(msSqlConfig)
+        ]
+      });
+    } catch (error) {
+      logToSystem('Error', `Admin | Failed to save/update MS SQL Connnection Configuration | user: ${(req.user.username ? req.user.username : '-')} | Details: ${error.message}`);
+    }
+  }
+
+  if (
+    updatedMsSqlConfig
+    && !(
+      updatedMsSqlConfig.errors
+      && Array.isArray(updatedMsSqlConfig.errors)
+      && updatedMsSqlConfig.errors.length
+    )
+  ) { // 🎉 💀 🪓🪓🪓🪓 😈
+    logToSystem('Information', `Admin | MS SQL Connnection Configuration saved/updated | Host: ${req.body.host} | Port: ${req.body.port} | Traffic Is Encrypted: ${(req.body.encrypt === 1 ? 'Encrypted' : 'Not encrypted')} | user: ${(req.user.username ? req.user.username : '-')}`);
+  } else { // 😥
+    logToSystem('Warning', `Admin | Failed to save/update MS SQL Connnection Configuration | Host: ${req.body.host} | Port: ${req.body.port} | Traffic Is Encrypted: ${(req.body.encrypt === 1 ? 'Encrypted' : 'Not encrypted')} | user: ${(req.user.username ? req.user.username : '-')} | Details: ${JSON.stringify(updatedMsSqlConfig)}`);
+  }
+
+  res.json(updatedMsSqlConfig);
 });
 
 //        ######## ##     ## ########   #######  ########  ########  ######
