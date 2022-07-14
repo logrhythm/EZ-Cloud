@@ -2,6 +2,7 @@
 -- Author:		Tony Massé
 -- Create date: 2022-06-30
 -- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
+-- Modified on: 2022-07-14 - To make `name` optional on updates
 -- Description:	Upsert Setting record, based on its UID
 -- =============================================
 
@@ -33,7 +34,7 @@ BEGIN
     )
     ON CONFLICT ("uid") DO
         UPDATE SET
-            "name" = "@name"
+            "name" = COALESCE("@name", s."name") -- If provided NULL for these, we re-use the current value
             ,"description" = COALESCE("@description", s."description") -- If provided NULL for these, we re-use the current value
             ,"settingsJson" = COALESCE("@settingsJson", s."settingsJson") -- If provided NULL for these, we re-use the current value
     ;
