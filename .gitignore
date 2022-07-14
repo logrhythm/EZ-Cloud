@@ -101,3 +101,6 @@ typings/
 
 # Unnecessary Mac stuff
 .DS_Store
+
+# Docker container artifact
+/core.*
