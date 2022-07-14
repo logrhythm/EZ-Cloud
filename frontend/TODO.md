@@ -35,6 +35,7 @@
   - [x] Add MS SQL Connection admin page
   - [x] Collect MS SQL credentials
   - [x] Push to API
+- [ ] Check MS SQL needs configuration right after Login in
 
 ## TO FIX
 
