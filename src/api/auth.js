@@ -31,8 +31,9 @@ const { encryptStringWithRsaPublicKey } = require('../shared/crypto');
  * @param {Boolean} isUserPrivileged True if the user is part of a Privileged Role
  * @param {String} publisherUid User's Publisher UID
  * @param {BigInteger} masterId SIEM Master ID
- * @param {*} res Express Router's response
- * @param {*} next Express Router's Next function
+ * @param {Object} extraInformation Extra details to be sent to the client
+ * @param {Object} res Express Router's response
+ * @param {Object} next Express Router's Next function
  */
 const createTokenSendResponse = async (
   user,
@@ -40,6 +41,7 @@ const createTokenSendResponse = async (
   isUserPrivileged,
   publisherUid,
   masterId,
+  extraInformation,
   res,
   next
 ) => {
@@ -105,7 +107,8 @@ const createTokenSendResponse = async (
             ezMarketServer: {
               baseUrl: ezMarketServer.baseUrl,
               baseApiPath: ezMarketServer.baseApiPath
-            }
+            },
+            extraInformation: extraInformation || {}
           },
           errors: [], // array of all the errors
           outputs: [] // array of all the outputs
@@ -144,6 +147,7 @@ router.post('/Login', async (req, res, next) => {
       let isUserPrivileged = false;
       let publisherUid = '';
       let masterId = 0;
+      let msSqlConnectionConfigMissing;
 
       if (
         process.env.databaseMode === 'mssql'
@@ -159,6 +163,7 @@ router.post('/Login', async (req, res, next) => {
             ,[rbacRoles].[isPrivileged] AS 'roleIsPrivileged'
             ,[rbacUserToRole].[publisherUid] AS 'publisherUid'
             ,[get_SIEM_Master_ID].[MasterID] AS 'masterId'
+            ,'She''ll be right, Mate' AS "msSqlHost"
           FROM [EZ].[dbo].[rbacRoles]
             RIGHT OUTER JOIN [EZ].[dbo].[rbacUserToRole] ON [rbacRoles].[uid] = [rbacUserToRole].[roleUid]
             LEFT OUTER JOIN [EZ].[dbo].[get_SIEM_Master_ID] ON [get_SIEM_Master_ID].[MasterID] IS NOT NULL
@@ -183,9 +188,11 @@ router.post('/Login', async (req, res, next) => {
             ,"rbacRoles"."isPrivileged" AS "roleIsPrivileged"
             ,"rbacUserToRole"."publisherUid" AS "publisherUid"
             ,"get_SIEM_Master_ID"."MasterID" AS "masterId"
+            ,"settings"."settingsJson"::json->'config'->>'server' AS "msSqlHost"
           FROM public."rbacRoles"
             RIGHT OUTER JOIN public."rbacUserToRole" ON "rbacRoles"."uid" = "rbacUserToRole"."roleUid"
             LEFT OUTER JOIN public."get_SIEM_Master_ID" ON "get_SIEM_Master_ID"."MasterID" IS NOT NULL
+            LEFT OUTER JOIN public."settings" ON "settings"."uid" = '6e5625e8-372d-4d4b-ac9a-615e370ac940'
             WHERE lower("rbacUserToRole"."login") = lower($1)
           `,
           variables: createPgSqlVariables(
@@ -225,6 +232,12 @@ router.post('/Login', async (req, res, next) => {
             publisherUid = item.publisherUid;
             // Grab the SIEM Master ID
             masterId = item.masterId;
+            // Check if the MS Configuration is missing
+            msSqlConnectionConfigMissing = (
+              item.msSqlHost && item.msSqlHost.length
+                ? undefined
+                : true
+            )
           }
         });
       }
@@ -241,6 +254,9 @@ router.post('/Login', async (req, res, next) => {
           isUserPrivileged, // True or False
           publisherUid, // The Publisher UID assigned to the User
           masterId, // The SIEM Master ID
+          { // extraInformation
+            msSqlConnectionConfigMissing
+          },
           res,
           next
         );
