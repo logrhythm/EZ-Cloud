@@ -144,6 +144,9 @@ export function updateJwtToken (state, payload) {
 
     // Gather EZ Market Place details
     updateEzMarketDetails(state, payload)
+
+    // Gather and update the Extra Information provided by the API
+    updateExtraInformation(state, payload)
   }
 }
 
@@ -289,5 +292,15 @@ export function updateEzMarketPublisherDetails (state, payload) {
 
   if (payload) {
     state.ezMarketPublisherDetails = payload
+  }
+}
+
+// Extra Information
+
+export function updateExtraInformation (state, payload) {
+  if (payload) {
+    if (payload.extraInformation) {
+      state.extraInformation = payload.extraInformation
+    }
   }
 }

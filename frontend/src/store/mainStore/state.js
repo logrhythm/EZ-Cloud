@@ -278,6 +278,7 @@ export default function () {
     ezMarketPipelineTemplates: [], // Pipeline Templates from EZ Market Place for the User
     ezMarketPipelineTemplate: {}, // Pipeline Template fully loaded from EZ Market Place by UID
     ezMarketPublisherDetails: {}, // Details of the Publisher (current user), as held by the EZ Market Place
-    msSqlConfig: {} // SIEM MS SQL connection configuration
+    msSqlConfig: {}, // SIEM MS SQL connection configuration
+    extraInformation: {} // Extra Information provided by the Login API on the server
   }
 }
