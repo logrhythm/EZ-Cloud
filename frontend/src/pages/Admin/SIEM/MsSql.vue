@@ -52,6 +52,7 @@
 
             <q-card-section class="q-pt-none">
               <q-input dense v-model="siemMsSqlPassword"
+                type="password"
                 :label="$t('Password')"
                 :rules="[val => !!val || $t('Really?! An empty Password?')]"
               />
