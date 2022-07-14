@@ -237,7 +237,7 @@ router.post('/Login', async (req, res, next) => {
               item.msSqlHost && item.msSqlHost.length
                 ? undefined
                 : true
-            )
+            );
           }
         });
       }
