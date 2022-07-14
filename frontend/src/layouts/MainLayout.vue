@@ -9,7 +9,7 @@
       @mouseout="miniState = true"
       mini-to-overlay
 
-      :width="200"
+      :width="220"
       :breakpoint="500"
       bordered
 
@@ -38,14 +38,15 @@
             A lot of things will not work until this is configred.
           </q-tooltip>
           <q-item-section
-            avatar
+            side
           >
-            <q-icon name="link_off" color="orange">
-            </q-icon>
+            <q-avatar size="24px" class="q-pa-none" square>
+              <q-icon name="link_off" size="sm" color="orange" />
+            </q-avatar>
           </q-item-section>
 
           <q-item-section>
-            <q-item-label class="text-orange">Not configured</q-item-label>
+            <q-item-label class="text-orange">SIEM Not Connected</q-item-label>
           </q-item-section>
         </q-item>
         <q-separator class="q-my-xs" v-if="needToConfigureMsSql"/>
@@ -56,10 +57,11 @@
             Some features might not work anymore.
           </q-tooltip>
           <q-item-section
-            avatar
+            side
           >
-            <q-icon name="cloud_off" color="orange">
-            </q-icon>
+            <q-avatar size="24px" class="q-pa-none" square>
+              <q-icon name="cloud_off" size="sm" color="orange" />
+            </q-avatar>
           </q-item-section>
 
           <q-item-section>
