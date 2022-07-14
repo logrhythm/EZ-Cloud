@@ -547,7 +547,7 @@ router.post('/UpdateMsSqlConfig', async (req, res) => {
         authentication: {
           type: 'default',
           options: {
-            userName: aesEncrypt(req.body.host),
+            userName: aesEncrypt(req.body.username),
             password: (
               // Check if we got sent the placeholder, indicating that
               // the user did not change the password
