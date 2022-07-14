@@ -36,15 +36,18 @@ export function signOut ({ commit }, payload) {
   // Empty Publisher details
   commit('updateEzMarketPublisherDetails', {})
 
-  // Empty MS SQL Connection Configuration
+  // Empty the MS SQL Connection Configuration
   commit('getMsSqlConfig', {})
+
+  // Empty the Extra Information
+  commit('updateExtraInformation', {})
 }
 
 // ######################################################################
 // SIEM MS SQL CONFIGURATION
 // ######################################################################
 
-export function forgetMsSqlConfig ({ state, commit }) {
+export function forgetMsSqlConfig ({ commit }) {
   commit('getMsSqlConfig', {})
 }
 
