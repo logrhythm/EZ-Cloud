@@ -203,7 +203,11 @@ export default {
           title: 'Admin',
           icon: 'admin_panel_settings',
           link: '#/Admin',
-          needsPriviledge: true
+          needsPriviledge: true,
+          id: 'admin',
+          notification: null,
+          notificationColor: 'negative',
+          notificationTextColor: 'white'
         },
         {
           title: 'Settings',
@@ -374,6 +378,12 @@ export default {
       if (ezMarketPlaceLink) {
         ezMarketPlaceLink.notification = payload
       }
+    },
+    updateAdminNotificationNumber (payload) {
+      const adminLink = this.lowLinks.find((link) => link.id === 'admin')
+      if (adminLink) {
+        adminLink.notification = payload
+      }
     }
   },
   watch: {
@@ -381,6 +391,13 @@ export default {
       handler (newValue) {
         this.updateEzMarketNotificationNumber(newValue)
       },
+      immediate: true
+    },
+    extraInformation: {
+      handler (newValue) {
+        this.updateAdminNotificationNumber(this.extraInformation && this.extraInformation.msSqlConnectionConfigMissing === true ? 1 : null)
+      },
+      deep: true,
       immediate: true
     }
   },

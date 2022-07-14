@@ -38,7 +38,7 @@
 - [ ] Missing MS SQL configuration
   - [x] Check MS SQL needs configuration right after Login in
   - [x] Add warning in navigation bar
-  - [ ] Add notification on Admin menu icon
+  - [x] Add notification on Admin menu icon
   - [ ] Add notification on Admin/SIEM/Manage MS SQL Connection button
 
 ## TO FIX
