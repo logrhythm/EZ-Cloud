@@ -120,7 +120,7 @@ export default {
     }
   }, // data
   computed: {
-    ...mapState('mainStore', ['msSqlConfig']),
+    ...mapState('mainStore', ['msSqlConfig', 'extraInformation']),
     readyToSave () {
       return this.siemMsSqlHost &&
         this.siemMsSqlHost.length &&
@@ -138,7 +138,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions('mainStore', ['getMsSqlConfig', 'updateMsSqlConfig']),
+    ...mapActions('mainStore', ['getMsSqlConfig', 'updateMsSqlConfig', 'updateExtraInformation']),
     saveSettings () {
       this.saveOrUpdateUserRole()
     },
@@ -149,6 +149,21 @@ export default {
         this.siemMsSqlUsername = this.msSqlConfig.username
         this.siemMsSqlPassword = this.msSqlConfig.password
         this.siemMsSqlEncrypt = !!this.msSqlConfig.encrypt
+
+        // Update the Extra Information branch `msSqlConnectionConfigMissing`
+        if (this.msSqlConfig.host && this.msSqlConfig.host.length) {
+          if (this.extraInformation && this.extraInformation.msSqlConnectionConfigMissing) {
+            // Turn is off
+            const newExtraInformation = Object.assign({}, this.extraInformation)
+            newExtraInformation.msSqlConnectionConfigMissing = false
+            this.updateExtraInformation({ extraInformation: newExtraInformation })
+          }
+        } else {
+          // Turn is on
+          const newExtraInformation = Object.assign({}, this.extraInformation)
+          newExtraInformation.msSqlConnectionConfigMissing = true
+          this.updateExtraInformation({ extraInformation: newExtraInformation })
+        }
       }
     },
     loadMsSqlConfig () {

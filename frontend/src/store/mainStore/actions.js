@@ -40,7 +40,11 @@ export function signOut ({ commit }, payload) {
   commit('getMsSqlConfig', {})
 
   // Empty the Extra Information
-  commit('updateExtraInformation', {})
+  commit('updateExtraInformation', { extraInformation: {} })
+}
+
+export function updateExtraInformation ({ commit }, payload) {
+  commit('updateExtraInformation', payload)
 }
 
 // ######################################################################
