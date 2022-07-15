@@ -26,58 +26,59 @@
         --- Max messages in Queue In
         --- Max messages in Processed Logs
  -->
-        <q-btn no-caps flat dense icon="arrow_back" label="Return to Properties" :to="'/Pipelines/' + this.pipelineUid + '/Properties'" />
+        <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Properties')" :to="'/Pipelines/' + this.pipelineUid + '/Properties'" />
         <q-separator vertical />
-        <q-btn no-caps flat dense icon="save" label="Save" color="primary" :disabled="!needsSaving" @click="save()" />
-        <q-btn no-caps flat dense icon="restore" label="Reverse to last saved" @click="reverseToLastSaved()" />
+        <q-btn no-caps flat dense icon="save" :label="$t('Save')" color="primary" :disabled="!needsSaving" @click="save()" />
+        <q-btn no-caps flat dense icon="restore" :label="$t('Reverse to last saved')" @click="reverseToLastSaved()" />
         <q-separator vertical />
-        <q-btn no-caps flat dense icon="play_circle_outline" label="Start Live Tail" color="secondary" @click="tailEnabled = true" v-if="!tailEnabled" />
-        <q-btn no-caps flat dense icon="stop" label="Stop Live Tail" @click="tailEnabled = false" v-else />
-        <q-btn no-caps flat dense icon="playlist_add" label="Manual Import" @click="showManualImport = true" v-if="!showManualImport" >
+        <q-btn no-caps flat dense icon="play_circle_outline" :label="$t('Start Live Tail')" color="secondary" @click="tailEnabled = true" v-if="!tailEnabled" />
+        <q-btn no-caps flat dense icon="stop" :label="$t('Stop Live Tail')" @click="tailEnabled = false" v-else />
+        <q-btn no-caps flat dense icon="playlist_add" :label="$t('Manual Import')" @click="showManualImport = true" v-if="!showManualImport" >
           <q-tooltip content-style="font-size: 1rem;">
-            Import log messages manually
+            {{ $t('Import log messages manually') }}
           </q-tooltip>
         </q-btn>
-        <q-btn no-caps flat dense icon="visibility_off" label="Manual Import" @click="showManualImport = false" v-else >
+        <q-btn no-caps flat dense icon="visibility_off" :label="$t('Manual Import')" @click="showManualImport = false" v-else >
           <q-tooltip content-style="font-size: 1rem;">
-            Hide Manual Import panel
+            {{ $t('Hide Manual Import panel') }}
           </q-tooltip>
         </q-btn>
         <q-separator vertical />
-        <q-btn no-caps flat dense icon="file_download" label="Export JQ" disable />
-        <q-btn no-caps flat dense icon="visibility" label="Show JQ" v-if="!showJqOutput" @click="buildJqFilter(); buildJqTransform(); showJqOutput = true" />
-        <q-btn no-caps flat dense icon="visibility_off" label="Hide JQ output" v-else @click="showJqOutput = false" />
+        <q-btn no-caps flat dense icon="file_download" :label="$t('Export JQ')" disable />
+        <q-btn no-caps flat dense icon="visibility" :label="$t('Show JQ')" v-if="!showJqOutput" @click="buildJqFilter(); buildJqTransform(); showJqOutput = true" />
+        <q-btn no-caps flat dense icon="visibility_off" :label="$t('Hide JQ output')" v-else @click="showJqOutput = false" />
 
-        <q-toolbar-title style="opacity:.4" class="text-center">Mapping Builder<span v-if="pipelineName && pipelineName.length">:  {{ pipelineName }}</span></q-toolbar-title>
+        <q-toolbar-title style="opacity:.4" class="text-center" v-if="areWeInLTR">{{ $t('Mapping Builder') }}<span v-if="pipelineName && pipelineName.length">:  {{ pipelineName }}</span></q-toolbar-title>
+        <q-toolbar-title style="opacity:.4" class="text-center" v-else><span v-if="pipelineName && pipelineName.length">{{ pipelineName }} :</span>{{ $t('Mapping Builder') }}</q-toolbar-title>
 
-        <q-btn no-caps flat dense icon="pending" label="Advanced">
+        <q-btn no-caps flat dense icon="pending" :label="$t('Advanced')">
           <q-menu>
             <div class="row no-wrap q-pa-md">
               <div class="column">
-                <div class="text-h6 q-mb-md">Advanced</div>
-                <q-toggle v-model="showExtraDetails" label="Show extra details" />
-                <q-toggle v-model="showQueues" label="Show Queues" />
-                <q-toggle v-model="showCommunicationLog" label="Show Communication &amp; Shipper's Logs" />
+                <div class="text-h6 q-mb-md">{{ $t('Advanced') }}</div>
+                <q-toggle v-model="showExtraDetails" :label="$t('Show extra details')" />
+                <q-toggle v-model="showQueues" :label="$t('Show Queues')" />
+                <q-toggle v-model="showCommunicationLog" :label="$t('Show Communication &amp; Shipper\'s Logs')" />
               </div>
             </div>
           </q-menu>
         </q-btn>
-        <q-btn no-caps flat dense icon="settings" label="Settings">
+        <q-btn no-caps flat dense icon="settings" :label="$t('Settings')">
           <q-menu>
             <div class="row no-wrap q-pa-md">
               <div class="column">
-                <div class="text-h6 q-mb-md">Settings</div>
+                <div class="text-h6 q-mb-md">{{ $t('Settings') }}</div>
                 <q-item class="q-pl-none" >
-                <q-toggle v-model="showTypesInMainList" label="Show types in Fields list" />
+                <q-toggle v-model="showTypesInMainList" :label="$t('Show types in Fields list')" />
                 </q-item>
                 <q-item class="q-pl-none" >
-                <q-toggle v-model="showTypesInPopup" label="Show types in Value popups" />
+                <q-toggle v-model="showTypesInPopup" :label="$t('Show types in Value popups')" />
                 </q-item>
                 <q-item class="q-pl-none" >
-                <q-toggle v-model="wrapSingleStringLog" label="Accept and Wrap non-JSON logs" />
+                <q-toggle v-model="wrapSingleStringLog" :label="$t('Accept and Wrap non-JSON logs')" />
                 </q-item>
                 <q-item class="q-pl-none" >
-                  <q-toggle v-model="extractMessageFieldOnly" label="Extract Beat's '.message' only" />
+                  <q-toggle v-model="extractMessageFieldOnly" :label="$t('Extract Beat\'s \'.message\' only')" />
                 </q-item>
                 <q-item  style="width: 20rem;">
                   <q-item-section avatar>
@@ -89,7 +90,7 @@
                       :min="1"
                       :max="10"
                       label
-                      :label-value="'Background Process max: ' + processInBackgroundMaxRate + ' / second'"
+                      :label-value="$t('Background Process max: {processInBackgroundMaxRate} / second', { processInBackgroundMaxRate })"
                     />
                   </q-item-section>
                 </q-item>
@@ -103,7 +104,7 @@
                       :min="1"
                       :max="2000"
                       label
-                      :label-value="'Max messages in Queue In: ' + queueInMaxSize"
+                      :label-value="$t('Max messages in Queue In: {queueInMaxSize}', { queueInMaxSize })"
                     />
                   </q-item-section>
                 </q-item>
@@ -117,7 +118,7 @@
                       :min="1"
                       :max="1000"
                       label
-                      :label-value="'Max messages in Processed Logs: ' + processedLogsMaxSize"
+                      :label-value="$t('Max messages in Processed Logs: {processedLogsMaxSize}', { processedLogsMaxSize })"
                     />
                   </q-item-section>
                 </q-item>
@@ -653,6 +654,7 @@ import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import mixinSharedRightToLeft from 'src/mixins/mixin-Shared-RightToLeft'
 import mixinSharedBuildJq from 'src/mixins/mixin-Shared-BuildJq'
 import Vue2Filters from 'vue2-filters'
 
@@ -662,6 +664,7 @@ export default {
     mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
     mixinSharedSocket, // Shared function and state to access the Socket.io
     mixinSharedDarkMode, // Shared computed to access and update the DarkMode
+    mixinSharedRightToLeft, // Shared functions to deal with LTR/RTL languages
     mixinSharedBuildJq, // Shared JQ Building functions (Filter and Transform)
     Vue2Filters.mixin
   ],

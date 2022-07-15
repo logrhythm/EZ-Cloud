@@ -49,7 +49,7 @@
                 :color="inFocus ? 'red-10' : 'alert'"
               >
                 <q-tooltip content-style="font-size: 1rem;">
-                  Failed to obfuscate the Secret. Error message:<br>
+                  {{ $t('Failed to obfuscate the Secret. Error message:') }}<br>
                   <span class="text-italic">{{ updateErrorMessage }}</span>
                 </q-tooltip>
               </q-icon>
@@ -59,7 +59,7 @@
                 :color="inFocus ? 'orange-10' : 'warning'"
               >
                 <q-tooltip content-style="font-size: 1rem;">
-                  This Secret must be obfuscated/encrypted to produce a valid configuration
+                  {{ $t('This Secret must be obfuscated/encrypted to produce a valid configuration') }}
                 </q-tooltip>
               </q-icon>
               <q-icon
@@ -70,8 +70,8 @@
                 @click="obfuscateSecret"
               >
                 <q-tooltip content-style="font-size: 1rem;">
-                  <span v-if="obfuscationRequirementNotMet">Obfuscate/encrypt this Secret</span>
-                  <span v-else>Your Secret is properly obfuscated</span>
+                  <span v-if="obfuscationRequirementNotMet">{{ $t('Obfuscate/encrypt this Secret') }}</span>
+                  <span v-else>{{ $t('Your Secret is properly obfuscated') }}</span>
                 </q-tooltip>
               </q-icon>
               <q-separator
@@ -88,7 +88,7 @@
                 @click="showPassword = !showPassword"
               >
                 <q-tooltip content-style="font-size: 1rem;">
-                  <span v-if="showPassword">Hide</span><span v-else>Show</span> Secret
+                  <span v-if="showPassword">{{ $t('Hide Secret') }}</span><span v-else>{{ $t('Show Secret') }}</span>
                 </q-tooltip>
               </q-icon>
             </template>
@@ -103,7 +103,7 @@
               v-model="internalValue[subFieldIndex]"
               @deleteSubField="deleteSubFieldEvent"
             />
-            <q-btn no-caps flat dense icon="add" label="Add Item" color="primary" @click="addValueToArray()" />
+            <q-btn no-caps flat dense icon="add" :label="$t('Add Item')" color="primary" @click="addValueToArray()" />
           </div>
           <div v-if="template.type && template.type.name && template.type.name === 'object'" class="q-gutter-y-sm col">
             <FieldEditor
@@ -115,7 +115,7 @@
               v-model="internalValue[subFieldLeafName]"
               @deleteSubField="deleteSubFieldEvent"
             />
-            <q-btn no-caps flat dense icon="add" label="Add Item" color="primary" @click="addValueToObject()" />
+            <q-btn no-caps flat dense icon="add" :label="$t('Add Item')" color="primary" @click="addValueToObject()" />
           </div>
           <q-select
             v-if="template.type && template.type.name && (template.type.name === 'boolean' || template.type.name === 'option')"
@@ -124,7 +124,7 @@
             class="col"
             emit-value
             map-options
-            :options="(template.options ? template.options : (template.type.name === 'boolean' ? [{ value: true, label: 'True' }, { value: false, label: 'False' }] : []))"
+            :options="(template.options ? template.options : (template.type.name === 'boolean' ? [{ value: true, label: $t('True') }, { value: false, label: $t('False') }] : []))"
             :readonly="(template.readonly ? template.readonly : false)"
           />
           <!-- Suffix, if any -->
@@ -171,7 +171,7 @@
           @click="deleteSubFieldPrompt()"
         >
           <q-tooltip content-style="font-size: 1rem;">
-            Delete entry
+            {{ $t('Delete entry') }}
           </q-tooltip>
         </q-btn>
       </div>
@@ -463,8 +463,8 @@ export default {
     addValueToObject () {
       // Ask for new Leaf name
       this.$q.dialog({
-        title: 'Prompt',
-        message: '<span class="text-bold">Please enter the name of the new entry.</span><br><br><span style="opacity: .7" class="text-italic"><span class="text-bold">Note: </span>This cannot be changed later.</span>',
+        title: this.$t('Prompt'),
+        message: this.$t('<span class="text-bold">Please enter the name of the new entry.</span><br><br><span style="opacity: .7" class="text-italic"><span class="text-bold">Note: </span>This cannot be changed later.</span>'),
         html: true,
         prompt: {
           model: '',
@@ -509,8 +509,8 @@ export default {
       if (!(this.value == null || this.value === '')) {
         // Ask to confirm
         this.$q.dialog({
-          title: 'Confirm',
-          message: 'Do you REALLY want to delete this entry?',
+          title: this.$t('Confirm'),
+          message: this.$t('Do you REALLY want to delete this entry?'),
           ok: {
             push: true,
             color: 'negative'
@@ -584,7 +584,7 @@ export default {
           type: 'negative',
           color: 'negative',
           icon: 'report_problem',
-          message: 'Failed to obfuscate the Secret. Error message:',
+          message: this.$t('Failed to obfuscate the Secret. Error message:'),
           caption: payload.captionForLogAndPopup,
           timeout: 4000
         })

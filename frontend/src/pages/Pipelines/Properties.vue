@@ -39,7 +39,7 @@
             </q-card-section>
             <q-card-section>
               <div class="">
-                  <div class="text-bold">Collection Configuration:</div>
+                  <div class="text-bold">{{ $t('Collection Configuration:') }}</div>
                   <div class="row q-my-sm">
                     <q-separator vertical size="2px" color="teal" />
                     <div class="q-ml-sm"><pre>{{ collectionConfigOutput }}</pre></div>
@@ -164,12 +164,22 @@
             <q-card-section class="text-h4">
                 {{ $t('Mapping') }}
             </q-card-section>
-            <q-card-section>
-                <span class="text-bold">Fields detected: </span>{{ detectedFields }}
-            </q-card-section>
-            <q-card-section>
-                <span class="text-bold">Fields mapped: </span>{{ mappedFields }}
-            </q-card-section>
+            <div v-if="areWeInLTR"> <!-- Left To Right -->
+              <q-card-section>
+                  <span class="text-bold">{{ $t('Fields detected:') }} </span>{{ detectedFields }}
+              </q-card-section>
+              <q-card-section>
+                  <span class="text-bold">{{ $t('Fields mapped:') }} </span>{{ mappedFields }}
+              </q-card-section>
+            </div>
+            <div v-else> <!-- Right To Left -->
+              <q-card-section>
+                  {{ detectedFields }} <span class="text-bold"> {{ $t('Fields detected:') }}</span>
+              </q-card-section>
+              <q-card-section>
+                  {{ mappedFields }} <span class="text-bold"> {{ $t('Fields mapped:') }}</span>
+              </q-card-section>
+            </div>
           </q-card-section>
 
           <q-separator vertical />
@@ -1744,6 +1754,8 @@ export default {
     }
   },
   mounted () {
+    console.log('this.$t') // XXXX
+    console.log(this.$t) // XXXX
     if (this.$route.params.pipelineUid && this.$route.params.pipelineUid.length) {
       if (this.pipelineUid !== this.$route.params.pipelineUid) {
         this.pipelineUid = this.$route.params.pipelineUid
