@@ -26,6 +26,7 @@
           <div v-else>
             <q-card-section class="q-pt-none">
               <q-input dense v-model="siemMsSqlHost"
+                :disable="loadingMsSqlConfig"
                 :label="$t('Hostname (XM or Platform Manager)')"
                 autofocus
                 :rules="[val => !!val || $t('Hostname cannot be empty')]"
@@ -34,6 +35,7 @@
 
             <q-card-section class="q-pt-none">
               <q-input dense v-model="siemMsSqlPort"
+                :disable="loadingMsSqlConfig"
                 :label="$t('MS SQL Port')"
                 type="number"
                 :rules="[
@@ -45,6 +47,7 @@
 
             <q-card-section class="q-pt-none">
               <q-input dense v-model="siemMsSqlUsername"
+                :disable="loadingMsSqlConfig"
                 :label="$t('Username')"
                 :rules="[val => !!val || $t('Username cannot be empty')]"
               />
@@ -52,6 +55,7 @@
 
             <q-card-section class="q-pt-none">
               <q-input dense v-model="siemMsSqlPassword"
+                :disable="loadingMsSqlConfig"
                 type="password"
                 :label="$t('Password')"
                 :rules="[val => !!val || $t('Really?! An empty Password?')]"
@@ -61,6 +65,7 @@
             <q-card-section class="q-pt-none q-mb-md">
               <q-toggle
                 v-model="siemMsSqlEncrypt"
+                :disable="loadingMsSqlConfig"
                 :label="$t('Encrypt traffic')"
                 left-label
                 checked-icon="lock"

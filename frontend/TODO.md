@@ -35,7 +35,7 @@
   - [x] Add MS SQL Connection admin page
   - [x] Collect MS SQL credentials
   - [x] Push to API
-  - [ ] Disable fields while loading
+  - [x] Disable fields while loading
 - [x] Missing MS SQL configuration
   - [x] Check MS SQL needs configuration right after Login in
   - [x] Add warning in navigation bar
