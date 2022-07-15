@@ -2,12 +2,12 @@
   <q-page class="flex flex-center">
     <div>
       <div class="text-h2" style="opacity:.4">
-        EZ Cloud Client
+        OC Admin
       </div>
       <div class="text-h6 text-right" style="opacity:.3">
         <q-tooltip content-style="font-size: 1em">
-          <span class="text-bold">EZ Client version:</span> v{{version}}<br>
-          <span class="text-bold">EZ Server version:</span> v{{serverVersion}}
+          <span class="text-bold">OC Admin Client version:</span> v{{version}}<br>
+          <span class="text-bold">OC Admin Server version:</span> v{{serverVersion}}
         </q-tooltip>
         v{{ version }}
       </div>

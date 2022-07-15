@@ -72,7 +72,7 @@
 
                       <q-item-section>
                         <q-item-label lines="1">Share as a Local File</q-item-label>
-                        <q-item-label caption>As an importable EZ Cloud Collection Configuration file</q-item-label>
+                        <q-item-label caption>As an importable OC Admin Collection Configuration file</q-item-label>
                       </q-item-section>
                     </q-item>
 
@@ -87,7 +87,7 @@
 
                       <q-item-section>
                         <q-item-label lines="1">Share via the Marketplace</q-item-label>
-                        <q-item-label caption>As an importable EZ Cloud Collection Configuration</q-item-label>
+                        <q-item-label caption>As an importable OC Admin Collection Configuration</q-item-label>
                       </q-item-section>
                     </q-item>
 
@@ -104,7 +104,7 @@
 
                       <q-item-section>
                         <q-item-label lines="1">Import from Local File</q-item-label>
-                        <q-item-label caption>Import a shared EZ Cloud Collection Configuration file</q-item-label>
+                        <q-item-label caption>Import a shared OC Admin Collection Configuration file</q-item-label>
                       </q-item-section>
                     </q-item>
 
@@ -119,7 +119,7 @@
 
                       <q-item-section>
                         <q-item-label lines="1">Import from Marketplace</q-item-label>
-                        <q-item-label caption>Import a shared EZ Cloud Collection Configuration</q-item-label>
+                        <q-item-label caption>Import a shared OC Admin Collection Configuration</q-item-label>
                       </q-item-section>
                     </q-item>
 
@@ -235,7 +235,7 @@
 
                       <q-item-section>
                         <q-item-label lines="1">Share as a Local File</q-item-label>
-                        <q-item-label caption>As an importable EZ Cloud Mapping file</q-item-label>
+                        <q-item-label caption>As an importable OC Admin Mapping file</q-item-label>
                       </q-item-section>
                     </q-item>
 
@@ -250,7 +250,7 @@
 
                       <q-item-section>
                         <q-item-label lines="1">Share via the Marketplace</q-item-label>
-                        <q-item-label caption>As an importable EZ Cloud Mapping</q-item-label>
+                        <q-item-label caption>As an importable OC Admin Mapping</q-item-label>
                       </q-item-section>
                     </q-item>
 
@@ -267,7 +267,7 @@
 
                       <q-item-section>
                         <q-item-label lines="1">Import from Local File</q-item-label>
-                        <q-item-label caption>Import a shared EZ Cloud Mapping file</q-item-label>
+                        <q-item-label caption>Import a shared OC Admin Mapping file</q-item-label>
                       </q-item-section>
                     </q-item>
 
@@ -282,7 +282,7 @@
 
                       <q-item-section>
                         <q-item-label lines="1">Import from Marketplace</q-item-label>
-                        <q-item-label caption>Import a shared EZ Cloud Mapping</q-item-label>
+                        <q-item-label caption>Import a shared OC Admin Mapping</q-item-label>
                       </q-item-section>
                     </q-item>
 
@@ -413,7 +413,7 @@
     <q-dialog v-model="showCollectionFileImportPopup" persistent>
       <q-card style="min-width: 350px">
         <q-card-section>
-          <div class="text-h6">{{ $t('Import EZ Cloud Collection Configuration') }}</div>
+          <div class="text-h6">{{ $t('Import OC Admin Collection Configuration') }}</div>
         </q-card-section>
 
         <q-card-section class="q-pt-none">
@@ -445,9 +445,9 @@
     <q-dialog v-model="showMarketplaceImportPopup" persistent>
       <q-card style="min-width: 900px">
         <q-card-section>
-          <div class="text-h6" v-if="marketplaceImportPopupType === 'collection'">{{ $t('Import EZ Cloud Collection Configuration') }}</div>
-          <div class="text-h6" v-else-if="marketplaceImportPopupType === 'mapping'">{{ $t('Import EZ Cloud Fields Mapping') }}</div>
-          <div class="text-h6" v-else>{{ $t('Import EZ Cloud Pipeline Template') }}</div>
+          <div class="text-h6" v-if="marketplaceImportPopupType === 'collection'">{{ $t('Import OC Admin Collection Configuration') }}</div>
+          <div class="text-h6" v-else-if="marketplaceImportPopupType === 'mapping'">{{ $t('Import OC Admin Fields Mapping') }}</div>
+          <div class="text-h6" v-else>{{ $t('Import OC Admin Pipeline Template') }}</div>
         </q-card-section>
 
         <q-card-section class="q-pt-none">
@@ -665,7 +665,7 @@
     <q-dialog v-model="showMappingFileImportPopup" persistent>
       <q-card style="min-width: 350px">
         <q-card-section>
-          <div class="text-h6">{{ $t('Import EZ Cloud Fields Mapping') }}</div>
+          <div class="text-h6">{{ $t('Import OC Admin Fields Mapping') }}</div>
         </q-card-section>
 
         <q-card-section class="q-pt-none">
@@ -697,7 +697,7 @@
     <q-dialog v-model="showMarketplaceExportPopup" persistent v-if="publisherDisplayName == null">
       <q-card style="min-width: 350px">
         <q-card-section>
-          <div class="text-h6">{{ $t('Export EZ Cloud Pipeline Template to EZ Market Place') }}</div>
+          <div class="text-h6">{{ $t('Export OC Admin Pipeline Template to EZ Market Place') }}</div>
         </q-card-section>
 
         <q-card-section class="q-pt-none column">

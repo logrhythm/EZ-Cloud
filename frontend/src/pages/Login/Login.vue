@@ -3,7 +3,7 @@
     <form>
       <q-card style="min-width: 350px" :class="(shakyClass ? 'computerSaysNo' : '')">
         <q-card-section>
-          <div class="text-h6">{{ $t('Sign in to EZ Cloud') }}</div>
+          <div class="text-h6">{{ $t('Sign in to OC Admin') }}</div>
         </q-card-section>
 
         <q-card-section class="q-pt-none">
