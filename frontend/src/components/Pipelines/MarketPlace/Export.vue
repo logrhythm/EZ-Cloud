@@ -2,7 +2,7 @@
   <div style="min-width: 80vw;/* height: 90vh; */max-height: 90vh;">
     <q-card style="min-width: 80vw;/* height: 90vh; */max-height: 90vh;">
       <q-card-section>
-        <div class="text-h6">{{ $t('Export EZ Cloud Pipeline Template to EZ Market Place') }}</div>
+        <div class="text-h6">{{ $t('Export OC Admin Pipeline Template to EZ Market Place') }}</div>
       </q-card-section>
 
       <q-card-section class="q-pa-none q-ma-none">

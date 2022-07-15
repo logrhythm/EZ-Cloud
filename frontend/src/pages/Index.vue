@@ -21,11 +21,11 @@
         </q-card-section>
 
         <q-card-section class="q-pt-none">
-          The connection details to the SQL server on the SIEM are missing.
+          {{ $t('The connection details to the SQL server on the SIEM are missing.') }}
         </q-card-section>
 
         <q-card-section class="q-pt-none q-mb-md">
-          Go to the Admin page and fix it.
+          {{ $t('Go to the Admin page and fix it.') }}
         </q-card-section>
 
         <q-separator />
@@ -64,10 +64,10 @@ export default {
   methods: {
     promptIgnoreConfigureMsSql () {
       this.$q.dialog({
-        title: 'Confirm',
-        message: 'A lot of things will NOT work until this is configred. Are you sure you want to ignore this for now?',
-        cancel: 'Yes',
-        ok: 'No',
+        title: this.$t('Confirm'),
+        message: this.$t('A lot of things will NOT work until this is configred. Are you sure you want to ignore this for now?'),
+        cancel: this.$t('Yes'),
+        ok: this.$t('No'),
         persistent: true
       }).onOk(() => {
         // Do nothing

@@ -34,8 +34,8 @@
       <q-list class="col-auto">
         <q-item v-if="needToConfigureMsSql">
           <q-tooltip content-style="font-size: 1rem;">
-            The connection details to the SQL server on the SIEM are missing.<br>
-            A lot of things will not work until this is configred.
+            {{ $t('The connection details to the SQL server on the SIEM are missing.') }}<br>
+            {{ $t('A lot of things will not work until this is configred.') }}
           </q-tooltip>
           <q-item-section
             side
@@ -46,15 +46,15 @@
           </q-item-section>
 
           <q-item-section>
-            <q-item-label class="text-orange">SIEM Not Connected</q-item-label>
+            <q-item-label class="text-orange">{{ $t('SIEM Not Connected') }}</q-item-label>
           </q-item-section>
         </q-item>
         <q-separator class="q-my-xs" v-if="needToConfigureMsSql"/>
 
         <q-item v-if="!socket.connected">
           <q-tooltip content-style="font-size: 1rem;">
-            Live connection with server has been lost.<br>
-            Some features might not work anymore.
+            {{ $t('Live connection with server has been lost.') }}<br>
+            {{ $t('Some features might not work anymore.') }}
           </q-tooltip>
           <q-item-section
             side
@@ -65,7 +65,7 @@
           </q-item-section>
 
           <q-item-section>
-            <q-item-label class="text-orange">Disconnected</q-item-label>
+            <q-item-label class="text-orange">{{ $t('Disconnected') }}</q-item-label>
           </q-item-section>
         </q-item>
         <q-separator class="q-my-xs" v-if="!socket.connected"/>
@@ -110,11 +110,11 @@
               <div class="row q-my-sm">
                 <q-separator vertical size="2px" color="orange" />
                 <div class="q-ml-sm">
-                  <div class="text-overline">Message Code:</div>
+                  <div class="text-overline">{{ $t('Message Code:') }}</div>
                   <div class="q-ml-sm text-bold">{{ detail.code }}</div>
-                  <div class="q-mt-sm text-overline">Message:</div>
+                  <div class="q-mt-sm text-overline">{{ $t('Message:') }}</div>
                   <div class="q-ml-sm text-italic">{{ detail.message }}</div>
-                  <div class="q-mt-sm text-overline">More information available at:</div>
+                  <div class="q-mt-sm text-overline">{{ $t('More information available at:') }}</div>
                   <div class="q-ml-sm"><a :href="detail.wikiLink" target="_blank" class="text-primary">{{ detail.wikiLink }}</a></div>
                 </div>
               </div>
@@ -161,19 +161,19 @@ export default {
         //   link: '#/Status'
         // },
         {
-          title: 'Open Collectors',
+          title: this.$t('Open Collectors'),
           icon: 'mediation',
           link: '#/OpenCollectors'
         },
         {
-          title: 'Pipelines',
+          title: this.$t('Pipelines'),
           icon: 'account_tree',
           link: '#/Pipelines'
         }
       ],
       lowLinks: [
         {
-          title: 'EZ Market Place',
+          title: this.$t('EZ Market Place'),
           icon: 'storefront',
           link: '#/MarketPlace',
           id: 'ezMarketPlace',
@@ -182,17 +182,17 @@ export default {
           notificationTextColor: 'white',
           subMenus: [
             {
-              title: 'Notifications',
+              title: this.$t('Notifications'),
               icon: 'mail_outline',
               link: '#/MarketPlace/Notifications'
             },
             {
-              title: 'Pipeline Templates',
+              title: this.$t('Pipeline Templates'),
               icon: 'account_tree',
               link: '#/MarketPlace/PipelineTemplates'
             },
             {
-              title: 'My Profile',
+              title: this.$t('My Profile'),
               icon: 'person',
               link: '#/MarketPlace/PublisherProfile'
             }
@@ -202,7 +202,7 @@ export default {
           separator: true
         },
         {
-          title: 'Admin',
+          title: this.$t('Admin'),
           icon: 'admin_panel_settings',
           link: '#/Admin',
           needsPriviledge: true,
@@ -212,7 +212,7 @@ export default {
           notificationTextColor: 'white'
         },
         {
-          title: 'Settings',
+          title: this.$t('Settings'),
           icon: 'settings',
           link: '#/Settings'
         },
@@ -220,7 +220,7 @@ export default {
           separator: true
         },
         {
-          title: 'Log Out',
+          title: this.$t('Log Out'),
           icon: 'logout',
           link: '#/Logout'
         }
