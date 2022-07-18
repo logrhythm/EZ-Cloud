@@ -1754,8 +1754,6 @@ export default {
     }
   },
   mounted () {
-    console.log('this.$t') // XXXX
-    console.log(this.$t) // XXXX
     if (this.$route.params.pipelineUid && this.$route.params.pipelineUid.length) {
       if (this.pipelineUid !== this.$route.params.pipelineUid) {
         this.pipelineUid = this.$route.params.pipelineUid
