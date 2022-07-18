@@ -9,7 +9,7 @@
       @mouseout="miniState = true"
       mini-to-overlay
 
-      :width="220"
+      :width="300"
       :breakpoint="500"
       bordered
 
@@ -32,23 +32,6 @@
         </q-scroll-area>
       </div>
       <q-list class="col-auto">
-        <q-item >
-          <q-tooltip content-style="font-size: 1rem;">
-            Change language
-          </q-tooltip>
-          <q-item-section
-            side
-          >
-            <q-avatar size="24px" class="q-pa-none" square>
-              <q-icon name="translate" size="sm" color="white" />
-            </q-avatar>
-          </q-item-section>
-
-          <q-item-section>
-            <q-item-label class="text-orange"><LanguageSwitch/></q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-separator class="q-my-xs" />
 
         <q-item v-if="needToConfigureMsSql">
           <q-tooltip content-style="font-size: 1rem;">
@@ -153,14 +136,13 @@
 <script>
 import { mapState } from 'vuex'
 import EssentialLink from 'components/EssentialLink.vue'
-import LanguageSwitch from 'components/LanguageSwitch.vue'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import { version } from '../../package.json'
 import { date } from 'quasar'
 
 export default {
   name: 'MainLayout',
-  components: { EssentialLink, LanguageSwitch },
+  components: { EssentialLink },
   mixins: [
     mixinSharedSocket // Shared function and state to access the Socket.io
   ],

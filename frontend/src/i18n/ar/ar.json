@@ -1,0 +1,492 @@
+{
+  "Sign in to OC Admin": "سجّل الدخول إلى مسؤول OC",
+  "Switch between Light and Dark mode": "التبديل بين الوضع الفاتح والداكن",
+  "Username": "اسم المستخدم",
+  "Username is required": "اسم المستخدم مطلوب",
+  "Password": "كلمة المرور",
+  "Authentication failed.": "المصادقة فشلت.",
+  "Login": "تسجيل الدخول",
+  "Save settings to local web browser.": "حفظ الإعدادات لمتصفح الويب المحلي.",
+  "New Pipeline Details": "تفاصيل خطوط الأنابيب الجديدة",
+  "Pipeline Details": "تفاصيل خط الأنابيب",
+  "Add new Pipeline": "إضافة خط أنابيب جديد",
+  "Cancel": "يلغي",
+  "Open this Pipeline": "افتح خط الأنابيب هذا",
+  "Delete Pipeline": "حذف خط الأنابيب",
+  "New OpenCollector": "OpenCollector الجديد",
+  "OpenCollector Details": "تفاصيل OpenCollector",
+  "Add new OpenCollector": "أضف OpenCollector الجديد",
+  "Update OpenCollector": "قم بتحديث OpenCollector",
+  "Open this OpenCollector": "افتح ملف OpenCollector هذا",
+  "Edit OpenCollector details": "تحرير تفاصيل OpenCollector",
+  "Delete OpenCollector": "حذف OpenCollector",
+  "Refresh stats for this OpenCollector": "تحديث الإحصائيات لهذا OpenCollector",
+  "OpenCollector name cannot be empty": "لا يمكن أن يكون اسم OpenCollector فارغًا",
+  "OpenCollector Host name cannot be empty": "لا يمكن أن يكون اسم مضيف OpenCollector فارغًا",
+  "OpenCollector port cannot be empty": "لا يمكن أن يكون منفذ OpenCollector فارغًا",
+  "OpenCollector Name": "OpenCollector اسم",
+  "Host name": "اسم المضيف",
+  "SSH Port": "منفذ SSH",
+  "SSH User name": "اسم مستخدم SSH",
+  "SSH Password": "كلمة مرور SSH",
+  "SSH Private Key": "مفتاح SSH الخاص",
+  "Private Key": "مفتاح سري",
+  "Downloading": "جارى التحميل",
+  "Succesfully loaded": "تم تحميلها بنجاح",
+  "[API SUCCESS]": "[نجاح API]",
+  "[API ERROR]": "[API خطأ]",
+  "Error querying persistance layer.": "خطأ في الاستعلام عن طبقة المقاومة.",
+  "Invalid response": "استجابة غير صالحة",
+  "No \"response\" object in AJAX response": "لا يوجد كائن \"response \" في استجابة AJAX",
+  "Loading error": "خطأ في التحميل",
+  "Uploading": "تحميل",
+  "Succesfully updated": "تم التحديث بنجاح",
+  "Update error": "خطأ في التحديث",
+  "EZ Server API returned an error.": "أرجع EZ Server API خطأ.",
+  "Switch to this Collection Method.": "قم بالتبديل إلى طريقة التجميع هذه.",
+  "Downloading Input Configuration file...": "تحميل ملف تكوين الإدخال ...",
+  "Input Configuration file downloaded": "تم تنزيل ملف تكوين الإدخال",
+  "Problem while downloading Input Configuration file:": "مشكلة أثناء تنزيل ملف تكوين الإدخال:",
+  "Edit Pipeline details": "تحرير تفاصيل خط الأنابيب",
+  "Update Pipeline": "تحديث خط الأنابيب",
+  "Pipeline name cannot be empty": "لا يمكن أن يكون اسم خط الأنابيب فارغًا",
+  "Edit Deployment details": "تحرير تفاصيل النشر",
+  "Delete Deployment": "حذف النشر",
+  "Deploy": "نشر",
+  "Un-deploy": "إلغاء النشر",
+  "This Stream has already been deployed on this OpenCollector.": "تم نشر هذا التدفق بالفعل على OpenCollector هذا.",
+  "This will remove the configuration from the Shipper on the OpenCollector, but will leave the OpenCollector's Pipeline and SIEM Log Source as they are.": "سيؤدي هذا إلى إزالة التكوين من الشاحن على OpenCollector ، ولكنه سيترك خط أنابيب OpenCollector ومصدر سجل SIEM كما هما.",
+  "New User Account": "حساب مستخدم جديد",
+  "Add new User Account": "إضافة حساب مستخدم جديد",
+  "User Account Details": "تفاصيل حساب المستخدم",
+  "Edit Account details": "تحرير تفاصيل الحساب",
+  "Account Username cannot be empty": "لا يمكن أن يكون اسم مستخدم الحساب فارغًا",
+  "Delete Account": "حذف الحساب",
+  "Update User Account": "تحديث حساب المستخدم",
+  "New User Role": "دور مستخدم جديد",
+  "Add new User Role": "إضافة دور مستخدم جديد",
+  "Update User Role": "تحديث دور المستخدم",
+  "User Role Details": "تفاصيل دور المستخدم",
+  "Edit Role details": "تحرير تفاصيل الدور",
+  "Delete Role": "حذف الدور",
+  "Role Name cannot be empty": "لا يمكن أن يكون اسم الدور فارغًا",
+  "What did just go wrong?": "ما الخطأ الذي حدث للتو؟",
+  "Manage User Accounts": "إدارة حسابات المستخدمين",
+  "Manage User Roles": "إدارة أدوار المستخدم",
+  "Close": "قريب",
+  "Downloading Importable Collection Configuration file...": "تحميل ملف تكوين المجموعة القابلة للاستيراد ...",
+  "Importable Collection Configuration file downloaded": "تم تنزيل ملف تكوين المجموعة القابلة للاستيراد",
+  "Problem while downloading Importable Collection Configuration file:": "مشكلة أثناء تنزيل ملف تكوين المجموعة القابلة للاستيراد:",
+  "Import OC Admin Collection Configuration": "استيراد تكوين مجموعة مسؤول OC",
+  "Import Configuration": "تكوين الاستيراد",
+  "Importing Shared Collection Configuration file...": "جاري استيراد ملف تكوين مجموعة مشتركة ...",
+  "Shared Collection Configuration file imported": "تم استيراد ملف تكوين المجموعة المشتركة",
+  "Problem while importing Shared Collection Configuration file": "حدثت مشكلة أثناء استيراد ملف تكوين المجموعة المشتركة",
+  "Import OC Admin Fields Mapping": "استيراد تعيين حقول مسؤول OC",
+  "Import Fields Mapping": "استيراد تعيين الحقول",
+  "Downloading Importable Fields Mapping file...": "تحميل ملف تعيين الحقول القابلة للاستيراد ...",
+  "Importable Fields Mapping file downloaded": "تم تنزيل ملف تعيين الحقول القابل للاستيراد",
+  "Problem while downloading Importable Fields Mapping file:": "مشكلة أثناء تنزيل ملف تعيين الحقول القابلة للاستيراد:",
+  "Importing Shared Fields Mapping file...": "استيراد ملف تعيين الحقول المشتركة ...",
+  "Shared Fields Mapping file imported": "تم استيراد ملف تعيين الحقول المشتركة",
+  "Problem while importing Shared Fields Mapping file": "حدثت مشكلة أثناء استيراد ملف تعيين الحقول المشتركة",
+  "Notifications": "إشعارات",
+  "You've got no notifications (yet...)": "ليس لديك أي إشعارات (حتى الآن ...)",
+  "Clear notifications": "مسح الإخطارات",
+  "Mark All Notifications as Read": "وضع علامة \"مقروءة\" على كافة الإخطارات",
+  "Reload": "إعادة تحميل",
+  "Mark as Read": "ضع إشارة مقروء",
+  "Mark as Unread": "وضع علامة كغير مقروءة",
+  "Delete": "حذف",
+  "Confirm": "يتأكد",
+  "View Notifications": "عرض الاشعارات",
+  "View Pipeline Templates": "عرض قوالب خطوط الأنابيب",
+  "Import Template into a new Pipeline": "استيراد قالب إلى خط أنابيب جديد",
+  "Create from Template": "إنشاء من قالب",
+  "Import Template into an existing Pipeline": "استيراد قالب إلى خط أنابيب موجود",
+  "Import Collection and Fields Mapping": "مجموعة الاستيراد وتخطيط الحقول",
+  "Import Collection only": "مجموعة الاستيراد فقط",
+  "Import Fields Mapping only": "استيراد تعيين الحقول فقط",
+  "Frequency": "تكرار",
+  "Field Full Paths": "المسارات الميدانية الكاملة",
+  "Mappings": "التعيينات",
+  "Modifiers": "الصفات التعريفية",
+  "Actions": "أجراءات",
+  "Status": "حالة",
+  "Pipeline Name": "اسم خط الأنابيب",
+  "Shipper": "الشاحن",
+  "Method": "طريقة",
+  "Mapping (%)": "رسم الخرائط (٪)",
+  "Open this Pipeline Template": "افتح قالب خط الأنابيب هذا",
+  "Can't open.": "لا يمكن فتح.",
+  "Still Pending Review.": "لا يزال في انتظار المراجعة.",
+  "Confirm overide": "تأكيد تجاوز",
+  "This will overide any existing Collection Configuration and Fields Mapping in the selected Pipeline. Are you sure?": "سيؤدي هذا إلى تجاوز أي تكوين مجموعة موجود وتعيين الحقول في خط الأنابيب المحدد. هل أنت واثق؟",
+  "This will overide any existing Collection Configuration in the selected Pipeline. Are you sure?": "سيؤدي هذا إلى تجاوز أي تكوين مجموعة موجود في خط الأنابيب المحدد. هل أنت واثق؟",
+  "This will overide any existing Fields Mapping in the selected Pipeline. Are you sure?": "سيؤدي هذا إلى تجاوز أي تعيين للحقول موجود في خط الأنابيب المحدد. هل أنت واثق؟",
+  "Open Pipeline Template full properties": "افتح الخصائص الكاملة لقالب خط الأنابيب",
+  "Import OC Admin Pipeline Template": "استيراد OC Admin Pipeline Template",
+  "Importing Shared Collection Configuration from Template...": "استيراد تكوين مجموعة مشتركة من قالب ...",
+  "Importing Shared Fields Mapping from Template...": "استيراد تعيين الحقول المشتركة من قالب ...",
+  "Importing Shared Collection Configuration and Fields Mapping from Template...": "استيراد تكوين مجموعة مشتركة وتعيين الحقول من قالب ...",
+  "Export OC Admin Pipeline Template to EZ Market Place": "تصدير OC Admin Pipeline Template إلى EZ Market Place",
+  "Shared Collection Configuration imported from Template...": "تم استيراد تكوين المجموعة المشتركة من قالب ...",
+  "Shared Fields Mapping imported from Template...": "تم استيراد تعيين الحقول المشتركة من قالب ...",
+  "Shared Collection Configuration and Fields Mapping imported from Template...": "تم استيراد تكوين المجموعة المشتركة وتعيين الحقول من قالب ...",
+  "Problem while importing Shared Collection Configuration from Template.": "حدثت مشكلة أثناء استيراد تكوين مجموعة مشتركة من قالب.",
+  "Problem while importing Shared Fields Mapping from Template.": "حدثت مشكلة أثناء استيراد تعيين الحقول المشتركة من القالب.",
+  "Problem while importing Shared Collection Configuration and Fields Mapping from Template.": "حدثت مشكلة أثناء استيراد تكوين المجموعة المشتركة وتعيين الحقول من القالب.",
+  "This will overide any existing Collection Configuration and Fields Mapping in the current Pipeline. Are you sure?": "سيؤدي هذا إلى تجاوز أي تكوين مجموعة حالي وتعيين الحقول في خط الأنابيب الحالي. هل أنت واثق؟",
+  "This will overide any existing Collection Configuration in the current Pipeline. Are you sure?": "سيؤدي هذا إلى تجاوز أي تكوين مجموعة موجود في خط الأنابيب الحالي. هل أنت واثق؟",
+  "This will overide any existing Fields Mapping in the current Pipeline. Are you sure?": "سيؤدي هذا إلى تجاوز أي تعيين للحقول موجود في خط الأنابيب الحالي. هل أنت واثق؟",
+  "View My Profile": "عرض ملف التعريف الخاص بي",
+  "Edit My Profile": "تعديل ملفي الشخصي",
+  "My Publisher Profile": "ملف الناشر الخاص بي",
+  "Publisher pseudo-name cannot be empty": "لا يمكن أن يكون الاسم المستعار للناشر فارغًا",
+  "Reload Publisher Profile": "إعادة تحميل ملف تعريف الناشر",
+  "Your Publisher profile doesn't exist yet.": "ملف تعريف الناشر الخاص بك غير موجود حتى الآن.",
+  "You need one to be able to publish anything to the MarketPlace.": "أنت بحاجة إلى واحد لتتمكن من نشر أي شيء في MarketPlace.",
+  "Error loading Publisher's details": "خطأ في تحميل تفاصيل الناشر",
+  "Publish": "ينشر",
+  "Publishing as:": "النشر باسم:",
+  "Pipeline Template Details": "تفاصيل قالب خط الأنابيب",
+  "Name": "اسم",
+  "Make sure to include vendor and product name.": "تأكد من تضمين اسم البائع والمنتج.",
+  "Export to EZ Market Place": "تصدير إلى EZ Market Place",
+  "Sanitisation": "التعقيم",
+  "Data to be exported": "البيانات المراد تصديرها",
+  "Pipeline Template name cannot be empty": "لا يمكن أن يكون اسم قالب خط الأنابيب فارغًا",
+  "Manage MS SQL Connection": "إدارة اتصال MS SQL",
+  "Return to List": "العودة إلى القائمة",
+  "Return to Admin": "العودة إلى المسؤول",
+  "Admin : SIEM : Manage MS SQL Connection": "المسؤول: SIEM: إدارة اتصال MS SQL",
+  "MS SQL Connection": "اتصال MS SQL",
+  "OC-Admin backend needs access to the SIEM database for certain operations, like listing and managing the Open Collector and OC-Admin related Log Sources.": "تحتاج الواجهة الخلفية لـ OC-Admin إلى الوصول إلى قاعدة بيانات SIEM لعمليات معينة ، مثل سرد وإدارة مصادر السجل ذات الصلة بـ Open Collector و OC-Admin.",
+  "To accomplish this, it needs to know the PM or XM address and SQL credentials.": "لتحقيق ذلك ، يحتاج إلى معرفة عنوان PM أو XM وبيانات اعتماد SQL.",
+  "Hostname (XM or Platform Manager)": "اسم المضيف (XM أو Platform Manager)",
+  "Hostname cannot be empty": "لا يمكن أن يكون اسم المضيف فارغًا",
+  "MS SQL Port": "منفذ MS SQL",
+  "Port must be specified": "يجب تحديد المنفذ",
+  "Port should be between 1 and 65535. Standard MS SQL port is 1433.": "يجب أن يكون المنفذ بين 1 و 65535. منفذ MS SQL القياسي هو 1433.",
+  "Username cannot be empty": "اسم المستخدم لا يمكن أن يكون فارغا",
+  "Really?! An empty Password?": "حقًا؟! كلمة مرور فارغة؟",
+  "Encrypt traffic": "تشفير حركة المرور",
+  "Enable encryption between OC-Admin backend and MS SQL on the XM or Platform Manager (PM)": "تمكين التشفير بين الخلفية OC-Admin و MS SQL على XM أو Platform Manager (PM)",
+  "Save settings": "احفظ التغييرات",
+  "The MS SQL connection configuration is managed on the Backend.": "تتم إدارة تكوين اتصال MS SQL على الواجهة الخلفية.",
+  "Nothing to do here.": "لا شيء تفعله هنا.",
+  "No connection to the SIEM": "لا يوجد اتصال مع SIEM",
+  "Go to Admin": "انتقل إلى المسؤول",
+  "SIEM Not Connected": "SIEM غير متصل",
+  "The connection details to the SQL server on the SIEM are missing.": "تفاصيل الاتصال بخادم SQL على SIEM مفقودة.",
+  "A lot of things will not work until this is configred.": "لن تعمل الكثير من الأشياء حتى يتم تكوين هذا.",
+  "Go to the Admin page and fix it.": "انتقل إلى صفحة المسؤول وقم بإصلاحها.",
+  "Live connection with server has been lost.": "انقطع الاتصال المباشر بالخادم.",
+  "Some features might not work anymore.": "قد لا تعمل بعض الميزات بعد الآن.",
+  "Disconnected": "انقطع الاتصال",
+  "Open Collectors": "افتح المجمعات",
+  "Pipelines": "خطوط الأنابيب",
+  "EZ Market Place": "سوق EZ",
+  "Pipeline Templates": "قوالب خطوط الأنابيب",
+  "My Profile": "ملفي",
+  "Admin": "مسؤل",
+  "Settings": "إعدادات",
+  "Log Out": "تسجيل خروج",
+  "A lot of things will NOT work until this is configred. Are you sure you want to ignore this for now?": "لن تعمل الكثير من الأشياء حتى يتم تكوين هذا. هل أنت متأكد أنك تريد تجاهل هذا الآن؟",
+  "Yes": "نعم",
+  "No": "رقم",
+  "Bye bye": "مع السلامة",
+  "You have successfuly logged out.": "لقد قمت بتسجيل الخروج بنجاح.",
+  "Log Back In": "تسجيل الدخول مرة أخرى",
+  "OpenCollectors": "OpenCollectors",
+  "No OpenCollector to display.": "لا يوجد OpenCollector للعرض.",
+  "OpenCollectors per page:": "OpenCollectors لكل صفحة:",
+  "Create a new OpenCollector.": "قم بإنشاء OpenCollector جديد.",
+  "Add New OpenCollector": "أضف New OpenCollector",
+  "Search": "يبحث",
+  "Reload the list of OpenCollectors.": "أعد تحميل قائمة OpenCollectors.",
+  "Failed to connect to the server.": "فشل الاتصال بالخادم.",
+  "Check the Open Collector details and Credentials.": "تحقق من تفاصيل Open Collector وبيانات الاعتماد.",
+  "Add another Shipper": "أضف شاحنًا آخر",
+  "Installation Logs": "سجلات التثبيت",
+  "Job completed successfuly": "اكتملت المهمة بنجاح",
+  "Job failed to complete": "فشل المهمة في إكمال",
+  "Completed steps:": "الخطوات المكتملة:",
+  "Hostname": "اسم المضيف",
+  "Authentication Method": "طريقة المصادقة",
+  "OS version": "إصدار نظام التشغيل",
+  "OpenCollector version": "إصدار OpenCollector",
+  "Installed Shippers": "الشاحنين المثبتين",
+  "password": "كلمه السر",
+  "private_key": "مفتاح سري",
+  "Not Installed": "غير مثبت",
+  "Do you REALLY want to delete this OpenCollector?": "هل تريد حقًا حذف OpenCollector هذا؟",
+  "Live (Socket) connection with the EZ Server has been lost or is not currently established.": "تم فقد الاتصال المباشر (Socket) بخادم EZ أو لم يتم تأسيسه حاليًا.",
+  "Shipper deployment could not start due to no live socket available.": "تعذر بدء نشر الشاحن بسبب عدم توفر مقبس مباشر.",
+  "Create a new Pipeline.": "قم بإنشاء خط أنابيب جديد.",
+  "Reload the list of Pipelines.": "أعد تحميل قائمة خطوط الأنابيب.",
+  "Add New Pipeline": "إضافة خط أنابيب جديد",
+  "No Pipeline to display.": "لا يوجد خط أنابيب لعرضه.",
+  "Pipelines per page:": "خطوط الأنابيب في الصفحة:",
+  "Primary Open Collector": "جامع الفتح الأساسي",
+  "Collecting Shipper": "جمع الشاحن",
+  "Collection Method": "طريقة الجمع",
+  "Fields Mapped (%)": "الحقول المعينة (٪)",
+  "Do you REALLY want to delete this Pipeline?": "هل تريد حقًا حذف خط الأنابيب هذا؟",
+  "Unknown or not set": "غير معروف أم لم يتم تعيينه",
+  "Collection": "مجموعة",
+  "Edit Collection": "تحرير المجموعة",
+  "Download Collection configuration as a Shipper configuration file": "قم بتنزيل تكوين المجموعة كملف تكوين الشاحن",
+  "Copy Collection configuration in Shipper's format to Clipboard": "نسخ تكوين المجموعة بتنسيق Shipper إلى Clipboard",
+  "Share and Import Collection Configuration": "تكوين مجموعة المشاركة والاستيراد",
+  "Share as a Local File": "شارك كملف محلي",
+  "As an importable OC Admin Collection Configuration file": "كملف تكوين مجموعة مسؤول OC القابل للاستيراد",
+  "Share via the Marketplace": "شارك عبر السوق",
+  "As an importable OC Admin Collection Configuration": "كتكوين OC Admin Collection قابل للاستيراد",
+  "Import from Local File": "استيراد من ملف محلي",
+  "Import a shared OC Admin Collection Configuration file": "قم باستيراد ملف تكوين مجموعة مسؤول OC مشترك",
+  "Import from Marketplace": "الاستيراد من السوق",
+  "Import a shared OC Admin Collection Configuration": "استيراد تكوين مجموعة مسؤول OC مشترك",
+  "What's the difference?": "ماهو الفرق؟",
+  "A quick peek at the Wiki": "نظرة خاطفة سريعة على ويكي",
+  "Delete Collection Configuration": "حذف تكوين المجموعة",
+  "Mapping": "رسم الخرائط",
+  "Edit Mapping": "تحرير التعيين",
+  "Download Mapping as JQ Pipeline": "تنزيل الخرائط كـ JQ Pipeline",
+  "Share and Import Mapping": "مشاركة واستيراد الخرائط",
+  "Delete Mapping": "حذف التعيين",
+  "Share Field Frequencies": "مشاركة الترددات الميدانية",
+  "Include the frequency statistics for each field": "قم بتضمين إحصائيات التردد لكل مجال",
+  "Share Field Values": "مشاركة قيم الحقول",
+  "Include all the observed values for each field": "قم بتضمين جميع القيم الملاحظة لكل حقل",
+  "This could lead to sharing sensitive information": "هذا يمكن أن يؤدي إلى تبادل المعلومات الحساسة",
+  "Share Field SIEM Mapping": "مشاركة خريطة SIEM الميدانية",
+  "Include the SIEM tags mapping for each field": "قم بتضمين تعيين علامات SIEM لكل حقل",
+  "Share Field Modifiers": "مشاركة المعدلات الميدانية",
+  "Include the modifiers for each field": "قم بتضمين المعدلات لكل حقل",
+  "As an importable OC Admin Mapping file": "كملف OC Admin Mapping القابل للاستيراد",
+  "As an importable OC Admin Mapping": "باعتباره تعيين مسؤول OC القابل للاستيراد",
+  "Import a shared OC Admin Mapping file": "قم باستيراد ملف تعيين مسؤول OC مشترك",
+  "Import a shared OC Admin Mapping": "استيراد تعيين مسؤول OC مشترك",
+  "Deployments": "عمليات النشر",
+  "Current Deployments": "عمليات النشر الحالية",
+  "Create a new Deployment.": "قم بإنشاء عملية نشر جديدة.",
+  "Add Deployment": "أضف النشر",
+  "No Deployment to display.": "لا يوجد نشر للعرض.",
+  "Deployments per page:": "عمليات النشر لكل صفحة:",
+  "Add New Deployment": "أضف نشر جديد",
+  "Disabled / Un-deployed": "معطل / غير منتشر",
+  "Click or Drop a .ezCollection file here": "انقر أو أسقط ملف .ezCollection هنا",
+  "Pipelines Templates": "قوالب خطوط الأنابيب",
+  "No Pipeline Template to display.": "لا يوجد قالب خط أنابيب للعرض.",
+  "Pipeline Templates per page:": "قوالب خطوط الأنابيب لكل صفحة:",
+  "Reload the list of Pipeline Templates.": "أعد تحميل قائمة قوالب خطوط الأنابيب.",
+  "Visible": "مرئي",
+  "Pending review": "في انتظار المراجعة",
+  "Failed Review": "مراجعة فاشلة",
+  "Hidden": "مختفي",
+  "To be deleted": "ليتم حذفها",
+  "Unread": "غير مقروء",
+  "Read": "اقرأ",
+  "The item is publicly visible": "العنصر مرئي للعامة",
+  "The item is to be reviewed": "البند هو للمراجعة",
+  "The item has been reviewed negatively": "تمت مراجعة العنصر بشكل سلبي",
+  "The item is hidden": "العنصر مخفي",
+  "The item is flag for deletion": "العنصر هو علامة للحذف",
+  "The item is marked as Not Read": "تم وضع علامة على العنصر على أنه لم تتم قراءته",
+  "The item is marked as Read": "تم وضع علامة \"مقروءة\" على العنصر",
+  "Disabled": "عاجز",
+  "Enabled": "ممكن",
+  "New": "جديد",
+  "Dev": "ديف",
+  "Ready": "مستعد",
+  "Locked": "مقفل",
+  "Absent": "غائب",
+  "Installed": "المثبتة",
+  "Running": "ادارة",
+  "Shipper and Method:": "الشاحن والطريقة:",
+  "Shipper:": "الشاحن:",
+  "Method:": "طريقة:",
+  "Detected fields:": "الحقول المكتشفة:",
+  "Mapped fields:": "الحقول المعينة:",
+  "Shared Frequency": "التردد المشترك",
+  "Shared Mapping": "رسم الخرائط المشتركة",
+  "Shared Modifiers": "المعدلات المشتركة",
+  "Click or Drop a .ezFieldsMapping file here": "انقر أو أسقط ملف .ezFieldsMapping هنا",
+  "Open Collector": "جامع مفتوح",
+  "Icon / Logo": "رمز / شعار",
+  "Pipeline Template Name": "اسم قالب خط الأنابيب",
+  "Publisher": "الناشر",
+  "Created": "مخلوق",
+  "No Collection Method configured.": "لم يتم تكوين طريقة التجميع.",
+  "Unknown output format.": "تنسيق الإخراج غير معروف.",
+  "No Collecting Shipper configured.": "لم يتم تكوين الشاحن المحصل.",
+  "Do you REALLY want to delete the Mapping information for this Pipeline?": "هل تريد حقًا حذف معلومات التعيين لخط الأنابيب هذا؟",
+  "Do you REALLY want to delete the Collection information for this Pipeline?": "هل تريد حقًا حذف معلومات المجموعة لخط الأنابيب هذا؟",
+  "Only .ezCollection files are accepted. You tried to import:": "يتم قبول ملفات .ezCollection فقط. لقد حاولت الاستيراد:",
+  "Error trying to parse the content of the imported Collection Configuration file. Error:": "خطأ في محاولة تحليل محتوى ملف تكوين المجموعة الذي تم استيراده. خطأ:",
+  "Only one .ezCollection file is accepted. You tried to import multiple files.": "يتم قبول ملف .ezCollection واحد فقط. لقد حاولت استيراد عدة ملفات.",
+  "Error trying to open the file. Error:": "خطأ في محاولة فتح الملف. خطأ:",
+  "Only .ezFieldsMapping files are accepted. You tried to import:": "يتم قبول ملفات .ezFieldsMapping فقط. لقد حاولت الاستيراد:",
+  "Error trying to parse the content of the imported Fields Mapping file. Error:": "خطأ في محاولة تحليل محتوى ملف تعيين الحقول الذي تم استيراده. خطأ:",
+  "⚠️ This will NOT un-deploy it. It will simply delete the database record about this deployment. To un-deploy, click on Edit and un-deploy from there.": "⚠️ لن يؤدي هذا إلى إلغاء نشره. سيحذف ببساطة سجل قاعدة البيانات حول هذا النشر. لإلغاء النشر ، انقر فوق تحرير وإلغاء النشر من هناك.",
+  "Do you REALLY want to delete this Deployment?": "هل تريد حقًا حذف هذا النشر؟",
+  "Collection Configuration": "تكوين المجموعة",
+  "Import PNG": "استيراد PNG",
+  "Detected / Extracted": "تم اكتشافه / استخراجه",
+  "No picture found in content": "لم يتم العثور على صورة في المحتوى",
+  "Accept": "قبول",
+  "Icon to be published": "الأيقونة المراد نشرها",
+  "Discard": "تجاهل",
+  "Readme": "التمهيدي",
+  "You selected not to export the Collection Configuration.": "لقد حددت عدم تصدير تكوين المجموعة.",
+  "Options": "خيارات",
+  "Fields Mapping": "رسم الخرائط",
+  "You selected not to export the Fields Mapping.": "لقد حددت عدم تصدير تعيين الحقول.",
+  "Raw Pipeline Template to be Published": "سيتم نشر قالب خط الأنابيب الخام",
+  "IMPORTANT": "مهم",
+  "Paste the PNG picture here": "الصق صورة PNG هنا",
+  "The *FIRST* picture is not in a PNG.": "الصورة * FIRST * ليست بتنسيق PNG.",
+  "Extract Beat's '.message' only": "استخراج Beat. الرسالة فقط",
+  "No Fields to display.": "لا توجد حقول لعرضها.",
+  "Fields per page:": "الحقول لكل صفحة:",
+  "Seen in": "شوهد في",
+  "of logs in the sample": "من السجلات في العينة",
+  "Please confirm": "يرجى تأكيد",
+  "Check list:": "قائمة تدقيق:",
+  "Icon / Logo, imported and accepted": "رمز / شعار ، مستورد ومقبول",
+  "Read Me / Instructions": "اقرأ لي / التعليمات",
+  "The instruction I wrote in the Read Me are clear and helpful": "التعليمات التي كتبتها في Read Me واضحة ومفيدة",
+  "I have sanitised the Collection Configuration": "لقد قمت بتعقيم تكوين المجموعة",
+  "I'm happy with the sanitisation settings for the Fields Mapping": "أنا سعيد بإعدادات التطهير لتعيين الحقول",
+  "I have reviewed everything twice, and I'm very happy with my handywork": "لقد راجعت كل شيء مرتين ، وأنا سعيد جدًا بعملي اليدوي",
+  "Return to Properties": "العودة إلى الخصائص",
+  "Collection Builder": "منشئ المجموعة",
+  "Save": "يحفظ",
+  "Reverse to last saved": "عكس لآخر حفظ",
+  "Advanced": "متقدم",
+  "Show Collection Configuration": "إظهار تكوين المجموعة",
+  "Show Collection Method Template": "إظهار قالب أسلوب المجموعة",
+  "Collection Parameters": "معلمات المجموعة",
+  "- 🟧 Required": "- 🟧 مطلوب",
+  "- ⬛ Read Only": "- ⬛ للقراءة فقط",
+  "Collection Params (JSON):": "مجموعة Params (JSON):",
+  "Collection Params (Yaml):": "كوليكشن بارامز (يمل):",
+  "Do you REALLY want to lose all your un-saved changes and revert to the last Saved version?": "هل تريد حقًا أن تفقد جميع التغييرات غير المحفوظة والعودة إلى آخر نسخة محفوظة؟",
+  "You will lose any un-saved changes and start fresh with the new Collection Method. Are you sure?": "ستفقد أي تغييرات غير محفوظة وتبدأ من جديد باستخدام طريقة التجميع الجديدة. هل أنت واثق؟",
+  "Failed to obfuscate the Secret. Error message:": "فشل في التعتيم على السر. رسالة خطأ:",
+  "This Secret must be obfuscated/encrypted to produce a valid configuration": "يجب إخفاء / تشفير هذا السر لإنتاج تكوين صالح",
+  "Obfuscate/encrypt this Secret": "قم بتشويش / تشفير هذا السر",
+  "Your Secret is properly obfuscated": "تم تعتيم سرك بشكل صحيح",
+  "Hide Secret": "إخفاء السر",
+  "Show Secret": "إظهار السر",
+  "Add Item": "اضافة عنصر",
+  "TRUE": "صحيح",
+  "FALSE": "خاطئة",
+  "Delete entry": "حذف المدخلات",
+  "Prompt": "مستعجل",
+  "<span class=\"text-bold\">Please enter the name of the new entry.</span><br><br><span style=\"opacity: .7\" class=\"text-italic\"><span class=\"text-bold\">Note: </span>This cannot be changed later.</span>": "<span class = \"text-bold \"> الرجاء إدخال اسم الإدخال الجديد. </span> <br> <br> <span style = \"opacity: .7 \" class = \"text-italic\"> <span class = \"text-bold \"> ملاحظة: </ span> لا يمكن تغيير هذا لاحقًا. </span>",
+  "Do you REALLY want to delete this entry?": "هل تريد حقًا حذف هذا الإدخال؟",
+  "Fields detected:": "الحقول المكتشفة:",
+  "Fields mapped:": "الحقول المعينة:",
+  "Collection Configuration:": "تكوين المجموعة:",
+  "Mapping Builder": "منشئ الخرائط",
+  "Start Live Tail": "ابدأ Live Tail",
+  "Stop Live Tail": "وقف لايف الذيل",
+  "Manual Import": "استيراد يدوي",
+  "Export JQ": "تصدير JQ",
+  "Show JQ": "عرض JQ",
+  "Hide JQ output": "إخفاء إخراج JQ",
+  "Show extra details": "إظهار التفاصيل الإضافية",
+  "Show Queues": "إظهار قوائم الانتظار",
+  "Show Communication & Shipper's Logs": "إظهار سجلات الاتصالات والشاحن",
+  "Show types in Fields list": "عرض الأنواع في قائمة الحقول",
+  "Show types in Value popups": "عرض الأنواع في القيم المنبثقة",
+  "Accept and Wrap non-JSON logs": "اقبل السجلات التي لا تنتمي إلى JSON ولفها",
+  "Import log messages manually": "استيراد رسائل السجل يدويًا",
+  "Hide Manual Import panel": "إخفاء لوحة الاستيراد اليدوي",
+  "Background Process max: {processInBackgroundMaxRate} / second": "الحد الأقصى للمعالجة في الخلفية: {processInBackgroundMaxRate} / ثانية",
+  "Max messages in Queue In: {queueInMaxSize}": "الحد الأقصى للرسائل في قائمة الانتظار: {queueInMaxSize}",
+  "Max messages in Processed Logs: {processedLogsMaxSize}": "الحد الأقصى للرسائل في السجلات المعالجة: {ProcessingLogsMaxSize}",
+  "Inbound Queue: {queueInOverQueueInMaxSize}% ({queueIn} / {queueInMaxSize}).": "قائمة الانتظار الواردة: {queueInOverQueueInMaxSize}٪ ({queueIn} / {queueInMaxSize}).",
+  "Processed Messages: {processedLogsCountOverProcessedLogsMaxSize}% ({processedLogsCount} / {processedLogsMaxSize}).": "الرسائل التي تمت معالجتها: {ProcessingLogsCountOverProcessedLogsMaxSize}٪ ({processorLogsCount} / {processorLogsMaxSize}).",
+  "Total Messages sent by the backend: {incomingLogCount}": "إجمالي الرسائل المرسلة بواسطة الخلفية: {incomingLogCount}",
+  "This includes the messages already in transit when the Live Tail got stopped.": "يتضمن هذا الرسائل التي كانت قيد النقل بالفعل عند توقف Live Tail.",
+  "Manual import": "الاستيراد اليدوي",
+  "Add to Queue": "إضافة إلى قائمة الانتظار",
+  "Copy to Clipboad": "نسخ إلى Clipboad",
+  "Clear out": "امسح",
+  "Single Log": "سجل واحد",
+  "Multiple Logs": "سجلات متعددة",
+  "File Import": "استيراد ملف",
+  "One single JSON log at a time": "سجل JSON واحد في كل مرة",
+  "One JSON entry per line": "إدخال JSON واحد لكل سطر",
+  "Click or Drop a file here": "انقر أو أسقط ملف هنا",
+  "Add Files Content to Queue": "إضافة محتوى الملفات إلى قائمة الانتظار",
+  "Add File Content to Queue": "إضافة محتوى الملف إلى قائمة الانتظار",
+  "As a Single Log": "كسجل واحد",
+  "One JSON Log per file": "سجل JSON واحد لكل ملف",
+  "As an Array of Logs": "كمصفوفة من السجلات",
+  "One JSON array of Logs per file": "مصفوفة JSON واحدة من السجلات لكل ملف",
+  "As a Set of Logs": "كمجموعة من السجلات",
+  "One JSON log per line": "سجل JSON واحد في كل سطر",
+  "Clear out file selection": "امسح اختيار الملف",
+  "Queues": "قوائم الانتظار",
+  "Input Queue": "قائمة انتظار الإدخال",
+  "Process Queue": "قائمة انتظار العملية",
+  "Freq.": "متكرر.",
+  "Fields": "مجالات",
+  "Read Only": "يقرأ فقط",
+  "Relative frequency {seenInLogCountOverMaxSeenInLog}% ({seenInLogCount} / {maxSeenInLog}).": "التردد النسبي {sawInLogCountOverMaxSeenInLog}٪ ({sawInLogCount} / {maxSeenInLog}).",
+  "N/A | Seen in {seenInLogCountOverProcessedLogsCount}% of the logs ({seenInLogCount} / {processedLogsCount}). | Seen in {seenInLogCountOverProcessedLogsCount}% of the logs ({seenInLogCount} / {processedLogsCount}).": "غير متاح | تمت مشاهدته في {sawInLogCountOverProcessedLogsCount}٪ من السجلات ({sawInLogCount} / {processorLogsCount}). | تمت مشاهدته في {sawInLogCountOverProcessedLogsCount}٪ من السجلات ({sawInLogCount} / {processorLogsCount}).",
+  "OpenCollector JQ": "OpenCollector JQ",
+  "JQ Filter": "مرشح JQ",
+  "Transform JQ": "تحويل JQ",
+  "Communication & Shipper Logs": "سجلات الاتصالات والشاحن",
+  "Clear": "صافي",
+  "Post-Tail killing/cleaning job finished.": "انتهت مهمة قتل / تنظيف ما بعد الذيل.",
+  "Post-Tail killing/cleaning job exited.": "تم إنهاء مهمة قتل / تنظيف ما بعد الذيل.",
+  "Tail could not start due to no live socket available.": "تعذر بدء الذيل بسبب عدم توفر مقبس مباشر.",
+  "object": "هدف",
+  "array": "مجموعة مصفوفة",
+  "string": "سلسلة",
+  "number": "رقم",
+  "boolean": "قيمة منطقية",
+  "Edit Deployment | Edit Deployment: {pipelineName} | Edit Deployment: {pipelineName}": "تحرير النشر | تحرير النشر: {pipelineName} | تحرير النشر: {pipelineName}",
+  "Select a Suitable Open Collector": "حدد مُجمعًا مفتوحًا مناسبًا",
+  "Available Open Collectors": "جامعات مفتوحة متاحة",
+  "No Open Collector to display.": "لا يوجد جامع مفتوح للعرض.",
+  "Open Collectors per page:": "افتح المُجمعات لكل صفحة:",
+  "The last step failed with this error message:": "فشلت الخطوة الأخيرة مع ظهور رسالة الخطأ هذه:",
+  "The last step failed with no error message.": "فشلت الخطوة الأخيرة مع عدم وجود رسالة خطأ.",
+  "| One step has been skipped. | {count} steps have been skipped.": "| تم تخطي خطوة واحدة. | تم تخطي {عدد} من الخطوات.",
+  "This is fine. Steps are typically skipped if not necessary for a given deployment.": "هذا جيد. يتم عادةً تخطي الخطوات إذا لم تكن ضرورية لعملية نشر معينة.",
+  "Un-Deployment Steps": "خطوات إلغاء النشر",
+  "Suitable": "متكافئ",
+  "Unsuitable": "غير ملائم",
+  "Unknown. Likely unsuitable ({propValue})": "مجهول. غير مناسب على الأرجح ({propValue})",
+  "The necessary Shipper to collect this source is not installed on this collector.": "لم يتم تثبيت الشاحن الضروري لجمع هذا المصدر على هذا المجمع.",
+  "Please go to the Collectors page to deploy this Shipper on this Collector.": "الرجاء الانتقال إلى صفحة المُجمعين لنشر هذا الشاحن على هذا المُجمع.",
+  "Missing:": "مفقود:",
+  "Log Source Name": "اسم مصدر السجل",
+  "Log Source ID": "معرف مصدر السجل",
+  "Log Source Host": "مضيف مصدر السجل",
+  "Log Source Host ID": "معرف مضيف مصدر السجل",
+  "Create and drop Beat's configuration in right location": "أنشئ إعدادات Beat وأفلتها في المكان الصحيح",
+  "Import JQ Pipeline into Open Collector": "استيراد JQ Pipeline إلى Open Collector",
+  "Create Log Source Type": "إنشاء نوع مصدر السجل",
+  "Create MPE Rule": "إنشاء قاعدة MPE",
+  "Create MPE Sub-Rule(s)": "إنشاء قاعدة (قواعد) فرعية MPE",
+  "Create Processing Policy": "إنشاء نهج المعالجة",
+  "Create Log Source (LS) Virtualisation": "إنشاء افتراضية مصدر السجل (LS)",
+  "Create new LS Virtualisation Item and associate it to LS Virtualisation": "قم بإنشاء عنصر افتراضية LS جديد واربطه بـ LS Virtualisation",
+  "Add LS Virtualisation to Open Collector Log Source": "أضف LS Virtualisation لفتح مصدر سجل المجمع",
+  "Update Beat configuration": "تحديث التكوين Beat",
+  "Re-import JQ Pipeline into Open Collector": "أعد استيراد JQ Pipeline إلى Open Collector",
+  "Modify MPE Sub-Rule(s)": "تعديل قواعد MPE الفرعية",
+  "Modify Processing Policy": "تعديل نهج المعالجة",
+  "Modify Log Source Virtualisation": "تعديل افتراضية مصدر السجل",
+  "Delete Beat configuration for Stream": "حذف تكوين Beat للدفق",
+  "Return to Market Place": "العودة إلى السوق",
+  "EZ Market Place : Notifications": "EZ Market Place: الإخطارات"
+}
