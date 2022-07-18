@@ -59,6 +59,7 @@ module.exports = function (/* ctx */) {
       // transpileDependencies: [],
 
       // rtl: false, // https://v1.quasar.dev/options/rtl-support
+      rtl: true, // https://v1.quasar.dev/options/rtl-support
       // preloadChunks: true,
       // showProgress: false,
       // gzip: true,

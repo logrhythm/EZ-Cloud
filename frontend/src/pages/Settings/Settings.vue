@@ -20,6 +20,7 @@
         </q-card-actions>
       </q-card-section>
     </q-card>
+
     <q-card class="q-pa-md q-mx-none">
       <q-card-section class="col">
         <div class="text-h4">Theme</div>
@@ -37,6 +38,32 @@
         </q-toggle>
       </q-card-section>
     </q-card>
+
+    <q-card class="q-pa-md q-mx-none">
+      <q-card-section horizontal>
+        <q-card-section class="col">
+          <div class="text-h4">Language</div>
+            <q-select
+              v-model="selectedLanguage"
+              :options="langOptions"
+              emit-value
+              map-options
+              style="min-width: 150px"
+            />
+        </q-card-section>
+
+        <q-separator vertical />
+
+        <q-card-actions>
+          <q-btn glossy class="full-height" color="primary" icon="save" @click="saveLanguageSettings()" :loading="savingAction" >
+            <q-tooltip content-style="font-size: 1em">
+              {{ $t('Save settings to local web browser.') }}
+            </q-tooltip>
+          </q-btn>
+        </q-card-actions>
+      </q-card-section>
+    </q-card>
+
   </q-page>
 </template>
 
@@ -53,7 +80,14 @@ export default {
       savingAction: false,
       ezBackendBaseUrlWeb: '',
       ezBackendBaseUrlApi: '',
-      ezBackendBaseUrlSocket: ''
+      ezBackendBaseUrlSocket: '',
+      selectedLanguage: this.$i18n.locale,
+      langOptions: [
+        { value: 'en-gb', label: 'English', rtl: false },
+        { value: 'fr', label: 'French', rtl: false },
+        { value: 'ar', label: 'Arabic', rtl: true },
+        { value: 'de', label: 'German', rtl: false }
+      ]
     }
   }, // data
   computed: {
@@ -69,6 +103,18 @@ export default {
       localStorage.setItem('settings.ezBackend.url.api', this.ezBackendBaseUrlApi)
       this.globalConstants.baseUrl.socket = this.ezBackendBaseUrlSocket
       localStorage.setItem('settings.ezBackend.url.socket', this.ezBackendBaseUrlSocket)
+    },
+    saveLanguageSettings () {
+      console.log('🙊 this.$q.lang.rtl', this.$q.lang.rtl)
+      this.$i18n.locale = this.selectedLanguage
+      localStorage.setItem('settings.selectedLanguage', this.selectedLanguage)
+      if (this.selectedLanguage === 'ar') {
+        this.$q.lang.rtl = true
+      } else {
+        this.$q.lang.rtl = false
+      }
+      console.log('🙊 this.$q.lang.rtl', this.$q.lang.rtl)
+      console.log(this.$i18n)
     }
   },
   mounted () {
