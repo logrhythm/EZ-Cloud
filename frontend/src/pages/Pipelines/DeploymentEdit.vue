@@ -2,16 +2,16 @@
   <q-page class="q-pa-sm">
     <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
-        <q-btn no-caps flat dense icon="arrow_back" label="Return to Properties" :to="'/Pipelines/' + this.pipelineUid + '/Properties'" />
+        <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Properties')" :to="'/Pipelines/' + this.pipelineUid + '/Properties'" />
         <q-separator vertical />
-        <q-toolbar-title style="opacity:.4" class="text-center">Edit Deployment<span v-if="pipeline && pipeline.name && pipeline.name.length">:  {{ pipeline.name }}</span></q-toolbar-title>
+        <q-toolbar-title style="opacity:.4" class="text-center">{{ $tc('Edit Deployment | Edit Deployment: {pipelineName} | Edit Deployment: {pipelineName}', (pipeline && pipeline.name && pipeline.name.length ? 1 : 0), { pipelineName: (pipeline && pipeline.name && pipeline.name.length ? pipeline.name : '') }) }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
     <div class=" q-gutter-y-sm">
       <q-card>
         <q-card-section class="col q-ma-none q-pa-none">
           <q-card-section class="text-h4">
-              Select a Suitable Open Collector
+              {{ $t('Select a Suitable Open Collector') }}
           </q-card-section>
           <q-card-section>
             <q-table
@@ -19,20 +19,20 @@
               :columns="columns"
               row-key="uid"
               dense
-              no-data-label="No Open Collector to display."
+              :no-data-label="$t('No Open Collector to display.')"
               :filter="searchFilter"
               :loading="dataLoading || collectorLogSourcesLoading"
-              rows-per-page-label="Open Collectors per page:"
+              :rows-per-page-label="$t('Open Collectors per page:')"
               :pagination.sync="pagination"
             >
               <template v-slot:top>
                 <div class="full-width row wrap justify-between">
                   <div class="q-table__title">
-                    Available Open Collectors
+                    {{ $t('Available Open Collectors') }}
                   </div>
                   <div class="row q-gutter-md">
                     <div style="width:300px;">
-                      <q-input outlined dense debounce="300" v-model="searchFilter" placeholder="Search">
+                      <q-input outlined dense debounce="300" v-model="searchFilter" :placeholder="$t('Search')">
                         <template v-slot:append>
                           <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
                           <q-icon name="search" />
@@ -41,7 +41,7 @@
                     </div>
                     <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadOpenCollectorsPipelinesAndLogSources()">
                       <q-tooltip content-style="font-size: 1em">
-                        Reload the list of Pipelines.
+                        {{ $t('Reload the list of Pipelines.') }}
                       </q-tooltip>
                     </q-btn>
                   </div>
@@ -126,8 +126,8 @@
                             <q-separator vertical class="q-mx-sm"/>
                             <q-separator vertical color="negative" size="0.2rem" class="q-ml-none q-mr-sm"/>
                             <div class="q-my-sm">
-                              <div class="text-bold text-orange" v-if="props.row.deploymentStatus.errorMessage && props.row.deploymentStatus.errorMessage.length">The last step failed with this error message:</div>
-                              <div class="text-bold" v-else>The last step failed with no error message.</div>
+                              <div class="text-bold text-orange" v-if="props.row.deploymentStatus.errorMessage && props.row.deploymentStatus.errorMessage.length">{{ $t('The last step failed with this error message:') }}</div>
+                              <div class="text-bold" v-else>{{ $t('The last step failed with no error message.') }}</div>
                               <div class="force-long-text-wrap ellipsis-3-lines" style="max-width: 35rem;">{{ props.row.deploymentStatus.errorMessage }}</div>
                             </div>
                           </div>
@@ -138,9 +138,8 @@
                             <q-icon name="redo" color="green-4" size="md" />
                             <q-separator vertical class="q-mx-sm"/>
                             <div class="q-my-sm">
-                              <div class="text-bold" v-if="deploymentProgressFor(props.row, 'deploymentStatus').skippedAbsolute > 1">{{ Math.round(deploymentProgressFor(props.row, 'deploymentStatus').skippedAbsolute) }} steps have been skipped.</div>
-                              <div class="text-bold" v-else>One step has been skipped.</div>
-                              <div class="">This is fine. Steps are typically skipped if not necessary for a given deployment.</div>
+                              <div class="text-bold">{{ $tc('| One step has been skipped. | {count} steps have been skipped.', Math.round(deploymentProgressFor(props.row, 'deploymentStatus').skippedAbsolute)) }}</div>
+                              <div class="">{{ $t('This is fine. Steps are typically skipped if not necessary for a given deployment.') }}</div>
                             </div>
                           </div>
                         </div>
@@ -185,7 +184,7 @@
                         <div class="row justify-between q-my-sm q-mr-sm">
                           <div class="row items-center q-gutter-x-sm">
                             <q-icon name="list" color="blue-3" size="md" />
-                            <div class="text-h6">Un-Deployment Steps</div>
+                            <div class="text-h6">{{ $t('Un-Deployment Steps') }}</div>
                           </div>
                           <div class="q-gutter-x-md">
                             <q-icon name="warning" color="orange" size="md" v-if="props.row && props.row.unDeployStatus && props.row.unDeployStatus.error === true" />
@@ -236,8 +235,8 @@
                             <q-separator vertical class="q-mx-sm"/>
                             <q-separator vertical color="negative" size="0.2rem" class="q-ml-none q-mr-sm"/>
                             <div class="q-my-sm">
-                              <div class="text-bold text-orange" v-if="props.row.unDeployStatus.errorMessage && props.row.unDeployStatus.errorMessage.length">The last step failed with this error message:</div>
-                              <div class="text-bold" v-else>The last step failed with no error message.</div>
+                              <div class="text-bold text-orange" v-if="props.row.unDeployStatus.errorMessage && props.row.unDeployStatus.errorMessage.length">{{ $t('The last step failed with this error message:') }}</div>
+                              <div class="text-bold" v-else>{{ $t('The last step failed with no error message.') }}</div>
                               <div class="force-long-text-wrap ellipsis-3-lines" style="max-width: 35rem;">{{ props.row.unDeployStatus.errorMessage }}</div>
                             </div>
                           </div>
@@ -248,9 +247,8 @@
                             <q-icon name="redo" color="green-4" size="md" />
                             <q-separator vertical class="q-mx-sm"/>
                             <div class="q-my-sm">
-                              <div class="text-bold" v-if="deploymentProgressFor(props.row, 'unDeployStatus').skippedAbsolute > 1">{{ Math.round(deploymentProgressFor(props.row, 'unDeployStatus').skippedAbsolute) }} steps have been skipped.</div>
-                              <div class="text-bold" v-else>One step has been skipped.</div>
-                              <div class="">This is fine. Steps are typically skipped if not necessary for a given deployment.</div>
+                              <div class="text-bold">{{ $tc('| One step has been skipped. | {count} steps have been skipped.', Math.round(deploymentProgressFor(props.row, 'unDeployStatus').skippedAbsolute)) }} </div>
+                              <div class="">{{ $t('This is fine. Steps are typically skipped if not necessary for a given deployment.') }}</div>
                             </div>
                           </div>
                         </div>
@@ -276,9 +274,9 @@
                   <q-icon name="thumb_down" color="red" size="md" v-else-if ="props.value === false" style="opacity: .6" />
                   <q-icon name="thumb_down_off_alt" color="orange" size="md" v-else style="opacity: .6" />
                   <q-tooltip content-style="font-size: 1em">
-                    <span v-if="props.value === true">Suitable</span>
-                    <span v-else-if ="props.value === false">Unsuitable</span>
-                    <span v-else>Unknown. Likely unsuitable ({{ props.value }})</span>
+                    <span v-if="props.value === true">{{ $t('Suitable') }}</span>
+                    <span v-else-if ="props.value === false">{{ $t('Unsuitable') }}</span>
+                    <span v-else>{{ $t('Unknown. Likely unsuitable ({propValue})', { propValue: props.value }) }}</span>
                   </q-tooltip>
                 </q-td>
               </template>
@@ -297,16 +295,21 @@
                   </div>
                   <div v-if="props.row.hasNecessaryShipper !== true">
                     <q-tooltip content-style="font-size: 1em;" >
-                      The necessary Shipper to collect this source is not installed on this collector.<br><br>
-                      Please go to the Collectors page to deploy this Shipper on this Collector.<br><br>
+                      {{ $t('The necessary Shipper to collect this source is not installed on this collector.') }}<br><br>
+                      {{ $t('Please go to the Collectors page to deploy this Shipper on this Collector.') }}<br><br>
                       <q-icon
                         name="info"
                         size="sm"
                         color="info"
                         class="q-mr-sm"
                       />
-                      <span class="text-bold">Missing:</span> {{ (pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : 'N/A') }}<br>
-                      <img class="q-ml-lg" :src="'/shippers/' + collectionShipperDetails((pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : null)).icon + '.svg'"  width="128px"/>
+                      <span class="text-bold">{{ $t('Missing:') }}</span><br>
+                      <div class="q-ml-lg q-mt-sm row ">
+                        <div class="text-center">
+                          <span class="" >{{ (pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : 'N/A') }}</span><br>
+                          <img class="q-mt-sm" :src="'/shippers/' + collectionShipperDetails((pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : null)).icon + '.svg'"  width="128px"/>
+                        </div>
+                      </div>
                     </q-tooltip>
                     <q-badge outline color="orange" class="q-gutter-x-sm">
                       <q-icon
@@ -353,14 +356,14 @@ export default {
       openCollectorUid: '',
       searchFilter: '',
       columns: [
-        { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
-        { name: 'status', align: 'center', label: 'Suitable', field: 'suitable', sortable: true },
-        { name: 'openCollector', align: 'center', label: 'Open Collector', field: 'openCollectorHost', sortable: true },
-        { name: 'installedShippers', align: 'center', label: 'Installed Shippers', field: row => (row.openCollector ? row.openCollector.installedShippers : undefined), sortable: true },
-        { name: 'name', align: 'center', label: 'Log Source Name', field: 'name', sortable: true },
-        { name: 'msgSourceId', align: 'center', label: 'Log Source ID', field: 'msgSourceId', sortable: true },
-        { name: 'hostName', align: 'center', label: 'Log Source Host', field: 'hostName', sortable: true },
-        { name: 'hostId', align: 'center', label: 'Log Source Host ID', field: 'hostId', sortable: true }
+        { name: 'actions', align: 'center', label: this.$t('Actions'), field: 'actions', sortable: false },
+        { name: 'status', align: 'center', label: this.$t('Suitable'), field: 'suitable', sortable: true },
+        { name: 'openCollector', align: 'center', label: this.$t('Open Collector'), field: 'openCollectorHost', sortable: true },
+        { name: 'installedShippers', align: 'center', label: this.$t('Installed Shippers'), field: row => (row.openCollector ? row.openCollector.installedShippers : undefined), sortable: true },
+        { name: 'name', align: 'center', label: this.$t('Log Source Name'), field: 'name', sortable: true },
+        { name: 'msgSourceId', align: 'center', label: this.$t('Log Source ID'), field: 'msgSourceId', sortable: true },
+        { name: 'hostName', align: 'center', label: this.$t('Log Source Host'), field: 'hostName', sortable: true },
+        { name: 'hostId', align: 'center', label: this.$t('Log Source Host ID'), field: 'hostId', sortable: true }
       ],
       pagination: {
         sortBy: 'status',
@@ -373,35 +376,35 @@ export default {
       deploymentStepsNewLogSource: [
         {
           uid: 'e745e0e6-60f6-4857-8afa-f8ea0663b6c3',
-          name: 'Create and drop Beat\'s configuration in right location',
+          name: this.$t('Create and drop Beat\'s configuration in right location'),
           status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/oc/UpdateStreamConfigurationForBeat',
           apiParamNames: ['openCollector', 'beat', 'stream']
         },
         {
           uid: 'd004f165-a028-4183-8e6d-f64534357c5d',
-          name: 'Import JQ Pipeline into Open Collector',
+          name: this.$t('Import JQ Pipeline into Open Collector'),
           status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/oc/ImportPipelineForBeat',
           apiParamNames: ['openCollector', 'beat', 'stream']
         },
         {
           uid: 'b632b998-cd67-4571-a384-31faf0053d1a',
-          name: 'Create Log Source Type',
+          name: this.$t('Create Log Source Type'),
           status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateLogSourceType',
           apiParamNames: ['uid', 'name']
         },
         {
           uid: '7e739d98-d427-4fac-9f63-392e8ccb4c94',
-          name: 'Create MPE Rule',
+          name: this.$t('Create MPE Rule'),
           status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateMpeRule',
           apiParamNames: ['uid', 'name']
         },
         { // NOT IMPLEMENTING THIS FOR NOW
           uid: '04ff4e8c-de73-419a-a48b-944b01bca836',
-          name: 'Create MPE Sub-Rule(s)',
+          name: this.$t('Create MPE Sub-Rule(s)'),
           status: 'To skip', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateMpeSubRule',
           apiParamNames: ['uid', 'SubRuleUid', 'SubRuleName', 'Tag1'],
@@ -409,21 +412,21 @@ export default {
         },
         {
           uid: '6fba3b49-580b-4ceb-b8be-374fc848fe63',
-          name: 'Create Processing Policy',
+          name: this.$t('Create Processing Policy'),
           status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateProcessingPolicy',
           apiParamNames: ['uid', 'name', 'MPEPolicy_Name']
         },
         {
           uid: 'dd1fae83-10af-40ea-bfe9-20ff668d5141',
-          name: 'Create Log Source (LS) Virtualisation',
+          name: this.$t('Create Log Source (LS) Virtualisation'),
           status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateLogSourceVirtualisationTemplate',
           apiParamNames: []
         },
         {
           uid: '857787cd-4ec5-4c06-b044-7aaf37de326f',
-          name: 'Create new LS Virtualisation Item and associate it to LS Virtualisation',
+          name: this.$t('Create new LS Virtualisation Item and associate it to LS Virtualisation'),
           status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateLogSourceVirtualisationTemplateItem',
           apiParamNames: ['uid', 'name']
@@ -438,7 +441,7 @@ export default {
         // },
         {
           uid: '5c0a3a9c-6d01-40e6-acb8-b0763a52bba3',
-          name: 'Add LS Virtualisation to Open Collector Log Source',
+          name: this.$t('Add LS Virtualisation to Open Collector Log Source'),
           status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateOpenCollectorLogSourceWithLogSourceVirtualisation',
           apiParamNames: ['uid', 'OpenCollectorMotherLogSourceID']
@@ -447,35 +450,35 @@ export default {
       deploymentStepsExistingLogSource: [
         {
           uid: 'd1038519-da8b-4580-91a6-8c34b3001327',
-          name: 'Update Beat configuration',
+          name: this.$t('Update Beat configuration'),
           status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/oc/UpdateStreamConfigurationForBeat',
           apiParamNames: ['openCollector', 'beat', 'stream']
         },
         {
           uid: 'b0f41342-c758-4453-8381-9be346f25dfe',
-          name: 'Re-import JQ Pipeline into Open Collector',
+          name: this.$t('Re-import JQ Pipeline into Open Collector'),
           status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/oc/ImportPipelineForBeat',
           apiParamNames: ['openCollector', 'beat', 'stream']
         },
         {
           uid: '3d0ef0a5-0c65-4b62-a68a-e1422490ffef',
-          name: 'Modify MPE Sub-Rule(s)',
+          name: this.$t('Modify MPE Sub-Rule(s)'),
           status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateMpeSubRule',
           apiParamNames: ['uid', 'SubRuleUid', 'SubRuleName', 'Tag1', 'Tag2', 'Tag3', 'Tag4', 'Tag5']
         },
         {
           uid: '32d0bf3c-9e09-4388-9a68-cec7c8b38529',
-          name: 'Modify Processing Policy',
+          name: this.$t('Modify Processing Policy'),
           status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateProcessingPolicy',
           apiParamNames: ['uid', 'name', 'MPEPolicy_Name']
         },
         {
           uid: '72e265cd-9d0d-469c-b1fd-8a319f3971b2',
-          name: 'Modify Log Source Virtualisation',
+          name: this.$t('Modify Log Source Virtualisation'),
           status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateLogSourceVirtualisationTemplateItem',
           apiParamNames: ['uid', 'name']
@@ -484,7 +487,7 @@ export default {
       unDeploySteps: [
         {
           uid: '8276950b-c01b-423e-8ce0-1ed23af6efe4',
-          name: 'Delete Beat configuration for Stream',
+          name: this.$t('Delete Beat configuration for Stream'),
           status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/oc/DeleteStreamConfigurationForBeat',
           apiParamNames: ['openCollector', 'beat', 'stream']

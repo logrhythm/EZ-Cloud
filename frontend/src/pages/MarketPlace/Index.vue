@@ -4,7 +4,7 @@
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
             <q-card-section class="text-h4">
-                EZ Market Place
+                {{ $t('EZ Market Place') }}
             </q-card-section>
             <q-card-section>
               <q-btn color="primary" icon='mail_outline' :label="$t('View Notifications')" to="/MarketPlace/Notifications" />
