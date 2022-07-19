@@ -15,7 +15,7 @@
 
       class="column"
     >
-    <div class="yep fit column">
+    <div class="fit column">
       <div
         class="col"
       >

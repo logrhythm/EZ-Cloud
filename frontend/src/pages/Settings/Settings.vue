@@ -3,10 +3,10 @@
     <q-card class="q-pa-md q-mx-none" v-if="devMode">
       <q-card-section horizontal>
         <q-card-section class="col">
-          <div class="text-h4">EZ Backend Base URLs</div>
-          <q-input v-model="ezBackendBaseUrlWeb" label="Website" autofocus />
-          <q-input v-model="ezBackendBaseUrlApi" label="API"  />
-          <q-input v-model="ezBackendBaseUrlSocket" label="Socket"  />
+          <div class="text-h4">{{ $t('EZ Backend Base URLs') }}</div>
+          <q-input v-model="ezBackendBaseUrlWeb" :label="$t('Website')" autofocus />
+          <q-input v-model="ezBackendBaseUrlApi" :label="$t('API')"  />
+          <q-input v-model="ezBackendBaseUrlSocket" :label="$t('Socket')"  />
         </q-card-section>
 
         <q-separator vertical />
@@ -23,7 +23,7 @@
 
     <q-card class="q-pa-md q-mx-none">
       <q-card-section class="col">
-        <div class="text-h4">Theme</div>
+        <div class="text-h4">{{ $t('Theme') }}</div>
         <q-toggle
           v-model="darkMode"
           checked-icon="dark_mode"
@@ -42,7 +42,7 @@
     <q-card class="q-pa-md q-mx-none">
       <q-card-section horizontal>
         <q-card-section class="col">
-          <div class="text-h4">Language</div>
+          <div class="text-h4">{{ $t('Language') }}</div>
             <q-select
               v-model="selectedLanguage"
               :options="langOptions"
@@ -85,8 +85,7 @@ export default {
       langOptions: [
         { value: 'en-gb', label: 'English', rtl: false },
         { value: 'fr', label: 'French', rtl: false },
-        { value: 'ar', label: 'Arabic', rtl: true },
-        { value: 'de', label: 'German', rtl: false }
+        { value: 'ar', label: 'Arabic', rtl: true }
       ]
     }
   }, // data
@@ -105,15 +104,37 @@ export default {
       localStorage.setItem('settings.ezBackend.url.socket', this.ezBackendBaseUrlSocket)
     },
     saveLanguageSettings () {
-      console.log('🙊 this.$q.lang.rtl', this.$q.lang.rtl)
+      console.log('🙊🚀 this.$q.lang.isoName', this.$q.lang.isoName)
+      console.log('🙊🚀 this.$q.lang.rtl', this.$q.lang.rtl)
+      console.log('🙊🚀 this.selectedLanguage,', this.selectedLanguage)
+
       this.$i18n.locale = this.selectedLanguage
       localStorage.setItem('settings.selectedLanguage', this.selectedLanguage)
+
       if (this.selectedLanguage === 'ar') {
-        this.$q.lang.rtl = true
+        import('quasar/lang/ar')
+          .then(({ default: messages }) => {
+            this.$q.lang.set(messages)
+          })
+      } else if (this.selectedLanguage === 'fr') {
+        import('quasar/lang/fr')
+          .then(({ default: messages }) => {
+            this.$q.lang.set(messages)
+          })
       } else {
-        this.$q.lang.rtl = false
+        import('quasar/lang/en-gb')
+          .then(({ default: messages }) => {
+            this.$q.lang.set(messages)
+          })
       }
-      console.log('🙊 this.$q.lang.rtl', this.$q.lang.rtl)
+      // if (this.selectedLanguage === 'ar') {
+      //   this.$q.lang.rtl = true
+      // } else {
+      //   this.$q.lang.rtl = false
+      // }
+      console.log('🙊🏁 this.$q.lang.isoName', this.$q.lang.isoName)
+      console.log('🙊🏁 this.$q.lang.rtl', this.$q.lang.rtl)
+      console.log('🙊🏁 this.selectedLanguage,', this.selectedLanguage)
       console.log(this.$i18n)
     }
   },

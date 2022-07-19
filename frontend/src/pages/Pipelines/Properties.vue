@@ -15,7 +15,7 @@
             <q-card-section class="text-h4">
                 {{ $t('Collection') }}
             </q-card-section>
-            <q-card-section class="row items-center" v-if="areWeInLTR"> <!-- Left To Right -->
+            <q-card-section class="row items-center">
                 <span class="text-bold">{{ $t('Shipper and Method:') }} </span>
                 <div class="q-ml-md text-center">
                   <img v-if="collectionShipperOption.icon && collectionShipperOption.icon.length" :src="'/shippers/' + collectionShipperOption.icon + '.svg'" width="64px">
@@ -25,17 +25,6 @@
                   <q-icon :name="collectionMethodOption.icon" size="64px" />
                   <div>{{ collectionMethodOption.label }}</div>
                 </div>
-            </q-card-section>
-            <q-card-section class="row items-center" v-else> <!-- Right To Left -->
-                <div class="q-ml-xl text-center">
-                  <q-icon :name="collectionMethodOption.icon" size="64px" />
-                  <div>{{ collectionMethodOption.label }}</div>
-                </div>
-                <div class="q-ml-md text-center">
-                  <img v-if="collectionShipperOption.icon && collectionShipperOption.icon.length" :src="'/shippers/' + collectionShipperOption.icon + '.svg'" width="64px">
-                  <div>{{ collectionShipperOption.label }}</div>
-                </div>
-                <span class="text-bold"> {{ $t('Shipper and Method:') }}</span>
             </q-card-section>
             <q-card-section>
               <div class="">
@@ -164,20 +153,12 @@
             <q-card-section class="text-h4">
                 {{ $t('Mapping') }}
             </q-card-section>
-            <div v-if="areWeInLTR"> <!-- Left To Right -->
+            <div>
               <q-card-section>
                   <span class="text-bold">{{ $t('Fields detected:') }} </span>{{ detectedFields }}
               </q-card-section>
               <q-card-section>
                   <span class="text-bold">{{ $t('Fields mapped:') }} </span>{{ mappedFields }}
-              </q-card-section>
-            </div>
-            <div v-else> <!-- Right To Left -->
-              <q-card-section>
-                  {{ detectedFields }} <span class="text-bold"> {{ $t('Fields detected:') }}</span>
-              </q-card-section>
-              <q-card-section>
-                  {{ mappedFields }} <span class="text-bold"> {{ $t('Fields mapped:') }}</span>
               </q-card-section>
             </div>
           </q-card-section>
@@ -596,14 +577,8 @@
             <template v-slot:body-cell-pipelineTemplateCollectionStats="props">
               <q-td :props="props">
                 <q-tooltip content-style="font-size: 1em">
-                  <div v-if="areWeInLTR"> <!-- Left To Right -->
-                    <span class="text-bold">{{ $t('Shipper:') }}</span> {{ collectionShipperByValue(props.row.stats.collectionShipper).label }}<br>
-                    <span class="text-bold">{{ $t('Method:') }}</span> {{ collectionMethodByValue(props.row.stats.collectionMethod).label }}
-                  </div>
-                  <div v-else> <!-- Right To Left -->
-                    {{ collectionShipperByValue(props.row.stats.collectionShipper).label }} <span class="text-bold">{{ $t('Shipper:') }}</span><br>
-                    {{ collectionMethodByValue(props.row.stats.collectionMethod).label }} <span class="text-bold">{{ $t('Method:') }}</span>
-                  </div>
+                  <span class="text-bold">{{ $t('Shipper:') }}</span> {{ collectionShipperByValue(props.row.stats.collectionShipper).label }}<br>
+                  <span class="text-bold">{{ $t('Method:') }}</span> {{ collectionMethodByValue(props.row.stats.collectionMethod).label }}
                 </q-tooltip>
                 <div
                   v-if="props.value"
@@ -626,13 +601,9 @@
                 >
                   <q-tooltip content-style="font-size: 1em">
                     <div class="column">
-                      <div v-if="areWeInLTR"> <!-- Left To Right -->
+                      <div >
                         <span>{{ $t('Detected fields:') }} {{ props.row.stats.detectedFields }}</span><br>
                         <span>{{ $t('Mapped fields:') }} {{ props.row.stats.mappedFields }}</span>&nbsp;(<span class="text-bold">{{ Math.round(props.value * 100) / 100 }}%</span>)
-                      </div>
-                      <div v-else> <!-- Right To Left -->
-                        <span>{{ props.row.stats.detectedFields }} {{ $t('Detected fields:') }}</span><br>
-                        (<span class="text-bold">{{ Math.round(props.value * 100) / 100 }}%</span>)&nbsp;<span>{{ props.row.stats.mappedFields }} {{ $t('Mapped fields:') }}</span>
                       </div>
                       <q-separator spaced  />
                       <div class="column q-gutter-y-xs">
@@ -663,13 +634,9 @@
               <q-td :props="props">
                 <div>
                   <q-tooltip content-style="font-size: 1em;">
-                    <div v-if="areWeInLTR"> <!-- Left To Right -->
+                    <div>
                       <span class="text-bold">{{ $t('Created:') }} </span>{{ props.value }}<br>
                       <span class="text-bold">{{ $t('Modified:') }} </span>{{ timeAgo(props.row.modified) }}<br>
-                    </div>
-                    <div v-else> <!-- Right To Left -->
-                      {{ props.value }} <span class="text-bold">{{ $t('Created:') }}</span><br>
-                      {{ timeAgo(props.row.modified) }} <span class="text-bold">{{ $t('Modified:') }}</span><br>
                     </div>
                     ({{ props.row.modified }})
                   </q-tooltip>
@@ -1143,9 +1110,7 @@ export default {
         {
           code: 'BadFileExtentionImportCollection',
           messageForLogAndPopup: (
-            this.areWeInLTR
-              ? this.$t('Only .ezCollection files are accepted. You tried to import:') + ` "${badFileName}".`
-              : `."${badFileName}"` + this.$t('Only .ezCollection files are accepted. You tried to import:')
+            this.$t('Only .ezCollection files are accepted. You tried to import: {badFileName}.', { badFileName })
           )
         }
       )
@@ -1226,9 +1191,7 @@ export default {
           {
             code: 'CantParseFileImportCollection',
             messageForLogAndPopup: (
-              this.areWeInLTR
-                ? this.$t('Error trying to parse the content of the imported Collection Configuration file. Error:') + ' ' + error.message
-                : error.message + ' ' + this.$t('Error trying to parse the content of the imported Collection Configuration file. Error:')
+              this.$t('Error trying to parse the content of the imported Collection Configuration file. Error: {errorMessage}', { errorMessage: error.message })
             )
           }
         )
@@ -1291,9 +1254,7 @@ export default {
               {
                 code: 'CantReadFileImportCollection',
                 messageForLogAndPopup: (
-                  this.areWeInLTR
-                    ? this.$t('Error trying to open the file. Error:') + ' ' + error.message
-                    : error.message + ' ' + this.$t('Error trying to open the file. Error:')
+                  this.$t('Error trying to open the file. Error: {errorMessage}', { errorMessage: error.message })
                 )
               }
             )
@@ -1601,9 +1562,7 @@ export default {
         {
           code: 'BadFileExtentionImportMapping',
           messageForLogAndPopup: (
-            this.areWeInLTR
-              ? this.$t('Only .ezFieldsMapping files are accepted. You tried to import:') + ` "${badFileName}".`
-              : `."${badFileName}"` + this.$t('Only .ezFieldsMapping files are accepted. You tried to import:')
+            this.$t('Only .ezFieldsMapping files are accepted. You tried to import: {badFileName}', { badFileName })
           )
         }
       )
@@ -1675,9 +1634,7 @@ export default {
                 {
                   code: 'CantParseFileImportMapping',
                   messageForLogAndPopup: (
-                    this.areWeInLTR
-                      ? this.$t('Error trying to parse the content of the imported Fields Mapping file. Error:') + ' ' + error.message
-                      : error.message + ' ' + this.$t('Error trying to parse the content of the imported Fields Mapping file. Error:')
+                    this.$t('Error trying to parse the content of the imported Fields Mapping file. Error: {errorMessage}', { errorMessage: error.message })
                   )
                 }
               )
@@ -1688,9 +1645,7 @@ export default {
               {
                 code: 'CantReadFileImportMapping',
                 messageForLogAndPopup: (
-                  this.areWeInLTR
-                    ? this.$t('Error trying to open the file. Error:') + ' ' + error.message
-                    : error.message + ' ' + this.$t('Error trying to open the file. Error:')
+                  this.$t('Error trying to open the file. Error: {errorMessage}', { errorMessage: error.message })
                 )
               }
             )
@@ -1725,9 +1680,7 @@ export default {
         this.$q.dialog({
           title: this.$t('Confirm'),
           message: (
-            this.areWeInLTR
-              ? this.$t('Do you REALLY want to delete this Deployment?') + ' ' + unDeployMessage
-              : unDeployMessage + ' ' + this.$t('Do you REALLY want to delete this Deployment?')
+            this.$t('Do you REALLY want to delete this Deployment? {unDeployMessage}', { unDeployMessage })
           ),
           ok: {
             push: true,

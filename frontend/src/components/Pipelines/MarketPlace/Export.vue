@@ -407,12 +407,7 @@
                     <q-td :props="props" style="width: 3em;">
                       <div>
                         <q-tooltip content-style="font-size: 1em;">
-                          <div v-if="areWeInLTR"> <!-- Left To Right -->
-                            {{ $t('Seen in') }} <span style="font-weight: bold;">{{ (maxSeenInLog != 0 ? Math.round(props.value / maxSeenInLog * 100) : 0) }}%</span> {{ $t('of logs in the sample') }} ({{ props.value }}&nbsp;/&nbsp;{{ maxSeenInLog }}).
-                          </div>
-                          <div v-else> <!-- Right To Left -->
-                            ({{ props.value }}&nbsp;/&nbsp;{{ maxSeenInLog }}) {{ $t('of logs in the sample') }} <span style="font-weight: bold;">{{ (maxSeenInLog != 0 ? Math.round(props.value / maxSeenInLog * 100) : 0) }}%</span> {{ $t('Seen in') }}
-                        </div>
+                          {{ $t('Seen in {seenInOverMaxSeenInLog}% of logs in the sample ({seenIn}/{maxSeenInLog})', { seenInOverMaxSeenInLog: (maxSeenInLog != 0 ? Math.round(props.value / maxSeenInLog * 100) : 0), seenIn: props.value, maxSeenInLog}) }}
                         </q-tooltip>
                         <q-linear-progress :value="props.value / maxSeenInLog" :color="(darkMode ? 'blue-10' : 'blue-7')" rounded size="1em" />
                       </div>
