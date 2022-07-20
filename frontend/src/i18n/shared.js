@@ -1,7 +1,7 @@
 const languageOptions = [
-  { value: 'en-gb', label: 'English', rtl: false },
-  { value: 'fr', label: 'French', rtl: false },
-  { value: 'ar', label: 'Arabic', rtl: true }
+  { value: 'en-gb', label: 'English', nativeLabel: 'English' },
+  { value: 'fr', label: 'French', nativeLabel: 'Français' },
+  { value: 'ar', label: 'Arabic', nativeLabel: 'عربى' }
 ]
 
 function switchLanguageTo (self, selectedNewLanguage) {

@@ -21,7 +21,13 @@
           <q-input dense v-model="password" type="password" :hint="$t('Password')" @keyup.enter="checkCredentials()" />
         </q-card-section>
 
-        <q-card-actions align="stretch">
+        <q-card-section class="q-py-none">
+          <dir class="q-ma-none q-px-sm text-bold text-negative text-center fadeOut">
+            <span v-show="lastAttemptFailed">{{ $t('Authentication failed.') }}</span>&nbsp;
+          </dir>
+        </q-card-section>
+
+        <q-card-actions align="between">
           <q-toggle
             v-model="darkMode"
             checked-icon="dark_mode"
@@ -34,13 +40,28 @@
               {{ $t('Switch between Light and Dark mode') }}
             </q-tooltip>
           </q-toggle>
-            <!-- size="4rem" -->
-          <dir class="col text-bold text-negative fadeOut" v-show="lastAttemptFailed">
-            {{ $t('Authentication failed.') }}
-          </dir>
-          <q-space />
+
+          <q-btn flat icon="translate">
+            <q-menu auto-close anchor="bottom middle" self="top middle">
+              <q-list style="min-width: 10em">
+                <q-item
+                  class="text-center"
+                  :clickable="!language.selected"
+                  v-for="language in languageList"
+                  :key="language.value"
+                  @click="selectLanguage(language.value)"
+                >
+                  <q-item-section :class="(language.selected ? 'text-primary' : '')">
+                    <div>{{ language.nativeLabel }}</div>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
+          </q-btn>
+
           <q-btn flat class="q-my-sm" :label="$t('Login')" color="primary" @click="checkCredentials()" :loading="waitingOnServer" />
         </q-card-actions>
+
       </q-card>
     </form>
   </q-page>
@@ -50,6 +71,7 @@
 import { mapState, mapActions } from 'vuex'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import { languageOptions, switchLanguageTo } from 'src/i18n/shared'
 
 export default {
   name: 'PageLogin',
@@ -69,7 +91,24 @@ export default {
     }
   }, // data
   computed: {
-    ...mapState('mainStore', ['jwtToken'])
+    ...mapState('mainStore', ['jwtToken']),
+    languageList () {
+      if (languageOptions && Array.isArray(languageOptions)) {
+        return languageOptions.reduce(
+          (accumulatedLanguages, language) => {
+            accumulatedLanguages.push(
+              {
+                ...language,
+                selected: !!(String(language.value).toLowerCase() === String(this.$i18n.locale).toLowerCase())
+              }
+            )
+            return accumulatedLanguages
+          },
+          []
+        )
+      }
+      return [{ value: 'en-gb', nativeLabel: 'English' }]
+    }
   }, // computed
   methods: {
     ...mapActions('mainStore', ['signIn', 'signOut', 'reloadEzMarketNotifications']),
@@ -112,6 +151,9 @@ export default {
           this.lastAttemptFailed = false
         }, 4800)
       }
+    },
+    selectLanguage (selectedLanguage) {
+      switchLanguageTo(this, selectedLanguage)
     }
   }, // methods
   mounted () {
