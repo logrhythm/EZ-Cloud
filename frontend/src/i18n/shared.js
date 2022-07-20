@@ -1,7 +1,13 @@
 const languageOptions = [
   { value: 'en-gb', label: 'English', nativeLabel: 'English' },
   { value: 'fr', label: 'French', nativeLabel: 'Français' },
-  { value: 'ar', label: 'Arabic', nativeLabel: 'عربى' }
+  { value: 'es', label: 'Spanish', nativeLabel: 'Español' },
+  { value: 'de', label: 'German', nativeLabel: 'Deutsch' },
+  { value: 'pt-pt', label: 'Portuguese', nativeLabel: 'Português' },
+  { value: 'it', label: 'Italian', nativeLabel: 'Italiano' },
+  { value: 'iw', label: 'Hebrew', nativeLabel: 'עִברִית' },
+  { value: 'ja', label: 'Japanese', nativeLabel: '日本' },
+  { value: 'ko', label: 'Korean', nativeLabel: '한국인' }
 ]
 
 function switchLanguageTo (self, selectedNewLanguage) {
@@ -35,7 +41,43 @@ function switchLanguageTo (self, selectedNewLanguage) {
             .then(({ default: messages }) => {
               self.$q.lang.set(messages)
             })
+        } else if (selectedNewLanguage === 'es') {
+          import('quasar/lang/es')
+            .then(({ default: messages }) => {
+              self.$q.lang.set(messages)
+            })
+        } else if (selectedNewLanguage === 'de') {
+          import('quasar/lang/de')
+            .then(({ default: messages }) => {
+              self.$q.lang.set(messages)
+            })
+        } else if (selectedNewLanguage === 'pt-pt') {
+          import('quasar/lang/pt')
+            .then(({ default: messages }) => {
+              self.$q.lang.set(messages)
+            })
+        } else if (selectedNewLanguage === 'it') {
+          import('quasar/lang/it')
+            .then(({ default: messages }) => {
+              self.$q.lang.set(messages)
+            })
+        } else if (selectedNewLanguage === 'iw' || selectedNewLanguage === 'he') {
+          import('quasar/lang/he')
+            .then(({ default: messages }) => {
+              self.$q.lang.set(messages)
+            })
+        } else if (selectedNewLanguage === 'ja') {
+          import('quasar/lang/ja')
+            .then(({ default: messages }) => {
+              self.$q.lang.set(messages)
+            })
+        } else if (selectedNewLanguage === 'ko' || selectedNewLanguage === 'ko-kr') {
+          import('quasar/lang/ko-kr')
+            .then(({ default: messages }) => {
+              self.$q.lang.set(messages)
+            })
         } else {
+          console.log('💬 🟠 Fail safe to en-gb.')
           import('quasar/lang/en-gb')
             .then(({ default: messages }) => {
               self.$q.lang.set(messages)
