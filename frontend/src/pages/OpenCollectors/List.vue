@@ -102,7 +102,7 @@
             <div v-else-if="osVersionCheck && osVersionCheck[props.row.uid] && osVersionCheck[props.row.uid].error">
               <q-tooltip content-style="font-size: 1rem;">
                 {{ $t('Failed to connect to the server.') }}<br>
-                {{ $t('Check the Open Collector details and Credentials.') }}
+                {{ $t('Check the OpenCollector details and Credentials.') }}
               </q-tooltip>
               <q-icon
                 name="cloud_off"
@@ -675,7 +675,7 @@ export default {
       if (response) {
         const uid = (response.params && response.params.apiCallParams && response.params.apiCallParams.uid ? response.params.apiCallParams.uid : null)
 
-        // Do the Open Collector version
+        // Do the OpenCollector version
 
         if (uid) {
           const newOcInfo = JSON.parse(JSON.stringify(this.openCollectors.find((oc) => oc.uid === uid)))

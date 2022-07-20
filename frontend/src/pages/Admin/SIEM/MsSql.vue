@@ -15,7 +15,7 @@
           </q-card-section>
 
           <q-card-section class="q-pt-none">
-            {{ $t('OC-Admin backend needs access to the SIEM database for certain operations, like listing and managing the Open Collector and OC-Admin related Log Sources.') }}<br>
+            {{ $t('OC-Admin backend needs access to the SIEM database for certain operations, like listing and managing the OpenCollector and OC-Admin related Log Sources.') }}<br>
             {{ $t('To accomplish this, it needs to know the PM or XM address and SQL credentials.') }}
           </q-card-section>
 
