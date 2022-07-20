@@ -69,6 +69,7 @@
 
 <script>
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import { languageOptions, switchLanguageTo } from 'src/i18n/shared'
 
 export default {
   name: 'PageSettings',
@@ -82,11 +83,7 @@ export default {
       ezBackendBaseUrlApi: '',
       ezBackendBaseUrlSocket: '',
       selectedLanguage: this.$i18n.locale,
-      langOptions: [
-        { value: 'en-gb', label: 'English', rtl: false },
-        { value: 'fr', label: 'French', rtl: false },
-        { value: 'ar', label: 'Arabic', rtl: true }
-      ]
+      langOptions: languageOptions // List of languages coming from `src/i18n/shared`
     }
   }, // data
   computed: {
@@ -104,38 +101,8 @@ export default {
       localStorage.setItem('settings.ezBackend.url.socket', this.ezBackendBaseUrlSocket)
     },
     saveLanguageSettings () {
-      console.log('🙊🚀 this.$q.lang.isoName', this.$q.lang.isoName)
-      console.log('🙊🚀 this.$q.lang.rtl', this.$q.lang.rtl)
-      console.log('🙊🚀 this.selectedLanguage,', this.selectedLanguage)
-
-      this.$i18n.locale = this.selectedLanguage
-      localStorage.setItem('settings.selectedLanguage', this.selectedLanguage)
-
-      if (this.selectedLanguage === 'ar') {
-        import('quasar/lang/ar')
-          .then(({ default: messages }) => {
-            this.$q.lang.set(messages)
-          })
-      } else if (this.selectedLanguage === 'fr') {
-        import('quasar/lang/fr')
-          .then(({ default: messages }) => {
-            this.$q.lang.set(messages)
-          })
-      } else {
-        import('quasar/lang/en-gb')
-          .then(({ default: messages }) => {
-            this.$q.lang.set(messages)
-          })
-      }
-      // if (this.selectedLanguage === 'ar') {
-      //   this.$q.lang.rtl = true
-      // } else {
-      //   this.$q.lang.rtl = false
-      // }
-      console.log('🙊🏁 this.$q.lang.isoName', this.$q.lang.isoName)
-      console.log('🙊🏁 this.$q.lang.rtl', this.$q.lang.rtl)
-      console.log('🙊🏁 this.selectedLanguage,', this.selectedLanguage)
-      console.log(this.$i18n)
+      // this.$root.$emit('switchLanguage', this.selectedLanguage)
+      switchLanguageTo(this, this.selectedLanguage)
     }
   },
   mounted () {
