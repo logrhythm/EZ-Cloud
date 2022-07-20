@@ -49,6 +49,7 @@
 ## TO FIX
 - [ ] Identifiers to EZ Market seems incorect/misformatted/ignored by EZ Market
 - [ ] Translated message in deployment steps roll over status (especially Skipped steps)
+- [ ] Save/Read of Fields Mapping from PgSQL (Backend issue?)
 
 ## TO TEST
 
