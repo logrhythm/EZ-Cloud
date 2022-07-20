@@ -4,6 +4,7 @@ const languageOptions = [
   { value: 'es', label: 'Spanish', nativeLabel: 'Español' },
   { value: 'de', label: 'German', nativeLabel: 'Deutsch' },
   { value: 'pt-pt', label: 'Portuguese', nativeLabel: 'Português' },
+  { value: 'ar', label: 'Arabic', nativeLabel: 'عربى' },
   { value: 'it', label: 'Italian', nativeLabel: 'Italiano' },
   { value: 'iw', label: 'Hebrew', nativeLabel: 'עִברִית' },
   { value: 'ja', label: 'Japanese', nativeLabel: '日本' },
