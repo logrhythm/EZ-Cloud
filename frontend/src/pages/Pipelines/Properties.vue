@@ -769,7 +769,7 @@ export default {
       columns: [
         { name: 'actions', align: 'center', label: this.$t('Actions'), field: 'actions', sortable: false },
         { name: 'status', align: 'center', label: this.$t('Status'), field: 'enabled', sortable: true },
-        { name: 'openCollector', align: 'center', label: this.$t('Open Collector'), field: 'openCollectorHost', sortable: true }
+        { name: 'openCollector', align: 'center', label: this.$t('OpenCollector'), field: 'openCollectorHost', sortable: true }
       ],
       pagination: {
         sortBy: 'status',

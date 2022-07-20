@@ -11,7 +11,7 @@
       <q-card>
         <q-card-section class="col q-ma-none q-pa-none">
           <q-card-section class="text-h4">
-              {{ $t('Select a Suitable Open Collector') }}
+              {{ $t('Select a Suitable OpenCollector') }}
           </q-card-section>
           <q-card-section>
             <q-table
@@ -19,16 +19,16 @@
               :columns="columns"
               row-key="uid"
               dense
-              :no-data-label="$t('No Open Collector to display.')"
+              :no-data-label="$t('No OpenCollector to display.')"
               :filter="searchFilter"
               :loading="dataLoading || collectorLogSourcesLoading"
-              :rows-per-page-label="$t('Open Collectors per page:')"
+              :rows-per-page-label="$t('OpenCollectors per page:')"
               :pagination.sync="pagination"
             >
               <template v-slot:top>
                 <div class="full-width row wrap justify-between">
                   <div class="q-table__title">
-                    {{ $t('Available Open Collectors') }}
+                    {{ $t('Available OpenCollectors') }}
                   </div>
                   <div class="row q-gutter-md">
                     <div style="width:300px;">
@@ -358,7 +358,7 @@ export default {
       columns: [
         { name: 'actions', align: 'center', label: this.$t('Actions'), field: 'actions', sortable: false },
         { name: 'status', align: 'center', label: this.$t('Suitable'), field: 'suitable', sortable: true },
-        { name: 'openCollector', align: 'center', label: this.$t('Open Collector'), field: 'openCollectorHost', sortable: true },
+        { name: 'openCollector', align: 'center', label: this.$t('OpenCollector'), field: 'openCollectorHost', sortable: true },
         { name: 'installedShippers', align: 'center', label: this.$t('Installed Shippers'), field: row => (row.openCollector ? row.openCollector.installedShippers : undefined), sortable: true },
         { name: 'name', align: 'center', label: this.$t('Log Source Name'), field: 'name', sortable: true },
         { name: 'msgSourceId', align: 'center', label: this.$t('Log Source ID'), field: 'msgSourceId', sortable: true },
@@ -383,7 +383,7 @@ export default {
         },
         {
           uid: 'd004f165-a028-4183-8e6d-f64534357c5d',
-          name: this.$t('Import JQ Pipeline into Open Collector'),
+          name: this.$t('Import JQ Pipeline into OpenCollector'),
           status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/oc/ImportPipelineForBeat',
           apiParamNames: ['openCollector', 'beat', 'stream']
@@ -434,14 +434,14 @@ export default {
         // { // NOT NECESSARY AS ALREADY GATHERED AND DISPLAYED TO USER AS TABLE
         //      USER WILL HAVE PICKED UP THE OpenCollectorMotherLogSourceID FROM TABLE
         //   uid: '1246443c-2f50-48af-bd7e-8072ed214e2e',
-        //   name: 'Search related Open Collector LS',
+        //   name: 'Search related OpenCollector LS',
         //   status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
         //   apiEndpoint: '/logrhythmCore/GetOpenCollectorLogSourcesList',
         //   apiParamNames: ['uid', 'name']
         // },
         {
           uid: '5c0a3a9c-6d01-40e6-acb8-b0763a52bba3',
-          name: this.$t('Add LS Virtualisation to Open Collector Log Source'),
+          name: this.$t('Add LS Virtualisation to OpenCollector Log Source'),
           status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/logrhythmCore/UpdateOpenCollectorLogSourceWithLogSourceVirtualisation',
           apiParamNames: ['uid', 'OpenCollectorMotherLogSourceID']
@@ -457,7 +457,7 @@ export default {
         },
         {
           uid: 'b0f41342-c758-4453-8381-9be346f25dfe',
-          name: this.$t('Re-import JQ Pipeline into Open Collector'),
+          name: this.$t('Re-import JQ Pipeline into OpenCollector'),
           status: 'Not started', // Not started, To skip, Pending, On-going, Completed, Error, Cancelled
           apiEndpoint: '/oc/ImportPipelineForBeat',
           apiParamNames: ['openCollector', 'beat', 'stream']
@@ -548,7 +548,7 @@ export default {
                 if (hi.value && hi.value.length) { valuesArray.push(hi.value) }
                 return valuesArray
               }, [])
-              // Flag if the right Shipper is already installed or if included out-of-the-box with the Open Collector
+              // Flag if the right Shipper is already installed or if included out-of-the-box with the OpenCollector
               const hasNecessaryShipper = this.hasNecessaryShipper(oc)
 
               list.push({
@@ -580,7 +580,7 @@ export default {
             msgSourceId: ls.msgSourceID,
             hostName: ls.hostName,
             hostId: ls.hostID,
-            hasNecessaryShipper: false // No Open Collector: no Shipper. Pas de bras: pas de chocolat.
+            hasNecessaryShipper: false // No OpenCollector: no Shipper. Pas de bras: pas de chocolat.
           })
         }
       })
@@ -746,12 +746,12 @@ export default {
           : null
       )
 
-      return !!(( // Is this Shipper in the list of the Installed Shipper for this Open Collector
+      return !!(( // Is this Shipper in the list of the Installed Shipper for this OpenCollector
         oc &&
         oc.installedShippers &&
         Array.isArray(oc.installedShippers) &&
         oc.installedShippers.filter((shipper) => shipper.name && shipper.name.toLowerCase() === neededShipperLowerCase).length
-      ) | ( // Or is is part of the out-of-the-box Open Collector Beats
+      ) | ( // Or is is part of the out-of-the-box OpenCollector Beats
         this.openCollectorBeats.filter((beat) => beat.value && beat.value.toLowerCase() === neededShipperLowerCase).length
       ))
     }, // hasNecessaryShipper
@@ -767,8 +767,8 @@ export default {
       //     - Create Processing Policy
       //     - Create LS Virtualisation
       //     - Create new LS Virtualisation Item and associate it to LS Virtualisation
-      //     - Search related Open Collector LS
-      //     - Add LS Virtualisation to Open Collector LS
+      //     - Search related OpenCollector LS
+      //     - Add LS Virtualisation to OpenCollector LS
       //   - Exisiting Log Source / Update of field mapping
       //     - Update Beat configuration in right location
       //     - Re-import JQ to OC
@@ -975,7 +975,7 @@ export default {
   },
 
   mounted () {
-    // Load the Open Collector Log Sources from the XM/PM database
+    // Load the OpenCollector Log Sources from the XM/PM database
     if (this.openCollectorLogSources.length === 0) {
       this.loadOpenCollectorLogSources()
     }
@@ -987,7 +987,7 @@ export default {
       }
     }
 
-    // Get the Open Collector UID from the Route
+    // Get the OpenCollector UID from the Route
     if (this.$route.params.openCollectorUid && this.$route.params.openCollectorUid.length) {
       if (this.openCollectorUid !== this.$route.params.openCollectorUid) {
         this.openCollectorUid = this.$route.params.openCollectorUid

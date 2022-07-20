@@ -162,7 +162,7 @@ export default {
       //   //   link: '#/Status'
       //   // },
       //   {
-      //     title: this.$t('Open Collectors'),
+      //     title: this.$t('OpenCollectors'),
       //     icon: 'mediation',
       //     link: '#/OpenCollectors'
       //   },
@@ -252,7 +252,7 @@ export default {
         //   link: '#/Status'
         // },
         {
-          title: this.$t('Open Collectors'),
+          title: this.$t('OpenCollectors'),
           icon: 'mediation',
           link: '#/OpenCollectors'
         },

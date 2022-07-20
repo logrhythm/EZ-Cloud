@@ -55,7 +55,7 @@ export function updateOpenCollector (state, payload) {
 
 export function deleteOpenCollector (state, payload) {
   if (payload && payload.uid && payload.uid.length) {
-    // Check if the Open Collector exists. If it does, then remove it
+    // Check if the OpenCollector exists. If it does, then remove it
     const position = state.openCollectors.findIndex(oc => oc.uid === payload.uid)
     if (position >= 0) {
       state.openCollectors.splice(position, 1)

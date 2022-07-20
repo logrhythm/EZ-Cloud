@@ -1,6 +1,6 @@
 # OC Admin Client (ez-cloud-client) - Formerly EZ Cloud
 
-Open Collector User Interface
+OpenCollector User Interface
 
 ## Install the dependencies
 ```bash

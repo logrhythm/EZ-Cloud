@@ -117,7 +117,7 @@ def transform:
     # First, convert to IO format.
     get_io_format |
 
-    # "beatname" is a required field for Open Collector Regex to work in the SIEM.
+    # "beatname" is a required field for OpenCollector Regex to work in the SIEM.
     # We add here more details to help the Log Source Virtualisation
 
     add_field(.input."@metadata".beat; .output.beatname) | # For the Log Source Virtualisation

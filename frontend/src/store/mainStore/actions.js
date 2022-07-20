@@ -432,7 +432,7 @@ export function forgetOpenCollectorLogSources ({ state, commit }) {
 export function getOpenCollectorLogSources ({ state, commit }, payload) {
   getDataFromSite({
     apiUrl: '/logrhythmCore/GetOpenCollectorLogSourcesList',
-    dataLabel: 'Open Collector Log Sources',
+    dataLabel: 'OpenCollector Log Sources',
     countDataLabel: true,
     apiHeaders: {
       authorization: 'Bearer ' + state.jwtToken

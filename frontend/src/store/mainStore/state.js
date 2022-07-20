@@ -30,7 +30,7 @@ export default function () {
     ],
     jqFilterTemplate: filterTemplate, // Imported from jqTemplates
     jqTransformTemplate: transformTemplate, // Imported from jqTemplates
-    shippersUrlsInternal: [], // Array of URLs and details for the different Shippers we can install on remote Open Collector hosts
+    shippersUrlsInternal: [], // Array of URLs and details for the different Shippers we can install on remote OpenCollector hosts
     collectionMethodTemplates: [
       collectionMethodTemplatesJsBeat, // jsBeat - flatfile
       collectionMethodTemplatesFilebeatLog, // Filebeat - log (flat files)
