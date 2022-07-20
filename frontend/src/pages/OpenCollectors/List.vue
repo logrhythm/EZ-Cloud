@@ -238,7 +238,7 @@
           <q-separator />
 
           <q-card-section class="q-pt-none">
-            <div class="text-overline">Host</div>
+            <div class="text-overline">{{ $t('Host') }}</div>
             <q-input dense v-model="newOpenCollectorHostname" :label="$t('Host name')" @keyup.esc="promptForNewOpenCollectorDetails = false" :rules="[val => !!val || $t('OpenCollector Host name cannot be empty')]" />
           </q-card-section>
 
@@ -249,7 +249,7 @@
           <q-separator />
 
           <q-card-section class="q-pt-none">
-            <div class="text-overline">Authentication</div>
+            <div class="text-overline">{{ $t('Authentication') }}</div>
 
             <q-input dense v-model="newOpenCollectorUsername" :label="$t('SSH User name')" hint="" @keyup.esc="promptForNewOpenCollectorDetails = false" />
 

@@ -2,11 +2,11 @@
   <q-page class="q-pa-sm">
     <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
-        <q-btn no-caps flat dense icon="arrow_back" label="Return to Market Place" :to="'/MarketPlace'" />
+        <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Market Place')" :to="'/MarketPlace'" />
         <q-separator spaced vertical />
         <q-btn no-caps flat dense icon="mail_outline" color="primary" :label="$t('View Notifications')" to="/MarketPlace/Notifications" />
         <q-btn no-caps flat dense icon="account_tree" :label="$t('View Pipeline Templates')" to="/MarketPlace/PipelineTemplates" />
-        <q-toolbar-title style="opacity:.4" class="text-center">EZ Market Place : My Profile</q-toolbar-title>
+        <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('EZ Market Place : My Profile') }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
     <q-card class="q-pa-md q-mx-none">
@@ -17,8 +17,8 @@
             </q-card-section>
 
             <q-card-section class="q-pt-none" v-if="!editingPublisherName">
-              <div class="text-bold">Pseudo Name:</div>
-              <div v-if="publisherDisplayName == null" class="text-italic" style="opacity: .6">You don't seem to have a profile yet</div>
+              <div class="text-bold">{{ $t('Pseudo Name:') }}</div>
+              <div v-if="publisherDisplayName == null" class="text-italic" style="opacity: .6">{{ $t('You don\'t seem to have a profile yet') }}</div>
               <div v-else>{{ publisherDisplayName }}</div>
             </q-card-section>
 
@@ -27,7 +27,7 @@
                 dense
                 v-model="newPublisherName"
                 autofocus
-                label="New Publisher Pseudo Name"
+                :label="$t('New Publisher Pseudo Name')"
                 @keyup.esc="editingPublisherName = false"
                 @keyup.enter="saveProfileDetails()"
                 :rules="[val => !!val || $t('Publisher pseudo-name cannot be empty')]"
@@ -35,7 +35,7 @@
             </q-card-section>
 
             <q-card-section class="q-pt-none">
-              <div class="text-bold">Identicon:</div>
+              <div class="text-bold">{{ $t('Identicon:') }}</div>
               <div class="row items-center q-gutter-x-md">
                 <Identicon :identity="publisherDisplayName" />
                 <q-icon name="arrow_forward" size="lg" v-if="editingPublisherName"/>

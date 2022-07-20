@@ -108,14 +108,8 @@
                 :track-color="(darkIsEnabled ? 'grey-9' : 'grey-3')"
               />
               <q-tooltip content-style="font-size: 1em">
-                <div v-if="areWeInLTR"> <!-- Left To Right -->
-                  <span>{{ $t('Detected fields:') }} {{ props.row.fieldsMapping.length }}</span><br>
-                  <span>{{ $t('Mapped fields:') }} {{ props.row.fieldsMapping.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0) }}</span>&nbsp;(<span class="text-bold">{{ Math.round(props.value * 100) / 100 }}%</span>)
-                </div>
-                <div v-else> <!-- Right To Left -->
-                  <span>{{ props.row.fieldsMapping.length }}{{ $t('Detected fields:') }}</span><br>
-                  <span>(<span class="text-bold">{{ Math.round(props.value * 100) / 100 }}%</span>)&nbsp;{{ props.row.fieldsMapping.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0) }} {{ $t('Mapped fields:') }}</span>
-                </div>
+                <span>{{ $t('Detected fields:') }} {{ props.row.fieldsMapping.length }}</span><br>
+                <span>{{ $t('Mapped fields:') }} {{ props.row.fieldsMapping.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0) }}</span>&nbsp;(<span class="text-bold">{{ Math.round(props.value * 100) / 100 }}%</span>)
               </q-tooltip>
             </div>
           </q-td>
@@ -133,7 +127,7 @@
           </q-card-section>
 
           <q-card-section class="q-pt-none">
-            <q-select dense v-model="newPipelineOpenCollector" :options="openCollectorsOptions" :label="$t('Primary Open Collector')" emit-value map-options />
+            <q-select dense v-model="newPipelineOpenCollector" :options="openCollectorsOptions" :label="$t('Primary OpenCollector')" emit-value map-options />
           </q-card-section>
 
           <q-card-section class="q-pt-none q-mt-md" v-if="newPipelineStatus">
@@ -170,7 +164,7 @@ export default {
         { name: 'actions', align: 'center', label: this.$t('Actions'), field: 'actions', sortable: false },
         { name: 'status', align: 'center', label: this.$t('Status'), field: 'status', sortable: true, sort: (a, b, rowA, rowB) => this.statusTextToId(a) - this.statusTextToId(b) },
         { name: 'name', align: 'center', label: this.$t('Pipeline Name'), field: 'name', sortable: true },
-        { name: 'openCollector', align: 'center', label: this.$t('Primary Open Collector'), field: 'openCollector', sortable: true },
+        { name: 'openCollector', align: 'center', label: this.$t('Primary OpenCollector'), field: 'openCollector', sortable: true },
         { name: 'collectionShipper', align: 'center', label: this.$t('Collecting Shipper'), field: row => row.collectionConfig.collectionShipper, sortable: true },
         { name: 'collectionMethod', align: 'center', label: this.$t('Collection Method'), field: row => row.collectionConfig.collectionMethod, sortable: true },
         { name: 'mappingStats', align: 'center', label: this.$t('Fields Mapped (%)'), field: row => (row.fieldsMapping && Array.isArray(row.fieldsMapping) && row.fieldsMapping.length > 0 ? row.fieldsMapping.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0) / row.fieldsMapping.length * 100 : null), sortable: true }

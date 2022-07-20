@@ -49,8 +49,6 @@
         <q-btn no-caps flat dense icon="visibility_off" :label="$t('Hide JQ output')" v-else @click="showJqOutput = false" />
 
         <q-toolbar-title style="opacity:.4" class="text-center">{{ $tc('Mapping Builder | Mapping Builder: {pipelineName} | Mapping Builder: {pipelineName}', (pipelineName && pipelineName.length ? 1 : 0), { pipelineName }) }}</q-toolbar-title>
-        <!-- <q-toolbar-title style="opacity:.4" class="text-center" v-if="areWeInLTR">{{ $t('Mapping Builder') }}<span v-if="pipelineName && pipelineName.length">:  {{ pipelineName }}</span></q-toolbar-title>
-        <q-toolbar-title style="opacity:.4" class="text-center" v-else><span v-if="pipelineName && pipelineName.length">{{ pipelineName }} :</span>{{ $t('Mapping Builder') }}</q-toolbar-title> -->
 
         <q-btn no-caps flat dense icon="pending" :label="$t('Advanced')">
           <q-menu>
