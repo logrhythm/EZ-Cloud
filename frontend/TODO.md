@@ -41,7 +41,10 @@
   - [x] Add warning in navigation bar
   - [x] Add notification on Admin menu icon
   - [x] Add notification on Admin/SIEM/Manage MS SQL Connection button
-- [ ] Make all text internationalised
+- [ ] Internationalisation
+  - [x] Make all text internationalised
+  - [x] Add Language switch in Settings
+  - [ ] Add Language switch on Logon page
 
 ## TO FIX
 - [ ] Identifiers to EZ Market seems incorect/misformatted/ignored by EZ Market
