@@ -101,7 +101,6 @@ export default {
       localStorage.setItem('settings.ezBackend.url.socket', this.ezBackendBaseUrlSocket)
     },
     saveLanguageSettings () {
-      // this.$root.$emit('switchLanguage', this.selectedLanguage)
       switchLanguageTo(this, this.selectedLanguage)
     }
   },
