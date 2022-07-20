@@ -72,6 +72,7 @@
   "Delete Role": "Delete Role",
   "Role Name cannot be empty": "Role Name cannot be empty",
   "What did just go wrong?": "What did just go wrong?",
+  "| {count} error occured. | {count} errors occured.": "| {count} error occured. | {count} errors occured.",
   "Message:": "Message:",
   "More information available at:": "More information available at:",
   "Message Code:": "Message Code:",

@@ -99,11 +99,8 @@
         <q-card-section class="q-pb-none">
           <div class="text-h6">{{ $t('What did just go wrong?') }}</div>
         </q-card-section>
-        <q-card-section class="q-pt-none" v-if="errorPanelDetails && Array.isArray(errorPanelDetails) && errorPanelDetails.length > 1">
-          <div class="text-bold text-italic">{{ errorPanelDetails.length }} errors occured.</div>
-        </q-card-section>
-        <q-card-section class="q-pt-none" v-else-if="errorPanelDetails && Array.isArray(errorPanelDetails)">
-          <div class="text-bold text-italic">{{ errorPanelDetails.length }} error occured.</div>
+        <q-card-section class="q-pt-none" v-if="errorPanelDetails && Array.isArray(errorPanelDetails)">
+          <div class="text-bold text-italic">{{ $tc('| {count} error occured. | {count} errors occured.', errorPanelDetails.length) }}</div>
         </q-card-section>
 
         <q-card-section class="" v-for="(detail, index) in errorPanelDetails" :key="index">

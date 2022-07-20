@@ -73,6 +73,7 @@
   "Delete Role": "حذف الدور",
   "Role Name cannot be empty": "لا يمكن أن يكون اسم الدور فارغًا",
   "What did just go wrong?": "ما الخطأ الذي حدث للتو؟",
+  "| {count} error occured. | {count} errors occured.": "| حدث خطأ {count}. | حدث {count} من الأخطاء.",
   "Message:": "رسالة:",
   "More information available at:": "مزيد من المعلومات متوفرة على:",
   "Message Code:": "كود الرسالة:",

@@ -73,6 +73,7 @@
   "Delete Role": "Supprimer le rôle",
   "Role Name cannot be empty": "Le nom du rôle ne peut pas être vide",
   "What did just go wrong?": "Qu'est-ce qui a mal tourné ?",
+  "| {count} error occured. | {count} errors occured.": "| {count} erreur s'est produite. | {count} erreurs se sont produites.",
   "Message:": "Message:",
   "More information available at:": "Plus d'informations disponibles sur :",
   "Message Code:": "Code message :",
