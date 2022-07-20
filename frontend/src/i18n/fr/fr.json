@@ -328,7 +328,7 @@
   "Do you REALLY want to delete the Mapping information for this Pipeline?": "Souhaitez-vous VRAIMENT supprimer les informations de mappage de ce Pipeline ?",
   "Do you REALLY want to delete the Collection information for this Pipeline?": "Souhaitez-vous VRAIMENT supprimer les informations de collecte pour ce Pipeline ?",
   "Only .ezCollection files are accepted. You tried to import: {badFileName}.": "Seuls les fichiers .ezCollection sont acceptés. Vous avez essayé d'importer : {badFileName}.",
-  "Error trying to parse the content of the imported Collection Configuration file. Error:": "Erreur lors de la tentative d'analyse du contenu du fichier de configuration de collection importé. Erreur:",
+  "Error trying to parse the content of the imported Collection Configuration file. Error: {errorMessage}": "Erreur lors de la tentative d'analyse du contenu du fichier de configuration de collection importé. Erreur: {errorMessage}",
   "Only one .ezCollection file is accepted. You tried to import multiple files.": "Un seul fichier .ezCollection est accepté. Vous avez essayé d'importer plusieurs fichiers.",
   "Error trying to open the file. Error: {errorMessage}": "Erreur lors de la tentative d'ouverture du fichier. Erreur : {errorMessage}",
   "Only .ezFieldsMapping files are accepted. You tried to import: {badFileName}": "Seuls les fichiers .ezFieldsMapping sont acceptés. Vous avez essayé d'importer : {badFileName}",
