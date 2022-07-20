@@ -150,7 +150,97 @@ export default {
     return {
       drawerMenuOpen: false,
       miniState: true,
-      mainLinks: [
+      // mainLinks: [
+      //   {
+      //     title: '',
+      //     icon: 'home',
+      //     link: '#/Welcome'
+      //   },
+      //   // {
+      //   //   title: 'Status',
+      //   //   icon: 'dashboard',
+      //   //   link: '#/Status'
+      //   // },
+      //   {
+      //     title: this.$t('Open Collectors'),
+      //     icon: 'mediation',
+      //     link: '#/OpenCollectors'
+      //   },
+      //   {
+      //     title: this.$t('Pipelines'),
+      //     icon: 'account_tree',
+      //     link: '#/Pipelines'
+      //   }
+      // ],
+      // lowLinks: [
+      //   {
+      //     title: this.$t('EZ Market Place'),
+      //     icon: 'storefront',
+      //     link: '#/MarketPlace',
+      //     id: 'ezMarketPlace',
+      //     notification: 5,
+      //     notificationColor: 'green',
+      //     notificationTextColor: 'white',
+      //     subMenus: [
+      //       {
+      //         title: this.$t('Notifications'),
+      //         icon: 'mail_outline',
+      //         link: '#/MarketPlace/Notifications'
+      //       },
+      //       {
+      //         title: this.$t('Pipeline Templates'),
+      //         icon: 'account_tree',
+      //         link: '#/MarketPlace/PipelineTemplates'
+      //       },
+      //       {
+      //         title: this.$t('My Profile'),
+      //         icon: 'person',
+      //         link: '#/MarketPlace/PublisherProfile'
+      //       }
+      //     ]
+      //   },
+      //   {
+      //     separator: true
+      //   },
+      //   {
+      //     title: this.$t('Admin'),
+      //     icon: 'admin_panel_settings',
+      //     link: '#/Admin',
+      //     needsPriviledge: true,
+      //     id: 'admin',
+      //     notification: null,
+      //     notificationColor: 'negative',
+      //     notificationTextColor: 'white'
+      //   },
+      //   {
+      //     title: this.$t('Settings'),
+      //     icon: 'settings',
+      //     link: '#/Settings'
+      //   },
+      //   {
+      //     separator: true
+      //   },
+      //   {
+      //     title: this.$t('Log Out'),
+      //     icon: 'logout',
+      //     link: '#/Logout'
+      //   }
+      // ],
+      version: version,
+      showErrorPanel: false,
+      errorPanelDetails: []
+    }
+  },
+  computed: {
+    ...mapState('mainStore', ['loggedInUser', 'loggedInUserIsPrivileged', 'errorWikiUrlBase', 'ezMarketNotification', 'deployment', 'extraInformation']),
+    serverVersion () {
+      return (this.deployment && this.deployment.version ? this.deployment.version : '?.?.?')
+    },
+    needToConfigureMsSql () {
+      return this.extraInformation && this.extraInformation.msSqlConnectionConfigMissing
+    },
+    mainLinks () {
+      return [
         {
           title: '',
           icon: 'home',
@@ -171,8 +261,10 @@ export default {
           icon: 'account_tree',
           link: '#/Pipelines'
         }
-      ],
-      lowLinks: [
+      ]
+    },
+    lowLinks () {
+      return [
         {
           title: this.$t('EZ Market Place'),
           icon: 'storefront',
@@ -225,19 +317,7 @@ export default {
           icon: 'logout',
           link: '#/Logout'
         }
-      ],
-      version: version,
-      showErrorPanel: false,
-      errorPanelDetails: []
-    }
-  },
-  computed: {
-    ...mapState('mainStore', ['loggedInUser', 'loggedInUserIsPrivileged', 'errorWikiUrlBase', 'ezMarketNotification', 'deployment', 'extraInformation']),
-    serverVersion () {
-      return (this.deployment && this.deployment.version ? this.deployment.version : '?.?.?')
-    },
-    needToConfigureMsSql () {
-      return this.extraInformation && this.extraInformation.msSqlConnectionConfigMissing
+      ]
     }
   },
   methods: {
