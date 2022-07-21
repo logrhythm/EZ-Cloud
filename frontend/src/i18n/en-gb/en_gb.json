@@ -40,6 +40,7 @@
   "Host": "Host",
   "Host name": "Host name",
   "SSH Port": "SSH Port",
+  "Authentication": "Authentication",
   "SSH User name": "SSH User name",
   "SSH Password": "SSH Password",
   "SSH Private Key": "SSH Private Key",
