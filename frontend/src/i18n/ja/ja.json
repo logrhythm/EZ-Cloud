@@ -177,6 +177,7 @@
   "Manage MS SQL Connection": "MSSQL接続を管理する",
   "Return to List": "リストに戻る",
   "Return to Admin": "管理者に戻る",
+  "Admin : RBAC : Manage User Accounts": "管理者：RBAC：ユーザーアカウントの管理",
   "User Accounts": "ユーザーアカウント",
   "Accounts": "アカウント",
   "Create a new Account.": "新しいアカウントを作成します。",

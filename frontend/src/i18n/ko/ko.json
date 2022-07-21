@@ -177,6 +177,7 @@
   "Manage MS SQL Connection": "MS SQL 연결 관리",
   "Return to List": "목록으로 돌아가기",
   "Return to Admin": "관리자로 돌아가기",
+  "Admin : RBAC : Manage User Accounts": "Admin : RBAC : 사용자 계정 관리",
   "User Accounts": "사용자 계정",
   "Accounts": "계정",
   "Create a new Account.": "새 계정 생성.",

@@ -177,6 +177,7 @@
   "Manage MS SQL Connection": "Gérer la connexion MS SQL",
   "Return to List": "Retour à la liste",
   "Return to Admin": "Retour à l'Administration",
+  "Admin : RBAC : Manage User Accounts": "Admin : RBAC : Gérer les comptes d'utilisateurs",
   "User Accounts": "Comptes utilisateur",
   "Accounts": "Comptes",
   "Create a new Account.": "Créer un nouveau compte.",
