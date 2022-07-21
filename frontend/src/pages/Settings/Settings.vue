@@ -82,13 +82,33 @@ export default {
       ezBackendBaseUrlWeb: '',
       ezBackendBaseUrlApi: '',
       ezBackendBaseUrlSocket: '',
-      selectedLanguage: this.$i18n.locale,
-      langOptions: languageOptions // List of languages coming from `src/i18n/shared`
+      selectedLanguage: this.$i18n.locale
+      // langOptions: languageOptions // List of languages coming from `src/i18n/shared`
     }
   }, // data
   computed: {
     devMode () {
       return !!(process.env.DEV)
+    },
+    langOptions () {
+      return (
+        languageOptions && Array.isArray(languageOptions)
+          ? languageOptions.reduce(
+            (accumulatedLangages, language) => {
+              accumulatedLangages.push(
+                {
+                  ...language,
+                  label: (language.value !== this.$i18n.locale
+                    ? `${this.$t(language.label)} - ${language.nativeLabel}`
+                    : language.nativeLabel
+                  )
+                }
+              )
+              return accumulatedLangages
+            }, []
+          )
+          : languageOptions
+      )
     }
   },
   methods: {

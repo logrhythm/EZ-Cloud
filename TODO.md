@@ -46,6 +46,7 @@
   - [x] Store them safely in PgSQL
 
 ## TO FIX
+- [ ] Save/Read of Fields Mapping from PgSQL (Frontend issue?)
 
 ## TO TEST
 
