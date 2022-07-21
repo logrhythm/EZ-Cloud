@@ -16,6 +16,8 @@
   "Password": "סיסמה",
   "Authentication failed.": "אימות נכשל.",
   "Login": "התחברות",
+  "OC Admin Client version:": "גרסת לקוח OC Admin:",
+  "OC Admin Server version:": "גרסת שרת OC Admin:",
   "Save settings to local web browser.": "שמור את ההגדרות בדפדפן האינטרנט המקומי.",
   "New Pipeline Details": "פרטי צינור חדש",
   "Pipeline Details": "פרטי צינור",

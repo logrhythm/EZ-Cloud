@@ -16,6 +16,8 @@
   "Password": "비밀번호",
   "Authentication failed.": "인증 실패.",
   "Login": "로그인",
+  "OC Admin Client version:": "OC Admin 클라이언트 버전:",
+  "OC Admin Server version:": "OC Admin 서버 버전:",
   "Save settings to local web browser.": "로컬 웹 브라우저에 설정을 저장합니다.",
   "New Pipeline Details": "새 파이프라인 세부정보",
   "Pipeline Details": "파이프라인 세부정보",

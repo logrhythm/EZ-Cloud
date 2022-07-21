@@ -16,6 +16,8 @@
   "Password": "パスワード",
   "Authentication failed.": "認証に失敗しました。",
   "Login": "ログイン",
+  "OC Admin Client version:": "OC Adminクライアントのバージョン：",
+  "OC Admin Server version:": "OC Adminサーバーのバージョン：",
   "Save settings to local web browser.": "設定をローカルWebブラウザに保存します。",
   "New Pipeline Details": "新しいパイプラインの詳細",
   "Pipeline Details": "パイプラインの詳細",

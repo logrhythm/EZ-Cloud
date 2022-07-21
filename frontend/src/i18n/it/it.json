@@ -16,6 +16,8 @@
   "Password": "Parola d'ordine",
   "Authentication failed.": "Autenticazione fallita.",
   "Login": "Login",
+  "OC Admin Client version:": "Versione client OC Admin:",
+  "OC Admin Server version:": "Versione del server OC Admin:",
   "Save settings to local web browser.": "Salva le impostazioni nel browser web locale.",
   "New Pipeline Details": "Nuovi dettagli sulla pipeline",
   "Pipeline Details": "Dettagli della conduttura",

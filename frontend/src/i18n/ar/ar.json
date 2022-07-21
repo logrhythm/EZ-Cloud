@@ -16,6 +16,8 @@
   "Password": "كلمة المرور",
   "Authentication failed.": "المصادقة فشلت.",
   "Login": "تسجيل الدخول",
+  "OC Admin Client version:": "إصدار عميل OC Admin:",
+  "OC Admin Server version:": "إصدار خادم OC Admin:",
   "Save settings to local web browser.": "حفظ الإعدادات لمتصفح الويب المحلي.",
   "New Pipeline Details": "تفاصيل خطوط الأنابيب الجديدة",
   "Pipeline Details": "تفاصيل خط الأنابيب",

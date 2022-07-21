@@ -16,6 +16,8 @@
   "Password": "Password",
   "Authentication failed.": "Authentication failed.",
   "Login": "Login",
+  "OC Admin Client version:": "OC Admin Client version:",
+  "OC Admin Server version:": "OC Admin Server version:",
   "Save settings to local web browser.": "Save settings to local web browser.",
   "New Pipeline Details": "New Pipeline Details",
   "Pipeline Details": "Pipeline Details",
