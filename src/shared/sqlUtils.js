@@ -293,7 +293,12 @@ function createPgSqlVariables(req, definitions) {
           (
             // eslint-disable-next-line no-nested-ternary
             req.body && (req.body[def.name] !== undefined)
-              ? req.body[def.name]
+              ? (
+                // PgSQL seems to only take the first item of it when provided an array as variable
+                Array.isArray(req.body[def.name])
+                  ? JSON.stringify(req.body[def.name])
+                  : req.body[def.name]
+              )
               : (
                 req.query && (req.query[def.name] !== undefined)
                   ? req.query[def.name]

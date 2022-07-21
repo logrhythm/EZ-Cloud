@@ -5,6 +5,9 @@ const router = express.Router();
 // const fs = require('fs');
 // const path = require('path');
 
+// Load the System Logging functions
+const { logToSystem } = require('../shared/systemLogging');
+
 // For passwords and tokens cyphering
 const secretPlaceholder = '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **';
 const { aesEncrypt } = require('../shared/crypto');
@@ -239,21 +242,30 @@ router.get('/GetPipelines', async (req, res) => {
       /* eslint-disable no-param-reassign */
       try {
         pipeline.fieldsMapping = JSON.parse((pipeline.fieldsMappingJson && pipeline.fieldsMappingJson.length > 0 ? pipeline.fieldsMappingJson : '[]'));
-        delete pipeline.fieldsMappingJson;
       } catch (error) {
-        pipeline.fieldsMapping = {};
+        logToSystem('Warning', `Persistance Layer | Unable to parse Pipeline Fields Mapping. Details: ${error.message}`);
+        pipeline.fieldsMapping = [];
+      }
+      if (pipeline.fieldsMappingJson) {
+        delete pipeline.fieldsMappingJson;
       }
       try {
         pipeline.collectionConfig = JSON.parse((pipeline.collectionConfigJson && pipeline.collectionConfigJson.length > 0 ? pipeline.collectionConfigJson : '{}'));
-        delete pipeline.collectionConfigJson;
       } catch (error) {
+        logToSystem('Warning', `Persistance Layer | Unable to parse Pipeline Collection Config. Details: ${error.message}`);
         pipeline.collectionConfig = {};
+      }
+      if (pipeline.collectionConfigJson) {
+        delete pipeline.collectionConfigJson;
       }
       try {
         pipeline.options = JSON.parse((pipeline.optionsJson && pipeline.optionsJson.length > 0 ? pipeline.optionsJson : '{}'));
-        delete pipeline.optionsJson;
       } catch (error) {
+        logToSystem('Warning', `Persistance Layer | Unable to parse Pipeline Options. Details: ${error.message}`);
         pipeline.options = {};
+      }
+      if (pipeline.optionsJson) {
+        delete pipeline.optionsJson;
       }
       /* eslint-enable no-param-reassign */
     });
