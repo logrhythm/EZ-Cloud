@@ -2,8 +2,8 @@
   <q-page class="q-gutter-sm q-pa-xl">
     <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
-        <q-btn no-caps flat dense icon="arrow_back" label="Return to Admin" :to="'/Admin'" />
-        <q-toolbar-title style="opacity:.4" class="text-center">Admin : RBAC : Manage User Accounts</q-toolbar-title>
+        <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Admin')" :to="'/Admin'" />
+        <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('Admin : RBAC : Manage User Accounts') }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
     <q-card class="q-pa-md q-mx-none">
@@ -14,7 +14,7 @@
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
             <q-card-section class="text-h4">
-                User Accounts
+                {{ $t('User Accounts') }}
             </q-card-section>
             <q-card-section>
               <q-table
@@ -22,29 +22,29 @@
                 :columns="columns"
                 row-key="userId"
                 dense
-                no-data-label="No Account to display."
+                :no-data-label="$t('No Account to display.')"
                 :filter="searchFilter"
                 :loading="dataLoading"
-                rows-per-page-label="Accounts per page:"
+                :rows-per-page-label="$t('Accounts per page:')"
                 :pagination.sync="pagination"
               >
                 <template v-slot:top>
                   <div class="full-width row wrap justify-between">
                     <div class="q-table__title">
-                      Accounts
+                      {{ $t('Accounts') }}
                     </div>
                     <div class="row q-gutter-md">
                       <div class="col" >
-                        <q-btn rounded dense color="primary" icon="add" label="Add New Account" style="min-width:14rem;" @click="addNewAccount()" >
+                        <q-btn rounded dense color="primary" icon="add" :label="$t('Add New Account')" style="min-width:14rem;" @click="addNewAccount()" >
                           <q-tooltip content-style="font-size: 1em">
-                            Create a new Account.
+                            {{ $t('Create a new Account.') }}
                           </q-tooltip>
                         </q-btn>
                       </div>
                     </div>
                     <div class="row q-gutter-md">
                       <div style="width:300px;">
-                        <q-input outlined dense debounce="300" v-model="searchFilter" placeholder="Search">
+                        <q-input outlined dense debounce="300" v-model="searchFilter" :placeholder="$t('Search')">
                           <template v-slot:append>
                             <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
                             <q-icon name="search" />
@@ -54,7 +54,7 @@
                       <!-- <q-separator vertical dark color="orange" /> -->
                       <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadAccountsAndRoles()">
                         <q-tooltip content-style="font-size: 1em">
-                          Reload the list of Accounts.
+                          {{ $t('Reload the list of Accounts.') }}
                         </q-tooltip>
                       </q-btn>
                     </div>
@@ -80,8 +80,8 @@
                   <q-td :props="props">
                     <q-icon name="check_circle_outline" color="green" size="md" v-if="props.value === 1" />
                     <q-tooltip content-style="font-size: 1em">
-                      <span v-if="props.value === 1">Privileged user</span>
-                      <span v-else-if ="props.value === 0">Non-privileged user</span>
+                      <span v-if="props.value === 1">{{ $t('Privileged user') }}</span>
+                      <span v-else-if ="props.value === 0">{{ $t('Non-privileged user') }}</span>
                       <span v-else>{{ props.value }}</span>
                     </q-tooltip>
                   </q-td>
@@ -123,12 +123,12 @@
           <q-card-actions vertical class="justify-around q-px-md">
               <q-btn icon="add" color="primary" @click="addNewAccount()" >
                 <q-tooltip content-style="font-size: 1rem;">
-                  Add Account
+                  {{ $t('Add Account') }}
                 </q-tooltip>
               </q-btn>
               <q-btn icon="refresh" :loading="dataLoading" @click="loadAccountsAndRoles()">
                 <q-tooltip content-style="font-size: 1rem;">
-                  Reload
+                  {{ $t('Reload') }}
                 </q-tooltip>
               </q-btn>
           </q-card-actions>
@@ -146,7 +146,7 @@
 
         <q-card-section class="q-pt-none">
           <q-input dense v-model="editingAccountUsername"
-            label="Username"
+            :label="$t('Username')"
             autofocus
             :disable="editingAccountId != null"
             :rules="[val => !!val || $t('Account Username cannot be empty')]"
@@ -156,7 +156,7 @@
 
         <q-card-section class="q-pt-none q-mb-md">
           <q-input dense v-model="editingAccountPassword"
-            label="Password"
+            :label="$t('Password')"
             :type="!showPassword ? 'password' : 'text'"
             :disable="editingAccountId != null"
             @keyup.esc="promptForAccountDetails = false"
@@ -170,7 +170,7 @@
                 @click="showPassword = !showPassword"
               >
                 <q-tooltip content-style="font-size: 1rem;">
-                  <span v-if="showPassword">Hide</span><span v-else>Show</span> Secret
+                  <span v-if="showPassword">{{ $t('Hide Secret') }}</span><span v-else>{{ $t('Show Secret') }}</span>
                 </q-tooltip>
               </q-icon>
             </template>
@@ -179,7 +179,7 @@
         </q-card-section>
 
         <q-card-section class="q-pt-none q-mb-md">
-          <q-select dense v-model="editingAccountRoleUid" :options="rolesOptions" label="Role" emit-value map-options />
+          <q-select dense v-model="editingAccountRoleUid" :options="rolesOptions" :label="$t('Role')" emit-value map-options />
         </q-card-section>
 
         <q-separator />
@@ -207,10 +207,10 @@ export default {
     return {
       searchFilter: '',
       columns: [
-        { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
-        { name: 'userLogin', align: 'center', label: 'Username', field: 'userLogin', sortable: true },
-        { name: 'roleName', align: 'center', label: 'Role', field: 'roleName', sortable: true },
-        { name: 'roleIsPrivileged', align: 'center', label: 'Is Privileged', field: 'roleIsPrivileged', sortable: true }
+        { name: 'actions', align: 'center', label: this.$t('Actions'), field: 'actions', sortable: false },
+        { name: 'userLogin', align: 'center', label: this.$t('Username'), field: 'userLogin', sortable: true },
+        { name: 'roleName', align: 'center', label: this.$t('Role'), field: 'roleName', sortable: true },
+        { name: 'roleIsPrivileged', align: 'center', label: this.$t('Is Privileged'), field: 'roleIsPrivileged', sortable: true }
       ],
       pagination: {
         sortBy: 'userLogin',
@@ -244,7 +244,7 @@ export default {
         options.push(
           {
             value: role.roleUid,
-            label: role.roleName + (role.roleIsPrivileged === 1 ? ' (Privileged)' : ''),
+            label: (role.roleIsPrivileged === 1 ? this.$t('{roleName} (Privileged)', { roleName: role.roleName }) : role.roleName),
             isPrivileged: (role.roleIsPrivileged === 1)
           }
         )
@@ -332,8 +332,8 @@ export default {
     deleteAccountPrompt (row) {
       // ask to confirm
       this.$q.dialog({
-        title: 'Confirm',
-        message: 'Do you REALLY want to delete this User Account?',
+        title: this.$t('Confirm'),
+        message: this.$t('Do you REALLY want to delete this User Account?'),
         ok: {
           push: true,
           color: 'negative'

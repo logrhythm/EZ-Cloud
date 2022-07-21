@@ -2,15 +2,15 @@
   <q-page class="q-gutter-sm q-pa-xl">
     <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
-        <q-btn no-caps flat dense icon="arrow_back" label="Return to Admin" :to="'/Admin'" />
-        <q-toolbar-title style="opacity:.4" class="text-center">Admin : RBAC : Manage User Roles</q-toolbar-title>
+        <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Admin')" :to="'/Admin'" />
+        <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('Admin : RBAC : Manage User Roles') }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
     <q-card class="q-pa-md q-mx-none">
       <q-card-section horizontal>
         <q-card-section class="col q-ma-none q-pa-none">
           <q-card-section class="text-h4">
-              User Roles
+              {{ $t('User Roles') }}
           </q-card-section>
           <q-card-section>
             <q-table
@@ -18,29 +18,29 @@
               :columns="columns"
               row-key="roleUid"
               dense
-              no-data-label="No Role to display."
+              :no-data-label="$t('No Role to display.')"
               :filter="searchFilter"
               :loading="dataLoading"
-              rows-per-page-label="Roles per page:"
+              :rows-per-page-label="$t('Roles per page:')"
               :pagination.sync="pagination"
             >
               <template v-slot:top>
                 <div class="full-width row wrap justify-between">
                   <div class="q-table__title">
-                    Roles
+                    {{ $t('Roles') }}
                   </div>
                   <div class="row q-gutter-md">
                     <div class="col" >
-                      <q-btn rounded dense color="primary" icon="add" label="Add New Role" style="min-width:14rem;" @click="addNewRole()" >
+                      <q-btn rounded dense color="primary" icon="add" :label="$t('Add New Role')" style="min-width:14rem;" @click="addNewRole()" >
                         <q-tooltip content-style="font-size: 1em">
-                          Create a new Role.
+                          {{ $t('Create a new Role.') }}
                         </q-tooltip>
                       </q-btn>
                     </div>
                   </div>
                   <div class="row q-gutter-md">
                     <div style="width:300px;">
-                      <q-input outlined dense debounce="300" v-model="searchFilter" placeholder="Search">
+                      <q-input outlined dense debounce="300" v-model="searchFilter" :placeholder="$t('Search')">
                         <template v-slot:append>
                           <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
                           <q-icon name="search" />
@@ -50,7 +50,7 @@
                     <!-- <q-separator vertical dark color="orange" /> -->
                     <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadRoles()">
                       <q-tooltip content-style="font-size: 1em">
-                        Reload the list of Roles.
+                        {{ $t('Reload the list of Roles.') }}
                       </q-tooltip>
                     </q-btn>
                   </div>
@@ -76,8 +76,8 @@
                 <q-td :props="props">
                   <q-icon name="check_circle_outline" color="green" size="md" v-if="props.value === 1" />
                   <q-tooltip content-style="font-size: 1em">
-                    <span v-if="props.value === 1">Privileged user</span>
-                    <span v-else-if ="props.value === 0">Non-privileged user</span>
+                    <span v-if="props.value === 1">{{ $t('Privileged role') }}</span>
+                    <span v-else-if ="props.value === 0">{{ $t('Non-privileged role') }}</span>
                     <span v-else>{{ props.value }}</span>
                   </q-tooltip>
                 </q-td>
@@ -111,12 +111,12 @@
         <q-card-actions vertical class="justify-around q-px-md">
             <q-btn icon="add" color="primary" @click="addNewRole()" >
               <q-tooltip content-style="font-size: 1rem;">
-                Add Role
+                {{ $t('Add Role') }}
               </q-tooltip>
             </q-btn>
             <q-btn icon="refresh" :loading="dataLoading" @click="loadRoles()">
               <q-tooltip content-style="font-size: 1rem;">
-                Reload
+                {{ $t('Reload') }}
               </q-tooltip>
             </q-btn>
         </q-card-actions>
@@ -134,7 +134,7 @@
 
         <q-card-section class="q-pt-none">
           <q-input dense v-model="editingRoleName"
-            label="Name"
+            :label="$t('Name')"
             autofocus
             :rules="[val => !!val || $t('Role Name cannot be empty')]"
             @keyup.esc="promptForRoleDetails = false"
@@ -144,7 +144,7 @@
         <q-card-section class="q-pt-none q-mb-md">
           <q-toggle
             v-model="editingRoleIsPrivileged"
-            label="Is Privileged"
+            :label="$t('Is Privileged')"
             false-value="0"
             :true-value="1"
             left-label
@@ -177,9 +177,9 @@ export default {
     return {
       searchFilter: '',
       columns: [
-        { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
-        { name: 'roleName', align: 'center', label: 'Role', field: 'roleName', sortable: true },
-        { name: 'roleIsPrivileged', align: 'center', label: 'Is Privileged', field: 'roleIsPrivileged', sortable: true }
+        { name: 'actions', align: 'center', label: this.$t('Actions'), field: 'actions', sortable: false },
+        { name: 'roleName', align: 'center', label: this.$t('Role'), field: 'roleName', sortable: true },
+        { name: 'roleIsPrivileged', align: 'center', label: this.$t('Is Privileged'), field: 'roleIsPrivileged', sortable: true }
       ],
       pagination: {
         sortBy: 'roleName',
@@ -256,8 +256,8 @@ export default {
     deleteRolePrompt (row) {
       // ask to confirm
       this.$q.dialog({
-        title: 'Confirm',
-        message: 'Do you REALLY want to delete this User Role?',
+        title: this.$t('Confirm'),
+        message: this.$t('Do you REALLY want to delete this User Role?'),
         ok: {
           push: true,
           color: 'negative'
