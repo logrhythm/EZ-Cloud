@@ -1,9 +1,9 @@
 const express = require('express');
 
 const router = express.Router();
-// Get SQL config
-const fs = require('fs');
-const path = require('path');
+// // Get SQL config
+// const fs = require('fs');
+// const path = require('path');
 
 // For passwords and tokens cyphering
 const secretPlaceholder = '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **';
@@ -27,7 +27,7 @@ router.get('/', (req, res) => {
 const {
   getDataFromMsSql,
   createMsSqlVariables,
-  createMsSqlVariablesAndStoredProcParams,
+  // createMsSqlVariablesAndStoredProcParams,
   getDataFromPgSql,
   createPgSqlVariables
 } = require('../shared/sqlUtils');
@@ -175,8 +175,10 @@ router.get('/GetCollectors', async (req, res) => {
 
         // Parse the list of Shippers, falling back to an empty array if things go pear shaped.
         try {
+          // eslint-disable-next-line no-param-reassign
           collector.installedShippers = JSON.parse(collector.installedShippers);
-        } catch {
+        } catch (error) {
+          // eslint-disable-next-line no-param-reassign
           collector.installedShippers = [];
         }
       });
