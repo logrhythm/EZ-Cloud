@@ -8,7 +8,8 @@ const languageOptions = [
   { value: 'it', label: 'Italian', nativeLabel: 'Italiano' },
   { value: 'iw', label: 'Hebrew', nativeLabel: 'עִברִית' },
   { value: 'ja', label: 'Japanese', nativeLabel: '日本' },
-  { value: 'ko', label: 'Korean', nativeLabel: '한국인' }
+  { value: 'ko', label: 'Korean', nativeLabel: '한국인' },
+  { value: 'zh-cn', label: 'Simplified Chinese', nativeLabel: '简体中文' }
 ]
 
 function switchLanguageTo (self, selectedNewLanguage) {
@@ -74,6 +75,11 @@ function switchLanguageTo (self, selectedNewLanguage) {
             })
         } else if (selectedNewLanguage === 'ko' || selectedNewLanguage === 'ko-kr') {
           import('quasar/lang/ko-kr')
+            .then(({ default: messages }) => {
+              self.$q.lang.set(messages)
+            })
+        } else if (selectedNewLanguage === 'zh-cn') {
+          import('quasar/lang/zh-hans')
             .then(({ default: messages }) => {
               self.$q.lang.set(messages)
             })
