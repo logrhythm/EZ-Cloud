@@ -26,10 +26,20 @@ module.exports = {
     rules: [{ test: /\.node$/, use: 'raw-loader' }]
   },
   plugins: [
-    // Ignore absence of optional module `pg-native` of module `pg`
+    // Ignore absence of optional module `pg-native` of module `pg` (pg/lib/native)
     new webpack.IgnorePlugin({
       resourceRegExp: /pg-native/,
-      contextRegExp: /pg\/lib$/
+      contextRegExp: /pg\/lib\/native$/
+    }),
+    // Ignore absence of optional module `cpu-features` of module `ssh2` (ssh2/lib/protocol)
+    new webpack.IgnorePlugin({
+      resourceRegExp: /cpu-features/,
+      contextRegExp: /ssh2\/lib\/protocol$/
+    }),
+    // Ignore absence of optional module `sshcrypto.node` of module `ssh2` (ssh2/lib/protocol)
+    new webpack.IgnorePlugin({
+      resourceRegExp: /sshcrypto.node/,
+      contextRegExp: /ssh2\/lib\/protocol$/
     }),
     // Copy all the necessary sample files to the relevant place under dist/
     new CopyPlugin({
