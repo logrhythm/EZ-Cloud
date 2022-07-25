@@ -26,6 +26,7 @@ module.exports = {
     rules: [{ test: /\.node$/, use: 'raw-loader' }]
   },
   plugins: [
+    // Ignore absence of optional module `pg-native` of module `pg`
     new webpack.IgnorePlugin({
       resourceRegExp: /pg-native/,
       contextRegExp: /pg\/lib$/
