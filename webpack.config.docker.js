@@ -53,8 +53,8 @@ module.exports = {
     new WebpackShellPluginNext({
       onBuildExit: {
         scripts: [
-          // Build the self contained Installer
-          // `node ${path.join(__dirname, 'installer', 'installerBuilder')} --installerHelper "${path.join(__dirname, 'installer')}" --distDirectory "${path.join(__dirname, 'dist')}" --distSubDirectory "${path.join(__dirname, 'dist', `EZ-Cloud.v${version}`)}" `
+          // Build the Docker Container
+          `node ${path.join(__dirname, 'docker', 'dockerContainerBuilder')} --distDirectory "${path.join(__dirname, 'dist')}" --distSubDirectory "${path.join(__dirname, 'dist', `EZ-Cloud.v${version}`)}" --dockerFile "${path.join(__dirname, 'docker', 'Dockerfile')}" `
         ],
         blocking: false,
         parallel: false
