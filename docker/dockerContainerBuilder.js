@@ -7,8 +7,8 @@
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 const yargs = require('yargs');
+const fs = require('fs');
 const path = require('path');
-const spawn = require('cross-spawn');
 
 const parsedArguments = yargs
   .option('distDirectory', {
@@ -23,7 +23,12 @@ const parsedArguments = yargs
   })
   .option('dockerFile', {
     alias: 'f',
-    description: 'Pull path of the `Dockerfile` file',
+    description: 'Full path of the `Dockerfile` file',
+    type: 'string'
+  })
+  .option('dockerBuildScriptTemplate', {
+    alias: 't',
+    description: 'Full path to the `_docker.build.sh` template file',
     type: 'string'
   })
   .help()
@@ -49,7 +54,15 @@ const distSubDirectory = (
 const dockerFilePath = (
   parsedArguments && parsedArguments.dockerFile && parsedArguments.dockerFile.length
     ? parsedArguments.dockerFile
-    : path.join(distSubDirectory || '', 'Dockerfile')
+    : path.join('.', 'Dockerfile')
+);
+
+const dockerBuildScriptTemplatePath = (
+  parsedArguments
+  && parsedArguments.dockerBuildScriptTemplate
+  && parsedArguments.dockerBuildScriptTemplate.length
+    ? parsedArguments.dockerBuildScriptTemplate
+    : path.join('.', '_docker.build-TEMPLATE.sh')
 );
 
 // Build the name of the new Installer
@@ -65,19 +78,27 @@ if (
   && dockerFilePath.length
   && versionTag
   && versionTag.length > 1
+  && dockerBuildScriptTemplatePath
+  && dockerBuildScriptTemplatePath.length
 ) {
   // Run Docker to build the Container
   // eslint-disable-next-line no-console
-  console.log('👷 Build the Container...');
+  console.log('👷 Build the Container building script...');
 
   try {
-    const docketBuildResult = spawn.sync('docker', ['build', '--tag', `tonymasse/oc-admin:${versionTag}`, '--tag', 'tonymasse/oc-admin:latest', '--file', dockerFilePath, distSubDirectory], {});
-    // eslint-disable-next-line no-console
-    console.log((docketBuildResult && docketBuildResult.stdout ? docketBuildResult.stdout : '').toString().trim());
-    if (docketBuildResult.error) {
-      // eslint-disable-next-line no-console
-      console.log('🔴 Oopsy Daisy - Error while running `Docker Build` with parameters:', JSON.stringify(docketBuildResult.error.spawnargs || []), ' - Error was:', docketBuildResult.error.message);
-    }
+    const dockerCommand = `docker build --tag "tonymasse/oc-admin:${versionTag}" --tag "tonymasse/oc-admin:latest" --file "${dockerFilePath}" "${distSubDirectory}"`;
+    const dockerScriptPath = path.join(distDirectory, '_docker.build.sh');
+
+    // Read template from disk
+    let dockerScriptTemplate = fs.readFileSync(dockerBuildScriptTemplatePath, { encoding: 'utf-8' }) || '';
+
+    // Replace token
+    dockerScriptTemplate = String(dockerScriptTemplate).replaceAll('#_DOCKER_COMMAND_GOES_HERE', dockerCommand);
+
+    // Write to disk
+    fs.writeFileSync(dockerScriptPath, dockerScriptTemplate);
+
+    console.log(dockerCommand);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.log('🔴 Oopsy Daisy - ', error.message);

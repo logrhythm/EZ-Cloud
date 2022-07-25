@@ -5,6 +5,8 @@ const WebpackShellPluginNext = require('webpack-shell-plugin-next');
 const path = require('path');
 const { version } = require('./package.json');
 
+const distSubDir = `EZ-Cloud.v${version}`;
+
 module.exports = {
   entry: {
     service: './src/index.js' // The main code of trhe service
@@ -13,7 +15,7 @@ module.exports = {
     // serviceWrapper: './node_modules/node-windows/lib/wrapper.js'
   },
   output: {
-    path: path.join(__dirname, 'dist', `EZ-Cloud.v${version}`, 'bin'),
+    path: path.join(__dirname, 'dist', distSubDir, 'bin'),
     filename: '[name].js'
   },
   mode: 'production',
@@ -58,11 +60,13 @@ module.exports = {
         // { from: 'installer/ezcloudserver.xml', to: 'ezcloudserver.xml', toType: 'file' },
         // String obfuscation tool from LogRhythm
         { from: 'src/shared/encryptionTool.exe', to: 'encryptionTool.exe', toType: 'file' }, // TODO: Swap with Linux version of this
-        { from: 'src/shared/encryptionTool.hashes.txt', to: 'encryptionTool.hashes.txt', toType: 'file' } // TODO: Swap with Linux version of this
+        { from: 'src/shared/encryptionTool.hashes.txt', to: 'encryptionTool.hashes.txt', toType: 'file' }, // TODO: Swap with Linux version of this
         // // Small helpers for the Service management by user
         // { from: 'installer/installService.bat', to: './', toType: 'dir' },
         // { from: 'installer/uninstallService.bat', to: './', toType: 'dir' },
         // { from: 'installer/restartService.bat', to: './', toType: 'dir' }
+        // Docker file
+        { from: 'docker/Dockerfile', to: path.join('..', '..', 'Dockerfile'), toType: 'file' }
       ]
     }),
 
@@ -70,7 +74,7 @@ module.exports = {
       onBuildExit: {
         scripts: [
           // Build the Docker Container
-          `node ${path.join(__dirname, 'docker', 'dockerContainerBuilder')} --distDirectory "${path.join(__dirname, 'dist')}" --distSubDirectory "${path.join(__dirname, 'dist', `EZ-Cloud.v${version}`)}" --dockerFile "${path.join(__dirname, 'docker', 'Dockerfile')}" `
+          `node ${path.join(__dirname, 'docker', 'dockerContainerBuilder')} --distDirectory "dist" --distSubDirectory "${distSubDir}/" --dockerFile "./Dockerfile" --dockerBuildScriptTemplate "${path.join('docker', '_docker.build-TEMPLATE.sh')}" `
         ],
         blocking: false,
         parallel: false
