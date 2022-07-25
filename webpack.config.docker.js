@@ -1,4 +1,5 @@
 /* eslint-disable max-len */
+const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 const WebpackShellPluginNext = require('webpack-shell-plugin-next');
 const path = require('path');
@@ -25,6 +26,10 @@ module.exports = {
     rules: [{ test: /\.node$/, use: 'raw-loader' }]
   },
   plugins: [
+    new webpack.IgnorePlugin({
+      resourceRegExp: /pg-native/,
+      contextRegExp: /pg\/lib$/
+    }),
     // Copy all the necessary sample files to the relevant place under dist/
     new CopyPlugin({
       patterns: [
