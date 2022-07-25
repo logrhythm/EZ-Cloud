@@ -39,7 +39,6 @@
         "morgan": "^1.10.0",
         "node-windows": "1.0.0-beta.6",
         "pg": "^8.7.3",
-        "pg-native": "^3.0.0",
         "simple-ssh": "^1.1.0",
         "socket.io": "^4.4.1",
         "tedious": "^11.8.0"
