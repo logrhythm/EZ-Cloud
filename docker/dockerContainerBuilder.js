@@ -98,7 +98,13 @@ if (
     // Write to disk
     fs.writeFileSync(dockerScriptPath, dockerScriptTemplate);
 
-    console.log(dockerCommand);
+    /* eslint-disable no-console */
+    console.log('🟢 Docker Container building script created.');
+    console.log('You now want to run the following command:');
+    console.log('cd /var/lib/docker/volumes/oc-admin_dev/_data/ && chmod +x _docker.build.sh && _docker.build.sh');
+    console.log('🏁');
+    console.log('');
+    /* eslint-enable no-console */
   } catch (error) {
     // eslint-disable-next-line no-console
     console.log('🔴 Oopsy Daisy - ', error.message);
