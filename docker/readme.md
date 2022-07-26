@@ -11,6 +11,8 @@ Made up of the files in the `./oc-admin_dev` directory:
 | `_docker.run-oc-admin_dev.sh` | Bash script to run the `oc-admin_dev` container. Can be run with the `--build_only` flag to build `oc-admin` container content and die. |
 | `_docker.build_oc-admin_production.sh` | Builds the `oc-admin` container using `oc-admin_dev` image. |
 
+See [`oc-admin_dev/`](./oc-admin_dev) for more details.
+
 ## oc-db
 
 Made up of the files in the `./oc-db` directory:
