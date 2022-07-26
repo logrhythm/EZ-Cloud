@@ -33,7 +33,7 @@ until [ ${#OC_ADMIN_PASSWORD} -gt 6 ]
 do
   echo " - Password must have a minimum of 6 characters"
   echo ""
-  read -sp 'Password: ' OC_ADMIN_PASSWORD
+  read -sp 'Password: ' OC_ADMIN_PASSWORD </dev/tty
   echo ""
   echo ""
 done
