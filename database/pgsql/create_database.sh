@@ -5,6 +5,7 @@
 # Create date: 2022-07-08
 # Modified on: 2022-07-08 - To rename the `ez` database to `oc-admin`
 # Modified on: 2022-07-08 - To rename User `ezAdmin` to `ocAdmin`
+# Modified on: 2022-07-26 - To use `OC_ADMIN_PASSWORD` environment variable to create the `ocAdmin` user account
 # Description: Create the User, DB, Tables, Views, Stored Procedure, Functions and there ancilaries in PostgreSQL container `oc-db`
 # =============================================
 
@@ -30,7 +31,7 @@ if [[ ! -z "$found" ]]; then
   cat "20220630.14 - Create Stored Procedure - delete_RBAC_Role.sql" | docker exec -i oc-db psql --username=postgres --dbname oc-admin
   cat "20220630.15 - Create Table - settings.sql" | docker exec -i oc-db psql --username=postgres --dbname oc-admin
   cat "20220630.16 - Create Stored Procedure - upsert_Setting.sql" | docker exec -i oc-db psql --username=postgres --dbname oc-admin
-  cat "20220701.17 - Create User - ocAdmin.sql" | docker exec -i oc-db psql --username=postgres --dbname oc-admin
+  cat "20220701.17 - Create User - ocAdmin.sql" | docker exec -i oc-db psql --username=postgres --dbname oc-admin --set=OC_ADMIN_PASSWORD="$OC_ADMIN_PASSWORD"
   cat "20220701.18 - Create View - get_SIEM_Master_ID.sql" | docker exec -i oc-db psql --username=postgres --dbname oc-admin
 fi
 
