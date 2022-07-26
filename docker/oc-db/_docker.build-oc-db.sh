@@ -5,6 +5,9 @@
 # Create date: 2022-07-11
 # Modified on: 2022-07-26 - To add --nopublish parameter and feature
 # Description: Create the named volume and Start PostgreSQL container `oc-db`
+# Parameters:
+#  --help         Shows Help message
+#  --nopublish    Skips publishing to Docker Hub
 # =============================================
 
 # Display Help message
