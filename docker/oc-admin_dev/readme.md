@@ -21,6 +21,10 @@
   - Get and run: `_docker.build-oc-admin_dev.sh`
     - `curl -fsSL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9/docker/oc-admin_dev/_docker.build-oc-admin_dev.sh | sh`
 
+**Below is the detailed description of the scripts present in this directory.**
+
+---
+
 ## `_docker.build-oc-admin_dev.sh`
 ### Description:
 Build the Dev version of the OC-Admin container `oc-admin_dev`.
