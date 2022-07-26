@@ -64,4 +64,5 @@ curl -fsSL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9/docker/oc-a
 cd ../../..
 echo "### DONE."
 echo ""
+echo ""
 docker ps | grep "oc-"
