@@ -3,7 +3,7 @@
 # =============================================
 # Author:      Tony Massé
 # Create date: 2022-07-11
-# Description: Build he Dev version of the OC-Admin container `oc-admin_dev`.
+# Description: Build the Dev version of the OC-Admin container `oc-admin_dev`.
 # Parameters:
 #  --help         Shows Help message
 #  --nopublish    Skips publishing to Docker Hub

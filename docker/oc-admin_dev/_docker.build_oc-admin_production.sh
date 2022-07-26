@@ -26,6 +26,9 @@ if [[ "$*" == *help* ]]; then
   echo "   --nopublish           Skips publishing to Docker Hub"
   echo "   --notempimage         Do not use temporary image if \`oc-admin_dev\` isn't already running"
   echo ""
+  echo "By default (no parameters) this script will attempt to use the currently running \`oc-admin_dev\`"
+  echo "image, if none, it will spin a temporary one."
+  echo ""
   exit 0
 fi
 
