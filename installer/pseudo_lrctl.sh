@@ -61,3 +61,7 @@ chmod +x create_database.sh
 echo "### DOWNLOAD AND RUN \`oc-admin\` START-UP SCRIPT..."
 curl -fsSL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9/docker/oc-admin/start_oc_admin.sh | sh
 
+cd ../../..
+echo "### DONE."
+echo ""
+docker ps | grep "oc-"
