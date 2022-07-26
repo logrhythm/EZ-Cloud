@@ -4,10 +4,28 @@
 # Author:      Tony Massé
 # Create date: 2022-07-11
 # Modified on: 2022-07-13 - To increase user watches, instances and queued events limits on the Docker host
-# Description: Pull and Start Dev version of the OC-Admin container `oc-admin_dev`
+# Description: Pull and Start Dev version of the OC-Admin container `oc-admin_dev`.
+#              Can be used to just build the content of the `oc-admin` container, with the `--build_only` flag.
+# Parameters:
+#  --help         Shows Help message
+#  --build_only   Run, build Frontend and Backend, then quit
 # =============================================
 
 # To be ran on the Docker host to start this container
+
+# Display Help message
+if [[ "$*" == *help* ]]; then
+  echo ""
+  echo "Usage:  _docker.run-oc-admin_dev.sh [OPTIONS]"
+  echo ""
+  echo "Options:"
+  echo "   --help                Shows this help"
+  echo "   --build_only          Run, build Frontend and Backend, then quit"
+  echo ""
+  echo "By default (no parameters) \`oc-admin_dev\` will stay running until killed."
+  echo ""
+  exit 0
+fi
 
 echo "### Create \`oc-admin_dev\` Volume..."
 docker volume create oc-admin_dev
