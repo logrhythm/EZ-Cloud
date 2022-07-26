@@ -3,13 +3,17 @@
 # =============================================
 # Author:      Tony Massé
 # Create date: 2022-07-25
+# Modified on: 2022-07-26 - To mix with _docker.run-oc-admin_dev.sh for temp image
 # Description: Check Dev version of the OC-Admin container `oc-admin_dev`
 #              is running, and use it to build the `oc-admin` container's 
 #              content prior to call the Docker command to build the 
 #              `oc-admin` container.
+#              If no running `oc-admin_dev` is found, it spins a temporary
+#              one, unless parameter `--notempimage` is present.
 # Parameters:
 #  --help         Shows Help message
 #  --nopublish    Skips publishing to Docker Hub
+#  --notempimage  Do not use temporary image if `oc-admin_dev` isn't already running
 # =============================================
 
 # Display Help message
@@ -20,6 +24,7 @@ if [[ "$*" == *help* ]]; then
   echo "Options:"
   echo "   --help                Shows this help"
   echo "   --nopublish           Skips publishing to Docker Hub"
+  echo "   --notempimage         Do not use temporary image if \`oc-admin_dev\` isn't already running"
   echo ""
   exit 0
 fi
@@ -35,51 +40,76 @@ if [[ $running == 0 ]]; then
   containerId="$(docker ps | grep "oc-admin_dev.*ago\s*Up" | cut -c-12)"
   if [[ $containerId == "" ]]; then
     echo "### 🔴 ERROR: COULD NOT DETERMINATE THE RUNNING ID OF \`oc-admin_dev\` CONTAINER. BUILD PROCESS CANCELLED"
-  else
-    echo "###   \-> 🟢 ID FOUND: $containerId."
-
-    echo "### CLEAN PREVIOUS ARTIFACTS (\`Dockerfile\` and \`_docker.build.sh\`)..."
-    if [[ -f "/var/lib/docker/volumes/oc-admin_dev/_data/Dockerfile" ]]; then
-      echo "###   \-> DELETING \`/var/lib/docker/volumes/oc-admin_dev/_data/Dockerfile\`)..."
-      rm "/var/lib/docker/volumes/oc-admin_dev/_data/Dockerfile"
-    fi
-    if [[ -f "/var/lib/docker/volumes/oc-admin_dev/_data/_docker.build.sh" ]]; then
-      echo "###   \-> DELETING \`/var/lib/docker/volumes/oc-admin_dev/_data/_docker.build.sh\`)..."
-      rm "/var/lib/docker/volumes/oc-admin_dev/_data/_docker.build.sh"
-    fi
-
-    echo "### RUN BUILD COMMAND ON CONTAINER IN INTERACTIVE MODE..."
-    docker exec -it $containerId ash -c 'cd EZ-Cloud && npm run buildDocker'
-
-    echo "### CHECK FILES ARE READY TO BUILD CONTAINERISED..."
-    if [[ -f "/var/lib/docker/volumes/oc-admin_dev/_data/Dockerfile" ]] && [[ -f "/var/lib/docker/volumes/oc-admin_dev/_data/_docker.build.sh" ]]; then
-      echo "###   \-> 🟢 DOCKER FILES FOUND."
-
-      echo "### BUILD \`oc-admin\` CONTAINER..."
-      /usr/bin/env bash -c "cd /var/lib/docker/volumes/oc-admin_dev/_data/ && chmod +x _docker.build.sh && ./_docker.build.sh"
-
-      echo "### LISTING \`oc-admin\` CONTAINER IMAGES..."
-      docker images tonymasse/oc-admin
-
-      echo "### 🟢🏁 BUILD PROCESS COMPLETE."
-
-      if [[ "$*" == *nopublish* ]]; then
-        echo "### SKIPPING PUBLISHING, as per \`--nopublish\` parameter."
-      else
-        echo "### PUBLISHING \`oc-admin\` CONTAINER IMAGE..."
-        docker push --all-tags tonymasse/oc-admin
-
-        echo "### 🟢🏁 PUBLISH PROCESS COMPLETE."
-      fi
-    else
-      echo "### 🔴 ERROR: DOCKER FILES NOT FOUND IN \`/var/lib/docker/volumes/oc-admin_dev/_data/\`. BUILD PROCESS CANCELLED"
-    fi
-
+    exit 1
   fi
+  echo "###   \-> 🟢 ID FOUND: $containerId."
 else
-  echo "### 🔴 ERROR: \`oc-admin_dev\` CONTAINER MUST BE RUNNING. BUILD PROCESS CANCELLED"
-  echo "### ℹ Please run the following commands prior to this one:"
-  echo "docker volume create oc-admin_dev"
-  echo "docker run --interactive --tty --network logrhythm --volume oc-admin_dev:/app/EZ-Cloud/dist tonymasse/oc-admin_dev"
+  echo "###   \-> 🟠 CONTAINER IS NOT RUNNING."
+  if [[ "$*" == *notempimage* ]]; then
+    echo "### 🔴 ERROR: IF USING \`--notempimage\` PARAMETER, \`oc-admin_dev\` CONTAINER MUST BE RUNNING. BUILD PROCESS CANCELLED"
+    echo "### ℹ Stop using the \`--notempimage\` parameter, or please run the following commands prior to this one:"
+    echo "docker volume create oc-admin_dev"
+    echo "docker run --interactive --tty --network logrhythm --volume oc-admin_dev:/app/EZ-Cloud/dist tonymasse/oc-admin_dev"
+    exit 1
+  fi
 fi
 
+# Carrying on
+# At this stage, either oc-admin_dev is alreay running and we got its ID, or the user is allowing us to spin a temp oc-admin_dev
+
+echo "### CLEAN PREVIOUS ARTIFACTS (\`Dockerfile\` and \`_docker.build.sh\`)..."
+if [[ -f "/var/lib/docker/volumes/oc-admin_dev/_data/Dockerfile" ]]; then
+  echo "###   \-> DELETING \`/var/lib/docker/volumes/oc-admin_dev/_data/Dockerfile\`)..."
+  rm "/var/lib/docker/volumes/oc-admin_dev/_data/Dockerfile"
+fi
+if [[ -f "/var/lib/docker/volumes/oc-admin_dev/_data/_docker.build.sh" ]]; then
+  echo "###   \-> DELETING \`/var/lib/docker/volumes/oc-admin_dev/_data/_docker.build.sh\`)..."
+  rm "/var/lib/docker/volumes/oc-admin_dev/_data/_docker.build.sh"
+fi
+
+# Build the container content
+#  - Build Frontend
+#  - Import it in the Backend `public_html` directory
+#  - Build Backent
+
+if [[ "$*" == *notempimage* ]]; then
+  echo "### SPIN TEMPORARY \`oc-admin_dev\` IMAGE (./_docker.run-oc-admin_dev.sh --build_only)..."
+  if [[ -f "_docker.run-oc-admin_dev.sh" ]]; then
+    chmod +x _docker.run-oc-admin_dev.sh
+    ./_docker.run-oc-admin_dev.sh --build_only
+  else
+    echo "### 🔴 ERROR: \`_docker.run-oc-admin_dev.sh\` SCRIPT IS NOT FOUND. BUILD PROCESS CANCELLED"
+    exit 1
+  fi
+else
+  echo "### RUN BUILD COMMAND ON CONTAINER IN INTERACTIVE MODE..."
+  docker exec -it $containerId ash -c 'cd EZ-Cloud && npm run buildDocker'
+fi
+
+# Double check the files are good, and Dockerise the life out of that thing!
+
+echo "### CHECK FILES ARE READY TO BUILD CONTAINERISED..."
+if [[ -f "/var/lib/docker/volumes/oc-admin_dev/_data/Dockerfile" ]] && [[ -f "/var/lib/docker/volumes/oc-admin_dev/_data/_docker.build.sh" ]]; then
+  echo "###   \-> 🟢 DOCKER FILES FOUND."
+
+  echo "### BUILD \`oc-admin\` CONTAINER..."
+  /usr/bin/env bash -c "cd /var/lib/docker/volumes/oc-admin_dev/_data/ && chmod +x _docker.build.sh && ./_docker.build.sh"
+
+  echo "### LISTING \`oc-admin\` CONTAINER IMAGES..."
+  docker images tonymasse/oc-admin
+
+  echo "### 🟢🏁 BUILD PROCESS COMPLETE."
+
+  if [[ "$*" == *nopublish* ]]; then
+    echo "### SKIPPING PUBLISHING, as per \`--nopublish\` parameter."
+  else
+    echo "### PUBLISHING \`oc-admin\` CONTAINER IMAGE..."
+    docker push --all-tags tonymasse/oc-admin
+
+    echo "### 🟢🏁 PUBLISH PROCESS COMPLETE."
+  fi
+else
+  echo "### 🔴 ERROR: DOCKER FILES NOT FOUND IN \`/var/lib/docker/volumes/oc-admin_dev/_data/\`. BUILD PROCESS CANCELLED"
+fi
+
+# Extra brownie points for you, if you read all the comments up to here.
