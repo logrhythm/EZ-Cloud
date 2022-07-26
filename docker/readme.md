@@ -1,6 +1,6 @@
 # `Docker` folder
 
-## oc-admin
+## `oc-admin` scripts
 
 Made up of the files in the [`./oc-admin`](./oc-admin) directory:
 
@@ -10,9 +10,9 @@ Made up of the files in the [`./oc-admin`](./oc-admin) directory:
 
 ---
 
-## oc-admin_dev
+## `oc-admin_dev` scripts
 
-Made up of the files in the `./oc-admin_dev` directory:
+Made up of the files in the [`./oc-admin_dev`](./oc-admin_dev) directory:
 
 | File name | Description |
 | --------- | ----------- |
@@ -23,9 +23,9 @@ Made up of the files in the `./oc-admin_dev` directory:
 
 See [`oc-admin_dev/`](./oc-admin_dev) for more details.
 
-## oc-db
+## `oc-db` scripts
 
-Made up of the files in the `./oc-db` directory:
+Made up of the files in the [`./oc-db`](./oc-db) directory:
 
 | File name | Description |
 | --------- | ----------- |
@@ -36,7 +36,7 @@ Made up of the files in the `./oc-db` directory:
 | - `init-extension-pgcrypto.sql` | SQL script to add the `pgcrypto` extension to PostgreSQL. |
 | - `init-pg_hba.sh` | Bash script to create the HBA (**H**ost **B**ased **A**ccess) file to secure the container while allowing passwordless yet restricted access to if from the `oc-admin` container. |
 
-## oc-admin
+## `oc-admin` Docker source
 
 Made up of the files in this very directory:
 
