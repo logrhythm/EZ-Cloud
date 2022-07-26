@@ -13,17 +13,6 @@
 GITHUB_REPO_URL_BASE="https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9"
 DB_CREATION_SCRIPT="create_database.sh"
 
-# echo "### CHECKING GIT IS INSTALLED..."
-# if command -v "git" &> /dev/null; then
-#   # echo "Git is present"
-#   echo ""
-# else
-#   echo "Git not installed. Please install it prior to running this script."
-#   echo "Run the following:"
-#   echo "yum -y install git"
-#   exit 1
-# fi
-
 echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
 curl -fsSL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9/docker/oc-db/_docker.run-oc-db.sh | sh
 
@@ -47,18 +36,6 @@ do
   echo ""
   echo ""
 done
-
-# echo "### CLONE GIT REPO..."
-# git clone https://github.com/logrhythm/EZ-Cloud.git
-
-# echo "### WALK IN \`EZ-Cloud\` DIRECTORY..."
-# cd "EZ-Cloud"
-
-# echo "### SWITCHING TO THE CURRENT BRANCH..."
-# git checkout v0.9
-
-# echo "### WALK IN \`database/pgsql\` DIRECTORY..."
-# cd database/pgsql/
 
 # Create a clean folder
 echo "### CREATING A CLEAN DIRECTORY (\`./pgsql\`)..."
