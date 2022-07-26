@@ -1,5 +1,15 @@
 # `Docker` folder
 
+## oc-admin
+
+Made up of the files in the [`./oc-admin`](./oc-admin) directory:
+
+| File name | Description |
+| --------- | ----------- |
+| `start_oc_admin.sh` | Bash script to run the `oc-admin` Production container. |
+
+---
+
 ## oc-admin_dev
 
 Made up of the files in the `./oc-admin_dev` directory:
