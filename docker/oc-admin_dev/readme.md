@@ -5,7 +5,7 @@
   - Deploy on your host:
     - Docker
   - Get and run: `_docker.run-oc-admin_dev.sh`
-    - `curl -fsSL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9/docker/oc-admin_dev/_docker.run-oc-admin_dev.sh | sh`
+    - `curl -fsSOL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9/docker/oc-admin_dev/_docker.run-oc-admin_dev.sh && sh _docker.run-oc-admin_dev.sh`
 - Build the `oc-admin` Docker image based on the latest code
   - Deploy on your host:
     - Docker
