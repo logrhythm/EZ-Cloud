@@ -59,7 +59,7 @@ chmod +x create_database.sh
 ./create_database.sh
 
 echo "### DOWNLOAD AND RUN \`oc-admin\` START-UP SCRIPT..."
-curl -fsSOL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9/docker/oc-admin/start_oc_admin.sh && chmod +x start_oc_admin.sh && ./start_oc_admin.sh
+curl -fsSL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9/docker/oc-admin/start_oc_admin.sh | sh
 
 cd ../../..
 echo "### DONE."
