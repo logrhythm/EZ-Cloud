@@ -28,7 +28,7 @@ const parsedArguments = yargs
   })
   .option('dockerBuildScriptTemplate', {
     alias: 't',
-    description: 'Full path to the `_docker.build.sh` template file',
+    description: 'Full path to the `_docker.build-oc-admin.sh` template file',
     type: 'string'
   })
   .help()
@@ -87,7 +87,7 @@ if (
 
   try {
     const dockerCommand = `docker build --tag "tonymasse/oc-admin:${versionTag}" --tag "tonymasse/oc-admin:latest" --file "${dockerFilePath}" "${distSubDirectory}"`;
-    const dockerScriptPath = path.join(distDirectory, '_docker.build.sh');
+    const dockerScriptPath = path.join(distDirectory, '_docker.build-oc-admin.sh');
 
     // Read template from disk
     let dockerScriptTemplate = fs.readFileSync(dockerBuildScriptTemplatePath, { encoding: 'utf-8' }) || '';
@@ -101,7 +101,7 @@ if (
     /* eslint-disable no-console */
     console.log('🟢 Docker Container building script created.');
     console.log('You now want to run the following command:');
-    console.log('cd /var/lib/docker/volumes/oc-admin_dev/_data/ && chmod +x _docker.build.sh && _docker.build.sh');
+    console.log('cd /var/lib/docker/volumes/oc-admin_dev/_data/ && chmod +x _docker.build-oc-admin.sh && _docker.build-oc-admin.sh');
     console.log('🏁');
     console.log('');
     /* eslint-enable no-console */

@@ -57,14 +57,14 @@ fi
 # Carrying on
 # At this stage, either oc-admin_dev is alreay running and we got its ID, or the user is allowing us to spin a temp oc-admin_dev
 
-echo "### CLEAN PREVIOUS ARTIFACTS (\`Dockerfile\` and \`_docker.build.sh\`)..."
+echo "### CLEAN PREVIOUS ARTIFACTS (\`Dockerfile\` and \`_docker.build-oc-admin.sh\`)..."
 if [[ -f "/var/lib/docker/volumes/oc-admin_dev/_data/Dockerfile" ]]; then
   echo "###   \-> DELETING \`/var/lib/docker/volumes/oc-admin_dev/_data/Dockerfile\`)..."
   rm "/var/lib/docker/volumes/oc-admin_dev/_data/Dockerfile"
 fi
-if [[ -f "/var/lib/docker/volumes/oc-admin_dev/_data/_docker.build.sh" ]]; then
-  echo "###   \-> DELETING \`/var/lib/docker/volumes/oc-admin_dev/_data/_docker.build.sh\`)..."
-  rm "/var/lib/docker/volumes/oc-admin_dev/_data/_docker.build.sh"
+if [[ -f "/var/lib/docker/volumes/oc-admin_dev/_data/_docker.build-oc-admin.sh" ]]; then
+  echo "###   \-> DELETING \`/var/lib/docker/volumes/oc-admin_dev/_data/_docker.build-oc-admin.sh\`)..."
+  rm "/var/lib/docker/volumes/oc-admin_dev/_data/_docker.build-oc-admin.sh"
 fi
 
 # Build the container content
@@ -89,11 +89,11 @@ fi
 # Double check the files are good, and Dockerise the life out of that thing!
 
 echo "### CHECK FILES ARE READY TO BUILD CONTAINERISED..."
-if [[ -f "/var/lib/docker/volumes/oc-admin_dev/_data/Dockerfile" ]] && [[ -f "/var/lib/docker/volumes/oc-admin_dev/_data/_docker.build.sh" ]]; then
+if [[ -f "/var/lib/docker/volumes/oc-admin_dev/_data/Dockerfile" ]] && [[ -f "/var/lib/docker/volumes/oc-admin_dev/_data/_docker.build-oc-admin.sh" ]]; then
   echo "###   \-> 🟢 DOCKER FILES FOUND."
 
   echo "### BUILD \`oc-admin\` CONTAINER..."
-  /usr/bin/env bash -c "cd /var/lib/docker/volumes/oc-admin_dev/_data/ && chmod +x _docker.build.sh && ./_docker.build.sh"
+  /usr/bin/env bash -c "cd /var/lib/docker/volumes/oc-admin_dev/_data/ && chmod +x _docker.build-oc-admin.sh && ./_docker.build-oc-admin.sh"
 
   echo "### LISTING \`oc-admin\` CONTAINER IMAGES..."
   docker images tonymasse/oc-admin
