@@ -36,6 +36,8 @@ Made up of the files in the [`./oc-db`](./oc-db) directory:
 | - `init-extension-pgcrypto.sql` | SQL script to add the `pgcrypto` extension to PostgreSQL. |
 | - `init-pg_hba.sh` | Bash script to create the HBA (**H**ost **B**ased **A**ccess) file to secure the container while allowing passwordless yet restricted access to if from the `oc-admin` container. |
 
+See [`oc-db/`](./oc-db) for more details.
+
 ## `oc-admin` Docker source
 
 Made up of the files in this very directory:
