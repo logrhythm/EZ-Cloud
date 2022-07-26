@@ -8,4 +8,4 @@
 # =============================================
 
 echo "### RUN \`oc-admin\` CONTAINER..."
-docker run --publish 8400:8400/tcp --network logrhythm --name oc-admin tonymasse/oc-admin
+docker run --detach --publish 8400:8400/tcp --network logrhythm --name oc-admin tonymasse/oc-admin
