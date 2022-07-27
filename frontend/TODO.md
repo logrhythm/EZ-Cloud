@@ -48,10 +48,10 @@
 
 ## TO FIX
 - [ ] Identifiers to EZ Market seems incorect/misformatted/ignored by EZ Market
-- [ ] Width of Advanced and Settings menus. Too narrow for some languages.
+- [x] Width of Advanced and Settings menus. Too narrow for some languages.
 
 ## TO TEST
-- [ ] Translated message in deployment steps roll over status (especially Skipped steps)
+- [x] Translated message in deployment steps roll over status (especially Skipped steps)
 
 ### Target: v0.8
 

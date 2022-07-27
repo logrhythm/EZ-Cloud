@@ -51,7 +51,8 @@
         <q-toolbar-title style="opacity:.4" class="text-center">{{ $tc('Mapping Builder | Mapping Builder: {pipelineName} | Mapping Builder: {pipelineName}', (pipelineName && pipelineName.length ? 1 : 0), { pipelineName }) }}</q-toolbar-title>
 
         <q-btn no-caps flat dense icon="pending" :label="$t('Advanced')">
-          <q-menu>
+          <!-- <q-menu max-width="450px" content-style="width:450px"> -->
+          <q-menu max-width="650px" content-style="min-width:350px">
             <div class="row no-wrap q-pa-md">
               <div class="column">
                 <div class="text-h6 q-mb-md">{{ $t('Advanced') }}</div>
@@ -79,7 +80,7 @@
                 <q-item class="q-pl-none" >
                   <q-toggle v-model="extractMessageFieldOnly" :label="$t('Extract Beat\'s \'.message\' only')" />
                 </q-item>
-                <q-item  style="width: 20rem;">
+                <q-item  style="width: 35rem;">
                   <q-item-section avatar>
                     <q-icon name="speed" />
                   </q-item-section>
@@ -93,7 +94,7 @@
                     />
                   </q-item-section>
                 </q-item>
-                <q-item  style="width: 20rem;">
+                <q-item  style="width: 35rem;">
                   <q-item-section avatar>
                     <q-icon name="download" />
                   </q-item-section>
@@ -107,7 +108,7 @@
                     />
                   </q-item-section>
                 </q-item>
-                <q-item  style="width: 20rem;">
+                <q-item  style="width: 35rem;">
                   <q-item-section avatar>
                     <q-icon name="download_for_offline" />
                   </q-item-section>
