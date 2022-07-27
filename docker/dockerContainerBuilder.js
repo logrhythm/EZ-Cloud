@@ -1,5 +1,5 @@
 /**
- * Build the Installer (using Inno Setup) and create/save its Hash (SHA256)
+ * Build the script that builds the `oc-admin` Docker Container
  * *
  * Changes log:
  * Tony Massé - 2022-07-25 - Adapt `installerBuilder` to bild Docker Container
