@@ -45,6 +45,7 @@
   - [x] Make all text internationalised
   - [x] Add Language switch in Settings
   - [x] Add Language switch on Login page
+- [x] MarketPlace notification indicator to show on Notification sub-menu too
 
 ## TO FIX
 - [ ] Identifiers to EZ Market seems incorect/misformatted/ignored by EZ Market

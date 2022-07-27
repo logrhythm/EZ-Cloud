@@ -267,13 +267,17 @@ export default {
           icon: 'storefront',
           link: '#/MarketPlace',
           id: 'ezMarketPlace',
-          notification: 5,
+          notification: null,
           notificationColor: 'green',
           notificationTextColor: 'white',
           subMenus: [
             {
               title: this.$t('Notifications'),
               icon: 'mail_outline',
+              id: 'ezMarketPlaceNotifications',
+              notification: null,
+              notificationColor: 'green',
+              notificationTextColor: 'white',
               link: '#/MarketPlace/Notifications'
             },
             {
@@ -454,9 +458,16 @@ export default {
       })
     },
     updateEzMarketNotificationNumber (payload) {
+      // Update the MarketPlace main menu
       const ezMarketPlaceLink = this.lowLinks.find((link) => link.id === 'ezMarketPlace')
       if (ezMarketPlaceLink) {
         ezMarketPlaceLink.notification = payload
+
+        // Update the Notification sub menu
+        const ezMarketPlaceSubLink = ezMarketPlaceLink.subMenus.find((link) => link.id === 'ezMarketPlaceNotifications')
+        if (ezMarketPlaceSubLink) {
+          ezMarketPlaceSubLink.notification = payload
+        }
       }
     },
     updateAdminNotificationNumber (payload) {
