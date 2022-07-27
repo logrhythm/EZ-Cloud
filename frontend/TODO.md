@@ -48,7 +48,7 @@
 - [x] MarketPlace notification indicator to show on Notification sub-menu too
 
 ## TO FIX
-- [ ] Identifiers to EZ Market seems incorect/misformatted/ignored by EZ Market
+- [x] Identifiers to EZ Market seems incorect/misformatted/ignored by EZ Market
 - [x] Width of Advanced and Settings menus. Too narrow for some languages.
 
 ## TO TEST
