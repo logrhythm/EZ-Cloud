@@ -47,7 +47,7 @@
 
 ## TO FIX
 - [x] Save/Read of Fields Mapping from PgSQL
-- [ ] Tail actions seem not to work since the move to PgSQL
+- [x] Tail actions doesn't fail if no or incomplete SSH details for Primary OC for Pipeline
 
 ## TO TEST
 
