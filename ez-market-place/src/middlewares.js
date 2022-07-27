@@ -36,7 +36,7 @@ function logHttpToSystem(req, res, next) {
  */
 async function trackStatsToDatabase(req, res, next) {
   try {
-    upsertResult = await db.pool.query({
+    await db.pool.query({
       namedPlaceholders: true,
       sql: `
         INSERT
@@ -165,7 +165,7 @@ const headerUidsSchema = yup.object().shape(
   {
     deploymentUid: yup.string().uuid().required(),
     publisherUid: yup.string().uuid().required(),
-    masterId: yup.number().integer().positive().required()
+    masterId: yup.number().integer().required()
   }
 );
 
