@@ -3,22 +3,15 @@
 # =============================================
 # Author:      Tony Massé
 # Create date: 2022-07-26
+# Modified on: 2022-07-27 - To remove dependency to Git, and avoid downloading the whole GitHub Repo
 # Description: Pseudo LRCTL command. To deploy `oc-admin`, `oc-db` and ancilaries
 #              Put the `ocAdmin` password in the environment variable `OC_ADMIN_PASSWORD`.
 #              If `OC_ADMIN_PASSWORD` env. variable isn't already set to a password of at
 #              Least 6 characters long, the user will be prompted for a new one.
 # =============================================
 
-echo "### CHECKING GIT IS INSTALLED..."
-if command -v "git" &> /dev/null; then
-  # echo "Git is present"
-  echo ""
-else
-  echo "Git not installed. Please install it prior to running this script."
-  echo "Run the following:"
-  echo "yum -y install git"
-  exit 1
-fi
+GITHUB_REPO_URL_BASE="https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9"
+DB_CREATION_SCRIPT="create_database.sh"
 
 echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
 curl -fsSL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9/docker/oc-db/_docker.run-oc-db.sh | sh
@@ -44,30 +37,41 @@ do
   echo ""
 done
 
-echo "### CLONE GIT REPO..."
-git clone https://github.com/logrhythm/EZ-Cloud.git
+# Create a clean folder
+echo "### CREATING A CLEAN DIRECTORY (\`./pgsql\`)..."
+mkdir pgsql 2> /dev/null
+# Clean up
+rm -f pgsql/create_database.sh 2> /dev/null
+rm -f pgsql/*.sql 2> /dev/null
 
-echo "### WALK IN \`EZ-Cloud\` DIRECTORY..."
-cd "EZ-Cloud"
+echo "### WALK IN \`./pgsql\` DIRECTORY..."
+cd pgsql
 
-echo "### SWITCHING TO THE CURRENT BRANCH..."
-git checkout v0.9
+# Get the DB creation files
+echo "### DOWNLOADING \"$GITHUB_REPO_URL_BASE/database/pgsql/$DB_CREATION_SCRIPT\"..."
+curl -sSOL "$GITHUB_REPO_URL_BASE/database/pgsql/$DB_CREATION_SCRIPT"
 
-echo "### WALK IN \`database/pgsql\` DIRECTORY..."
-cd database/pgsql/
+echo "### PARSING \"$DB_CREATION_SCRIPT\" TO DISCOVER FILES TO DOWNLOAD..."
+IFS=$(echo -en "\n\b")
+for SQL_FILE_NAME in $(cat $DB_CREATION_SCRIPT | grep --only-matching "^\\s*cat\\s\+\"[0-9]\+[^\|]\+"  | grep --only-matching "\"[^\"]\+\"" | grep --only-matching "[^\"]\+")
+do
+    echo "### DOWNLOADING \"$GITHUB_REPO_URL_BASE/database/pgsql/$SQL_FILE_NAME\"..."
+    curl -sSL "$GITHUB_REPO_URL_BASE/database/pgsql/$( echo "$SQL_FILE_NAME" | sed 's/ /%20/g' )" -o "$SQL_FILE_NAME"
+done
 
 echo "### RUN DATABASE CREATION SCRIPTS..."
-chmod +x create_database.sh
+chmod +x "$DB_CREATION_SCRIPT"
 # Environment variable `OC_ADMIN_PASSWORD` will be used to create the `ocAdmin` user
 export OC_ADMIN_PASSWORD
-./create_database.sh
+bash "$DB_CREATION_SCRIPT"
 # Clear OC_ADMIN_PASSWORD
 unset OC_ADMIN_PASSWORD
+
+cd ..
 
 echo "### DOWNLOAD AND RUN \`oc-admin\` START-UP SCRIPT..."
 curl -fsSL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9/docker/oc-admin/start_oc_admin.sh | sh
 
-cd ../../..
 echo "### DONE."
 echo ""
 echo ""
