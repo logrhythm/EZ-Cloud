@@ -47,6 +47,7 @@
 
 ## TO FIX
 - [x] Save/Read of Fields Mapping from PgSQL
+- [ ] Tail actions seem not to work since the move to PgSQL
 
 ## TO TEST
 
