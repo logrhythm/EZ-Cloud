@@ -59,7 +59,7 @@
             </q-menu>
           </q-btn>
 
-          <q-btn flat class="q-my-sm" :label="$t('Login')" color="primary" @click="checkCredentials()" :loading="waitingOnServer" />
+          <q-btn flat class="q-my-sm" :label="$t('Login')" color="primary" @click="checkCredentials()" :loading="waitingOnServer" :disable="!canWeLogin" />
         </q-card-actions>
 
       </q-card>
@@ -190,6 +190,10 @@ export default {
     },
     statusProblems () {
       return Number(this.ocAdminState === false) + Number(this.pgSqlState === false) + Number(this.msSqlState === false)
+    },
+    canWeLogin () {
+      return this.pgSqlState === true ||
+        (this.pgSqlState === null && this.msSqlState === true)
     }
   }, // computed
   methods: {

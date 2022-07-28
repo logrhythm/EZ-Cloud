@@ -47,7 +47,7 @@
   - [x] Add Language switch on Login page
 - [x] MarketPlace notification indicator to show on Notification sub-menu too
 - [x] Get and show status of server components on Login page
-- [ ] Disable Logon button if no SQL server is available
+- [x] Disable Logon button if no SQL server is available
 
 ## TO FIX
 - [x] Identifiers to EZ Market seems incorect/misformatted/ignored by EZ Market
