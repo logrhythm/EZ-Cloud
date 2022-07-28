@@ -208,7 +208,7 @@
   "Admin : SIEM : Manage MS SQL Connection": "Admin : SIEM : Gérer la connexion MS SQL",
   "MS SQL Connection": "Connexion MS SQL",
   "OC-Admin backend needs access to the SIEM database for certain operations, like listing and managing the OpenCollector and OC-Admin related Log Sources.": "Le backend OC-Admin a besoin d'accéder à la base de données SIEM pour certaines opérations, telles que la liste et la gestion des sources de journal de liées aux OpenCollectors et à OC-Admin.",
-  "To accomplish this, it needs to know the PM or XM address and SQL credentials.": "Pour ce faire, il doit connaître l'adresse PM ou XM et les informations d'identification SQL.",
+  "To accomplish this, it needs to know the PM or XM address and SQL credentials.": "Pour ce faire, il doit connaître l'adresse du PM ou XM et les informations d'identification SQL.",
   "Hostname (XM or Platform Manager)": "Nom d'hôte (XM ou Platform Manager)",
   "Hostname cannot be empty": "Le nom d'hôte ne peut pas être vide",
   "MS SQL Port": "Port MS SQL",
