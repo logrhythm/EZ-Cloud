@@ -108,6 +108,29 @@ export function updateMsSqlConfig ({ state }, payload) {
 }
 
 // ######################################################################
+// DATABASE STATUS/AVAILABILITY
+// ######################################################################
+
+export function getPersistenceLayerAvailability ({ state, commit }, payload) {
+  getDataFromSite({
+    apiUrl: '/status/GetPersistenceLayerAvailability',
+    dataLabel: 'Persistence layer availability status',
+    countDataLabel: false,
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    commit: commit,
+    targetCommitName: 'getPersistenceLayerAvailability',
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    silent: true,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: false
+  })
+}
+
+// ######################################################################
 // COLLECTORS
 // ######################################################################
 

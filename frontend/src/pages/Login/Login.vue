@@ -64,6 +64,72 @@
 
       </q-card>
     </form>
+
+    <q-page-sticky position="bottom" :offset="[18, 18]">
+      <q-fab
+        icon="keyboard_arrow_up"
+        direction="up"
+        square
+        color="blue-grey-7"
+        @click="morphGroupModel = 'full'"
+      >
+        <template v-slot:label="{ opened }">
+          <div :class="{ 'example-fab-animate--hover': opened !== true }">
+            <q-badge color="warning" text-color="black" floating v-if="statusWarnings && !statusProblems">{{ statusWarnings }}</q-badge>
+            <q-badge color="negative" floating v-if="statusProblems">{{ statusProblems }}</q-badge>
+            {{ opened !== true ? 'Status' : 'Close' }}
+            <q-linear-progress :indeterminate="loadingPersistenceLayerAvailability && delayUntilCheck < 0" :value="delayUntilCheck" color="white" size="1px" v-if="loadingPersistenceLayerAvailability || delayUntilCheck > 0" />
+          </div>
+        </template>
+        <q-card
+          dense
+          style="min-width: 40rem"
+        >
+
+          <q-card-section horizontal>
+            <q-card-section class="column items-center no-wrap q-gutter-y-sm justify-center q-px-lg">
+              <q-icon name="traffic" size="xl" />
+              <div class="text-bold">Status</div>
+            </q-card-section>
+
+            <q-separator vertical/>
+
+            <q-card-section class="full-width row items-center no-wrap justify-evenly">
+              <div class="column items-center">
+                <div class="text-bold">OC-Admin Container</div>
+                <q-icon name="extension" size="xl" color="positive" v-if="ocAdminState === true"/>
+                <q-icon name="extension_off" size="xl" color="warning" v-else-if="ocAdminState === false"/>
+                <q-icon name="extension" size="xl" color="grey" v-else/>
+                <div v-if="ocAdminState === true">ON</div>
+                <div v-else-if="ocAdminState === false">OFF</div>
+                <div v-else>Unknown</div>
+              </div>
+
+              <div class="column items-center">
+                <div class="text-bold">OC-DB Container</div>
+                <q-icon name="extension" size="xl" color="positive" v-if="pgSqlState === true"/>
+                <q-icon name="extension_off" size="xl" color="warning" v-else-if="pgSqlState === false"/>
+                <q-icon name="extension" size="xl" color="grey" v-else/>
+                <div v-if="pgSqlState === true">ON</div>
+                <div v-else-if="pgSqlState === false">OFF</div>
+                <div v-else>Unknown</div>
+              </div>
+
+              <div class="column items-center">
+                <div class="text-bold">Platform Manager</div>
+                <q-icon name="cloud" size="xl" color="positive" v-if="msSqlState === true"/>
+                <q-icon name="cloud_off" size="xl" color="warning" v-else-if="msSqlState === false"/>
+                <q-icon name="cloud" size="xl" color="grey" v-else/>
+                <div v-if="msSqlState === true">ON</div>
+                <div v-else-if="msSqlState === false">OFF</div>
+                <div v-else>Unknown</div>
+              </div>
+            </q-card-section>
+          </q-card-section>
+        </q-card>
+      </q-fab>
+
+    </q-page-sticky>
   </q-page>
 </template>
 
@@ -87,11 +153,15 @@ export default {
       lastAttemptFailed: false,
       shakyClass: false,
       lastAttemptFailedTimer: null,
-      shakyClassTime: null
+      shakyClassTime: null,
+      ocAdminState: null, // State of OC Admin. Null = status unknown, True = OC Admin is up and responding, False = OC Admin not responding
+      loadingPersistenceLayerAvailability: true, // Are we waiting for the API for Persistence Layer Availability
+      delayUntilCheck: 0, // How long until we check next API for Persistence Layer Availability
+      persistenceLayerAvailabilityCheckTimer: null
     }
   }, // data
   computed: {
-    ...mapState('mainStore', ['jwtToken']),
+    ...mapState('mainStore', ['jwtToken', 'currentPersistenceLayerAvailability']),
     languageList () {
       if (languageOptions && Array.isArray(languageOptions)) {
         return languageOptions.reduce(
@@ -108,10 +178,22 @@ export default {
         )
       }
       return [{ value: 'en-gb', nativeLabel: 'English' }]
+    },
+    pgSqlState () {
+      return this.currentPersistenceLayerAvailability.pgSqlAvailable
+    },
+    msSqlState () {
+      return this.currentPersistenceLayerAvailability.msSqlAvailable
+    },
+    statusWarnings () {
+      return Number(this.ocAdminState === null) + Number(this.pgSqlState === null) + Number(this.msSqlState === null)
+    },
+    statusProblems () {
+      return Number(this.ocAdminState === false) + Number(this.pgSqlState === false) + Number(this.msSqlState === false)
     }
   }, // computed
   methods: {
-    ...mapActions('mainStore', ['signIn', 'signOut', 'reloadEzMarketNotifications']),
+    ...mapActions('mainStore', ['signIn', 'signOut', 'reloadEzMarketNotifications', 'getPersistenceLayerAvailability']),
     checkCredentials () {
       if (this.lastAttemptFailedTimer) {
         clearTimeout(this.lastAttemptFailedTimer)
@@ -154,11 +236,63 @@ export default {
     },
     selectLanguage (selectedLanguage) {
       switchLanguageTo(this, selectedLanguage)
+    },
+    checkPersistenceLayerAvailability () {
+      // Get the status of the Databases
+      this.getPersistenceLayerAvailability(
+        {
+          onSuccessCallBack: this.onPersistenceLayerAvailabilitySuccess,
+          onErrorCallBack: this.onPersistenceLayerAvailabilityError
+        }
+      )
+    },
+    onPersistenceLayerAvailabilitySuccess () {
+      this.ocAdminState = true
+      this.loadingPersistenceLayerAvailability = false
+      this.scheduleNewCheck()
+    },
+    onPersistenceLayerAvailabilityError () {
+      this.ocAdminState = false
+      this.loadingPersistenceLayerAvailability = false
+      this.scheduleNewCheck()
+    },
+    scheduleNewCheck () {
+      // Check if we have any negative stuff
+      // If we do:
+      // - set `delayUntilCheck` to 1
+      // - set `persistenceLayerAvailabilityCheckTimer` timer to 0.1 second to reduce `delayUntilCheck` until it's 0
+      // If `delayUntilCheck` is 0, kill `persistenceLayerAvailabilityCheckTimer` time and start a new API check
+
+      console.log('scheduleNewCheck()', this.delayUntilCheck)
+      if (this.statusWarnings || this.statusProblems) {
+        this.delayUntilCheck = 1
+        console.log('RESET', this.delayUntilCheck)
+
+        if (!this.persistenceLayerAvailabilityCheckTimer) {
+          this.persistenceLayerAvailabilityCheckTimer = setInterval(() => {
+            this.delayUntilCheck = this.delayUntilCheck - 0.05
+            if (this.delayUntilCheck <= 0) {
+              clearInterval(this.persistenceLayerAvailabilityCheckTimer)
+              this.persistenceLayerAvailabilityCheckTimer = null
+              this.checkPersistenceLayerAvailability()
+            }
+            console.log('TICK', this.delayUntilCheck)
+          }, 500)
+        }
+      }
     }
   }, // methods
   mounted () {
     // First remove any token from previous Login
     this.signOut()
+
+    // Get the status of the Databases
+    this.checkPersistenceLayerAvailability()
+  },
+  beforeDestroy () {
+    if (this.persistenceLayerAvailabilityCheckTimer) {
+      clearInterval(this.persistenceLayerAvailabilityCheckTimer)
+    }
   }
 }
 </script>

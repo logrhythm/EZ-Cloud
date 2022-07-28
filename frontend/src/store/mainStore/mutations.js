@@ -8,6 +8,19 @@ export function getMsSqlConfig (state, payload) {
   }
 }
 
+export function getPersistenceLayerAvailability (state, payload) {
+  if (payload) {
+    state.currentPersistenceLayerAvailability = (
+      payload && Array.isArray(payload) && payload.length
+        ? Object.assign(
+          {},
+          payload[0]
+        )
+        : {}
+    )
+  }
+}
+
 export function addOpenCollector (state, payload) {
   if (payload && payload.name && payload.name.length > 0) {
     const newOpenCollector = Object.assign({}, payload)
