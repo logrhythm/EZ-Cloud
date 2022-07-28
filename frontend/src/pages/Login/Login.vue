@@ -270,10 +270,8 @@ export default {
       // - set `persistenceLayerAvailabilityCheckTimer` timer to 0.1 second to reduce `delayUntilCheck` until it's 0
       // If `delayUntilCheck` is 0, kill `persistenceLayerAvailabilityCheckTimer` time and start a new API check
 
-      console.log('scheduleNewCheck()', this.delayUntilCheck)
       if (this.statusWarnings || this.statusProblems) {
         this.delayUntilCheck = 1
-        console.log('RESET', this.delayUntilCheck)
 
         if (!this.persistenceLayerAvailabilityCheckTimer) {
           this.persistenceLayerAvailabilityCheckTimer = setInterval(() => {
@@ -283,7 +281,6 @@ export default {
               this.persistenceLayerAvailabilityCheckTimer = null
               this.checkPersistenceLayerAvailability()
             }
-            console.log('TICK', this.delayUntilCheck)
           }, 500)
         }
       }
