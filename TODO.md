@@ -16,6 +16,8 @@
     - [x] Stored Procedures
     - [x] Functions
   - [x] Move MS SQL connection configuration from JSON file to record in PostgreSQL Table
+  - [x] Check connection to the SQL systems at start-up and keep checkin until they are all good
+  - [x] Function to retrieve the current Persistence Layer Availability
 - SQL Utils
   - [x] Split utilitarian functions to deal with both MS SQL and PostgreSQL
     - [ ] Depreciate said functions and force using MS SQL and PostgreSQL specific functions instead

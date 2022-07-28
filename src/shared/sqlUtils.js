@@ -24,6 +24,9 @@ const { logToSystem } = require('./systemLogging');
 // Get the crypto tools to work with password and keys
 const { aesDecrypt } = require('./crypto');
 
+// Global store for the availability of the databases
+const currentPersistenceAvailability = {}
+
 function waitMilliseconds(delay = 250) {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -434,14 +437,173 @@ async function getSiemDataFromSql(parameters) {
   }
 }
 
+async function checkPgSqlAvailability() {
+  if (
+    process.env.databaseMode === 'pgsql'
+    || process.env.databaseMode === 'split'
+  ) {
+    // Check PostgreSQL
+    logToSystem('Verbose', `Checking for PG availabilities...`);
+
+    let response = false;
+
+    try {
+      // Get SQL config
+      const configSql = await getPgSqlConfig();
+      
+      // Connect
+      const pgClient = new Client(configSql);
+      // Connection event handler
+      // try to connect
+      await pgClient.connect();
+      response = true;
+      await pgClient.end();
+    } catch (error) {
+      logToSystem('Debug', `PG SQL is not available | Details: ${error.message}`);
+    }
+
+    return response;
+  } else {
+    // No PostgreSQL to be checked
+    return null;
+  }
+}
+
+async function checkMsSqlAvailability() {
+  if (
+    process.env.databaseMode === 'mssql'
+    || process.env.databaseMode === 'split'
+    ) {
+    // Check MS SQL
+    logToSystem('Verbose', `Checking for MS availabilities...`);
+
+    let response = false;
+    let stillChecking = true;
+    const timeoutSeconds = 5; // Timeout after X seconds
+
+    try {
+      // Get SQL config
+      const configSql = await getMsSqlConfig();
+
+      // Connect
+      const connection = new Connection(configSql);
+
+      // Connection event handler
+      connection.on('connect', (connectionError) => {
+        if (!connectionError) {
+          response = true;
+        }
+        try {
+          connection.close();
+        } catch (error) {
+          //
+        } finally {
+          stillChecking = false;
+        }
+      });
+
+      // try to connect
+      connection.connect();
+
+      // Wait, by default, for the attempt to happen (or fail) before returning to caller
+      const loopEndTime = Date.now() / 1000 + timeoutSeconds;
+
+      // Waiting - Sync
+      while (stillChecking && (loopEndTime > (Date.now() / 1000))) {
+        // Wait for 50 ms
+        // eslint-disable-next-line no-await-in-loop
+        await waitMilliseconds(50);
+      }
+      stillChecking = false;
+    } catch (error) {
+      logToSystem('Debug', `MS SQL is not available | Details: ${error.message}`);
+    }
+    return response;
+  } else {
+    // No MS SQL to be checked
+    return null;
+  }
+}
+
+/**
+ * Check connection to the SQL systems and keep checkin until they are all good.
+ * Stores its results in global (to `sqlUtils`) variable `currentPersistenceAvailability`
+ * @param {boolean} keepCheckingOnFailure If TRUE, schedule another try if any of the DB is not available
+ * @param {number} triesCounter Accumulator of number of attempts
+ */
+async function checkPersistenceAvailability(keepCheckingOnFailure = true, triesCounter = 1) {
+  logToSystem('Verbose', `Checking for Persistence layer availabilities (attempt # ${triesCounter})...`);
+  logToSystem('Debug', `checkPersistenceAvailability 🚀 \`currentPersistenceAvailability\`: ${JSON.stringify(currentPersistenceAvailability)}`);
+
+  const retryDelay = Number(process.env.databaseCheckDelay) || 2; // 2 seconds default delay, or whatever was provided in .env
+  const maxRetryDelay = Number(process.env.databaseMaxCheckDelay) || 120; // 2 minutes max, or whatever was provided in .env
+
+  const retryDelayInt = (
+    maxRetryDelay >= retryDelay * triesCounter
+      ? retryDelay * triesCounter
+      : maxRetryDelay
+    );
+
+  currentPersistenceAvailability.pgSqlAvailable = currentPersistenceAvailability.pgSqlAvailable || await checkPgSqlAvailability(); // Check PG SQL no matter what. Will come back with NULL if it was not necessary
+
+  if (currentPersistenceAvailability.pgSqlAvailable === false) {
+    // PG SQL was required, but is not available
+    // Rechedule another scan
+    logToSystem('Warning', `Container \`oc-db\` is not available. Make sure to start it before the \`oc-admin\` container. Will try connecting again in ${retryDelayInt} seconds.`);
+
+    setTimeout(() => {
+      checkPersistenceAvailability(keepCheckingOnFailure, triesCounter + 1);
+    }, retryDelayInt * 1000);
+  } else if (
+    (
+      currentPersistenceAvailability.pgSqlAvailable === null // There is no need for PG SQL (we must be in MS SQL only mode)
+      || currentPersistenceAvailability.pgSqlAvailable === true // PG SQL is available
+    )
+    && (
+      process.env.databaseMode === 'mssql'
+      || process.env.databaseMode === 'split'
+    )
+  ) {
+    // Check MS SQL
+    currentPersistenceAvailability.msSqlAvailable = await checkMsSqlAvailability();
+
+  }
+
+  if (currentPersistenceAvailability.msSqlAvailable === false) {
+    // MS SQL was required, but is not available
+    // Rechedule another scan
+    logToSystem('Warning', `MS SQL on the XM or PM is not available (based on the current configuration), or is not yet configured in OC-Admin. Make sure to start it before the \`oc-admin\` container, and/or to configure it next time you login onto OC-Admin. Will try connecting again in ${retryDelayInt} seconds.`);
+
+    setTimeout(() => {
+      checkPersistenceAvailability(keepCheckingOnFailure, triesCounter + 1);
+    }, retryDelayInt * 1000);
+  }
+  logToSystem('Debug', `checkPersistenceAvailability 🏁 \`currentPersistenceAvailability\`: ${JSON.stringify(currentPersistenceAvailability)}`);
+}
+
+/**
+ * Gather the Current Persistence Layer Availability
+ * @returns The Current Persistence Layer Availability as an object
+ */
+function getPersistenceAvailability() {
+  return {
+    pgSqlAvailable: currentPersistenceAvailability.pgSqlAvailable,
+    msSqlAvailable: currentPersistenceAvailability.msSqlAvailable
+  }
+}
+
 module.exports = {
   getPgSqlConfig,
   getMsSqlConfig,
   getDataFromMsSql,
   getDataFromPgSql,
-  getConfigDataFromSql,
-  getSiemDataFromSql,
+  getConfigDataFromSql, // DEPRECIATED
+  getSiemDataFromSql, // DEPRECIATED
   createMsSqlVariables,
   createPgSqlVariables,
-  createMsSqlVariablesAndStoredProcParams
+  createMsSqlVariablesAndStoredProcParams,
+  checkPgSqlAvailability,
+  checkMsSqlAvailability,
+  checkPersistenceAvailability,
+  getPersistenceAvailability
 };

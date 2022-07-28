@@ -61,6 +61,19 @@ process.on('uncaughtException', (err) => {
 // "split": Configuration is stored in Postgres, SIEM integration through MS SQL
 process.env.databaseMode = String(process.env.DB_MODE || 'mssql').toLowerCase();
 
+// Retry delay, in seconds, between checks to DBs.
+// The actual retry time is based on this number, but increased with each attempt to connect.
+process.env.databaseCheckDelay = String(process.env.DB_CHECK_DELAY_IN_SECONDS || '2').toLowerCase();
+
+// Maximum retry delay, in seconds, between checks to DBs.
+// This caps the actual retry delay, as it's increased with each attempt.
+process.env.databaseMaxCheckDelay = String(process.env.DB_MAX_CHECK_DELAY_IN_SECONDS || '120').toLowerCase();
+
+// Load the SQL Utils
+const {
+  checkPersistenceAvailability
+} = require('./shared/sqlUtils');
+
 // const app = require('./app');
 const httpsServer = require('./app');
 
@@ -78,4 +91,6 @@ logToSystem('Information', `${process.env.NAME} - Version: ${process.env.VERSION
 // app.listen(port, host, () => {
 httpsServer.listen(port, host, () => {
   logToSystem('Information', `Listening for HTTPS requests on: https://${host}:${port}`, true);
+  // Check for DB connectivity, and keep checking if not
+  checkPersistenceAvailability(true);
 });
