@@ -42,6 +42,9 @@
           </q-toggle>
 
           <q-btn flat icon="translate">
+            <q-tooltip content-style="font-size: 1em">
+              {{ $t('Change language') }}
+            </q-tooltip>
             <q-menu auto-close anchor="bottom middle" self="top middle">
               <q-list style="min-width: 10em">
                 <q-item
@@ -77,7 +80,7 @@
           <div :class="{ 'example-fab-animate--hover': opened !== true }">
             <q-badge color="warning" text-color="black" floating v-if="statusWarnings && !statusProblems">{{ statusWarnings }}</q-badge>
             <q-badge color="negative" floating v-if="statusProblems">{{ statusProblems }}</q-badge>
-            {{ opened !== true ? 'Status' : 'Close' }}
+            {{ opened !== true ? $t('Statuses') : $t('Close') }}
             <q-linear-progress :indeterminate="loadingPersistenceLayerAvailability && delayUntilCheck < 0" :value="delayUntilCheck" color="white" size="1px" v-if="loadingPersistenceLayerAvailability || delayUntilCheck > 0" />
           </div>
         </template>
@@ -89,40 +92,40 @@
           <q-card-section horizontal>
             <q-card-section class="column items-center no-wrap q-gutter-y-sm justify-center q-px-lg">
               <q-icon name="traffic" size="xl" />
-              <div class="text-bold">Status</div>
+              <div class="text-bold">{{ $t('Statuses') }}</div>
             </q-card-section>
 
             <q-separator vertical/>
 
             <q-card-section class="full-width row items-center no-wrap justify-evenly">
               <div class="column items-center">
-                <div class="text-bold">OC-Admin Container</div>
+                <div class="text-bold">{{ $t('OC-Admin Container') }}</div>
                 <q-icon name="extension" size="xl" color="positive" v-if="ocAdminState === true"/>
                 <q-icon name="extension_off" size="xl" color="warning" v-else-if="ocAdminState === false"/>
                 <q-icon name="extension" size="xl" color="grey" v-else/>
-                <div v-if="ocAdminState === true">ON</div>
-                <div v-else-if="ocAdminState === false">OFF</div>
-                <div v-else>Unknown</div>
+                <div v-if="ocAdminState === true">{{ $t('Reachable') }}</div>
+                <div v-else-if="ocAdminState === false">{{ $t('Unreachable') }}</div>
+                <div v-else>{{ $t('Unknown') }}</div>
               </div>
 
               <div class="column items-center">
-                <div class="text-bold">OC-DB Container</div>
+                <div class="text-bold">{{ $t('OC-DB Container') }}</div>
                 <q-icon name="extension" size="xl" color="positive" v-if="pgSqlState === true"/>
                 <q-icon name="extension_off" size="xl" color="warning" v-else-if="pgSqlState === false"/>
                 <q-icon name="extension" size="xl" color="grey" v-else/>
-                <div v-if="pgSqlState === true">ON</div>
-                <div v-else-if="pgSqlState === false">OFF</div>
-                <div v-else>Unknown</div>
+                <div v-if="pgSqlState === true">{{ $t('Reachable') }}</div>
+                <div v-else-if="pgSqlState === false">{{ $t('Unreachable') }}</div>
+                <div v-else>{{ $t('Unknown') }}</div>
               </div>
 
               <div class="column items-center">
-                <div class="text-bold">Platform Manager</div>
+                <div class="text-bold">{{ $t('Platform Manager') }}</div>
                 <q-icon name="cloud" size="xl" color="positive" v-if="msSqlState === true"/>
                 <q-icon name="cloud_off" size="xl" color="warning" v-else-if="msSqlState === false"/>
                 <q-icon name="cloud" size="xl" color="grey" v-else/>
-                <div v-if="msSqlState === true">ON</div>
-                <div v-else-if="msSqlState === false">OFF</div>
-                <div v-else>Unknown</div>
+                <div v-if="msSqlState === true">{{ $t('Reachable') }}</div>
+                <div v-else-if="msSqlState === false">{{ $t('Unreachable') }}</div>
+                <div v-else>{{ $t('Unknown') }}</div>
               </div>
             </q-card-section>
           </q-card-section>
