@@ -437,6 +437,10 @@ async function getSiemDataFromSql(parameters) {
   }
 }
 
+/**
+ * Check the availability of PG SQL (`oc-db` container)
+ * @returns TRUE is PG is reachable, FALSE if not, NULL if there is not need for PG
+ */
 async function checkPgSqlAvailability() {
   if (
     process.env.databaseMode === 'pgsql'
@@ -469,6 +473,10 @@ async function checkPgSqlAvailability() {
   return null;
 }
 
+/**
+ * Check the availability of MS SQL (on XM or PM server)
+ * @returns TRUE is MS SQL is reachable, FALSE if not, NULL if there is not need for MS SQL
+ */
 async function checkMsSqlAvailability() {
   if (
     process.env.databaseMode === 'mssql'
