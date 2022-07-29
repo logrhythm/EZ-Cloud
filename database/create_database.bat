@@ -1,6 +1,6 @@
 @echo off
 echo.
-echo  EZ Cloud Server - Database creation and update script 
+echo  OC Admin Server - Database creation and update script 
 echo.
 echo NOTE: This will attempt to create or update the EZ database on the local MS SQL server. It is SAFE to run this script multiple times.
 echo.
