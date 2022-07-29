@@ -179,7 +179,7 @@ begin
       OcAdminCredentialsQueryPage := CreateInputQueryPage(
         wpSelectProgramGroup,
         'OC Admin Administrator Credentials and Details - ocAdmin',
-        'This is the OC Admin account for OC Admin.',
+        'This is the Administrator (login: "ocAdmin") account for OC Admin.',
         'NOTE:' + #10+#13 + ' - The Username is NOT case sensitive' + #10+#13 +
         ' - The Password IS case sensitive.' + #10+#13 +
         ' - If the "ocAdmin" SQL Login already exists (in case of Upgrade for example), it will NOT be modified.' + #10+#13 + #10+#13 + #10+#13 +
