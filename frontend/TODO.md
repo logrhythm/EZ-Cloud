@@ -53,6 +53,7 @@
 - [x] Identifiers to EZ Market seems incorect/misformatted/ignored by EZ Market
 - [x] Width of Advanced and Settings menus. Too narrow for some languages.
 - [x] Erroneous "SIEM Not Connected" alert message on Windows deployment
+- [x] Issue #12 - [BUG] Pipeline import from EZ Market Place - Wrong icon colour on "Import Both" button in Day mode
 
 ## TO TEST
 - [x] Translated message in deployment steps roll over status (especially Skipped steps)

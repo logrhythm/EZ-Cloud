@@ -505,7 +505,7 @@
                 <q-btn
                   icon="input"
                   dense
-                  :flat="(marketplaceImportPopupType === 'collection' || marketplaceImportPopupType === 'mapping' ? false : true)"
+                  :flat="(marketplaceImportPopupType === 'collection' || marketplaceImportPopupType === 'mapping' ? true : false)"
                   :color="(marketplaceImportPopupType === 'collection' || marketplaceImportPopupType === 'mapping' ? '' : 'primary')"
                   @click="loadAndImportIntoCurrentPipelineFromTemplate(props.row, { importCollectionConfiguration: true, importFieldsMapping: true })"
                 >
