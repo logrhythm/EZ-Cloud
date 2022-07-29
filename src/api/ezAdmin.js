@@ -27,7 +27,8 @@ const {
   createMsSqlVariables,
   createMsSqlVariablesAndStoredProcParams,
   getDataFromPgSql,
-  createPgSqlVariables
+  createPgSqlVariables,
+  getSiemMasterLicenseId
 } = require('../shared/sqlUtils');
 
 //        ########   #######  ##     ## ######## ########  ######
@@ -598,6 +599,9 @@ router.post('/UpdateMsSqlConfig', async (req, res) => {
     )
   ) { // 🎉 💀 🪓🪓🪓🪓 😈
     logToSystem('Information', `Admin | MS SQL Connnection Configuration saved/updated | Host: ${req.body.host} | Port: ${req.body.port} | Traffic Is Encrypted: ${(req.body.encrypt === 1 ? 'Encrypted' : 'Not encrypted')} | user: ${(req.user.username ? req.user.username : '-')}`);
+    // If MS SQL is good, then try to fecth the Master License ID and update
+    // PG SQL with it
+    getSiemMasterLicenseId(true);
   } else { // 😥
     logToSystem('Warning', `Admin | Failed to save/update MS SQL Connnection Configuration | Host: ${req.body.host} | Port: ${req.body.port} | Traffic Is Encrypted: ${(req.body.encrypt === 1 ? 'Encrypted' : 'Not encrypted')} | user: ${(req.user.username ? req.user.username : '-')} | Details: ${JSON.stringify(updatedMsSqlConfig)}`);
   }

@@ -438,6 +438,87 @@ async function getSiemDataFromSql(parameters) {
 }
 
 /**
+ * Fetch the Master License ID of the SIEM on the MS SQL of the XM or PM
+ * @param {boolean} updateConfigDB If TRUE, will save ID in PG SQL. Default: FALSE
+ * @returns The Master License ID
+ */
+async function getSiemMasterLicenseId(updateConfigDB = false) {
+  let masterLicenseId = -1;
+
+  if (
+    currentPersistenceAvailability.msSqlAvailable === true
+    && (
+      process.env.databaseMode === 'mssql'
+      || process.env.databaseMode === 'split'
+    )
+  ) {
+    logToSystem('Verbose', `Fetching the Master License ID of the SIEM on the MS SQL of the XM or PM${updateConfigDB ? ' (and will update the Settings in `oc-db`)' : ''}...`);
+
+    const masterLicenseIdList = {};
+    await getDataFromMsSql({
+      targetVariable: masterLicenseIdList,
+      query: `
+      SELECT
+        TOP 1 sc.MasterLicenseID AS 'masterId'
+      FROM
+        [LogRhythmEMDB].[dbo].[SCLicense] sc
+      WHERE
+        sc.MasterLicenseID IS NOT NULL
+      ;
+    `
+    });
+
+    if (
+      masterLicenseIdList
+      && masterLicenseIdList.payload
+      && Array.isArray(masterLicenseIdList.payload)
+    ) {
+      masterLicenseId = masterLicenseIdList.payload[0].masterId;
+    }
+  }
+
+  // If needed, update the `settings` table in the PostgreSQL DB (`oc-db`)
+  if (
+    updateConfigDB
+    && (
+      process.env.databaseMode === 'pgsql'
+      || process.env.databaseMode === 'split'
+    )
+  ) {
+    logToSystem('Verbose', `Updating the Settings in \`oc-db\` with Master License ID: ${masterLicenseId}...`);
+    try {
+      const masterIdConfig = {
+        MasterID: masterLicenseId || -1
+      };
+
+      logToSystem('Debug', `Internal | Attempting to save/update the Master License ID | Generated : ${JSON.stringify(masterIdConfig)}`);
+
+      const updatedMasterIdConfig = {};
+
+      await getDataFromPgSql({
+        targetVariable: updatedMasterIdConfig,
+        query: `
+        CALL "upsert_Setting"
+        (
+          '68d79f70-f8a8-4eec-9d05-64fa3eccbf55' -- "@uid"
+          ,NULL -- "@name"
+          ,NULL -- "@description"
+          ,$1 -- "@settingsJson"
+        );
+        `,
+        variables: [
+          JSON.stringify(masterIdConfig)
+        ]
+      });
+    } catch (error) {
+      logToSystem('Error', `Internal | Failed to save/update the Master License ID | Details: ${error.message}`);
+    }
+  }
+
+  return masterLicenseId;
+}
+
+/**
  * Check the availability of PG SQL (`oc-db` container)
  * @returns TRUE is PG is reachable, FALSE if not, NULL if there is not need for PG
  */
@@ -581,6 +662,12 @@ async function checkPersistenceAvailability(keepCheckingOnFailure = true, triesC
     currentPersistenceAvailability.msSqlAvailable = await checkMsSqlAvailability();
   }
 
+  if (currentPersistenceAvailability.msSqlAvailable === true) {
+    // If MS SQL is good, then try to fecth the Master License ID and update
+    // PG SQL with it
+    getSiemMasterLicenseId(true);
+  }
+
   if (currentPersistenceAvailability.msSqlAvailable === false) {
     // MS SQL was required, but is not available
     // Rechedule another scan
@@ -617,5 +704,6 @@ module.exports = {
   checkPgSqlAvailability,
   checkMsSqlAvailability,
   checkPersistenceAvailability,
-  getPersistenceAvailability
+  getPersistenceAvailability,
+  getSiemMasterLicenseId
 };
