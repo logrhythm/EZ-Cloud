@@ -1,6 +1,6 @@
 @echo off
 echo.
-echo  EZ Cloud Server - EZ Admin "ezAdmin" account creation script 
+echo  OC Admin Server (Formerly "EZ Cloud Server") - OC Admin "ocAdmin" account creation script 
 echo.
 echo NOTE: This will attempt to create an EZ Admin account on the local MS SQL server.
 echo.
@@ -15,7 +15,7 @@ pause
 
 echo on
 
-osql -E -n -i "20211111.17 - Create User - EzAdmin.sql"
+osql -E -n -i "20211111.17 - Create User - OcAdmin.sql"
 
 @echo off
 echo.

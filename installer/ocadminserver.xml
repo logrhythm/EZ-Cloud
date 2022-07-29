@@ -1,15 +1,15 @@
 <service>
-	<id>ezcloudserver</id>
-	<name>EZ-Cloud Server</name>
-	<description>The Backend server of the EZ-Cloud On-boarder for LogRhythm Core SIEM</description>
+	<id>ocadminserver</id>
+	<name>OC-Admin Server (EZ-Cloud)</name>
+	<description>The Backend server of OC Admin (formerly EZ-Cloud)</description>
 	<executable>node.exe</executable>
 	<argument>--harmony</argument>
-	<argument>ROOT_PATH_EZ-Cloud\bin\serviceWrapper.js</argument>
+	<argument>ROOT_PATH_OC-Admin\bin\serviceWrapper.js</argument>
 	<argument>--file</argument>
-	<argument>ROOT_PATH_EZ-Cloud\bin\service.js</argument>
+	<argument>ROOT_PATH_OC-Admin\bin\service.js</argument>
 	<argument>--scriptoptions=</argument>
 	<argument>--log</argument>
-	<argument>EZ-Cloud Server - Service wrapper</argument>
+	<argument>OC-Admin Server - Service wrapper</argument>
 	<argument>--grow</argument>
 	<argument>0.25</argument>
 	<argument>--wait</argument>
@@ -28,5 +28,5 @@
 	<onfailure action="restart" delay="10 sec"/>
 	<onfailure action="restart" delay="20 sec"/>
 	<resetfailure>1 hour</resetfailure>
-	<workingdirectory>ROOT_PATH_EZ-Cloud</workingdirectory>
+	<workingdirectory>ROOT_PATH_OC-Admin</workingdirectory>
 </service>

@@ -18,7 +18,7 @@ module.exports = {
     serviceWrapper: './node_modules/node-windows/lib/wrapper.js'
   },
   output: {
-    path: path.join(__dirname, 'dist', `EZ-Cloud.v${version}`, 'bin'),
+    path: path.join(__dirname, 'dist', `OC-Admin.v${version}`, 'bin'),
     filename: '[name].js'
   },
   mode: 'production',
@@ -58,9 +58,9 @@ module.exports = {
         { from: 'LICENSE', to: path.join('..', 'License.txt'), toType: 'file' },
         { from: 'resources', to: path.join('..', 'resources'), toType: 'dir' },
         // Service and wrapper support files:
-        { from: 'node_modules/node-windows/bin/winsw/winsw.exe', to: 'ezcloudserver.exe', toType: 'file' },
-        { from: 'node_modules/node-windows/bin/winsw/winsw.exe.config', to: 'ezcloudserver.exe.config', toType: 'file' },
-        { from: 'installer/ezcloudserver.xml', to: 'ezcloudserver.xml', toType: 'file' },
+        { from: 'node_modules/node-windows/bin/winsw/winsw.exe', to: 'ocadminserver.exe', toType: 'file' },
+        { from: 'node_modules/node-windows/bin/winsw/winsw.exe.config', to: 'ocadminserver.exe.config', toType: 'file' },
+        { from: 'installer/ocadminserver.xml', to: 'ocadminserver.xml', toType: 'file' },
         // String obfuscation tool from LogRhythm
         { from: 'src/shared/encryptionTool.exe', to: 'encryptionTool.exe', toType: 'file' },
         { from: 'src/shared/encryptionTool.hashes.txt', to: 'encryptionTool.hashes.txt', toType: 'file' },
@@ -76,21 +76,21 @@ module.exports = {
         scripts: [
           // Create a Zip file for this packaged version, without NodeJS
           // eslint-disable-next-line prefer-template
-          'PowerShell.exe -Command Compress-Archive -Path "' + path.join(__dirname, 'dist', `EZ-Cloud.v${version}`) + '" -DestinationPath "' + path.join(__dirname, 'dist', `EZ-Cloud_v${version}.NoNodeJS.zip`) + '" -Force -CompressionLevel Fastest',
+          'PowerShell.exe -Command Compress-Archive -Path "' + path.join(__dirname, 'dist', `OC-Admin.v${version}`) + '" -DestinationPath "' + path.join(__dirname, 'dist', `OC-Admin_v${version}.NoNodeJS.zip`) + '" -Force -CompressionLevel Fastest',
 
           // Downloading NodeJS
           // eslint-disable-next-line prefer-template
           'PowerShell.exe -Command if (!(Test-Path "' + path.join(__dirname, 'dist', 'NodeJS_Installer', nodeJS.filename) + '")) { New-Item -Path "' + path.join(__dirname, 'dist', 'NodeJS_Installer') + `" -ItemType Directory -Force ; Invoke-WebRequest -Uri "https://nodejs.org/dist/${nodeJS.version}/${nodeJS.filename}" -OutFile "` + path.join(__dirname, 'dist', 'NodeJS_Installer', nodeJS.filename) + '" }',
-          // 'PowerShell.exe -Command if (!(Test-Path "' + path.join(__dirname, 'dist', `EZ-Cloud.v${version}`, 'NodeJS_Installer', nodeJS.filename) + '")) { New-Item -Path "' + path.join(__dirname, 'dist', `EZ-Cloud.v${version}`, 'NodeJS_Installer') + `" -ItemType Directory -Force ; Invoke-WebRequest -Uri "https://nodejs.org/dist/${nodeJS.version}/${nodeJS.filename}" -OutFile "` + path.join(__dirname, 'dist', `EZ-Cloud.v${version}`, 'NodeJS_Installer', nodeJS.filename) + '" }',
+          // 'PowerShell.exe -Command if (!(Test-Path "' + path.join(__dirname, 'dist', `OC-Admin.v${version}`, 'NodeJS_Installer', nodeJS.filename) + '")) { New-Item -Path "' + path.join(__dirname, 'dist', `OC-Admin.v${version}`, 'NodeJS_Installer') + `" -ItemType Directory -Force ; Invoke-WebRequest -Uri "https://nodejs.org/dist/${nodeJS.version}/${nodeJS.filename}" -OutFile "` + path.join(__dirname, 'dist', `OC-Admin.v${version}`, 'NodeJS_Installer', nodeJS.filename) + '" }',
 
           // Creating second Zip file, with NodeJS
           // eslint-disable-next-line prefer-template
-          'PowerShell.exe -Command Compress-Archive -Path "' + path.join(__dirname, 'dist', `EZ-Cloud.v${version}`) + '", "' + path.join(__dirname, 'dist', 'NodeJS_Installer') + '" -DestinationPath "' + path.join(__dirname, 'dist', `EZ-Cloud_v${version}.WithNodeJS.zip`) + '" -Force -CompressionLevel Fastest',
+          'PowerShell.exe -Command Compress-Archive -Path "' + path.join(__dirname, 'dist', `OC-Admin.v${version}`) + '", "' + path.join(__dirname, 'dist', 'NodeJS_Installer') + '" -DestinationPath "' + path.join(__dirname, 'dist', `OC-Admin_v${version}.WithNodeJS.zip`) + '" -Force -CompressionLevel Fastest',
           // eslint-disable-next-line max-len
-          // 'PowerShell.exe -Command Compress-Archive -Path "' + path.join(__dirname, 'dist', `EZ-Cloud.v${version}`) + '"  -DestinationPath "' + path.join(__dirname, 'dist', `EZ-Cloud_v${version}.WithNodeJS.zip` + '" -Force -CompressionLevel Fastest'),
+          // 'PowerShell.exe -Command Compress-Archive -Path "' + path.join(__dirname, 'dist', `OC-Admin.v${version}`) + '"  -DestinationPath "' + path.join(__dirname, 'dist', `OC-Admin_v${version}.WithNodeJS.zip` + '" -Force -CompressionLevel Fastest'),
 
           // Build the self contained Installer
-          `node ${path.join(__dirname, 'installer', 'installerBuilder')} --installerHelper "${path.join(__dirname, 'installer')}" --distDirectory "${path.join(__dirname, 'dist')}" --distSubDirectory "${path.join(__dirname, 'dist', `EZ-Cloud.v${version}`)}" `
+          `node ${path.join(__dirname, 'installer', 'installerBuilder')} --installerHelper "${path.join(__dirname, 'installer')}" --distDirectory "${path.join(__dirname, 'dist')}" --distSubDirectory "${path.join(__dirname, 'dist', `OC-Admin.v${version}`)}" `
         ],
         blocking: false,
         parallel: false
