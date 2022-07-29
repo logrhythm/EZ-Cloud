@@ -65,7 +65,7 @@ Source: "{#DistSubDirectory}\config\jwt.json"; DestDir: "{app}\config"; Componen
 Source: "{#DistSubDirectory}\config\secure.json"; DestDir: "{app}\config"; Components: ocAdminServer; AfterInstall: FileReplaceTokenIfTaskSelected('{app}\config\secure.json', 'CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS', 120, 'autoGenerateTokens\aes'); Flags: onlyifdoesntexist
 Source: "{#DistSubDirectory}\config\https.*"; DestDir: "{app}\config"; Components: ocAdminServer; Flags: onlyifdoesntexist
 Source: "{#DistSubDirectory}\config.sample\*"; DestDir: "{app}\config.sample"; Components: ocAdminServer
-Source: "{#DistSubDirectory}\database\*"; DestDir: "{app}\database"; Components: sqlDatabase, sqlDockerDatabase
+Source: "{#DistSubDirectory}\database\*"; DestDir: "{app}\database"; Components: sqlDatabase sqlDockerDatabase
 Source: "{#DistSubDirectory}\resources\*"; DestDir: "{app}\resources"; Components: ocAdminServer
 Source: "{#DistSubDirectory}\.env"; DestDir: "{app}"; Components: ocAdminServer; Flags: onlyifdoesntexist
 Source: "{#DistSubDirectory}\.env.sample"; DestDir: "{app}"; Components: ocAdminServer
