@@ -25,7 +25,7 @@ const { logToSystem } = require('./systemLogging');
 const { aesDecrypt } = require('./crypto');
 
 // Global store for the availability of the databases
-const currentPersistenceAvailability = {}
+const currentPersistenceAvailability = {};
 
 function waitMilliseconds(delay = 250) {
   return new Promise((resolve) => {
@@ -443,39 +443,39 @@ async function checkPgSqlAvailability() {
     || process.env.databaseMode === 'split'
   ) {
     // Check PostgreSQL
-    logToSystem('Verbose', `Checking for PG availabilities...`);
+    logToSystem('Verbose', 'Checking for PG availabilities...');
 
     let response = false;
 
     try {
       // Get SQL config
       const configSql = await getPgSqlConfig();
-      
+
       // Connect
       const pgClient = new Client(configSql);
       // Connection event handler
       // try to connect
       await pgClient.connect();
       response = true;
+      logToSystem('Verbose', 'PG SQL is available.');
       await pgClient.end();
     } catch (error) {
-      logToSystem('Debug', `PG SQL is not available | Details: ${error.message}`);
+      logToSystem('Verbose', `PG SQL is not available | Details: ${error.message}`);
     }
 
     return response;
-  } else {
-    // No PostgreSQL to be checked
-    return null;
   }
+  // No PostgreSQL to be checked
+  return null;
 }
 
 async function checkMsSqlAvailability() {
   if (
     process.env.databaseMode === 'mssql'
     || process.env.databaseMode === 'split'
-    ) {
+  ) {
     // Check MS SQL
-    logToSystem('Verbose', `Checking for MS availabilities...`);
+    logToSystem('Verbose', 'Checking for MS availabilities...');
 
     let response = false;
     let stillChecking = true;
@@ -492,6 +492,7 @@ async function checkMsSqlAvailability() {
       connection.on('connect', (connectionError) => {
         if (!connectionError) {
           response = true;
+          logToSystem('Verbose', 'MS SQL is available.');
         }
         try {
           connection.close();
@@ -516,35 +517,38 @@ async function checkMsSqlAvailability() {
       }
       stillChecking = false;
     } catch (error) {
-      logToSystem('Debug', `MS SQL is not available | Details: ${error.message}`);
+      logToSystem('Verbose', `MS SQL is not available | Details: ${error.message}`);
     }
     return response;
-  } else {
-    // No MS SQL to be checked
-    return null;
   }
+  // No MS SQL to be checked
+  return null;
 }
 
 /**
  * Check connection to the SQL systems and keep checkin until they are all good.
  * Stores its results in global (to `sqlUtils`) variable `currentPersistenceAvailability`
- * @param {boolean} keepCheckingOnFailure If TRUE, schedule another try if any of the DB is not available
+ * @param {boolean} keepCheckingOnFailure If TRUE, schedule another try if a DB isn't available
  * @param {number} triesCounter Accumulator of number of attempts
  */
 async function checkPersistenceAvailability(keepCheckingOnFailure = true, triesCounter = 1) {
   logToSystem('Verbose', `Checking for Persistence layer availabilities (attempt # ${triesCounter})...`);
   logToSystem('Debug', `checkPersistenceAvailability 🚀 \`currentPersistenceAvailability\`: ${JSON.stringify(currentPersistenceAvailability)}`);
 
-  const retryDelay = Number(process.env.databaseCheckDelay) || 2; // 2 seconds default delay, or whatever was provided in .env
-  const maxRetryDelay = Number(process.env.databaseMaxCheckDelay) || 120; // 2 minutes max, or whatever was provided in .env
+  // 2 seconds default delay, or whatever was provided in .env
+  const retryDelay = Number(process.env.databaseCheckDelay) || 2;
+  // 2 minutes max, or whatever was provided in .env
+  const maxRetryDelay = Number(process.env.databaseMaxCheckDelay) || 120;
 
   const retryDelayInt = (
     maxRetryDelay >= retryDelay * triesCounter
       ? retryDelay * triesCounter
       : maxRetryDelay
-    );
+  );
 
-  currentPersistenceAvailability.pgSqlAvailable = currentPersistenceAvailability.pgSqlAvailable || await checkPgSqlAvailability(); // Check PG SQL no matter what. Will come back with NULL if it was not necessary
+  // Check PG SQL no matter what. Will come back with NULL if it was not necessary
+  currentPersistenceAvailability.pgSqlAvailable = currentPersistenceAvailability.pgSqlAvailable
+    || await checkPgSqlAvailability();
 
   if (currentPersistenceAvailability.pgSqlAvailable === false) {
     // PG SQL was required, but is not available
@@ -556,6 +560,7 @@ async function checkPersistenceAvailability(keepCheckingOnFailure = true, triesC
     }, retryDelayInt * 1000);
   } else if (
     (
+      // eslint-disable-next-line max-len
       currentPersistenceAvailability.pgSqlAvailable === null // There is no need for PG SQL (we must be in MS SQL only mode)
       || currentPersistenceAvailability.pgSqlAvailable === true // PG SQL is available
     )
@@ -566,7 +571,6 @@ async function checkPersistenceAvailability(keepCheckingOnFailure = true, triesC
   ) {
     // Check MS SQL
     currentPersistenceAvailability.msSqlAvailable = await checkMsSqlAvailability();
-
   }
 
   if (currentPersistenceAvailability.msSqlAvailable === false) {
@@ -589,7 +593,7 @@ function getPersistenceAvailability() {
   return {
     pgSqlAvailable: currentPersistenceAvailability.pgSqlAvailable,
     msSqlAvailable: currentPersistenceAvailability.msSqlAvailable
-  }
+  };
 }
 
 module.exports = {
