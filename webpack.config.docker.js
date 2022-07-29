@@ -5,7 +5,7 @@ const WebpackShellPluginNext = require('webpack-shell-plugin-next');
 const path = require('path');
 const { version } = require('./package.json');
 
-const distSubDir = `EZ-Cloud.v${version}`;
+const distSubDir = `OC-Admin.v${version}`;
 
 module.exports = {
   entry: {
@@ -73,6 +73,8 @@ module.exports = {
     new WebpackShellPluginNext({
       onBuildExit: {
         scripts: [
+          // Build the MS SQL DB script for Docker deployments
+          `cd ${path.join(__dirname, 'dist', distSubDir)} && zip "${path.join(__dirname, 'dist', `${distSubDir}.EZ_database_for_Docker.zip`)}" database/create_database_for_Docker.bat database/*.00*.sql database/*.09*.sql database/*.10*.sql database/*.11*.sql database/*.12*.sql database/*.13*.sql database/*.14*.sql database/*.15*.sql database/*.16*.sql`,
           // Build the Docker Container
           `node ${path.join(__dirname, 'docker', 'dockerContainerBuilder')} --distDirectory "dist" --distSubDirectory "${distSubDir}/" --dockerFile "./Dockerfile" --dockerBuildScriptTemplate "${path.join('docker', '_docker.build-TEMPLATE.sh')}" `
         ],

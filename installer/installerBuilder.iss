@@ -23,6 +23,7 @@ Name: "lrCloud"; Description: "LR Cloud installation (OC Admin Server + EZ Datab
 Name: "compact"; Description: "Compact installation (OC Admin Server + EZ Database + Frontend)"
 Name: "minimal"; Description: "Minimal installation (OC Admin Server + EZ Database)"
 Name: "sqlonly"; Description: "Only SQL Database and configuration (EZ Database)"
+Name: "sqlDockerOnly"; Description: "Only SQL Database for Docker deployments (EZ Database for Docker)"
 ; Name: "upgrade"; Description: "Full upgrade to {#Version} (OC Admin Server + Frontend)"
 ; Name: "upgradeBackend"; Description: "Backend upgrade to {#Version} (OC Admin Server)"
 ; Name: "upgradeFrontend"; Description: "Frontend upgrade to {#Version} (OC Admin Frontend)"
@@ -31,6 +32,7 @@ Name: "custom"; Description: "Custom installation / upgrade"; Flags: iscustom
 [Components]
 Name: "ocAdminServer"; Description: "OC Admin Server"; Types: full lrCloud compact minimal custom
 Name: "sqlDatabase"; Description: "EZ Database and SQL User"; Types: full lrCloud compact minimal sqlonly custom
+Name: "sqlDockerDatabase"; Description: "EZ Database for Docker deployments"; Types: sqlDockerOnly custom
 Name: "ocAdminFrontend"; Description: "OC Admin Frontend"; Types: full compact custom
 Name: "nodeJs"; Description: "NodeJS"; Types: full lrCloud custom; ExtraDiskSpaceRequired: 56700928
 ; NodeJS:
@@ -41,6 +43,7 @@ Name: "nodeJs"; Description: "NodeJS"; Types: full lrCloud custom; ExtraDiskSpac
 
 [Tasks]
 Name: createDatabase; Description: "Create / Update and Configure [EZ] SQL Database"; GroupDescription: "Database:"; Components: sqlDatabase
+Name: createDockerDatabase; Description: "Create / Update [EZ] SQL Database for Docker deployments"; GroupDescription: "Database:"; Components: sqlDockerDatabase
 Name: installNodeJs; Description: "Install NodeJS {#NodeJsVersionLabel} (>>> Can take up to 2 minutes to install in the background)"; GroupDescription: "NodeJS:"; Components: nodeJs
 Name: serviceSetup; Description: "Configure OC Admin Service"; GroupDescription: "Service:"; Components: ocAdminServer
 Name: serviceStart; Description: "Start OC Admin Service immediately"; GroupDescription: "Service:"; Components: ocAdminServer
@@ -62,7 +65,7 @@ Source: "{#DistSubDirectory}\config\jwt.json"; DestDir: "{app}\config"; Componen
 Source: "{#DistSubDirectory}\config\secure.json"; DestDir: "{app}\config"; Components: ocAdminServer; AfterInstall: FileReplaceTokenIfTaskSelected('{app}\config\secure.json', 'CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS', 120, 'autoGenerateTokens\aes'); Flags: onlyifdoesntexist
 Source: "{#DistSubDirectory}\config\https.*"; DestDir: "{app}\config"; Components: ocAdminServer; Flags: onlyifdoesntexist
 Source: "{#DistSubDirectory}\config.sample\*"; DestDir: "{app}\config.sample"; Components: ocAdminServer
-Source: "{#DistSubDirectory}\database\*"; DestDir: "{app}\database"; Components: sqlDatabase
+Source: "{#DistSubDirectory}\database\*"; DestDir: "{app}\database"; Components: sqlDatabase, sqlDockerDatabase
 Source: "{#DistSubDirectory}\resources\*"; DestDir: "{app}\resources"; Components: ocAdminServer
 Source: "{#DistSubDirectory}\.env"; DestDir: "{app}"; Components: ocAdminServer; Flags: onlyifdoesntexist
 Source: "{#DistSubDirectory}\.env.sample"; DestDir: "{app}"; Components: ocAdminServer
@@ -85,6 +88,7 @@ Name: "{group}\Uninstall OC Admin Server"; Filename: "{uninstallexe}"
 [Run]
 Filename: "{app}\database\create_database.bat"; Parameters: "--NoSleepTillBrooklyn"; WorkingDir: "{app}\database"; Description: "Create and Configure [EZ] SQL Database"; Tasks: createDatabase
 Filename: "{tmp}\create_ocadmin.bat"; Parameters: "--NoSleepTillBrooklyn"; WorkingDir: "{tmp}"; Description: "Create and Configure OcAdmin account in SQL Database"; Tasks: createDatabase; Flags: runhidden
+Filename: "{app}\database\create_database_for_Docker.bat"; Parameters: "--NoSleepTillBrooklyn"; WorkingDir: "{app}\database"; Description: "Create [EZ] SQL Database for Docker deployments"; Tasks: createDockerDatabase
 ; Filename: "MsiExec.exe"; Parameters: "/i ""{tmp}\{#NodeJsFilename}"" /qn"; Description: "Installing NodeJS {#NodeJsVersionLabel}"; Tasks: installNodeJs; Flags: runhidden skipifnotsilent
 ; Filename: "MsiExec.exe"; Parameters: "/i ""{tmp}\{#NodeJsFilename}"""; Description: "Installing NodeJS {#NodeJsVersionLabel}"; Tasks: installNodeJs; Flags: skipifsilent
 Filename: "MsiExec.exe"; Parameters: "/i ""{tmp}\{#NodeJsFilename}"" /qn"; Description: "Installing NodeJS {#NodeJsVersionLabel}"; Tasks: installNodeJs; Flags: skipifsilent
