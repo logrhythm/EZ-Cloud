@@ -86,7 +86,7 @@ if [[ "$*" == *notempimage* ]]; then
   fi
 else
   echo "### RUN BUILD COMMAND ON CONTAINER IN INTERACTIVE MODE..."
-  docker exec -it $containerId ash -c 'cd EZ-Cloud && npm run buildDocker'
+  docker exec -it $containerId ash -c 'cd EZ-Cloud && npm run buildDockerFull'
 fi
 
 # Double check the files are good, and Dockerise the life out of that thing!
