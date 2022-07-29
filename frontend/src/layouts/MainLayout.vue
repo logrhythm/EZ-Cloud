@@ -229,12 +229,17 @@ export default {
     }
   },
   computed: {
-    ...mapState('mainStore', ['loggedInUser', 'loggedInUserIsPrivileged', 'errorWikiUrlBase', 'ezMarketNotification', 'deployment', 'extraInformation']),
+    ...mapState('mainStore', ['loggedInUser', 'loggedInUserIsPrivileged', 'errorWikiUrlBase', 'ezMarketNotification', 'deployment', 'extraInformation', 'currentPersistenceLayerAvailability']),
     serverVersion () {
       return (this.deployment && this.deployment.version ? this.deployment.version : '?.?.?')
     },
     needToConfigureMsSql () {
-      return this.extraInformation && this.extraInformation.msSqlConnectionConfigMissing
+      return (
+        this.extraInformation &&
+        this.extraInformation.msSqlConnectionConfigMissing &&
+        this.currentPersistenceLayerAvailability &&
+        this.currentPersistenceLayerAvailability.msSqlAvailable !== true
+      )
     },
     mainLinks () {
       return [

@@ -52,6 +52,7 @@
 ## TO FIX
 - [x] Identifiers to EZ Market seems incorect/misformatted/ignored by EZ Market
 - [x] Width of Advanced and Settings menus. Too narrow for some languages.
+- [ ] Erroneous "SIEM Not Connected" alert message on Windows deployment
 
 ## TO TEST
 - [x] Translated message in deployment steps roll over status (especially Skipped steps)
