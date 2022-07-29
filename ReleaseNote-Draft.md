@@ -298,7 +298,6 @@ _(Below "Market" relates to the backend API of the Market Place, and "Market Adm
 **v0.8.4**
 - [v0.8.5] Frontend - Fix #8 (JQ Filter doesn't catch on logs coming from LR Webhook Beat) - Add filtering by `.fullyqualifiedbeatname` in JQ Filter
 - [v0.8.5] Frontend - Fix - `DeploymentEdit` page didn't implement `extractMessageFieldOnly` correctly when producing the JQ Transform at deployment time
-- [v0.8.🚧] 
 
 **v0.8.4**
 - [v0.8.4] Frontend - Remove Webhook shipper duplicate entry
