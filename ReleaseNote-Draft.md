@@ -6,7 +6,7 @@
 - Ideally, one or more already configured, running and collected Open Collectors
   - Docker version 20 or above (on the Open Collectors)
 ### Windows Standalone version - ![Windows](/medias/Windows_logo_16x16.png "Windows")
-- NodeJS (v12.16 or above) 👈 Installer will offer to install NodeJS v14.17.6-x64 for you
+- NodeJS (v12.16 or above) 👈 Installer will offer to install NodeJS v16.16.0-x64 for you
 - MS SQL (v2012 or above) 👈 The one of your LogRhythm XM or PM
 - Microsoft Windows (v2012 or above)
 
@@ -23,10 +23,15 @@
 #### 1. Download and Run
 ##### On the Platform Manager or XM
 - Create the MS SQL DB for Docker deployments (it's a hollow version of the EZ database, with only some of its Stored Procedures)
-  - Get [OC-Admin.v0.9.🚧.Server-Installer.exe](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.9.🚧/OC-Admin.v0.9.🚧.Server-Installer.exe)
-  - Run it on the PM or XM
-  - Select **Only SQL Database for Docker deployments (EZ Database for Docker)**
-  - Finish the install
+  - **EITHER:**
+    - Get [OC-Admin.v0.9.🚧.EZ_database_for_Docker.zip](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.9.🚧/OC-Admin.v0.9.🚧.EZ_database_for_Docker.zip)
+    - Decompress it on the PM or XM
+    - Run the `create_database_for_Docker.bat` script as an Administrator
+  - **OR:**
+    - Get [OC-Admin.v0.9.🚧.Server-Installer.exe](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.9.🚧/OC-Admin.v0.9.🚧.Server-Installer.exe)
+    - Run it on the PM or XM
+    - Select **Only SQL Database for Docker deployments (EZ Database for Docker)**
+    - Finish the install
 ##### On the Docker machine
 - Two containers will be created:
   - `oc-db`: to host OC-Admin configuration
@@ -120,6 +125,7 @@ It's possible to install OC Admin Server onto a separate machine than the SQL Se
 - [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Move EZ Market Place config to PostgreSQL instead of JSON file
 - [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Pull Master License ID from SIEM and store it in PostgreSQL
 - [v0.9.5] Backend - Check connection to the SQL systems at start-up and keep checkin until they are all good
+- [v0.9.5] Backend - Update embedded NodeJS to v16.16.0
 - [v0.9.5] Frontend - 💬 Internationalisation - Right-To-Left langauge support (For Arabic and Hebrew)
 - [v0.9.5] Frontend - 💬 Internationalisation - Multilanguage support with all text internationalised in: (some langauges still need to be reviewed and corrected by native speakers, they are marked with a "🚧")
   - British English
