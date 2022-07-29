@@ -3,40 +3,77 @@
 
 ## Requirements
 - a non-HA and non-DR LogRhythm deployment (v7.5 or above)
+- Ideally, one or more already configured, running and collected Open Collectors
+  - Docker version 20 or above (on the Open Collectors)
+### Windows Standalone version - ![Windows](/medias/Windows_logo_16x16.png "Windows")
 - NodeJS (v12.16 or above) 👈 Installer will offer to install NodeJS v14.17.6-x64 for you
 - MS SQL (v2012 or above) 👈 The one of your LogRhythm XM or PM
 - Microsoft Windows (v2012 or above)
-- Ideally, one or more already configured, running and collected Open Collectors
-  - Docker version 20 or above (on the Open Collectors)
+
+### Containerised version - ![Docker](/medias/Docker_logo_23x16.png "Docker")
+- Docker (v20.10 or above)
+- CURL
+
+### Linux Standalone version - ![Linux](/medias/Linux_logo_14x16.png "Linux") - **EXPERIMENTAL** _(Will never be supported)_
+- NodeJS (v12.16 or above)
+- MS SQL (v2016 or above, on the XM or PM)
 
 ## Setup
-### Microsoft Windows
+### Docker - ![Docker](/medias/Docker_logo_23x16.png "Docker")
+#### 1. Download and Run
+- Two containers will be created:
+  - `oc-db`: to host OC-Admin configuration
+  - `oc-admin`: OC-Admin itself
+- On the host's Firewall, if any, open the port TCP/8400 to allow inbound connections
+- Run the following command:
+```
+mkdir dummyDir && cd dummyDir && curl -fsSOL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/installer/pseudo_lrctl.sh && sh pseudo_lrctl.sh
+```
+
+#### 2. Create your configuration
+- During the Install, when prompted, please provide a password for the new user `ocAdmin`
+
+#### 3. Connect to the OC Admin Server
+- Open https://`<ip-of-the-OC-Admin-server>`:8400/
+- Login with `ocAdmin` and the password you specified during the installation
+
+#### 4. Create your configuration
+- At first login, you will be prompted to edit the connection to the SIEM database, please follow the instruction and provide the correct credentials for the MS SQL that runs on your XM or Platform Manager
+
+### Microsoft Windows - ![Windows](/medias/Windows_logo_16x16.png "Windows")
 
 #### 1. Download and Install
-- If upgrading a previous version, it's a good idea to backup your `\Program Files\EZ Server\config` folder
-- Get [EZ-Cloud.v0.9.🚧.Server-Installer.exe](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.9.🚧/EZ-Cloud.v0.9.🚧.Server-Installer.exe)
+- If upgrading a previous **EZ Cloud** version to **OC Admin** v0.9.5
+  - Backup your `\Program Files\EZ Server\config` folder
+  - Un-install **EZ Cloud**
+  - Once you have installed **OC Admin**, you want to copy the following backed up files to `\Program Files\OC Admin\config`
+    - `ez-market-place.json` - As it contains your unique deployment ID
+    - `secure.json` - As it contains your private key to secure the content of the SQL database
+    - any of the `https.*.pem` files if you had brought in your own HTTPS certificates
+- If upgrading a previous **OC Admin** version, it's a good idea to backup your `\Program Files\OC Admin\config` folder
+- Get [OC-Admin.v0.9.🚧.Server-Installer.exe](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.9.🚧/OC-Admin.v0.9.🚧.Server-Installer.exe)
 - Run it
 
-It's possible to install EZ Server onto a separate machine than the SQL Server (XM/PM)
+It's possible to install OC Admin Server onto a separate machine than the SQL Server (XM/PM)
   - If you want to use this:
     - Run the installer on the SQL server (XM/PM) first
     - Select `Only SQL Database and configuration (EZ Database)` in the drop down list on the **Select Components** screen
     - Finish the install
-    - Run the installer on the Windows server where you want to run the EZ Server
-    - Select `Full installation (EZ Cloud Server + EZ Database + Frontend + NodeJS)` (or whichever is the most appropriate for you) in the drop down list
+    - Run the installer on the Windows server where you want to run the OC Admin Server
+    - Select `Full installation (OC Admin Server + EZ Database + Frontend + NodeJS)` (or whichever is the most appropriate for you) in the drop down list
     - Untick `EZ Database and SQL User` in the list of **Components**
     - Finish the install
 
 #### 2. Create your configuration
 - During the Install, if prompted, please provide the correct credentials for SQL
-- During the Install, if prompted, please provide the credentials for the new user ezAdmin
+- During the Install, if prompted, please provide the credentials for the new user ocAdmin
 
-#### 3. Connect to the EZ Server
-- Open https://`<ip-of-the-EZ-server>`:8400/
-- Login with `ezAdmin` and the password you specified during the installation
+#### 3. Connect to the OC Admin Server
+- Open https://`<ip-of-the-OC-Admin-server>`:8400/
+- Login with `ocAdmin` and the password you specified during the installation
 
 ## Advice: Create and use a non privileged User
-- Login as `ezAdmin`
+- Login as `ocAdmin`
 - Click **Admin** (just above **Settings**, on the bottom left)
 - Click **Manage User Accounts**
 - Click **Add New Account**
