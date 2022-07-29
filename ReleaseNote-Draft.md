@@ -2,7 +2,7 @@
 *🚧🚧🚧🚧-🚧🚧-🚧🚧*
 
 ## Requirements
-- a non-HA and non-DR LogRhythm deployment (v7.5 or above)
+- A non-HA and non-DR LogRhythm deployment (v7.5 or above)
 - Ideally, one or more already configured, running and collected Open Collectors
   - Docker version 20 or above (on the Open Collectors)
 ### Windows Standalone version - ![Windows](/medias/Windows_logo_16x16.png "Windows")
@@ -19,8 +19,15 @@
 - MS SQL (v2016 or above, on the XM or PM)
 
 ## Setup
-### Docker - ![Docker](/medias/Docker_logo_23x16.png "Docker")
+### Docker Deployment Option - ![Docker](/medias/Docker_logo_23x16.png "Docker")
 #### 1. Download and Run
+##### On the Platform Manager or XM
+- Create the MS SQL DB for Docker deployments (it's a hollow version of the EZ database, with only some of its Stored Procedures)
+  - Get [OC-Admin.v0.9.🚧.Server-Installer.exe](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.9.🚧/OC-Admin.v0.9.🚧.Server-Installer.exe)
+  - Run it on the PM or XM
+  - Select **Only SQL Database for Docker deployments (EZ Database for Docker)**
+  - Finish the install
+##### On the Docker machine
 - Two containers will be created:
   - `oc-db`: to host OC-Admin configuration
   - `oc-admin`: OC-Admin itself
@@ -40,7 +47,7 @@ mkdir dummyDir && cd dummyDir && curl -fsSOL https://raw.githubusercontent.com/l
 #### 4. Create your configuration
 - At first login, you will be prompted to edit the connection to the SIEM database, please follow the instruction and provide the correct credentials for the MS SQL that runs on your XM or Platform Manager
 
-### Microsoft Windows - ![Windows](/medias/Windows_logo_16x16.png "Windows")
+### Microsoft Windows Deployment Option - ![Windows](/medias/Windows_logo_16x16.png "Windows")
 
 #### 1. Download and Install
 - If upgrading a previous **EZ Cloud** version to **OC Admin** v0.9.5
