@@ -89,9 +89,52 @@ It's possible to install OC Admin Server onto a separate machine than the SQL Se
 - Wiki: [Troubleshooting](https://github.com/logrhythm/EZ-Cloud/wiki/Troubleshooting)
 
 ## What's new in this release?
+**v0.9.5**
+- [v0.9.5] **EZ Cloud** is now called **OC Admin** 🎉🎉🎉
+  - This is part of the plan to move ~~EZ Cloud~~ OC Admin to run *on/with/as part of* the Open Collector
+- [v0.9.5] Backend - Multi-platform - Same codebase now supports/builds for multiple OSes and deployment methods:
+  - ![Windows](/medias/Windows_logo_16x16.png "Windows") Windows
+  - ![Docker](/medias/Docker_logo_23x16.png "Docker") Docker - As a new `oc-admin` container
+  - ![Linux](/medias/Linux_logo_14x16.png "Linux") Linux - **EXPERIMENTAL** _(Will never be supported)_
+- [v0.9.5] Backend - Multi-platform - Logs are stored in appropriate locations
+  - ![Windows](/medias/Windows_logo_16x16.png "Windows") - To Windows Event Journal (as always with EZ)
+  - ![Docker](/medias/Docker_logo_23x16.png "Docker") - To the Console (to be picked by Docker, and not fill up the container's volume)
+  - ![Linux](/medias/Linux_logo_14x16.png "Linux") Linux - To flat file (`/var/log/ez`)
+- [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Create a sister container `oc-db` to host PostgreSQL and store all the OC Admin configuration
+- [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Port all the SQL (EZ database) to PostgreSQL
+- [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Move MS SQL connection configuration from JSON file to record in PostgreSQL Table
+  - And encrypt all the sensitive information (MS SQL Hostname, login and password)
+- [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Add API for MS SQL Connection Admin page on Frontend
+- [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Modify API endpoints to use PostgreSQL, if Database Mode is Split or PgSQL
+  - Database Mode = "Split" means OC Admin config sits in PostgreSQL, but the SIEM is still to be reached via MS SQL. This is the default for ![Docker](/medias/Docker_logo_23x16.png "Docker") deployments
+  - Database Mode = "MsSQL" means OC Admin config sits in MS SQL on the SIEM, and there is no PostgresSQL. This is the default for ![Windows](/medias/Windows_logo_16x16.png "Windows") deployments.
+  - Database Mode = "PgSQL" means OC Admin config sits in PostgreSQL, and there is no MS SQL. This is a future state, for when the SIEM will be accessed purely by API.
+- [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Move RBAC tables and logic to PostgreSQL
+- [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Move EZ Market Place config to PostgreSQL instead of JSON file
+- [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Pull Master License ID from SIEM and store it in PostgreSQL
+- [v0.9.5] Backend - Check connection to the SQL systems at start-up and keep checkin until they are all good
+- [v0.9.5] Frontend - 💬 Internationalisation - Right-To-Left langauge support (For Arabic and Hebrew)
+- [v0.9.5] Frontend - 💬 Internationalisation - Multilanguage support with all text internationalised in: (some langauges still need to be reviewed and corrected by native speakers, they are marked with a "🚧")
+  - British English
+  - French
+  - Spanish (🚧)
+  - German (🚧)
+  - Simplified Chinese (🚧)
+  - Arabic (🚧)
+  - Korean (🚧)
+  - Portugese (🚧)
+  - Hebrew (🚧)
+  - Italian (🚧)
+  - Japanese (🚧)
+- [v0.9.5] Frontend - 💬 Internationalisation - Add Language switch in Settings and Login page
+- [v0.9.5] Frontend - Login page - Show status of Backend services and databases
+- [v0.9.5] Frontend - Login page - Disable Logon button if no SQL server is available
+- [v0.9.5] Frontend - Admin - Configuration page for SIEM MS SQL, for ![Docker](/medias/Docker_logo_23x16.png "Docker") deployments
+- [v0.9.5] Frontend - MarketPlace notification indicator to show on **Notification** sub-menu too
+- [v0.9.🚧] 
+
 **v0.9.0**
 - [v0.9.0] Backend - Make Encrypted SQL connection the default
-- [v0.9.🚧] 
 
 **v0.8.5-0.8.7**
 _(Backend v0.8.5 / Frontend v0.8.7)_
@@ -298,7 +341,6 @@ _(Below "Market" relates to the backend API of the Market Place, and "Market Adm
 
 ## Know issues :bug: :beetle:
 - Will fail to deploy log shippers if not using the `root` account or an account with full `sudo` access
-- If using the Fan Out feature - OpenCollector will refuse to import JQ Transform
 - Open Collector machines running older versions of Docker (anything below v20) will fail to Tail
 - HA and DR deployments of LogRhythm SIEM are not supported
 
