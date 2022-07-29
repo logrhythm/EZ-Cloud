@@ -13,12 +13,12 @@ Check [Releases](https://github.com/logrhythm/EZ-Cloud/releases) for version spe
 - NodeJS (v12.16 or above)
 - MS SQL (v2016 or above, on the XM or PM)
 
-### Linux Standalone version - ![Linux](/medias/Linux_logo_14x16.png "Linux")
-- NodeJS (v12.16 or above)
-- MS SQL (v2016 or above, on the XM or PM)
-
 ### Containerised version - ![Docker](/medias/Docker_logo_23x16.png "Docker")
 - Docker (v20.10 or above)
+
+### Linux Standalone version - ![Linux](/medias/Linux_logo_14x16.png "Linux") - **EXPERIMENTAL** _(Will never be supported)_
+- NodeJS (v12.16 or above)
+- MS SQL (v2016 or above, on the XM or PM)
 
 ## Setup
 See [Releases](https://github.com/logrhythm/EZ-Cloud/releases) for version specific installation instructions
