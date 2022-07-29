@@ -124,10 +124,10 @@ It's possible to install OC Admin Server onto a separate machine than the SQL Se
 - [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Move RBAC tables and logic to PostgreSQL
 - [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Move EZ Market Place config to PostgreSQL instead of JSON file
 - [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Pull Master License ID from SIEM and store it in PostgreSQL
-- [v0.9.5] Backend - Check connection to the SQL systems at start-up and keep checkin until they are all good
+- [v0.9.5] Backend - Check connection to the SQL systems at start-up and keep checking until they are all good
 - [v0.9.5] Backend - Update embedded NodeJS to v16.16.0
-- [v0.9.5] Frontend - 💬 Internationalisation - Right-To-Left langauge support (For Arabic and Hebrew)
-- [v0.9.5] Frontend - 💬 Internationalisation - Multilanguage support with all text internationalised in: (some langauges still need to be reviewed and corrected by native speakers, they are marked with a "🚧")
+- [v0.9.5] Frontend - 💬 Internationalisation - Right-To-Left language support (For Arabic and Hebrew)
+- [v0.9.5] Frontend - 💬 Internationalisation - Multilanguage support with all text internationalised in: (some languages still need to be reviewed and corrected by native speakers, they are marked with a "🚧")
   - British English
   - French
   - Spanish (🚧)
@@ -135,7 +135,7 @@ It's possible to install OC Admin Server onto a separate machine than the SQL Se
   - Simplified Chinese (🚧)
   - Arabic (🚧)
   - Korean (🚧)
-  - Portugese (🚧)
+  - Portuguese (🚧)
   - Hebrew (🚧)
   - Italian (🚧)
   - Japanese (🚧)
