@@ -189,7 +189,12 @@ export default {
       return this.currentPersistenceLayerAvailability.msSqlAvailable
     },
     statusWarnings () {
-      return Number(this.ocAdminState === null) + Number(this.pgSqlState === null) + Number(this.msSqlState === null)
+      return Number(this.ocAdminState === null) +
+      Number(this.ocAdminState === undefined) +
+      Number(this.pgSqlState === null) +
+      Number(this.pgSqlState === undefined) +
+      Number(this.msSqlState === null) +
+      Number(this.msSqlState === undefined)
     },
     statusProblems () {
       return Number(this.ocAdminState === false) + Number(this.pgSqlState === false) + Number(this.msSqlState === false)
@@ -287,11 +292,18 @@ export default {
     }
   }, // methods
   mounted () {
+    console.log('mounted - 🚀')
     // First remove any token from previous Login
     this.signOut()
 
     // Get the status of the Databases
-    this.checkPersistenceLayerAvailability()
+    this.persistenceLayerAvailabilityCheckTimer = setInterval(() => {
+      console.log('persistenceLayerAvailabilityCheckTimer - ⏰')
+      clearInterval(this.persistenceLayerAvailabilityCheckTimer)
+      this.persistenceLayerAvailabilityCheckTimer = null
+      this.checkPersistenceLayerAvailability()
+    }, 100)
+    console.log('mounted - 🏁')
   },
   beforeDestroy () {
     if (this.persistenceLayerAvailabilityCheckTimer) {
