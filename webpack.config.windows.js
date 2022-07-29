@@ -6,8 +6,8 @@ const { version } = require('./package.json');
 
 // For the file download of the NodeJS installer
 const nodeJS = {
-  version: 'v14.17.6',
-  filename: 'node-v14.17.6-x64.msi'
+  version: 'v16.16.0',
+  filename: 'node-v16.16.0-x64.msi'
 };
 
 module.exports = {
