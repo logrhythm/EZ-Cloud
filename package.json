@@ -11,7 +11,7 @@
         "test": "mocha --exit",
         "buildWindows": "echo \"🚀 Build (🎯 Windows)...\" && npm run buildVersion && webpack --config webpack.config.windows.js",
         "buildWindowsFrontendAndImport": "npm run buildVersion && cd frontend && npm install && quasar build && (robocopy dist\\spa\\ ..\\public_web_root\\ /COPYALL /MIR /NJH) ^& IF %ERRORLEVEL% LEQ 1 SET ERRORLEVEL = 0 && cd..",
-        "buildWindowsWithFrontend": "echo \"🚀 Build With Frontend (🎯 Windows)...\" && npm run buildVersion && npm run buildFrontendAndImport && webpack --config webpack.config.windows.js",
+        "buildWindowsWithFrontend": "echo \"🚀 Build With Frontend (🎯 Windows)...\" && npm run buildVersion && npm run buildWindowsFrontendAndImport && webpack --config webpack.config.windows.js",
         "buildWindowsFull": "echo \"🚀 Build Full (🎯 Windows)...\" && npm run buildWindowsWithFrontend",
         "buildDocker": "echo \"🚀 Build (🎯 Docker)...\" && npm run buildVersion && webpack --config webpack.config.docker.js",
         "buildDockerFrontendAndImport": "echo \"🚀 Build Frontend and Import (🎯 Docker)...\" && cd frontend && npm install && quasar build && cp -af dist/spa/* ../public_web_root/ && cd ..",
