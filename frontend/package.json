@@ -16,19 +16,19 @@
   },
   "dependencies": {
     "@quasar/cli": "^1.2.2",
-    "@quasar/extras": "^1.11.1",
-    "axios": "^0.21.4",
-    "core-js": "^3.18.0",
-    "javascript-time-ago": "^2.3.13",
+    "@quasar/extras": "^1.15.0",
+    "axios": "^0.27.2",
+    "core-js": "^3.24.0",
+    "javascript-time-ago": "^2.5.7",
     "jdenticon": "^3.1.1",
-    "js-yaml": "^3.14.1",
+    "js-yaml": "^4.1.0",
     "jwt-decode": "^3.1.2",
-    "marked": "^4.0.14",
+    "marked": "^4.0.18",
     "node-html-markdown": "^1.2.0",
-    "quasar": "^1.17.4",
-    "socket.io-client": "^4.2.0",
+    "quasar": "^1.19.4",
+    "socket.io-client": "^4.5.1",
     "vue-i18n": "^8.26.1",
-    "vue2-filters": "^0.12.0"
+    "vue2-filters": "^0.14.0"
   },
   "devDependencies": {
     "@quasar/app": "^2.2.10",
