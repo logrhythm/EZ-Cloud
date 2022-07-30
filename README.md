@@ -1,4 +1,4 @@
-[![Last Release](https://badgen.net/badge/release/v0.9.5/green)](https://github.com/logrhythm/EZ-Cloud/releases/tag/v0.9.5)
+[![Last Release](https://badgen.net/badge/release/v0.9.5/green)](https://github.com/logrhythm/EZ-Cloud/releases)
 [![Dev Version](https://badgen.net/badge/dev/v0.9/orange)](https://github.com/logrhythm/EZ-Cloud/tree/v0.9)
 
 # OC Admin (Formerly EZ-Cloud)
