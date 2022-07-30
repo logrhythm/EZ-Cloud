@@ -1,6 +1,6 @@
-# EZ Cloud Client (ez-cloud-client)
+# OC Admin Client (ez-cloud-client) - Formerly EZ Cloud
 
-User Interface for EZ-Cloud for Legacy SIEM
+OpenCollector User Interface
 
 ## Install the dependencies
 ```bash

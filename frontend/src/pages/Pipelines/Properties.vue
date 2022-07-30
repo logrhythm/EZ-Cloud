@@ -2,7 +2,7 @@
   <q-page class="q-pa-sm">
     <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
-        <q-btn no-caps flat dense icon="arrow_back" label="Return to List" :to="'/Pipelines'" />
+        <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to List')" :to="'/Pipelines'" />
 
         <q-toolbar-title style="opacity:.4" class="text-center">Pipeline Properties<span v-if="pipeline && pipeline.name && pipeline.name.length">:  {{ pipeline.name }}</span></q-toolbar-title>
 
@@ -13,10 +13,10 @@
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
             <q-card-section class="text-h4">
-                Collection
+                {{ $t('Collection') }}
             </q-card-section>
             <q-card-section class="row items-center">
-                <span class="text-bold">Shipper and Method: </span>
+                <span class="text-bold">{{ $t('Shipper and Method:') }} </span>
                 <div class="q-ml-md text-center">
                   <img v-if="collectionShipperOption.icon && collectionShipperOption.icon.length" :src="'/shippers/' + collectionShipperOption.icon + '.svg'" width="64px">
                   <div>{{ collectionShipperOption.label }}</div>
@@ -28,7 +28,7 @@
             </q-card-section>
             <q-card-section>
               <div class="">
-                  <div class="text-bold">Collection Configuration:</div>
+                  <div class="text-bold">{{ $t('Collection Configuration:') }}</div>
                   <div class="row q-my-sm">
                     <q-separator vertical size="2px" color="teal" />
                     <div class="q-ml-sm"><pre>{{ collectionConfigOutput }}</pre></div>
@@ -42,22 +42,22 @@
           <q-card-actions vertical class="justify-around q-px-md">
               <q-btn icon="edit" color="primary" :to="'/Pipelines/' + this.pipelineUid + '/Collection/Edit'" >
                 <q-tooltip content-style="font-size: 1rem;">
-                  Edit Collection
+                  {{ $t('Edit Collection') }}
                 </q-tooltip>
               </q-btn>
               <q-btn icon="download" @click="downloadCollectionAsShipperConfigFile()">
                 <q-tooltip content-style="font-size: 1rem;">
-                  Download Collection configuration as a Shipper configuration file
+                  {{ $t('Download Collection configuration as a Shipper configuration file') }}
                 </q-tooltip>
               </q-btn>
               <q-btn icon="content_copy" @click="copyCollectionConfigAsShipperFileToClipboard()">
                 <q-tooltip content-style="font-size: 1rem;">
-                  Copy Collection configuration in Shipper's format to Clipboard
+                  {{ $t('Copy Collection configuration in Shipper\'s format to Clipboard') }}
                 </q-tooltip>
               </q-btn>
               <q-btn icon="share">
                 <q-tooltip content-style="font-size: 1rem;">
-                  Share and Import Collection Configuration
+                  {{ $t('Share and Import Collection Configuration') }}
                 </q-tooltip>
                 <q-menu>
                   <q-list style="min-width: 400px">
@@ -71,8 +71,8 @@
                       </q-item-section>
 
                       <q-item-section>
-                        <q-item-label lines="1">Share as a Local File</q-item-label>
-                        <q-item-label caption>As an importable EZ Cloud Collection Configuration file</q-item-label>
+                        <q-item-label lines="1">{{ $t('Share as a Local File') }}</q-item-label>
+                        <q-item-label caption>{{ $t('As an importable OC Admin Collection Configuration file') }}</q-item-label>
                       </q-item-section>
                     </q-item>
 
@@ -86,8 +86,8 @@
                       </q-item-section>
 
                       <q-item-section>
-                        <q-item-label lines="1">Share via the Marketplace</q-item-label>
-                        <q-item-label caption>As an importable EZ Cloud Collection Configuration</q-item-label>
+                        <q-item-label lines="1">{{ $t('Share via the Marketplace') }}</q-item-label>
+                        <q-item-label caption>{{ $t('As an importable OC Admin Collection Configuration') }}</q-item-label>
                       </q-item-section>
                     </q-item>
 
@@ -103,8 +103,8 @@
                       </q-item-section>
 
                       <q-item-section>
-                        <q-item-label lines="1">Import from Local File</q-item-label>
-                        <q-item-label caption>Import a shared EZ Cloud Collection Configuration file</q-item-label>
+                        <q-item-label lines="1">{{ $t('Import from Local File') }}</q-item-label>
+                        <q-item-label caption>{{ $t('Import a shared OC Admin Collection Configuration file') }}</q-item-label>
                       </q-item-section>
                     </q-item>
 
@@ -118,8 +118,8 @@
                       </q-item-section>
 
                       <q-item-section>
-                        <q-item-label lines="1">Import from Marketplace</q-item-label>
-                        <q-item-label caption>Import a shared EZ Cloud Collection Configuration</q-item-label>
+                        <q-item-label lines="1">{{ $t('Import from Marketplace') }}</q-item-label>
+                        <q-item-label caption>{{ $t('Import a shared OC Admin Collection Configuration') }}</q-item-label>
                       </q-item-section>
                     </q-item>
 
@@ -131,8 +131,8 @@
                       </q-item-section>
 
                       <q-item-section>
-                        <q-item-label lines="1">What's the difference?</q-item-label>
-                        <q-item-label caption>A quick peek at the Wiki</q-item-label>
+                        <q-item-label lines="1">{{ $t('What\'s the difference?') }}</q-item-label>
+                        <q-item-label caption>{{ $t('A quick peek at the Wiki') }}</q-item-label>
                       </q-item-section>
                     </q-item>
                   </q-list>
@@ -140,7 +140,7 @@
               </q-btn>
               <q-btn icon="delete" text-color="negative" @click="deleteCollectionPrompt()">
                 <q-tooltip content-style="font-size: 1rem;">
-                  Delete Collection Configuration
+                  {{ $t('Delete Collection Configuration') }}
                 </q-tooltip>
               </q-btn>
           </q-card-actions>
@@ -151,14 +151,16 @@
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
             <q-card-section class="text-h4">
-                Mapping
+                {{ $t('Mapping') }}
             </q-card-section>
-            <q-card-section>
-                <span class="text-bold">Fields detected: </span>{{ detectedFields }}
-            </q-card-section>
-            <q-card-section>
-                <span class="text-bold">Fields mapped: </span>{{ mappedFields }}
-            </q-card-section>
+            <div>
+              <q-card-section>
+                  <span class="text-bold">{{ $t('Fields detected:') }} </span>{{ detectedFields }}
+              </q-card-section>
+              <q-card-section>
+                  <span class="text-bold">{{ $t('Fields mapped:') }} </span>{{ mappedFields }}
+              </q-card-section>
+            </div>
           </q-card-section>
 
           <q-separator vertical />
@@ -166,25 +168,25 @@
           <q-card-actions vertical class="justify-around q-px-md">
               <q-btn icon="edit" color="primary" :to="'/Pipelines/' + this.pipelineUid + '/Mapping/Edit'" >
                 <q-tooltip content-style="font-size: 1rem;">
-                  Edit Mapping
+                  {{ $t('Edit Mapping') }}
                 </q-tooltip>
               </q-btn>
               <q-btn icon="download" disable>
                 <q-tooltip content-style="font-size: 1rem;">
-                  Download Mapping as JQ Pipeline
+                  {{ $t('Download Mapping as JQ Pipeline') }}
                 </q-tooltip>
               </q-btn>
               <q-btn icon="share">
                 <q-tooltip content-style="font-size: 1rem;">
-                  Share and Import Mapping
+                  {{ $t('Share and Import Mapping') }}
                 </q-tooltip>
                 <q-menu content-style="min-width: 420px">
                   <q-list style="min-width: 400px">
-                    <q-item-label header>Sanitisation</q-item-label>
+                    <q-item-label header>{{ $t('Sanitisation') }}</q-item-label>
                     <q-item tag="label" v-ripple>
                       <q-item-section>
-                        <q-item-label>Share Field Frequencies</q-item-label>
-                        <q-item-label caption>Include the frequency statistics for each field</q-item-label>
+                        <q-item-label>{{ $t('Share Field Frequencies') }}</q-item-label>
+                        <q-item-label caption>{{ $t('Include the frequency statistics for each field') }}</q-item-label>
                       </q-item-section>
                       <q-item-section avatar>
                         <q-toggle v-model="shareFieldFrequencies" />
@@ -193,9 +195,9 @@
 
                     <q-item tag="label" v-ripple>
                       <q-item-section>
-                        <q-item-label>Share Field Values</q-item-label>
-                        <q-item-label caption>Include all the observed values for each field</q-item-label>
-                        <q-item-label caption class="text-bold text-italic"><q-icon name="warning" class="q-ma-none q-mr-xs" color="orange" />This could lead to sharing sensitive information</q-item-label>
+                        <q-item-label>{{ $t('Share Field Values') }}</q-item-label>
+                        <q-item-label caption>{{ $t('Include all the observed values for each field') }}</q-item-label>
+                        <q-item-label caption class="text-bold text-italic"><q-icon name="warning" class="q-ma-none q-mr-xs" color="orange" />{{ $t('This could lead to sharing sensitive information') }}</q-item-label>
                       </q-item-section>
                       <q-item-section avatar>
                         <q-toggle color="orange" v-model="shareFieldValues" />
@@ -204,8 +206,8 @@
 
                     <q-item tag="label" v-ripple>
                       <q-item-section>
-                        <q-item-label>Share Field SIEM Mapping</q-item-label>
-                        <q-item-label caption>Include the SIEM tags mapping for each field</q-item-label>
+                        <q-item-label>{{ $t('Share Field SIEM Mapping') }}</q-item-label>
+                        <q-item-label caption>{{ $t('Include the SIEM tags mapping for each field') }}</q-item-label>
                       </q-item-section>
                       <q-item-section avatar>
                         <q-toggle v-model="shareFieldMapping" />
@@ -214,8 +216,8 @@
 
                     <q-item tag="label" v-ripple>
                       <q-item-section>
-                        <q-item-label>Share Field Modifiers</q-item-label>
-                        <q-item-label caption>Include the modifiers for each field</q-item-label>
+                        <q-item-label>{{ $t('Share Field Modifiers') }}</q-item-label>
+                        <q-item-label caption>{{ $t('Include the modifiers for each field') }}</q-item-label>
                       </q-item-section>
                       <q-item-section avatar>
                         <q-toggle v-model="shareFieldModifiers" />
@@ -234,8 +236,8 @@
                       </q-item-section>
 
                       <q-item-section>
-                        <q-item-label lines="1">Share as a Local File</q-item-label>
-                        <q-item-label caption>As an importable EZ Cloud Mapping file</q-item-label>
+                        <q-item-label lines="1">{{ $t('Share as a Local File') }}</q-item-label>
+                        <q-item-label caption>{{ $t('As an importable OC Admin Mapping file') }}</q-item-label>
                       </q-item-section>
                     </q-item>
 
@@ -249,8 +251,8 @@
                       </q-item-section>
 
                       <q-item-section>
-                        <q-item-label lines="1">Share via the Marketplace</q-item-label>
-                        <q-item-label caption>As an importable EZ Cloud Mapping</q-item-label>
+                        <q-item-label lines="1">{{ $t('Share via the Marketplace') }}</q-item-label>
+                        <q-item-label caption>{{ $t('As an importable OC Admin Mapping') }}</q-item-label>
                       </q-item-section>
                     </q-item>
 
@@ -266,8 +268,8 @@
                       </q-item-section>
 
                       <q-item-section>
-                        <q-item-label lines="1">Import from Local File</q-item-label>
-                        <q-item-label caption>Import a shared EZ Cloud Mapping file</q-item-label>
+                        <q-item-label lines="1">{{ $t('Import from Local File') }}</q-item-label>
+                        <q-item-label caption>{{ $t('Import a shared OC Admin Mapping file') }}</q-item-label>
                       </q-item-section>
                     </q-item>
 
@@ -281,8 +283,8 @@
                       </q-item-section>
 
                       <q-item-section>
-                        <q-item-label lines="1">Import from Marketplace</q-item-label>
-                        <q-item-label caption>Import a shared EZ Cloud Mapping</q-item-label>
+                        <q-item-label lines="1">{{ $t('Import from Marketplace') }}</q-item-label>
+                        <q-item-label caption>{{ $t('Import a shared OC Admin Mapping') }}</q-item-label>
                       </q-item-section>
                     </q-item>
 
@@ -294,8 +296,8 @@
                       </q-item-section>
 
                       <q-item-section>
-                        <q-item-label lines="1">What's the difference?</q-item-label>
-                        <q-item-label caption>A quick peek at the Wiki</q-item-label>
+                        <q-item-label lines="1">{{ $t('What\'s the difference?') }}</q-item-label>
+                        <q-item-label caption>{{ $t('A quick peek at the Wiki') }}</q-item-label>
                       </q-item-section>
                     </q-item>
                   </q-list>
@@ -303,7 +305,7 @@
               </q-btn>
               <q-btn icon="delete" text-color="negative" @click="deleteMappingPrompt()">
                 <q-tooltip content-style="font-size: 1rem;">
-                  Delete Mapping
+                  {{ $t('Delete Mapping') }}
                 </q-tooltip>
               </q-btn>
           </q-card-actions>
@@ -314,7 +316,7 @@
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
             <q-card-section class="text-h4">
-                Deployments
+                {{ $t('Deployments') }}
             </q-card-section>
             <q-card-section>
               <q-table
@@ -322,29 +324,29 @@
                 :columns="columns"
                 row-key="uid"
                 dense
-                no-data-label="No Deployment to display."
+                :no-data-label="$t('No Deployment to display.')"
                 :filter="searchFilter"
                 :loading="dataLoading"
-                rows-per-page-label="Deployments per page:"
+                :rows-per-page-label="$t('Deployments per page:')"
                 :pagination.sync="pagination"
               >
                 <template v-slot:top>
                   <div class="full-width row wrap justify-between">
                     <div class="q-table__title">
-                      Current Deployments
+                      {{ $t('Current Deployments') }}
                     </div>
                     <div class="row q-gutter-md">
                       <div class="col" >
-                        <q-btn rounded dense color="primary" icon="add" label="Add New Deployment" style="min-width:14rem;" @click="addNewDeployment()" >
+                        <q-btn rounded dense color="primary" icon="add" :label="$t('Add New Deployment')" style="min-width:14rem;" @click="addNewDeployment()" >
                           <q-tooltip content-style="font-size: 1em">
-                            Create a new Deployment.
+                            {{ $t('Create a new Deployment.') }}
                           </q-tooltip>
                         </q-btn>
                       </div>
                     </div>
                     <div class="row q-gutter-md">
                       <div style="width:300px;">
-                        <q-input outlined dense debounce="300" v-model="searchFilter" placeholder="Search">
+                        <q-input outlined dense debounce="300" v-model="searchFilter" :placeholder="$t('Search')">
                           <template v-slot:append>
                             <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
                             <q-icon name="search" />
@@ -353,7 +355,7 @@
                       </div>
                       <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadOpenCollectorsAndPipelines()">
                         <q-tooltip content-style="font-size: 1em">
-                          Reload the list of Pipelines.
+                          {{ $t('Reload the list of Pipelines.') }}
                         </q-tooltip>
                       </q-btn>
                     </div>
@@ -381,8 +383,8 @@
                     <q-icon name="arrow_circle_down" color="red" size="md" v-else-if ="props.value === false" />
                     <q-icon name="help_center" color="grey" size="md" v-else />
                     <q-tooltip content-style="font-size: 1em">
-                      <span v-if="props.value === true">Enabled</span>
-                      <span v-else-if ="props.value === false">Disabled / Un-deployed</span>
+                      <span v-if="props.value === true">{{ $t('Enabled') }}</span>
+                      <span v-else-if ="props.value === false">{{ $t('Disabled / Un-deployed') }}</span>
                       <span v-else>{{ props.value }}</span>
                     </q-tooltip>
                   </q-td>
@@ -396,12 +398,12 @@
           <q-card-actions vertical class="justify-around q-px-md">
               <q-btn icon="add" color="primary" @click="addNewDeployment()" >
                 <q-tooltip content-style="font-size: 1rem;">
-                  Add Deployment
+                  {{ $t('Add Deployment') }}
                 </q-tooltip>
               </q-btn>
               <q-btn icon="refresh" :loading="dataLoading" @click="loadOpenCollectorsAndPipelines()">
                 <q-tooltip content-style="font-size: 1rem;">
-                  Reload
+                  {{ $t('Reload') }}
                 </q-tooltip>
               </q-btn>
           </q-card-actions>
@@ -413,7 +415,7 @@
     <q-dialog v-model="showCollectionFileImportPopup" persistent>
       <q-card style="min-width: 350px">
         <q-card-section>
-          <div class="text-h6">{{ $t('Import EZ Cloud Collection Configuration') }}</div>
+          <div class="text-h6">{{ $t('Import OC Admin Collection Configuration') }}</div>
         </q-card-section>
 
         <q-card-section class="q-pt-none">
@@ -421,7 +423,7 @@
             filled
             bottom-slots
             v-model="collectionConfigurationImportFileInput"
-            label="Click or Drop a .ezCollection file here"
+            :label="$t('Click or Drop a .ezCollection file here')"
             input-style="min-width: 24em;min-height: 14em;"
             accept=".ezCollection"
             @rejected="onRejectedCollectionFile"
@@ -445,33 +447,33 @@
     <q-dialog v-model="showMarketplaceImportPopup" persistent>
       <q-card style="min-width: 900px">
         <q-card-section>
-          <div class="text-h6" v-if="marketplaceImportPopupType === 'collection'">{{ $t('Import EZ Cloud Collection Configuration') }}</div>
-          <div class="text-h6" v-else-if="marketplaceImportPopupType === 'mapping'">{{ $t('Import EZ Cloud Fields Mapping') }}</div>
-          <div class="text-h6" v-else>{{ $t('Import EZ Cloud Pipeline Template') }}</div>
+          <div class="text-h6" v-if="marketplaceImportPopupType === 'collection'">{{ $t('Import OC Admin Collection Configuration') }}</div>
+          <div class="text-h6" v-else-if="marketplaceImportPopupType === 'mapping'">{{ $t('Import OC Admin Fields Mapping') }}</div>
+          <div class="text-h6" v-else>{{ $t('Import OC Admin Pipeline Template') }}</div>
         </q-card-section>
 
         <q-card-section class="q-pt-none">
           <q-table
-            title="Pipelines Templates"
+            :title="$t('Pipelines Templates')"
             :data="MarketplaceImportPopupTableData"
             :columns="marketplaceImportPopupColumns"
             row-key="uid"
             dense
-            no-data-label="No Pipeline Template to display."
+            :no-data-label="$t('No Pipeline Template to display.')"
             :filter="marketplaceImportPopupSearchFilter"
             :loading="dataLoading"
-            rows-per-page-label="Pipeline Templates per page:"
+            :rows-per-page-label="$t('Pipeline Templates per page:')"
             :pagination.sync="marketplaceImportPopupPagination"
           >
 
             <template v-slot:top>
               <div class="full-width row wrap justify-between">
                 <div class="q-table__title">
-                  Pipeline Templates
+                  {{ $t('Pipeline Templates') }}
                 </div>
                 <div class="row q-gutter-md">
                   <div style="width:300px;">
-                    <q-input outlined dense debounce="300" v-model="marketplaceImportPopupSearchFilter" placeholder="Search">
+                    <q-input outlined dense debounce="300" v-model="marketplaceImportPopupSearchFilter" :placeholder="$t('Search')">
                       <template v-slot:append>
                         <q-btn v-if="marketplaceImportPopupSearchFilter.length" dense flat icon="close" @click="marketplaceImportPopupSearchFilter=''" />
                         <q-icon name="search" />
@@ -480,7 +482,7 @@
                   </div>
                   <q-btn dense outline icon="refresh" @click="reloadEzMarketPipelineTemplates()">
                     <q-tooltip content-style="font-size: 1em">
-                      Reload the list of Pipeline Templates.
+                      {{ $t('Reload the list of Pipeline Templates.') }}
                     </q-tooltip>
                   </q-btn>
                 </div>
@@ -546,10 +548,10 @@
                   <q-icon name="auto_delete" color="negative" style="opacity: .5;" size="md" v-else-if="props.value === 'To be deleted'" />
                   <q-icon name="question_mark" color="orange" size="md" v-else />
                   <q-tooltip content-style="font-size: 1em">
-                    {{ props.row.statusDescription }}
+                    {{ $t(props.row.statusDescription) }}
                   </q-tooltip>
                   <br>
-                  {{ props.value }}
+                  {{ $t(props.value) }}
                 </div>
               </q-td>
             </template>
@@ -575,8 +577,8 @@
             <template v-slot:body-cell-pipelineTemplateCollectionStats="props">
               <q-td :props="props">
                 <q-tooltip content-style="font-size: 1em">
-                  <span class="text-bold">Shipper:</span> {{ collectionShipperByValue(props.row.stats.collectionShipper).label }}<br>
-                  <span class="text-bold">Method:</span> {{ collectionMethodByValue(props.row.stats.collectionMethod).label }}
+                  <span class="text-bold">{{ $t('Shipper:') }}</span> {{ collectionShipperByValue(props.row.stats.collectionShipper).label }}<br>
+                  <span class="text-bold">{{ $t('Method:') }}</span> {{ collectionMethodByValue(props.row.stats.collectionMethod).label }}
                 </q-tooltip>
                 <div
                   v-if="props.value"
@@ -599,15 +601,15 @@
                 >
                   <q-tooltip content-style="font-size: 1em">
                     <div class="column">
-                      <div>
-                        <span>Detected fields: {{ props.row.stats.detectedFields }}</span><br>
-                        <span>Mapped fields: {{ props.row.stats.mappedFields }}</span>&nbsp;(<span class="text-bold">{{ Math.round(props.value * 100) / 100 }}%</span>)
+                      <div >
+                        <span>{{ $t('Detected fields:') }} {{ props.row.stats.detectedFields }}</span><br>
+                        <span>{{ $t('Mapped fields:') }} {{ props.row.stats.mappedFields }}</span>&nbsp;(<span class="text-bold">{{ Math.round(props.value * 100) / 100 }}%</span>)
                       </div>
                       <q-separator spaced  />
                       <div class="column q-gutter-y-xs">
-                        <q-badge :color="(props.row.stats && props.row.stats.sharedFieldFrequencies ? 'positive' : 'grey')" text-color="black" label="Shared Frequency" />
-                        <q-badge :color="(props.row.stats && props.row.stats.sharedFieldMapping ? 'positive' : 'grey')" text-color="black" label="Shared Mapping" />
-                        <q-badge :color="(props.row.stats && props.row.stats.sharedFieldModifiers ? 'positive' : 'grey')" text-color="black" label="Shared Modifiers" />
+                        <q-badge :color="(props.row.stats && props.row.stats.sharedFieldFrequencies ? 'positive' : 'grey')" text-color="black" :label="$t('Shared Frequency')" />
+                        <q-badge :color="(props.row.stats && props.row.stats.sharedFieldMapping ? 'positive' : 'grey')" text-color="black" :label="$t('Shared Mapping')" />
+                        <q-badge :color="(props.row.stats && props.row.stats.sharedFieldModifiers ? 'positive' : 'grey')" text-color="black" :label="$t('Shared Modifiers')" />
                       </div>
                     </div>
                   </q-tooltip>
@@ -632,8 +634,10 @@
               <q-td :props="props">
                 <div>
                   <q-tooltip content-style="font-size: 1em;">
-                    <span class="text-bold">Created: </span>{{ props.value }}<br>
-                    <span class="text-bold">Modified: </span>{{ timeAgo(props.row.modified) }}<br>
+                    <div>
+                      <span class="text-bold">{{ $t('Created:') }} </span>{{ props.value }}<br>
+                      <span class="text-bold">{{ $t('Modified:') }} </span>{{ timeAgo(props.row.modified) }}<br>
+                    </div>
                     ({{ props.row.modified }})
                   </q-tooltip>
                   {{ timeAgo(props.value) }}
@@ -665,7 +669,7 @@
     <q-dialog v-model="showMappingFileImportPopup" persistent>
       <q-card style="min-width: 350px">
         <q-card-section>
-          <div class="text-h6">{{ $t('Import EZ Cloud Fields Mapping') }}</div>
+          <div class="text-h6">{{ $t('Import OC Admin Fields Mapping') }}</div>
         </q-card-section>
 
         <q-card-section class="q-pt-none">
@@ -673,7 +677,7 @@
             filled
             bottom-slots
             v-model="mappingImportFileInput"
-            label="Click or Drop a .ezFieldsMapping file here"
+            :label="$t('Click or Drop a .ezFieldsMapping file here')"
             input-style="min-width: 24em;min-height: 14em;"
             accept=".ezFieldsMapping"
             @rejected="onRejectedMappingFile"
@@ -697,7 +701,7 @@
     <q-dialog v-model="showMarketplaceExportPopup" persistent v-if="publisherDisplayName == null">
       <q-card style="min-width: 350px">
         <q-card-section>
-          <div class="text-h6">{{ $t('Export EZ Cloud Pipeline Template to EZ Market Place') }}</div>
+          <div class="text-h6">{{ $t('Export OC Admin Pipeline Template to EZ Market Place') }}</div>
         </q-card-section>
 
         <q-card-section class="q-pt-none column">
@@ -736,6 +740,7 @@ import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import mixinSharedRightToLeft from 'src/mixins/mixin-Shared-RightToLeft'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 // import { dump } from 'js-yaml'
 import { exportFile, copyToClipboard } from 'quasar'
@@ -752,6 +757,7 @@ export default {
     mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
     mixinSharedSocket, // Shared function and state to access the Socket.io
     mixinSharedDarkMode, // Shared computed to access and update the DarkMode
+    mixinSharedRightToLeft, // Shared functions to deal with LTR/RTL languages
     mixinSharedShipperAndCollectionsHelpers // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
   ],
   components: { MarketPlaceExport, Identicon, IconPicture },
@@ -761,9 +767,9 @@ export default {
       pipelineUid: '',
       searchFilter: '',
       columns: [
-        { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
-        { name: 'status', align: 'center', label: 'Status', field: 'enabled', sortable: true },
-        { name: 'openCollector', align: 'center', label: 'Open Collector', field: 'openCollectorHost', sortable: true }
+        { name: 'actions', align: 'center', label: this.$t('Actions'), field: 'actions', sortable: false },
+        { name: 'status', align: 'center', label: this.$t('Status'), field: 'enabled', sortable: true },
+        { name: 'openCollector', align: 'center', label: this.$t('OpenCollector'), field: 'openCollectorHost', sortable: true }
       ],
       pagination: {
         sortBy: 'status',
@@ -782,13 +788,13 @@ export default {
       marketplaceImportPopupType: null, // Select the type of import for the popup. Either "collection" or "mapping"
       marketplaceImportPopupSearchFilter: '',
       marketplaceImportPopupColumns: [
-        { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
-        { name: 'iconPicture', align: 'center', label: 'Icon / Logo', field: 'iconPicture', sortable: false },
-        { name: 'name', align: 'center', label: 'Pipeline Template Name', field: 'name', sortable: true, classes: '', style: 'white-space: pre-line;' },
-        { name: 'pipelineTemplateCollectionStats', align: 'center', label: 'Collection', field: row => (row.stats ? `${row.stats.collectionShipper || ''}${row.stats.collectionMethod || ''}` : null), sortable: true },
-        { name: 'pipelineTemplateFieldsMappingStats', align: 'center', label: 'Mapping', field: row => (row.stats && row.stats.detectedFields > 0 ? (row.stats.mappedFields || 0) / row.stats.detectedFields * 100 : null), sortable: true },
-        { name: 'publisher', align: 'center', label: 'Publisher', field: 'publisher', sortable: true },
-        { name: 'created', align: 'center', label: 'Created', field: 'created', sortable: true }
+        { name: 'actions', align: 'center', label: this.$t('Actions'), field: 'actions', sortable: false },
+        { name: 'iconPicture', align: 'center', label: this.$t('Icon / Logo'), field: 'iconPicture', sortable: false },
+        { name: 'name', align: 'center', label: this.$t('Pipeline Template Name'), field: 'name', sortable: true, classes: '', style: 'white-space: pre-line;' },
+        { name: 'pipelineTemplateCollectionStats', align: 'center', label: this.$t('Collection'), field: row => (row.stats ? `${row.stats.collectionShipper || ''}${row.stats.collectionMethod || ''}` : null), sortable: true },
+        { name: 'pipelineTemplateFieldsMappingStats', align: 'center', label: this.$t('Mapping'), field: row => (row.stats && row.stats.detectedFields > 0 ? (row.stats.mappedFields || 0) / row.stats.detectedFields * 100 : null), sortable: true },
+        { name: 'publisher', align: 'center', label: this.$t('Publisher'), field: 'publisher', sortable: true },
+        { name: 'created', align: 'center', label: this.$t('Created'), field: 'created', sortable: true }
         // { name: 'modified', align: 'center', label: 'Modified', field: 'modified', sortable: true },
         // { name: 'status', align: 'center', label: 'Status', field: 'status', sortable: true }
       ],
@@ -832,7 +838,7 @@ export default {
       return (this.pipeline.collectionConfig && this.pipeline.collectionConfig.collectionShipper ? this.pipeline.collectionConfig.collectionShipper : '')
     },
     collectionMethodOption () {
-      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'help_center' }
+      const fallbackValue = { value: 'unknown', label: this.$t('Unknown or not set'), icon: 'help_center' }
       if (this.collectionMethod && this.collectionMethod.length) {
         return this.collectionMethodsOptions.find(cmo => cmo.value && cmo.value === this.collectionMethod) || fallbackValue
       } else {
@@ -840,7 +846,7 @@ export default {
       }
     },
     collectionShipperOption () {
-      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'unknown', outputFormat: 'json' }
+      const fallbackValue = { value: 'unknown', label: this.$t('Unknown or not set'), icon: 'unknown', outputFormat: 'json' }
       if (this.collectionShipper && this.collectionShipper.length) {
         return this.collectionShippersOptions.find(cso => cso.value && cso.value === this.collectionShipper) || fallbackValue
       } else {
@@ -856,13 +862,13 @@ export default {
             // Calling collectionConfigOutputFor from Mixin mixin-Shared-ShipperAndCollectionsHelpers
             output = this.collectionConfigOutputFor(this.collectionShipperOption.outputFormat, this.pipeline.collectionConfig)
           } else {
-            output = '# No Collection Method configured.'
+            output = '# ' + this.$t('No Collection Method configured.')
           }
         } else {
-          output = '# Unknown output format.'
+          output = '# ' + this.$t('Unknown output format.')
         }
       } else {
-        output = '# No Collecting Shipper configured.'
+        output = '# ' + this.$t('No Collecting Shipper configured.')
       }
       return output
     },
@@ -887,9 +893,15 @@ export default {
       const list = []
       this.deployments.forEach(deployment => {
         const deploymentOpenCollector = this.openCollectors.find(oc => deployment.openCollector && oc.uid === deployment.openCollector.uid)
-        list.push(Object.assign({}, deployment, {
-          openCollectorHost: (deploymentOpenCollector && deploymentOpenCollector.name && deploymentOpenCollector.hostname ? deploymentOpenCollector.name + ' (' + deploymentOpenCollector.hostname + ')' : null)
-        }))
+        if (this.areWeInLTR) { // Left To Right
+          list.push(Object.assign({}, deployment, {
+            openCollectorHost: (deploymentOpenCollector && deploymentOpenCollector.name && deploymentOpenCollector.hostname ? deploymentOpenCollector.name + ' (' + deploymentOpenCollector.hostname + ')' : null)
+          }))
+        } else { // Right To Left
+          list.push(Object.assign({}, deployment, {
+            openCollectorHost: (deploymentOpenCollector && deploymentOpenCollector.name && deploymentOpenCollector.hostname ? '(' + deploymentOpenCollector.hostname + ') ' + deploymentOpenCollector.name : null)
+          }))
+        }
       })
       return list
     },
@@ -911,8 +923,8 @@ export default {
     deleteMappingPrompt () {
       // ask to confirm
       this.$q.dialog({
-        title: 'Confirm',
-        message: 'Do you REALLY want to delete the Mapping information for this Pipeline?',
+        title: this.$t('Confirm'),
+        message: this.$t('Do you REALLY want to delete the Mapping information for this Pipeline?'),
         ok: {
           push: true,
           color: 'negative'
@@ -948,8 +960,8 @@ export default {
     deleteCollectionPrompt () {
       // ask to confirm
       this.$q.dialog({
-        title: 'Confirm',
-        message: 'Do you REALLY want to delete the Collection information for this Pipeline?',
+        title: this.$t('Confirm'),
+        message: this.$t('Do you REALLY want to delete the Collection information for this Pipeline?'),
         ok: {
           push: true,
           color: 'negative'
@@ -1097,7 +1109,9 @@ export default {
       this.$root.$emit('addAndShowErrorToErrorPanel',
         {
           code: 'BadFileExtentionImportCollection',
-          messageForLogAndPopup: `Only .ezCollection files are accepted. You tried to import "${badFileName}".`
+          messageForLogAndPopup: (
+            this.$t('Only .ezCollection files are accepted. You tried to import: {badFileName}.', { badFileName })
+          )
         }
       )
     },
@@ -1176,7 +1190,9 @@ export default {
         this.$root.$emit('addAndShowErrorToErrorPanel',
           {
             code: 'CantParseFileImportCollection',
-            messageForLogAndPopup: `Error trying to parse the content of the imported Collection Configuration file. Error: ${error.message}`
+            messageForLogAndPopup: (
+              this.$t('Error trying to parse the content of the imported Collection Configuration file. Error: {errorMessage}', { errorMessage: error.message })
+            )
           }
         )
       }
@@ -1194,7 +1210,7 @@ export default {
           this.$root.$emit('addAndShowErrorToErrorPanel',
             {
               code: 'TooManyFilesImportCollection',
-              messageForLogAndPopup: `Only one .ezCollection file is accepted. You tried to import ${filesInput.length} files.`
+              messageForLogAndPopup: this.$t('Only one .ezCollection file is accepted. You tried to import multiple files.')
             }
           )
         } else {
@@ -1237,7 +1253,9 @@ export default {
             this.$root.$emit('addAndShowErrorToErrorPanel',
               {
                 code: 'CantReadFileImportCollection',
-                messageForLogAndPopup: `Error trying to open ${filesInput.length} file. Error: ${error.message}`
+                messageForLogAndPopup: (
+                  this.$t('Error trying to open the file. Error: {errorMessage}', { errorMessage: error.message })
+                )
               }
             )
           }
@@ -1427,7 +1445,7 @@ export default {
       return formattedTimeAgo
     },
     collectionShipperByValue (value) { // XXXX Move to its own Mixin
-      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'unknown', outputFormat: 'json' }
+      const fallbackValue = { value: 'unknown', label: this.$t('Unknown or not set'), icon: 'unknown', outputFormat: 'json' }
       if (value && value.length) {
         return this.collectionShippersOptions.find(cso => cso.value && cso.value === value) || fallbackValue
       } else {
@@ -1435,7 +1453,7 @@ export default {
       }
     },
     collectionMethodByValue (value) { // XXXX Move to its own Mixin
-      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'help_center' }
+      const fallbackValue = { value: 'unknown', label: this.$t('Unknown or not set'), icon: 'help_center' }
       if (value && value.length) {
         return this.collectionMethodsOptions.find(cmo => cmo.value && cmo.value === value) || fallbackValue
       } else {
@@ -1543,7 +1561,9 @@ export default {
       this.$root.$emit('addAndShowErrorToErrorPanel',
         {
           code: 'BadFileExtentionImportMapping',
-          messageForLogAndPopup: `Only .ezFieldsMapping files are accepted. You tried to import "${badFileName}".`
+          messageForLogAndPopup: (
+            this.$t('Only .ezFieldsMapping files are accepted. You tried to import: {badFileName}', { badFileName })
+          )
         }
       )
     },
@@ -1558,7 +1578,7 @@ export default {
           this.$root.$emit('addAndShowErrorToErrorPanel',
             {
               code: 'TooManyFilesImportMapping',
-              messageForLogAndPopup: `Only one .ezFieldsMapping file is accepted. You tried to import ${filesInput.length} files.`
+              messageForLogAndPopup: this.$t('Only one .ezFieldsMapping file is accepted. You tried to import multiple files.')
             }
           )
         } else {
@@ -1613,7 +1633,9 @@ export default {
               this.$root.$emit('addAndShowErrorToErrorPanel',
                 {
                   code: 'CantParseFileImportMapping',
-                  messageForLogAndPopup: `Error trying to parse the content of ${filesInput.length} file. Error: ${error.message}`
+                  messageForLogAndPopup: (
+                    this.$t('Error trying to parse the content of the imported Fields Mapping file. Error: {errorMessage}', { errorMessage: error.message })
+                  )
                 }
               )
             }
@@ -1622,7 +1644,9 @@ export default {
             this.$root.$emit('addAndShowErrorToErrorPanel',
               {
                 code: 'CantReadFileImportMapping',
-                messageForLogAndPopup: `Error trying to open ${filesInput.length} file. Error: ${error.message}`
+                messageForLogAndPopup: (
+                  this.$t('Error trying to open the file. Error: {errorMessage}', { errorMessage: error.message })
+                )
               }
             )
           }
@@ -1650,12 +1674,14 @@ export default {
     }, // doPromptForDeploymentDetails
     deleteDeploymentPrompt (row) {
       if (typeof row !== 'undefined') {
-        const unDeployMessage = (row.enabled === false ? '' : ' ⚠️ This will NOT un-deploy it. It will simply delete the database record about this deployment. To un-deploy, click on Edit and un-deploy from there.')
+        const unDeployMessage = (row.enabled === false ? '' : this.$t('⚠️ This will NOT un-deploy it. It will simply delete the database record about this deployment. To un-deploy, click on Edit and un-deploy from there.'))
 
         // ask to confirm
         this.$q.dialog({
-          title: 'Confirm',
-          message: 'Do you REALLY want to delete this Deployment?' + unDeployMessage,
+          title: this.$t('Confirm'),
+          message: (
+            this.$t('Do you REALLY want to delete this Deployment? {unDeployMessage}', { unDeployMessage })
+          ),
           ok: {
             push: true,
             color: 'negative'

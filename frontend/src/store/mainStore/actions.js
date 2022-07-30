@@ -35,6 +35,99 @@ export function signOut ({ commit }, payload) {
 
   // Empty Publisher details
   commit('updateEzMarketPublisherDetails', {})
+
+  // Empty the MS SQL Connection Configuration
+  commit('getMsSqlConfig', {})
+
+  // Empty the Extra Information
+  commit('updateExtraInformation', { extraInformation: {} })
+}
+
+export function updateExtraInformation ({ commit }, payload) {
+  commit('updateExtraInformation', payload)
+}
+
+// ######################################################################
+// SIEM MS SQL CONFIGURATION
+// ######################################################################
+
+export function forgetMsSqlConfig ({ commit }) {
+  commit('getMsSqlConfig', {})
+}
+
+export function getMsSqlConfig ({ state, commit }, payload) {
+  getDataFromSite({
+    apiUrl: '/admin/GetMsSqlConfig',
+    dataLabel: 'Configuration',
+    countDataLabel: true,
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    commit: commit,
+    targetCommitName: 'getMsSqlConfig',
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    silent: true,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: false
+  })
+}
+
+export function updateMsSqlConfig ({ state }, payload) {
+  if (
+    payload &&
+    payload.host &&
+    payload.host.length &&
+    payload.username &&
+    payload.username.length &&
+    payload.port >= 1 &&
+    payload.port <= 65535
+  ) {
+    postDataToSite({
+      apiUrl: '/admin/UpdateMsSqlConfig',
+      dataLabel: 'Configuration',
+      apiCallParams: {
+        host: payload.host,
+        port: payload.port,
+        username: payload.username,
+        password: payload.password,
+        encrypt: !!payload.encrypt
+      },
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      silent: false,
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: false
+    })
+  }
+}
+
+// ######################################################################
+// DATABASE STATUS/AVAILABILITY
+// ######################################################################
+
+export function getPersistenceLayerAvailability ({ state, commit }, payload) {
+  getDataFromSite({
+    apiUrl: '/status/GetPersistenceLayerAvailability',
+    dataLabel: 'Persistence layer availability status',
+    countDataLabel: false,
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    commit: commit,
+    targetCommitName: 'getPersistenceLayerAvailability',
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    silent: true,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: false
+  })
 }
 
 // ######################################################################
@@ -362,7 +455,7 @@ export function forgetOpenCollectorLogSources ({ state, commit }) {
 export function getOpenCollectorLogSources ({ state, commit }, payload) {
   getDataFromSite({
     apiUrl: '/logrhythmCore/GetOpenCollectorLogSourcesList',
-    dataLabel: 'Open Collector Log Sources',
+    dataLabel: 'OpenCollector Log Sources',
     countDataLabel: true,
     apiHeaders: {
       authorization: 'Bearer ' + state.jwtToken

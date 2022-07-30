@@ -2,10 +2,10 @@
   <q-page class="q-pa-sm">
     <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
-        <q-btn no-caps flat dense icon="arrow_back" label="Return to Properties" :to="'/Pipelines/' + this.pipelineUid + '/Properties'" />
+        <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Properties')" :to="'/Pipelines/' + this.pipelineUid + '/Properties'" />
         <q-separator vertical />
-        <q-btn no-caps flat dense icon="save" label="Save" color="primary" :disabled="!needsSaving" @click="save()" />
-        <q-btn no-caps flat dense icon="restore" label="Reverse to last saved" @click="reverseToLastSavedPrompt()" />
+        <q-btn no-caps flat dense icon="save" :label="$t('Save')" color="primary" :disabled="!needsSaving" @click="save()" />
+        <q-btn no-caps flat dense icon="restore" :label="$t('Reverse to last saved')" @click="reverseToLastSavedPrompt()" />
         <!-- <q-separator vertical />
         <q-btn no-caps flat dense icon="play_circle_outline" label="Start Live Tail" color="secondary" @click="tailEnabled = true" v-if="!tailEnabled" />
         <q-btn no-caps flat dense icon="stop" label="Stop Live Tail" @click="tailEnabled = false" v-else /> -->
@@ -17,15 +17,15 @@
         <q-btn no-caps flat dense icon="visibility" label="Show JQ" v-if="!showJqOutput" @click="buildJqFilter(); buildJqTransform(); showJqOutput = true" />
         <q-btn no-caps flat dense icon="visibility_off" label="Hide JQ output" v-else @click="showJqOutput = false" /> -->
 
-        <q-toolbar-title style="opacity:.4" class="text-center">Collection Builder<span v-if="pipeline && pipeline.name && pipeline.name.length">:  {{ pipeline.name }}</span></q-toolbar-title>
+        <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('Collection Builder') }}<span v-if="pipeline && pipeline.name && pipeline.name.length">:  {{ pipeline.name }}</span></q-toolbar-title>
 
-        <q-btn no-caps flat dense icon="pending" label="Advanced">
+        <q-btn no-caps flat dense icon="pending" :label="$t('Advanced')"  >
           <q-menu>
             <div class="row no-wrap q-pa-md">
               <div class="column">
-                <div class="text-h6 q-mb-md">Advanced</div>
-                <q-toggle v-model="showCollectionConfig" label="Show Collection Configuration" />
-                <q-toggle v-model="showCollectionMethodTemplate" label="Show Collection Method Template" />
+                <div class="text-h6 q-mb-md">{{ $t('Advanced') }}</div>
+                <q-toggle v-model="showCollectionConfig" :label="$t('Show Collection Configuration')" />
+                <q-toggle v-model="showCollectionMethodTemplate" :label="$t('Show Collection Method Template')" />
               </div>
             </div>
           </q-menu>
@@ -100,7 +100,7 @@
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
             <q-card-section class="text-h6">
-                Collecting Shipper
+                {{ $t('Collecting Shipper') }}
             </q-card-section>
             <q-separator />
             <q-card-section>
@@ -119,7 +119,7 @@
 
           <q-card-section class="col q-ma-none q-pa-none">
             <q-card-section class="text-h6">
-                Collection Method
+                {{ $t('Collection Method') }}
             </q-card-section>
             <q-separator />
             <q-card-section>
@@ -149,7 +149,7 @@
       </q-card>
       <q-card v-if="activeCollectionMethod && activeCollectionMethod.length">
         <q-card-section class="text-h6 row">
-            Collection Parameters
+            {{ $t('Collection Parameters') }}
             <q-space />
             <div class="text-teal-4">
               {{ currentCollectionMethodOption.label }}
@@ -182,8 +182,8 @@
                   <span class="text-bold q-mr-md">{{ fieldTemplate.label }}</span>
                   <span style="opacity: .6">
                     (&nbsp;<span class="fixed-font">{{ fieldTemplate.name }}</span>&nbsp;)
-                    <span class="text-italic" v-if="fieldTemplate.required">&nbsp;- 🟧 Required</span>
-                    <span class="text-italic" v-if="fieldTemplate.readonly">&nbsp;- ⬛ Read Only</span>
+                    <span class="text-italic" v-if="fieldTemplate.required">&nbsp;{{ $t('- 🟧 Required') }}</span>
+                    <span class="text-italic" v-if="fieldTemplate.readonly">&nbsp;{{ $t('- ⬛ Read Only') }}</span>
                   </span>
                 </div>
                 <FieldEditor
@@ -200,11 +200,11 @@
         <q-card-section>
           <div class="row q-gutter-x-lg">
             <div class="col">
-              <span class="text-bold">Collection Params (JSON):</span><pre>{{ collectionConfig }}</pre>
+              <span class="text-bold">{{ $t('Collection Params (JSON):') }}</span><pre>{{ collectionConfig }}</pre>
             </div>
             <q-separator vertical color="green" />
             <div class="col">
-              <span class="text-bold">Collection Params (Yaml):</span><pre>{{ collectionConfigYml }}</pre>
+              <span class="text-bold">{{ $t('Collection Params (Yaml):') }}</span><pre>{{ collectionConfigYml }}</pre>
             </div>
           </div>
 
@@ -291,9 +291,9 @@ export default {
     },
     currentCollectionMethodOption () {
       if (this.activeCollectionMethod && this.activeCollectionMethod.length) {
-        return this.collectionMethodsOptions.find(cmo => cmo.value && cmo.value === this.activeCollectionMethod) || { value: 'unknown', label: 'Unknown', icon: 'help_center' }
+        return this.collectionMethodsOptions.find(cmo => cmo.value && cmo.value === this.activeCollectionMethod) || { value: 'unknown', label: this.$t('Unknown'), icon: 'help_center' }
       } else {
-        return { value: 'unknown', label: 'Unknown', icon: 'help_center' }
+        return { value: 'unknown', label: this.$t('Unknown'), icon: 'help_center' }
       }
     }
   },
@@ -303,8 +303,8 @@ export default {
     reverseToLastSavedPrompt () {
       // Ask to confirm
       this.$q.dialog({
-        title: 'Confirm',
-        message: 'Do you REALLY want to lose all your un-saved changes and revert to the last Saved version?',
+        title: this.$t('Confirm'),
+        message: this.$t('Do you REALLY want to lose all your un-saved changes and revert to the last Saved version?'),
         ok: {
           push: true,
           color: 'negative'
@@ -354,8 +354,8 @@ export default {
       if (this.collectionConfig && this.collectionConfig.collectionMethod && this.collectionConfig.collectionMethod.length) {
         // Ask to confirm
         this.$q.dialog({
-          title: 'Confirm',
-          message: 'You will lose any un-saved changes and start fresh with the new Collection Method. Are you sure?',
+          title: this.$t('Confirm'),
+          message: this.$t('You will lose any un-saved changes and start fresh with the new Collection Method. Are you sure?'),
           ok: {
             push: true,
             color: 'negative'
@@ -504,7 +504,7 @@ export default {
       if (this.activeCollectionMethod && this.activeCollectionMethod.length) {
         this.collectionConfigYml = collectionConfigToYml(this.pipeline.collectionConfig)
       } else {
-        this.collectionConfigYml = '# No Collection Method configured.'
+        this.collectionConfigYml = '# ' + this.$t('No Collection Method configured.')
       }
     },
     collectionShipperHasChanged () {

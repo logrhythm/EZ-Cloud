@@ -2,9 +2,9 @@
   <q-page class="q-pa-sm">
     <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
-        <q-btn no-caps flat dense icon="arrow_back" label="Return to Market Place Pipeline Templates" :to="'/MarketPlace/PipelineTemplates'" />
+        <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Market Place Pipeline Templates')" :to="'/MarketPlace/PipelineTemplates'" />
         <q-separator spaced vertical />
-        <q-btn no-caps flat dense icon="input" color="primary" label="Import" >
+        <q-btn no-caps flat dense icon="input" color="primary" :label="$t('Import')" >
           <q-menu>
             <q-list style="min-width: 20rem">
               <q-item clickable v-close-popup @click="doPromptForNewPipelineDetails()">
@@ -13,8 +13,8 @@
                   </q-avatar>
                 </q-item-section>
                 <q-item-section>
-                  <q-item-label lines="1">Into new Pipeline</q-item-label>
-                  <q-item-label caption>Create a new Pipeline and import this Template</q-item-label>
+                  <q-item-label lines="1">{{ $t('Into new Pipeline') }}</q-item-label>
+                  <q-item-label caption>{{ $t('Create a new Pipeline and import this Template') }}</q-item-label>
                 </q-item-section>
               </q-item>
 
@@ -24,14 +24,14 @@
                   </q-avatar>
                 </q-item-section>
                 <q-item-section>
-                  <q-item-label lines="1">Into existing Pipeline</q-item-label>
-                  <q-item-label caption>Override parts of an existing Pipeline with this Template</q-item-label>
+                  <q-item-label lines="1">{{ $t('Into existing Pipeline') }}</q-item-label>
+                  <q-item-label caption>{{ $t('Override parts of an existing Pipeline with this Template') }}</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
           </q-menu>
         </q-btn>
-        <q-toolbar-title style="opacity:.4" class="text-center">EZ Market Place : Pipeline Templates : {{ ezMarketPipelineTemplate.name }}</q-toolbar-title>
+        <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('EZ Market Place : Pipeline Templates : {ezMarketPipelineTemplateName}', { ezMarketPipelineTemplateName: ezMarketPipelineTemplate.name }) }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
 
@@ -39,7 +39,7 @@
       <q-card-section horizontal>
         <q-card-section class="col q-ma-none q-pa-none">
           <q-card-section class="text-h4">
-              Properties
+              {{ $t('Properties') }}
           </q-card-section>
           <q-card-section class="row">
             <div>
@@ -72,10 +72,10 @@
                   </div>
                   <div class="q-ml-sm">
                     <div class="text-bold">
-                      {{ ezMarketPipelineTemplate.status }}
+                      {{ $t(ezMarketPipelineTemplate.status) }}
                     </div>
                     <div class="text-caption">
-                      {{ ezMarketPipelineTemplate.statusDescription }}
+                      {{ $t(ezMarketPipelineTemplate.statusDescription) }}
                     </div>
                   </div>
                 </div>
@@ -86,20 +86,20 @@
               <div class="row justify-between">
                 <div class="">
                   <div class="">
-                    <span class="text-bold">Created:</span> {{ timeAgo(ezMarketPipelineTemplate.created) }}
+                    {{ $t('Created: {ezMarketPipelineTemplateCreated}', { ezMarketPipelineTemplateCreated: timeAgo(ezMarketPipelineTemplate.created)}) }}
                     <q-tooltip content-style="font-size: 1rem;">
                       {{ ezMarketPipelineTemplate.created }}
                     </q-tooltip>
                   </div>
                   <div class="">
-                    <span class="text-bold">Modified:</span> {{ timeAgo(ezMarketPipelineTemplate.modified) }}
+                    {{ $t('Modified: {ezMarketPipelineTemplateModified}', { ezMarketPipelineTemplateModified: timeAgo(ezMarketPipelineTemplate.modified)}) }}
                     <q-tooltip content-style="font-size: 1rem;">
                       {{ ezMarketPipelineTemplate.modified }}
                     </q-tooltip>
                   </div>
                 </div>
                 <div class="text-h6">
-                  by
+                  {{ $t('by') }}
                 </div>
                 <div class="text-center">
                   <Identicon :identity="ezMarketPipelineTemplate.publisher" />
@@ -120,7 +120,7 @@
       <q-card-section horizontal>
         <q-card-section class="col q-ma-none q-pa-none">
           <q-card-section class="text-h4">
-              Read Me
+              {{ $t('Read Me') }}
           </q-card-section>
           <q-card-section class="">
             <q-markdown
@@ -137,10 +137,10 @@
       <q-card-section horizontal>
         <q-card-section class="col q-ma-none q-pa-none">
           <q-card-section class="text-h4">
-              Collection
+              {{ $t('Collection') }}
           </q-card-section>
           <q-card-section class="row items-center">
-            <span class="text-bold">Shipper and Method: </span>
+            <span class="text-bold">{{ $t('Shipper and Method:') }}</span>
             <div class="q-ml-md text-center">
               <img v-if="collectionShipperOption.icon && collectionShipperOption.icon.length" :src="'/shippers/' + collectionShipperOption.icon + '.svg'" width="64px">
               <div>{{ collectionShipperOption.label }}</div>
@@ -152,7 +152,7 @@
           </q-card-section>
             <q-card-section>
               <div class="">
-                <div class="text-bold">Collection Configuration:</div>
+                <div class="text-bold">{{ $t('Collection Configuration:') }}</div>
                 <div class="row q-my-sm">
                   <q-separator vertical size="2px" color="teal" />
                   <div class="q-ml-sm"><pre>{{ collectionConfigOutput }}</pre></div>
@@ -168,11 +168,11 @@
         <q-card-section class="col q-ma-none q-pa-none">
           <q-card-section class="row wrap justify-between">
             <div class="text-h4">
-              Fields Mapping
+              {{ $t('Fields Mapping') }}
             </div>
             <div class="row q-gutter-md">
               <div style="width:300px;">
-                <q-input outlined dense debounce="300" v-model="searchFilter" placeholder="Search">
+                <q-input outlined dense debounce="300" v-model="searchFilter" :placeholder="$t('Search')">
                   <template v-slot:append>
                     <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
                     <q-icon name="search" />
@@ -187,10 +187,10 @@
               :columns="columns"
               row-key="name"
               dense
-              no-data-label="No Fields to display."
+              :no-data-label="$t('No Fields to display.')"
               :filter="searchFilter"
               :loading="pipelineTemplateLoading"
-              rows-per-page-label="Fields per page:"
+              :rows-per-page-label="$t('Fields per page:')"
               :pagination.sync="pagination"
             >
 
@@ -198,7 +198,7 @@
                 <q-td :props="props" style="width: 3em;">
                   <div>
                     <q-tooltip content-style="font-size: 1em;">
-                      Seen in <span style="font-weight: bold;">{{ (maxSeenInLog != 0 ? Math.round(props.value / maxSeenInLog * 100) : 0) }}%</span> of logs in the sample ({{ props.value }}&nbsp;/&nbsp;{{ maxSeenInLog }}).
+                      {{ $t('Seen in {seenInOverMaxSeenInLog}% of logs in the sample ({seenIn}/{maxSeenInLog})', { seenInOverMaxSeenInLog: (maxSeenInLog != 0 ? Math.round(props.value / maxSeenInLog * 100) : 0), seenIn: props.value, maxSeenInLog}) }}
                     </q-tooltip>
                     <q-linear-progress :value="props.value / maxSeenInLog" :color="(darkMode ? 'blue-10' : 'blue-7')" rounded size="1em" />
                   </div>
@@ -231,20 +231,20 @@
         </q-card-section>
 
         <q-card-section class="q-pt-none">
-          <q-input dense v-model="newPipelineName" autofocus label="Pipeline Name" @keyup.esc="showImportPopupNewPipeline = false" @keyup.enter="ImportIntoNewPipeline()" :rules="[val => !!val || $t('Pipeline name cannot be empty')]" />
+          <q-input dense v-model="newPipelineName" autofocus :label="$t('Pipeline Name')" @keyup.esc="showImportPopupNewPipeline = false" @keyup.enter="ImportIntoNewPipeline()" :rules="[val => !!val || $t('Pipeline name cannot be empty')]" />
         </q-card-section>
 
         <q-card-section class="q-pt-none">
-          <q-select dense v-model="newPipelineOpenCollector" :options="openCollectorsOptions" label="Primary Open Collector" emit-value map-options />
+          <q-select dense v-model="newPipelineOpenCollector" :options="openCollectorsOptions" :label="$t('Primary OpenCollector')" emit-value map-options />
         </q-card-section>
 
         <q-card-section class="q-pt-none">
           <q-list style="min-width: 400px">
-            <q-item-label header>Import Options</q-item-label>
+            <q-item-label header>{{ $t('Import Options') }}</q-item-label>
             <q-item tag="label" v-ripple>
               <q-item-section>
-                <q-item-label>Import Collection Configuation</q-item-label>
-                <q-item-label caption>Include the Shipper's Collection Configuation</q-item-label>
+                <q-item-label>{{ $t('Import Collection Configuation') }}</q-item-label>
+                <q-item-label caption>{{ $t('Include the Shipper\'s Collection Configuation') }}</q-item-label>
               </q-item-section>
               <q-item-section avatar>
                 <q-toggle v-model="importCollectionConfiguration" />
@@ -253,8 +253,8 @@
 
             <q-item tag="label" v-ripple>
               <q-item-section>
-                <q-item-label>Import Fields Mapping</q-item-label>
-                <q-item-label caption>Include the Shipper's Collection Configuation</q-item-label>
+                <q-item-label>{{ $t('Import Fields Mapping') }}</q-item-label>
+                <q-item-label caption>{{ $t('Include the Shipper\'s Collection Configuation') }}</q-item-label>
               </q-item-section>
               <q-item-section avatar>
                 <q-toggle v-model="importFieldsMapping" />
@@ -278,26 +278,26 @@
 
         <q-card-section class="q-pt-none">
           <q-table
-            title="Existing Pipelines"
+            :title="$t('Existing Pipelines')"
             :data="existingPipelineTableData"
             :columns="existingPipelineTableColumns"
             row-key="uid"
             dense
-            no-data-label="No Pipeline to display."
+            :no-data-label="$t('No Pipeline to display.')"
             :filter="existingPipelineTableSearchFilter"
             :loading="dataLoading"
-            rows-per-page-label="Pipelines per page:"
+            :rows-per-page-label="$t('Pipelines per page:')"
             :pagination.sync="existingPipelineTablePagination"
           >
 
             <template v-slot:top>
               <div class="full-width row wrap justify-between">
                 <div class="q-table__title">
-                  Existing Pipelines
+                  {{ $t('Existing Pipelines') }}
                 </div>
                 <div class="row q-gutter-md">
                   <div style="width:300px;">
-                    <q-input outlined dense debounce="300" v-model="existingPipelineTableSearchFilter" placeholder="Search">
+                    <q-input outlined dense debounce="300" v-model="existingPipelineTableSearchFilter" :placeholder="$t('Search')">
                       <template v-slot:append>
                         <q-btn v-if="existingPipelineTableSearchFilter.length" dense flat icon="close" @click="existingPipelineTableSearchFilter=''" />
                         <q-icon name="search" />
@@ -306,7 +306,7 @@
                   </div>
                   <q-btn dense outline icon="refresh" @click="loadPipelines()">
                     <q-tooltip content-style="font-size: 1em">
-                      Reload the list of Pipelines.
+                      {{ $t('Reload the list of Pipelines.') }}
                     </q-tooltip>
                   </q-btn>
                 </div>
@@ -338,7 +338,7 @@
                 <q-icon name="auto_awesome" size="md" v-else-if ="props.value === 'New'" />
                 <q-icon name="help_center" color="grey" size="md" v-else />
                 <q-tooltip content-style="font-size: 1em">
-                  {{ props.value }}
+                  {{ $t(props.value) }}
                 </q-tooltip>
               </q-td>
             </template>
@@ -374,8 +374,8 @@
                     :track-color="(darkMode ? 'grey-9' : 'grey-3')"
                   />
                   <q-tooltip content-style="font-size: 1em">
-                    <span>Detected fields: {{ props.row.fieldsMapping.length }}</span><br>
-                    <span>Mapped fields: {{ props.row.fieldsMapping.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0) }}</span>&nbsp;(<span class="text-bold">{{ Math.round(props.value * 100) / 100 }}%</span>)
+                    <span>{{ $t('Detected fields: {fieldsMappingDetectedCount}', { fieldsMappingDetectedCount: props.row.fieldsMapping.length}) }}</span><br>
+                    <span>{{ $t('Mapped fields: {fieldsMappingMappedCount} ({fieldsMappingMappedPercent}%)', { fieldsMappingMappedCount: props.row.fieldsMapping.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0), fieldsMappingMappedPercent: Math.round(props.value * 100) / 100}) }}</span>
                   </q-tooltip>
                 </div>
               </q-td>
@@ -463,7 +463,7 @@ export default {
       return (this.ezMarketPipelineTemplate.collection_configuration && this.ezMarketPipelineTemplate.collection_configuration.collectionConfig && this.ezMarketPipelineTemplate.collection_configuration.collectionConfig.collectionShipper ? this.ezMarketPipelineTemplate.collection_configuration.collectionConfig.collectionShipper : '')
     },
     collectionMethodOption () {
-      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'help_center' }
+      const fallbackValue = { value: 'unknown', label: this.$t('Unknown or not set'), icon: 'help_center' }
       if (this.collectionMethod && this.collectionMethod.length) {
         return this.collectionMethodsOptions.find(cmo => cmo.value && cmo.value === this.collectionMethod) || fallbackValue
       } else {
@@ -471,7 +471,7 @@ export default {
       }
     },
     collectionShipperOption () {
-      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'unknown', outputFormat: 'json' }
+      const fallbackValue = { value: 'unknown', label: this.$t('Unknown or not set'), icon: 'unknown', outputFormat: 'json' }
       if (this.collectionShipper && this.collectionShipper.length) {
         return this.collectionShippersOptions.find(cso => cso.value && cso.value === this.collectionShipper) || fallbackValue
       } else {
@@ -487,13 +487,13 @@ export default {
             // Calling collectionConfigOutputFor from Mixin mixin-Shared-ShipperAndCollectionsHelpers
             output = this.collectionConfigOutputFor(this.collectionShipperOption.outputFormat, this.ezMarketPipelineTemplate.collection_configuration.collectionConfig)
           } else {
-            output = '# No Collection Method configured.'
+            output = '# ' + this.$t('No Collection Method configured.')
           }
         } else {
-          output = '# Unknown output format.'
+          output = '# ' + this.$t('Unknown output format.')
         }
       } else {
-        output = '# No Collecting Shipper configured.'
+        output = '# ' + this.$t('No Collecting Shipper configured.')
       }
       return output
     },
@@ -541,7 +541,7 @@ export default {
   methods: {
     ...mapActions('mainStore', ['loadEzMarketPipelineTemplateById', 'upsertPipeline', 'adaptPipelineCollectionConfiguration']),
     timeAgo (timestamp) {
-      let formattedTimeAgo = 'Some time ago'
+      let formattedTimeAgo = this.$t('Some time ago')
       try {
         // Create formatter (English).
         const timeAgo = new TimeAgo('en-US')
@@ -606,7 +606,7 @@ export default {
       }
     },
     collectionMethodDetails (shipperId, methodId) {
-      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'help_center' }
+      const fallbackValue = { value: 'unknown', label: this.$t('Unknown or not set'), icon: 'help_center' }
       if (shipperId && shipperId.length && methodId && methodId.length) {
         return this.collectionMethodsOptions.find(cmo => cmo.shipper && cmo.shipper === shipperId && cmo.value && cmo.value === methodId) || fallbackValue
       } else {

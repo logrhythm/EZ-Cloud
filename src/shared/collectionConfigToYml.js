@@ -1,5 +1,11 @@
 const { dump } = require('js-yaml')
 
+/**
+ * Extract Transforms
+ * @param {Object} sourceTransformsObject Object to transform
+ * @param {Array} transformOptions Array of options for the transformation
+ * @param {Object} targetTransformsObject Destination object of the transformation
+ */
 function extractTransforms (sourceTransformsObject, transformOptions, targetTransformsObject) {
   if (
     sourceTransformsObject &&
@@ -70,6 +76,11 @@ function extractTransforms (sourceTransformsObject, transformOptions, targetTran
   }
 }
 
+/**
+ * Produce a YAML Beat configuration from a JSON configuration
+ * @param {Object} collectionConfig Collection configuration as JSON object
+ * @returns Beat configuraiton as YAML
+ */
 exports.collectionConfigToYml = (collectionConfig) => {
   try {
     const jsonConfig = Object.assign({}, collectionConfig)
@@ -114,7 +125,7 @@ exports.collectionConfigToYml = (collectionConfig) => {
       let encodedCredentials
       try {
         encodedCredentials = btoa((jsonConfig.EZ__Auth_Basic__username || '') + ':' + (jsonConfig.EZ__Auth_Basic__password || ''))
-      } catch {
+      } catch (error) {
         // No login no pass.
         encodedCredentials = btoa(':')
       }
@@ -134,7 +145,7 @@ exports.collectionConfigToYml = (collectionConfig) => {
     if (jsonConfig['request.body'] && jsonConfig['request.body'].length) {
       try {
         jsonConfig['request.body'] = JSON.parse(jsonConfig['request.body'])
-      } catch {
+      } catch (error) {
         delete jsonConfig['request.body']
       }
     }

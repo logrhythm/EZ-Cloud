@@ -77,8 +77,9 @@ const routes = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/Admin/Index.vue') },
-      { path: 'Users', component: () => import('pages/Admin/Users.vue') },
-      { path: 'Roles', component: () => import('pages/Admin/Roles.vue') }
+      { path: 'RBAC/Users', component: () => import('pages/Admin/RBAC/Users.vue') },
+      { path: 'RBAC/Roles', component: () => import('pages/Admin/RBAC/Roles.vue') },
+      { path: 'SIEM/MsSql', component: () => import('pages/Admin/SIEM/MsSql.vue') }
     ]
   },
 

@@ -1,8 +1,5 @@
 const jwt = require('jsonwebtoken');
 
-const fs = require('fs');
-const path = require('path');
-
 const express = require('express');
 
 const router = express.Router();
@@ -12,19 +9,20 @@ const checkCredentials = require('../shared/checkCredentials');
 const { logToSystem } = require('../shared/systemLogging');
 
 // Import SQL Utilities
-const { getDataFromSql, createSqlVariables } = require('../shared/sqlUtils');
+const {
+  getDataFromMsSql,
+  createMsSqlVariables,
+  getDataFromPgSql,
+  createPgSqlVariables
+} = require('../shared/sqlUtils');
+
+// Import Config Loaders
+const {
+  getJwtConfig,
+  getEzMarketConfig
+} = require('../shared/loadConfigUtils');
 
 const { encryptStringWithRsaPublicKey } = require('../shared/crypto');
-
-// EZ Market Place configuration
-const ezMarketConfig = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'ez-market-place.json'), 'utf8'));
-const deploymentUid = (ezMarketConfig && ezMarketConfig.deploymentUid ? ezMarketConfig.deploymentUid : '');
-const ezMarketServer = (ezMarketConfig && ezMarketConfig.server ? ezMarketConfig.server : {});
-
-// Get JWT Secret and TTL
-const jwtConfig = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'jwt.json'), 'utf8'));
-const jwtSecret = (jwtConfig && jwtConfig.secret ? jwtConfig.secret : '');
-const jwtTtl = (jwtConfig && jwtConfig.ttl ? jwtConfig.ttl : '1h');
 
 /**
  * Create the JWT Token and sends it via res
@@ -33,15 +31,17 @@ const jwtTtl = (jwtConfig && jwtConfig.ttl ? jwtConfig.ttl : '1h');
  * @param {Boolean} isUserPrivileged True if the user is part of a Privileged Role
  * @param {String} publisherUid User's Publisher UID
  * @param {BigInteger} masterId SIEM Master ID
- * @param {*} res Express Router's response
- * @param {*} next Express Router's Next function
+ * @param {Object} extraInformation Extra details to be sent to the client
+ * @param {Object} res Express Router's response
+ * @param {Object} next Express Router's Next function
  */
-const createTokenSendResponse = (
+const createTokenSendResponse = async (
   user,
   roles,
   isUserPrivileged,
   publisherUid,
   masterId,
+  extraInformation,
   res,
   next
 ) => {
@@ -51,11 +51,16 @@ const createTokenSendResponse = (
     isPrivileged: (isUserPrivileged === true) || false
   };
 
+  // Get JWT Secret and TTL
+  const jwtConfig = await getJwtConfig();
+  const jwtSecret = (jwtConfig && jwtConfig.secret ? jwtConfig.secret : '');
+  const jwtTtl = (jwtConfig && jwtConfig.ttl ? jwtConfig.ttl : '1h');
+
   jwt.sign(
     payload,
     jwtSecret, {
       expiresIn: jwtTtl
-    }, (err, token) => {
+    }, async (err, token) => {
       if (err) {
         logToSystem('Error', 'JWT | Unable to sign Token. Denying access to user with HTTP Code 422.');
         res.status(422);
@@ -63,6 +68,31 @@ const createTokenSendResponse = (
         next(error);
       } else {
         // login all good
+
+        // EZ Market Place configuration
+        const ezMarketConfig = await getEzMarketConfig();
+        const deploymentUid = (
+          ezMarketConfig && ezMarketConfig.deploymentUid
+            ? ezMarketConfig.deploymentUid
+            : ''
+        );
+        const ezMarketServer = (
+          ezMarketConfig && ezMarketConfig.server
+            ? ezMarketConfig.server
+            : {}
+        );
+        const ezMarketRsaPublicKey = (
+          ezMarketServer
+          && ezMarketServer.publicKey
+            ? ezMarketServer.publicKey
+            : null
+        );
+
+        if (!(ezMarketRsaPublicKey && ezMarketRsaPublicKey.length)) {
+          // eslint-disable-next-line no-console
+          logToSystem('Warning', 'WARNING - server.publicKey not set in config/ez-market-place.json or in the related record in Internal Database. This will impact communication with EZ Market Plance. DO FIX THIS ASAP.'); // XXXX
+        }
+
         res.json({
           payload: {
             token, // null (unchecked) or object with token
@@ -72,12 +102,13 @@ const createTokenSendResponse = (
             },
             publisher: {
               publisherUid, // string with the Publisher UID
-              ezMarketUid: encryptStringWithRsaPublicKey(`${deploymentUid}:${publisherUid}:${masterId}`)
+              ezMarketUid: encryptStringWithRsaPublicKey(ezMarketRsaPublicKey, `${deploymentUid}:${publisherUid}:${masterId}`)
             },
             ezMarketServer: {
               baseUrl: ezMarketServer.baseUrl,
               baseApiPath: ezMarketServer.baseApiPath
-            }
+            },
+            extraInformation: extraInformation || {}
           },
           errors: [], // array of all the errors
           outputs: [] // array of all the outputs
@@ -116,29 +147,62 @@ router.post('/Login', async (req, res, next) => {
       let isUserPrivileged = false;
       let publisherUid = '';
       let masterId = 0;
+      let msSqlConnectionConfigMissing;
 
-      await getDataFromSql({
-        targetVariable: userRolesFromSql,
-        query: `
-        SELECT -- [rbacUserToRole].[id] AS 'userID'
-          [rbacUserToRole].[login] AS 'userLogin'
-          -- ,[rbacRoles].[uid] AS 'roleUid'
-          ,[rbacRoles].[name] AS 'roleName'
-          ,[rbacRoles].[isPrivileged] AS 'roleIsPrivileged'
-          ,[rbacUserToRole].[publisherUid] AS 'publisherUid'
-          ,[get_SIEM_Master_ID].[MasterID] AS 'masterId'
-        FROM [EZ].[dbo].[rbacRoles]
-          RIGHT OUTER JOIN [EZ].[dbo].[rbacUserToRole] ON [rbacRoles].[uid] = [rbacUserToRole].[roleUid]
-          LEFT OUTER JOIN [EZ].[dbo].[get_SIEM_Master_ID] ON [get_SIEM_Master_ID].[MasterID] IS NOT NULL
-          WHERE [rbacUserToRole].[login] = @username
-        `,
-        variables: createSqlVariables(
-          req,
-          [
-            { name: 'username', type: 'NVarChar' }
-          ]
-        )
-      });
+      if (
+        process.env.databaseMode === 'mssql'
+      ) {
+        // Use MS SQL
+        await getDataFromMsSql({
+          targetVariable: userRolesFromSql,
+          query: `
+          SELECT -- [rbacUserToRole].[id] AS 'userID'
+            [rbacUserToRole].[login] AS 'userLogin'
+            -- ,[rbacRoles].[uid] AS 'roleUid'
+            ,[rbacRoles].[name] AS 'roleName'
+            ,[rbacRoles].[isPrivileged] AS 'roleIsPrivileged'
+            ,[rbacUserToRole].[publisherUid] AS 'publisherUid'
+            ,[get_SIEM_Master_ID].[MasterID] AS 'masterId'
+            ,'She''ll be right, Mate' AS "msSqlHost"
+          FROM [EZ].[dbo].[rbacRoles]
+            RIGHT OUTER JOIN [EZ].[dbo].[rbacUserToRole] ON [rbacRoles].[uid] = [rbacUserToRole].[roleUid]
+            LEFT OUTER JOIN [EZ].[dbo].[get_SIEM_Master_ID] ON [get_SIEM_Master_ID].[MasterID] IS NOT NULL
+            WHERE LOWER([rbacUserToRole].[login]) = LOWER(@username)
+          `,
+          variables: createMsSqlVariables(
+            req,
+            [
+              { name: 'username', type: 'NVarChar' }
+            ]
+          )
+        });
+      } else {
+        // Use PgSQL
+        await getDataFromPgSql({
+          targetVariable: userRolesFromSql,
+          query: `
+          SELECT -- "rbacUserToRole"."id" AS "userID"
+            "rbacUserToRole"."login" AS "userLogin"
+            -- ,"rbacRoles"."uid" AS "roleUid"
+            ,"rbacRoles"."name" AS "roleName"
+            ,"rbacRoles"."isPrivileged" AS "roleIsPrivileged"
+            ,"rbacUserToRole"."publisherUid" AS "publisherUid"
+            ,"get_SIEM_Master_ID"."MasterID" AS "masterId"
+            ,"settings"."settingsJson"::json->'config'->>'server' AS "msSqlHost"
+          FROM public."rbacRoles"
+            RIGHT OUTER JOIN public."rbacUserToRole" ON "rbacRoles"."uid" = "rbacUserToRole"."roleUid"
+            LEFT OUTER JOIN public."get_SIEM_Master_ID" ON "get_SIEM_Master_ID"."MasterID" IS NOT NULL
+            LEFT OUTER JOIN public."settings" ON "settings"."uid" = '6e5625e8-372d-4d4b-ac9a-615e370ac940'
+            WHERE lower("rbacUserToRole"."login") = lower($1)
+          `,
+          variables: createPgSqlVariables(
+            req,
+            [
+              { name: 'username' }
+            ]
+          )
+        });
+      }
 
       // Report on SQL Error, if any
       if (
@@ -158,13 +222,22 @@ router.post('/Login', async (req, res, next) => {
             if (item.roleName && item.roleName.length) {
               userRoles.push(item.roleName);
             }
-            if (item.roleIsPrivileged === 1) {
+            if (
+              item.roleIsPrivileged === 1 // MS SQL
+              || item.roleIsPrivileged === true // PgSQL
+            ) {
               isUserPrivileged = true;
             }
             // Grab the Publisher UID
             publisherUid = item.publisherUid;
             // Grab the SIEM Master ID
             masterId = item.masterId;
+            // Check if the MS Configuration is missing
+            msSqlConnectionConfigMissing = (
+              item.msSqlHost && item.msSqlHost.length
+                ? undefined
+                : true
+            );
           }
         });
       }
@@ -175,12 +248,15 @@ router.post('/Login', async (req, res, next) => {
       if (userRoles && userRoles.length > 0) {
         //   Create JWT token
         //   Return token
-        createTokenSendResponse(
+        await createTokenSendResponse(
           checkedCreds.username, // Login name
           userRoles, // Array of Roles
           isUserPrivileged, // True or False
           publisherUid, // The Publisher UID assigned to the User
           masterId, // The SIEM Master ID
+          { // extraInformation
+            msSqlConnectionConfigMissing
+          },
           res,
           next
         );

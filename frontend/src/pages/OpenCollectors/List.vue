@@ -1,35 +1,35 @@
 <template>
   <q-page class="q-pa-md">
       <q-table
-        title="OpenCollectors"
+        :title="$t('OpenCollectors')"
         :data="tableData"
         :columns="columns"
         row-key="uid"
         dense
-        no-data-label="No OpenCollector to display."
+        :no-data-label="$t('No OpenCollector to display.')"
         :filter="searchFilter"
         :loading="tableLoading"
-        rows-per-page-label="OpenCollectors per page:"
+        :rows-per-page-label="$t('OpenCollectors per page:')"
         :pagination.sync="pagination"
       >
 
         <template v-slot:top>
           <div class="full-width row wrap justify-between">
             <div class="q-table__title">
-              OpenCollectors
+              {{ $t('OpenCollectors') }}
             </div>
             <div class="row q-gutter-md">
               <div class="col" >
-                <q-btn rounded dense color="primary" icon="add" label="Add New OpenCollector" @click="doPromptForOpenCollectorDetails()" style="min-width:15rem;">
+                <q-btn rounded dense color="primary" icon="add" :label="$t('Add New OpenCollector')" @click="doPromptForOpenCollectorDetails()" style="min-width:15rem;">
                   <q-tooltip content-style="font-size: 1em">
-                    Create a new OpenCollector.
+                    {{ $t('Create a new OpenCollector.') }}
                   </q-tooltip>
                 </q-btn>
               </div>
             </div>
             <div class="row q-gutter-md">
               <div style="width:300px;">
-                <q-input outlined dense debounce="300" v-model="searchFilter" placeholder="Search">
+                <q-input outlined dense debounce="300" v-model="searchFilter" :placeholder="$t('Search')">
                   <template v-slot:append>
                     <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
                     <q-icon name="search" />
@@ -38,7 +38,7 @@
               </div>
               <q-btn dense outline icon="refresh" @click="loadOpenCollectors()">
                 <q-tooltip content-style="font-size: 1em">
-                  Reload the list of OpenCollectors.
+                  {{ $t('Reload the list of OpenCollectors.') }}
                 </q-tooltip>
               </q-btn>
             </div>
@@ -74,7 +74,7 @@
             <q-icon name="vpn_key" size="sm" v-else-if ="props.value === 'private_key'" />
             <q-icon name="help_center" color="grey" size="md" v-else />
             <q-tooltip content-style="font-size: 1em">
-              {{ props.value }}
+              {{ $t(props.value) }}
             </q-tooltip>
           </q-td>
         </template>
@@ -101,8 +101,8 @@
             </div>
             <div v-else-if="osVersionCheck && osVersionCheck[props.row.uid] && osVersionCheck[props.row.uid].error">
               <q-tooltip content-style="font-size: 1rem;">
-                Failed to connect to the server.<br>
-                Check the Open Collector details and Credentials.
+                {{ $t('Failed to connect to the server.') }}<br>
+                {{ $t('Check the OpenCollector details and Credentials.') }}
               </q-tooltip>
               <q-icon
                 name="cloud_off"
@@ -199,7 +199,7 @@
               color="primary"
               flat
             >
-              <q-tooltip content-style="font-size: 1em;" >Add another Shipper</q-tooltip>
+              <q-tooltip content-style="font-size: 1em;" >{{ $t('Add another Shipper') }}</q-tooltip>
               <q-menu>
                 <q-list>
                   <q-item
@@ -232,26 +232,26 @@
           </q-card-section>
 
           <q-card-section class="q-pt-none">
-            <q-input dense v-model="newOpenCollectorName" autofocus label="OpenCollector Name" @keyup.esc="promptForNewOpenCollectorDetails = false" :rules="[val => !!val || $t('OpenCollector name cannot be empty')]" />
+            <q-input dense v-model="newOpenCollectorName" autofocus :label="$t('OpenCollector Name')" @keyup.esc="promptForNewOpenCollectorDetails = false" :rules="[val => !!val || $t('OpenCollector name cannot be empty')]" />
           </q-card-section>
 
           <q-separator />
 
           <q-card-section class="q-pt-none">
-            <div class="text-overline">Host</div>
-            <q-input dense v-model="newOpenCollectorHostname" label="Host name" @keyup.esc="promptForNewOpenCollectorDetails = false" :rules="[val => !!val || $t('OpenCollector Host name cannot be empty')]" />
+            <div class="text-overline">{{ $t('Host') }}</div>
+            <q-input dense v-model="newOpenCollectorHostname" :label="$t('Host name')" @keyup.esc="promptForNewOpenCollectorDetails = false" :rules="[val => !!val || $t('OpenCollector Host name cannot be empty')]" />
           </q-card-section>
 
           <q-card-section class="q-pt-none">
-            <q-input dense v-model="newOpenCollectorPort" type="number" label="SSH Port" @keyup.esc="promptForNewOpenCollectorDetails = false" :rules="[val => !!val || $t('OpenCollector port cannot be empty')]" />
+            <q-input dense v-model="newOpenCollectorPort" type="number" :label="$t('SSH Port')" @keyup.esc="promptForNewOpenCollectorDetails = false" :rules="[val => !!val || $t('OpenCollector port cannot be empty')]" />
           </q-card-section>
 
           <q-separator />
 
           <q-card-section class="q-pt-none">
-            <div class="text-overline">Authentication</div>
+            <div class="text-overline">{{ $t('Authentication') }}</div>
 
-            <q-input dense v-model="newOpenCollectorUsername" label="SSH User name" hint="" @keyup.esc="promptForNewOpenCollectorDetails = false" />
+            <q-input dense v-model="newOpenCollectorUsername" :label="$t('SSH User name')" hint="" @keyup.esc="promptForNewOpenCollectorDetails = false" />
 
             <q-tabs
               v-model="newOpenCollectorAuthMethod"
@@ -260,19 +260,19 @@
               align="justify"
               narrow-indicator
             >
-              <q-tab name="password" label="Password" />
-              <q-tab name="private_key" label="Private Key" />
+              <q-tab name="password" :label="$t('Password')" />
+              <q-tab name="private_key" :label="$t('Private Key')" />
             </q-tabs>
 
             <q-separator />
 
             <q-tab-panels v-model="newOpenCollectorAuthMethod" animated>
               <q-tab-panel name="password">
-                <q-input dense v-model="newOpenCollectorPassword" type="password" label="SSH Password" hint="" @keyup.esc="promptForNewOpenCollectorDetails = false" />
+                <q-input dense v-model="newOpenCollectorPassword" type="password" :label="$t('SSH Password')" hint="" @keyup.esc="promptForNewOpenCollectorDetails = false" />
               </q-tab-panel>
 
               <q-tab-panel name="private_key">
-                <q-input dense v-model="newOpenCollectorPrivateKey" type="textarea" label="SSH Private Key" hint="" @keyup.esc="promptForNewOpenCollectorDetails = false" />
+                <q-input dense v-model="newOpenCollectorPrivateKey" type="textarea" :label="$t('SSH Private Key')" hint="" @keyup.esc="promptForNewOpenCollectorDetails = false" />
               </q-tab-panel>
             </q-tab-panels>
           </q-card-section>
@@ -286,16 +286,16 @@
       </q-dialog>
       <q-card class="q-mt-sm" v-if="Object.keys(shipperInstall).length">
         <q-card-section>
-          <div class="text-h6">Installation Logs</div>
+          <div class="text-h6">{{ $t('Installation Logs') }}</div>
         </q-card-section>
         <q-card-section v-for="(job, jobIndex) in shipperInstall" :key="jobIndex">
           <div class="row q-gutter-x-md items-center" v-if="job.collector">
             <q-spinner-dots size="2em" color="teal" v-show="job.onGoing === true" />
             <q-icon name="thumb_up" size="2em" color="positive" v-show="job.onGoing === false && job.failed === false" >
-              <q-tooltip content-style="font-size: 1em;" >Job completed successfuly</q-tooltip>
+              <q-tooltip content-style="font-size: 1em;" >{{ $t('Job completed successfuly') }}</q-tooltip>
             </q-icon>
             <q-icon name="thumb_down" size="2em" color="negative" v-show="job.onGoing === false && job.failed === true" >
-              <q-tooltip content-style="font-size: 1em;" >Job failed to complete</q-tooltip>
+              <q-tooltip content-style="font-size: 1em;" >{{ $t('Job failed to complete') }}</q-tooltip>
             </q-icon>
             <q-separator vertical />
             <div class="text-bold">{{ job.collector.name }}</div>
@@ -303,7 +303,7 @@
             <div class="text-italic">{{ job.collector.hostname }}:{{ job.collector.port }}</div>
             <q-separator vertical />
             <q-linear-progress rounded size="1em" :value="(job.step > 0 ? job.totalSteps / job.step : 0)" class="col" :color="(job.onGoing === false ? (job.failed === false ? 'green-8' : 'deep-orange-8') : '')" >
-              <q-tooltip content-style="font-size: 1em;" >Completed steps: {{ job.step }} / {{ job.totalSteps }}</q-tooltip>
+              <q-tooltip content-style="font-size: 1em;" >{{ $t('Completed steps:') }}<br>{{ job.step }} / {{ job.totalSteps }}</q-tooltip>
             </q-linear-progress>
           </div>
           <div class="row q-my-sm">
@@ -352,14 +352,14 @@ export default {
     return {
       searchFilter: '',
       columns: [
-        { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
-        { name: 'name', align: 'center', label: 'Name', field: 'name', sortable: true },
-        { name: 'hostname', align: 'center', label: 'Hostname', field: 'hostname', sortable: true },
-        { name: 'authenticationMethod', align: 'center', label: 'Authentication Method', field: 'authenticationMethod', sortable: true },
-        { name: 'osVersion', align: 'center', label: 'OS version', field: 'osVersion', sortable: true },
-        { name: 'ocVersion', align: 'center', label: 'OpenCollector version', field: 'ocVersion', sortable: true },
+        { name: 'actions', align: 'center', label: this.$t('Actions'), field: 'actions', sortable: false },
+        { name: 'name', align: 'center', label: this.$t('Name'), field: 'name', sortable: true },
+        { name: 'hostname', align: 'center', label: this.$t('Hostname'), field: 'hostname', sortable: true },
+        { name: 'authenticationMethod', align: 'center', label: this.$t('Authentication Method'), field: 'authenticationMethod', sortable: true },
+        { name: 'osVersion', align: 'center', label: this.$t('OS version'), field: 'osVersion', sortable: true },
+        { name: 'ocVersion', align: 'center', label: this.$t('OpenCollector version'), field: 'ocVersion', sortable: true },
         // { name: 'fbVersion', align: 'center', label: 'Shippers version', field: 'fbVersion', sortable: true },
-        { name: 'installedShippers', align: 'center', label: 'Installed Shippers', field: 'installedShippers', sortable: true }
+        { name: 'installedShippers', align: 'center', label: this.$t('Installed Shippers'), field: 'installedShippers', sortable: true }
         // { name: 'pipelinesCount', align: 'center', label: 'Log Sources', field: 'pipelinesCount', sortable: true }
       ],
       pagination: {
@@ -607,7 +607,7 @@ export default {
             if (response.data.errors && Array.isArray(response.data.errors)) {
               response.data.errors.forEach((err) => {
                 if (String(err).includes('command not found')) {
-                  newOcInfo.fbVersion = 'Not Installed'
+                  newOcInfo.fbVersion = this.$t('Not Installed')
                 }
               })
             }
@@ -652,7 +652,7 @@ export default {
             if (response.data.errors && Array.isArray(response.data.errors)) {
               response.data.errors.forEach((err) => {
                 if (String(err).includes('command not found')) {
-                  newOcInfo.jsBeatVersion = 'Not Installed'
+                  newOcInfo.jsBeatVersion = this.$t('Not Installed')
                 }
               })
             }
@@ -675,7 +675,7 @@ export default {
       if (response) {
         const uid = (response.params && response.params.apiCallParams && response.params.apiCallParams.uid ? response.params.apiCallParams.uid : null)
 
-        // Do the Open Collector version
+        // Do the OpenCollector version
 
         if (uid) {
           const newOcInfo = JSON.parse(JSON.stringify(this.openCollectors.find((oc) => oc.uid === uid)))
@@ -748,8 +748,8 @@ export default {
       if (typeof row !== 'undefined') {
         // ask to confirm
         this.$q.dialog({
-          title: 'Confirm',
-          message: 'Do you REALLY want to delete this OpenCollector?',
+          title: this.$t('Confirm'),
+          message: this.$t('Do you REALLY want to delete this OpenCollector?'),
           ok: {
             push: true,
             color: 'negative'
@@ -845,11 +845,11 @@ export default {
             errors: [
               {
                 code: 'NoLiveSocket',
-                message: 'Live (Socket) connection with the EZ Server has been lost or is not currently established.'
+                message: this.$t('Live (Socket) connection with the EZ Server has been lost or is not currently established.')
               },
               {
                 code: 'ShipperInstallFailedToStart',
-                message: 'Shipper deployment could not start due to no live socket available.'
+                message: this.$t('Shipper deployment could not start due to no live socket available.')
               }
             ]
           }

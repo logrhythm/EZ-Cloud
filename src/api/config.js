@@ -1,9 +1,12 @@
 const express = require('express');
 
 const router = express.Router();
-// Get SQL config
-const fs = require('fs');
-const path = require('path');
+// // Get SQL config
+// const fs = require('fs');
+// const path = require('path');
+
+// Load the System Logging functions
+const { logToSystem } = require('../shared/systemLogging');
 
 // For passwords and tokens cyphering
 const secretPlaceholder = '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **';
@@ -23,7 +26,14 @@ router.get('/', (req, res) => {
 //        ##     ##    ##     ##  ##        ##     ##     ##  ##       ##    ##
 //         #######     ##    #### ######## ####    ##    #### ########  ######
 
-const { getDataFromSql, createSqlVariables } = require('../shared/sqlUtils');
+// const { getConfigDataFromSql, createMsSqlVariables } = require('../shared/sqlUtils'); // XXXX
+const {
+  getDataFromMsSql,
+  createMsSqlVariables,
+  // createMsSqlVariablesAndStoredProcParams,
+  getDataFromPgSql,
+  createPgSqlVariables
+} = require('../shared/sqlUtils');
 
 //        ########   #######  ##     ## ######## ########  ######
 //        ##     ## ##     ## ##     ##    ##    ##       ##    ##
@@ -42,36 +52,88 @@ const collectors = {};
 const collectorsPipelines = {};
 
 router.get('/GetCollectors', async (req, res) => {
-  await getDataFromSql({
-    targetVariable: collectorsPipelines,
-    query: `
+  if (
+    process.env.databaseMode === 'mssql'
+  ) {
+    // Use MS SQL
+    await getDataFromMsSql({
+      targetVariable: collectorsPipelines,
+      query: `
       SELECT [openCollectorUid]
         ,[pipelineUid]
         ,[state]
       FROM [dbo].[openCollectorsPipelines]
+      ;
       `
-  });
+    });
 
-  await getDataFromSql({
-    targetVariable: collectors,
-    query: `
-      SELECT [uid]
-        ,[name]
-        ,[hostname]
-        ,[port]
-        ,[authenticationMethod]
-        ,[username]
-        ,'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' AS [password]
-        ,'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' AS [privateKey]
-        ,[osVersion]
-        ,[ocInstalled]
-        ,[ocVersion]
-        ,[fbInstalled]
-        ,[fbVersion]
-        ,[installedShippers]
-      FROM [dbo].[openCollectors]
-      `
-  });
+    await getDataFromMsSql({
+      targetVariable: collectors,
+      query: `
+        SELECT [uid]
+          ,[name]
+          ,[hostname]
+          ,[port]
+          ,[authenticationMethod]
+          ,[username]
+          ,'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' AS [password]
+          ,'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' AS [privateKey]
+          ,[osVersion]
+          ,[ocInstalled]
+          ,[ocVersion]
+          ,[fbInstalled]
+          ,[fbVersion]
+          ,[installedShippers]
+        FROM [dbo].[openCollectors]
+        `
+    });
+  } else {
+    // Use PgSQL
+    await getDataFromPgSql({
+      targetVariable: collectorsPipelines,
+      query: `
+      SELECT "openCollectorUid"
+        ,"pipelineUid"
+        ,"state"
+      FROM "openCollectorsPipelines"
+      ;
+    `
+    });
+
+    await getDataFromPgSql({
+      targetVariable: collectors,
+      query: `
+      SELECT "uid"
+          ,"name"
+          ,"hostname"
+          ,"port"
+          ,"authenticationMethod"
+          ,"username"
+          ,'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' AS "password"
+          ,'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' AS "privateKey"
+          ,"osVersion"
+          ,CASE
+          WHEN
+              "openCollectors"."ocInstalled"=TRUE
+              THEN 1
+          ELSE
+              0
+          END AS "ocInstalled"
+          ,"ocVersion"
+          ,CASE
+            WHEN
+                "openCollectors"."fbInstalled"=TRUE
+                THEN 1
+            ELSE
+                0
+            END AS "fbInstalled"
+          ,"fbVersion"
+          ,"installedShippers"
+        FROM "openCollectors"
+      ;
+    `
+    });
+  }
 
   const collectorsPipelinesLooksGood = (
     collectorsPipelines
@@ -116,8 +178,10 @@ router.get('/GetCollectors', async (req, res) => {
 
         // Parse the list of Shippers, falling back to an empty array if things go pear shaped.
         try {
+          // eslint-disable-next-line no-param-reassign
           collector.installedShippers = JSON.parse(collector.installedShippers);
-        } catch {
+        } catch (error) {
+          // eslint-disable-next-line no-param-reassign
           collector.installedShippers = [];
         }
       });
@@ -133,43 +197,75 @@ router.get('/GetCollectors', async (req, res) => {
 const pipelines = {};
 
 router.get('/GetPipelines', async (req, res) => {
-  await getDataFromSql({
-    targetVariable: pipelines,
-    query: `
-    SELECT p.[uid]
-      ,p.[name]
-      ,p.[status] AS [statusId]
-      ,s.[name] AS [status]
-      ,p.[primaryOpenCollector]
-      ,p.[fieldsMappingJson]
-      ,p.[collectionConfigJson]
-      ,p.[optionsJson]
-  FROM [dbo].[pipelines] p
-  LEFT JOIN [dbo].[states] s
-    ON s.[id] = p.[status]
-  `
-  });
+  if (
+    process.env.databaseMode === 'mssql'
+  ) {
+    // Use MS SQL
+    await getDataFromMsSql({
+      targetVariable: pipelines,
+      query: `
+      SELECT p.[uid]
+        ,p.[name]
+        ,p.[status] AS [statusId]
+        ,s.[name] AS [status]
+        ,p.[primaryOpenCollector]
+        ,p.[fieldsMappingJson]
+        ,p.[collectionConfigJson]
+        ,p.[optionsJson]
+      FROM [dbo].[pipelines] p
+      LEFT JOIN [dbo].[states] s
+        ON s.[id] = p.[status]
+      `
+    });
+  } else {
+    // Use PgSQL
+    await getDataFromPgSql({
+      targetVariable: pipelines,
+      query: `
+      SELECT p."uid"
+        ,p."name"
+        ,p."status" AS "statusId"
+        ,s."name" AS "status"
+        ,p."primaryOpenCollector"
+        ,p."fieldsMappingJson"
+        ,p."collectionConfigJson"
+        ,p."optionsJson"
+      FROM "pipelines" p
+      LEFT JOIN "states" s
+        ON s."id" = p."status"
+    `
+    });
+  }
 
   if (pipelines && pipelines.payload && Array.isArray(pipelines.payload)) {
     pipelines.payload.forEach((pipeline) => {
       /* eslint-disable no-param-reassign */
       try {
         pipeline.fieldsMapping = JSON.parse((pipeline.fieldsMappingJson && pipeline.fieldsMappingJson.length > 0 ? pipeline.fieldsMappingJson : '[]'));
-        delete pipeline.fieldsMappingJson;
       } catch (error) {
-        pipeline.fieldsMapping = {};
+        logToSystem('Warning', `Persistance Layer | Unable to parse Pipeline Fields Mapping. Details: ${error.message}`);
+        pipeline.fieldsMapping = [];
+      }
+      if (pipeline.fieldsMappingJson) {
+        delete pipeline.fieldsMappingJson;
       }
       try {
         pipeline.collectionConfig = JSON.parse((pipeline.collectionConfigJson && pipeline.collectionConfigJson.length > 0 ? pipeline.collectionConfigJson : '{}'));
-        delete pipeline.collectionConfigJson;
       } catch (error) {
+        logToSystem('Warning', `Persistance Layer | Unable to parse Pipeline Collection Config. Details: ${error.message}`);
         pipeline.collectionConfig = {};
+      }
+      if (pipeline.collectionConfigJson) {
+        delete pipeline.collectionConfigJson;
       }
       try {
         pipeline.options = JSON.parse((pipeline.optionsJson && pipeline.optionsJson.length > 0 ? pipeline.optionsJson : '{}'));
-        delete pipeline.optionsJson;
       } catch (error) {
+        logToSystem('Warning', `Persistance Layer | Unable to parse Pipeline Options. Details: ${error.message}`);
         pipeline.options = {};
+      }
+      if (pipeline.optionsJson) {
+        delete pipeline.optionsJson;
       }
       /* eslint-enable no-param-reassign */
     });
@@ -196,48 +292,98 @@ router.post('/UpdateCollector', async (req, res) => {
     myReq.body.privateKey = aesEncrypt(myReq.body.privateKey);
   }
 
-  await getDataFromSql({
-    targetVariable: collectorToUpdate,
-    query: `
-    EXECUTE [dbo].[upsert_openCollector] 
-       @uid
-      ,@name
-      ,@hostname
-      ,@port
-      ,@authenticationMethod
-      ,@username
-      ,@password
-      ,@privateKey
-      ,@osVersion
-      ,@ocInstalled
-      ,@ocVersion
-      ,@fbInstalled
-      ,@fbVersion
-      ,@pipelines
-      ,@installedShippers
+  if (
+    process.env.databaseMode === 'mssql'
+  ) {
+    // Use MS SQL
+    await getDataFromMsSql({
+      targetVariable: collectorToUpdate,
+      query: `
+      EXECUTE [dbo].[upsert_openCollector] 
+        @uid
+        ,@name
+        ,@hostname
+        ,@port
+        ,@authenticationMethod
+        ,@username
+        ,@password
+        ,@privateKey
+        ,@osVersion
+        ,@ocInstalled
+        ,@ocVersion
+        ,@fbInstalled
+        ,@fbVersion
+        ,@pipelines
+        ,@installedShippers
       ;
-    `,
-    variables: createSqlVariables(
-      myReq,
-      [
-        { name: 'uid', type: 'NVarChar' },
-        { name: 'name', type: 'NVarChar' },
-        { name: 'hostname', type: 'NVarChar' },
-        { name: 'port', type: 'Int' },
-        { name: 'authenticationMethod', type: 'NVarChar' },
-        { name: 'username', type: 'NVarChar' },
-        { name: 'password', type: 'NVarChar' },
-        { name: 'privateKey', type: 'NVarChar' },
-        { name: 'osVersion', type: 'NVarChar' },
-        { name: 'ocInstalled', type: 'TinyInt' },
-        { name: 'ocVersion', type: 'NVarChar' },
-        { name: 'fbInstalled', type: 'TinyInt' },
-        { name: 'fbVersion', type: 'NVarChar' },
-        { name: 'pipelines', type: 'NVarChar' },
-        { name: 'installedShippers', type: 'NVarChar' }
-      ]
-    )
-  });
+      `,
+      variables: createMsSqlVariables(
+        myReq,
+        [
+          { name: 'uid', type: 'NVarChar' },
+          { name: 'name', type: 'NVarChar' },
+          { name: 'hostname', type: 'NVarChar' },
+          { name: 'port', type: 'Int' },
+          { name: 'authenticationMethod', type: 'NVarChar' },
+          { name: 'username', type: 'NVarChar' },
+          { name: 'password', type: 'NVarChar' },
+          { name: 'privateKey', type: 'NVarChar' },
+          { name: 'osVersion', type: 'NVarChar' },
+          { name: 'ocInstalled', type: 'TinyInt' },
+          { name: 'ocVersion', type: 'NVarChar' },
+          { name: 'fbInstalled', type: 'TinyInt' },
+          { name: 'fbVersion', type: 'NVarChar' },
+          { name: 'pipelines', type: 'NVarChar' },
+          { name: 'installedShippers', type: 'NVarChar' }
+        ]
+      )
+    });
+  } else {
+    // Use PgSQL
+    await getDataFromPgSql({
+      targetVariable: collectorToUpdate,
+      query: `
+      CALL "upsert_openCollector"
+      (
+         $1 -- @uid
+        ,$2 -- @name
+        ,$3 -- @hostname
+        ,$4 -- @port
+        ,$5 -- @authenticationMethod
+        ,$6 -- @username
+        ,$7 -- @password
+        ,$8 -- @privateKey
+        ,$9 -- @osVersion
+        ,$10 -- @ocInstalled
+        ,$11 -- @ocVersion
+        ,$12 -- @fbInstalled
+        ,$13 -- @fbVersion
+        ,$14 -- @pipelines
+        ,$15 -- @installedShippers
+      );
+      `,
+      variables: createPgSqlVariables(
+        myReq,
+        [
+          { name: 'uid' },
+          { name: 'name' },
+          { name: 'hostname' },
+          { name: 'port' },
+          { name: 'authenticationMethod' },
+          { name: 'username' },
+          { name: 'password' },
+          { name: 'privateKey' },
+          { name: 'osVersion' },
+          { name: 'ocInstalled' },
+          { name: 'ocVersion' },
+          { name: 'fbInstalled' },
+          { name: 'fbVersion' },
+          { name: 'pipelines' },
+          { name: 'installedShippers' }
+        ]
+      )
+    });
+  }
 
   res.json(collectorToUpdate);
 });
@@ -249,20 +395,41 @@ router.post('/UpdateCollector', async (req, res) => {
 const collectorToDelete = {};
 
 router.post('/DeleteCollector', async (req, res) => {
-  await getDataFromSql({
-    targetVariable: collectorToDelete,
-    query: `
-    DELETE FROM [dbo].[openCollectors]
-      WHERE uid = @uid
+  if (
+    process.env.databaseMode === 'mssql'
+  ) {
+    // Use MS SQL
+    await getDataFromMsSql({
+      targetVariable: collectorToDelete,
+      query: `
+      DELETE FROM [dbo].[openCollectors]
+        WHERE uid = @uid
       ;
-    `,
-    variables: createSqlVariables(
-      req,
-      [
-        { name: 'uid', type: 'NVarChar' }
-      ]
-    )
-  });
+      `,
+      variables: createMsSqlVariables(
+        req,
+        [
+          { name: 'uid', type: 'NVarChar' }
+        ]
+      )
+    });
+  } else {
+    // Use PgSQL
+    await getDataFromPgSql({
+      targetVariable: collectorToDelete,
+      query: `
+      DELETE FROM "openCollectors"
+        WHERE uid = $1
+      ;
+      `,
+      variables: createPgSqlVariables(
+        req,
+        [
+          { name: 'uid' }
+        ]
+      )
+    });
+  }
 
   res.json(collectorToDelete);
 });
@@ -274,32 +441,67 @@ router.post('/DeleteCollector', async (req, res) => {
 const pipelineToUpdate = {};
 
 router.post('/UpdatePipeline', async (req, res) => {
-  await getDataFromSql({
-    targetVariable: pipelineToUpdate,
-    query: `
-    EXECUTE [dbo].[upsert_Pipeline] 
-       @uid
-      ,@name
-      ,@status
-      ,@primaryOpenCollector
-      ,@fieldsMapping
-      ,@collectionConfig
-      ,@options
+  if (
+    process.env.databaseMode === 'mssql'
+  ) {
+    // Use MS SQL
+    await getDataFromMsSql({
+      targetVariable: pipelineToUpdate,
+      query: `
+      EXECUTE [dbo].[upsert_Pipeline] 
+        @uid
+        ,@name
+        ,@status
+        ,@primaryOpenCollector
+        ,@fieldsMapping
+        ,@collectionConfig
+        ,@options
       ;
-    `,
-    variables: createSqlVariables(
-      req,
-      [
-        { name: 'uid', type: 'NVarChar' },
-        { name: 'name', type: 'NVarChar' },
-        { name: 'status', type: 'NVarChar' },
-        { name: 'primaryOpenCollector', type: 'NVarChar' },
-        { name: 'fieldsMapping', type: 'NVarChar' },
-        { name: 'collectionConfig', type: 'NVarChar' },
-        { name: 'options', type: 'NVarChar' }
-      ]
-    )
-  });
+      `,
+      variables: createMsSqlVariables(
+        req,
+        [
+          { name: 'uid', type: 'NVarChar' },
+          { name: 'name', type: 'NVarChar' },
+          { name: 'status', type: 'NVarChar' },
+          { name: 'primaryOpenCollector', type: 'NVarChar' },
+          { name: 'fieldsMapping', type: 'NVarChar' },
+          { name: 'collectionConfig', type: 'NVarChar' },
+          { name: 'options', type: 'NVarChar' }
+        ]
+      )
+    });
+  } else {
+    // Use PgSQL
+    await getDataFromPgSql({
+      targetVariable: pipelineToUpdate,
+      query: `
+      CALL "upsert_Pipeline"
+      (
+         $1 -- uid
+        ,$2 -- name
+        ,$3 -- status
+        ,$4 -- primaryOpenCollector
+        ,$5 -- fieldsMapping
+        ,$6 -- collectionConfig
+        ,$7 -- options
+      )
+      ;
+      `,
+      variables: createPgSqlVariables(
+        req,
+        [
+          { name: 'uid' },
+          { name: 'name' },
+          { name: 'status' },
+          { name: 'primaryOpenCollector' },
+          { name: 'fieldsMapping' },
+          { name: 'collectionConfig' },
+          { name: 'options' }
+        ]
+      )
+    });
+  }
 
   res.json(pipelineToUpdate);
 });
@@ -311,20 +513,41 @@ router.post('/UpdatePipeline', async (req, res) => {
 const pipelineToDelete = {};
 
 router.post('/DeletePipeline', async (req, res) => {
-  await getDataFromSql({
-    targetVariable: pipelineToDelete,
-    query: `
-    DELETE FROM [dbo].[pipelines]
-      WHERE uid = @uid
+  if (
+    process.env.databaseMode === 'mssql'
+  ) {
+    // Use MS SQL
+    await getDataFromMsSql({
+      targetVariable: pipelineToDelete,
+      query: `
+      DELETE FROM [dbo].[pipelines]
+        WHERE uid = @uid
       ;
-    `,
-    variables: createSqlVariables(
-      req,
-      [
-        { name: 'uid', type: 'NVarChar' }
-      ]
-    )
-  });
+      `,
+      variables: createMsSqlVariables(
+        req,
+        [
+          { name: 'uid', type: 'NVarChar' }
+        ]
+      )
+    });
+  } else {
+    // Use PgSQL
+    await getDataFromPgSql({
+      targetVariable: pipelineToDelete,
+      query: `
+      DELETE FROM "pipelines"
+        WHERE uid = $1
+      ;
+      `,
+      variables: createPgSqlVariables(
+        req,
+        [
+          { name: 'uid' }
+        ]
+      )
+    });
+  }
 
   res.json(pipelineToDelete);
 });

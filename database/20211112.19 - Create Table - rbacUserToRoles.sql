@@ -40,15 +40,15 @@ END
 GO
 
 
--- Create the basic role mapping for ezAdmin
+-- Create the basic role mapping for ocAdmin
 IF NOT EXISTS (SELECT *
     FROM [dbo].[rbacUserToRole]
-    WHERE [login] = 'ezAdmin')
+    WHERE [login] = 'ocAdmin')
 	INSERT INTO [dbo].[rbacUserToRole]
 			   ([login]
 			   ,[roleUid])
 		 VALUES
-			   ('ezAdmin'
+			   ('ocAdmin'
 			   ,'b7972c45-3546-4993-93ab-c0f1d9a0ffae')
 GO
 

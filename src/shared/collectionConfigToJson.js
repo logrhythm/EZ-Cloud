@@ -1,3 +1,8 @@
+/**
+ * Produce a JSON Beat configuration from a JSON internal EZ configuration
+ * @param {Object} collectionConfig Collection configuration as JSON object
+ * @returns Beat configuraiton as YAML
+ */
 exports.collectionConfigToJson = (collectionConfig) => {
   try {
     const jsonConfig = { ...collectionConfig };
@@ -10,7 +15,11 @@ exports.collectionConfigToJson = (collectionConfig) => {
 
     // ***********
     // Remove any leafs set to null
-    const jsonConfigClean = JSON.parse(JSON.stringify(jsonConfig, (key, value) => (value === null ? undefined : value)));
+    const jsonConfigClean = JSON.parse(
+      JSON.stringify(
+        jsonConfig, (key, value) => (value === null ? undefined : value)
+      )
+    );
 
     // ***********
     // and push it out

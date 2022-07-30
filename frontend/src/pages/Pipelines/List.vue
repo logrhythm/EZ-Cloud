@@ -2,35 +2,35 @@
   <q-page class="q-pa-md">
     <!-- <q-btn class="q-mt-sm" label="Open Editor" to="/Pipelines/b9f7c85a-a278-11eb-bcbc-0242ac130002/Edit" color="primary"/> -->
       <q-table
-        title="Pipelines"
+        :title="$t('Pipelines')"
         :data="tableData"
         :columns="columns"
         row-key="uid"
         dense
-        no-data-label="No Pipeline to display."
+        :no-data-label="$t('No Pipeline to display.')"
         :filter="searchFilter"
         :loading="tableLoading"
-        rows-per-page-label="Pipelines per page:"
+        :rows-per-page-label="$t('Pipelines per page:')"
         :pagination.sync="pagination"
       >
 
         <template v-slot:top>
           <div class="full-width row wrap justify-between">
             <div class="q-table__title">
-              Pipelines
+              {{ $t('Pipelines') }}
             </div>
             <div class="row q-gutter-md">
               <div class="col" >
-                <q-btn rounded dense color="primary" icon="add" label="Add New Pipeline" @click="doPromptForPipelineDetails()" style="min-width:12rem;">
+                <q-btn rounded dense color="primary" icon="add" :label="$t('Add New Pipeline')" @click="doPromptForPipelineDetails()" style="min-width:12rem;">
                   <q-tooltip content-style="font-size: 1em">
-                    Create a new Pipeline.
+                    {{ $t('Create a new Pipeline.') }}
                   </q-tooltip>
                 </q-btn>
               </div>
             </div>
             <div class="row q-gutter-md">
               <div style="width:300px;">
-                <q-input outlined dense debounce="300" v-model="searchFilter" placeholder="Search">
+                <q-input outlined dense debounce="300" v-model="searchFilter" :placeholder="$t('Search')">
                   <template v-slot:append>
                     <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
                     <q-icon name="search" />
@@ -40,7 +40,7 @@
               <!-- <q-separator vertical dark color="orange" /> -->
               <q-btn dense outline icon="refresh" @click="loadPipelines()">
                 <q-tooltip content-style="font-size: 1em">
-                  Reload the list of Pipelines.
+                  {{ $t('Reload the list of Pipelines.') }}
                 </q-tooltip>
               </q-btn>
             </div>
@@ -72,7 +72,7 @@
             <q-icon name="auto_awesome" size="md" v-else-if ="props.value === 'New'" />
             <q-icon name="help_center" color="grey" size="md" v-else />
             <q-tooltip content-style="font-size: 1em">
-              {{ props.value }}
+              {{ $t(props.value) }}
             </q-tooltip>
           </q-td>
         </template>
@@ -108,8 +108,8 @@
                 :track-color="(darkIsEnabled ? 'grey-9' : 'grey-3')"
               />
               <q-tooltip content-style="font-size: 1em">
-                <span>Detected fields: {{ props.row.fieldsMapping.length }}</span><br>
-                <span>Mapped fields: {{ props.row.fieldsMapping.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0) }}</span>&nbsp;(<span class="text-bold">{{ Math.round(props.value * 100) / 100 }}%</span>)
+                <span>{{ $t('Detected fields:') }} {{ props.row.fieldsMapping.length }}</span><br>
+                <span>{{ $t('Mapped fields:') }} {{ props.row.fieldsMapping.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0) }}</span>&nbsp;(<span class="text-bold">{{ Math.round(props.value * 100) / 100 }}%</span>)
               </q-tooltip>
             </div>
           </q-td>
@@ -123,15 +123,15 @@
           </q-card-section>
 
           <q-card-section class="q-pt-none">
-            <q-input dense v-model="newPipelineName" autofocus label="Pipeline Name" @keyup.esc="promptForNewPipelineDetails = false" :rules="[val => !!val || $t('Pipeline name cannot be empty')]" />
+            <q-input dense v-model="newPipelineName" autofocus :label="$t('Pipeline Name')" @keyup.esc="promptForNewPipelineDetails = false" :rules="[val => !!val || $t('Pipeline name cannot be empty')]" />
           </q-card-section>
 
           <q-card-section class="q-pt-none">
-            <q-select dense v-model="newPipelineOpenCollector" :options="openCollectorsOptions" label="Primary Open Collector" emit-value map-options />
+            <q-select dense v-model="newPipelineOpenCollector" :options="openCollectorsOptions" :label="$t('Primary OpenCollector')" emit-value map-options />
           </q-card-section>
 
           <q-card-section class="q-pt-none q-mt-md" v-if="newPipelineStatus">
-            <q-select dense v-model="newPipelineStatus" :options="statusOptions" label="Status" />
+            <q-select dense v-model="newPipelineStatus" :options="statusOptions" :label="$t('Status')" emit-value map-options />
           </q-card-section>
 
           <q-card-actions align="right" class="text-primary q-mt-md">
@@ -146,12 +146,14 @@
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
+import mixinSharedRightToLeft from 'src/mixins/mixin-Shared-RightToLeft'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 
 export default {
   name: 'PagePipelinesList',
   mixins: [
+    mixinSharedRightToLeft, // Shared functions to deal with LTR/RTL languages
     mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
     mixinSharedShipperAndCollectionsHelpers // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
   ],
@@ -159,13 +161,13 @@ export default {
     return {
       searchFilter: '',
       columns: [
-        { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
-        { name: 'status', align: 'center', label: 'Status', field: 'status', sortable: true, sort: (a, b, rowA, rowB) => this.statusTextToId(a) - this.statusTextToId(b) },
-        { name: 'name', align: 'center', label: 'Pipeline Name', field: 'name', sortable: true },
-        { name: 'openCollector', align: 'center', label: 'Primary Open Collector', field: 'openCollector', sortable: true },
-        { name: 'collectionShipper', align: 'center', label: 'Collecting Shipper', field: row => row.collectionConfig.collectionShipper, sortable: true },
-        { name: 'collectionMethod', align: 'center', label: 'Collection Method', field: row => row.collectionConfig.collectionMethod, sortable: true },
-        { name: 'mappingStats', align: 'center', label: 'Fields Mapped (%)', field: row => (row.fieldsMapping && Array.isArray(row.fieldsMapping) && row.fieldsMapping.length > 0 ? row.fieldsMapping.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0) / row.fieldsMapping.length * 100 : null), sortable: true }
+        { name: 'actions', align: 'center', label: this.$t('Actions'), field: 'actions', sortable: false },
+        { name: 'status', align: 'center', label: this.$t('Status'), field: 'status', sortable: true, sort: (a, b, rowA, rowB) => this.statusTextToId(a) - this.statusTextToId(b) },
+        { name: 'name', align: 'center', label: this.$t('Pipeline Name'), field: 'name', sortable: true },
+        { name: 'openCollector', align: 'center', label: this.$t('Primary OpenCollector'), field: 'openCollector', sortable: true },
+        { name: 'collectionShipper', align: 'center', label: this.$t('Collecting Shipper'), field: row => row.collectionConfig.collectionShipper, sortable: true },
+        { name: 'collectionMethod', align: 'center', label: this.$t('Collection Method'), field: row => row.collectionConfig.collectionMethod, sortable: true },
+        { name: 'mappingStats', align: 'center', label: this.$t('Fields Mapped (%)'), field: row => (row.fieldsMapping && Array.isArray(row.fieldsMapping) && row.fieldsMapping.length > 0 ? row.fieldsMapping.reduce((count, fm) => (fm.mappedField && fm.mappedField.length > 0 ? count + 1 : count), 0) / row.fieldsMapping.length * 100 : null), sortable: true }
       ],
       pagination: {
         sortBy: 'status',
@@ -179,7 +181,20 @@ export default {
       newPipelineOpenCollector: null,
       newPipelineUid: '',
       newPipelineStatus: null,
-      statusOptions: ['New', 'Dev', 'Ready']
+      statusOptions: [ // Using the label/value due to translation. Do not revert back to simple list.
+        {
+          label: this.$t('New'),
+          value: 'New'
+        },
+        {
+          label: this.$t('Dev'),
+          value: 'Dev'
+        },
+        {
+          label: this.$t('Ready'),
+          value: 'Ready'
+        }
+      ]
     } // return
   },
   computed: {
@@ -223,8 +238,8 @@ export default {
       if (typeof row !== 'undefined') {
         // ask to confirm
         this.$q.dialog({
-          title: 'Confirm',
-          message: 'Do you REALLY want to delete this Pipeline?',
+          title: this.$t('Confirm'),
+          message: this.$t('Do you REALLY want to delete this Pipeline?'),
           ok: {
             push: true,
             color: 'negative'
@@ -271,7 +286,7 @@ export default {
     },
     collectionMethodDetails (shipperId, methodId) {
       // console.log('collectionMethodDetails: ', methodId)
-      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'help_center' }
+      const fallbackValue = { value: 'unknown', label: this.$t('Unknown or not set'), icon: 'help_center' }
       if (shipperId && shipperId.length && methodId && methodId.length) {
         // console.log(JSON.stringify(this.collectionMethodsOptions.find(cmo => cmo.shipper && cmo.shipper === shipperId && cmo.value && cmo.value === methodId) || fallbackValue))
         return this.collectionMethodsOptions.find(cmo => cmo.shipper && cmo.shipper === shipperId && cmo.value && cmo.value === methodId) || fallbackValue

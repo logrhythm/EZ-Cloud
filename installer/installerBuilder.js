@@ -55,8 +55,8 @@ const distSubDirectory = (
 // );
 
 // Build the name of the new Installer
-const targetInstallerFileName = `EZ-Cloud.v${version}.Server-Installer`;
-const targetInstallerFileNameWithExt = `EZ-Cloud.v${version}.Server-Installer.exe`;
+const targetInstallerFileName = `OC-Admin.v${version}.Server-Installer`;
+const targetInstallerFileNameWithExt = `OC-Admin.v${version}.Server-Installer.exe`;
 const targetInstallerFileFullPath = path.join(distDirectory, targetInstallerFileNameWithExt);
 
 // Run Inno Setup to build the installer

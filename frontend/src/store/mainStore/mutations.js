@@ -2,6 +2,25 @@ import { uid } from 'quasar'
 // eslint-disable-next-line camelcase
 import jwt_decode from 'jwt-decode'
 
+export function getMsSqlConfig (state, payload) {
+  if (payload) {
+    state.msSqlConfig = payload
+  }
+}
+
+export function getPersistenceLayerAvailability (state, payload) {
+  if (payload) {
+    state.currentPersistenceLayerAvailability = (
+      payload && Array.isArray(payload) && payload.length
+        ? Object.assign(
+          {},
+          payload[0]
+        )
+        : {}
+    )
+  }
+}
+
 export function addOpenCollector (state, payload) {
   if (payload && payload.name && payload.name.length > 0) {
     const newOpenCollector = Object.assign({}, payload)
@@ -49,7 +68,7 @@ export function updateOpenCollector (state, payload) {
 
 export function deleteOpenCollector (state, payload) {
   if (payload && payload.uid && payload.uid.length) {
-    // Check if the Open Collector exists. If it does, then remove it
+    // Check if the OpenCollector exists. If it does, then remove it
     const position = state.openCollectors.findIndex(oc => oc.uid === payload.uid)
     if (position >= 0) {
       state.openCollectors.splice(position, 1)
@@ -138,6 +157,9 @@ export function updateJwtToken (state, payload) {
 
     // Gather EZ Market Place details
     updateEzMarketDetails(state, payload)
+
+    // Gather and update the Extra Information provided by the API
+    updateExtraInformation(state, payload)
   }
 }
 
@@ -283,5 +305,15 @@ export function updateEzMarketPublisherDetails (state, payload) {
 
   if (payload) {
     state.ezMarketPublisherDetails = payload
+  }
+}
+
+// Extra Information
+
+export function updateExtraInformation (state, payload) {
+  if (payload) {
+    if (payload.extraInformation) {
+      state.extraInformation = payload.extraInformation
+    }
   }
 }

@@ -2,11 +2,11 @@
   <q-page class="q-pa-sm">
     <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
-        <q-btn no-caps flat dense icon="arrow_back" label="Return to Market Place" :to="'/MarketPlace'" />
+        <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Market Place')" :to="'/MarketPlace'" />
         <q-separator spaced vertical />
         <q-btn no-caps flat dense icon="mail_outline" color="primary" :label="$t('View Notifications')" to="/MarketPlace/Notifications" />
         <q-btn no-caps flat dense icon='person' :label="$t('View My Profile')" to="/MarketPlace/PublisherProfile" />
-        <q-toolbar-title style="opacity:.4" class="text-center">EZ Market Place : Pipeline Templates</q-toolbar-title>
+        <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('EZ Market Place : Pipeline Templates') }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
     <q-card class="q-pa-md q-mx-none">
@@ -14,11 +14,11 @@
           <q-card-section class="col q-ma-none q-pa-none">
             <q-card-section class="row wrap justify-between">
             <div class="text-h4">
-              Pipeline Templates
+              {{ $t('Pipeline Templates') }}
             </div>
             <div class="row q-gutter-md">
               <div style="width:300px;">
-                <q-input outlined dense debounce="300" v-model="searchFilter" placeholder="Search">
+                <q-input outlined dense debounce="300" v-model="searchFilter" :placeholder="$t('Search')">
                   <template v-slot:append>
                     <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
                     <q-icon name="search" />
@@ -34,10 +34,10 @@
                 :columns="columns"
                 row-key="pipelineTemplateUid"
                 dense
-                no-data-label="No Pipeline Template to display."
+                :no-data-label="$t('No Pipeline Template to display.')"
                 :filter="searchFilter"
                 :loading="dataLoading"
-                rows-per-page-label="Pipeline Templates per page:"
+                :rows-per-page-label="$t('Pipeline Templates per page:')"
                 :pagination.sync="pagination"
               >
 
@@ -73,10 +73,10 @@
                       <q-icon name="auto_delete" color="negative" style="opacity: .5;" size="md" v-else-if="props.value === 'To be deleted'" />
                       <q-icon name="question_mark" color="orange" size="md" v-else />
                       <q-tooltip content-style="font-size: 1em">
-                        {{ props.row.statusDescription }}
+                        {{ $t(props.row.statusDescription) }}
                       </q-tooltip>
                       <br>
-                      {{ props.value }}
+                      {{ $t(props.value) }}
                     </div>
                   </q-td>
                 </template>
@@ -102,8 +102,8 @@
                 <template v-slot:body-cell-pipelineTemplateCollectionStats="props">
                   <q-td :props="props">
                     <q-tooltip content-style="font-size: 1em">
-                      <span class="text-bold">Shipper:</span> {{ collectionShipperByValue(props.row.stats.collectionShipper).label }}<br>
-                      <span class="text-bold">Method:</span> {{ collectionMethodByValue(props.row.stats.collectionMethod).label }}
+                      {{ $t('Shipper: {collectionShipperLabel}', { collectionShipperLabel: collectionShipperByValue(props.row.stats.collectionShipper).label }) }}<br>
+                      {{ $t('Method: {collectionMethodLabel}', {collectionMethodLabel: collectionMethodByValue(props.row.stats.collectionMethod).label }) }}
                     </q-tooltip>
                     <div
                       v-if="props.value"
@@ -125,8 +125,8 @@
                       class="row items-center justify-center"
                     >
                       <q-tooltip content-style="font-size: 1em">
-                        <span>Detected fields: {{ props.row.stats.detectedFields }}</span><br>
-                        <span>Mapped fields: {{ props.row.stats.mappedFields }}</span>&nbsp;(<span class="text-bold">{{ Math.round(props.value * 100) / 100 }}%</span>)
+                        <span>{{ $t('Detected fields: {detectedFields}', { detectedFields: props.row.stats.detectedFields }) }}</span><br>
+                        <span>{{ $t('Mapped fields: {mappedFields} ({mappedFieldsPercent}%)', { mappedFields: props.row.stats.mappedFields, mappedFieldsPercent: Math.round(props.value * 100) / 100 }) }}</span><br>
                       </q-tooltip>
                       <q-circular-progress
                         class="q-mr-md"
@@ -139,10 +139,10 @@
                         :track-color="(darkMode ? 'grey-9' : 'grey-3')"
                       />
                       <div class="column q-gutter-y-xs">
-                        <q-badge :color="(props.row.stats && props.row.stats.sharedFieldFrequencies ? 'positive' : 'grey')" text-color="black" label="Shared Frequency" />
+                        <q-badge :color="(props.row.stats && props.row.stats.sharedFieldFrequencies ? 'positive' : 'grey')" text-color="black" :label="$t('Shared Frequency')" />
                         <!-- <q-badge :color="(props.row.stats && props.row.stats.sharedFieldValues ? 'orange' : 'grey')" text-color="black" label="Shared Values" /> -->
-                        <q-badge :color="(props.row.stats && props.row.stats.sharedFieldMapping ? 'positive' : 'grey')" text-color="black" label="Shared Mapping" />
-                        <q-badge :color="(props.row.stats && props.row.stats.sharedFieldModifiers ? 'positive' : 'grey')" text-color="black" label="Shared Modifiers" />
+                        <q-badge :color="(props.row.stats && props.row.stats.sharedFieldMapping ? 'positive' : 'grey')" text-color="black" :label="$t('Shared Mapping')" />
+                        <q-badge :color="(props.row.stats && props.row.stats.sharedFieldModifiers ? 'positive' : 'grey')" text-color="black" :label="$t('Shared Modifiers')" />
                       </div>
                     </div>
                     <div v-else>
@@ -214,16 +214,16 @@ export default {
     return {
       searchFilter: '',
       columns: [
-        { name: 'actions', align: 'center', label: 'Actions', field: 'actions', sortable: false },
-        { name: 'iconPicture', align: 'center', label: 'Icon / Logo', field: 'iconPicture', sortable: false },
-        { name: 'name', align: 'center', label: 'Pipeline Template Name', field: 'name', sortable: true, classes: '', style: 'white-space: pre-line;' },
+        { name: 'actions', align: 'center', label: this.$t('Actions'), field: 'actions', sortable: false },
+        { name: 'iconPicture', align: 'center', label: this.$t('Icon / Logo'), field: 'iconPicture', sortable: false },
+        { name: 'name', align: 'center', label: this.$t('Pipeline Template Name'), field: 'name', sortable: true, classes: '', style: 'white-space: pre-line;' },
         // { name: 'pipelineTemplateCollectionStats', align: 'center', label: 'Collection', field: row => (row.stats ? `${row.stats.collectionShipper || ''} - ${row.stats.collectionMethod || ''}` : null), sortable: true },
-        { name: 'pipelineTemplateCollectionStats', align: 'center', label: 'Collection', field: row => (row.stats ? `${row.stats.collectionShipper || ''}${row.stats.collectionMethod || ''}` : null), sortable: true },
-        { name: 'pipelineTemplateFieldsMappingStats', align: 'center', label: 'Fields Mapping', field: row => (row.stats && row.stats.detectedFields > 0 ? (row.stats.mappedFields || 0) / row.stats.detectedFields * 100 : null), sortable: true },
-        { name: 'publisher', align: 'center', label: 'Publisher', field: 'publisher', sortable: true },
-        { name: 'created', align: 'center', label: 'Created', field: 'created', sortable: true },
-        { name: 'modified', align: 'center', label: 'Modified', field: 'modified', sortable: true },
-        { name: 'status', align: 'center', label: 'Status', field: 'status', sortable: true }
+        { name: 'pipelineTemplateCollectionStats', align: 'center', label: this.$t('Collection'), field: row => (row.stats ? `${row.stats.collectionShipper || ''}${row.stats.collectionMethod || ''}` : null), sortable: true },
+        { name: 'pipelineTemplateFieldsMappingStats', align: 'center', label: this.$t('Fields Mapping'), field: row => (row.stats && row.stats.detectedFields > 0 ? (row.stats.mappedFields || 0) / row.stats.detectedFields * 100 : null), sortable: true },
+        { name: 'publisher', align: 'center', label: this.$t('Publisher'), field: 'publisher', sortable: true },
+        { name: 'created', align: 'center', label: this.$t('Created'), field: 'created', sortable: true },
+        { name: 'modified', align: 'center', label: this.$t('Modified'), field: 'modified', sortable: true },
+        { name: 'status', align: 'center', label: this.$t('Status'), field: 'status', sortable: true }
       ],
       pagination: {
         sortBy: 'created',
@@ -242,7 +242,7 @@ export default {
   methods: {
     ...mapActions('mainStore', ['reloadEzMarketPipelineTemplates']),
     timeAgo (timestamp) {
-      let formattedTimeAgo = 'Some time ago'
+      let formattedTimeAgo = this.$t('Some time ago')
       try {
         // Create formatter (English).
         const timeAgo = new TimeAgo('en-US')
@@ -254,7 +254,7 @@ export default {
       return formattedTimeAgo
     },
     collectionShipperByValue (value) {
-      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'unknown', outputFormat: 'json' }
+      const fallbackValue = { value: 'unknown', label: this.$t('Unknown or not set'), icon: 'unknown', outputFormat: 'json' }
       if (value && value.length) {
         return this.collectionShippersOptions.find(cso => cso.value && cso.value === value) || fallbackValue
       } else {
@@ -262,7 +262,7 @@ export default {
       }
     },
     collectionMethodByValue (value) {
-      const fallbackValue = { value: 'unknown', label: 'Unknown or not set', icon: 'help_center' }
+      const fallbackValue = { value: 'unknown', label: this.$t('Unknown or not set'), icon: 'help_center' }
       if (value && value.length) {
         return this.collectionMethodsOptions.find(cmo => cmo.value && cmo.value === value) || fallbackValue
       } else {

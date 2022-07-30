@@ -2,11 +2,11 @@
   <q-page class="q-pa-sm">
     <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
-        <q-btn no-caps flat dense icon="arrow_back" label="Return to Market Place" :to="'/MarketPlace'" />
+        <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Market Place')" :to="'/MarketPlace'" />
         <q-separator spaced vertical />
         <q-btn no-caps flat dense icon="account_tree" color="primary" :label="$t('View Pipeline Templates')" to="/MarketPlace/PipelineTemplates" />
         <q-btn no-caps flat dense icon='person' :label="$t('View My Profile')" to="/MarketPlace/PublisherProfile" />
-        <q-toolbar-title style="opacity:.4" class="text-center">EZ Market Place : Notifications</q-toolbar-title>
+        <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('EZ Market Place : Notifications') }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
     <q-card class="q-pa-md q-mx-none">
@@ -44,8 +44,10 @@
                     </q-item-section>
 
                     <q-item-section>
-                      <q-item-label lines="1"><span class="text-bold">From: </span><span :class="(notification.sender == null ? 'text-italic' : '')">{{ notification.sender || '*** Platform ***' }}</span></q-item-label>
-                      <q-item-label caption lines="1" class="q-mb-md"><span class="text-bold">To: </span><span :class="(notification.recipient == null ? 'text-italic' : '')">{{ notification.recipient || '*** Broadcast ***' }}</span></q-item-label>
+                      <!-- <q-item-label lines="1">{{ $t('From: {notificationSender}', { notificationSender: notification.sender || '*** Platform ***' }) }}</q-item-label>
+                      <q-item-label caption lines="1" class="q-mb-md">{{ $t('To: {notificationRecipient}', { notificationRecipient: notification.recipient || '*** Broadcast ***' }) }}</q-item-label> -->
+                      <q-item-label lines="1"><span class="text-bold">{{ $t('From:') }}</span>&nbsp;<span :class="(notification.sender == null ? 'text-italic' : '')">{{ notification.sender || '*** Platform ***' }}</span></q-item-label>
+                      <q-item-label caption lines="1" class="q-mb-md"><span class="text-bold">{{ $t('To:') }}</span>&nbsp;<span :class="(notification.recipient == null ? 'text-italic' : '')">{{ notification.recipient || '*** Broadcast ***' }}</span></q-item-label>
                       <q-item-label lines="20" style="white-space: pre-line;">
                         {{ notification.messageContent }}
                       </q-item-label>
@@ -56,11 +58,11 @@
                         <div>
                           <q-tooltip content-style="font-size: 1rem;">
                             <div>
-                              <span class="text-bold">Sent:</span><br>
+                              <span class="text-bold">{{ $t('Sent:') }}</span><br>
                               {{ notification.sentOn }}
                             </div>
                             <div>
-                              <span class="text-bold">Last updated:</span><br>
+                              <span class="text-bold">{{ $t('Last updated:') }}</span><br>
                               {{ notification.updatedOn }}
                             </div>
                           </q-tooltip>
@@ -103,7 +105,7 @@
                             <q-menu content-class="bg-negative text-white" anchor="top right" self="top left">
                               <q-list style="min-width: 100px">
                                 <q-item clickable v-close-popup @click="deleteEzMarketNotificationById(notification.messageUid)">
-                                  <q-item-section>Confirm</q-item-section>
+                                  <q-item-section>{{ $t('Confirm') }}</q-item-section>
                                 </q-item>
                               </q-list>
                             </q-menu>
@@ -154,6 +156,7 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import mixinSharedRightToLeft from 'src/mixins/mixin-Shared-RightToLeft'
 import { toSvg } from 'jdenticon'
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en.json'
@@ -162,7 +165,8 @@ TimeAgo.addDefaultLocale(en)
 export default {
   name: 'PageMarketNotifications',
   mixins: [
-    mixinSharedDarkMode // Shared computed to access and update the DarkMode
+    mixinSharedDarkMode, // Shared computed to access and update the DarkMode
+    mixinSharedRightToLeft // Shared functions to deal with LTR/RTL languages
   ],
   data () {
     return {

@@ -1,42 +1,91 @@
-# v0.8.🚧
+# v0.9.🚧
 *🚧🚧🚧🚧-🚧🚧-🚧🚧*
 
 ## Requirements
-- a non-HA and non-DR LogRhythm deployment (v7.5 or above)
-- NodeJS (v12.16 or above) 👈 Installer will offer to install NodeJS v14.17.6-x64 for you
-- MS SQL (v2012 or above) 👈 The one of your LogRhythm XM or PM
-- Microsoft Windows (v2012 or above)
+- A non-HA and non-DR LogRhythm deployment (v7.5 or above)
 - Ideally, one or more already configured, running and collected Open Collectors
   - Docker version 20 or above (on the Open Collectors)
+### Windows Standalone version - ![Windows](/medias/Windows_logo_16x16.png "Windows")
+- NodeJS (v12.16 or above) 👈 Installer will offer to install NodeJS v16.16.0-x64 for you
+- MS SQL (v2012 or above) 👈 The one of your LogRhythm XM or PM
+- Microsoft Windows (v2012 or above)
+
+### Containerised version - ![Docker](/medias/Docker_logo_23x16.png "Docker")
+- Docker (v20.10 or above)
+- CURL
+
+### Linux Standalone version - ![Linux](/medias/Linux_logo_14x16.png "Linux") - **EXPERIMENTAL** _(Will never be supported)_
+- NodeJS (v12.16 or above)
+- MS SQL (v2016 or above, on the XM or PM)
 
 ## Setup
-### Microsoft Windows
+### Docker Deployment Option - ![Docker](/medias/Docker_logo_23x16.png "Docker")
+#### 1. Download and Run
+##### On the Platform Manager or XM
+- Create the MS SQL DB for Docker deployments (it's a hollow version of the EZ database, with only some of its Stored Procedures)
+  - **EITHER:**
+    - Get [OC-Admin.v0.9.🚧.EZ_database_for_Docker.zip](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.9.🚧/OC-Admin.v0.9.🚧.EZ_database_for_Docker.zip)
+    - Decompress it on the PM or XM
+    - Run the `create_database_for_Docker.bat` script as an Administrator
+  - **OR:**
+    - Get [OC-Admin.v0.9.🚧.Server-Installer.exe](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.9.🚧/OC-Admin.v0.9.🚧.Server-Installer.exe)
+    - Run it on the PM or XM
+    - Select **Only SQL Database for Docker deployments (EZ Database for Docker)**
+    - Finish the install
+##### On the Docker machine
+- Two containers will be created:
+  - `oc-db`: to host OC-Admin configuration
+  - `oc-admin`: OC-Admin itself
+- On the host's Firewall, if any, open the port TCP/8400 to allow inbound connections
+- Run the following command:
+```
+mkdir dummyDir && cd dummyDir && curl -fsSOL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/installer/pseudo_lrctl.sh && sh pseudo_lrctl.sh
+```
+
+#### 2. Create your configuration
+- During the Install, when prompted, please provide a password for the new user `ocAdmin`
+
+#### 3. Connect to the OC Admin Server
+- Open https://`<ip-of-the-OC-Admin-server>`:8400/
+- Login with `ocAdmin` and the password you specified during the installation
+
+#### 4. Create your configuration
+- At first login, you will be prompted to edit the connection to the SIEM database, please follow the instruction and provide the correct credentials for the MS SQL that runs on your XM or Platform Manager
+
+### Microsoft Windows Deployment Option - ![Windows](/medias/Windows_logo_16x16.png "Windows")
 
 #### 1. Download and Install
-- If upgrading a previous version, it's a good idea to backup your `\Program Files\EZ Server\config` folder
-- Get [EZ-Cloud.v0.8.🚧.Server-Installer.exe](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.8.🚧/EZ-Cloud.v0.8.🚧.Server-Installer.exe)
+- If upgrading a previous **EZ Cloud** version to **OC Admin** v0.9.5
+  - Backup your `\Program Files\EZ Server\config` folder
+  - Un-install **EZ Cloud**
+  - Once you have installed **OC Admin**, you want to copy the following backed up files to `\Program Files\OC Admin\config`
+    - `ez-market-place.json` - As it contains your unique deployment ID
+    - `secure.json` - As it contains your private key to secure the content of the SQL database
+    - any of the `https.*.pem` files if you had brought in your own HTTPS certificates
+- If upgrading a previous **OC Admin** version, it's a good idea to backup your `\Program Files\OC Admin\config` folder
+- Get [OC-Admin.v0.9.🚧.Server-Installer.exe](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.9.🚧/OC-Admin.v0.9.🚧.Server-Installer.exe)
 - Run it
 
-It's possible to install EZ Server onto a separate machine than the SQL Server (XM/PM)
+It's possible to install OC Admin Server onto a separate machine than the SQL Server (XM/PM)
   - If you want to use this:
     - Run the installer on the SQL server (XM/PM) first
     - Select `Only SQL Database and configuration (EZ Database)` in the drop down list on the **Select Components** screen
     - Finish the install
-    - Run the installer on the Windows server where you want to run the EZ Server
-    - Select `Full installation (EZ Cloud Server + EZ Database + Frontend + NodeJS)` (or whichever is the most appropriate for you) in the drop down list
+    - Run the installer on the Windows server where you want to run the OC Admin Server
+    - Select `Full installation (OC Admin Server + EZ Database + Frontend + NodeJS)` (or whichever is the most appropriate for you) in the drop down list
     - Untick `EZ Database and SQL User` in the list of **Components**
     - Finish the install
 
 #### 2. Create your configuration
 - During the Install, if prompted, please provide the correct credentials for SQL
-- During the Install, if prompted, please provide the credentials for the new user ezAdmin
+- During the Install, if prompted, please provide the credentials for the new user ocAdmin
 
-#### 3. Connect to the EZ Server
-- Open https://`<ip-of-the-EZ-server>`:8400/
-- Login with `ezAdmin` and the password you specified during the installation
+#### 3. Connect to the OC Admin Server
+- Open https://`<ip-of-the-OC-Admin-server>`:8400/
+- Login with `ocAdmin` and the password you specified during the installation
 
 ## Advice: Create and use a non privileged User
-- Login as `ezAdmin`
+- Login as `ocAdmin`
 - Click **Admin** (just above **Settings**, on the bottom left)
 - Click **Manage User Accounts**
 - Click **Add New Account**
@@ -52,6 +101,54 @@ It's possible to install EZ Server onto a separate machine than the SQL Server (
 - Wiki: [Troubleshooting](https://github.com/logrhythm/EZ-Cloud/wiki/Troubleshooting)
 
 ## What's new in this release?
+**v0.9.5**
+- [v0.9.5] **EZ Cloud** is now called **OC Admin** 🎉🎉🎉
+  - This is part of the plan to move ~~EZ Cloud~~ OC Admin to run *on/with/as part of* the Open Collector
+- [v0.9.5] Backend - Multi-platform - Same codebase now supports/builds for multiple OSes and deployment methods:
+  - ![Windows](/medias/Windows_logo_16x16.png "Windows") Windows
+  - ![Docker](/medias/Docker_logo_23x16.png "Docker") Docker - As a new `oc-admin` container
+  - ![Linux](/medias/Linux_logo_14x16.png "Linux") Linux - **EXPERIMENTAL** _(Will never be supported)_
+- [v0.9.5] Backend - Multi-platform - Logs are stored in appropriate locations
+  - ![Windows](/medias/Windows_logo_16x16.png "Windows") - To Windows Event Journal (as always with EZ)
+  - ![Docker](/medias/Docker_logo_23x16.png "Docker") - To the Console (to be picked by Docker, and not fill up the container's volume)
+  - ![Linux](/medias/Linux_logo_14x16.png "Linux") Linux - To flat file (`/var/log/ez`)
+- [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Create a sister container `oc-db` to host PostgreSQL and store all the OC Admin configuration
+- [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Port all the SQL (EZ database) to PostgreSQL
+- [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Move MS SQL connection configuration from JSON file to record in PostgreSQL Table
+  - And encrypt all the sensitive information (MS SQL Hostname, login and password)
+- [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Add API for MS SQL Connection Admin page on Frontend
+- [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Modify API endpoints to use PostgreSQL, if Database Mode is Split or PgSQL
+  - Database Mode = "Split" means OC Admin config sits in PostgreSQL, but the SIEM is still to be reached via MS SQL. This is the default for ![Docker](/medias/Docker_logo_23x16.png "Docker") deployments
+  - Database Mode = "MsSQL" means OC Admin config sits in MS SQL on the SIEM, and there is no PostgresSQL. This is the default for ![Windows](/medias/Windows_logo_16x16.png "Windows") deployments.
+  - Database Mode = "PgSQL" means OC Admin config sits in PostgreSQL, and there is no MS SQL. This is a future state, for when the SIEM will be accessed purely by API.
+- [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Move RBAC tables and logic to PostgreSQL
+- [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Move EZ Market Place config to PostgreSQL instead of JSON file
+- [v0.9.5] Backend - Multi-platform - ![Docker](/medias/Docker_logo_23x16.png "Docker") - Pull Master License ID from SIEM and store it in PostgreSQL
+- [v0.9.5] Backend - Check connection to the SQL systems at start-up and keep checkin until they are all good
+- [v0.9.5] Backend - Update embedded NodeJS to v16.16.0
+- [v0.9.5] Frontend - 💬 Internationalisation - Right-To-Left langauge support (For Arabic and Hebrew)
+- [v0.9.5] Frontend - 💬 Internationalisation - Multilanguage support with all text internationalised in: (some langauges still need to be reviewed and corrected by native speakers, they are marked with a "🚧")
+  - British English
+  - French
+  - Spanish (🚧)
+  - German (🚧)
+  - Simplified Chinese (🚧)
+  - Arabic (🚧)
+  - Korean (🚧)
+  - Portugese (🚧)
+  - Hebrew (🚧)
+  - Italian (🚧)
+  - Japanese (🚧)
+- [v0.9.5] Frontend - 💬 Internationalisation - Add Language switch in Settings and Login page
+- [v0.9.5] Frontend - Login page - Show status of Backend services and databases
+- [v0.9.5] Frontend - Login page - Disable Logon button if no SQL server is available
+- [v0.9.5] Frontend - Admin - Configuration page for SIEM MS SQL, for ![Docker](/medias/Docker_logo_23x16.png "Docker") deployments
+- [v0.9.5] Frontend - MarketPlace notification indicator to show on **Notification** sub-menu too
+- [v0.9.🚧] 
+
+**v0.9.0**
+- [v0.9.0] Backend - Make Encrypted SQL connection the default
+
 **v0.8.5-0.8.7**
 _(Backend v0.8.5 / Frontend v0.8.7)_
 - [v0.8.5-0.8.7] Frontend - Market - Export Pipeline to EZ Market Place
@@ -63,7 +160,6 @@ _(Backend v0.8.5 / Frontend v0.8.7)_
   - Sanitization of Fields Mapping
   - Pre-Submit Final Check-list
 - [v0.8.5-0.8.7] Frontend - Empty Publisher details on Log-out
-- [v0.8.🚧] 
 
 **v0.8.5-0.8.6**
 _(Backend v0.8.5 / Frontend v0.8.6)_
@@ -215,7 +311,6 @@ _(Below "Market" relates to the backend API of the Market Place, and "Market Adm
 **v0.8.4**
 - [v0.8.5] Frontend - Fix #8 (JQ Filter doesn't catch on logs coming from LR Webhook Beat) - Add filtering by `.fullyqualifiedbeatname` in JQ Filter
 - [v0.8.5] Frontend - Fix - `DeploymentEdit` page didn't implement `extractMessageFieldOnly` correctly when producing the JQ Transform at deployment time
-- [v0.8.🚧] 
 
 **v0.8.4**
 - [v0.8.4] Frontend - Remove Webhook shipper duplicate entry
@@ -258,7 +353,6 @@ _(Below "Market" relates to the backend API of the Market Place, and "Market Adm
 
 ## Know issues :bug: :beetle:
 - Will fail to deploy log shippers if not using the `root` account or an account with full `sudo` access
-- If using the Fan Out feature - OpenCollector will refuse to import JQ Transform
 - Open Collector machines running older versions of Docker (anything below v20) will fail to Tail
 - HA and DR deployments of LogRhythm SIEM are not supported
 

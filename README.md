@@ -1,16 +1,24 @@
-[![Last Release](https://badgen.net/badge/release/v0.9.0/green)](https://github.com/logrhythm/EZ-Cloud/releases)
+[![Last Release](https://badgen.net/badge/release/v0.9.5/green)](https://github.com/logrhythm/EZ-Cloud/releases)
 [![Dev Version](https://badgen.net/badge/dev/v0.9/orange)](https://github.com/logrhythm/EZ-Cloud/tree/v0.9)
 
-# EZ-Cloud
- EZ-Cloud On-Boarder for Core SIEM
+# OC Admin (Formerly EZ-Cloud)
+Open Collector Admin and On-Boarder for Core SIEM
 
 Check [Releases](https://github.com/logrhythm/EZ-Cloud/releases) for version specific instructions.
 
 # Backend:
 
 ## Requirements
+### Windows Standalone version - ![Windows](/medias/Windows_logo_16x16.png "Windows")
 - NodeJS (v12.16 or above)
-- MS SQL (v2016 or above)
+- MS SQL (v2016 or above, on the XM or PM)
+
+### Containerised version - ![Docker](/medias/Docker_logo_23x16.png "Docker")
+- Docker (v20.10 or above)
+
+### Linux Standalone version - ![Linux](/medias/Linux_logo_14x16.png "Linux") - **EXPERIMENTAL** _(Will never be supported)_
+- NodeJS (v12.16 or above)
+- MS SQL (v2016 or above, on the XM or PM)
 
 ## Setup
 See [Releases](https://github.com/logrhythm/EZ-Cloud/releases) for version specific installation instructions
@@ -45,34 +53,44 @@ npm run test
 ```
 
 ### Build
-
 - Full build
-  - Updates Version
-  - Build and Import Frontend
-  - Build the Backend
-    - Webpack
-    - Creates the Zip files
-      - Without NodeJS
-      - With NodeJS
-    - Creates the Installer
+  - Updates Version (![Windows](/medias/Windows_logo_16x16.png "Windows"), ![Linux](/medias/Linux_logo_14x16.png "Linux") & ![Docker](/medias/Docker_logo_23x16.png "Docker"))
+  - Build and Import Frontend (![Windows](/medias/Windows_logo_16x16.png "Windows"), ![Linux](/medias/Linux_logo_14x16.png "Linux") & ![Docker](/medias/Docker_logo_23x16.png "Docker"))
+  - Build the Backend (![Windows](/medias/Windows_logo_16x16.png "Windows"), ![Linux](/medias/Linux_logo_14x16.png "Linux") & ![Docker](/medias/Docker_logo_23x16.png "Docker"))
+    - Webpack (![Windows](/medias/Windows_logo_16x16.png "Windows"), ![Linux](/medias/Linux_logo_14x16.png "Linux") & ![Docker](/medias/Docker_logo_23x16.png "Docker"))
+    - Creates the Zip files (![Windows](/medias/Windows_logo_16x16.png "Windows") only)
+      - Without NodeJS (![Windows](/medias/Windows_logo_16x16.png "Windows") only)
+      - With NodeJS (![Windows](/medias/Windows_logo_16x16.png "Windows") only)
+    - Creates the Installer (![Windows](/medias/Windows_logo_16x16.png "Windows") only)
+    - Creates the Docker creation file and script (![Docker](/medias/Docker_logo_23x16.png "Docker") only)
 ```
-npm run buildWithFrontend
+# For Windows:
+npm run buildWindowsFull
+# For Docker:
+npm run buildDockerFull
 ```
 
-- Backend build
-  - Updates Version
-  - Webpack
-  - Creates the Zip files
-    - Without NodeJS
-    - With NodeJS
-  - Creates the Installer
+- Backend build (![Windows](/medias/Windows_logo_16x16.png "Windows"), ![Linux](/medias/Linux_logo_14x16.png "Linux") & ![Docker](/medias/Docker_logo_23x16.png "Docker"))
+  - Updates Version (![Windows](/medias/Windows_logo_16x16.png "Windows"), ![Linux](/medias/Linux_logo_14x16.png "Linux") & ![Docker](/medias/Docker_logo_23x16.png "Docker"))
+  - Webpack (![Windows](/medias/Windows_logo_16x16.png "Windows"), ![Linux](/medias/Linux_logo_14x16.png "Linux") & ![Docker](/medias/Docker_logo_23x16.png "Docker"))
+  - Creates the Zip files (![Windows](/medias/Windows_logo_16x16.png "Windows") only)
+    - Without NodeJS (![Windows](/medias/Windows_logo_16x16.png "Windows") only)
+    - With NodeJS (![Windows](/medias/Windows_logo_16x16.png "Windows") only)
+  - Creates the Installer (![Windows](/medias/Windows_logo_16x16.png "Windows") only)
+  - Creates the Docker creation file and script (![Docker](/medias/Docker_logo_23x16.png "Docker") only)
 ```
-npm run build
+# For Windows:
+npm run buildWindows
+# For Docker:
+npm run buildDocker
 ```
 
 - Build and Import Frontend
 ```
-npm run buildFrontendAndImport
+# On Windows:
+npm run buildWindowsFrontendAndImport
+# On Linux:
+npm run buildDockerFrontendAndImport
 ```
 
 ### TODO

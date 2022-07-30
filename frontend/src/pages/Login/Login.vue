@@ -1,9 +1,9 @@
 <template>
   <q-page class="flex flex-center">
     <form>
-      <q-card style="min-width: 350px" :class="(shakyClass ? 'computerSayNo' : '')">
+      <q-card style="min-width: 350px" :class="(shakyClass ? 'computerSaysNo' : '')">
         <q-card-section>
-          <div class="text-h6">{{ $t('Sign in to EZ Cloud') }}</div>
+          <div class="text-h6">{{ $t('Sign in to OC Admin') }}</div>
         </q-card-section>
 
         <q-card-section class="q-pt-none">
@@ -21,7 +21,13 @@
           <q-input dense v-model="password" type="password" :hint="$t('Password')" @keyup.enter="checkCredentials()" />
         </q-card-section>
 
-        <q-card-actions align="stretch">
+        <q-card-section class="q-py-none">
+          <dir class="q-ma-none q-px-sm text-bold text-negative text-center fadeOut">
+            <span v-show="lastAttemptFailed">{{ $t('Authentication failed.') }}</span>&nbsp;
+          </dir>
+        </q-card-section>
+
+        <q-card-actions align="between">
           <q-toggle
             v-model="darkMode"
             checked-icon="dark_mode"
@@ -34,15 +40,99 @@
               {{ $t('Switch between Light and Dark mode') }}
             </q-tooltip>
           </q-toggle>
-            <!-- size="4rem" -->
-          <dir class="col text-bold text-negative fadeOut" v-show="lastAttemptFailed">
-            {{ $t('Authentication failed.') }}
-          </dir>
-          <q-space />
-          <q-btn flat class="q-my-sm" :label="$t('Login')" color="primary" @click="checkCredentials()" :loading="waitingOnServer" />
+
+          <q-btn flat icon="translate">
+            <q-tooltip content-style="font-size: 1em">
+              {{ $t('Change language') }}
+            </q-tooltip>
+            <q-menu auto-close anchor="bottom middle" self="top middle">
+              <q-list style="min-width: 10em">
+                <q-item
+                  class="text-center"
+                  :clickable="!language.selected"
+                  v-for="language in languageList"
+                  :key="language.value"
+                  @click="selectLanguage(language.value)"
+                >
+                  <q-item-section :class="(language.selected ? 'text-primary' : '')">
+                    <div>{{ language.nativeLabel }}</div>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
+          </q-btn>
+
+          <q-btn flat class="q-my-sm" :label="$t('Login')" color="primary" @click="checkCredentials()" :loading="waitingOnServer" :disable="!canWeLogin" />
         </q-card-actions>
+
       </q-card>
     </form>
+
+    <q-page-sticky position="bottom" :offset="[18, 18]">
+      <q-fab
+        icon="keyboard_arrow_up"
+        direction="up"
+        square
+        color="blue-grey-7"
+        @click="morphGroupModel = 'full'"
+      >
+        <template v-slot:label="{ opened }">
+          <div :class="{ 'example-fab-animate--hover': opened !== true }">
+            <q-badge color="warning" text-color="black" floating v-if="statusWarnings && !statusProblems">{{ statusWarnings }}</q-badge>
+            <q-badge color="negative" floating v-if="statusProblems">{{ statusProblems }}</q-badge>
+            {{ opened !== true ? $t('Statuses') : $t('Close') }}
+            <q-linear-progress :indeterminate="loadingPersistenceLayerAvailability && delayUntilCheck < 0" :value="delayUntilCheck" color="white" size="1px" v-if="loadingPersistenceLayerAvailability || delayUntilCheck > 0" />
+          </div>
+        </template>
+        <q-card
+          dense
+          style="min-width: 40rem"
+        >
+
+          <q-card-section horizontal>
+            <q-card-section class="column items-center no-wrap q-gutter-y-sm justify-center q-px-lg">
+              <q-icon name="traffic" size="xl" />
+              <div class="text-bold">{{ $t('Statuses') }}</div>
+            </q-card-section>
+
+            <q-separator vertical/>
+
+            <q-card-section class="full-width row items-center no-wrap justify-evenly">
+              <div class="column items-center">
+                <div class="text-bold">{{ $t('OC-Admin Container') }}</div>
+                <q-icon name="extension" size="xl" color="positive" v-if="ocAdminState === true"/>
+                <q-icon name="extension_off" size="xl" color="warning" v-else-if="ocAdminState === false"/>
+                <q-icon name="extension" size="xl" color="grey" v-else/>
+                <div v-if="ocAdminState === true">{{ $t('Reachable') }}</div>
+                <div v-else-if="ocAdminState === false">{{ $t('Unreachable') }}</div>
+                <div v-else>{{ $t('Unknown') }}</div>
+              </div>
+
+              <div class="column items-center">
+                <div class="text-bold">{{ $t('OC-DB Container') }}</div>
+                <q-icon name="extension" size="xl" color="positive" v-if="pgSqlState === true"/>
+                <q-icon name="extension_off" size="xl" color="warning" v-else-if="pgSqlState === false"/>
+                <q-icon name="extension" size="xl" color="grey" v-else/>
+                <div v-if="pgSqlState === true">{{ $t('Reachable') }}</div>
+                <div v-else-if="pgSqlState === false">{{ $t('Unreachable') }}</div>
+                <div v-else>{{ $t('Unknown') }}</div>
+              </div>
+
+              <div class="column items-center">
+                <div class="text-bold">{{ $t('Platform Manager') }}</div>
+                <q-icon name="cloud" size="xl" color="positive" v-if="msSqlState === true"/>
+                <q-icon name="cloud_off" size="xl" color="warning" v-else-if="msSqlState === false"/>
+                <q-icon name="cloud" size="xl" color="grey" v-else/>
+                <div v-if="msSqlState === true">{{ $t('Reachable') }}</div>
+                <div v-else-if="msSqlState === false">{{ $t('Unreachable') }}</div>
+                <div v-else>{{ $t('Unknown') }}</div>
+              </div>
+            </q-card-section>
+          </q-card-section>
+        </q-card>
+      </q-fab>
+
+    </q-page-sticky>
   </q-page>
 </template>
 
@@ -50,6 +140,7 @@
 import { mapState, mapActions } from 'vuex'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import { languageOptions, switchLanguageTo } from 'src/i18n/shared'
 
 export default {
   name: 'PageLogin',
@@ -65,14 +156,56 @@ export default {
       lastAttemptFailed: false,
       shakyClass: false,
       lastAttemptFailedTimer: null,
-      shakyClassTime: null
+      shakyClassTime: null,
+      ocAdminState: null, // State of OC Admin. Null = status unknown, True = OC Admin is up and responding, False = OC Admin not responding
+      loadingPersistenceLayerAvailability: true, // Are we waiting for the API for Persistence Layer Availability
+      delayUntilCheck: 0, // How long until we check next API for Persistence Layer Availability
+      persistenceLayerAvailabilityCheckTimer: null
     }
   }, // data
   computed: {
-    ...mapState('mainStore', ['jwtToken'])
+    ...mapState('mainStore', ['jwtToken', 'currentPersistenceLayerAvailability']),
+    languageList () {
+      if (languageOptions && Array.isArray(languageOptions)) {
+        return languageOptions.reduce(
+          (accumulatedLanguages, language) => {
+            accumulatedLanguages.push(
+              {
+                ...language,
+                selected: !!(String(language.value).toLowerCase() === String(this.$i18n.locale).toLowerCase())
+              }
+            )
+            return accumulatedLanguages
+          },
+          []
+        )
+      }
+      return [{ value: 'en-gb', nativeLabel: 'English' }]
+    },
+    pgSqlState () {
+      return this.currentPersistenceLayerAvailability.pgSqlAvailable
+    },
+    msSqlState () {
+      return this.currentPersistenceLayerAvailability.msSqlAvailable
+    },
+    statusWarnings () {
+      return Number(this.ocAdminState === null) +
+      Number(this.ocAdminState === undefined) +
+      Number(this.pgSqlState === null) +
+      Number(this.pgSqlState === undefined) +
+      Number(this.msSqlState === null) +
+      Number(this.msSqlState === undefined)
+    },
+    statusProblems () {
+      return Number(this.ocAdminState === false) + Number(this.pgSqlState === false) + Number(this.msSqlState === false)
+    },
+    canWeLogin () {
+      return this.pgSqlState === true ||
+        (this.pgSqlState === null && this.msSqlState === true)
+    }
   }, // computed
   methods: {
-    ...mapActions('mainStore', ['signIn', 'signOut', 'reloadEzMarketNotifications']),
+    ...mapActions('mainStore', ['signIn', 'signOut', 'reloadEzMarketNotifications', 'getPersistenceLayerAvailability']),
     checkCredentials () {
       if (this.lastAttemptFailedTimer) {
         clearTimeout(this.lastAttemptFailedTimer)
@@ -112,17 +245,76 @@ export default {
           this.lastAttemptFailed = false
         }, 4800)
       }
+    },
+    selectLanguage (selectedLanguage) {
+      switchLanguageTo(this, selectedLanguage)
+    },
+    checkPersistenceLayerAvailability () {
+      // Get the status of the Databases
+      this.getPersistenceLayerAvailability(
+        {
+          onSuccessCallBack: this.onPersistenceLayerAvailabilitySuccess,
+          onErrorCallBack: this.onPersistenceLayerAvailabilityError
+        }
+      )
+    },
+    onPersistenceLayerAvailabilitySuccess () {
+      this.ocAdminState = true
+      this.loadingPersistenceLayerAvailability = false
+      this.scheduleNewCheck()
+    },
+    onPersistenceLayerAvailabilityError () {
+      this.ocAdminState = false
+      this.loadingPersistenceLayerAvailability = false
+      this.scheduleNewCheck()
+    },
+    scheduleNewCheck () {
+      // Check if we have any negative stuff
+      // If we do:
+      // - set `delayUntilCheck` to 1
+      // - set `persistenceLayerAvailabilityCheckTimer` timer to 0.1 second to reduce `delayUntilCheck` until it's 0
+      // If `delayUntilCheck` is 0, kill `persistenceLayerAvailabilityCheckTimer` time and start a new API check
+
+      if (this.statusWarnings || this.statusProblems) {
+        this.delayUntilCheck = 1
+
+        if (!this.persistenceLayerAvailabilityCheckTimer) {
+          this.persistenceLayerAvailabilityCheckTimer = setInterval(() => {
+            this.delayUntilCheck = this.delayUntilCheck - 0.05
+            if (this.delayUntilCheck <= 0) {
+              clearInterval(this.persistenceLayerAvailabilityCheckTimer)
+              this.persistenceLayerAvailabilityCheckTimer = null
+              this.checkPersistenceLayerAvailability()
+            }
+          }, 500)
+        }
+      }
     }
   }, // methods
   mounted () {
+    console.log('mounted - 🚀')
     // First remove any token from previous Login
     this.signOut()
+
+    // Get the status of the Databases
+    this.persistenceLayerAvailabilityCheckTimer = setInterval(() => {
+      console.log('persistenceLayerAvailabilityCheckTimer - ⏰')
+      clearInterval(this.persistenceLayerAvailabilityCheckTimer)
+      this.persistenceLayerAvailabilityCheckTimer = null
+      this.checkPersistenceLayerAvailability()
+    }, 100)
+    console.log('mounted - 🏁')
+  },
+  beforeDestroy () {
+    if (this.persistenceLayerAvailabilityCheckTimer) {
+      clearInterval(this.persistenceLayerAvailabilityCheckTimer)
+    }
   }
 }
 </script>
 
 <style>
-.computerSayNo {
+.computerSaysNo {
   position: relative;
   animation-name: shakeLogin;
   animation-duration: 5s;

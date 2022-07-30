@@ -1,8 +1,20 @@
 // Get the SQL utils
-const { getDataFromSql, createSqlVariables } = require('./sqlUtils');
+// const { getConfigDataFromSql, createMsSqlVariables } = require('./sqlUtils');
+const {
+  getDataFromMsSql,
+  createMsSqlVariables,
+  getDataFromPgSql,
+  createPgSqlVariables
+} = require('./sqlUtils');
+
 // Get the crypto tools to work with password and keys
 const { aesDecrypt } = require('./crypto');
 
+/**
+ * Gather SSH configuration for a given Open Collector host
+ * @param {Object} params Object containing the UID as `uid` of the Collector
+ * @returns SSH configuration object with host port, user and password or private key
+ */
 async function getSshConfigForCollector(params) {
   const sshConfig = {
     host: '',
@@ -11,32 +23,66 @@ async function getSshConfigForCollector(params) {
   const queryResult = {};
 
   if (params && params.uid && params.uid.length) {
-    await getDataFromSql({
-      targetVariable: queryResult,
-      query: `
-      SELECT TOP 1
-        [uid]
-        ,[hostname]
-        ,[port]
-        ,[authenticationMethod]
-        ,[username]
-        ,[password]
-        ,[privateKey]
-      FROM [dbo].[openCollectors]
-      WHERE [uid] = @uid
-      ;
-      `,
-      variables: createSqlVariables(
-        {
-          body: {
-            uid: params.uid
-          }
-        },
-        [
-          { name: 'uid', type: 'NVarChar' }
-        ]
-      )
-    });
+    if (
+      process.env.databaseMode === 'mssql'
+    ) {
+      // Use MS SQL
+      await getDataFromMsSql({
+        targetVariable: queryResult,
+        query: `
+        SELECT TOP 1
+          [uid]
+          ,[hostname]
+          ,[port]
+          ,[authenticationMethod]
+          ,[username]
+          ,[password]
+          ,[privateKey]
+        FROM [dbo].[openCollectors]
+        WHERE [uid] = @uid
+        ;
+        `,
+        variables: createMsSqlVariables(
+          {
+            body: {
+              uid: params.uid
+            }
+          },
+          [
+            { name: 'uid', type: 'NVarChar' }
+          ]
+        )
+      });
+    } else {
+      // Use PgSQL
+      await getDataFromPgSql({
+        targetVariable: queryResult,
+        query: `
+        SELECT
+           "uid"
+          ,"hostname"
+          ,"port"
+          ,"authenticationMethod"
+          ,"username"
+          ,"password"
+          ,"privateKey"
+        FROM "openCollectors"
+        WHERE "uid" = $1
+        LIMIT 1
+        ;
+        `,
+        variables: createPgSqlVariables(
+          {
+            body: {
+              uid: params.uid
+            }
+          },
+          [
+            { name: 'uid' }
+          ]
+        )
+      });
+    }
 
     const collectorRecord = (
       queryResult
@@ -95,30 +141,64 @@ async function getSshConfigForCollector(params) {
   return sshConfig;
 }
 
+/**
+ * Gather SSH configuration for a Open Collector host for a given Pipeline
+ * @param {Object} params Object containing the UID as `uid` of the Pipeline
+ * @returns SSH configuration object with host port, user and password or private key
+ */
 async function getCollectorSshConfigForPipeline(params) {
   const queryResult = {};
   let collectorUid = '';
 
   if (params && params.uid && params.uid.length) {
-    await getDataFromSql({
-      targetVariable: queryResult,
-      query: `
-      SELECT TOP 1 [primaryOpenCollector]
-      FROM [dbo].[pipelines]
-      WHERE [uid] = @uid
-      ;
-      `,
-      variables: createSqlVariables(
-        {
-          body: {
-            uid: params.uid
-          }
-        },
-        [
-          { name: 'uid', type: 'NVarChar' }
-        ]
-      )
-    });
+    if (
+      process.env.databaseMode === 'mssql'
+    ) {
+      // Use MS SQL
+      await getDataFromMsSql({
+        targetVariable: queryResult,
+        query: `
+        SELECT TOP 1 
+          [primaryOpenCollector]
+          FROM [dbo].[pipelines]
+          WHERE [uid] = @uid
+        ;
+        `,
+        variables: createMsSqlVariables(
+          {
+            body: {
+              uid: params.uid
+            }
+          },
+          [
+            { name: 'uid', type: 'NVarChar' }
+          ]
+        )
+      });
+    } else {
+      // Use PgSQL
+      await getDataFromPgSql({
+        targetVariable: queryResult,
+        query: `
+        SELECT
+           "primaryOpenCollector"
+        FROM "pipelines"
+        WHERE "uid" = $1
+        LIMIT 1
+        ;
+        `,
+        variables: createPgSqlVariables(
+          {
+            body: {
+              uid: params.uid
+            }
+          },
+          [
+            { name: 'uid' }
+          ]
+        )
+      });
+    }
 
     const pipelineRecord = (
       queryResult

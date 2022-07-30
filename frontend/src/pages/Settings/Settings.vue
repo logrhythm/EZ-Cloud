@@ -3,10 +3,10 @@
     <q-card class="q-pa-md q-mx-none" v-if="devMode">
       <q-card-section horizontal>
         <q-card-section class="col">
-          <div class="text-h4">EZ Backend Base URLs</div>
-          <q-input v-model="ezBackendBaseUrlWeb" label="Website" autofocus />
-          <q-input v-model="ezBackendBaseUrlApi" label="API"  />
-          <q-input v-model="ezBackendBaseUrlSocket" label="Socket"  />
+          <div class="text-h4">{{ $t('EZ Backend Base URLs') }}</div>
+          <q-input v-model="ezBackendBaseUrlWeb" :label="$t('Website')" autofocus />
+          <q-input v-model="ezBackendBaseUrlApi" :label="$t('API')"  />
+          <q-input v-model="ezBackendBaseUrlSocket" :label="$t('Socket')"  />
         </q-card-section>
 
         <q-separator vertical />
@@ -20,9 +20,10 @@
         </q-card-actions>
       </q-card-section>
     </q-card>
+
     <q-card class="q-pa-md q-mx-none">
       <q-card-section class="col">
-        <div class="text-h4">Theme</div>
+        <div class="text-h4">{{ $t('Theme') }}</div>
         <q-toggle
           v-model="darkMode"
           checked-icon="dark_mode"
@@ -37,11 +38,38 @@
         </q-toggle>
       </q-card-section>
     </q-card>
+
+    <q-card class="q-pa-md q-mx-none">
+      <q-card-section horizontal>
+        <q-card-section class="col">
+          <div class="text-h4">{{ $t('Language') }}</div>
+            <q-select
+              v-model="selectedLanguage"
+              :options="langOptions"
+              emit-value
+              map-options
+              style="min-width: 150px"
+            />
+        </q-card-section>
+
+        <q-separator vertical />
+
+        <q-card-actions>
+          <q-btn glossy class="full-height" color="primary" icon="save" @click="saveLanguageSettings()" :loading="savingAction" >
+            <q-tooltip content-style="font-size: 1em">
+              {{ $t('Save settings to local web browser.') }}
+            </q-tooltip>
+          </q-btn>
+        </q-card-actions>
+      </q-card-section>
+    </q-card>
+
   </q-page>
 </template>
 
 <script>
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import { languageOptions, switchLanguageTo } from 'src/i18n/shared'
 
 export default {
   name: 'PageSettings',
@@ -53,12 +81,34 @@ export default {
       savingAction: false,
       ezBackendBaseUrlWeb: '',
       ezBackendBaseUrlApi: '',
-      ezBackendBaseUrlSocket: ''
+      ezBackendBaseUrlSocket: '',
+      selectedLanguage: this.$i18n.locale
+      // langOptions: languageOptions // List of languages coming from `src/i18n/shared`
     }
   }, // data
   computed: {
     devMode () {
       return !!(process.env.DEV)
+    },
+    langOptions () {
+      return (
+        languageOptions && Array.isArray(languageOptions)
+          ? languageOptions.reduce(
+            (accumulatedLangages, language) => {
+              accumulatedLangages.push(
+                {
+                  ...language,
+                  label: (language.value !== this.$i18n.locale
+                    ? `${this.$t(language.label)} - ${language.nativeLabel}`
+                    : language.nativeLabel
+                  )
+                }
+              )
+              return accumulatedLangages
+            }, []
+          )
+          : languageOptions
+      )
     }
   },
   methods: {
@@ -69,6 +119,9 @@ export default {
       localStorage.setItem('settings.ezBackend.url.api', this.ezBackendBaseUrlApi)
       this.globalConstants.baseUrl.socket = this.ezBackendBaseUrlSocket
       localStorage.setItem('settings.ezBackend.url.socket', this.ezBackendBaseUrlSocket)
+    },
+    saveLanguageSettings () {
+      switchLanguageTo(this, this.selectedLanguage)
     }
   },
   mounted () {

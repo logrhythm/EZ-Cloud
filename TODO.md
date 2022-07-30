@@ -1,5 +1,61 @@
 # TODO - Backend
 
+### Target: v0.9
+
+## TO DO
+- Installer
+  - [ ] ~~Offer to use Trusted SQL Connection for run time~~ (👈 Trusted mode not supported by Tedious)
+  - [ ] ~~Make SQL Trusted Connection the default~~ (👈 Trusted mode not supported by Tedious)
+  - [ ] Offer to use Encrypted Connection for run time
+  - [x] Make Encrypted SQL connection the default
+  - [x] Create Docker dedicated MS SQL DB creation script
+- SQL
+  - [ ] ~~Add configuration parameters to enable SQL Trusted Connection Auth~~ (👈 Trusted mode not supported by Tedious)
+  - [ ] ~~Handle SQL Trusted Connection~~ (👈 Trusted mode not supported by Tedious)
+  - [x] Move EZ database to PostgreSQL
+    - [x] Tables
+    - [x] Stored Procedures
+    - [x] Functions
+  - [x] Move MS SQL connection configuration from JSON file to record in PostgreSQL Table
+  - [x] Check connection to the SQL systems at start-up and keep checkin until they are all good
+  - [x] Function to retrieve the current Persistence Layer Availability
+  - [x] Add API to check Persistence Layer Availability
+- SQL Utils
+  - [x] Split utilitarian functions to deal with both MS SQL and PostgreSQL
+    - [ ] Depreciate said functions and force using MS SQL and PostgreSQL specific functions instead
+- Multi-platform
+  - [x] Allow to run on:
+    - [x] Windows
+      - [x] Log to Event Journal Application
+    - [x] Linux
+      - [x] Log to flat file (`/var/log/ez`)
+    - [x] Containerised Linux
+- RBAC
+  - [x] Move RBAC tables and Stored Procedures to PostgreSQL
+  - [x] Use PostgreSQL for Authenticaion instead of MS SQL
+    - [x] Validate login with PgSQL or MS SQL depending on DB Mode
+    - [x] Gather RBAC access rights from table of PgSQL instead of MS SQL, if DB Mode is Split or PgSQL
+  - [x] Collect JWT config from PgSQL instead of JSON file, if DB Mode is Split or PgSQL
+  - [x] Modify RBAC API enpoints to use PostgreSQL, if DB Mode is Split or PgSQL
+- EZ Marketplace
+  - [x] Collect EZ Market Place config from PgSQL instead of JSON file if DB Mode is Split or PgSQL
+  - [x] Create function to pull Master License ID from SIEM and store it in PgSQL, if DB Mode is Split or PgSQL
+- OpenCollectors and Pipeline API
+  - [x] Modify API endpoints to use PostgreSQL, if DB Mode is Split or PgSQL
+- MS SQL Admin
+  - [x] Add API for MS SQL Connection admin page on Frontend
+    - [x] Get MS SQL config
+    - [x] Update MS SQL config
+  - [x] Encrypt MS SQL credentials using deployment specific private key
+  - [x] Store them safely in PgSQL
+
+## TO FIX
+- [x] Save/Read of Fields Mapping from PgSQL
+- [x] Tail actions doesn't fail if no or incomplete SSH details for Primary OC for Pipeline
+
+## TO TEST
+
+---
 ### Target: v0.8
 
 ## TO DO

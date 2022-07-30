@@ -30,7 +30,7 @@ export default function () {
     ],
     jqFilterTemplate: filterTemplate, // Imported from jqTemplates
     jqTransformTemplate: transformTemplate, // Imported from jqTemplates
-    shippersUrlsInternal: [], // Array of URLs and details for the different Shippers we can install on remote Open Collector hosts
+    shippersUrlsInternal: [], // Array of URLs and details for the different Shippers we can install on remote OpenCollector hosts
     collectionMethodTemplates: [
       collectionMethodTemplatesJsBeat, // jsBeat - flatfile
       collectionMethodTemplatesFilebeatLog, // Filebeat - log (flat files)
@@ -277,6 +277,9 @@ export default function () {
     ezMarketNotifications: [], // Notifications from EZ Market Place for the User
     ezMarketPipelineTemplates: [], // Pipeline Templates from EZ Market Place for the User
     ezMarketPipelineTemplate: {}, // Pipeline Template fully loaded from EZ Market Place by UID
-    ezMarketPublisherDetails: {} // Details of the Publisher (current user), as held by the EZ Market Place
+    ezMarketPublisherDetails: {}, // Details of the Publisher (current user), as held by the EZ Market Place
+    msSqlConfig: {}, // SIEM MS SQL connection configuration
+    extraInformation: {}, // Extra Information provided by the Login API on the server
+    currentPersistenceLayerAvailability: {} // Stores the availability of the databases
   }
 }

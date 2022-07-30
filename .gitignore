@@ -8,6 +8,9 @@ config/
 # Private key of the Market place
 ez-market-place/certificates/ez-market-place.key.pem
 
+# Working dir of the Docker building scripts
+docker/oc-admin_dev/EZ-Cloud
+
 # Build from webpack
 /dist/
 
@@ -101,3 +104,6 @@ typings/
 
 # Unnecessary Mac stuff
 .DS_Store
+
+# Docker container artifact
+/core.*

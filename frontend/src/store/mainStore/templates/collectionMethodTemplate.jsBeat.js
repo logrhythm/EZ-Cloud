@@ -204,7 +204,7 @@ The default setting is 30 Seconds.`,
         name: 'string' // array, object, boolean, string, number, regex, option
       },
       default: '',
-      description: `The name of the Device Type, to pass onto the Open Collector Pipeline for the Log Source Virtualisation to work.
+      description: `The name of the Device Type, to pass onto the OpenCollector Pipeline for the Log Source Virtualisation to work.
 ::: tip
 The Log Source Virtualisation will expect it to be the same as the Pipeline name, but with all the non alphanumerical characters replaced by an underscore.
 For example:

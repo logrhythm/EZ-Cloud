@@ -771,7 +771,7 @@ Like so:
 
     // I decided NOT to implement this one, as it was too complicated
     // (it would have required to develop new widgets / logic to deal with it)
-    // and a duplicate of the Fan Out option of the Open Collector
+    // and a duplicate of the Fan Out option of the OpenCollector
 
     // {
     //   name: 'response.split',
@@ -824,7 +824,7 @@ Like so:
 __NOT IMPLEMENTED__
 :::
 
-The __split__ feature of Filebeat is a duplicate of the __Fan Out__ feature of the Open Collector.
+The __split__ feature of Filebeat is a duplicate of the __Fan Out__ feature of the OpenCollector.
 As such, it is not necessary to implement it here.
 
 ::: tip

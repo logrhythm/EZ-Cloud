@@ -26,60 +26,61 @@
         --- Max messages in Queue In
         --- Max messages in Processed Logs
  -->
-        <q-btn no-caps flat dense icon="arrow_back" label="Return to Properties" :to="'/Pipelines/' + this.pipelineUid + '/Properties'" />
+        <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Properties')" :to="'/Pipelines/' + this.pipelineUid + '/Properties'" />
         <q-separator vertical />
-        <q-btn no-caps flat dense icon="save" label="Save" color="primary" :disabled="!needsSaving" @click="save()" />
-        <q-btn no-caps flat dense icon="restore" label="Reverse to last saved" @click="reverseToLastSaved()" />
+        <q-btn no-caps flat dense icon="save" :label="$t('Save')" color="primary" :disabled="!needsSaving" @click="save()" />
+        <q-btn no-caps flat dense icon="restore" :label="$t('Reverse to last saved')" @click="reverseToLastSaved()" />
         <q-separator vertical />
-        <q-btn no-caps flat dense icon="play_circle_outline" label="Start Live Tail" color="secondary" @click="tailEnabled = true" v-if="!tailEnabled" />
-        <q-btn no-caps flat dense icon="stop" label="Stop Live Tail" @click="tailEnabled = false" v-else />
-        <q-btn no-caps flat dense icon="playlist_add" label="Manual Import" @click="showManualImport = true" v-if="!showManualImport" >
+        <q-btn no-caps flat dense icon="play_circle_outline" :label="$t('Start Live Tail')" color="secondary" @click="tailEnabled = true" v-if="!tailEnabled" />
+        <q-btn no-caps flat dense icon="stop" :label="$t('Stop Live Tail')" @click="tailEnabled = false" v-else />
+        <q-btn no-caps flat dense icon="playlist_add" :label="$t('Manual Import')" @click="showManualImport = true" v-if="!showManualImport" >
           <q-tooltip content-style="font-size: 1rem;">
-            Import log messages manually
+            {{ $t('Import log messages manually') }}
           </q-tooltip>
         </q-btn>
-        <q-btn no-caps flat dense icon="visibility_off" label="Manual Import" @click="showManualImport = false" v-else >
+        <q-btn no-caps flat dense icon="visibility_off" :label="$t('Manual Import')" @click="showManualImport = false" v-else >
           <q-tooltip content-style="font-size: 1rem;">
-            Hide Manual Import panel
+            {{ $t('Hide Manual Import panel') }}
           </q-tooltip>
         </q-btn>
         <q-separator vertical />
-        <q-btn no-caps flat dense icon="file_download" label="Export JQ" disable />
-        <q-btn no-caps flat dense icon="visibility" label="Show JQ" v-if="!showJqOutput" @click="buildJqFilter(); buildJqTransform(); showJqOutput = true" />
-        <q-btn no-caps flat dense icon="visibility_off" label="Hide JQ output" v-else @click="showJqOutput = false" />
+        <q-btn no-caps flat dense icon="file_download" :label="$t('Export JQ')" disable />
+        <q-btn no-caps flat dense icon="visibility" :label="$t('Show JQ')" v-if="!showJqOutput" @click="buildJqFilter(); buildJqTransform(); showJqOutput = true" />
+        <q-btn no-caps flat dense icon="visibility_off" :label="$t('Hide JQ output')" v-else @click="showJqOutput = false" />
 
-        <q-toolbar-title style="opacity:.4" class="text-center">Mapping Builder<span v-if="pipelineName && pipelineName.length">:  {{ pipelineName }}</span></q-toolbar-title>
+        <q-toolbar-title style="opacity:.4" class="text-center">{{ $tc('Mapping Builder | Mapping Builder: {pipelineName} | Mapping Builder: {pipelineName}', (pipelineName && pipelineName.length ? 1 : 0), { pipelineName }) }}</q-toolbar-title>
 
-        <q-btn no-caps flat dense icon="pending" label="Advanced">
-          <q-menu>
+        <q-btn no-caps flat dense icon="pending" :label="$t('Advanced')">
+          <!-- <q-menu max-width="450px" content-style="width:450px"> -->
+          <q-menu max-width="650px" content-style="min-width:350px">
             <div class="row no-wrap q-pa-md">
               <div class="column">
-                <div class="text-h6 q-mb-md">Advanced</div>
-                <q-toggle v-model="showExtraDetails" label="Show extra details" />
-                <q-toggle v-model="showQueues" label="Show Queues" />
-                <q-toggle v-model="showCommunicationLog" label="Show Communication &amp; Shipper's Logs" />
+                <div class="text-h6 q-mb-md">{{ $t('Advanced') }}</div>
+                <q-toggle v-model="showExtraDetails" :label="$t('Show extra details')" />
+                <q-toggle v-model="showQueues" :label="$t('Show Queues')" />
+                <q-toggle v-model="showCommunicationLog" :label="$t('Show Communication &amp; Shipper\'s Logs')" />
               </div>
             </div>
           </q-menu>
         </q-btn>
-        <q-btn no-caps flat dense icon="settings" label="Settings">
+        <q-btn no-caps flat dense icon="settings" :label="$t('Settings')">
           <q-menu>
             <div class="row no-wrap q-pa-md">
               <div class="column">
-                <div class="text-h6 q-mb-md">Settings</div>
+                <div class="text-h6 q-mb-md">{{ $t('Settings') }}</div>
                 <q-item class="q-pl-none" >
-                <q-toggle v-model="showTypesInMainList" label="Show types in Fields list" />
+                <q-toggle v-model="showTypesInMainList" :label="$t('Show types in Fields list')" />
                 </q-item>
                 <q-item class="q-pl-none" >
-                <q-toggle v-model="showTypesInPopup" label="Show types in Value popups" />
+                <q-toggle v-model="showTypesInPopup" :label="$t('Show types in Value popups')" />
                 </q-item>
                 <q-item class="q-pl-none" >
-                <q-toggle v-model="wrapSingleStringLog" label="Accept and Wrap non-JSON logs" />
+                <q-toggle v-model="wrapSingleStringLog" :label="$t('Accept and Wrap non-JSON logs')" />
                 </q-item>
                 <q-item class="q-pl-none" >
-                  <q-toggle v-model="extractMessageFieldOnly" label="Extract Beat's '.message' only" />
+                  <q-toggle v-model="extractMessageFieldOnly" :label="$t('Extract Beat\'s \'.message\' only')" />
                 </q-item>
-                <q-item  style="width: 20rem;">
+                <q-item  style="width: 35rem;">
                   <q-item-section avatar>
                     <q-icon name="speed" />
                   </q-item-section>
@@ -89,11 +90,11 @@
                       :min="1"
                       :max="10"
                       label
-                      :label-value="'Background Process max: ' + processInBackgroundMaxRate + ' / second'"
+                      :label-value="$t('Background Process max: {processInBackgroundMaxRate} / second', { processInBackgroundMaxRate })"
                     />
                   </q-item-section>
                 </q-item>
-                <q-item  style="width: 20rem;">
+                <q-item  style="width: 35rem;">
                   <q-item-section avatar>
                     <q-icon name="download" />
                   </q-item-section>
@@ -103,11 +104,11 @@
                       :min="1"
                       :max="2000"
                       label
-                      :label-value="'Max messages in Queue In: ' + queueInMaxSize"
+                      :label-value="$t('Max messages in Queue In: {queueInMaxSize}', { queueInMaxSize })"
                     />
                   </q-item-section>
                 </q-item>
-                <q-item  style="width: 20rem;">
+                <q-item  style="width: 35rem;">
                   <q-item-section avatar>
                     <q-icon name="download_for_offline" />
                   </q-item-section>
@@ -117,7 +118,7 @@
                       :min="1"
                       :max="1000"
                       label
-                      :label-value="'Max messages in Processed Logs: ' + processedLogsMaxSize"
+                      :label-value="$t('Max messages in Processed Logs: {processedLogsMaxSize}', { processedLogsMaxSize })"
                     />
                   </q-item-section>
                 </q-item>
@@ -139,19 +140,17 @@
             <!-- <span class="text-bold">Queues / Stacks sizes: </span>{{ incomingLogCount }} / {{ queueIn.length }} / {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ processedLogs.length }} -->
             <div class="row content-center items-center q-gutter-x-sm">
               <q-linear-progress :value=".75" color="indigo" size="lg" stripe style="width: 5rem;" track-color="grey-10"/>
-              <div>
-                Inbound Queue: <span style="font-weight: bold;" v-if="queueInMaxSize != 0">{{ Math.round(queueIn.length / queueInMaxSize * 100) }}%</span> ({{ queueIn.length }}&nbsp;/&nbsp;{{ queueInMaxSize }}).
-              </div>
+                {{ $t('Inbound Queue: {queueInOverQueueInMaxSize}% ({queueIn} / {queueInMaxSize}).', { queueInOverQueueInMaxSize: (queueInMaxSize != 0 ? Math.round(queueIn.length / queueInMaxSize * 100) : '_'), queueIn: queueIn.length, queueInMaxSize}) }}
             </div>
             <div class="row content-center items-center q-gutter-x-sm">
               <q-linear-progress :value=".75" color="teal" size="lg" style="width: 5rem;" track-color="grey-10" />
               <div>
-                Processed Messages: <span style="font-weight: bold;" v-if="processedLogsMaxSize != 0">{{ Math.round(processedLogsCount / processedLogsMaxSize * 100) }}%</span> ({{ processedLogsCount }}&nbsp;/&nbsp;{{ processedLogsMaxSize }}).
+                {{ $t('Processed Messages: {processedLogsCountOverProcessedLogsMaxSize}% ({processedLogsCount} / {processedLogsMaxSize}).', { processedLogsCountOverProcessedLogsMaxSize: (processedLogsMaxSize != 0 ? Math.round(processedLogsCount / processedLogsMaxSize * 100) : '_'), processedLogsCount: processedLogsCount, processedLogsMaxSize}) }}
               </div>
             </div>
             <q-separator class="q-my-sm" />
-            <q-icon name="info" color="blue-10" size="sm" class="q-mr-sm" /><span>Total Messages sent by the backend: </span><span style="font-weight: bold;">{{ incomingLogCount }}</span><br>
-            <span>This includes the messages already in transit when the Live Tail got stopped.</span>
+            <q-icon name="info" color="blue-10" size="sm" class="q-mr-sm" /><span>{{ $t('Total Messages sent by the backend: {incomingLogCount}', { incomingLogCount }) }}</span><br>
+            <span>{{ $t('This includes the messages already in transit when the Live Tail got stopped.') }}</span>
           </q-tooltip>
         <q-linear-progress :value="queueIn.length / queueInMaxSize" color="indigo" size="lg" stripe track-color="grey-10" />
         <q-linear-progress :value="processedLogsCount / processedLogsMaxSize" color="teal" size="lg" track-color="grey-10" />
@@ -162,7 +161,7 @@
       <q-card class="q-mt-md" v-show="showManualImport">
       <!-- <q-card class="q-mt-md"> -->
         <q-card-section class="text-h4" style="opacity:.4">
-          Manual import
+          {{ $t('Manual import') }}
         </q-card-section>
         <q-separator />
         <q-card-section>
@@ -173,9 +172,9 @@
             align="justify"
             narrow-indicator
           >
-            <q-tab name="single_log" label="Single Log" />
-            <q-tab name="multiple_logs" label="Multiple Logs" />
-            <q-tab name="log_file" label="File Import" />
+            <q-tab name="single_log" :label="$t('Single Log')" />
+            <q-tab name="multiple_logs" :label="$t('Multiple Logs')" />
+            <q-tab name="log_file" :label="$t('File Import')" />
           </q-tabs>
 
           <q-separator />
@@ -187,7 +186,7 @@
                 filled
                 autogrow
                 input-style="min-height: 16em;"
-                label="One single JSON log at a time"
+                :label="$t('One single JSON log at a time')"
                 :rules="[ val => isProperJson(val) || 'JSON Syntax Error(s)' ]"
                 @keypress.shift.enter.prevent="queueInAdd({values: queueInDataEntrySingleLog, manualEntry: true});"
               >
@@ -195,17 +194,17 @@
                   <div class="full-height justify-around q-gutter-y-lg">
                     <q-btn dense icon="playlist_add" color="primary" :disable="!isProperJson(queueInDataEntrySingleLog)" @click="queueInAdd({ values: queueInDataEntrySingleLog, manualEntry: true })" >
                       <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
-                        Add to Queue
+                        {{ $t('Add to Queue') }}
                       </q-tooltip>
                     </q-btn>
                     <q-btn class="row" dense icon="content_copy" flat :disable="!queueInDataEntrySingleLog.length" @click="copyToClipboard(queueInDataEntrySingleLog)" >
                       <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
-                        Copy to Clipboad
+                        {{ $t('Copy to Clipboad') }}
                       </q-tooltip>
                     </q-btn>
                     <q-btn class="row" dense icon="close" flat :disable="!queueInDataEntrySingleLog.length" @click="queueInDataEntrySingleLog = ''" >
                       <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
-                        Clear out
+                        {{ $t('Clear out') }}
                       </q-tooltip>
                     </q-btn>
                   </div>
@@ -219,7 +218,7 @@
                 filled
                 autogrow
                 input-style="min-height: 16em;"
-                label="One JSON entry per line"
+                :label="$t('One JSON entry per line')"
                 :rules="[ val => val != null || 'Common, give me some JSON!' ]"
                 @keypress.shift.enter.prevent="queueInAdd({values: queueInDataEntryMultiLog, manualEntry: true});"
               >
@@ -227,17 +226,17 @@
                   <div class="full-height justify-around q-gutter-y-lg">
                     <q-btn class="row" dense icon="playlist_add" color="primary" :disable="!queueInDataEntryMultiLog.length" @click="queueInAdd({ values: queueInDataEntryMultiLog, manualEntry: true, multiLogs: true })" >
                       <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
-                        Add to Queue
+                        {{ $t('Add to Queue') }}
                       </q-tooltip>
                     </q-btn>
                     <q-btn class="row" dense icon="content_copy" flat :disable="!queueInDataEntryMultiLog.length" @click="copyToClipboard(queueInDataEntryMultiLog)" >
                       <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
-                        Copy to Clipboad
+                        {{ $t('Copy to Clipboad') }}
                       </q-tooltip>
                     </q-btn>
                     <q-btn class="row" dense icon="close" flat :disable="!queueInDataEntryMultiLog.length" @click="queueInDataEntryMultiLog = ''" >
                       <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
-                        Clear out
+                        {{ $t('Clear out') }}
                       </q-tooltip>
                     </q-btn>
                   </div>
@@ -250,7 +249,7 @@
                 filled
                 bottom-slots
                 v-model="manualImportFileInput"
-                label="Click or Drop a file here"
+                :label="$t('Click or Drop a file here')"
                 multiple
                 counter
                 max-files="10"
@@ -265,8 +264,8 @@
                   <div class="full-height justify-around q-gutter-y-lg">
                     <q-btn class="row" dense icon="upload_file" color="primary" :disable="manualImportFileInput == null" >
                       <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
-                       <span v-if="manualImportFileInput !== null && manualImportFileInput.length > 1" >Add Files Content to Queue</span>
-                       <span v-else >Add File Content to Queue</span>
+                       <span v-if="manualImportFileInput !== null && manualImportFileInput.length > 1" >{{ $t('Add Files Content to Queue') }}</span>
+                       <span v-else >{{ $t('Add File Content to Queue') }}</span>
                       </q-tooltip>
                       <q-menu>
                         <q-list style="min-width: 400px">
@@ -276,8 +275,8 @@
                             </q-item-section>
 
                             <q-item-section>
-                              <q-item-label lines="1">As a Single Log</q-item-label>
-                              <q-item-label caption>One JSON Log per file</q-item-label>
+                              <q-item-label lines="1">{{ $t('As a Single Log') }}</q-item-label>
+                              <q-item-label caption>{{ $t('One JSON Log per file') }}</q-item-label>
                             </q-item-section>
                           </q-item>
                           <q-item clickable v-close-popup @click="processFilesInput({ filesInput: manualImportFileInput, importAs: 'log_array_per_file' })">
@@ -286,8 +285,8 @@
                             </q-item-section>
 
                             <q-item-section>
-                              <q-item-label lines="1">As an Array of Logs</q-item-label>
-                              <q-item-label caption>One JSON array of Logs per file</q-item-label>
+                              <q-item-label lines="1">{{ $t('As an Array of Logs') }}</q-item-label>
+                              <q-item-label caption>{{ $t('One JSON array of Logs per file') }}</q-item-label>
                             </q-item-section>
                           </q-item>
                           <q-item clickable v-close-popup @click="processFilesInput({ filesInput: manualImportFileInput, importAs: 'log_set_per_file' })">
@@ -296,8 +295,8 @@
                             </q-item-section>
 
                             <q-item-section>
-                              <q-item-label lines="1">As a Set of Logs</q-item-label>
-                              <q-item-label caption>One JSON log per line</q-item-label>
+                              <q-item-label lines="1">{{ $t('As a Set of Logs') }}</q-item-label>
+                              <q-item-label caption>{{ $t('One JSON log per line') }}</q-item-label>
                             </q-item-section>
                           </q-item>
                           <!-- format_list_numbered -->
@@ -309,8 +308,8 @@
                             </q-item-section>
 
                             <q-item-section>
-                              <q-item-label lines="1">What's the difference?</q-item-label>
-                              <q-item-label caption>A quick peek at the Wiki</q-item-label>
+                              <q-item-label lines="1">{{ $t('What\'s the difference?') }}</q-item-label>
+                              <q-item-label caption>{{ $t('A quick peek at the Wiki') }}</q-item-label>
                             </q-item-section>
                           </q-item>
                         </q-list>
@@ -318,7 +317,7 @@
                     </q-btn>
                     <q-btn class="row" dense icon="close" flat :disable="manualImportFileInput == null" @click="manualImportFileInput = null" >
                       <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
-                        Clear out file selection
+                        {{ $t('Clear out file selection') }}
                       </q-tooltip>
                     </q-btn>
                   </div>
@@ -330,12 +329,12 @@
       </q-card>
       <q-card class="q-mt-md" v-show="showQueues">
         <q-card-section class="text-h4" style="opacity:.4">
-          Queues
+          {{ $t('Queues') }}
         </q-card-section>
         <q-separator />
         <q-card-section>
           <div class="text-caption">
-            Input Queue
+            {{ $t('Input Queue') }}
           </div>
           <q-input
             v-model="queueInWindow"
@@ -343,7 +342,7 @@
             autogrow
             input-style="min-height: 10em;"
             readonly
-            label="Read Only"
+            :label="$t('Read Only')"
           >
             <template v-slot:after>
               <div class="column">
@@ -355,7 +354,7 @@
         </q-card-section>
         <q-card-section>
           <div class="text-caption">
-            Process Queue
+            {{ $t('Process Queue') }}
           </div>
           <q-input
             v-model="queueProcessWindow"
@@ -363,7 +362,7 @@
             autogrow
             input-style="min-height: 10em;"
             readonly
-            label="Read Only"
+            :label="$t('Read Only')"
           >
             <template v-slot:after>
               <!-- <q-btn round dense flat icon="send" @click="processLogSample({ logSample: queueProcess, options: {} }).finally({ console.log('processLogSample IS DONE'); })" :disable="Object.keys(queueProcess).length === 0"/> -->
@@ -379,27 +378,27 @@
           style="min-height: 2.5rem;"
         >
           <div class="row content-center q-ml-sm" style="width: 3rem;">
-            Freq.
+            {{ $t('Freq.') }}
           </div>
           <q-separator vertical class="q-ml-xs" />
           <div
             class="content-center col row q-mx-sm q-px-sm"
           >
-            Fields
+            {{ $t('Fields') }}
           </div>
           <q-separator vertical />
           <div
             style="width: 18rem;"
             class="row content-center q-mx-sm q-my-xs q-px-sm"
           >
-            Mapping
+            {{ $t('Mapping') }}
           </div>
           <q-separator vertical />
           <div
             style="width: 20rem;"
             class="row content-center q-mx-sm q-my-xs q-px-sm"
           >
-            Modifiers
+            {{ $t('Modifiers') }}
           </div>
           <div
             style="width: 1rem;"
@@ -423,8 +422,8 @@
             >
               <div class="row content-center q-mr-sm q-gutter-y-none" style="width: 3rem;">
                 <q-tooltip content-style="font-size: 1em;">
-                  <q-icon name="stop" :color="(darkMode ? 'blue-10' : 'blue-7')" />Relative frequency <span style="font-weight: bold;" v-if="maxSeenInLog != 0">{{ Math.round(item.seenInLogCount / maxSeenInLog * 100) }}%</span> ({{ item.seenInLogCount }}&nbsp;/&nbsp;{{ maxSeenInLog }}).<br>
-                  <q-icon name="stop" :color="(darkMode ? 'indigo-10' : 'indigo-7')" />Seen in <span v-if="processedLogsCount != 0"><span style="font-weight: bold;" >{{ Math.round(item.seenInLogCount / processedLogsCount * 100) }}%</span> of the logs ({{ item.seenInLogCount }}&nbsp;/&nbsp;{{ processedLogsCount }})</span><span style="font-weight: bold;" v-else>N/A</span>.
+                  <q-icon name="stop" :color="(darkMode ? 'blue-10' : 'blue-7')" />{{ $t('Relative frequency {seenInLogCountOverMaxSeenInLog}% ({seenInLogCount} / {maxSeenInLog}).', { seenInLogCountOverMaxSeenInLog: (maxSeenInLog != 0 ? Math.round(item.seenInLogCount / maxSeenInLog * 100) : '_'), seenInLogCount: item.seenInLogCount, maxSeenInLog }) }}<br>
+                  <q-icon name="stop" :color="(darkMode ? 'indigo-10' : 'indigo-7')" />{{ $tc('N/A | Seen in {seenInLogCountOverProcessedLogsCount}% of the logs ({seenInLogCount} / {processedLogsCount}). | Seen in {seenInLogCountOverProcessedLogsCount}% of the logs ({seenInLogCount} / {processedLogsCount}).', processedLogsCount, { seenInLogCountOverProcessedLogsCount: (processedLogsCount != 0 ? Math.round(item.seenInLogCount / processedLogsCount * 100) : '_'), seenInLogCount: item.seenInLogCount, processedLogsCount}) }}
                 </q-tooltip>
                 <q-linear-progress :value="item.seenInLogCount / maxSeenInLog" :color="(darkMode ? 'blue-10' : 'blue-7')" />
                 <q-linear-progress :value="item.seenInLogCount / processedLogsCount" :color="(darkMode ? 'indigo-10' : 'indigo-7')" />
@@ -453,7 +452,7 @@
                             <div>
                               <div class="force-long-text-wrap ellipsis-3-lines">{{ value.value }}</div>
                             </div>
-                            <q-chip v-if="showTypesInPopup" dense size="sm" class="q-ml-sm" :class="(value.type ? 'json-bg-type-' + value.type.toLowerCase() : '')">{{ (value.type ? value.type : '') }}</q-chip>
+                            <q-chip v-if="showTypesInPopup" dense size="sm" class="q-ml-sm" :class="(value.type ? 'json-bg-type-' + value.type.toLowerCase() : '')">{{ (value.type ? $t(value.type) : '') }}</q-chip>
                           </div>
                         </q-item-label>
                           <q-linear-progress :value="value.count / item.seenInLogCount" color="blue-3" />
@@ -489,7 +488,7 @@
                 emit-value
                 map-options
                 :options="mdiTagsOptions"
-                label="Mapping"
+                :label="$t('Mapping')"
                 stack-label
                 style="width: 18rem;"
                 class="q-mx-sm q-my-xs"
@@ -530,7 +529,7 @@
                 style="width: 20rem;"
                 class="q-mx-sm q-my-xs"
                 :popup-content-class="(darkMode ? 'bg-grey-9' : undefined)"
-                label="Modifiers"
+                :label="$t('Modifiers')"
                 stack-label
                 multiple
               />
@@ -540,11 +539,11 @@
       </q-card>
       <q-card class="q-mt-md" v-show="showJqOutput">
         <q-card-section class="text-h4" style="opacity:.4">
-          OpenCollector JQ
+          {{ $t('OpenCollector JQ') }}
         </q-card-section>
         <q-separator />
         <q-card-section class="text-h6" style="opacity:.6">
-          JQ Filter
+          {{ $t('JQ Filter') }}
         </q-card-section>
         <q-card-section>
             <!-- autogrow -->
@@ -561,7 +560,7 @@
             <template v-slot:after>
               <q-btn round dense flat icon="content_copy" @click="copyToClipboard(jqFilterOutput)" :disable="!jqFilterOutput || (jqFilterOutput && jqFilterOutput.length === 0)">
                 <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
-                  Copy to Clipboad
+                  {{ $t('Copy to Clipboad') }}
                 </q-tooltip>
               </q-btn>
             </template>
@@ -571,7 +570,7 @@
         <q-separator />
 
         <q-card-section class="text-h6" style="opacity:.6">
-          Transform JQ
+          {{ $t('Transform JQ') }}
         </q-card-section>
         <q-card-section>
             <!-- autogrow -->
@@ -588,7 +587,7 @@
             <template v-slot:after>
               <q-btn round dense flat icon="content_copy" @click="copyToClipboard(jqTransformOutput)" :disable="!jqTransformOutput || (jqTransformOutput && jqTransformOutput.length === 0)">
                 <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
-                  Copy to Clipboad
+                  {{ $t('Copy to Clipboad') }}
                 </q-tooltip>
               </q-btn>
             </template>
@@ -603,7 +602,7 @@
         v-show="showCommunicationLog"
       >
         <q-card-section class="text-h6" style="opacity:.6">
-          Communication &amp; Shipper Logs
+          {{ $t('Communication & Shipper Logs') }}
         </q-card-section>
         <q-card-section>
           <q-input
@@ -620,13 +619,13 @@
                 <div class="column q-gutter-y-lg">
                   <q-btn round dense flat icon="content_copy" @click="copyToClipboard(communicationLogsOutput)" :disable="!communicationLogsOutput || (communicationLogsOutput && communicationLogsOutput.length === 0)">
                     <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
-                      Copy to Clipboad
+                      {{ $t('Copy to Clipboad') }}
                     </q-tooltip>
                   </q-btn>
                   <q-separator />
                   <q-btn round dense flat icon="clear" @click="communicationLogsOutput=''" color="red" :disable="!communicationLogsOutput || (communicationLogsOutput && communicationLogsOutput.length === 0)">
                     <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
-                      Clear
+                      {{ $t('Clear') }}
                     </q-tooltip>
                   </q-btn>
                 </div>
@@ -653,6 +652,7 @@ import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import mixinSharedRightToLeft from 'src/mixins/mixin-Shared-RightToLeft'
 import mixinSharedBuildJq from 'src/mixins/mixin-Shared-BuildJq'
 import Vue2Filters from 'vue2-filters'
 
@@ -662,6 +662,7 @@ export default {
     mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
     mixinSharedSocket, // Shared function and state to access the Socket.io
     mixinSharedDarkMode, // Shared computed to access and update the DarkMode
+    mixinSharedRightToLeft, // Shared functions to deal with LTR/RTL languages
     mixinSharedBuildJq, // Shared JQ Building functions (Filter and Transform)
     Vue2Filters.mixin
   ],
@@ -1111,8 +1112,8 @@ export default {
         payload.tailId &&
         payload.tailId === this.pipelineUid
       ) {
-        this.addLineToCommunicationLog(`${payload.code} | Post-Tail killing/cleaning job finished. | ${(payload.payload !== undefined ? payload.payload : '🏁')}`)
-        this.showNotificationWithActionToLogs(`${payload.code} | Post-Tail killing/cleaning job finished. (${(payload.payload !== undefined ? payload.payload : '🏁')})`, 'info')
+        this.addLineToCommunicationLog(`${payload.code} | ${this.$t('Post-Tail killing/cleaning job finished.')} | ${(payload.payload !== undefined ? payload.payload : '🏁')}`)
+        this.showNotificationWithActionToLogs(`${payload.code} | ${this.$t('Post-Tail killing/cleaning job finished.')} (${(payload.payload !== undefined ? payload.payload : '🏁')})`, 'info')
       }
 
       // If the remote job died, push it to the Comm Log
@@ -1121,7 +1122,7 @@ export default {
         payload.tailId &&
         payload.tailId === this.pipelineUid
       ) {
-        this.addLineToCommunicationLog(`${payload.code} | Post-Tail killing/cleaning job exited. | ${(payload.payload !== undefined ? payload.payload : '🏁')}`)
+        this.addLineToCommunicationLog(`${payload.code} | ${this.$t('Post-Tail killing/cleaning job exited.')} | ${(payload.payload !== undefined ? payload.payload : '🏁')}`)
       }
     },
 
@@ -1654,11 +1655,11 @@ export default {
               errors: [
                 {
                   code: 'NoLiveSocket',
-                  message: 'Live (Socket) connection with the EZ Server has been lost or is not currently established.'
+                  message: this.$t('Live (Socket) connection with the EZ Server has been lost or is not currently established.')
                 },
                 {
                   code: 'TailFailedToStart',
-                  message: 'Tail could not start due to no live socket available.'
+                  message: this.$t('Tail could not start due to no live socket available.')
                 }
               ]
             }

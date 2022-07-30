@@ -1,8 +1,8 @@
 {
   "name": "ez-cloud-client",
-  "version": "0.8.7",
+  "version": "0.9.5",
   "description": "User Interface for EZ-Cloud for Legacy SIEM",
-  "productName": "EZ Cloud Client",
+  "productName": "OC Admin Client",
   "author": "Tony Massé <tony.masse@logrhythm.com>",
   "license": "MIT",
   "repository": {

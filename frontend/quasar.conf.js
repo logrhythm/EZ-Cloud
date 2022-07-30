@@ -59,6 +59,7 @@ module.exports = function (/* ctx */) {
       // transpileDependencies: [],
 
       // rtl: false, // https://v1.quasar.dev/options/rtl-support
+      rtl: true, // https://v1.quasar.dev/options/rtl-support
       // preloadChunks: true,
       // showProgress: false,
       // gzip: true,
@@ -144,8 +145,8 @@ module.exports = function (/* ctx */) {
       workboxPluginMode: 'GenerateSW', // 'GenerateSW' or 'InjectManifest'
       workboxOptions: {}, // only for GenerateSW
       manifest: {
-        name: 'EZ Cloud Client',
-        short_name: 'EZ Cloud Client',
+        name: 'OC Admin Client',
+        short_name: 'OC Admin Client',
         description: 'User Interface for EZ-Cloud for Legacy SIEM',
         display: 'standalone',
         orientation: 'portrait',

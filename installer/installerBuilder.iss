@@ -6,10 +6,10 @@
 #define ConfigFilesViewer 'Notepad.exe'
 
 [Setup]
-AppName=EZ-Cloud - Backend Server
+AppName=OC-Admin - Backend Server
 AppVersion={#Version}
-DefaultDirName={autopf}\EZ Cloud Server
-DefaultGroupName=EZ Cloud - Server
+DefaultDirName={autopf}\OC Admin Server
+DefaultGroupName=OC Admin - Server
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
 WizardStyle=modern
@@ -18,78 +18,82 @@ LicenseFile="{#DistSubDirectory}\License.txt"
 ; SignTool=MicrosoftSigningTool "{#InstallerHelper}\signtool.exe" sign /f "{#InstallerHelper}\Installer_Wizard_Code_Signing_Certificate.crt" /tr http://timestamp.sectigo.com /td sha256 /fd sha256 /a $p
 
 [Types]
-Name: "full"; Description: "Full installation (EZ Cloud Server + EZ Database + Frontend + NodeJS)"
-Name: "lrCloud"; Description: "LR Cloud installation (EZ Cloud Server + EZ Database + NodeJS)"
-Name: "compact"; Description: "Compact installation (EZ Cloud Server + EZ Database + Frontend)"
-Name: "minimal"; Description: "Minimal installation (EZ Cloud Server + EZ Database)"
+Name: "full"; Description: "Full installation (OC Admin Server + EZ Database + Frontend + NodeJS)"
+Name: "lrCloud"; Description: "LR Cloud installation (OC Admin Server + EZ Database + NodeJS)"
+Name: "compact"; Description: "Compact installation (OC Admin Server + EZ Database + Frontend)"
+Name: "minimal"; Description: "Minimal installation (OC Admin Server + EZ Database)"
 Name: "sqlonly"; Description: "Only SQL Database and configuration (EZ Database)"
-; Name: "upgrade"; Description: "Full upgrade to {#Version} (EZ Cloud Server + Frontend)"
-; Name: "upgradeBackend"; Description: "Backend upgrade to {#Version} (EZ Cloud Server)"
-; Name: "upgradeFrontend"; Description: "Frontend upgrade to {#Version} (EZ Frontend)"
+Name: "sqlDockerOnly"; Description: "Only SQL Database for Docker deployments (EZ Database for Docker)"
+; Name: "upgrade"; Description: "Full upgrade to {#Version} (OC Admin Server + Frontend)"
+; Name: "upgradeBackend"; Description: "Backend upgrade to {#Version} (OC Admin Server)"
+; Name: "upgradeFrontend"; Description: "Frontend upgrade to {#Version} (OC Admin Frontend)"
 Name: "custom"; Description: "Custom installation / upgrade"; Flags: iscustom
 
 [Components]
-Name: "ezCloudServer"; Description: "EZ Cloud Server"; Types: full lrCloud compact minimal custom
+Name: "ocAdminServer"; Description: "OC Admin Server"; Types: full lrCloud compact minimal custom
 Name: "sqlDatabase"; Description: "EZ Database and SQL User"; Types: full lrCloud compact minimal sqlonly custom
-Name: "ezCloudFrontend"; Description: "EZ Cloud Frontend"; Types: full compact custom
+Name: "sqlDockerDatabase"; Description: "EZ Database for Docker deployments"; Types: sqlDockerOnly custom
+Name: "ocAdminFrontend"; Description: "OC Admin Frontend"; Types: full compact custom
 Name: "nodeJs"; Description: "NodeJS"; Types: full lrCloud custom; ExtraDiskSpaceRequired: 56700928
 ; NodeJS:
 ; Installed - Installer = extra disk requered (all sizes in Bytes)
 ; 87236608 - 30535680 = 56700928
-; Name: "ezCloudUpgradeServer"; Description: "Upgrade EZ Cloud Server to {#Version}"; Types: upgrade upgradeBackend custom
-; Name: "ezCloudUpgradeFrontend"; Description: "Upgrade EZ Cloud Frontend to {#Version}"; Types: upgrade upgradeFrontend custom
+; Name: "ocAdminUpgradeServer"; Description: "Upgrade OC Admin Server to {#Version}"; Types: upgrade upgradeBackend custom
+; Name: "ocAdminUpgradeFrontend"; Description: "Upgrade OC Admin Frontend to {#Version}"; Types: upgrade upgradeFrontend custom
 
 [Tasks]
 Name: createDatabase; Description: "Create / Update and Configure [EZ] SQL Database"; GroupDescription: "Database:"; Components: sqlDatabase
+Name: createDockerDatabase; Description: "Create / Update [EZ] SQL Database for Docker deployments"; GroupDescription: "Database:"; Components: sqlDockerDatabase
 Name: installNodeJs; Description: "Install NodeJS {#NodeJsVersionLabel} (>>> Can take up to 2 minutes to install in the background)"; GroupDescription: "NodeJS:"; Components: nodeJs
-Name: serviceSetup; Description: "Configure EZ Server Service"; GroupDescription: "Service:"; Components: ezCloudServer
-Name: serviceStart; Description: "Start EZ Server Service immediately"; GroupDescription: "Service:"; Components: ezCloudServer
-Name: autoGenerateTokens; Description: "Automatically &generate private tokens"; GroupDescription: "Private tokens:"; Components: ezCloudServer
-Name: autoGenerateTokens\jwt; Description: "For &JWT (Authentication token encryption/decripion key)"; GroupDescription: "Private tokens:"; Components: ezCloudServer
-Name: autoGenerateTokens\aes; Description: "For &AES (Encryption / Decryption private key)"; GroupDescription: "Private tokens:"; Components: ezCloudServer
-Name: openConfigFileDatabase_json; Description: "&Database configuration file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer; Flags: unchecked
-Name: openConfigFileJwt_json; Description: "JWT configuration file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer; Flags: unchecked
-Name: openConfigFileSecure_json; Description: "AES configuration file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer; Flags: unchecked
-Name: openConfigFileHttps_cert; Description: "HTTPS Certificate file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer; Flags: unchecked
-Name: openConfigFileHttps_key; Description: "HTTPS RSA Private Key file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer; Flags: unchecked
-Name: openConfigFileHttps_key_tmp; Description: "HTTPS Encrypted Key file"; GroupDescription: "Open and manually review configuration files:"; Components: ezCloudServer; Flags: unchecked
+Name: serviceSetup; Description: "Configure OC Admin Service"; GroupDescription: "Service:"; Components: ocAdminServer
+Name: serviceStart; Description: "Start OC Admin Service immediately"; GroupDescription: "Service:"; Components: ocAdminServer
+Name: autoGenerateTokens; Description: "Automatically &generate private tokens"; GroupDescription: "Private tokens:"; Components: ocAdminServer
+Name: autoGenerateTokens\jwt; Description: "For &JWT (Authentication token encryption/decripion key)"; GroupDescription: "Private tokens:"; Components: ocAdminServer
+Name: autoGenerateTokens\aes; Description: "For &AES (Encryption / Decryption private key)"; GroupDescription: "Private tokens:"; Components: ocAdminServer
+Name: openConfigFileDatabase_json; Description: "&Database configuration file"; GroupDescription: "Open and manually review configuration files:"; Components: ocAdminServer; Flags: unchecked
+Name: openConfigFileJwt_json; Description: "JWT configuration file"; GroupDescription: "Open and manually review configuration files:"; Components: ocAdminServer; Flags: unchecked
+Name: openConfigFileSecure_json; Description: "AES configuration file"; GroupDescription: "Open and manually review configuration files:"; Components: ocAdminServer; Flags: unchecked
+Name: openConfigFileHttps_cert; Description: "HTTPS Certificate file"; GroupDescription: "Open and manually review configuration files:"; Components: ocAdminServer; Flags: unchecked
+Name: openConfigFileHttps_key; Description: "HTTPS RSA Private Key file"; GroupDescription: "Open and manually review configuration files:"; Components: ocAdminServer; Flags: unchecked
+Name: openConfigFileHttps_key_tmp; Description: "HTTPS Encrypted Key file"; GroupDescription: "Open and manually review configuration files:"; Components: ocAdminServer; Flags: unchecked
 
 [Files]
-Source: "{#DistSubDirectory}\bin\*"; DestDir: "{app}\bin"; Components: ezCloudServer; AfterInstall: FileReplaceTokenByConstant('{app}\bin\ezcloudserver.xml', 'ROOT_PATH_EZ-Cloud', '{app}')
-Source: "{#DistSubDirectory}\config\database.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceSqlCreds('{app}\config\database.json'); Flags: onlyifdoesntexist
-Source: "{#DistSubDirectory}\config\ez-market-place.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceTokenByV4Uuid('{app}\config\ez-market-place.json', 'CHANGE_ME_WITH_A_UUID'); Flags: onlyifdoesntexist
-Source: "{#DistSubDirectory}\config\jwt.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceTokenIfTaskSelected('{app}\config\jwt.json', 'CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS', 50, 'autoGenerateTokens\jwt'); Flags: onlyifdoesntexist
-Source: "{#DistSubDirectory}\config\secure.json"; DestDir: "{app}\config"; Components: ezCloudServer; AfterInstall: FileReplaceTokenIfTaskSelected('{app}\config\secure.json', 'CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS', 120, 'autoGenerateTokens\aes'); Flags: onlyifdoesntexist
-Source: "{#DistSubDirectory}\config\https.*"; DestDir: "{app}\config"; Components: ezCloudServer; Flags: onlyifdoesntexist
-Source: "{#DistSubDirectory}\config.sample\*"; DestDir: "{app}\config.sample"; Components: ezCloudServer
-Source: "{#DistSubDirectory}\database\*"; DestDir: "{app}\database"; Components: sqlDatabase
-Source: "{#DistSubDirectory}\resources\*"; DestDir: "{app}\resources"; Components: ezCloudServer
-Source: "{#DistSubDirectory}\.env"; DestDir: "{app}"; Components: ezCloudServer; Flags: onlyifdoesntexist
-Source: "{#DistSubDirectory}\.env.sample"; DestDir: "{app}"; Components: ezCloudServer
-Source: "{#DistSubDirectory}\public_web_root\*"; DestDir: "{app}\public_web_root"; Components: ezCloudFrontend; Flags: recursesubdirs
+Source: "{#DistSubDirectory}\bin\*"; DestDir: "{app}\bin"; Components: ocAdminServer; AfterInstall: FileReplaceTokenByConstant('{app}\bin\ocadminserver.xml', 'ROOT_PATH_OC-Admin', '{app}')
+Source: "{#DistSubDirectory}\config\database.json"; DestDir: "{app}\config"; Components: ocAdminServer; AfterInstall: FileReplaceSqlCreds('{app}\config\database.json'); Flags: onlyifdoesntexist
+Source: "{#DistSubDirectory}\config\ez-market-place.json"; DestDir: "{app}\config"; Components: ocAdminServer; AfterInstall: FileReplaceTokenByV4Uuid('{app}\config\ez-market-place.json', 'CHANGE_ME_WITH_A_UUID'); Flags: onlyifdoesntexist
+Source: "{#DistSubDirectory}\config\jwt.json"; DestDir: "{app}\config"; Components: ocAdminServer; AfterInstall: FileReplaceTokenIfTaskSelected('{app}\config\jwt.json', 'CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS', 50, 'autoGenerateTokens\jwt'); Flags: onlyifdoesntexist
+Source: "{#DistSubDirectory}\config\secure.json"; DestDir: "{app}\config"; Components: ocAdminServer; AfterInstall: FileReplaceTokenIfTaskSelected('{app}\config\secure.json', 'CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS', 120, 'autoGenerateTokens\aes'); Flags: onlyifdoesntexist
+Source: "{#DistSubDirectory}\config\https.*"; DestDir: "{app}\config"; Components: ocAdminServer; Flags: onlyifdoesntexist
+Source: "{#DistSubDirectory}\config.sample\*"; DestDir: "{app}\config.sample"; Components: ocAdminServer
+Source: "{#DistSubDirectory}\database\*"; DestDir: "{app}\database"; Components: sqlDatabase sqlDockerDatabase
+Source: "{#DistSubDirectory}\resources\*"; DestDir: "{app}\resources"; Components: ocAdminServer
+Source: "{#DistSubDirectory}\.env"; DestDir: "{app}"; Components: ocAdminServer; Flags: onlyifdoesntexist
+Source: "{#DistSubDirectory}\.env.sample"; DestDir: "{app}"; Components: ocAdminServer
+Source: "{#DistSubDirectory}\public_web_root\*"; DestDir: "{app}\public_web_root"; Components: ocAdminFrontend; Flags: recursesubdirs
 ; For NodeJS Installation
 Source: "{#distDirectory}\NodeJS_Installer\{#NodeJsFilename}"; DestDir: "{tmp}"; Components: nodeJs
-; For EzAdmin account creation
-Source: "{#DistSubDirectory}\database\20211111.17 - Create User - EzAdmin.sql"; DestDir: "{tmp}"; Components: sqlDatabase; AfterInstall: FileReplaceEzAdminCreds('{tmp}\20211111.17 - Create User - EzAdmin.sql')
-Source: "{#DistSubDirectory}\database\create_ezadmin.bat"; DestDir: "{tmp}"; Components: sqlDatabase
+; For OcAdmin account creation
+Source: "{#DistSubDirectory}\database\20211111.17 - Create User - OcAdmin.sql"; DestDir: "{tmp}"; Components: sqlDatabase; AfterInstall: FileReplaceOcAdminCreds('{tmp}\20211111.17 - Create User - OcAdmin.sql')
+Source: "{#DistSubDirectory}\database\create_ocadmin.bat"; DestDir: "{tmp}"; Components: sqlDatabase
 
 [Dirs]
-Name: "{app}\public_web_root"; Components: ezCloudServer
+Name: "{app}\public_web_root"; Components: ocAdminServer
 
 [Icons]
 Name: "{group}\Open Configuration Folder"; Filename: "{app}\config"
 Name: "{group}\Open Configuration Sample Folder"; Filename: "{app}\config.sample"
 Name: "{group}\Access Source Code on GitHub"; Filename: "https://github.com/logrhythm/EZ-Cloud/"
-Name: "{group}\Uninstall EZ Cloud Server"; Filename: "{uninstallexe}"
+Name: "{group}\Uninstall OC Admin Server"; Filename: "{uninstallexe}"
 
 [Run]
 Filename: "{app}\database\create_database.bat"; Parameters: "--NoSleepTillBrooklyn"; WorkingDir: "{app}\database"; Description: "Create and Configure [EZ] SQL Database"; Tasks: createDatabase
-Filename: "{tmp}\create_ezadmin.bat"; Parameters: "--NoSleepTillBrooklyn"; WorkingDir: "{tmp}"; Description: "Create and Configure EzAdmin account in SQL Database"; Tasks: createDatabase; Flags: runhidden
+Filename: "{tmp}\create_ocadmin.bat"; Parameters: "--NoSleepTillBrooklyn"; WorkingDir: "{tmp}"; Description: "Create and Configure OcAdmin account in SQL Database"; Tasks: createDatabase; Flags: runhidden
+Filename: "{app}\database\create_database_for_Docker.bat"; Parameters: "--NoSleepTillBrooklyn"; WorkingDir: "{app}\database"; Description: "Create [EZ] SQL Database for Docker deployments"; Tasks: createDockerDatabase
 ; Filename: "MsiExec.exe"; Parameters: "/i ""{tmp}\{#NodeJsFilename}"" /qn"; Description: "Installing NodeJS {#NodeJsVersionLabel}"; Tasks: installNodeJs; Flags: runhidden skipifnotsilent
 ; Filename: "MsiExec.exe"; Parameters: "/i ""{tmp}\{#NodeJsFilename}"""; Description: "Installing NodeJS {#NodeJsVersionLabel}"; Tasks: installNodeJs; Flags: skipifsilent
 Filename: "MsiExec.exe"; Parameters: "/i ""{tmp}\{#NodeJsFilename}"" /qn"; Description: "Installing NodeJS {#NodeJsVersionLabel}"; Tasks: installNodeJs; Flags: skipifsilent
-Filename: "{app}\bin\ezcloudserver.exe"; Parameters: "install"; WorkingDir: "{app}\bin"; Description: "Setting up the EZ Server service"; Tasks: serviceSetup; Flags: runhidden
-Filename: "{app}\bin\ezcloudserver.exe"; Parameters: "start"; WorkingDir: "{app}\bin"; Description: "Starting the EZ Server service"; Tasks: serviceStart; Flags: runhidden skipifsilent
+Filename: "{app}\bin\ocadminserver.exe"; Parameters: "install"; WorkingDir: "{app}\bin"; Description: "Setting up the OC Admin service"; Tasks: serviceSetup; Flags: runhidden
+Filename: "{app}\bin\ocadminserver.exe"; Parameters: "start"; WorkingDir: "{app}\bin"; Description: "Starting the OC Admin service"; Tasks: serviceStart; Flags: runhidden skipifsilent
 Filename: "{#ConfigFilesViewer}"; Parameters: "{app}\config\database.json"; Description: "View the Database configuration file"; Tasks: openConfigFileDatabase_json; Flags: nowait skipifsilent
 Filename: "{#ConfigFilesViewer}"; Parameters: "{app}\config\jwt.json"; Description: "View the JWT configuration file"; Tasks: openConfigFileJwt_json; Flags: nowait skipifsilent
 Filename: "{#ConfigFilesViewer}"; Parameters: "{app}\config\secure.json"; Description: "View the AES configuration file"; Tasks: openConfigFileSecure_json; Flags: nowait skipifsilent
@@ -98,11 +102,11 @@ Filename: "{#ConfigFilesViewer}"; Parameters: "{app}\config\https.key.pem"; Desc
 Filename: "{#ConfigFilesViewer}"; Parameters: "{app}\config\https.keytmp.pem"; Description: "View the HTTP Private Key file"; Tasks: openConfigFileHttps_key_tmp; Flags: nowait skipifsilent
 
 [UninstallRun]
-Filename: "{app}\bin\ezcloudserver.exe"; Parameters: "stop"; WorkingDir: "{app}\bin"; Flags: runhidden
-Filename: "{app}\bin\ezcloudserver.exe"; Parameters: "uninstall"; WorkingDir: "{app}\bin"; Flags: runhidden
+Filename: "{app}\bin\ocadminserver.exe"; Parameters: "stop"; WorkingDir: "{app}\bin"; Flags: runhidden
+Filename: "{app}\bin\ocadminserver.exe"; Parameters: "uninstall"; WorkingDir: "{app}\bin"; Flags: runhidden
 
 [UninstallDelete]
-Type: files; Name: "{app}\bin\ezcloudserver.wrapper.log"
+Type: files; Name: "{app}\bin\ocadminserver.wrapper.log"
 
 ; Set by parameters (for Silent, or not):
 ; - SQL details (creds)
@@ -113,7 +117,7 @@ Type: files; Name: "{app}\bin\ezcloudserver.wrapper.log"
 
 [Code]
 const
-wcpEzAdminCredentialsQueryPage = 100;
+wcpOcAdminCredentialsQueryPage = 100;
 wcpSqlCredentialsQueryPage = 101;
 
 var
@@ -122,8 +126,8 @@ var
   SqlCredentialsPassword: String;
   SqlCredentialsHost: String;
   SqlCredentialsPort: String;
-  EzAdminCredentialsQueryPage: TInputQueryWizardPage;
-  EzAdminCredentialsPassword: String;
+  OcAdminCredentialsQueryPage: TInputQueryWizardPage;
+  OcAdminCredentialsPassword: String;
 
 procedure URLLabelOnClick(Sender: TObject);
 var
@@ -156,7 +160,7 @@ begin
       SqlCredentialsQueryPage := CreateInputQueryPage(
         wpSelectProgramGroup,
         'SQL Credentials and Details',
-        'At run time, EZ Server requires valid SQL Credentials to manage the its own and the SIEM databases.',
+        'At run time, OC Admin requires valid SQL Credentials to manage the its own and the SIEM databases.',
         'NOTE:' + #10+#13 + 'These credentials are for run time only. This Installation Wizard will use the user currently running it to create the EZ database.' + #10+#13 + #10+#13 +
         'IMPORTANT:' + #10+#13 + 'The credentials must have READ and WRITE access to the EZ and LogRhythm_EMDB databases.' + #10+#13);
 
@@ -172,29 +176,29 @@ begin
     end
 end;
 
-procedure AddEzAdminCredentialsQueryPage();
+procedure AddOcAdminCredentialsQueryPage();
 begin
-  if EzAdminCredentialsQueryPage = nil then
+  if OcAdminCredentialsQueryPage = nil then
     begin
-      EzAdminCredentialsQueryPage := CreateInputQueryPage(
+      OcAdminCredentialsQueryPage := CreateInputQueryPage(
         wpSelectProgramGroup,
-        'EZ Server Administrator Credentials and Details - ezAdmin',
-        'This is the EZ Admin account for EZ Server.',
+        'OC Admin Administrator Credentials and Details - ocAdmin',
+        'This is the Administrator (login: "ocAdmin") account for OC Admin.',
         'NOTE:' + #10+#13 + ' - The Username is NOT case sensitive' + #10+#13 +
         ' - The Password IS case sensitive.' + #10+#13 +
-        ' - If the "ezAdmin" SQL Login already exists (in case of Upgrade for example), it will NOT be modified.' + #10+#13 + #10+#13 + #10+#13 +
-        'Username:' + #10+#13 + 'ezAdmin');
+        ' - If the "ocAdmin" SQL Login already exists (in case of Upgrade for example), it will NOT be modified.' + #10+#13 + #10+#13 + #10+#13 +
+        'Username:' + #10+#13 + 'ocAdmin');
 
-      EzAdminCredentialsQueryPage.Add('Password:', True);
+      OcAdminCredentialsQueryPage.Add('Password:', True);
 
-      EzAdminCredentialsQueryPage.Values[0] := '';
+      OcAdminCredentialsQueryPage.Values[0] := '';
     end;
 end;
 
 procedure InitializeWizard();
 begin
   CreateURLLabel(WizardForm, WizardForm.CancelButton);
-  AddEzAdminCredentialsQueryPage();
+  AddOcAdminCredentialsQueryPage();
   AddSqlCredentialsQueryPage();
 end;
 
@@ -321,18 +325,18 @@ begin
     FileReplaceString(ExpandConstant(FileName), '"port": 1433', '"port": ' + SqlCredentialsPort);
 end;
 
-// To replace the EzAdmin password by the ones provided in the Wizard
+// To replace the OcAdmin password by the ones provided in the Wizard
 // NOTE: This should only be used against a temporary file, as you do not want to leave
-// the EzAdmin password left in a file after the installation
+// the OcAdmin password left in a file after the installation
 
-procedure FileReplaceEzAdminCreds(const FileName: String);
+procedure FileReplaceOcAdminCreds(const FileName: String);
 var
-  EscapedEzAdminCredentialsPassword : string;
+  EscapedOcAdminCredentialsPassword : string;
 begin
     // Escaping the password for SQL consumption
-    EscapedEzAdminCredentialsPassword := EzAdminCredentialsPassword
-    StringChangeEx(EscapedEzAdminCredentialsPassword, '''', '''''', True)
-    FileReplaceString(ExpandConstant(FileName), 'CHANGE_ME', EscapedEzAdminCredentialsPassword);
+    EscapedOcAdminCredentialsPassword := OcAdminCredentialsPassword
+    StringChangeEx(EscapedOcAdminCredentialsPassword, '''', '''''', True)
+    FileReplaceString(ExpandConstant(FileName), 'CHANGE_ME', EscapedOcAdminCredentialsPassword);
 end;
 
 // To replace the token in a given file, by a generated random string, only if the mathcing Task is selected
@@ -355,8 +359,8 @@ begin
     SqlCredentialsHost     := SqlCredentialsQueryPage.Values[2];
     SqlCredentialsPort     := SqlCredentialsQueryPage.Values[3];
 
-    { Collect the entered EZAdmin Credentials into the relevant variables}
-    EzAdminCredentialsPassword := EzAdminCredentialsQueryPage.Values[0];
+    { Collect the entered OCAdmin Credentials into the relevant variables}
+    OcAdminCredentialsPassword := OcAdminCredentialsQueryPage.Values[0];
   end;
 end;
 
@@ -364,14 +368,14 @@ function ShouldSkipPage(PageID: Integer): Boolean;
 begin
   Result := False;
 
-  // // Skip the EzAdmin Credential Page if Component neither ezCloudServer nor ezCloudUpgradeServer is selected
-  // if (PageID = wcpEzAdminCredentialsQueryPage) and not WizardIsComponentSelected('ezCloudServer ezCloudUpgradeServer') then
+  // // Skip the OcAdmin Credential Page if Component neither ocAdminServer nor ocAdminUpgradeServer is selected
+  // if (PageID = wcpOcAdminCredentialsQueryPage) and not WizardIsComponentSelected('ocAdminServer ocAdminUpgradeServer') then
   //   Result := True;
-  // Skip the EzAdmin Credential Page if Component sqlDatabase is not selected
-  if (PageID = wcpEzAdminCredentialsQueryPage) and not WizardIsComponentSelected('sqlDatabase') then
+  // Skip the OcAdmin Credential Page if Component sqlDatabase is not selected
+  if (PageID = wcpOcAdminCredentialsQueryPage) and not WizardIsComponentSelected('sqlDatabase') then
     Result := True;
 
-  // Skip the SQL Credential Page if Component ezCloudServer is not selected
-  if (PageID = wcpSqlCredentialsQueryPage) and not WizardIsComponentSelected('ezCloudServer') then
+  // Skip the SQL Credential Page if Component ocAdminServer is not selected
+  if (PageID = wcpSqlCredentialsQueryPage) and not WizardIsComponentSelected('ocAdminServer') then
     Result := True;
 end;

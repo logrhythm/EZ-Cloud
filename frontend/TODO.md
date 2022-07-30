@@ -31,10 +31,31 @@
     - [ ] Ability to rename Log Source
     - [ ] Ability to assign Log Source to other Open Collectors
     - [ ] Ability to Enable / Commit the Log Source creation
+- [x] MS SQL Admin
+  - [x] Add MS SQL Connection admin page
+  - [x] Collect MS SQL credentials
+  - [x] Push to API
+  - [x] Disable fields while loading
+- [x] Missing MS SQL configuration
+  - [x] Check MS SQL needs configuration right after Login in
+  - [x] Add warning in navigation bar
+  - [x] Add notification on Admin menu icon
+  - [x] Add notification on Admin/SIEM/Manage MS SQL Connection button
+- [x] Internationalisation
+  - [x] Make all text internationalised
+  - [x] Add Language switch in Settings
+  - [x] Add Language switch on Login page
+- [x] MarketPlace notification indicator to show on Notification sub-menu too
+- [x] Get and show status of server components on Login page
+- [x] Disable Logon button if no SQL server is available
 
 ## TO FIX
+- [x] Identifiers to EZ Market seems incorect/misformatted/ignored by EZ Market
+- [x] Width of Advanced and Settings menus. Too narrow for some languages.
+- [x] Erroneous "SIEM Not Connected" alert message on Windows deployment
 
 ## TO TEST
+- [x] Translated message in deployment steps roll over status (especially Skipped steps)
 
 ### Target: v0.8
 
@@ -106,7 +127,7 @@
   - [x] Publisher profile's properties
     - [x] Create Publisher profile with user's Pseudo-name
     - [x] Edit Publisher profile
-  - [ ] Export to Market Place
+  - [x] Export to Market Place
     - [x] Deal with non-existing Publisher Profile
     - [x] Pipeline name
     - [x] Icon / Visual
