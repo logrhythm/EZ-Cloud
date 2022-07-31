@@ -6,7 +6,7 @@
 - Installer
   - [ ] ~~Offer to use Trusted SQL Connection for run time~~ (👈 Trusted mode not supported by Tedious)
   - [ ] ~~Make SQL Trusted Connection the default~~ (👈 Trusted mode not supported by Tedious)
-  - [ ] Offer to use Encrypted Connection for run time
+  - [ ] ~~Offer to use Encrypted Connection for run time~~ (👈 Now set by default to TRUE)
   - [x] Make Encrypted SQL connection the default
   - [x] Create Docker dedicated MS SQL DB creation script
 - SQL
