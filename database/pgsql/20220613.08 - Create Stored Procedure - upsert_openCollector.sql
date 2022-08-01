@@ -2,8 +2,10 @@
 -- Author:		Tony Massé
 -- Create date: 2022-06-13
 -- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
+-- Modified on: 2022-08-03 - To add better logging
 -- =============================================
 
+RAISE NOTICE '% - Create/Update Stored Procedure "upsert_openCollector" ownership and indices, if necessary.', clock_timestamp()::TEXT;
 DROP PROCEDURE IF EXISTS public."upsert_openCollector";
 
 CREATE PROCEDURE public."upsert_openCollector"
@@ -117,6 +119,8 @@ BEGIN
 END;
 $BODY$;
 
+RAISE NOTICE '% - Stored Procedure "upsert_openCollector" succesfully created/updated.', clock_timestamp()::TEXT;
+RAISE NOTICE '% - Update Stored Procedure "upsert_openCollector" ownership and access rights, if necessary.', clock_timestamp()::TEXT;
 
 ALTER PROCEDURE public."upsert_openCollector"
     OWNER TO "oc-admin-backend";
@@ -126,3 +130,5 @@ GRANT EXECUTE ON PROCEDURE public."upsert_openCollector"
 
 REVOKE ALL ON PROCEDURE public."upsert_openCollector"
     FROM PUBLIC;
+
+RAISE NOTICE '% - Stored Procedure "upsert_openCollector" ownership and access rights updated.', clock_timestamp()::TEXT;

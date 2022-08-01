@@ -2,9 +2,11 @@
 -- Author:		Tony Massé
 -- Create date: 2022-06-29
 -- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
+-- Modified on: 2022-08-03 - To add better logging
 -- Description:	Create a User in SQL and Insert or Update it in `rbacUserToRole`, based on its ID
 -- =============================================
 
+RAISE NOTICE '% - Create/Update Stored Procedure "upsert_RBAC_User" ownership and indices, if necessary.', clock_timestamp()::TEXT;
 DROP PROCEDURE IF EXISTS public."upsert_RBAC_User";
 
 CREATE PROCEDURE public."upsert_RBAC_User"
@@ -112,6 +114,9 @@ BEGIN
 END;
 $BODY$;
 
+RAISE NOTICE '% - Stored Procedure "upsert_RBAC_User" succesfully created/updated.', clock_timestamp()::TEXT;
+RAISE NOTICE '% - Update Stored Procedure "upsert_RBAC_User" ownership and access rights, if necessary.', clock_timestamp()::TEXT;
+
 ALTER PROCEDURE public."upsert_RBAC_User"
     OWNER TO "postgres";
 
@@ -120,6 +125,8 @@ GRANT EXECUTE ON PROCEDURE public."upsert_RBAC_User"
 
 REVOKE ALL ON PROCEDURE public."upsert_RBAC_User"
     FROM PUBLIC;
+
+RAISE NOTICE '% - Stored Procedure "upsert_RBAC_User" ownership and access rights updated.', clock_timestamp()::TEXT;
 
 -- =============================================
 -- Tests

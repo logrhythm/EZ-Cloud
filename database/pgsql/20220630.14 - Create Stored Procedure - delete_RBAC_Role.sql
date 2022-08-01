@@ -2,9 +2,11 @@
 -- Author:		Tony Massé
 -- Create date: 2022-06-30
 -- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
+-- Modified on: 2022-08-03 - To add better logging
 -- Description:	Delete Role record, based on its UID
 -- =============================================
 
+RAISE NOTICE '% - Create/Update Stored Procedure "delete_RBAC_Role" ownership and indices, if necessary.', clock_timestamp()::TEXT;
 DROP PROCEDURE IF EXISTS public."delete_RBAC_Role";
 
 CREATE PROCEDURE public."delete_RBAC_Role"
@@ -22,6 +24,9 @@ BEGIN
 END
 $BODY$;
 
+RAISE NOTICE '% - Stored Procedure "delete_RBAC_Role" succesfully created/updated.', clock_timestamp()::TEXT;
+RAISE NOTICE '% - Update Stored Procedure "delete_RBAC_Role" ownership and access rights, if necessary.', clock_timestamp()::TEXT;
+
 ALTER PROCEDURE public."delete_RBAC_Role"
     OWNER TO "oc-admin-backend";
 
@@ -30,6 +35,8 @@ GRANT EXECUTE ON PROCEDURE public."delete_RBAC_Role"
 
 REVOKE ALL ON PROCEDURE public."delete_RBAC_Role"
     FROM PUBLIC;
+
+RAISE NOTICE '% - Stored Procedure "delete_RBAC_Role" ownership and access rights updated.', clock_timestamp()::TEXT;
 
 -- =============================================
 -- Tests
