@@ -6,9 +6,11 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 -- =============================================
--- Author:		  Tony Massé
+-- Author:      Tony Massé
 -- Create date: 2021-07-15
 -- Update date: 2021-09-02 -- To align @DeviceName with what is used in the JQ Transform
+-- Update date: 2022-08-03 - To add `EZ_VERSION` flag
+-- EZ_VERSION: 20210902.01 :EZ_VERSION
 -- =============================================
 
 CREATE PROCEDURE [dbo].[upsert_Log_Source_Virtualisation_Template_Item] 

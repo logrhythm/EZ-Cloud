@@ -6,8 +6,10 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 -- =============================================
--- Author:		  Tony Massé
+-- Author:      Tony MassÃ©
 -- Create date: 2021-07-08
+-- Update date: 2022-08-03 - To add `EZ_VERSION` flag
+-- EZ_VERSION: 20210708.01 :EZ_VERSION
 -- =============================================
 
 CREATE PROCEDURE [dbo].[clone_MPE_Rule] 

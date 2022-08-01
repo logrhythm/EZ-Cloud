@@ -6,10 +6,12 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 -- =============================================
--- Author:		  Tony Massé
+-- Author:      Tony Massé
 -- Create date: 2021-05-10
 -- Update date: 2021-07-22 - To deal with Pipelines
 -- Update date: 2021-08-09 - To deal with multiple Shippers and their versions
+-- Update date: 2022-08-03 - To add `EZ_VERSION` flag
+-- EZ_VERSION: 20210809.01 :EZ_VERSION
 -- =============================================
 CREATE PROCEDURE upsert_openCollector 
 	@uid varchar(50),

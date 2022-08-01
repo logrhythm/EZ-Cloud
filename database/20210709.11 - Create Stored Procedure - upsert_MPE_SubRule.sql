@@ -6,10 +6,12 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 -- =============================================
--- Author:		  Tony Massé
+-- Author:      Tony MassÃ©
 -- Create date: 2021-07-09 -- Discovery and POC
--- Updated date: 2021-07-12 -- Bring POC into Store Procedure
--- Updated date: 2021-07-13 -- Fix SortOrder. Default to MAX(SortOrder) + 1 for new Sub Rule, or use exisitng Sub Rule's SortOrder
+-- Update date: 2021-07-12 -- Bring POC into Store Procedure
+-- Update date: 2021-07-13 -- Fix SortOrder. Default to MAX(SortOrder) + 1 for new Sub Rule, or use exisitng Sub Rule's SortOrder
+-- Update date: 2022-08-03 - To add `EZ_VERSION` flag
+-- EZ_VERSION: 20210713.01 :EZ_VERSION
 -- =============================================
 
 CREATE PROCEDURE [dbo].[upsert_MPE_SubRule] 

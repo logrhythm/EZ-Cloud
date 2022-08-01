@@ -7,9 +7,11 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- =============================================
--- Author:		  Tony Massé
+-- Author:      Tony Massé
 -- Create date: 2021-07-14 -- Discovery and POC, Bring POC into Store Procedure
 -- Update date: 2021-09-10 -- Refactor to not need to add a SP to EMDB
+-- Update date: 2022-08-03 - To add `EZ_VERSION` flag
+-- EZ_VERSION: 20210910.01 :EZ_VERSION
 -- =============================================
 
 CREATE PROCEDURE [dbo].[upsert_Log_Source_Virtualisation_Template] 
