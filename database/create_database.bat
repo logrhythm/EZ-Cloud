@@ -40,6 +40,7 @@ osql -E -n -d EZ -i "20211122.21 - Create Stored Procedure - delete_RBAC_User.sq
 osql -E -n -d EZ -i "20211123.22 - Create Stored Procedure - upsert_RBAC_Role.sql"
 osql -E -n -d EZ -i "20211123.23 - Create Stored Procedure - delete_RBAC_Role.sql"
 osql -E -n -d EZ -i "20220209.24 - Create View - get_SIEM_Master_ID.sql"
+osql -E -n -d EZ -i "20220803.25 - Create View - get_EZ_Versions.sql"
 
 @echo off
 echo.
