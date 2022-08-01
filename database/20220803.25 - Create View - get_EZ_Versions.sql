@@ -10,6 +10,11 @@ GO
 -- =============================================
 -- Author:      Tony Massé
 -- Create date: 2022-08-03
+-- Description: Extract the version of Stored Procedure, Functions and Views based on the EZ_VERSION:xx:EZ_VERSION tag.
+--              Format is `EZ_VERSION: <VERSION> :EZ_VERSION` where `<VERSION>` is made of 2 numbers:
+--               - Date, as YYYYMMDD
+--               - Version/revision of that file on that day
+--              For example: First revision of January 1st 20200 => `EZ_VERSION: 20220131.01 :EZ_VERSION`
 -- EZ_VERSION: 20220803.01 :EZ_VERSION
 -- =============================================
 CREATE VIEW [dbo].[get_EZ_Versions]
@@ -39,5 +44,4 @@ AS
         ) e
     WHERE
         s.s > 11
-    ORDER BY [Name]
 GO
