@@ -4,6 +4,7 @@
 # Author:      Tony Massé
 # Create date: 2022-07-26
 # Modified on: 2022-07-27 - To remove dependency to Git, and avoid downloading the whole GitHub Repo
+# Modified on: 2022-08-05 - To remove dependency to Dev branch
 # Description: Pseudo LRCTL command. To deploy `oc-admin`, `oc-db` and ancilaries
 #              Put the `ocAdmin` password in the environment variable `OC_ADMIN_PASSWORD`.
 #              If `OC_ADMIN_PASSWORD` env. variable isn't already set to a password of at
