@@ -10,11 +10,11 @@
 #              Least 6 characters long, the user will be prompted for a new one.
 # =============================================
 
-GITHUB_REPO_URL_BASE="https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9"
+GITHUB_REPO_URL_BASE="https://raw.githubusercontent.com/logrhythm/EZ-Cloud/main"
 DB_CREATION_SCRIPT="create_database.sh"
 
 echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
-curl -fsSL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9/docker/oc-db/_docker.run-oc-db.sh | sh
+curl -fsSL "$GITHUB_REPO_URL_BASE/docker/oc-db/_docker.run-oc-db.sh" | sh
 
 echo "### SLEEPING 5 SECONDS TO GIVE \`oc-db\` A CHANCE TO START-UP..."
 sleep 5
@@ -70,7 +70,7 @@ unset OC_ADMIN_PASSWORD
 cd ..
 
 echo "### DOWNLOAD AND RUN \`oc-admin\` START-UP SCRIPT..."
-curl -fsSL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9/docker/oc-admin/start_oc_admin.sh | sh
+curl -fsSL "$GITHUB_REPO_URL_BASE/docker/oc-admin/start_oc_admin.sh" | sh
 
 echo "### DONE."
 echo ""
