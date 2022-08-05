@@ -7,7 +7,7 @@ DECLARE @MPEPolicy_Name varchar(50) = 'LogRhythm Default'
 
 -- TODO: Set parameter values here.
 
-EXECUTE [dbo].[upsert_Processing_Policy] 
+EXECUTE [dbo].[OC_Admin_Upsert_Processing_Policy] 
    @uid
   ,@name
   ,@MPEPolicy_Name

@@ -1,4 +1,9 @@
+-- Old name
 DROP PROCEDURE IF EXISTS [dbo].[upsert_Processing_Policy]
+GO
+
+-- New name
+DROP PROCEDURE IF EXISTS [dbo].[OC_Admin_Upsert_Processing_Policy]
 GO
 
 SET ANSI_NULLS ON
@@ -14,7 +19,7 @@ GO
 -- EZ_VERSION: 20210910.01 :EZ_VERSION
 -- =============================================
 
-CREATE PROCEDURE [dbo].[upsert_Processing_Policy] 
+CREATE PROCEDURE [dbo].[OC_Admin_Upsert_Processing_Policy] 
 	@uid varchar(40), -- UID of the LS Type
 	@name nvarchar(50), -- Name of the LS Type
 	@MPEPolicy_Name varchar(50) = 'LogRhythm Default' -- Name of the new Policy (if Policy already exists, old name is kept)

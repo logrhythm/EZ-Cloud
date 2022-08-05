@@ -1,4 +1,9 @@
+-- Old name
 DROP PROCEDURE IF EXISTS [dbo].[upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource]
+GO
+
+-- New name
+DROP PROCEDURE IF EXISTS [dbo].[OC_Admin_Upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource]
 GO
 
 SET ANSI_NULLS ON
@@ -16,7 +21,7 @@ GO
 -- EZ_VERSION: 20220215.01 :EZ_VERSION
 -- =============================================
 
-CREATE PROCEDURE [dbo].[upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource] 
+CREATE PROCEDURE [dbo].[OC_Admin_Upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource] 
 	@uid varchar(40), -- UID of the Log Source
 	@OpenCollectorMotherLogSourceID int, -- Log Source ID of the Open Collector
 	@Virt_Template_UID varchar(40) = '0d7544aa-5760-4c5e-be62-26262f3cd1db' -- UID of the EZ Cloud Template

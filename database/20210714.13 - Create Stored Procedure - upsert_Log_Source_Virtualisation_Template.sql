@@ -1,4 +1,9 @@
+-- Old name
 DROP PROCEDURE IF EXISTS [dbo].[upsert_Log_Source_Virtualisation_Template]
+GO
+
+-- New name
+DROP PROCEDURE IF EXISTS [dbo].[OC_Admin_Upsert_Log_Source_Virtualisation_Template]
 GO
 
 SET ANSI_NULLS ON
@@ -14,7 +19,7 @@ GO
 -- EZ_VERSION: 20210910.01 :EZ_VERSION
 -- =============================================
 
-CREATE PROCEDURE [dbo].[upsert_Log_Source_Virtualisation_Template] 
+CREATE PROCEDURE [dbo].[OC_Admin_Upsert_Log_Source_Virtualisation_Template] 
 	@Virt_Template_UID varchar(40) = '0d7544aa-5760-4c5e-be62-26262f3cd1db', -- UID of the EZ Cloud Template
 	@Virt_Template_Name varchar(50) = 'EZ Cloud', -- Name of the new Template
 	@ItemToInsert_ID int = NULL, -- ID of Template Item to insert, or NULL if none

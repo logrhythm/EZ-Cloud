@@ -1,4 +1,9 @@
+-- Old name
 DROP PROCEDURE IF EXISTS [dbo].[upsert_LogSource_Type]
+GO
+
+-- New name
+DROP PROCEDURE IF EXISTS [dbo].[OC_Admin_Upsert_LogSource_Type]
 GO
 
 SET ANSI_NULLS ON
@@ -12,7 +17,7 @@ GO
 -- EZ_VERSION: 20210708.01 :EZ_VERSION
 -- =============================================
 
-CREATE PROCEDURE [dbo].[upsert_LogSource_Type] 
+CREATE PROCEDURE [dbo].[OC_Admin_Upsert_LogSource_Type] 
 	@uid varchar(40),
 	@name nvarchar(50)
 AS

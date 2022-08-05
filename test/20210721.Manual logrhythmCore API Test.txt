@@ -141,13 +141,13 @@
   "stillChecking": false,
   "errors": [
     {
-      "message": "Procedure or function 'upsert_MPE_SubRule' expects parameter '@SubRuleName', which was not supplied.",
+      "message": "Procedure or function 'OC_Admin_Upsert_MPE_SubRule' expects parameter '@SubRuleName', which was not supplied.",
       "code": "EREQUEST",
       "number": 201,
       "state": 4,
       "class": 16,
       "serverName": "LRVM6",
-      "procName": "upsert_MPE_SubRule",
+      "procName": "OC_Admin_Upsert_MPE_SubRule",
       "lineNumber": 0
     }
   ],

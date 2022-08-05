@@ -1,4 +1,9 @@
+-- Old name
 DROP PROCEDURE IF EXISTS [dbo].[upsert_MPE_SubRule]
+GO
+
+-- New name
+DROP PROCEDURE IF EXISTS [dbo].[OC_Admin_Upsert_MPE_SubRule]
 GO
 
 SET ANSI_NULLS ON
@@ -14,7 +19,7 @@ GO
 -- EZ_VERSION: 20210713.01 :EZ_VERSION
 -- =============================================
 
-CREATE PROCEDURE [dbo].[upsert_MPE_SubRule] 
+CREATE PROCEDURE [dbo].[OC_Admin_Upsert_MPE_SubRule] 
 	@uid varchar(40), -- UID of the LS Type
 	@SubRuleUid varchar(40),
 	@SubRuleName nvarchar(50),

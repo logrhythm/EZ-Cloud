@@ -1,4 +1,9 @@
+-- Old name
 DROP PROCEDURE IF EXISTS [dbo].[clone_MPE_Rule]
+GO
+
+-- New name
+DROP PROCEDURE IF EXISTS [dbo].[OC_Admin_Clone_MPE_Rule]
 GO
 
 SET ANSI_NULLS ON
@@ -12,7 +17,7 @@ GO
 -- EZ_VERSION: 20210708.01 :EZ_VERSION
 -- =============================================
 
-CREATE PROCEDURE [dbo].[clone_MPE_Rule] 
+CREATE PROCEDURE [dbo].[OC_Admin_Clone_MPE_Rule] 
 	@uid varchar(40),
 	@name nvarchar(50),
 	@SourceMsgSourceTypeID int = 1000772, -- for LS Type "BETA : Syslog - Open Collector - Azure Event Hub" (1000772)

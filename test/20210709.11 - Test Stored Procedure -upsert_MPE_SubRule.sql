@@ -22,7 +22,7 @@ DECLARE @Tag10 nvarchar(200) = '*'
 
 -- TODO: Set parameter values here.
 
-EXECUTE @RC = [dbo].[upsert_MPE_SubRule] 
+EXECUTE @RC = [dbo].[OC_Admin_Upsert_MPE_SubRule] 
    @uid
   ,@SubRuleUid
   ,@SubRuleName
