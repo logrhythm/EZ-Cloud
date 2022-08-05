@@ -5,7 +5,7 @@
   - Deploy on your host:
     - Docker
   - Get and run: `_docker.run-oc-admin_dev.sh`
-    - `curl -fsSOL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9/docker/oc-admin_dev/_docker.run-oc-admin_dev.sh && sh _docker.run-oc-admin_dev.sh`
+    - `curl -fsSOL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/main/docker/oc-admin_dev/_docker.run-oc-admin_dev.sh && sh _docker.run-oc-admin_dev.sh`
 - Build the `oc-admin` Docker image based on the latest code
   - Deploy on your host:
     - Docker
@@ -13,13 +13,13 @@
     - `_docker.run-oc-admin_dev.sh`
     - `_docker.build_oc-admin_production.sh`
   - Run `_docker.build_oc-admin_production.sh`
-    - `curl -fsSOL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9/docker/oc-admin_dev/_docker.run-oc-admin_dev.sh https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9/docker/oc-admin_dev/_docker.build_oc-admin_production.sh | sh`
+    - `curl -fsSOL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/main/docker/oc-admin_dev/_docker.run-oc-admin_dev.sh https://raw.githubusercontent.com/logrhythm/EZ-Cloud/main/docker/oc-admin_dev/_docker.build_oc-admin_production.sh | sh -s -- --latest`
 - Build the `oc-admin_dev` image
   - Deploy on your host:
     - Docker
     - Git CLI
   - Get and run: `_docker.build-oc-admin_dev.sh`
-    - `curl -fsSL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9/docker/oc-admin_dev/_docker.build-oc-admin_dev.sh | sh`
+    - `curl -fsSL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/main/docker/oc-admin_dev/_docker.build-oc-admin_dev.sh | sh`
 
 **Below is the detailed description of the scripts present in this directory.**
 
@@ -91,5 +91,6 @@ If no running `oc-admin_dev` is found, it spins a temporary one, unless paramete
 | --help | Shows Help message |
 | --nopublish | Skips publishing to Docker Hub |
 | --notempimage | Do not use temporary image if `oc-admin_dev` isn't already running |
+| --latest | Tag the image as \`latest\` instead of \`latest-dev\` |
 
-If no option/parameter is provided, the script will attempt to use the currently running \`oc-admin_dev\`" image, if none, it will spin a temporary one.
+If no option/parameter is provided, the script will attempt to use the currently running \`oc-admin_dev\`" image, if none, it will spin a temporary one to build `oc-admin` with the tag `latest-dev`.

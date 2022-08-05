@@ -5,14 +5,14 @@
   - Deploy on your host:
     - Docker
   - Get and run `_docker.run-oc-db.sh`
-    - `curl -fsSL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9/docker/oc-db/_docker.run-oc-db.sh | sh`
+    - `curl -fsSL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/main/docker/oc-db/_docker.run-oc-db.sh | sh`
 - Build the `oc-db` image
   - Deploy on your host:
     - Docker
     - `Dockerfile` in the same directory
     - `docker-entrypoint-initdb.d/` in the same directory
   - Get and run: `_docker.build-oc-db.sh`
-    - `curl -fsSOL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9/docker/oc-db/Dockerfile https://raw.githubusercontent.com/logrhythm/EZ-Cloud/v0.9/docker/oc-db/_docker.build-oc-db.sh | sh`
+    - `curl -fsSOL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/main/docker/oc-db/Dockerfile https://raw.githubusercontent.com/logrhythm/EZ-Cloud/main/docker/oc-db/_docker.build-oc-db.sh | sh -s -- --latest`
 
 **Below is the detailed description of the scripts present in this directory.**
 
@@ -35,8 +35,9 @@ Create the named volume and Start PostgreSQL container `oc-db`.
 | - | - |
 | --help | Shows Help message |
 | --nopublish | Skips publishing to Docker Hub |
+| --latest | Tag the image as \`latest\` instead of \`latest-dev\` |
 
-If no option/parameter is provided, the script will build the `oc-db` container Production image and publish it.
+If no option/parameter is provided, the script will build the `oc-db` container Production image and publish it with the tag `latest-dev`.
 
 ---
 
