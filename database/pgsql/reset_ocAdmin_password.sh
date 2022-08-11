@@ -3,7 +3,6 @@
 # =============================================
 # Author:      Tony Massé
 # Create date: 2022-08-19
-# Modified on: 2022-07-26 - To use `OC_ADMIN_PASSWORD` environment variable to create the `ocAdmin` user account
 # Description: Reset the password for Admin User `ocAdmin` to either the new pass in `OC_ADMIN_PASSWORD` environment variable
 #              or a randomly generated password.
 #              Optional: A different login name can be provided in `OC_ADMIN_LOGIN` environment variable. If none, default
