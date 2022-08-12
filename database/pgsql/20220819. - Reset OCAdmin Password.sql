@@ -38,8 +38,11 @@ BEGIN
     );
     RAISE NOTICE 'DONE';
 
+    -- Check for the presence of the default Admin role
+    -- We do this as the ocAdmin account we are reseting belongs to this Role
+    -- If the Role is missing, we simply recreate it
     IF NOT EXISTS (
-            SELECT FROM public."rbacRoles" WHERE "uid" = 'b7972c45-3546-4993-93ab-c0f1d9a0ffae' -- Admin role
+            SELECT FROM public."rbacRoles" WHERE "uid" = 'b7972c45-3546-4993-93ab-c0f1d9a0ffae'
         )
         THEN
             RAISE WARNING 'ERROR - Default Admin Role is missing';
