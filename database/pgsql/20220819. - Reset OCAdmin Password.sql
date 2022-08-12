@@ -39,7 +39,7 @@ BEGIN
     RAISE NOTICE 'DONE';
 
     IF NOT EXISTS (
-            SELECT FROM public."rbacRoles" WHERE "uid" = 'b7972c45-3546-4993-93ab-c0f1d9a0ffae', -- Admin role
+            SELECT FROM public."rbacRoles" WHERE "uid" = 'b7972c45-3546-4993-93ab-c0f1d9a0ffae' -- Admin role
         )
         THEN
             RAISE WARNING 'ERROR - Default Admin Role is missing';
