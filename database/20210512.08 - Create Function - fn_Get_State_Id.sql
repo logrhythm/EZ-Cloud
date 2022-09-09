@@ -8,7 +8,9 @@ GO
 -- =============================================
 -- Author:		Tony Masse
 -- Create date: 2021-05-12
+-- Update date: 2022-08-03 - To add `EZ_VERSION` flag
 -- Description:	Return the StateID for a given StateName
+-- EZ_VERSION: 20210512.01 :EZ_VERSION
 -- =============================================
 CREATE FUNCTION fn_Get_State_Id 
 (

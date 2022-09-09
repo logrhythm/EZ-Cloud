@@ -1,4 +1,9 @@
+-- Old name
 DROP VIEW IF EXISTS [dbo].[list_OpenCollector_Log_Sources]
+GO
+
+-- New name
+DROP VIEW IF EXISTS [dbo].[OC_Admin_List_OpenCollector_Log_Sources]
 GO
 
 SET ANSI_NULLS ON
@@ -7,7 +12,13 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE VIEW [dbo].[list_OpenCollector_Log_Sources]
+-- =============================================
+-- Author:      Tony Massé
+-- Create date: 2021-07-19
+-- Update date: 2022-08-03 - To add `EZ_VERSION` flag
+-- EZ_VERSION: 20210719.01 :EZ_VERSION
+-- =============================================
+CREATE VIEW [dbo].[OC_Admin_List_OpenCollector_Log_Sources]
 AS
 	SELECT
 		ls.MsgSourceID,

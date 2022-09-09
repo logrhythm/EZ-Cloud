@@ -6,8 +6,10 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 -- =============================================
--- Author:		  Tony Massé
+-- Author:      Tony Massé
 -- Create date: 2021-11-23
+-- Update date: 2022-08-03 - To add `EZ_VERSION` flag
+-- EZ_VERSION: 20211123.01 :EZ_VERSION
 -- =============================================
 CREATE PROCEDURE delete_RBAC_Role 
 	@uid varchar(40) = NULL -- If none is provided, we just do nothing

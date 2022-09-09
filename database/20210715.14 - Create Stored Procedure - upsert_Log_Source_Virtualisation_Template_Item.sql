@@ -1,4 +1,9 @@
+-- Old name
 DROP PROCEDURE IF EXISTS [dbo].[upsert_Log_Source_Virtualisation_Template_Item]
+GO
+
+-- New name
+DROP PROCEDURE IF EXISTS [dbo].[OC_Admin_Upsert_Log_Source_Virtualisation_Template_Item]
 GO
 
 SET ANSI_NULLS ON
@@ -6,12 +11,14 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 -- =============================================
--- Author:		  Tony Massé
+-- Author:      Tony Massé
 -- Create date: 2021-07-15
 -- Update date: 2021-09-02 -- To align @DeviceName with what is used in the JQ Transform
+-- Update date: 2022-08-03 - To add `EZ_VERSION` flag
+-- EZ_VERSION: 20210902.01 :EZ_VERSION
 -- =============================================
 
-CREATE PROCEDURE [dbo].[upsert_Log_Source_Virtualisation_Template_Item] 
+CREATE PROCEDURE [dbo].[OC_Admin_Upsert_Log_Source_Virtualisation_Template_Item] 
 	@uid varchar(40), -- UID of the Log Source
 	@name nvarchar(50), -- Name of Log Source
 	@RegexFilter varchar(max) = NULL, -- If not provided, we build it up from UID and Name
@@ -103,7 +110,7 @@ BEGIN
 			ELSE
 			BEGIN
 				-- Update Virtualisation Template to Insert new Item to it
-				EXEC [dbo].[upsert_Log_Source_Virtualisation_Template]
+				EXEC [dbo].[OC_Admin_Upsert_Log_Source_Virtualisation_Template]
 					@ItemToInsert_ID = @TemplateItemID
 
 				-- Spit out new Template Item ID

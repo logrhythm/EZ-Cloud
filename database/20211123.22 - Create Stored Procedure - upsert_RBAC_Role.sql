@@ -6,9 +6,11 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 -- =============================================
--- Author:		  Tony Massé
+-- Author:      Tony Massé
 -- Create date: 2021-11-23
 -- Update date: 2021-12-17 - To rename the [isPrivileged] column into [isPrivileged]
+-- Update date: 2022-08-03 - To add `EZ_VERSION` flag
+-- EZ_VERSION: 20211217.01 :EZ_VERSION
 -- =============================================
 CREATE PROCEDURE upsert_RBAC_Role 
 	@uid varchar(40),

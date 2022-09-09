@@ -1,4 +1,9 @@
+-- Old name
 DROP PROCEDURE IF EXISTS [dbo].[upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource]
+GO
+
+-- New name
+DROP PROCEDURE IF EXISTS [dbo].[OC_Admin_Upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource]
 GO
 
 SET ANSI_NULLS ON
@@ -6,15 +11,17 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 -- =============================================
--- Author:		  Tony Massé
+-- Author:      Tony Massé
 -- Create date: 2021-07-20
 -- Update date: 2021-07-21 - Remove unnecessary parameter (@OpenCollectorLogSourceTypeID)
 -- Update date: 2021-07-21 - Change separator between OC Log Source and Virtual LS (adding spaces around the dash: '-' -> ' - ')
 -- Update date: 2021-11-08 - Change type for @VirtualSourceTemplateItemRegex to handle RegEx properly ('nvarchar(100)' -> 'varchar(max)')
 -- Update date: 2022-02-15 - Collect Log Source Identifiers for the OC Log Source, to then re-apply them after they get deleted
+-- Update date: 2022-08-03 - To add `EZ_VERSION` flag
+-- EZ_VERSION: 20220215.01 :EZ_VERSION
 -- =============================================
 
-CREATE PROCEDURE [dbo].[upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource] 
+CREATE PROCEDURE [dbo].[OC_Admin_Upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource] 
 	@uid varchar(40), -- UID of the Log Source
 	@OpenCollectorMotherLogSourceID int, -- Log Source ID of the Open Collector
 	@Virt_Template_UID varchar(40) = '0d7544aa-5760-4c5e-be62-26262f3cd1db' -- UID of the EZ Cloud Template

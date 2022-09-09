@@ -17,7 +17,7 @@
 # =============================================
 
 # Display Help message
-if [[ "$*" == *help* ]]; then
+if [[ "$*" == *--help* ]]; then
   echo ""
   echo "Usage:  _docker.build_oc-admin_production.sh [OPTIONS]"
   echo ""
@@ -25,11 +25,17 @@ if [[ "$*" == *help* ]]; then
   echo "   --help                Shows this help"
   echo "   --nopublish           Skips publishing to Docker Hub"
   echo "   --notempimage         Do not use temporary image if \`oc-admin_dev\` isn't already running"
+  echo "   --latest              Tag the image as \`latest\` instead of \`latest-dev\`"
   echo ""
   echo "By default (no parameters) this script will attempt to use the currently running \`oc-admin_dev\`"
   echo "image, if none, it will spin a temporary one."
   echo ""
   exit 0
+fi
+
+LATEST_PARAM=""
+if [[ "$*" == *--latest* ]]; then
+  LATEST_PARAM="--latest"
 fi
 
 # Let's get cracking!
@@ -96,7 +102,7 @@ if [[ -f "/var/lib/docker/volumes/oc-admin_dev/_data/Dockerfile" ]] && [[ -f "/v
   echo "###   \-> 🟢 DOCKER FILES FOUND."
 
   echo "### BUILD \`oc-admin\` CONTAINER..."
-  /usr/bin/env bash -c "cd /var/lib/docker/volumes/oc-admin_dev/_data/ && chmod +x _docker.build-oc-admin.sh && ./_docker.build-oc-admin.sh"
+  /usr/bin/env bash -c "cd /var/lib/docker/volumes/oc-admin_dev/_data/ && chmod +x _docker.build-oc-admin.sh && ./_docker.build-oc-admin.sh $LATEST_PARAM"
 
   echo "### LISTING \`oc-admin\` CONTAINER IMAGES..."
   docker images tonymasse/oc-admin

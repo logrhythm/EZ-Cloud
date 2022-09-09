@@ -57,7 +57,7 @@ router.post('/UpdateLogSourceType', async (req, res) => {
   await getSiemDataFromSql({
     targetVariable: updatedLogSourceType,
     query: `
-    EXECUTE [dbo].[upsert_LogSource_Type]
+    EXECUTE [dbo].[OC_Admin_Upsert_LogSource_Type]
        @uid
       ,@name
       ;
@@ -84,7 +84,7 @@ router.post('/UpdateMpeRule', async (req, res) => {
   await getSiemDataFromSql({
     targetVariable: updatedMpeRule,
     query: `
-    EXECUTE [dbo].[clone_MPE_Rule]
+    EXECUTE [dbo].[OC_Admin_Clone_MPE_Rule]
        @uid
       ,@name
       ;
@@ -136,7 +136,7 @@ router.post('/UpdateMpeSubRule', async (req, res) => {
   await getSiemDataFromSql({
     targetVariable: updatedMpeSubRule,
     query: `
-    EXECUTE [dbo].[upsert_MPE_SubRule]
+    EXECUTE [dbo].[OC_Admin_Upsert_MPE_SubRule]
        ${storedProcedureParams.join(', ')}
       ;
     `,
@@ -168,7 +168,7 @@ router.post('/UpdateProcessingPolicy', async (req, res) => {
   await getSiemDataFromSql({
     targetVariable: updatedProcessingPolicy,
     query: `
-    EXECUTE [dbo].[upsert_Processing_Policy]
+    EXECUTE [dbo].[OC_Admin_Upsert_Processing_Policy]
        ${storedProcedureParams.join(', ')}
       ;
     `,
@@ -202,7 +202,7 @@ router.post('/UpdateLogSourceVirtualisationTemplate', async (req, res) => {
   await getSiemDataFromSql({
     targetVariable: updatedLogSourceVirtualisationTemplate,
     query: `
-    EXECUTE [dbo].[upsert_Log_Source_Virtualisation_Template]
+    EXECUTE [dbo].[OC_Admin_Upsert_Log_Source_Virtualisation_Template]
        ${storedProcedureParams.join(', ')}
       ;
     `,
@@ -235,7 +235,7 @@ router.post('/UpdateLogSourceVirtualisationTemplateItem', async (req, res) => {
   await getSiemDataFromSql({
     targetVariable: updatedLogSourceVirtualisationTemplateItem,
     query: `
-    EXECUTE [dbo].[upsert_Log_Source_Virtualisation_Template_Item]
+    EXECUTE [dbo].[OC_Admin_Upsert_Log_Source_Virtualisation_Template_Item]
        ${storedProcedureParams.join(', ')}
       ;
     `,
@@ -266,7 +266,7 @@ router.get('/GetOpenCollectorLogSourcesList', async (req, res) => {
       ,[HostID] AS 'hostID'
       ,[HostName] AS 'hostName'
       ,[HostIdentifiers_JSON] AS 'hostIdentifiers_JSON'
-    FROM [EZ].[dbo].[list_OpenCollector_Log_Sources]
+    FROM [EZ].[dbo].[OC_Admin_List_OpenCollector_Log_Sources]
   `
   });
 
@@ -307,7 +307,7 @@ router.post('/UpdateOpenCollectorLogSourceWithLogSourceVirtualisation', async (r
   await getSiemDataFromSql({
     targetVariable: updatedOpenCollectorLogSource,
     query: `
-    EXECUTE [dbo].[upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource]
+    EXECUTE [dbo].[OC_Admin_Upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource]
        ${storedProcedureParams.join(', ')}
       ;
     `,

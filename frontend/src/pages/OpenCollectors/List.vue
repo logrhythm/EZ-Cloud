@@ -89,7 +89,52 @@
             />
           </q-td>
         </template>
-        <template v-slot:body-cell-osVersion="props">
+        <template v-slot:body-cell-hostVersions="props">
+          <q-td :props="props">
+            <div v-if="props.row.osVersion">
+              <q-tooltip content-style="font-size: 1em;" >Linux</q-tooltip>
+              <q-avatar square  size="24px" class="q-mr-xs">
+                <img :src="'/icons/host-linux.svg'" />
+              </q-avatar>
+              <q-badge outline color="grey">v{{ props.row.osVersion }}</q-badge>
+            </div>
+
+            <div v-if="props.row.dockerVersion">
+              <q-tooltip content-style="font-size: 1em;" >Docker</q-tooltip>
+              <q-avatar square  size="24px" class="q-mr-xs">
+                <img :src="'/icons/host-docker.svg'" />
+              </q-avatar>
+              <q-badge outline color="grey">v{{ props.row.dockerVersion }}</q-badge>
+            </div>
+
+            <div v-if="osVersionCheck && osVersionCheck[props.row.uid] && osVersionCheck[props.row.uid].checking">
+              <q-spinner-dots
+                color="primary"
+                size="2em"
+                class="q-ml-sm"
+              />
+            </div>
+            <div v-else-if="osVersionCheck && osVersionCheck[props.row.uid] && osVersionCheck[props.row.uid].error">
+              <q-tooltip content-style="font-size: 1rem;">
+                {{ $t('Failed to connect to the server.') }}<br>
+                {{ $t('Check the OpenCollector details and Credentials.') }}
+              </q-tooltip>
+              <q-icon
+                name="cloud_off"
+                color="orange"
+                size="2em"
+                class="q-ml-sm"
+              />
+              <q-icon
+                name="warning_amber"
+                color="orange"
+                size="2em"
+                class="q-ml-sm"
+              />
+            </div>
+          </q-td>
+        </template>
+        <!-- <template v-slot:body-cell-osVersion="props">
           <q-td :props="props">
             {{ props.value }}
             <div v-if="osVersionCheck && osVersionCheck[props.row.uid] && osVersionCheck[props.row.uid].checking">
@@ -118,7 +163,7 @@
               />
             </div>
           </q-td>
-        </template>
+        </template> -->
         <!-- <template v-slot:body-cell-fbVersion="props">
           <q-td :props="props">
             <span v-if="props.value !== 'Not Installed'" >{{ (props.value && props.value.length ? 'Filebeat ' + props.value : '') }}</span>
@@ -356,7 +401,8 @@ export default {
         { name: 'name', align: 'center', label: this.$t('Name'), field: 'name', sortable: true },
         { name: 'hostname', align: 'center', label: this.$t('Hostname'), field: 'hostname', sortable: true },
         { name: 'authenticationMethod', align: 'center', label: this.$t('Authentication Method'), field: 'authenticationMethod', sortable: true },
-        { name: 'osVersion', align: 'center', label: this.$t('OS version'), field: 'osVersion', sortable: true },
+        { name: 'hostVersions', align: 'center', label: this.$t('Host versions'), field: 'osVersion', sortable: true },
+        // { name: 'osVersion', align: 'center', label: this.$t('OS version'), field: 'osVersion', sortable: true },
         { name: 'ocVersion', align: 'center', label: this.$t('OpenCollector version'), field: 'ocVersion', sortable: true },
         // { name: 'fbVersion', align: 'center', label: 'Shippers version', field: 'fbVersion', sortable: true },
         { name: 'installedShippers', align: 'center', label: this.$t('Installed Shippers'), field: 'installedShippers', sortable: true }

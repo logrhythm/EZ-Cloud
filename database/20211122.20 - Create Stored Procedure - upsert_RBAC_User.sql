@@ -6,10 +6,12 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 -- =============================================
--- Author:		  Tony Massé
+-- Author:      Tony Massé
 -- Create date: 2021-11-22
 -- Update date: 2021-11-23 - To make @userLogin optional, rename @password into @userPassword and load userLogin from table when updating the user details (as opposed to create a new user)
 -- Update date: 2021-11-24 - Update to deal with non EZ accounts
+-- Update date: 2022-08-03 - To add `EZ_VERSION` flag
+-- EZ_VERSION: 20211124.01 :EZ_VERSION
 -- =============================================
 CREATE PROCEDURE upsert_RBAC_User 
 	@userID int = NULL, -- If none is provided, we create a new User

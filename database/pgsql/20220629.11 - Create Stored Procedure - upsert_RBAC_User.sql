@@ -2,6 +2,7 @@
 -- Author:		Tony Massé
 -- Create date: 2022-06-29
 -- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
+-- Modified on: 2022-08-19 - To allow to change the password of an existing user
 -- Description:	Create a User in SQL and Insert or Update it in `rbacUserToRole`, based on its ID
 -- =============================================
 
@@ -27,6 +28,10 @@ BEGIN
 	-- - double check the Login doesn't already exist in SQL (for any DB, as we do not want to mess with existing accounts)
 	-- - if Login not found anywhere:
 	-- -- create the User in SQL
+    -- Else (UserID was not NULL):
+    -- - Check the @userPassword 
+    -- - if it contains something else than the normal placeholder, then:
+    -- -- update the password of the user in SQL
 	-- If userLogin exists as an SQL User and is already in rbacUserToToles:
 	-- - update the entry in rbacUserToToles
 	-- If userLogin exists as an SQL User and is not yet in rbacUserToToles:
@@ -80,6 +85,36 @@ BEGIN
             INTO "@tempUserLogin"
             FROM public."rbacUserToRole" rutr
             WHERE rutr."id" = "@userID";
+
+        -- Else (UserID was not NULL):
+        -- - Check the @userPassword 
+        -- - if it contains something else than the normal placeholder, then:
+        -- -- update the password of the user in SQL
+        IF 
+            "@userPassword" IS NOT NULL
+            AND NULLIF("@userPassword", '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **') IS NOT NULL 
+            THEN
+            RAISE DEBUG 'Checking "%" exists, prior to udpdate its Password', "@lowerCaseUserLogin"; -- XXXX
+            IF EXISTS (
+                    SELECT FROM pg_catalog.pg_roles WHERE rolname = "@tempUserLogin"
+            )
+            THEN
+                RAISE DEBUG 'Updating Password for Role "%"', "@tempUserLogin"; -- XXXX
+                EXECUTE format('
+                    ALTER ROLE %I
+                        WITH
+                            PASSWORD %L
+                        ;
+                    ',
+                    "@tempUserLogin",
+                    "@userPassword"
+                );
+                RAISE DEBUG 'Done';
+            ELSE
+                RAISE WARNING 'ERROR - User Login "%" did not exist. Not possible to udpdate its Password', "@tempUserLogin"; -- XXXX
+                RAISE EXCEPTION 'User Login not found. OC Admin can only modify the password of existing User Login.' USING ERRCODE = '51002';
+            END IF;
+        END IF;
     END IF;
     RAISE DEBUG '@tempUserLogin is now "%"', "@tempUserLogin";
 
@@ -150,4 +185,13 @@ REVOKE ALL ON PROCEDURE public."upsert_RBAC_User"
 --     NULL,
 --     'abcde823-e68f-46aa-9dc1-71c35cae43b5', -- New User role
 --     NULL
+-- );
+
+-- -- Update the User's Password (assuming UserID is 15)
+
+-- call public."upsert_RBAC_User" (
+--     15,
+--     NULL,
+--     'cb36e823-e68f-46aa-9dc1-71c35cae43b5', -- User role
+--     'New__P4ssw0rd!!Pa55word!!'
 -- );

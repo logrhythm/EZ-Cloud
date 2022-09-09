@@ -61,6 +61,7 @@ router.get('/GetUsersList', async (req, res) => {
       query: `
       SELECT [rbacUserToRole].[id] AS 'userId'
         ,[rbacUserToRole].[login] AS 'userLogin'
+        ,'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' AS 'userPassword'
         ,[rbacRoles].[uid] AS 'roleUid'
         ,[rbacRoles].[name] AS 'roleName'
         ,[rbacRoles].[isPrivileged] AS 'roleIsPrivileged'
@@ -76,6 +77,7 @@ router.get('/GetUsersList', async (req, res) => {
       query: `
       SELECT "rbacUserToRole"."id" AS "userId"
         ,"rbacUserToRole"."login" AS "userLogin"
+        ,'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' AS "userPassword"
         ,"rbacRoles"."uid" AS "roleUid"
         ,"rbacRoles"."name" AS "roleName"
         ,CASE

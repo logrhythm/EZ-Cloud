@@ -4,6 +4,7 @@
 # Author:      Tony Massé
 # Create date: 2022-07-11
 # Modified on: 2022-07-26 - To add --nopublish parameter and feature
+# Modified on: 2022-08-05 - To add `--latest` parameter
 # Description: Create the named volume and Start PostgreSQL container `oc-db`
 # Parameters:
 #  --help         Shows Help message
@@ -11,23 +12,29 @@
 # =============================================
 
 # Display Help message
-if [[ "$*" == *help* ]]; then
+if [[ "$*" == *--help* ]]; then
   echo ""
   echo "Usage:  _docker.build-oc-db.sh [OPTIONS]"
   echo ""
   echo "Options:"
   echo "   --help                Shows this help"
   echo "   --nopublish           Skips publishing to Docker Hub"
+  echo "   --latest              Tag the image as \`latest\` instead of \`latest-dev\`"
   echo ""
   exit 0
 fi
 
-echo "### BUILD DOCKER IMAGE..."
-docker build -t tonymasse/oc-db:v1.0 -t tonymasse/oc-db:latest ./
+LATEST_TAG=latest-dev
+if [[ "$*" == *--latest* ]]; then
+  LATEST_TAG=latest
+fi
+
+echo "### BUILD DOCKER IMAGE (FLAG: $LATEST_TAG)..."
+docker build -t tonymasse/oc-db:v1.0 -t tonymasse/oc-db:$LATEST_TAG ./
 
 echo "### Done."
 
-if [[ "$*" == *nopublish* ]]; then
+if [[ "$*" == *--nopublish* ]]; then
   echo "### SKIPPING PUBLISHING, as per \`--nopublish\` parameter."
   echo "### Next steps for you are likely to be:"
   echo "docker login"

@@ -13,7 +13,7 @@ SET @name = 'A_ EZ Test LS - MODIFIED - Biloute II';
 
 
 
-EXECUTE @RC = [dbo].[clone_MPE_Rule] 
+EXECUTE @RC = [dbo].[OC_Admin_Clone_MPE_Rule] 
    @uid
   ,@name
 --  ,@SourceMsgSourceTypeID

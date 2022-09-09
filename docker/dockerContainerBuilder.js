@@ -3,6 +3,7 @@
  * *
  * Changes log:
  * Tony Massé - 2022-07-25 - Adapt `installerBuilder` to bild Docker Container
+ * Tony Massé - 2022-08-05 - Add `LATEST_TAG` to the Docker command
  */
 
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -86,7 +87,7 @@ if (
   console.log('👷 Build the Container building script...');
 
   try {
-    const dockerCommand = `docker build --tag "tonymasse/oc-admin:${versionTag}" --tag "tonymasse/oc-admin:latest" --file "${dockerFilePath}" "${distSubDirectory}"`;
+    const dockerCommand = `docker build --tag "tonymasse/oc-admin:${versionTag}" --tag "tonymasse/oc-admin:$LATEST_TAG" --file "${dockerFilePath}" "${distSubDirectory}"`;
     const dockerScriptPath = path.join(distDirectory, '_docker.build-oc-admin.sh');
 
     // Read template from disk

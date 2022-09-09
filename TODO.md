@@ -6,7 +6,7 @@
 - Installer
   - [ ] ~~Offer to use Trusted SQL Connection for run time~~ (👈 Trusted mode not supported by Tedious)
   - [ ] ~~Make SQL Trusted Connection the default~~ (👈 Trusted mode not supported by Tedious)
-  - [ ] Offer to use Encrypted Connection for run time
+  - [ ] ~~Offer to use Encrypted Connection for run time~~ (👈 Now set by default to TRUE)
   - [x] Make Encrypted SQL connection the default
   - [x] Create Docker dedicated MS SQL DB creation script
 - SQL
@@ -20,6 +20,17 @@
   - [x] Check connection to the SQL systems at start-up and keep checkin until they are all good
   - [x] Function to retrieve the current Persistence Layer Availability
   - [x] Add API to check Persistence Layer Availability
+  - [ ] Move Stored Procedures and Views from EZ database to EMDB
+    - [ ] Rename specific Stored Procedure and Views to match EMDB style
+      - [x] upsert_LogSource_Type.sql
+      - [x] clone_MPE_Rule.sql
+      - [x] upsert_MPE_SubRule.sql
+      - [x] upsert_Processing_Policy.sql
+      - [x] upsert_Log_Source_Virtualisation_Template.sql
+      - [x] upsert_Log_Source_Virtualisation_Template_Item.sql
+      - [x] list_OpenCollector_Log_Sources.sql
+      - [x] upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource.sql
+      - [ ] get_SIEM_Master_ID
 - SQL Utils
   - [x] Split utilitarian functions to deal with both MS SQL and PostgreSQL
     - [ ] Depreciate said functions and force using MS SQL and PostgreSQL specific functions instead

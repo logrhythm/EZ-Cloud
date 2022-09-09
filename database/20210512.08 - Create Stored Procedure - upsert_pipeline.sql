@@ -9,6 +9,8 @@ GO
 -- Author:		  Tony Massé
 -- Create date: 2021-05-12
 -- Update date: 2021-12-06 - To add the [optionsJson] column
+-- Update date: 2022-08-03 - To add `EZ_VERSION` flag
+-- EZ_VERSION: 20211206.01 :EZ_VERSION
 -- =============================================
 CREATE PROCEDURE upsert_Pipeline 
 	@uid varchar(40),
