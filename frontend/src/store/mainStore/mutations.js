@@ -43,6 +43,7 @@ export function updateOpenCollector (state, payload) {
       'password',
       'privateKey',
       'osVersion',
+      'dockerVersion',
       'ocInstalled',
       'ocVersion',
       'fbInstalled',

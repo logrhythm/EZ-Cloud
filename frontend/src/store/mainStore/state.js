@@ -280,6 +280,7 @@ export default function () {
     ezMarketPublisherDetails: {}, // Details of the Publisher (current user), as held by the EZ Market Place
     msSqlConfig: {}, // SIEM MS SQL connection configuration
     extraInformation: {}, // Extra Information provided by the Login API on the server
-    currentPersistenceLayerAvailability: {} // Stores the availability of the databases
+    currentPersistenceLayerAvailability: {}, // Stores the availability of the databases
+    minimalDockerSupportedVersion: 20 // Lowest major version number of Docker that is supported
   }
 }

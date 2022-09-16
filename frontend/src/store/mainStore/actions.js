@@ -259,6 +259,23 @@ export function getOpenCollectorsOsVersion ({ state }, payload) {
   })
 }
 
+export function getOpenCollectorsDockerVersion ({ state }, payload) {
+  getDataFromSite({
+    apiUrl: '/oc/CheckDockerVersion',
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    targetObjectName: (payload && payload.targetObjectName ? payload.targetObjectName : ''),
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    apiCallParams: (payload && payload.apiCallParams ? payload.apiCallParams : undefined),
+    silent: true,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: (payload && payload.debug ? payload.debug : false)
+  })
+}
+
 export function getOpenCollectorsFilebeatVersion ({ state }, payload) {
   getDataFromSite({
     apiUrl: '/oc/CheckFilebeatVersion',
