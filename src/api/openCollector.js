@@ -551,7 +551,7 @@ router.get('/CheckDockerPresence', async (req, res) => {
 const dockerVersionTemplate = {
   stillChecking: false,
   lastSuccessfulCheckTimeStampUtc: 0,
-  payload: { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } }, // object with version
+  payload: null, // object with version
   errors: [], // array of all the errors
   outputs: [] // array of all the outputs
 };
@@ -567,7 +567,7 @@ function checkDockerVersion(dockerVersion, uid) {
       dockerVersion.stillChecking = true;
       dockerVersion.errors = [];
       dockerVersion.outputs = [];
-      dockerVersion.payload = { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } };
+      dockerVersion.payload = null;
 
       ssh
         .exec('docker -v 2>/dev/null || exit 1', {
@@ -579,17 +579,17 @@ function checkDockerVersion(dockerVersion, uid) {
           },
           out(stdout) {
             const version = stdout.match(/.*?\s+(([0-9]+)\.([0-9]+)\.([0-9]+))/);
-            if (version.length > 0) {
+            if (version && version.length > 4) {
               dockerVersion.payload = {
                 version: {
                   detailed: {
                     major: version[2], minor: version[3], build: version[4]
                   },
-                  Full: version[1]
+                  full: version[1]
                 }
               };
             } else {
-              dockerVersion.payload = { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } };
+              dockerVersion.payload = null;
             }
             dockerVersion.outputs.push(stdout);
           }
