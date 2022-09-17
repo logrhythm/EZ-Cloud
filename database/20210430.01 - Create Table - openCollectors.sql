@@ -23,6 +23,7 @@ BEGIN
 		[password] [nvarchar](250) NULL,
 		[privateKey] [nvarchar](max) NULL,
 		[osVersion] [nvarchar](100) NULL,
+		[dockerVersion] [nvarchar](100) NULL,
 		[ocInstalled] [tinyint] NULL,
 		[ocVersion] [nvarchar](100) NULL,
 		[fbInstalled] [tinyint] NULL,
@@ -43,5 +44,16 @@ END
 ELSE
 BEGIN
 	PRINT CONVERT(nvarchar(24), GETDATE(), 121) + ' | INFO: [openCollectors] already exists. Moving on.'
+
+	-- Add the [dockerVersion] column, in case of upgrade
+	IF NOT EXISTS(SELECT *
+			FROM   INFORMATION_SCHEMA.COLUMNS
+			WHERE  TABLE_NAME = 'openCollectors'
+					AND COLUMN_NAME = 'dockerVersion')
+	BEGIN
+		PRINT CONVERT(nvarchar(24), GETDATE(), 121) + ' | INFO: Adding column [dockerVersion] to table [openCollectors].'
+		ALTER TABLE dbo.openCollectors ADD dockerVersion nvarchar(100) NULL
+	END
+	GO
 END
 GO
