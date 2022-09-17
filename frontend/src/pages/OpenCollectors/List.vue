@@ -111,7 +111,7 @@
               <div>
                 <q-tooltip content-style="font-size: 1em;">
                   Docker
-                  <span v-if="props.row.dockerVersionUnsupported && !dockerVersionCheck[props.row.uid].checking" class="text-bold text-warning"><br>
+                  <span v-if="props.row.dockerVersionUnsupported && !(dockerVersionCheck && dockerVersionCheck[props.row.uid] && dockerVersionCheck[props.row.uid].checking)" class="text-bold text-warning"><br>
                   <q-icon
                     name="warning_amber"
                     color="orange"
@@ -132,7 +132,7 @@
                   class="q-ml-sm"
                 />
                 <q-icon
-                  v-if="props.row.dockerVersionUnsupported && !dockerVersionCheck[props.row.uid].checking"
+                  v-if="props.row.dockerVersionUnsupported && !(dockerVersionCheck && dockerVersionCheck[props.row.uid] && dockerVersionCheck[props.row.uid].checking)"
                   name="warning_amber"
                   color="orange"
                   size="2em"
