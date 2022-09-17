@@ -10,6 +10,7 @@ GO
 -- Create date: 2021-04-30
 -- Update date: 2021-08-09 - To deal with multiple Shippers and their versions
 -- Update date: 2021-11-22 - To be runnable multiple times and ignore unnecessary tasks
+-- Update date: 2022-09-20 - To add `dockerVersion` column
 -- =============================================
 IF OBJECT_ID('[openCollectors]', 'U') IS NULL
 BEGIN
