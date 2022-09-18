@@ -107,6 +107,39 @@ export function updateMsSqlConfig ({ state }, payload) {
   }
 }
 
+export function updateEmdb ({ state }, payload) {
+  if (
+    payload &&
+    payload.host &&
+    payload.host.length &&
+    payload.username &&
+    payload.username.length &&
+    payload.port >= 1 &&
+    payload.port <= 65535
+  ) {
+    postDataToSite({
+      apiUrl: '/admin/UpdateEmdb',
+      dataLabel: 'Update',
+      apiCallParams: {
+        host: payload.host,
+        port: payload.port,
+        username: payload.username,
+        password: payload.password,
+        encrypt: !!payload.encrypt
+      },
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      silent: false,
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: false
+    })
+  }
+}
+
 // ######################################################################
 // DATABASE STATUS/AVAILABILITY
 // ######################################################################

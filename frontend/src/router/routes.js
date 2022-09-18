@@ -79,7 +79,8 @@ const routes = [
       { path: '', component: () => import('pages/Admin/Index.vue') },
       { path: 'RBAC/Users', component: () => import('pages/Admin/RBAC/Users.vue') },
       { path: 'RBAC/Roles', component: () => import('pages/Admin/RBAC/Roles.vue') },
-      { path: 'SIEM/MsSql', component: () => import('pages/Admin/SIEM/MsSql.vue') }
+      { path: 'SIEM/MsSql', component: () => import('pages/Admin/SIEM/MsSql.vue') },
+      { path: 'SIEM/UpdateEmdb', component: () => import('pages/Admin/SIEM/UpdateEmdb.vue') }
     ]
   },
 
