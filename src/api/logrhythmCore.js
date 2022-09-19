@@ -17,6 +17,9 @@ function waitMilliseconds(delay = 250) {
   });
 }
 
+// Load the System Logging functions
+const { logToSystem } = require('../shared/systemLogging');
+
 const maxCheckInterval = 10; // Check once every X seconds max, and/or timeout after X seconds
 
 router.get('/', (req, res) => {
@@ -34,7 +37,8 @@ router.get('/', (req, res) => {
 //         #######     ##    #### ######## ####    ##    #### ########  ######
 
 const {
-  getSiemDataFromSql,
+  getSiemDataFromSql, // OBSOLETE. MUST STOP USING. XXXX
+  getDataFromMsSql,
   createMsSqlVariables,
   createMsSqlVariablesAndStoredProcParams
 } = require('../shared/sqlUtils');
@@ -315,6 +319,144 @@ router.post('/UpdateOpenCollectorLogSourceWithLogSourceVirtualisation', async (r
   });
 
   res.json(updatedOpenCollectorLogSource);
+});
+
+// ##########################################################################################
+// GetSiemDatabaseStatusAndVersions
+// ##########################################################################################
+
+router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
+  // Steps
+  // Check presence of:
+  // - SQL server
+  // - OC Admin DB
+  // - get_EZ_Versions
+  // - SP & Views in the right version
+
+  const siemDatabaseStatusAndStatusAndVersions = {
+    sqlServerIsUp: false,
+    sqlServerVersion: null,
+    ezDatabaseExists: false,
+    ezDatabaseStatus: null,
+    viewGet_EZ_VersionsExists: false,
+    viewGet_EZ_VersionsDetails: null,
+    storedProcedureAndViewsVersions: []
+  };
+
+  if (
+    process.env.databaseMode === 'mssql'
+    || process.env.databaseMode === 'split'
+  ) {
+    logToSystem('Verbose', 'Fetching the version number of the MS SQL of the XM or PM...');
+
+    // Check SQL Server presence and response
+    const sqlServerVersionList = {};
+    await getDataFromMsSql({
+      targetVariable: sqlServerVersionList,
+      query: `
+      SELECT @@version AS 'sqlVersion';
+    `
+    });
+
+    if (
+      sqlServerVersionList
+      && sqlServerVersionList.payload
+      && Array.isArray(sqlServerVersionList.payload)
+      && sqlServerVersionList.payload.length > 0
+    ) {
+      siemDatabaseStatusAndStatusAndVersions.sqlServerIsUp = !!(
+        sqlServerVersionList.payload[0].sqlVersion
+        && String(sqlServerVersionList.payload[0].sqlVersion).length
+      );
+      // eslint-disable-next-line max-len
+      siemDatabaseStatusAndStatusAndVersions.sqlServerVersion = sqlServerVersionList.payload[0].sqlVersion;
+    }
+  }
+
+  // Check `EZ` DATABASE exists
+  if (siemDatabaseStatusAndStatusAndVersions.sqlServerIsUp) {
+    // Check SQL Server presence and response
+    const ezDbStatusList = {};
+    await getDataFromMsSql({
+      targetVariable: ezDbStatusList,
+      query: `
+      SELECT TOP (1)
+        [name] AS 'name',
+        [create_date] AS 'createdOn',
+        [state_desc] AS 'status'
+      FROM
+        [sys].[databases]
+      WHERE name = 'EZ'
+      ;
+    `
+    });
+
+    if (
+      ezDbStatusList
+      && ezDbStatusList.payload
+      && Array.isArray(ezDbStatusList.payload)
+      && ezDbStatusList.payload.length === 1
+    ) {
+      siemDatabaseStatusAndStatusAndVersions.ezDatabaseExists = true;
+      // eslint-disable-next-line max-len, prefer-destructuring
+      siemDatabaseStatusAndStatusAndVersions.ezDatabaseStatus = ezDbStatusList.payload[0];
+    }
+  }
+
+  // Check `get_EZ_Versions` VIEW exists
+  if (siemDatabaseStatusAndStatusAndVersions.ezDatabaseExists) {
+    const viewGet_EZ_VersionsList = {};
+    await getDataFromMsSql({
+      targetVariable: viewGet_EZ_VersionsList,
+      query: `
+      SELECT TOP (1)
+        [name] AS 'name',
+        [create_date] AS 'createdOn',
+        [modify_date] AS 'updatedOn'
+      FROM
+        [EZ].[sys].[all_objects]
+      WHERE
+        [name] = 'get_EZ_Versions'
+      ;
+    `
+    });
+
+    if (
+      viewGet_EZ_VersionsList
+      && viewGet_EZ_VersionsList.payload
+      && Array.isArray(viewGet_EZ_VersionsList.payload)
+      && viewGet_EZ_VersionsList.payload.length === 1
+    ) {
+      siemDatabaseStatusAndStatusAndVersions.viewGet_EZ_VersionsExists = true;
+      // eslint-disable-next-line max-len, prefer-destructuring
+      siemDatabaseStatusAndStatusAndVersions.viewGet_EZ_VersionsDetails = viewGet_EZ_VersionsList.payload[0];
+    }
+  }
+
+  // Get the version of the Stored Procedures and Views
+  if (siemDatabaseStatusAndStatusAndVersions.sqlServerIsUp) {
+    const siemDatabaseVersionsList = {};
+    await getDataFromMsSql({
+      targetVariable: siemDatabaseVersionsList,
+      query: `
+      SELECT
+        [Name] AS 'name',
+        [Version] AS 'version'
+      FROM [EZ].[dbo].[get_EZ_Versions]
+    `
+    });
+
+    if (
+      siemDatabaseVersionsList
+      && siemDatabaseVersionsList.payload
+      && Array.isArray(siemDatabaseVersionsList.payload)
+    ) {
+      // eslint-disable-next-line max-len
+      siemDatabaseStatusAndStatusAndVersions.storedProcedureAndViewsVersions = siemDatabaseVersionsList.payload;
+    }
+  }
+
+  res.json(siemDatabaseStatusAndStatusAndVersions);
 });
 
 //        ######## ##     ## ########   #######  ########  ########  ######
