@@ -38,8 +38,9 @@
     - [x] Push to API
     - [x] Disable fields while loading
   - [ ] Update EMDB
-    - [ ] Add Update EMDB admin page
+    - [x] Add Update EMDB admin page
     - [ ] Collect MS SQL, EZ DB, EZ_Get_Versions view and EZ DB's content versions
+    - [ ] Display SQL, EZ DB, EZ_Get_Versions view and EZ DB's content versions
     - [ ] Gather provoleged credentials
     - [ ] Call API to Update EMDB
 - [x] Missing MS SQL configuration
