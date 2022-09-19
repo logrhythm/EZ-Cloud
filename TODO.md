@@ -31,6 +31,7 @@
       - [x] list_OpenCollector_Log_Sources.sql
       - [x] upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource.sql
       - [ ] get_SIEM_Master_ID
+  - [x] Create EZ_Get_Versions view to gather EZ DB's content versions
 - SQL Utils
   - [x] Split utilitarian functions to deal with both MS SQL and PostgreSQL
     - [ ] Depreciate said functions and force using MS SQL and PostgreSQL specific functions instead
@@ -59,6 +60,8 @@
     - [x] Update MS SQL config
   - [x] Encrypt MS SQL credentials using deployment specific private key
   - [x] Store them safely in PgSQL
+  - [x] Add API to collect MS SQL, EZ DB, EZ_Get_Versions view and EZ DB's content versions
+  - [ ] Add API to update the EMDB
 
 ## TO FIX
 - [x] Save/Read of Fields Mapping from PgSQL
