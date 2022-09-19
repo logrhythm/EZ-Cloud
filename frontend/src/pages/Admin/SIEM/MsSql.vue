@@ -4,7 +4,7 @@
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
         <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Admin')" :to="'/Admin'" />
         <q-separator spaced vertical />
-        <q-btn no-caps flat dense icon="link" :label="$t('Update EMDB')" to="/Admin/SIEM/UpdateEmdb" />
+        <q-btn no-caps flat dense icon="update" :label="$t('Update EMDB')" to="/Admin/SIEM/UpdateEmdb" />
         <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('Admin : SIEM : Manage MS SQL Connection') }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
