@@ -456,7 +456,14 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
     }
   }
 
-  res.json(siemDatabaseStatusAndStatusAndVersions);
+  res.json(
+    {
+      errors: [],
+      outputs: [],
+      payload: siemDatabaseStatusAndStatusAndVersions,
+      stillChecking: false
+    }
+  );
 });
 
 //        ######## ##     ## ########   #######  ########  ########  ######
