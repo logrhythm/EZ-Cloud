@@ -62,6 +62,7 @@
 - [x] Erroneous "SIEM Not Connected" alert message on Windows deployment
 - [x] Issue #12 - [BUG] Pipeline import from EZ Market Place - Wrong icon colour on "Import Both" button in Day mode
 - [x] Issue #11 - [BUG] Fields Mapping - Incorrect LR MPE tags for Outbound bytes type fields
+- [ ] Top bar not stuck to top left of screen in Admin : SIEM : Update EMDB
 
 ## TO TEST
 - [x] Translated message in deployment steps roll over status (especially Skipped steps)
