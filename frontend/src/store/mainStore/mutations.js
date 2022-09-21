@@ -21,6 +21,21 @@ export function getPersistenceLayerAvailability (state, payload) {
   }
 }
 
+export function getEmdbVersions (state, payload) {
+  console.log('getEmdbVersions')
+  console.log('payload', payload)
+  if (payload) {
+    state.siemEmdbVersions = (
+      payload
+        ? Object.assign(
+          {},
+          payload
+        )
+        : {}
+    )
+  }
+}
+
 export function addOpenCollector (state, payload) {
   if (payload && payload.name && payload.name.length > 0) {
     const newOpenCollector = Object.assign({}, payload)

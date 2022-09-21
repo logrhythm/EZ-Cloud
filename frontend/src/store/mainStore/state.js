@@ -279,8 +279,51 @@ export default function () {
     ezMarketPipelineTemplate: {}, // Pipeline Template fully loaded from EZ Market Place by UID
     ezMarketPublisherDetails: {}, // Details of the Publisher (current user), as held by the EZ Market Place
     msSqlConfig: {}, // SIEM MS SQL connection configuration
+    siemEmdbVersions: {}, // SIEM EMDB object with version information
     extraInformation: {}, // Extra Information provided by the Login API on the server
     currentPersistenceLayerAvailability: {}, // Stores the availability of the databases
-    minimalDockerSupportedVersion: 20 // Lowest major version number of Docker that is supported
+    minimalDockerSupportedVersion: 20, // Lowest major version number of Docker that is supported
+    minimalEzDbPartsVersions: [
+      {
+        name: 'get_SIEM_Master_ID',
+        version: '20220209.01'
+      },
+      {
+        name: 'upsert_LogSource_Type',
+        version: '20210708.01'
+      },
+      {
+        name: 'clone_MPE_Rule',
+        version: '20210708.02'
+      },
+      {
+        name: 'upsert_MPE_SubRule',
+        version: '20210713.01'
+      },
+      {
+        name: 'upsert_Processing_Policy',
+        version: '20210910.01'
+      },
+      {
+        name: 'upsert_Log_Source_Virtualisation_Template',
+        version: '20210910.01'
+      },
+      {
+        name: 'upsert_Log_Source_Virtualisation_Template_Item',
+        version: '20210903.01'
+      },
+      {
+        name: 'list_OpenCollector_Log_Sources',
+        version: '20210719.01'
+      },
+      {
+        name: 'upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource',
+        version: '20220215.01'
+      },
+      {
+        name: 'get_EZ_Versions',
+        version: '20220803.01'
+      }
+    ]
   }
 }

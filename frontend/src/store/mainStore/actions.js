@@ -141,6 +141,29 @@ export function updateEmdb ({ state }, payload) {
 }
 
 // ######################################################################
+// EMDB STATUS/AVAILABILITY/VERSIONS
+// ######################################################################
+
+export function getEmdbVersions ({ state, commit }, payload) {
+  getDataFromSite({
+    apiUrl: '/logrhythmCore/GetSiemDatabaseStatusAndVersions',
+    dataLabel: 'EMDB Versions and statuses',
+    countDataLabel: false,
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    commit: commit,
+    targetCommitName: 'getEmdbVersions',
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    silent: true,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: false
+  })
+}
+
+// ######################################################################
 // DATABASE STATUS/AVAILABILITY
 // ######################################################################
 

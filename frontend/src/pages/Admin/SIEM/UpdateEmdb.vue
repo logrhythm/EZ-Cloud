@@ -13,6 +13,128 @@
       <q-card-section horizontal>
         <q-card-section class="col q-ma-none q-pa-none">
           <q-card-section class="text-h4">
+              {{ $t('EMDB Version Details') }}
+          </q-card-section>
+
+          <div v-if="managedOnBackend">
+            <q-card-section class="q-pt-none">
+              {{ $t('The MS SQL connection configuration is managed on the Backend.') }}
+            </q-card-section>
+            <q-card-section class="q-pt-none">
+              {{ $t('Nothing to do here.') }}
+            </q-card-section>
+          </div>
+
+          <div v-else>
+            <q-card-section class="q-pt-none">
+              <q-list dense bordered separator>
+                <q-item>
+                  <q-item-section avatar>
+                    <q-spinner-dots v-if="loadingEmdbVersions" color="blue-10" size="2em" />
+                    <q-icon v-else-if="siemEmdbVersions && siemEmdbVersions.sqlServerIsUp === false" name="block" size="sm" color="warning" />
+                    <q-icon v-else-if="siemEmdbVersions && siemEmdbVersions.sqlServerIsUp" name="task_alt" size="sm" color="positive" />
+                    <q-icon v-else name="block" size="sm" color="grey" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>MS SQL Server</q-item-label>
+                    <q-item-label caption class="q-pl-md">
+                      Status: {{ (siemEmdbVersions && siemEmdbVersions.sqlServerIsUp ? 'Up and running' : (siemEmdbVersions.sqlServerIsUp === false ? 'Unreachable' : 'Unknown')) }}<br>
+                      Version: {{ (siemEmdbVersions && siemEmdbVersions.sqlServerVersion ? siemEmdbVersions.sqlServerVersion : '') }}
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+
+                <q-item>
+                  <q-item-section avatar>
+                    <q-spinner-dots v-if="loadingEmdbVersions" color="blue-10" size="2em" />
+                    <q-icon v-else-if="siemEmdbVersions && siemEmdbVersions.ezDatabaseExists === false" name="block" size="sm" color="warning" />
+                    <q-icon v-else-if="siemEmdbVersions && siemEmdbVersions.ezDatabaseExists" name="task_alt" size="sm" color="positive" />
+                    <q-icon v-else name="block" size="sm" color="grey" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>EZ Database</q-item-label>
+                    <q-item-label caption class="q-pl-md">
+                      Presence: {{ (siemEmdbVersions && siemEmdbVersions.ezDatabaseExists ? 'Present' : (siemEmdbVersions.ezDatabaseExists === false ? 'Not found' : 'Unknown')) }}<br>
+                      Status: {{ (siemEmdbVersions && siemEmdbVersions.ezDatabaseStatus ? siemEmdbVersions.ezDatabaseStatus.status : '') }}<br>
+                      Created on: {{ (siemEmdbVersions && siemEmdbVersions.ezDatabaseStatus ? siemEmdbVersions.ezDatabaseStatus.createdOn : '') }}
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+
+                <q-item>
+                  <q-item-section avatar>
+                    <q-spinner-dots v-if="loadingEmdbVersions" color="blue-10" size="2em" />
+                    <q-icon v-else-if="siemEmdbVersions && siemEmdbVersions.viewGet_EZ_VersionsExists === false" name="block" size="sm" color="warning" />
+                    <q-icon v-else-if="siemEmdbVersions && siemEmdbVersions.viewGet_EZ_VersionsExists" name="task_alt" size="sm" color="positive" />
+                    <q-icon v-else name="block" size="sm" color="grey" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>EZ Versions View</q-item-label>
+                    <q-item-label caption class="q-pl-md">
+                      Presence: {{ (siemEmdbVersions && siemEmdbVersions.viewGet_EZ_VersionsExists ? 'Present' : (siemEmdbVersions.viewGet_EZ_VersionsExists === false ? 'Not found' : 'Unknown')) }}<br>
+                      Created on: {{ (siemEmdbVersions && siemEmdbVersions.viewGet_EZ_VersionsDetails ? siemEmdbVersions.viewGet_EZ_VersionsDetails.createdOn : '') }}<br>
+                      Updated on: {{ (siemEmdbVersions && siemEmdbVersions.viewGet_EZ_VersionsDetails ? siemEmdbVersions.viewGet_EZ_VersionsDetails.updatedOn : '') }}
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+
+                <q-item
+                  v-if="loadingEmdbVersions"
+                >
+                  <q-item-section avatar>
+                    <q-spinner-dots  color="blue-10" size="2em" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>EZ Database components</q-item-label>
+                  </q-item-section>
+                </q-item>
+
+                <q-item
+                  v-else
+                  v-for="(storedProcedureAndViewsVersion, i) in (siemEmdbVersions && siemEmdbVersions.storedProcedureAndViewsVersions && siemEmdbVersions.storedProcedureAndViewsVersions.length ? siemEmdbVersions.storedProcedureAndViewsVersions : [])" :key="i"
+                >
+                  <q-item-section avatar>
+                    <q-spinner-dots v-if="loadingEmdbVersions" color="blue-10" size="2em" />
+                    <q-icon v-else-if="requiredVersionForEzDbPartByName(storedProcedureAndViewsVersion.name) <= storedProcedureAndViewsVersion.version" name="task_alt" size="sm" color="positive" />
+                    <q-icon v-else-if="requiredVersionForEzDbPartByName(storedProcedureAndViewsVersion.name) > storedProcedureAndViewsVersion.version" name="upgrade" size="sm" color="warning" />
+                    <q-icon v-else name="block" size="sm" color="grey" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>EZ Database component: {{ storedProcedureAndViewsVersion.name }}</q-item-label>
+                    <q-item-label caption class="q-pl-md">
+                      Required Version: {{ requiredVersionForEzDbPartByName(storedProcedureAndViewsVersion.name) }}<br>
+                      Detected Version: {{ (storedProcedureAndViewsVersion.version ? storedProcedureAndViewsVersion.version : 'Unknown') }}
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+
+              </q-list>
+            </q-card-section>
+
+            <!-- <q-card-section class="q-pt-none">
+              <pre>{{ siemEmdbVersions }}</pre>
+            </q-card-section> -->
+          </div>
+
+        </q-card-section>
+
+        <q-separator vertical />
+
+        <q-card-actions vertical class="justify-around q-px-md">
+            <q-btn icon="refresh" color="primary" :loading="loadingEmdbVersions" @click="loadEmdbVersions()" :disabled="loadingEmdbVersions">
+              <q-tooltip content-style="font-size: 1rem;">
+                {{ $t('Reload EMDB Version Details') }}
+              </q-tooltip>
+            </q-btn>
+        </q-card-actions>
+
+      </q-card-section>
+    </q-card>
+
+    <q-card class="q-pa-md q-mx-none">
+      <q-card-section horizontal>
+        <q-card-section class="col q-ma-none q-pa-none">
+          <q-card-section class="text-h4">
               {{ $t('Update EMDB') }}
           </q-card-section>
 
@@ -172,6 +294,7 @@ export default {
   ],
   data () {
     return {
+      loadingEmdbVersions: false,
       loadingMsSqlConfig: false,
       updatingAction: false,
       siemMsSqlHost: null,
@@ -182,7 +305,7 @@ export default {
     }
   }, // data
   computed: {
-    ...mapState('mainStore', ['msSqlConfig', 'extraInformation']),
+    ...mapState('mainStore', ['siemEmdbVersions', 'msSqlConfig', 'extraInformation', 'minimalEzDbPartsVersions']),
     readyToUpdate () {
       return this.siemMsSqlHost &&
         this.siemMsSqlHost.length &&
@@ -200,7 +323,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions('mainStore', ['getMsSqlConfig', 'updateEmdb', 'updateExtraInformation']),
+    ...mapActions('mainStore', ['getEmdbVersions', 'getMsSqlConfig', 'updateEmdb', 'updateExtraInformation']),
     promptToUpdateEmdb () {
       // ask to confirm
       this.$q.dialog({
@@ -256,6 +379,14 @@ export default {
         // }
       }
     },
+    loadEmdbVersions () {
+      this.getEmdbVersions(
+        {
+          loadingVariableName: 'loadingEmdbVersions',
+          caller: this
+        }
+      )
+    },
     loadMsSqlConfig () {
       this.getMsSqlConfig(
         {
@@ -268,11 +399,24 @@ export default {
     updateEmdbFailure (payload) {
       // Pop this to the screen (via MainLayout)
       this.$root.$emit('addAndShowErrorToErrorPanel', payload)
+    },
+    requiredVersionForEzDbPartByName (EzDbPartName) {
+      if (this.minimalEzDbPartsVersions) {
+        const minimalEzDbPartsVersion = this.minimalEzDbPartsVersions.filter(pv => String(pv.name).toLowerCase() === String(EzDbPartName).toLowerCase())
+        if (minimalEzDbPartsVersion && minimalEzDbPartsVersion.length) {
+          return minimalEzDbPartsVersion[0].version
+        }
+        return 'Unknown'
+      }
+      return 'Unknown'
     }
   },
   mounted () {
     if (!(this.msSqlConfig && this.msSqlConfig.config && this.msSqlConfig.config.server.length)) {
       this.loadMsSqlConfig()
+    }
+    if (!(this.siemEmdbVersions && this.siemEmdbVersions.ezDatabaseStatus)) {
+      this.loadEmdbVersions()
     }
   }
 }
