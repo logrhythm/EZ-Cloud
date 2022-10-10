@@ -1,26 +1,9 @@
 const express = require('express');
 
 const router = express.Router();
-// Get SQL config
-const fs = require('fs');
-const path = require('path');
-
-const configSql = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'database.json'), 'utf8')).config;
-// Create SQL object
-const { Connection, Request, TYPES } = require('tedious');
-
-function waitMilliseconds(delay = 250) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve();
-    }, delay);
-  });
-}
 
 // Load the System Logging functions
 const { logToSystem } = require('../shared/systemLogging');
-
-const maxCheckInterval = 10; // Check once every X seconds max, and/or timeout after X seconds
 
 router.get('/', (req, res) => {
   res.json({
@@ -112,6 +95,7 @@ router.post('/UpdateMpeRule', async (req, res) => {
 router.post('/UpdateMpeSubRule', async (req, res) => {
   const updatedMpeSubRule = {};
 
+  // eslint-disable-next-line max-len
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
   const [sqlVariables, storedProcedureParams] = createMsSqlVariablesAndStoredProcParams(
     req,
@@ -157,6 +141,7 @@ router.post('/UpdateMpeSubRule', async (req, res) => {
 router.post('/UpdateProcessingPolicy', async (req, res) => {
   const updatedProcessingPolicy = {};
 
+  // eslint-disable-next-line max-len
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
   const [sqlVariables, storedProcedureParams] = createMsSqlVariablesAndStoredProcParams(
     req,
@@ -189,6 +174,7 @@ router.post('/UpdateProcessingPolicy', async (req, res) => {
 router.post('/UpdateLogSourceVirtualisationTemplate', async (req, res) => {
   const updatedLogSourceVirtualisationTemplate = {};
 
+  // eslint-disable-next-line max-len
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
   const [sqlVariables, storedProcedureParams] = createMsSqlVariablesAndStoredProcParams(
     req,
@@ -223,6 +209,7 @@ router.post('/UpdateLogSourceVirtualisationTemplate', async (req, res) => {
 router.post('/UpdateLogSourceVirtualisationTemplateItem', async (req, res) => {
   const updatedLogSourceVirtualisationTemplateItem = {};
 
+  // eslint-disable-next-line max-len
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
   const [sqlVariables, storedProcedureParams] = createMsSqlVariablesAndStoredProcParams(
     req,
@@ -274,7 +261,11 @@ router.get('/GetOpenCollectorLogSourcesList', async (req, res) => {
   `
   });
 
-  if (openCollectorLogSourcesList && openCollectorLogSourcesList.payload && Array.isArray(openCollectorLogSourcesList.payload)) {
+  if (
+    openCollectorLogSourcesList
+    && openCollectorLogSourcesList.payload
+    && Array.isArray(openCollectorLogSourcesList.payload)
+  ) {
     openCollectorLogSourcesList.payload.forEach((openCollectorLogSource) => {
       /* eslint-disable no-param-reassign */
       try {
@@ -297,6 +288,7 @@ router.get('/GetOpenCollectorLogSourcesList', async (req, res) => {
 router.post('/UpdateOpenCollectorLogSourceWithLogSourceVirtualisation', async (req, res) => {
   const updatedOpenCollectorLogSource = {};
 
+  // eslint-disable-next-line max-len
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
   const [sqlVariables, storedProcedureParams] = createMsSqlVariablesAndStoredProcParams(
     req,
