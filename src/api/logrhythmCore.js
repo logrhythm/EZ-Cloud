@@ -285,6 +285,7 @@ router.get('/GetOpenCollectorLogSourcesList', async (req, res) => {
       }
       /* eslint-enable no-param-reassign */
     });
+    logToSystem('Debug', JSON.stringify(openCollectorLogSourcesList), true);
   }
   res.json(openCollectorLogSourcesList);
 });
