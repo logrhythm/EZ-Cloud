@@ -350,9 +350,9 @@ export default {
           username: this.siemMsSqlUsername,
           password: this.siemMsSqlPassword,
           encrypt: this.siemMsSqlEncrypt,
-          loadingVariableName: 'loadingMsSqlConfig',
+          loadingVariableName: 'updatingAction',
           caller: this,
-          onSuccessCallBack: this.loadMsSqlConfig,
+          onSuccessCallBack: this.loadEmdbVersions,
           onErrorCallBack: this.updateEmdbFailure
         }
       )
@@ -383,6 +383,7 @@ export default {
       this.getEmdbVersions(
         {
           loadingVariableName: 'loadingEmdbVersions',
+          silent: false,
           caller: this
         }
       )
