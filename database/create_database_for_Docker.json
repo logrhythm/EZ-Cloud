@@ -1,0 +1,42 @@
+[
+    {
+        "targetDatabase": "master",
+        "sourceFilename": "20210430.00 - Create DB.sql"
+    },
+    {
+        "targetDatabase": "EZ",
+        "sourceFilename": "20210708.09 - Create Stored Procedure - upsert_LogSource_Type.sql"
+    },
+    {
+        "targetDatabase": "EZ",
+        "sourceFilename": "20210708.10 - Create Stored Procedure - clone_MPE_Rule.sql"
+    },
+    {
+        "targetDatabase": "EZ",
+        "sourceFilename": "20210709.11 - Create Stored Procedure - upsert_MPE_SubRule.sql"
+    },
+    {
+        "targetDatabase": "EZ",
+        "sourceFilename": "20210712.12 - Create Stored Procedure - upsert_Processing_Policy.sql"
+    },
+    {
+        "targetDatabase": "EZ",
+        "sourceFilename": "20210714.13 - Create Stored Procedure - upsert_Log_Source_Virtualisation_Template.sql"
+    },
+    {
+        "targetDatabase": "EZ",
+        "sourceFilename": "20210715.14 - Create Stored Procedure - upsert_Log_Source_Virtualisation_Template_Item.sql"
+    },
+    {
+        "targetDatabase": "EZ",
+        "sourceFilename": "20210719.15 - Create View - list_OpenCollector_Log_Sources.sql"
+    },
+    {
+        "targetDatabase": "EZ",
+        "sourceFilename": "20210720.16 - Create Stored Procedure - upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource.sql"
+    },
+    {
+        "targetDatabase": "EZ",
+        "sourceFilename": "20220803.25 - Create View - get_EZ_Versions.sql"
+    }
+]
