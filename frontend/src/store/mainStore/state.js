@@ -289,35 +289,35 @@ export default function () {
         version: '20220209.01'
       },
       {
-        name: 'upsert_LogSource_Type',
+        name: 'OC_Admin_Upsert_LogSource_Type',
         version: '20210708.01'
       },
       {
-        name: 'clone_MPE_Rule',
+        name: 'OC_Admin_Clone_MPE_Rule',
         version: '20210708.02'
       },
       {
-        name: 'upsert_MPE_SubRule',
+        name: 'OC_Admin_Upsert_MPE_SubRule',
         version: '20210713.01'
       },
       {
-        name: 'upsert_Processing_Policy',
+        name: 'OC_Admin_Upsert_Processing_Policy',
         version: '20210910.01'
       },
       {
-        name: 'upsert_Log_Source_Virtualisation_Template',
+        name: 'OC_Admin_Upsert_Log_Source_Virtualisation_Template',
         version: '20210910.01'
       },
       {
-        name: 'upsert_Log_Source_Virtualisation_Template_Item',
+        name: 'OC_Admin_Upsert_Log_Source_Virtualisation_Template_Item',
         version: '20210903.01'
       },
       {
-        name: 'list_OpenCollector_Log_Sources',
+        name: 'OC_Admin_List_OpenCollector_Log_Sources',
         version: '20210719.01'
       },
       {
-        name: 'upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource',
+        name: 'OC_Admin_Upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource',
         version: '20220215.01'
       },
       {
