@@ -1,12 +1,12 @@
 <template>
-  <q-page class="q-gutter-sm q-pa-xl">
+  <q-page class="q-pa-sm">
     <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
         <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Admin')" :to="'/Admin'" />
         <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('Admin : RBAC : Manage User Accounts') }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
-    <q-card class="q-pa-md q-mx-none">
+    <q-card class="">
       <!-- <q-card-section class="col">
         <div class="text-h4">User Accounts</div>
         🚧🚧 Placeholder 🚧🚧
