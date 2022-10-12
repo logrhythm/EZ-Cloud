@@ -31,18 +31,19 @@
     - [ ] Ability to rename Log Source
     - [ ] Ability to assign Log Source to other Open Collectors
     - [ ] Ability to Enable / Commit the Log Source creation
-- [ ] MS SQL Admin
+- [x] MS SQL Admin
   - [x] MS SQL Connection
     - [x] Add MS SQL Connection admin page
     - [x] Collect MS SQL credentials
     - [x] Push to API
     - [x] Disable fields while loading
-  - [ ] Update EMDB
+    - [x] Remind user to go and update DB after change
+  - [x] Update EMDB
     - [x] Add Update EMDB admin page
     - [x] Collect MS SQL, EZ DB, EZ_Get_Versions view and EZ DB's content versions
-    - [ ] Display SQL, EZ DB, EZ_Get_Versions view and EZ DB's content versions
-    - [ ] Gather provoleged credentials
-    - [ ] Call API to Update EMDB
+    - [x] Display SQL, EZ DB, EZ_Get_Versions view and EZ DB's content versions
+    - [x] Gather provoleged credentials
+    - [x] Call API to Update EMDB
 - [x] Missing MS SQL configuration
   - [x] Check MS SQL needs configuration right after Login in
   - [x] Add warning in navigation bar

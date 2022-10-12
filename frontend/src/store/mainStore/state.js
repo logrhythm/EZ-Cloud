@@ -294,7 +294,7 @@ export default function () {
       },
       {
         name: 'OC_Admin_Clone_MPE_Rule',
-        version: '20210708.02'
+        version: '20210708.01'
       },
       {
         name: 'OC_Admin_Upsert_MPE_SubRule',
@@ -310,7 +310,7 @@ export default function () {
       },
       {
         name: 'OC_Admin_Upsert_Log_Source_Virtualisation_Template_Item',
-        version: '20210903.01'
+        version: '20210902.01'
       },
       {
         name: 'OC_Admin_List_OpenCollector_Log_Sources',
@@ -321,7 +321,7 @@ export default function () {
         version: '20220215.01'
       },
       {
-        name: 'get_EZ_Versions',
+        name: 'OC_Admin_get_EZ_Versions',
         version: '20220803.01'
       }
     ]
