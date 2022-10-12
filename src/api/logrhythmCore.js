@@ -323,7 +323,7 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
   // Check presence of:
   // - SQL server
   // - OC Admin DB
-  // - get_EZ_Versions
+  // - OC_Admin_get_EZ_Versions
   // - SP & Views in the right version
 
   const siemDatabaseStatusAndStatusAndVersions = {
@@ -396,7 +396,7 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
     }
   }
 
-  // Check `get_EZ_Versions` VIEW exists
+  // Check `OC_Admin_get_EZ_Versions` VIEW exists
   if (siemDatabaseStatusAndStatusAndVersions.ezDatabaseExists) {
     const viewGet_EZ_VersionsList = {};
     await getDataFromMsSql({
@@ -409,7 +409,7 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
       FROM
         [EZ].[sys].[all_objects]
       WHERE
-        [name] = 'get_EZ_Versions'
+        [name] = 'OC_Admin_get_EZ_Versions'
       ;
     `
     });
@@ -435,7 +435,7 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
       SELECT
         [Name] AS 'name',
         [Version] AS 'version'
-      FROM [EZ].[dbo].[get_EZ_Versions]
+      FROM [EZ].[dbo].[OC_Admin_get_EZ_Versions]
     `
     });
 
