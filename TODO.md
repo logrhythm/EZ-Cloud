@@ -66,6 +66,7 @@
 ## TO FIX
 - [x] Save/Read of Fields Mapping from PgSQL
 - [x] Tail actions doesn't fail if no or incomplete SSH details for Primary OC for Pipeline
+- [ ] Linux obfuscation executable
 
 ## TO TEST
 
