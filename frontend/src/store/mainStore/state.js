@@ -47,47 +47,47 @@ export default function () {
         icon: 'jsBeat',
         outputFormat: 'json'
       },
-      {
-        value: 'eventhubbeat',
-        label: 'LogRhythm Azure Event Hub Beat (🚧 - Stub)',
-        icon: 'logrhythm-eventhubbeat',
-        outputFormat: 'yaml'
-      },
+      // {
+      //   value: 'eventhubbeat',
+      //   label: 'LogRhythm Azure Event Hub Beat (🚧 - Stub)',
+      //   icon: 'logrhythm-eventhubbeat',
+      //   outputFormat: 'yaml'
+      // },
       {
         value: 'genericbeat',
         label: 'LogRhythm Generic HTTP Rest Beat',
         icon: 'logrhythm-genericbeat',
         outputFormat: 'yaml'
       },
-      {
-        value: 'kafkabeat',
-        label: 'LogRhythm Kafka Beat (🚧 - Stub)',
-        icon: 'logrhythm-kafkabeat',
-        outputFormat: 'yaml'
-      },
-      {
-        value: 'pubsubbeat',
-        label: 'LogRhythm PubSub Beat (🚧 - Stub)',
-        icon: 'logrhythm-pubsubbeat',
-        outputFormat: 'yaml'
-      },
-      {
-        value: 's3beat',
-        label: 'LogRhythm S3 Beat (🚧 - Stub)',
-        icon: 'logrhythm-s3beat',
-        outputFormat: 'yaml'
-      },
+      // {
+      //   value: 'kafkabeat',
+      //   label: 'LogRhythm Kafka Beat (🚧 - Stub)',
+      //   icon: 'logrhythm-kafkabeat',
+      //   outputFormat: 'yaml'
+      // },
+      // {
+      //   value: 'pubsubbeat',
+      //   label: 'LogRhythm PubSub Beat (🚧 - Stub)',
+      //   icon: 'logrhythm-pubsubbeat',
+      //   outputFormat: 'yaml'
+      // },
+      // {
+      //   value: 's3beat',
+      //   label: 'LogRhythm S3 Beat (🚧 - Stub)',
+      //   icon: 'logrhythm-s3beat',
+      //   outputFormat: 'yaml'
+      // },
       {
         value: 'webhookbeat',
-        label: 'LogRhythm Webhook Beat (👁‍🗨 - Preview - Missing HTTPS)',
+        label: 'LogRhythm Webhook Beat (👁‍🗨 - Preview - HTTP Only)',
         icon: 'logrhythm-webhookbeat',
         outputFormat: 'yaml'
-      },
-      {
-        value: 'filebeat',
-        label: 'Filebeat',
-        icon: 'filebeat',
-        outputFormat: 'yaml'
+      // },
+      // {
+      //   value: 'filebeat',
+      //   label: 'Filebeat',
+      //   icon: 'filebeat',
+      //   outputFormat: 'yaml'
       }
     ], // collectionShippersOptions
     openCollectorBeats: [
