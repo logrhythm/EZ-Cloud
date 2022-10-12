@@ -61,7 +61,7 @@
   - [x] Encrypt MS SQL credentials using deployment specific private key
   - [x] Store them safely in PgSQL
   - [x] Add API to collect MS SQL, EZ DB, EZ_Get_Versions view and EZ DB's content versions
-  - [ ] Add API to update the EMDB
+  - [x] Add API to update the EZ DB
 
 ## TO FIX
 - [x] Save/Read of Fields Mapping from PgSQL
