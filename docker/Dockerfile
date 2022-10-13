@@ -1,7 +1,7 @@
 # =============================================
 # Author:      Tony Massé
 # Create date: 2022-07-25
-# Updated on: 2022-10-13 - To `chmod +x` the Linux binary of `encryptionTool`
+# Modified on: 2022-10-13 - To `chmod +x` the Linux binary of `encryptionTool`
 # Description: Describes container `oc-admin`, based on NodeJS
 #              This container is designed to run the OC Admin (formerly EZ Cloud) Backend
 # =============================================
