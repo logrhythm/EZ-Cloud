@@ -593,7 +593,7 @@
   "Presence: {siemEmdbVersionsEzDatabaseExists}": "Presence: {siemEmdbVersionsEzDatabaseExists}",
   "Status: {siemEmdbVersionsEzDatabaseStatusStatus}": "Status: {siemEmdbVersionsEzDatabaseStatusStatus}",
   "Created on: {siemEmdbVersionsEzDatabaseStatusCreatedOn}": "Created on: {siemEmdbVersionsEzDatabaseStatusCreatedOn}",
-  "EZ Versions View": "EZ Versions View",
+  "EZ Versions View": "EZ Versions SQL View",
   "Presence: {siemEmdbVersionsViewGet_EZ_VersionsExists}": "Presence: {siemEmdbVersionsViewGet_EZ_VersionsExists}",
   "Created on: {siemEmdbVersionsViewGet_EZ_VersionsExistsCreatedOn}": "Created on: {siemEmdbVersionsViewGet_EZ_VersionsExistsCreatedOn}",
   "Updated on: {siemEmdbVersionsViewGet_EZ_VersionsExistsUpdatedOn}": "Updated on: {siemEmdbVersionsViewGet_EZ_VersionsExistsUpdatedOn}",
@@ -616,5 +616,7 @@
   "This update will use the other connection details already configured in \"Manage MS SQL Connection\". As shown below:": "This update will use the other connection details already configured in \"Manage MS SQL Connection\". As shown below:",
   "Reload MS SQL Connection settings": "Reload MS SQL Connection settings",
   "Edit MS SQL Connection setting": "Edit MS SQL Connection setting",
-  "Not found": "Not found"
+  "Not found": "Not found",
+  "Success": "Success",
+  "Now that the MS SQL Connection is configured, the Database must be updated for all the features of OC Admin to work.": "Now that the MS SQL Connection is configured, the Database must be updated for all the features of OC Admin to work."
 }
