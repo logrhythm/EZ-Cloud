@@ -37,7 +37,7 @@
     },
     {
         "targetDatabase": "EZ",
-        "sourceFilename": "20220209.24 - Create View - get_SIEM_Master_ID"
+        "sourceFilename": "20220209.24 - Create View - get_SIEM_Master_ID.sql"
     },
     {
         "targetDatabase": "EZ",
