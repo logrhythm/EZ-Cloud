@@ -53,10 +53,16 @@ function encryptStringWithRsaPublicKey(ezMarketRsaPublicKey, toEncrypt) {
 
 const spawn = require('cross-spawn');
 
+const encryptionToolExtension = (
+  process.platform === 'win32'
+    ? '.exe'
+    : ''
+);
+
 const encryptionToolPath = (
   process.env.NODE_ENV === 'development'
-    ? path.join(process.env.baseDirname, 'src', 'shared', 'encryptionTool.exe')
-    : path.join(process.env.baseDirname, 'bin', 'encryptionTool.exe')
+    ? path.join(process.env.baseDirname, 'src', 'shared', `encryptionTool${encryptionToolExtension}`)
+    : path.join(process.env.baseDirname, 'bin', `encryptionTool${encryptionToolExtension}`)
 );
 
 /**
