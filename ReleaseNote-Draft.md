@@ -27,7 +27,7 @@
   - `oc-admin`: OC-Admin itself
 - On the host's Firewall, if any, open the port TCP/8400 to allow inbound connections
 - Follow the **[Install the Open Collector](https://docs.logrhythm.com/docs/OCbeats/logrhythm-open-collector/open-collector-installation-and-user-guide/install-the-open-collector)** procedure from **docs.logrhythm.com**
-- Run the following commands:
+- Run the following commands: **_(these commands will only work with the LRCTL script to be released on or after 2022-10-20)_**
 ```
 ./lrctl oc-db start
 ./lrctl oc-admin start
@@ -42,7 +42,7 @@
 
 #### 4. Create your configuration
 - At first login, you will be prompted to edit the connection to the SIEM database, please follow the instruction and provide the correct credentials for the MS SQL that runs on your XM or Platform Manager
-- Once this is done, you will be prompted to create or update the SIEM database. Please provide privileged credentials (these will NOT be saved) to create the necessary Stored Procedures, View, etc... in eh SIEM Database
+- Once this is done, you will be prompted to create or update the SIEM database. Please provide privileged credentials (these will NOT be saved) to create the necessary Stored Procedures, View, etc... in the SIEM Database
 
 ### Microsoft Windows Deployment Option - ![Windows](/medias/Windows_logo_16x16.png "Windows")
 
