@@ -45,6 +45,8 @@
 - Once this is done, you will be prompted to create or update the SIEM database. Please provide privileged credentials (these will NOT be saved) to create the necessary Stored Procedures, View, etc... in the SIEM Database
 
 ### Microsoft Windows Deployment Option - ![Windows](/medias/Windows_logo_16x16.png "Windows")
+**IMPORTANT:**
+The Docker way is the preferred way to deploy OC Admin.
 
 #### 1. Download and Install
 - If upgrading a previous **EZ Cloud** version to **OC Admin** v0.9.🚧
