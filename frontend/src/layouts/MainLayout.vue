@@ -4,12 +4,7 @@
       v-model="drawerMenuOpen"
       show-if-above
 
-      :mini="miniState"
-      @mouseover="miniState = false"
-      @mouseout="miniState = true"
-      mini-to-overlay
-
-      :width="300"
+      :width="57"
       :breakpoint="500"
       bordered
 
@@ -24,8 +19,8 @@
         >
           <q-list padding class="">
             <EssentialLink
-              v-for="link in mainLinks"
-              :key="link.title"
+              v-for="(link, index) in mainLinks"
+              :key="index"
               v-bind="link"
             />
           </q-list>
@@ -35,38 +30,30 @@
 
         <q-item v-if="needToConfigureMsSql">
           <q-tooltip content-style="font-size: 1rem;">
+            <span class="text-orange text-bold">{{ $t('SIEM Not Connected') }}</span><br>
             {{ $t('The connection details to the SQL server on the SIEM are missing.') }}<br>
             {{ $t('A lot of things will not work until this is configred.') }}
           </q-tooltip>
           <q-item-section
-            side
           >
             <q-avatar size="24px" class="q-pa-none" square>
               <q-icon name="link_off" size="sm" color="orange" />
             </q-avatar>
-          </q-item-section>
-
-          <q-item-section>
-            <q-item-label class="text-orange">{{ $t('SIEM Not Connected') }}</q-item-label>
           </q-item-section>
         </q-item>
         <q-separator class="q-my-xs" v-if="needToConfigureMsSql"/>
 
         <q-item v-if="!socket.connected">
           <q-tooltip content-style="font-size: 1rem;">
+            <span class="text-orange text-bold">{{ $t('Disconnected') }}</span><br>
             {{ $t('Live connection with server has been lost.') }}<br>
             {{ $t('Some features might not work anymore.') }}
           </q-tooltip>
           <q-item-section
-            side
           >
             <q-avatar size="24px" class="q-pa-none" square>
               <q-icon name="cloud_off" size="sm" color="orange" />
             </q-avatar>
-          </q-item-section>
-
-          <q-item-section>
-            <q-item-label class="text-orange">{{ $t('Disconnected') }}</q-item-label>
           </q-item-section>
         </q-item>
         <q-separator class="q-my-xs" v-if="!socket.connected"/>
@@ -254,12 +241,14 @@ export default {
         //   link: '#/Status'
         // },
         {
-          title: this.$t('OpenCollectors'),
+          title: '',
+          tooltip: this.$t('OpenCollectors'),
           icon: 'mediation',
           link: '#/OpenCollectors'
         },
         {
-          title: this.$t('Pipelines'),
+          title: '',
+          tooltip: this.$t('Pipelines'),
           icon: 'account_tree',
           link: '#/Pipelines'
         }
@@ -268,7 +257,8 @@ export default {
     lowLinks () {
       return [
         {
-          title: this.$t('EZ Market Place'),
+          title: '',
+          tooltip: this.$t('EZ Market Place'),
           icon: 'storefront',
           link: '#/MarketPlace',
           id: 'ezMarketPlace',
@@ -301,7 +291,8 @@ export default {
           separator: true
         },
         {
-          title: this.$t('Admin'),
+          title: '',
+          tooltip: this.$t('Admin'),
           icon: 'admin_panel_settings',
           link: '#/Admin',
           needsPriviledge: true,
@@ -311,7 +302,8 @@ export default {
           notificationTextColor: 'white'
         },
         {
-          title: this.$t('Settings'),
+          title: '',
+          tooltip: this.$t('Settings'),
           icon: 'settings',
           link: '#/Settings'
         },
@@ -319,7 +311,8 @@ export default {
           separator: true
         },
         {
-          title: this.$t('Log Out'),
+          title: '',
+          tooltip: this.$t('Log Out'),
           icon: 'logout',
           link: '#/Logout'
         }
