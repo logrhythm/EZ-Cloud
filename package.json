@@ -1,6 +1,6 @@
 {
     "name": "ez-cloud-server",
-    "version": "0.9.7",
+    "version": "1.0.0",
     "description": "Server backend for EZ-Cloud for Legacy SIEM",
     "main": "index.js",
     "scripts": {
