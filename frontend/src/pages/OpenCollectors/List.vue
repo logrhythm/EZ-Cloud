@@ -91,30 +91,57 @@
         </template>
         <template v-slot:body-cell-hostVersions="props">
           <q-td :props="props">
-            <div v-if="props.row.osVersion">
-              <q-tooltip content-style="font-size: 1em;" >Linux</q-tooltip>
-              <q-avatar square  size="24px" class="q-mr-xs">
-                <img :src="'/icons/host-linux.svg'" />
-              </q-avatar>
-              <q-badge outline color="grey">v{{ props.row.osVersion }}</q-badge>
+            <div v-if="props.row.osVersion || (osVersionCheck && osVersionCheck[props.row.uid] && osVersionCheck[props.row.uid].checking)">
+              <div>
+                <q-tooltip content-style="font-size: 1em;" >Linux</q-tooltip>
+                <q-avatar square  size="24px" class="q-mr-xs">
+                  <img :src="'/icons/host-linux.svg'" />
+                </q-avatar>
+                <q-badge outline color="grey" v-if="props.row.osVersion">v{{ props.row.osVersion }}</q-badge>
+                <q-spinner-dots
+                  v-if="osVersionCheck && osVersionCheck[props.row.uid] && osVersionCheck[props.row.uid].checking"
+                  color="primary"
+                  size="2em"
+                  class="q-ml-sm"
+                />
+              </div>
             </div>
 
-            <div v-if="props.row.dockerVersion">
-              <q-tooltip content-style="font-size: 1em;" >Docker</q-tooltip>
-              <q-avatar square  size="24px" class="q-mr-xs">
-                <img :src="'/icons/host-docker.svg'" />
-              </q-avatar>
-              <q-badge outline color="grey">v{{ props.row.dockerVersion }}</q-badge>
+            <div v-if="props.row.dockerVersion || (dockerVersionCheck && dockerVersionCheck[props.row.uid] && dockerVersionCheck[props.row.uid].checking)">
+              <div>
+                <q-tooltip content-style="font-size: 1em;">
+                  Docker
+                  <span v-if="props.row.dockerVersionUnsupported && !(dockerVersionCheck && dockerVersionCheck[props.row.uid] && dockerVersionCheck[props.row.uid].checking)" class="text-bold text-warning"><br>
+                  <q-icon
+                    name="warning_amber"
+                    color="orange"
+                    size="1.5em"
+                    class="q-ml-sm"
+                  />
+                  {{ $t('Only versions of Docker above {dockerMinimumSupportedVersion} are supported. Please upgrade.', { dockerMinimumSupportedVersion: minimalDockerSupportedVersion }) }}
+                  </span>
+                </q-tooltip>
+                <q-avatar square  size="24px" class="q-mr-xs">
+                  <img :src="'/icons/host-docker.svg'" />
+                </q-avatar>
+                <q-badge v-if="props.row.dockerVersion" outline color="grey">v{{ props.row.dockerVersion }}</q-badge>
+                <q-spinner-dots
+                  v-if="dockerVersionCheck && dockerVersionCheck[props.row.uid] && dockerVersionCheck[props.row.uid].checking"
+                  color="primary"
+                  size="2em"
+                  class="q-ml-sm"
+                />
+                <q-icon
+                  v-if="props.row.dockerVersionUnsupported && !(dockerVersionCheck && dockerVersionCheck[props.row.uid] && dockerVersionCheck[props.row.uid].checking)"
+                  name="warning_amber"
+                  color="orange"
+                  size="2em"
+                  class="q-ml-sm"
+                />
+              </div>
             </div>
 
-            <div v-if="osVersionCheck && osVersionCheck[props.row.uid] && osVersionCheck[props.row.uid].checking">
-              <q-spinner-dots
-                color="primary"
-                size="2em"
-                class="q-ml-sm"
-              />
-            </div>
-            <div v-else-if="osVersionCheck && osVersionCheck[props.row.uid] && osVersionCheck[props.row.uid].error">
+            <div v-if="osVersionCheck && osVersionCheck[props.row.uid] && !osVersionCheck[props.row.uid].checking && osVersionCheck[props.row.uid].error">
               <q-tooltip content-style="font-size: 1rem;">
                 {{ $t('Failed to connect to the server.') }}<br>
                 {{ $t('Check the OpenCollector details and Credentials.') }}
@@ -430,6 +457,7 @@ export default {
       newOpenCollectorFbInstalled: false,
       newOpenCollectorFbVersion: '',
       osVersionCheck: {},
+      dockerVersionCheck: {},
       ocVersionCheck: {},
       fbVersionCheck: {},
       jsBeatVersionCheck: {},
@@ -438,13 +466,16 @@ export default {
     } // return
   },
   computed: {
-    ...mapState('mainStore', ['collectionShippersOptions', 'openCollectorBeats']),
+    ...mapState('mainStore', ['collectionShippersOptions', 'openCollectorBeats', 'minimalDockerSupportedVersion']),
     ...mapGetters('mainStore', ['openCollectors', 'pipelines', 'shippersUrls']),
     tableData () {
+      const majorVersionPosition = 2
       const list = []
       this.openCollectors.forEach(oc => {
+        const dockerVersion = String(oc.dockerVersion || '').match(/(([0-9]+)\.([0-9]+)\.([0-9]+))/)
         list.push(Object.assign({}, oc, {
-          pipelinesCount: (oc.pipelines && oc.pipelines.length > 0 ? oc.pipelines.length : '-')
+          pipelinesCount: (oc.pipelines && oc.pipelines.length > 0 ? oc.pipelines.length : '-'),
+          dockerVersionUnsupported: !(dockerVersion && dockerVersion.length > majorVersionPosition && dockerVersion[majorVersionPosition] >= this.minimalDockerSupportedVersion)
         }))
       })
       return list
@@ -477,7 +508,7 @@ export default {
   },
   methods: {
     ...mapActions('mainStore', ['upsertOpenCollector', 'deleteOpenCollector', 'loadShippersUrls']),
-    ...mapActions('mainStore', ['getOpenCollectorsOsVersion', 'getOpenCollectorsOcVersion', 'getOpenCollectorsFilebeatVersion', 'getOpenCollectorsOcAndActiveBeatsVersion', 'getOpenCollectorsjsBeatVersion']),
+    ...mapActions('mainStore', ['getOpenCollectorsOsVersion', 'getOpenCollectorsDockerVersion', 'getOpenCollectorsOcVersion', 'getOpenCollectorsFilebeatVersion', 'getOpenCollectorsOcAndActiveBeatsVersion', 'getOpenCollectorsjsBeatVersion']),
     openOpenCollector (row) {
       this.$router.push({ path: '/OpenCollectors/' + row.uid + '/View' })
     }, // openOpenCollector
@@ -511,6 +542,21 @@ export default {
           apiCallParams: { uid: uid },
           onSuccessCallBack: this.osVersionReceive,
           onErrorCallBack: this.osVersionReceive,
+          debug: false
+        })
+
+        if (!this.dockerVersionCheck[uid]) {
+          this.dockerVersionCheck[uid] = {
+            apiData: {}
+          }
+        }
+        this.dockerVersionCheck[uid].checking = true
+        this.dockerVersionCheck = JSON.parse(JSON.stringify(this.dockerVersionCheck))
+        this.getOpenCollectorsDockerVersion({
+          caller: this,
+          apiCallParams: { uid: uid },
+          onSuccessCallBack: this.dockerVersionReceive,
+          onErrorCallBack: this.dockerVersionReceive,
           debug: false
         })
 
@@ -623,6 +669,32 @@ export default {
             this.osVersionCheck[uid].apiData = {}
           }
           this.osVersionCheck = JSON.parse(JSON.stringify(this.osVersionCheck))
+        }
+      }
+    },
+    dockerVersionReceive (response) {
+      if (response) {
+        const uid = (response.params && response.params.apiCallParams && response.params.apiCallParams.uid ? response.params.apiCallParams.uid : null)
+        if (uid && this.dockerVersionCheck && this.dockerVersionCheck[uid]) {
+          this.dockerVersionCheck[uid].checking = false
+          if (response.success) {
+            this.dockerVersionCheck[uid].error = false
+
+            const newOcInfo = JSON.parse(JSON.stringify(this.openCollectors.find((oc) => oc.uid === uid)))
+            newOcInfo.dockerVersion = (response.data && response.data.payload && response.data.payload.version && response.data.payload.version.full ? response.data.payload.version.full : newOcInfo.dockerVersion)
+            newOcInfo.dockerVersion = newOcInfo.dockerVersion || ''
+            this.upsertOpenCollector(
+              {
+                pushToApi: true,
+                caller: this,
+                openCollector: newOcInfo
+              }
+            )
+          } else {
+            this.dockerVersionCheck[uid].error = true
+            this.dockerVersionCheck[uid].apiData = {}
+          }
+          this.dockerVersionCheck = JSON.parse(JSON.stringify(this.dockerVersionCheck))
         }
       }
     },

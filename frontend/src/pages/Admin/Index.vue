@@ -35,6 +35,18 @@
                 />
               </q-btn>
             </q-card-section>
+            <q-card-section>
+              <q-btn color="primary" :label="$t('Update Database')" to="/Admin/SIEM/UpdateEmdb">
+                <!-- <q-badge
+                  v-if="needToConfigureMsSql"
+                  floating
+                  rounded
+                  color="negative"
+                  text-color="white"
+                  label="1"
+                /> -->
+              </q-btn>
+            </q-card-section>
           </q-card-section>
 
         </q-card-section>

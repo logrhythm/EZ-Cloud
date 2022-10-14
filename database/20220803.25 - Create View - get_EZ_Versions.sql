@@ -1,6 +1,9 @@
 DROP VIEW IF EXISTS [dbo].[get_EZ_Versions]
 GO
 
+DROP VIEW IF EXISTS [dbo].[OC_Admin_get_EZ_Versions]
+GO
+
 SET ANSI_NULLS ON
 GO
 
@@ -17,7 +20,7 @@ GO
 --              For example: First revision of January 1st 20200 <VERSION> would be: `20220131.01`. See the real example below
 -- EZ_VERSION: 20220803.01 :EZ_VERSION
 -- =============================================
-CREATE VIEW [dbo].[get_EZ_Versions]
+CREATE VIEW [dbo].[OC_Admin_get_EZ_Versions]
 AS
     SELECT
         sao.name AS [Name],

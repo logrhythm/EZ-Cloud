@@ -32,10 +32,18 @@
     - [ ] Ability to assign Log Source to other Open Collectors
     - [ ] Ability to Enable / Commit the Log Source creation
 - [x] MS SQL Admin
-  - [x] Add MS SQL Connection admin page
-  - [x] Collect MS SQL credentials
-  - [x] Push to API
-  - [x] Disable fields while loading
+  - [x] MS SQL Connection
+    - [x] Add MS SQL Connection admin page
+    - [x] Collect MS SQL credentials
+    - [x] Push to API
+    - [x] Disable fields while loading
+    - [x] Remind user to go and update DB after change
+  - [x] Update EMDB
+    - [x] Add Update EMDB admin page
+    - [x] Collect MS SQL, EZ DB, EZ_Get_Versions view and EZ DB's content versions
+    - [x] Display SQL, EZ DB, EZ_Get_Versions view and EZ DB's content versions
+    - [x] Gather provoleged credentials
+    - [x] Call API to Update EMDB
 - [x] Missing MS SQL configuration
   - [x] Check MS SQL needs configuration right after Login in
   - [x] Add warning in navigation bar
@@ -55,6 +63,7 @@
 - [x] Erroneous "SIEM Not Connected" alert message on Windows deployment
 - [x] Issue #12 - [BUG] Pipeline import from EZ Market Place - Wrong icon colour on "Import Both" button in Day mode
 - [x] Issue #11 - [BUG] Fields Mapping - Incorrect LR MPE tags for Outbound bytes type fields
+- [ ] Top bar not stuck to top left of screen in Admin : SIEM : Update EMDB
 
 ## TO TEST
 - [x] Translated message in deployment steps roll over status (especially Skipped steps)

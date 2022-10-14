@@ -548,72 +548,107 @@ router.get('/CheckDockerPresence', async (req, res) => {
 // CheckDockerVersion
 // #############################################
 
-const dockerVersion = {
+const dockerVersionTemplate = {
   stillChecking: false,
   lastSuccessfulCheckTimeStampUtc: 0,
-  payload: { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } }, // object with version
+  payload: null, // object with version
   errors: [], // array of all the errors
   outputs: [] // array of all the outputs
 };
 
-function checkDockerVersion() {
-  getSshConfigForCollector({ uid }).then((sshConfig) => {
-    const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
+const dockerVersionArray = {};
 
-    dockerVersion.stillChecking = true;
-    dockerVersion.errors = [];
-    dockerVersion.outputs = [];
-    dockerVersion.payload = { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } };
+function checkDockerVersion(dockerVersion, uid) {
+  /* eslint-disable no-param-reassign */
+  if (uid && uid.length) {
+    getSshConfigForCollector({ uid }).then((sshConfig) => {
+      const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
-    ssh
-      .exec('docker -v 2>/dev/null || exit 1', {
-        err(stderr) {
-          dockerVersion.errors.push(stderr);
-        },
-        exit(code) {
-          dockerVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
-        },
-        out(stdout) {
-          version = stdout.match(/.*?\s+(([0-9]+)\.([0-9]+)\.([0-9]+))/);
-          if (version.length > 0) {
-            dockerVersion.payload = { version: { detailed: { major: version[2], minor: version[3], build: version[4] }, Full: version[1] } };
-          } else {
-            dockerVersion.payload = { version: { detailed: { major: -1, minor: 0, build: 0 }, Full: '-1' } };
+      dockerVersion.stillChecking = true;
+      dockerVersion.errors = [];
+      dockerVersion.outputs = [];
+      dockerVersion.payload = null;
+
+      ssh
+        .exec('docker -v 2>/dev/null || exit 1', {
+          err(stderr) {
+            dockerVersion.errors.push(stderr);
+          },
+          exit(code) {
+            dockerVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
+          },
+          out(stdout) {
+            const version = stdout.match(/.*?\s+(([0-9]+)\.([0-9]+)\.([0-9]+))/);
+            if (version && version.length > 4) {
+              dockerVersion.payload = {
+                version: {
+                  detailed: {
+                    major: version[2], minor: version[3], build: version[4]
+                  },
+                  full: version[1]
+                }
+              };
+            } else {
+              dockerVersion.payload = null;
+            }
+            dockerVersion.outputs.push(stdout);
           }
-          dockerVersion.outputs.push(stdout);
-        }
-      })
-      .on('end', (err) => {
-        dockerVersion.stillChecking = false;
-      })
-      .start({
-        failure() {
+        })
+        .on('end', (err) => {
           dockerVersion.stillChecking = false;
-        }
-      });
-  });
+        })
+        .start({
+          failure() {
+            dockerVersion.stillChecking = false;
+          }
+        });
+    });
+  }
+  /* eslint-enable no-param-reassign */
 }
 
 router.get('/CheckDockerVersion', async (req, res) => {
-  if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
-    // Waiting - Sync
-    if (!dockerVersion.stillChecking) {
-      checkDockerVersion();
-    }
-    const loopEndTime = Date.now() / 1000 + maxCheckInterval;
+  if (req
+    && req.query
+    && req.query.uid
+    && req.query.uid.length
+    && getSafeUidFrom(req.query).length
+  ) {
+    const uid = getSafeUidFrom(req.query);
 
-    while (dockerVersion.stillChecking && (loopEndTime > (Date.now() / 1000))) {
-      // Wait for 50 ms
-      await waitMilliseconds(50);
+    if (!dockerVersionArray[uid]) {
+      dockerVersionArray[uid] = JSON.parse(JSON.stringify(dockerVersionTemplate));
     }
+
+    if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
+      // Waiting - Sync
+      if (!dockerVersionArray[uid].stillChecking) {
+        dockerVersionArray[uid].stillChecking = true;
+        checkDockerVersion(dockerVersionArray[uid], uid);
+      }
+      const loopEndTime = Date.now() / 1000 + maxCheckInterval;
+
+      while (dockerVersionArray[uid].stillChecking && (loopEndTime > (Date.now() / 1000))) {
+        // Wait for 50 ms
+        // eslint-disable-next-line no-await-in-loop
+        await waitMilliseconds(50);
+      }
+    } else {
+      // No waiting - Async
+      // eslint-disable-next-line no-lonely-if
+      if (
+        !dockerVersionArray[uid].stillChecking
+        && (dockerVersionArray[uid].lastSuccessfulCheckTimeStampUtc + maxCheckInterval)
+        <= (Date.now() / 1000)
+      ) {
+        checkDockerVersion(dockerVersionArray[uid], uid);
+      }
+    }
+
+    res.json(dockerVersionArray[uid]);
   } else {
-    // No waiting - Async
-    if (!dockerVersion.stillChecking && (dockerVersion.lastSuccessfulCheckTimeStampUtc + maxCheckInterval) <= (Date.now() / 1000)) {
-      checkDockerVersion();
-    }
+    res.json({ ...dockerVersionTemplate, errors: ['Missing UID in Query.'] });
   }
-
-  res.json(dockerVersion);
 });
 
 // #############################################

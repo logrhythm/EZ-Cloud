@@ -2,6 +2,7 @@
 -- Author:		Tony Massé
 -- Create date: 2022-06-10
 -- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
+-- Modified on: 2022-09-20 - To add `dockerVersion` column
 -- =============================================
 
 CREATE TABLE IF NOT EXISTS public."openCollectors"
@@ -15,6 +16,7 @@ CREATE TABLE IF NOT EXISTS public."openCollectors"
     "password" varchar(250) NULL,
     "privateKey" text NULL,
     "osVersion" varchar(100) NULL,
+    "dockerVersion" varchar(100) NULL,
     "ocInstalled" boolean NULL,
     "ocVersion" varchar(100) NULL,
     "fbInstalled" boolean NULL,
@@ -26,3 +28,6 @@ CREATE TABLE IF NOT EXISTS public."openCollectors"
 ALTER TABLE IF EXISTS public."openCollectors"
     OWNER to "oc-admin-backend";
 
+-- Adding `dockerVersion` to table if it's from an old version
+ALTER TABLE IF EXISTS public."openCollectors"
+    ADD COLUMN IF NOT EXISTS "dockerVersion" varchar(100) NULL;

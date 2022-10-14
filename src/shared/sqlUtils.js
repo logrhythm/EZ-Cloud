@@ -141,8 +141,40 @@ async function getDataFromMsSql(parameters) {
     targetVariable.payload = [];
 
     try {
+      // Build connection params,
+      // by merging the MS SQL Config we got stored and the optional `msSqlConfig` paramaters
+      const msSqlConfig = await getMsSqlConfig();
+      if (parameters.msSqlConfig) {
+        msSqlConfig.server = parameters.msSqlConfig.server || msSqlConfig.server;
+
+        // Authentication
+        if (parameters.msSqlConfig.authentication) {
+          if (!msSqlConfig.authentication) {
+            msSqlConfig.authentication = {};
+          }
+          if (!msSqlConfig.authentication.options) {
+            msSqlConfig.authentication.options = {};
+          }
+          // eslint-disable-next-line max-len
+          msSqlConfig.authentication.options.userName = parameters.msSqlConfig.authentication.options.userName || msSqlConfig.authentication.options.userName;
+          // eslint-disable-next-line max-len
+          msSqlConfig.authentication.options.password = parameters.msSqlConfig.authentication.options.password || msSqlConfig.authentication.options.password;
+        }
+
+        // Options.Database
+        if (parameters.msSqlConfig.options) {
+          if (!msSqlConfig.options) {
+            msSqlConfig.options = {};
+          }
+          // eslint-disable-next-line max-len
+          msSqlConfig.options.database = parameters.msSqlConfig.options.database || msSqlConfig.options.database;
+        }
+      }
+
+      // logToSystem('Debug', `msSqlConfig | Details: ${JSON.stringify(msSqlConfig)}`); // XXXX
+
       // Connect
-      const connection = new Connection(await getMsSqlConfig());
+      const connection = new Connection(msSqlConfig);
 
       // Connection event handler
       connection.on('connect', (connectionError) => {

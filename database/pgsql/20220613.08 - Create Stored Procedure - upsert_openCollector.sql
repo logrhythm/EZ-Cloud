@@ -2,6 +2,7 @@
 -- Author:		Tony Massé
 -- Create date: 2022-06-13
 -- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
+-- Modified on: 2022-09-20 - To add `dockerVersion` column
 -- =============================================
 
 DROP PROCEDURE IF EXISTS public."upsert_openCollector";
@@ -17,6 +18,7 @@ CREATE PROCEDURE public."upsert_openCollector"
     IN "@password" character varying,
     IN "@privateKey" text,
     IN "@osVersion" character varying,
+    IN "@dockerVersion" character varying,
     IN "@ocInstalled" boolean,
     IN "@ocVersion" character varying,
     IN "@fbInstalled" boolean,
@@ -38,6 +40,7 @@ BEGIN
         ,"password"
         ,"privateKey"
         ,"osVersion"
+        ,"dockerVersion"
         ,"ocInstalled"
         ,"ocVersion"
         ,"fbInstalled"
@@ -55,6 +58,7 @@ BEGIN
         ,"@password"
         ,"@privateKey"
         ,"@osVersion"
+        ,"@dockerVersion"
         ,"@ocInstalled"
         ,"@ocVersion"
         ,"@fbInstalled"
@@ -71,6 +75,7 @@ BEGIN
             ,"password" = CASE WHEN "@password" != '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' THEN "@password" ELSE oc."password" END
             ,"privateKey" = CASE WHEN "@privateKey" != '** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' THEN "@privateKey" ELSE oc."privateKey" END
             ,"osVersion" = "@osVersion"
+            ,"dockerVersion" = "@dockerVersion"
             ,"ocInstalled" = "@ocInstalled"
             ,"ocVersion" = "@ocVersion"
             ,"fbInstalled" = "@fbInstalled"

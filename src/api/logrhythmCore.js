@@ -1,23 +1,9 @@
 const express = require('express');
 
 const router = express.Router();
-// Get SQL config
-const fs = require('fs');
-const path = require('path');
 
-const configSql = JSON.parse(fs.readFileSync(path.join(process.env.baseDirname, 'config', 'database.json'), 'utf8')).config;
-// Create SQL object
-const { Connection, Request, TYPES } = require('tedious');
-
-function waitMilliseconds(delay = 250) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve();
-    }, delay);
-  });
-}
-
-const maxCheckInterval = 10; // Check once every X seconds max, and/or timeout after X seconds
+// Load the System Logging functions
+const { logToSystem } = require('../shared/systemLogging');
 
 router.get('/', (req, res) => {
   res.json({
@@ -34,7 +20,8 @@ router.get('/', (req, res) => {
 //         #######     ##    #### ######## ####    ##    #### ########  ######
 
 const {
-  getSiemDataFromSql,
+  getSiemDataFromSql, // OBSOLETE. MUST STOP USING. XXXX
+  getDataFromMsSql,
   createMsSqlVariables,
   createMsSqlVariablesAndStoredProcParams
 } = require('../shared/sqlUtils');
@@ -108,6 +95,7 @@ router.post('/UpdateMpeRule', async (req, res) => {
 router.post('/UpdateMpeSubRule', async (req, res) => {
   const updatedMpeSubRule = {};
 
+  // eslint-disable-next-line max-len
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
   const [sqlVariables, storedProcedureParams] = createMsSqlVariablesAndStoredProcParams(
     req,
@@ -153,6 +141,7 @@ router.post('/UpdateMpeSubRule', async (req, res) => {
 router.post('/UpdateProcessingPolicy', async (req, res) => {
   const updatedProcessingPolicy = {};
 
+  // eslint-disable-next-line max-len
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
   const [sqlVariables, storedProcedureParams] = createMsSqlVariablesAndStoredProcParams(
     req,
@@ -185,6 +174,7 @@ router.post('/UpdateProcessingPolicy', async (req, res) => {
 router.post('/UpdateLogSourceVirtualisationTemplate', async (req, res) => {
   const updatedLogSourceVirtualisationTemplate = {};
 
+  // eslint-disable-next-line max-len
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
   const [sqlVariables, storedProcedureParams] = createMsSqlVariablesAndStoredProcParams(
     req,
@@ -219,6 +209,7 @@ router.post('/UpdateLogSourceVirtualisationTemplate', async (req, res) => {
 router.post('/UpdateLogSourceVirtualisationTemplateItem', async (req, res) => {
   const updatedLogSourceVirtualisationTemplateItem = {};
 
+  // eslint-disable-next-line max-len
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
   const [sqlVariables, storedProcedureParams] = createMsSqlVariablesAndStoredProcParams(
     req,
@@ -270,7 +261,11 @@ router.get('/GetOpenCollectorLogSourcesList', async (req, res) => {
   `
   });
 
-  if (openCollectorLogSourcesList && openCollectorLogSourcesList.payload && Array.isArray(openCollectorLogSourcesList.payload)) {
+  if (
+    openCollectorLogSourcesList
+    && openCollectorLogSourcesList.payload
+    && Array.isArray(openCollectorLogSourcesList.payload)
+  ) {
     openCollectorLogSourcesList.payload.forEach((openCollectorLogSource) => {
       /* eslint-disable no-param-reassign */
       try {
@@ -281,6 +276,7 @@ router.get('/GetOpenCollectorLogSourcesList', async (req, res) => {
       }
       /* eslint-enable no-param-reassign */
     });
+    logToSystem('Debug', JSON.stringify(openCollectorLogSourcesList), true);
   }
   res.json(openCollectorLogSourcesList);
 });
@@ -292,6 +288,7 @@ router.get('/GetOpenCollectorLogSourcesList', async (req, res) => {
 router.post('/UpdateOpenCollectorLogSourceWithLogSourceVirtualisation', async (req, res) => {
   const updatedOpenCollectorLogSource = {};
 
+  // eslint-disable-next-line max-len
   // Create the SQL Variables and the Stored Procedure parameters in one go, while weeding out the missing params
   const [sqlVariables, storedProcedureParams] = createMsSqlVariablesAndStoredProcParams(
     req,
@@ -315,6 +312,151 @@ router.post('/UpdateOpenCollectorLogSourceWithLogSourceVirtualisation', async (r
   });
 
   res.json(updatedOpenCollectorLogSource);
+});
+
+// ##########################################################################################
+// GetSiemDatabaseStatusAndVersions
+// ##########################################################################################
+
+router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
+  // Steps
+  // Check presence of:
+  // - SQL server
+  // - OC Admin DB
+  // - OC_Admin_get_EZ_Versions
+  // - SP & Views in the right version
+
+  const siemDatabaseStatusAndStatusAndVersions = {
+    sqlServerIsUp: false,
+    sqlServerVersion: null,
+    ezDatabaseExists: false,
+    ezDatabaseStatus: null,
+    viewGet_EZ_VersionsExists: false,
+    viewGet_EZ_VersionsDetails: null,
+    storedProcedureAndViewsVersions: []
+  };
+
+  if (
+    process.env.databaseMode === 'mssql'
+    || process.env.databaseMode === 'split'
+  ) {
+    logToSystem('Verbose', 'Fetching the version number of the MS SQL of the XM or PM...');
+
+    // Check SQL Server presence and response
+    const sqlServerVersionList = {};
+    await getDataFromMsSql({
+      targetVariable: sqlServerVersionList,
+      query: `
+      SELECT @@version AS 'sqlVersion';
+    `
+    });
+
+    if (
+      sqlServerVersionList
+      && sqlServerVersionList.payload
+      && Array.isArray(sqlServerVersionList.payload)
+      && sqlServerVersionList.payload.length > 0
+    ) {
+      siemDatabaseStatusAndStatusAndVersions.sqlServerIsUp = !!(
+        sqlServerVersionList.payload[0].sqlVersion
+        && String(sqlServerVersionList.payload[0].sqlVersion).length
+      );
+      // eslint-disable-next-line max-len
+      siemDatabaseStatusAndStatusAndVersions.sqlServerVersion = sqlServerVersionList.payload[0].sqlVersion;
+    }
+  }
+
+  // Check `EZ` DATABASE exists
+  if (siemDatabaseStatusAndStatusAndVersions.sqlServerIsUp) {
+    // Check SQL Server presence and response
+    const ezDbStatusList = {};
+    await getDataFromMsSql({
+      targetVariable: ezDbStatusList,
+      query: `
+      SELECT TOP (1)
+        [name] AS 'name',
+        [create_date] AS 'createdOn',
+        [state_desc] AS 'status'
+      FROM
+        [sys].[databases]
+      WHERE name = 'EZ'
+      ;
+    `
+    });
+
+    if (
+      ezDbStatusList
+      && ezDbStatusList.payload
+      && Array.isArray(ezDbStatusList.payload)
+      && ezDbStatusList.payload.length === 1
+    ) {
+      siemDatabaseStatusAndStatusAndVersions.ezDatabaseExists = true;
+      // eslint-disable-next-line max-len, prefer-destructuring
+      siemDatabaseStatusAndStatusAndVersions.ezDatabaseStatus = ezDbStatusList.payload[0];
+    }
+  }
+
+  // Check `OC_Admin_get_EZ_Versions` VIEW exists
+  if (siemDatabaseStatusAndStatusAndVersions.ezDatabaseExists) {
+    const viewGet_EZ_VersionsList = {};
+    await getDataFromMsSql({
+      targetVariable: viewGet_EZ_VersionsList,
+      query: `
+      SELECT TOP (1)
+        [name] AS 'name',
+        [create_date] AS 'createdOn',
+        [modify_date] AS 'updatedOn'
+      FROM
+        [EZ].[sys].[all_objects]
+      WHERE
+        [name] = 'OC_Admin_get_EZ_Versions'
+      ;
+    `
+    });
+
+    if (
+      viewGet_EZ_VersionsList
+      && viewGet_EZ_VersionsList.payload
+      && Array.isArray(viewGet_EZ_VersionsList.payload)
+      && viewGet_EZ_VersionsList.payload.length === 1
+    ) {
+      siemDatabaseStatusAndStatusAndVersions.viewGet_EZ_VersionsExists = true;
+      // eslint-disable-next-line max-len, prefer-destructuring
+      siemDatabaseStatusAndStatusAndVersions.viewGet_EZ_VersionsDetails = viewGet_EZ_VersionsList.payload[0];
+    }
+  }
+
+  // Get the version of the Stored Procedures and Views
+  if (siemDatabaseStatusAndStatusAndVersions.sqlServerIsUp) {
+    const siemDatabaseVersionsList = {};
+    await getDataFromMsSql({
+      targetVariable: siemDatabaseVersionsList,
+      query: `
+      SELECT
+        [Name] AS 'name',
+        [Version] AS 'version'
+      FROM [EZ].[dbo].[OC_Admin_get_EZ_Versions]
+    `
+    });
+
+    if (
+      siemDatabaseVersionsList
+      && siemDatabaseVersionsList.payload
+      && Array.isArray(siemDatabaseVersionsList.payload)
+    ) {
+      // eslint-disable-next-line max-len
+      siemDatabaseStatusAndStatusAndVersions.storedProcedureAndViewsVersions = siemDatabaseVersionsList.payload;
+    }
+  }
+
+  res.json(
+    {
+      errors: [],
+      outputs: [],
+      payload: siemDatabaseStatusAndStatusAndVersions,
+      stillChecking: false
+    }
+  );
 });
 
 //        ######## ##     ## ########   #######  ########  ########  ######

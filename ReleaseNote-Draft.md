@@ -21,29 +21,20 @@
 ## Setup
 ### Docker Deployment Option - ![Docker](/medias/Docker_logo_23x16.png "Docker")
 #### 1. Download and Run
-##### On the Platform Manager or XM
-- Create the MS SQL DB for Docker deployments (it's a hollow version of the EZ database, with only some of its Stored Procedures)
-  - **EITHER:**
-    - Get [OC-Admin.v0.9.🚧.EZ_database_for_Docker.zip](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.9.🚧/OC-Admin.v0.9.🚧.EZ_database_for_Docker.zip)
-    - Decompress it on the PM or XM
-    - Run the `create_database_for_Docker.bat` script as an Administrator
-  - **OR:**
-    - Get [OC-Admin.v0.9.🚧.Server-Installer.exe](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.9.🚧/OC-Admin.v0.9.🚧.Server-Installer.exe)
-    - Run it on the PM or XM
-    - Select **Only SQL Database for Docker deployments (EZ Database for Docker)**
-    - Finish the install
 ##### On the Docker machine
 - Two containers will be created:
   - `oc-db`: to host OC-Admin configuration
   - `oc-admin`: OC-Admin itself
 - On the host's Firewall, if any, open the port TCP/8400 to allow inbound connections
-- Run the following command:
+- Follow the **[Install the Open Collector](https://docs.logrhythm.com/docs/OCbeats/logrhythm-open-collector/open-collector-installation-and-user-guide/install-the-open-collector)** procedure from **docs.logrhythm.com**
+- Run the following commands: **_(these commands will only work with the LRCTL script to be released on or after 2022-10-20)_**
 ```
-mkdir dummyDir && cd dummyDir && curl -fsSOL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/installer/pseudo_lrctl.sh && sh pseudo_lrctl.sh
+./lrctl oc-db start
+./lrctl oc-admin start
 ```
 
 #### 2. Create your configuration
-- During the Install, when prompted, please provide a password for the new user `ocAdmin`
+- During the first `start` of OC Admin, when prompted, please provide a password for the new user `ocAdmin`
 
 #### 3. Connect to the OC Admin Server
 - Open https://`<ip-of-the-OC-Admin-server>`:8400/
@@ -51,11 +42,14 @@ mkdir dummyDir && cd dummyDir && curl -fsSOL https://raw.githubusercontent.com/l
 
 #### 4. Create your configuration
 - At first login, you will be prompted to edit the connection to the SIEM database, please follow the instruction and provide the correct credentials for the MS SQL that runs on your XM or Platform Manager
+- Once this is done, you will be prompted to create or update the SIEM database. Please provide privileged credentials (these will NOT be saved) to create the necessary Stored Procedures, View, etc... in the SIEM Database
 
 ### Microsoft Windows Deployment Option - ![Windows](/medias/Windows_logo_16x16.png "Windows")
+**IMPORTANT:**
+The Docker way is the preferred way to deploy OC Admin.
 
 #### 1. Download and Install
-- If upgrading a previous **EZ Cloud** version to **OC Admin** v0.9.5
+- If upgrading a previous **EZ Cloud** version to **OC Admin** v0.9.🚧
   - Backup your `\Program Files\EZ Server\config` folder
   - Un-install **EZ Cloud**
   - Once you have installed **OC Admin**, you want to copy the following backed up files to `\Program Files\OC Admin\config`
@@ -101,6 +95,18 @@ It's possible to install OC Admin Server onto a separate machine than the SQL Se
 - Wiki: [Troubleshooting](https://github.com/logrhythm/EZ-Cloud/wiki/Troubleshooting)
 
 ## What's new in this release?
+**v0.9.6 and v0.9.7**
+- [v0.9.6] Frontend - Display Docker version with the OS version for Open Collectors
+- [v0.9.6] Frontend - Admin - New page to check and update SIEM database
+- [v0.9.6] Backend - SQL - Add version information in all Stored Procedures, Views and Functions
+- [v0.9.6] Backend - SQL - Create a View to extract the version of all these components
+- [v0.9.6] Backend - SQL - Rename all Stored Procedures and Views to be easily identifiable in EMDB
+- [v0.9.6] Backend - API - New endpoint to collect Docker version
+- [v0.9.6] Backend - API - New endpoint to check SIEM database and its components versions
+- [v0.9.6] Backend - API - New endpoint to update SIEM database and its components
+- [v0.9.7] Backend - API - Bring in obfuscation binary for Linux (Docker version)
+- [v0.9.🚧] 
+
 **v0.9.5**
 - [v0.9.5] **EZ Cloud** is now called **OC Admin** 🎉🎉🎉
   - This is part of the plan to move ~~EZ Cloud~~ OC Admin to run *on/with/as part of* the Open Collector
@@ -144,7 +150,6 @@ It's possible to install OC Admin Server onto a separate machine than the SQL Se
 - [v0.9.5] Frontend - Login page - Disable Logon button if no SQL server is available
 - [v0.9.5] Frontend - Admin - Configuration page for SIEM MS SQL, for ![Docker](/medias/Docker_logo_23x16.png "Docker") deployments
 - [v0.9.5] Frontend - MarketPlace notification indicator to show on **Notification** sub-menu too
-- [v0.9.🚧] 
 
 **v0.9.0**
 - [v0.9.0] Backend - Make Encrypted SQL connection the default
@@ -308,6 +313,11 @@ _(Below "Market" relates to the backend API of the Market Place, and "Market Adm
         - https://github.com/logrhythm/EZ-Cloud/wiki/Help#ref-whatsthedifferencefileimport
 
 ## What has been fixed in this release?
+**v0.9.6**
+- [v0.9.6] Frontend - Fix #11 Fields Mapping - Incorrect LR MPE tags for Outbound bytes type fields
+- [v0.9.6] Frontend - Fix #12 Pipeline import from EZ Market Place - Wrong icon colour on "Import Both" button in Day mode
+- [v0.9.6] Security - Update multiple 3rd party modules and packages
+
 **v0.8.4**
 - [v0.8.5] Frontend - Fix #8 (JQ Filter doesn't catch on logs coming from LR Webhook Beat) - Add filtering by `.fullyqualifiedbeatname` in JQ Filter
 - [v0.8.5] Frontend - Fix - `DeploymentEdit` page didn't implement `extractMessageFieldOnly` correctly when producing the JQ Transform at deployment time

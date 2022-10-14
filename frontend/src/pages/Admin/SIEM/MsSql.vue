@@ -1,13 +1,15 @@
 <template>
-  <q-page class="q-gutter-sm q-pa-xl">
+  <q-page class="q-pa-sm">
     <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
         <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Admin')" :to="'/Admin'" />
+        <q-separator spaced vertical />
+        <q-btn no-caps flat dense icon="update" :label="$t('Update Database')" to="/Admin/SIEM/UpdateEmdb" />
         <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('Admin : SIEM : Manage MS SQL Connection') }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
 
-    <q-card class="q-pa-md q-mx-none">
+    <q-card class="">
       <q-card-section horizontal>
         <q-card-section class="col q-ma-none q-pa-none">
           <q-card-section class="text-h4">
@@ -106,6 +108,24 @@
       </q-card-section>
     </q-card>
 
+    <q-dialog v-model="promptForDatabaseUpgrade" persistent>
+      <q-card style="min-width: 350px; max-width: 450px">
+        <q-card-section>
+          <div class="text-h6">{{ $t('Success') }}</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <div class="">{{ $t('Now that the MS SQL Connection is configured, the Database must be updated for all the features of OC Admin to work.') }}</div>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right" class="text-primary">
+          <q-btn flat :label="$t('Close')" v-close-popup />
+          <q-btn color="primary" icon="update" :label="$t('Update Database')" to="/Admin/SIEM/UpdateEmdb" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -126,7 +146,8 @@ export default {
       siemMsSqlPort: 1433,
       siemMsSqlUsername: null,
       siemMsSqlPassword: null,
-      siemMsSqlEncrypt: true
+      siemMsSqlEncrypt: true,
+      promptForDatabaseUpgrade: false
     }
   }, // data
   computed: {
@@ -150,7 +171,7 @@ export default {
   methods: {
     ...mapActions('mainStore', ['getMsSqlConfig', 'updateMsSqlConfig', 'updateExtraInformation']),
     saveSettings () {
-      this.saveOrUpdateUserRole()
+      this.saveOrUpdateMsSqlConnectionConfiguration()
     },
     prepVariables () {
       if (this.msSqlConfig) {
@@ -185,7 +206,7 @@ export default {
         }
       )
     },
-    saveOrUpdateUserRole () {
+    saveOrUpdateMsSqlConnectionConfiguration () {
       this.updateMsSqlConfig(
         {
           host: this.siemMsSqlHost,
@@ -195,10 +216,15 @@ export default {
           encrypt: this.siemMsSqlEncrypt,
           loadingVariableName: 'loadingMsSqlConfig',
           caller: this,
-          onSuccessCallBack: this.loadMsSqlConfig,
+          onSuccessCallBack: this.saveOrUpdateMsSqlConfigSuccess,
           onErrorCallBack: this.saveOrUpdateMsSqlConfigFailure
         }
       )
+    },
+    saveOrUpdateMsSqlConfigSuccess (payload) {
+      this.loadMsSqlConfig()
+      // Prompt the user to Update the Database now
+      this.promptForDatabaseUpgrade = true
     },
     saveOrUpdateMsSqlConfigFailure (payload) {
       // Pop this to the screen (via MainLayout)

@@ -47,47 +47,47 @@ export default function () {
         icon: 'jsBeat',
         outputFormat: 'json'
       },
-      {
-        value: 'eventhubbeat',
-        label: 'LogRhythm Azure Event Hub Beat (🚧 - Stub)',
-        icon: 'logrhythm-eventhubbeat',
-        outputFormat: 'yaml'
-      },
+      // {
+      //   value: 'eventhubbeat',
+      //   label: 'LogRhythm Azure Event Hub Beat (🚧 - Stub)',
+      //   icon: 'logrhythm-eventhubbeat',
+      //   outputFormat: 'yaml'
+      // },
       {
         value: 'genericbeat',
         label: 'LogRhythm Generic HTTP Rest Beat',
         icon: 'logrhythm-genericbeat',
         outputFormat: 'yaml'
       },
-      {
-        value: 'kafkabeat',
-        label: 'LogRhythm Kafka Beat (🚧 - Stub)',
-        icon: 'logrhythm-kafkabeat',
-        outputFormat: 'yaml'
-      },
-      {
-        value: 'pubsubbeat',
-        label: 'LogRhythm PubSub Beat (🚧 - Stub)',
-        icon: 'logrhythm-pubsubbeat',
-        outputFormat: 'yaml'
-      },
-      {
-        value: 's3beat',
-        label: 'LogRhythm S3 Beat (🚧 - Stub)',
-        icon: 'logrhythm-s3beat',
-        outputFormat: 'yaml'
-      },
+      // {
+      //   value: 'kafkabeat',
+      //   label: 'LogRhythm Kafka Beat (🚧 - Stub)',
+      //   icon: 'logrhythm-kafkabeat',
+      //   outputFormat: 'yaml'
+      // },
+      // {
+      //   value: 'pubsubbeat',
+      //   label: 'LogRhythm PubSub Beat (🚧 - Stub)',
+      //   icon: 'logrhythm-pubsubbeat',
+      //   outputFormat: 'yaml'
+      // },
+      // {
+      //   value: 's3beat',
+      //   label: 'LogRhythm S3 Beat (🚧 - Stub)',
+      //   icon: 'logrhythm-s3beat',
+      //   outputFormat: 'yaml'
+      // },
       {
         value: 'webhookbeat',
-        label: 'LogRhythm Webhook Beat (👁‍🗨 - Preview - Missing HTTPS)',
+        label: 'LogRhythm Webhook Beat (👁‍🗨 - Preview - HTTP Only)',
         icon: 'logrhythm-webhookbeat',
         outputFormat: 'yaml'
-      },
-      {
-        value: 'filebeat',
-        label: 'Filebeat',
-        icon: 'filebeat',
-        outputFormat: 'yaml'
+      // },
+      // {
+      //   value: 'filebeat',
+      //   label: 'Filebeat',
+      //   icon: 'filebeat',
+      //   outputFormat: 'yaml'
       }
     ], // collectionShippersOptions
     openCollectorBeats: [
@@ -279,7 +279,51 @@ export default function () {
     ezMarketPipelineTemplate: {}, // Pipeline Template fully loaded from EZ Market Place by UID
     ezMarketPublisherDetails: {}, // Details of the Publisher (current user), as held by the EZ Market Place
     msSqlConfig: {}, // SIEM MS SQL connection configuration
+    siemEmdbVersions: {}, // SIEM EMDB object with version information
     extraInformation: {}, // Extra Information provided by the Login API on the server
-    currentPersistenceLayerAvailability: {} // Stores the availability of the databases
+    currentPersistenceLayerAvailability: {}, // Stores the availability of the databases
+    minimalDockerSupportedVersion: 20, // Lowest major version number of Docker that is supported
+    minimalEzDbPartsVersions: [
+      {
+        name: 'get_SIEM_Master_ID',
+        version: '20220209.01'
+      },
+      {
+        name: 'OC_Admin_Upsert_LogSource_Type',
+        version: '20210708.01'
+      },
+      {
+        name: 'OC_Admin_Clone_MPE_Rule',
+        version: '20210708.01'
+      },
+      {
+        name: 'OC_Admin_Upsert_MPE_SubRule',
+        version: '20210713.01'
+      },
+      {
+        name: 'OC_Admin_Upsert_Processing_Policy',
+        version: '20210910.01'
+      },
+      {
+        name: 'OC_Admin_Upsert_Log_Source_Virtualisation_Template',
+        version: '20210910.01'
+      },
+      {
+        name: 'OC_Admin_Upsert_Log_Source_Virtualisation_Template_Item',
+        version: '20210902.01'
+      },
+      {
+        name: 'OC_Admin_List_OpenCollector_Log_Sources',
+        version: '20210719.01'
+      },
+      {
+        name: 'OC_Admin_Upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource',
+        version: '20220215.01'
+      },
+      {
+        name: 'OC_Admin_get_EZ_Versions',
+        version: '20220803.01'
+      }
+    ]
   }
 }

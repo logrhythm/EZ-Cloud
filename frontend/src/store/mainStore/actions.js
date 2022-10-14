@@ -107,6 +107,55 @@ export function updateMsSqlConfig ({ state }, payload) {
   }
 }
 
+export function updateEmdb ({ state }, payload) {
+  if (
+    payload &&
+    payload.username &&
+    payload.username.length
+  ) {
+    postDataToSite({
+      apiUrl: '/admin/UpdateEmdb',
+      dataLabel: 'Database',
+      apiCallParams: {
+        username: payload.username,
+        password: payload.password
+      },
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      silent: (payload ? !!payload.silent : false),
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: false
+    })
+  }
+}
+
+// ######################################################################
+// EMDB STATUS/AVAILABILITY/VERSIONS
+// ######################################################################
+
+export function getEmdbVersions ({ state, commit }, payload) {
+  getDataFromSite({
+    apiUrl: '/logrhythmCore/GetSiemDatabaseStatusAndVersions',
+    dataLabel: 'EMDB Versions and statuses',
+    countDataLabel: false,
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    commit: commit,
+    targetCommitName: 'getEmdbVersions',
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    silent: (payload ? !!payload.silent : true),
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: false
+  })
+}
+
 // ######################################################################
 // DATABASE STATUS/AVAILABILITY
 // ######################################################################
@@ -245,6 +294,23 @@ export function getOpenCollectorsOcVersion ({ state }, payload) {
 export function getOpenCollectorsOsVersion ({ state }, payload) {
   getDataFromSite({
     apiUrl: '/oc/CheckOSVersion',
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    targetObjectName: (payload && payload.targetObjectName ? payload.targetObjectName : ''),
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    apiCallParams: (payload && payload.apiCallParams ? payload.apiCallParams : undefined),
+    silent: true,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: (payload && payload.debug ? payload.debug : false)
+  })
+}
+
+export function getOpenCollectorsDockerVersion ({ state }, payload) {
+  getDataFromSite({
+    apiUrl: '/oc/CheckDockerVersion',
     apiHeaders: {
       authorization: 'Bearer ' + state.jwtToken
     },

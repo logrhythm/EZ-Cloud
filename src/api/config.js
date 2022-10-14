@@ -79,6 +79,7 @@ router.get('/GetCollectors', async (req, res) => {
           ,'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' AS [password]
           ,'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' AS [privateKey]
           ,[osVersion]
+          ,[dockerVersion]
           ,[ocInstalled]
           ,[ocVersion]
           ,[fbInstalled]
@@ -112,6 +113,7 @@ router.get('/GetCollectors', async (req, res) => {
           ,'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' AS "password"
           ,'** PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER - PLACEHOLDER **' AS "privateKey"
           ,"osVersion"
+          ,"dockerVersion"
           ,CASE
           WHEN
               "openCollectors"."ocInstalled"=TRUE
@@ -309,6 +311,7 @@ router.post('/UpdateCollector', async (req, res) => {
         ,@password
         ,@privateKey
         ,@osVersion
+        ,@dockerVersion
         ,@ocInstalled
         ,@ocVersion
         ,@fbInstalled
@@ -329,6 +332,7 @@ router.post('/UpdateCollector', async (req, res) => {
           { name: 'password', type: 'NVarChar' },
           { name: 'privateKey', type: 'NVarChar' },
           { name: 'osVersion', type: 'NVarChar' },
+          { name: 'dockerVersion', type: 'NVarChar' },
           { name: 'ocInstalled', type: 'TinyInt' },
           { name: 'ocVersion', type: 'NVarChar' },
           { name: 'fbInstalled', type: 'TinyInt' },
@@ -354,12 +358,13 @@ router.post('/UpdateCollector', async (req, res) => {
         ,$7 -- @password
         ,$8 -- @privateKey
         ,$9 -- @osVersion
-        ,$10 -- @ocInstalled
-        ,$11 -- @ocVersion
-        ,$12 -- @fbInstalled
-        ,$13 -- @fbVersion
-        ,$14 -- @pipelines
-        ,$15 -- @installedShippers
+        ,$10 -- @dockerVersion
+        ,$11 -- @ocInstalled
+        ,$12 -- @ocVersion
+        ,$13 -- @fbInstalled
+        ,$14 -- @fbVersion
+        ,$15 -- @pipelines
+        ,$16 -- @installedShippers
       );
       `,
       variables: createPgSqlVariables(
@@ -374,6 +379,7 @@ router.post('/UpdateCollector', async (req, res) => {
           { name: 'password' },
           { name: 'privateKey' },
           { name: 'osVersion' },
+          { name: 'dockerVersion' },
           { name: 'ocInstalled' },
           { name: 'ocVersion' },
           { name: 'fbInstalled' },

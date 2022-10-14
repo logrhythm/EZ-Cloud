@@ -11,7 +11,8 @@ GO
 -- Update date: 2021-07-22 - To deal with Pipelines
 -- Update date: 2021-08-09 - To deal with multiple Shippers and their versions
 -- Update date: 2022-08-03 - To add `EZ_VERSION` flag
--- EZ_VERSION: 20210809.01 :EZ_VERSION
+-- Update date: 2022-09-20 - To add `dockerVersion` column
+-- EZ_VERSION: 20220920.01 :EZ_VERSION
 -- =============================================
 CREATE PROCEDURE upsert_openCollector 
 	@uid varchar(50),
@@ -23,6 +24,7 @@ CREATE PROCEDURE upsert_openCollector
 	@password nvarchar(250),
 	@privateKey nvarchar(max),
 	@osVersion nvarchar(100),
+	@dockerVersion nvarchar(100),
 	@ocInstalled tinyint,
 	@ocVersion nvarchar(100),
 	@fbInstalled tinyint,
@@ -50,6 +52,7 @@ BEGIN
 				  --,[password] = @password
 				  --,[privateKey] = @privateKey
 				  ,[osVersion] = @osVersion
+				  ,[dockerVersion] = @dockerVersion
 				  ,[ocInstalled] = @ocInstalled
 				  ,[ocVersion] = @ocVersion
 				  ,[fbInstalled] = @fbInstalled
@@ -68,6 +71,7 @@ BEGIN
 					  --,[password] = @password
 					  ,[privateKey] = @privateKey
 					  ,[osVersion] = @osVersion
+					  ,[dockerVersion] = @dockerVersion
 					  ,[ocInstalled] = @ocInstalled
 					  ,[ocVersion] = @ocVersion
 					  ,[fbInstalled] = @fbInstalled
@@ -86,6 +90,7 @@ BEGIN
 						  ,[password] = @password
 						  --,[privateKey] = @privateKey
 						  ,[osVersion] = @osVersion
+						  ,[dockerVersion] = @dockerVersion
 						  ,[ocInstalled] = @ocInstalled
 						  ,[ocVersion] = @ocVersion
 						  ,[fbInstalled] = @fbInstalled
@@ -103,6 +108,7 @@ BEGIN
 						  ,[password] = @password
 						  ,[privateKey] = @privateKey
 						  ,[osVersion] = @osVersion
+						  ,[dockerVersion] = @dockerVersion
 						  ,[ocInstalled] = @ocInstalled
 						  ,[ocVersion] = @ocVersion
 						  ,[fbInstalled] = @fbInstalled
@@ -120,6 +126,7 @@ BEGIN
 			,[password]
 			,[privateKey]
 			,[osVersion]
+			,[dockerVersion]
 			,[ocInstalled]
 			,[ocVersion]
 			,[fbInstalled]
@@ -135,6 +142,7 @@ BEGIN
 			,@password
 			,@privateKey
 			,@osVersion
+			,@dockerVersion
 			,@ocInstalled
 			,@ocVersion
 			,@fbInstalled
