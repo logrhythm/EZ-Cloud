@@ -1,5 +1,5 @@
-[![Last Release](https://badgen.net/badge/release/v0.9.5/green)](https://github.com/logrhythm/EZ-Cloud/releases)
-[![Dev Version](https://badgen.net/badge/dev/v0.9/orange)](https://github.com/logrhythm/EZ-Cloud/tree/v0.9)
+[![Last Release](https://badgen.net/badge/release/v0.9.7/green)](https://github.com/logrhythm/EZ-Cloud/releases)
+[![Dev Version](https://badgen.net/badge/dev/v1.0/orange)](https://github.com/logrhythm/EZ-Cloud/tree/v1.0)
 
 # OC Admin (Formerly EZ-Cloud)
 Open Collector Admin and On-Boarder for Core SIEM
