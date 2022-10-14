@@ -1,5 +1,41 @@
 # TODO - Frontend
 
+### Target: v1.0
+
+## TO DO
+- [ ] Incorporate Axon style UI
+- [ ] LogRhythm Beats mapping for Collection Configuration
+  - [ ] Azure Event Hub
+    - [ ] With custom Mapping
+    - [ ] Without custom Mapping
+  - [ ] S3
+  - [ ] Azure Event Hub
+    - [ ] With custom Mapping
+    - [ ] Without custom Mapping
+  - [ ] WebHook
+    - [ ] https
+  - [ ] PubSub
+  - [ ] Kafka
+  - ...
+- [ ] Add a simple Wizard from landing page
+  - [ ] Ask for name for Log Source
+  - [ ] Create collection configuation
+    - [ ] Pick Shipper
+    - [ ] Pick type of collection (Flat File, Syslog, REST, etc...)
+    - [ ] Configure it
+  - [ ] Pick up Open Collector
+    - [ ] Add one if none in the list
+    - [ ] Offer to deploy required Shipper if not already on OC
+  - [ ] Create field mapping
+    - [ ] Run pre-configured Tail
+  - [ ] Recap page
+    - [ ] Ability to rename Log Source
+    - [ ] Ability to assign Log Source to other Open Collectors
+    - [ ] Ability to Enable / Commit the Log Source creation
+
+## TO FIX
+## TO TEST
+
 ### Target: v0.9
 
 ## TO DO
@@ -63,7 +99,7 @@
 - [x] Erroneous "SIEM Not Connected" alert message on Windows deployment
 - [x] Issue #12 - [BUG] Pipeline import from EZ Market Place - Wrong icon colour on "Import Both" button in Day mode
 - [x] Issue #11 - [BUG] Fields Mapping - Incorrect LR MPE tags for Outbound bytes type fields
-- [ ] Top bar not stuck to top left of screen in Admin : SIEM : Update EMDB
+- [x] Top bar not stuck to top left of screen in Admin : SIEM : Update EMDB
 
 ## TO TEST
 - [x] Translated message in deployment steps roll over status (especially Skipped steps)
