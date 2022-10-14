@@ -21,29 +21,20 @@
 ## Setup
 ### Docker Deployment Option - ![Docker](/medias/Docker_logo_23x16.png "Docker")
 #### 1. Download and Run
-##### On the Platform Manager or XM
-- Create the MS SQL DB for Docker deployments (it's a hollow version of the EZ database, with only some of its Stored Procedures)
-  - **EITHER:**
-    - Get [OC-Admin.v0.9.🚧.EZ_database_for_Docker.zip](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.9.🚧/OC-Admin.v0.9.🚧.EZ_database_for_Docker.zip)
-    - Decompress it on the PM or XM
-    - Run the `create_database_for_Docker.bat` script as an Administrator
-  - **OR:**
-    - Get [OC-Admin.v0.9.🚧.Server-Installer.exe](https://github.com/logrhythm/EZ-Cloud/releases/download/v0.9.🚧/OC-Admin.v0.9.🚧.Server-Installer.exe)
-    - Run it on the PM or XM
-    - Select **Only SQL Database for Docker deployments (EZ Database for Docker)**
-    - Finish the install
 ##### On the Docker machine
 - Two containers will be created:
   - `oc-db`: to host OC-Admin configuration
   - `oc-admin`: OC-Admin itself
 - On the host's Firewall, if any, open the port TCP/8400 to allow inbound connections
-- Run the following command:
+- Follow the **[Install the Open Collector](https://docs.logrhythm.com/docs/OCbeats/logrhythm-open-collector/open-collector-installation-and-user-guide/install-the-open-collector)** procedure from **docs.logrhythm.com**
+- Run the following commands:
 ```
-mkdir dummyDir && cd dummyDir && curl -fsSOL https://raw.githubusercontent.com/logrhythm/EZ-Cloud/installer/pseudo_lrctl.sh && sh pseudo_lrctl.sh
+./lrctl oc-db start
+./lrctl oc-admin start
 ```
 
 #### 2. Create your configuration
-- During the Install, when prompted, please provide a password for the new user `ocAdmin`
+- During the first `start` of OC Admin, when prompted, please provide a password for the new user `ocAdmin`
 
 #### 3. Connect to the OC Admin Server
 - Open https://`<ip-of-the-OC-Admin-server>`:8400/
@@ -51,11 +42,12 @@ mkdir dummyDir && cd dummyDir && curl -fsSOL https://raw.githubusercontent.com/l
 
 #### 4. Create your configuration
 - At first login, you will be prompted to edit the connection to the SIEM database, please follow the instruction and provide the correct credentials for the MS SQL that runs on your XM or Platform Manager
+- Once this is done, you will be prompted to create or update the SIEM database. Please provide privileged credentials (these will NOT be saved) to create the necessary Stored Procedures, View, etc... in eh SIEM Database
 
 ### Microsoft Windows Deployment Option - ![Windows](/medias/Windows_logo_16x16.png "Windows")
 
 #### 1. Download and Install
-- If upgrading a previous **EZ Cloud** version to **OC Admin** v0.9.5
+- If upgrading a previous **EZ Cloud** version to **OC Admin** v0.9.🚧
   - Backup your `\Program Files\EZ Server\config` folder
   - Un-install **EZ Cloud**
   - Once you have installed **OC Admin**, you want to copy the following backed up files to `\Program Files\OC Admin\config`
