@@ -101,6 +101,18 @@ It's possible to install OC Admin Server onto a separate machine than the SQL Se
 - Wiki: [Troubleshooting](https://github.com/logrhythm/EZ-Cloud/wiki/Troubleshooting)
 
 ## What's new in this release?
+**v0.9.6 and v0.9.7**
+- [v0.9.6] Frontend - Display Docker version with the OS version for Open Collectors
+- [v0.9.6] Frontend - Admin - New page to check and update SIEM database
+- [v0.9.6] Backend - SQL - Add version information in all Stored Procedures, Views and Functions
+- [v0.9.6] Backend - SQL - Create a View to extract the version of all these components
+- [v0.9.6] Backend - SQL - Rename all Stored Procedures and Views to be easily identifiable in EMDB
+- [v0.9.6] Backend - API - New endpoint to collect Docker version
+- [v0.9.6] Backend - API - New endpoint to check SIEM database and its components versions
+- [v0.9.6] Backend - API - New endpoint to update SIEM database and its components
+- [v0.9.7] Backend - API - Bring in obfuscation binary for Linux (Docker version)
+- [v0.9.🚧] 
+
 **v0.9.5**
 - [v0.9.5] **EZ Cloud** is now called **OC Admin** 🎉🎉🎉
   - This is part of the plan to move ~~EZ Cloud~~ OC Admin to run *on/with/as part of* the Open Collector
@@ -144,7 +156,6 @@ It's possible to install OC Admin Server onto a separate machine than the SQL Se
 - [v0.9.5] Frontend - Login page - Disable Logon button if no SQL server is available
 - [v0.9.5] Frontend - Admin - Configuration page for SIEM MS SQL, for ![Docker](/medias/Docker_logo_23x16.png "Docker") deployments
 - [v0.9.5] Frontend - MarketPlace notification indicator to show on **Notification** sub-menu too
-- [v0.9.🚧] 
 
 **v0.9.0**
 - [v0.9.0] Backend - Make Encrypted SQL connection the default
@@ -308,6 +319,11 @@ _(Below "Market" relates to the backend API of the Market Place, and "Market Adm
         - https://github.com/logrhythm/EZ-Cloud/wiki/Help#ref-whatsthedifferencefileimport
 
 ## What has been fixed in this release?
+**v0.9.6**
+- [v0.9.6] Frontend - Fix #11 Fields Mapping - Incorrect LR MPE tags for Outbound bytes type fields
+- [v0.9.6] Frontend - Fix #12 Pipeline import from EZ Market Place - Wrong icon colour on "Import Both" button in Day mode
+- [v0.9.6] Security - Update multiple 3rd party modules and packages
+
 **v0.8.4**
 - [v0.8.5] Frontend - Fix #8 (JQ Filter doesn't catch on logs coming from LR Webhook Beat) - Add filtering by `.fullyqualifiedbeatname` in JQ Filter
 - [v0.8.5] Frontend - Fix - `DeploymentEdit` page didn't implement `extractMessageFieldOnly` correctly when producing the JQ Transform at deployment time
