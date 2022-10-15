@@ -17,6 +17,7 @@
   "Username is required": "ユーザー名が必要です",
   "Password": "パスワード",
   "Authentication failed.": "認証に失敗しました。",
+  "Next": "次",
   "Login": "ログイン",
   "Statuses": "ステータス",
   "OC-Admin Container": "OC-Adminコンテナ",

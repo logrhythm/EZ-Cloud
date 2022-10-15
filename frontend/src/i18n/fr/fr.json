@@ -17,6 +17,7 @@
   "Username is required": "Le nom d'utilisateur est requis",
   "Password": "Mot de passe",
   "Authentication failed.": "Authentification échouée.",
+  "Next": "Suivant",
   "Login": "Se connecter",
   "Statuses": "Statuts",
   "OC-Admin Container": "Conteneur OC-Admin",

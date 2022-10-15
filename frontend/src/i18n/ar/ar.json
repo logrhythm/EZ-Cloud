@@ -17,6 +17,7 @@
   "Username is required": "اسم المستخدم مطلوب",
   "Password": "كلمة المرور",
   "Authentication failed.": "المصادقة فشلت.",
+  "Next": "التالي",
   "Login": "تسجيل الدخول",
   "Statuses": "الحالات",
   "OC-Admin Container": "حاوية OC-Admin",

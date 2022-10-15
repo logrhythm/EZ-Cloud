@@ -4,6 +4,12 @@
 
 ## TO DO
 - [ ] Incorporate Axon style UI
+  - [x] Left hand side navigation bar
+  - [x] Login page
+  - [ ] Cards
+  - [ ] Fields
+  - [ ] Dialogs
+  - [ ] Tables
 - [ ] LogRhythm Beats mapping for Collection Configuration
   - [ ] Azure Event Hub
     - [ ] With custom Mapping

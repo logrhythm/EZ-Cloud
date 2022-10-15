@@ -17,6 +17,7 @@
   "Username is required": "사용자 이름은 필수 항목입니다.",
   "Password": "비밀번호",
   "Authentication failed.": "인증 실패.",
+  "Next": "다음",
   "Login": "로그인",
   "Statuses": "상태",
   "OC-Admin Container": "OC-Admin 컨테이너",

@@ -16,36 +16,68 @@
         </svg>
     </div>
     <form>
-      <q-card style="min-width: 350px" class="q-py-md q-px-lg" :class="(shakyClass ? 'computerSaysNo' : '')">
-        <q-card-section class="text-center">
-          <div class="text-h6">{{ $t('Sign in to OC Admin') }}</div>
-        </q-card-section>
+      <q-card style="min-width: 350px" class="q-ma-none q-pa-none" :class="(shakyClass ? 'computerSaysNo' : '')">
+        <q-tab-panels v-model="stage" animated class="">
 
-        <q-card-section class="q-pt-none">
-          <q-input
-            dense
-            outlined
-            v-model="username"
-            autofocus
-            :label="$t('Username')"
-            :rules="[val => !!val || $t('Username is required')]"
-            @keyup.enter="checkCredentials()"
-          />
-        </q-card-section>
+          <q-tab-panel name="username" class="q-pb-none">
+            <q-card-section class="text-center">
+              <div class="text-h6">{{ $t('Sign in to OC Admin') }}</div>
+            </q-card-section>
 
-        <q-card-section class="q-pt-none">
-          <q-input dense v-model="password" outlined type="password" :label="$t('Password')" @keyup.enter="checkCredentials()" />
-        </q-card-section>
+            <q-card-section class="q-py-none">
+              <q-input
+                dense
+                outlined
+                v-model="username"
+                autofocus
+                :label="$t('Username')"
+                :rules="[val => !!val || $t('Username is required')]"
+                @keyup.enter="stage='password'"
+              />
+            </q-card-section>
+
+            <q-card-actions>
+              <q-btn class="q-my-sm full-width" :label="$t('Next')" color="primary" @click="stage='password'" :loading="waitingOnServer" :disable="!username" />
+            </q-card-actions>
+          </q-tab-panel>
+
+          <q-tab-panel name="password" class="q-pb-none">
+            <q-card-section class="text-center row justify-center no-wrap">
+              <q-btn class="" dense flat icon="arrow_back" @click="stage='username'" />
+              <div class="text-h6">{{ username }}</div>
+            </q-card-section>
+
+            <q-card-section class="q-py-none">
+              <q-input
+                bottom-slots
+                dense
+                outlined
+                v-model="password"
+                autofocus
+                :type="showPassword ? 'text' : 'password'"
+                :label="$t('Password')"
+                @keyup.enter="checkCredentials()">
+                <template v-slot:append>
+                  <q-icon
+                    :name="showPassword ? 'visibility' : 'visibility_off'"
+                    class="cursor-pointer"
+                    @click="showPassword = !showPassword"
+                  />
+                </template>
+              </q-input>
+            </q-card-section>
+
+            <q-card-actions>
+              <q-btn class="q-my-sm full-width" :label="$t('Login')" color="primary" @click="checkCredentials()" :loading="waitingOnServer" :disable="!canWeLogin" />
+            </q-card-actions>
+          </q-tab-panel>
+        </q-tab-panels>
 
         <q-card-section class="q-py-none">
           <dir class="q-ma-none q-px-sm text-bold text-negative text-center fadeOut">
             <span v-show="lastAttemptFailed">{{ $t('Authentication failed.') }}</span>&nbsp;
           </dir>
         </q-card-section>
-
-        <q-card-actions>
-          <q-btn class="q-my-sm full-width" :label="$t('Login')" color="primary" @click="checkCredentials()" :loading="waitingOnServer" :disable="!canWeLogin" />
-        </q-card-actions>
 
       </q-card>
     </form>
@@ -166,7 +198,9 @@ export default {
       loadingPersistenceLayerAvailability: true, // Are we waiting for the API for Persistence Layer Availability
       delayUntilCheck: 0, // How long until we check next API for Persistence Layer Availability
       persistenceLayerAvailabilityCheckTimer: null,
-      selectedLanguage: this.$i18n.locale
+      selectedLanguage: this.$i18n.locale,
+      stage: 'username', // Name of the Panel we are on. `username` or `password`
+      showPassword: false // True to display the password. Default false = mask the pass
     }
   }, // data
   computed: {
