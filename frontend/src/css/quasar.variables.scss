@@ -12,7 +12,10 @@
 // to match your app's branding.
 // Tip: Use the "Theme Builder" on Quasar's documentation website.
 
-$primary   : #1976D2;
+$primary   : #1976D2; // Quasar default
+// $primary   : rgb(25, 118, 210); // Quasar default
+// $primary   : hsl(210, 79%, 46%); // Quasar default
+
 $secondary : #26A69A;
 $accent    : #9C27B0;
 
@@ -22,3 +25,28 @@ $positive  : #21BA45;
 $negative  : #C10015;
 $info      : #31CCEC;
 $warning   : #F2C037;
+
+// LogRhyhthm Axon colour scheme:
+
+$primaryForDarkModeVar   : #02b7fe; // For Dark Mode
+// $primary   : #02b7fe; // For Dark Mode
+// $primary   : rgb(2, 183, 254); // For Dark Mode
+// $primary   : hsl(197, 99%, 50%); // For Dark Mode
+
+// $primary   : rgb(0, 80, 145); // In between mode
+// $primary   : hsl(207, 100%, 28%); // In between mode
+
+$primaryForLightModeVar   : #007bc2; // For Light Mode
+// $primary   : rgb(0, 123, 194); // For Light Mode
+// $primary   : hsl(202, 100%, 38%); // For Light Mode
+
+:root {
+  --primaryForDarkMode: #02b7fe;
+  --primaryForLightMode: #007bc2;
+  --textForPrimaryButtonForDarkMode: #000000;
+  --textForPrimaryButtonForLightMode: #ffffff;
+
+  --q-color-primaryForDarkMode: #02b7fe;
+  --q-color-primaryForLightMode: #007bc2;
+  --q-color-textForPrimaryButton: #ffffff;
+}

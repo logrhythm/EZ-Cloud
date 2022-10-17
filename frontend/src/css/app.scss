@@ -7,3 +7,16 @@
   font-family: monospace;
   white-space: pre;
 }
+
+// Axon style / To force the buttons to use the right foreground colour (it varies between Dark and Light mode)
+.q-btn.bg-primary
+{
+  color: var(--q-color-textForPrimaryButton) !important;
+}
+
+// Axon style / To force the bar under the name of tabs to be coloured with the gradient
+.q-tab__indicator.text-primary {
+  color: transparent !important;
+  background: rgb(2,0,36) !important;
+  background: linear-gradient(90deg, rgba(0,173,163,1) 0%, rgba(0,182,237,1) 50%, rgba(0,85,184,1) 100%) !important;
+}
