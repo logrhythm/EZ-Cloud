@@ -456,6 +456,7 @@ import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadC
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 import { uid } from 'quasar'
+import ConfirmDialog from 'components/Dialogs/ConfirmDialog.vue'
 
 // import shippersFallbackUrls from 'src/pages/OpenCollectors/shippers_fallback_urls.json'
 
@@ -910,18 +911,11 @@ export default {
     },
     deleteOpenCollectorPrompt (row) {
       if (typeof row !== 'undefined') {
-        // ask to confirm
         this.$q.dialog({
+          component: ConfirmDialog,
+          parent: this, // becomes child of this Vue node
           title: this.$t('Confirm'),
           message: this.$t('Do you REALLY want to delete this OpenCollector?'),
-          ok: {
-            push: true,
-            color: 'negative'
-          },
-          cancel: {
-            push: true,
-            color: 'positive'
-          },
           persistent: true
         }).onOk(() => {
           this.deleteOpenCollector({
@@ -929,7 +923,32 @@ export default {
             caller: this,
             openCollector: row
           })
-        }) // }).onOk(() => {
+        }).onCancel(() => {
+          console.log('Cancel')
+        }).onDismiss(() => {
+          console.log('Called on OK or Cancel')
+        })
+
+        // ask to confirm
+        // this.$q.dialog({
+        //   title: this.$t('Confirm'),
+        //   message: this.$t('Do you REALLY want to delete this OpenCollector?'),
+        //   ok: {
+        //     push: true,
+        //     color: 'negative'
+        //   },
+        //   cancel: {
+        //     push: true,
+        //     color: 'positive'
+        //   },
+        //   persistent: true
+        // }).onOk(() => {
+        //   this.deleteOpenCollector({
+        //     pushToApi: true,
+        //     caller: this,
+        //     openCollector: row
+        //   })
+        // }) // }).onOk(() => {
       }
     }, // deleteOpenCollectorPrompt
     doPromptForOpenCollectorDetails (existing) {
