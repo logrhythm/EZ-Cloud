@@ -20,7 +20,7 @@
             </div>
             <div class="row q-gutter-md">
               <div class="col" >
-                <q-btn rounded dense color="primary" icon="add" :label="$t('Add New OpenCollector')" @click="doPromptForOpenCollectorDetails()" style="min-width:15rem;">
+                <q-btn dense no-caps color="primary" icon="add" :label="$t('Add New OpenCollector')" @click="doPromptForOpenCollectorDetails()" style="min-width:15rem;">
                   <q-tooltip content-style="font-size: 1em">
                     {{ $t('Create a new OpenCollector.') }}
                   </q-tooltip>
@@ -304,26 +304,55 @@
           </q-card-section>
 
           <q-card-section class="q-pt-none">
-            <q-input dense v-model="newOpenCollectorName" autofocus :label="$t('OpenCollector Name')" @keyup.esc="promptForNewOpenCollectorDetails = false" :rules="[val => !!val || $t('OpenCollector name cannot be empty')]" />
+            <q-input
+              dense
+              outlined
+              v-model="newOpenCollectorName"
+              autofocus
+              :label="$t('OpenCollector Name')"
+              @keyup.esc="promptForNewOpenCollectorDetails = false"
+              :rules="[val => !!val || $t('OpenCollector name cannot be empty')]"
+            />
           </q-card-section>
 
           <q-separator />
 
           <q-card-section class="q-pt-none">
-            <div class="text-overline">{{ $t('Host') }}</div>
-            <q-input dense v-model="newOpenCollectorHostname" :label="$t('Host name')" @keyup.esc="promptForNewOpenCollectorDetails = false" :rules="[val => !!val || $t('OpenCollector Host name cannot be empty')]" />
+            <div class="text-overline text-uppercase">{{ $t('Host') }}</div>
+            <q-input
+              dense
+              outlined
+              v-model="newOpenCollectorHostname"
+              :label="$t('Host name')" @keyup.esc="promptForNewOpenCollectorDetails = false"
+              :rules="[val => !!val || $t('OpenCollector Host name cannot be empty')]"
+            />
           </q-card-section>
 
           <q-card-section class="q-pt-none">
-            <q-input dense v-model="newOpenCollectorPort" type="number" :label="$t('SSH Port')" @keyup.esc="promptForNewOpenCollectorDetails = false" :rules="[val => !!val || $t('OpenCollector port cannot be empty')]" />
+            <q-input
+              dense
+              outlined
+              v-model="newOpenCollectorPort"
+              type="number"
+              :label="$t('SSH Port')"
+              @keyup.esc="promptForNewOpenCollectorDetails = false"
+              :rules="[val => !!val || $t('OpenCollector port cannot be empty')]"
+            />
           </q-card-section>
 
           <q-separator />
 
           <q-card-section class="q-pt-none">
-            <div class="text-overline">{{ $t('Authentication') }}</div>
+            <div class="text-overline text-uppercase">{{ $t('Authentication') }}</div>
 
-            <q-input dense v-model="newOpenCollectorUsername" :label="$t('SSH User name')" hint="" @keyup.esc="promptForNewOpenCollectorDetails = false" />
+            <q-input
+              dense
+              outlined
+              v-model="newOpenCollectorUsername"
+              :label="$t('SSH User name')"
+              hint=""
+              @keyup.esc="promptForNewOpenCollectorDetails = false"
+            />
 
             <q-tabs
               v-model="newOpenCollectorAuthMethod"
@@ -331,6 +360,7 @@
               indicator-color="primary"
               align="justify"
               narrow-indicator
+              no-caps
             >
               <q-tab name="password" :label="$t('Password')" />
               <q-tab name="private_key" :label="$t('Private Key')" />
@@ -340,19 +370,35 @@
 
             <q-tab-panels v-model="newOpenCollectorAuthMethod" animated>
               <q-tab-panel name="password">
-                <q-input dense v-model="newOpenCollectorPassword" type="password" :label="$t('SSH Password')" hint="" @keyup.esc="promptForNewOpenCollectorDetails = false" />
+                <q-input
+                  dense
+                  outlined
+                  v-model="newOpenCollectorPassword"
+                  type="password"
+                  :label="$t('SSH Password')"
+                  hint=""
+                  @keyup.esc="promptForNewOpenCollectorDetails = false"
+                />
               </q-tab-panel>
 
               <q-tab-panel name="private_key">
-                <q-input dense v-model="newOpenCollectorPrivateKey" type="textarea" :label="$t('SSH Private Key')" hint="" @keyup.esc="promptForNewOpenCollectorDetails = false" />
+                <q-input
+                  dense
+                  outlined
+                  v-model="newOpenCollectorPrivateKey"
+                  type="textarea"
+                  :label="$t('SSH Private Key')"
+                  hint=""
+                  @keyup.esc="promptForNewOpenCollectorDetails = false"
+                />
               </q-tab-panel>
             </q-tab-panels>
           </q-card-section>
 
           <q-card-actions align="right" class="text-primary">
-            <q-btn flat :label="$t('Cancel')" v-close-popup />
-            <q-btn flat :label="$t('Update OpenCollector')" v-close-popup v-if="newOpenCollectorUid && newOpenCollectorUid.length" :disabled="!newOpenCollectorName || !newOpenCollectorName.length || !newOpenCollectorHostname || !newOpenCollectorHostname.length || !newOpenCollectorPort || newOpenCollectorPort < 0 || newOpenCollectorPort > 65535 || !newOpenCollectorUsername || !newOpenCollectorUsername.length || ((!newOpenCollectorPassword || !newOpenCollectorPassword.length) && (!newOpenCollectorPrivateKey || !newOpenCollectorPrivateKey.length))" @click="addNewOrUpdateOpenCollector()" />
-            <q-btn flat :label="$t('Add new OpenCollector')" v-close-popup v-else :disabled="!newOpenCollectorName || !newOpenCollectorName.length || !newOpenCollectorHostname || !newOpenCollectorHostname.length || !newOpenCollectorPort || newOpenCollectorPort < 0 || newOpenCollectorPort > 65535 || !newOpenCollectorUsername || !newOpenCollectorUsername.length || ((!newOpenCollectorPassword || !newOpenCollectorPassword.length) && (!newOpenCollectorPrivateKey || !newOpenCollectorPrivateKey.length))" @click="addNewOrUpdateOpenCollector()" />
+            <q-btn outline no-caps :label="$t('Cancel')" v-close-popup />
+            <q-btn color="primary" no-caps class="text-textForPrimaryButton" :label="$t('Update OpenCollector')" v-close-popup v-if="newOpenCollectorUid && newOpenCollectorUid.length" :disabled="!newOpenCollectorName || !newOpenCollectorName.length || !newOpenCollectorHostname || !newOpenCollectorHostname.length || !newOpenCollectorPort || newOpenCollectorPort < 0 || newOpenCollectorPort > 65535 || !newOpenCollectorUsername || !newOpenCollectorUsername.length || ((!newOpenCollectorPassword || !newOpenCollectorPassword.length) && (!newOpenCollectorPrivateKey || !newOpenCollectorPrivateKey.length))" @click="addNewOrUpdateOpenCollector()" />
+            <q-btn color="primary" no-caps class="text-textForPrimaryButton" :label="$t('Add new OpenCollector')" v-close-popup v-else :disabled="!newOpenCollectorName || !newOpenCollectorName.length || !newOpenCollectorHostname || !newOpenCollectorHostname.length || !newOpenCollectorPort || newOpenCollectorPort < 0 || newOpenCollectorPort > 65535 || !newOpenCollectorUsername || !newOpenCollectorUsername.length || ((!newOpenCollectorPassword || !newOpenCollectorPassword.length) && (!newOpenCollectorPrivateKey || !newOpenCollectorPrivateKey.length))" @click="addNewOrUpdateOpenCollector()" />
           </q-card-actions>
         </q-card>
       </q-dialog>
