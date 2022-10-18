@@ -267,25 +267,27 @@ export default {
   methods: {
     ...mapActions('mainStore', ['signIn', 'signOut', 'reloadEzMarketNotifications', 'getPersistenceLayerAvailability']),
     checkCredentials () {
-      if (this.lastAttemptFailedTimer) {
-        clearTimeout(this.lastAttemptFailedTimer)
+      if (this.canWeLogin === true) { // Don't even try checking if we can't
+        if (this.lastAttemptFailedTimer) {
+          clearTimeout(this.lastAttemptFailedTimer)
+        }
+        if (this.shakyClassTime) {
+          clearTimeout(this.shakyClassTime)
+        }
+        this.shakyClass = false
+        this.lastAttemptFailed = false
+        this.signIn({
+          loadingVariableName: 'waitingOnServer',
+          caller: this,
+          apiCallParams: {
+            username: this.username,
+            password: this.password
+          },
+          onSuccessCallBack: this.checkTokenAndMoveOn,
+          onErrorCallBack: this.checkTokenAndMoveOn,
+          debug: false
+        })
       }
-      if (this.shakyClassTime) {
-        clearTimeout(this.shakyClassTime)
-      }
-      this.shakyClass = false
-      this.lastAttemptFailed = false
-      this.signIn({
-        loadingVariableName: 'waitingOnServer',
-        caller: this,
-        apiCallParams: {
-          username: this.username,
-          password: this.password
-        },
-        onSuccessCallBack: this.checkTokenAndMoveOn,
-        onErrorCallBack: this.checkTokenAndMoveOn,
-        debug: false
-      })
     },
     checkTokenAndMoveOn () {
       if (this.jwtToken && this.jwtToken.length) {
