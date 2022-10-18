@@ -183,6 +183,7 @@
 import FieldEditor from 'components/Pipelines/Collection/FieldEditor.vue'
 import { uid } from 'quasar'
 import { mapActions } from 'vuex'
+import ConfirmDialog from '../../Dialogs/ConfirmDialog.vue'
 
 export default {
   name: 'FieldEditor',
@@ -509,20 +510,30 @@ export default {
       if (!(this.value == null || this.value === '')) {
         // Ask to confirm
         this.$q.dialog({
+          component: ConfirmDialog,
+          parent: this,
           title: this.$t('Confirm'),
           message: this.$t('Do you REALLY want to delete this entry?'),
-          ok: {
-            push: true,
-            color: 'negative'
-          },
-          cancel: {
-            push: true,
-            color: 'positive'
-          },
           persistent: true
         }).onOk(() => {
           this.deleteSubField()
         }) // }).onOk(() => {
+
+        // this.$q.dialog({
+        //   title: this.$t('Confirm'),
+        //   message: this.$t('Do you REALLY want to delete this entry?'),
+        //   ok: {
+        //     push: true,
+        //     color: 'negative'
+        //   },
+        //   cancel: {
+        //     push: true,
+        //     color: 'positive'
+        //   },
+        //   persistent: true
+        // }).onOk(() => {
+        //   this.deleteSubField()
+        // }) // }).onOk(() => {
       } else {
         // Delete right away
         this.deleteSubField()
