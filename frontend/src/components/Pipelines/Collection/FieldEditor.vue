@@ -518,22 +518,6 @@ export default {
         }).onOk(() => {
           this.deleteSubField()
         }) // }).onOk(() => {
-
-        // this.$q.dialog({
-        //   title: this.$t('Confirm'),
-        //   message: this.$t('Do you REALLY want to delete this entry?'),
-        //   ok: {
-        //     push: true,
-        //     color: 'negative'
-        //   },
-        //   cancel: {
-        //     push: true,
-        //     color: 'positive'
-        //   },
-        //   persistent: true
-        // }).onOk(() => {
-        //   this.deleteSubField()
-        // }) // }).onOk(() => {
       } else {
         // Delete right away
         this.deleteSubField()
