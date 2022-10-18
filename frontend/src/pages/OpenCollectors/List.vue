@@ -298,12 +298,15 @@
 
       <q-dialog v-model="promptForNewOpenCollectorDetails" persistent>
         <q-card style="min-width: 350px">
-          <q-card-section>
+          <q-card-section class="row justify-between">
             <div class="text-h6" v-if="newOpenCollectorUid && newOpenCollectorUid.length">{{ $t('OpenCollector Details') }}</div>
             <div class="text-h6" v-else>{{ $t('New OpenCollector') }}</div>
+            <q-btn dense flat icon="close" color="grey-5" v-close-popup />
           </q-card-section>
 
-          <q-card-section class="q-pt-none">
+          <q-separator />
+
+          <q-card-section class="">
             <q-input
               dense
               outlined
@@ -314,8 +317,6 @@
               :rules="[val => !!val || $t('OpenCollector name cannot be empty')]"
             />
           </q-card-section>
-
-          <q-separator />
 
           <q-card-section class="q-pt-none">
             <div class="text-overline text-uppercase">{{ $t('Host') }}</div>
@@ -340,8 +341,6 @@
             />
           </q-card-section>
 
-          <q-separator />
-
           <q-card-section class="q-pt-none">
             <div class="text-overline text-uppercase">{{ $t('Authentication') }}</div>
 
@@ -359,14 +358,11 @@
               active-color="primary"
               indicator-color="primary"
               align="justify"
-              narrow-indicator
               no-caps
             >
               <q-tab name="password" :label="$t('Password')" />
               <q-tab name="private_key" :label="$t('Private Key')" />
             </q-tabs>
-
-            <q-separator />
 
             <q-tab-panels v-model="newOpenCollectorAuthMethod" animated>
               <q-tab-panel name="password">
@@ -376,7 +372,6 @@
                   v-model="newOpenCollectorPassword"
                   type="password"
                   :label="$t('SSH Password')"
-                  hint=""
                   @keyup.esc="promptForNewOpenCollectorDetails = false"
                 />
               </q-tab-panel>
@@ -388,17 +383,20 @@
                   v-model="newOpenCollectorPrivateKey"
                   type="textarea"
                   :label="$t('SSH Private Key')"
-                  hint=""
                   @keyup.esc="promptForNewOpenCollectorDetails = false"
                 />
               </q-tab-panel>
             </q-tab-panels>
           </q-card-section>
 
+          <q-separator />
+
           <q-card-actions align="right" class="text-primary">
-            <q-btn outline no-caps :label="$t('Cancel')" v-close-popup />
-            <q-btn color="primary" no-caps class="text-textForPrimaryButton" :label="$t('Update OpenCollector')" v-close-popup v-if="newOpenCollectorUid && newOpenCollectorUid.length" :disabled="!newOpenCollectorName || !newOpenCollectorName.length || !newOpenCollectorHostname || !newOpenCollectorHostname.length || !newOpenCollectorPort || newOpenCollectorPort < 0 || newOpenCollectorPort > 65535 || !newOpenCollectorUsername || !newOpenCollectorUsername.length || ((!newOpenCollectorPassword || !newOpenCollectorPassword.length) && (!newOpenCollectorPrivateKey || !newOpenCollectorPrivateKey.length))" @click="addNewOrUpdateOpenCollector()" />
-            <q-btn color="primary" no-caps class="text-textForPrimaryButton" :label="$t('Add new OpenCollector')" v-close-popup v-else :disabled="!newOpenCollectorName || !newOpenCollectorName.length || !newOpenCollectorHostname || !newOpenCollectorHostname.length || !newOpenCollectorPort || newOpenCollectorPort < 0 || newOpenCollectorPort > 65535 || !newOpenCollectorUsername || !newOpenCollectorUsername.length || ((!newOpenCollectorPassword || !newOpenCollectorPassword.length) && (!newOpenCollectorPrivateKey || !newOpenCollectorPrivateKey.length))" @click="addNewOrUpdateOpenCollector()" />
+            <div class="q-gutter-x-lg">
+              <q-btn outline no-caps :label="$t('Cancel')" v-close-popup />
+              <q-btn color="primary" no-caps class="text-textForPrimaryButton" :label="$t('Update OpenCollector')" v-close-popup v-if="newOpenCollectorUid && newOpenCollectorUid.length" :disabled="!newOpenCollectorName || !newOpenCollectorName.length || !newOpenCollectorHostname || !newOpenCollectorHostname.length || !newOpenCollectorPort || newOpenCollectorPort < 0 || newOpenCollectorPort > 65535 || !newOpenCollectorUsername || !newOpenCollectorUsername.length || ((!newOpenCollectorPassword || !newOpenCollectorPassword.length) && (!newOpenCollectorPrivateKey || !newOpenCollectorPrivateKey.length))" @click="addNewOrUpdateOpenCollector()" />
+              <q-btn color="primary" no-caps class="text-textForPrimaryButton" :label="$t('Add new OpenCollector')" v-close-popup v-else :disabled="!newOpenCollectorName || !newOpenCollectorName.length || !newOpenCollectorHostname || !newOpenCollectorHostname.length || !newOpenCollectorPort || newOpenCollectorPort < 0 || newOpenCollectorPort > 65535 || !newOpenCollectorUsername || !newOpenCollectorUsername.length || ((!newOpenCollectorPassword || !newOpenCollectorPassword.length) && (!newOpenCollectorPrivateKey || !newOpenCollectorPrivateKey.length))" @click="addNewOrUpdateOpenCollector()" />
+            </div>
           </q-card-actions>
         </q-card>
       </q-dialog>
@@ -911,9 +909,10 @@ export default {
     },
     deleteOpenCollectorPrompt (row) {
       if (typeof row !== 'undefined') {
+        // ask to confirm
         this.$q.dialog({
           component: ConfirmDialog,
-          parent: this, // becomes child of this Vue node
+          parent: this,
           title: this.$t('Confirm'),
           message: this.$t('Do you REALLY want to delete this OpenCollector?'),
           persistent: true
@@ -923,32 +922,7 @@ export default {
             caller: this,
             openCollector: row
           })
-        }).onCancel(() => {
-          console.log('Cancel')
-        }).onDismiss(() => {
-          console.log('Called on OK or Cancel')
-        })
-
-        // ask to confirm
-        // this.$q.dialog({
-        //   title: this.$t('Confirm'),
-        //   message: this.$t('Do you REALLY want to delete this OpenCollector?'),
-        //   ok: {
-        //     push: true,
-        //     color: 'negative'
-        //   },
-        //   cancel: {
-        //     push: true,
-        //     color: 'positive'
-        //   },
-        //   persistent: true
-        // }).onOk(() => {
-        //   this.deleteOpenCollector({
-        //     pushToApi: true,
-        //     caller: this,
-        //     openCollector: row
-        //   })
-        // }) // }).onOk(() => {
+        }) // }).onOk(() => {
       }
     }, // deleteOpenCollectorPrompt
     doPromptForOpenCollectorDetails (existing) {
