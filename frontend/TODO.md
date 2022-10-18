@@ -9,6 +9,7 @@
   - [ ] Cards
   - [ ] Fields
   - [ ] Dialogs
+    - [ ] Standard Confirm dialog
   - [ ] Tables
 - [ ] LogRhythm Beats mapping for Collection Configuration
   - [ ] Azure Event Hub
