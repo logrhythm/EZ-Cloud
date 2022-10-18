@@ -1,22 +1,35 @@
 <template>
-  <q-dialog ref="dialog" @hide="onDialogHide">
+  <q-dialog ref="dialog" @hide="onDialogHide" :persistent="persistent">
     <q-card class="q-dialog-plugin">
-      <!--
-        ...content
-        ... use q-card-section for it?
-      -->
-      <q-card-section>
+      <q-card-section class="row justify-between">
         <div class="text-h6">{{ title }}</div>
+        <q-btn dense flat icon="close" color="grey-5" @click="onCloseClick" />
       </q-card-section>
 
-      <q-card-section>
+      <q-card-section class="q-pa-none">
+        <q-separator />
+      </q-card-section>
+
+      <q-card-section class="q-my-lg q-py-none">
         <div class="">{{ message }}</div>
       </q-card-section>
 
-      <!-- buttons example -->
+      <q-card-section class="q-pa-none">
+        <q-separator />
+      </q-card-section>
+
       <q-card-actions align="right">
-        <q-btn color="primary" label="OK" @click="onOKClick" />
-        <q-btn color="primary" label="Cancel" @click="onCancelClick" />
+        <div class="q-gutter-x-lg">
+          <q-btn
+            v-for="(button, index) in buttons"
+            :key="index"
+            color="primary"
+            no-caps
+            :outline="!button.default"
+            :label="button.label"
+            @click="onButtonClick (button.meaning, index)"
+          />
+        </div>
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -38,6 +51,22 @@ export default {
     persistent: {
       type: Boolean,
       default: false
+    },
+    buttons: {
+      type: Array,
+      default () {
+        return [
+          {
+            label: this.$t('Yes'),
+            meaning: 'OK'
+          },
+          {
+            label: this.$t('No'),
+            meaning: 'Cancel',
+            default: true
+          }
+        ]
+      }
     }
   },
 
@@ -61,18 +90,23 @@ export default {
     },
 
     onOKClick () {
-      // on OK, it is REQUIRED to
-      // emit "ok" event (with optional payload)
-      // before hiding the QDialog
       this.$emit('ok')
-      // or with payload: this.$emit('ok', { ... })
-
-      // then hiding dialog
       this.hide()
     },
 
     onCancelClick () {
-      // we just need to hide dialog
+      this.hide()
+    },
+
+    onButtonClick (buttonMeaning, buttonIndex) {
+      if (buttonMeaning && String(buttonMeaning).toLowerCase() === 'ok') {
+        this.onOKClick()
+      } else if (buttonMeaning && String(buttonMeaning).toLowerCase() === 'cancel') {
+        this.onCancelClick()
+      }
+    },
+
+    onCloseClick () {
       this.hide()
     }
   }
