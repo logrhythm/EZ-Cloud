@@ -326,6 +326,7 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import ConfirmDialog from '../../../components/Dialogs/ConfirmDialog.vue'
 
 export default {
   name: 'PageAdminSiemUpdateEmdb',
@@ -395,16 +396,18 @@ export default {
     promptToUpdateEmdb () {
       // ask to confirm
       this.$q.dialog({
+        component: ConfirmDialog,
+        parent: this,
         title: this.$t('Confirm'),
         message: this.$t('Do you want to connect to Database and update it?'),
-        ok: {
-          push: true,
-          color: 'positive'
-        },
-        cancel: {
-          push: true,
-          color: 'negative'
-        },
+        // ok: {
+        //   push: true,
+        //   color: 'positive'
+        // },
+        // cancel: {
+        //   push: true,
+        //   color: 'negative'
+        // },
         persistent: true
       }).onOk(() => {
         this.doUpdateEmdb()
