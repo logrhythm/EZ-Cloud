@@ -149,6 +149,7 @@ import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedRightToLeft from 'src/mixins/mixin-Shared-RightToLeft'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
+import ConfirmDialog from 'components/Dialogs/ConfirmDialog.vue'
 
 export default {
   name: 'PagePipelinesList',
@@ -238,16 +239,18 @@ export default {
       if (typeof row !== 'undefined') {
         // ask to confirm
         this.$q.dialog({
+          component: ConfirmDialog,
+          parent: this,
           title: this.$t('Confirm'),
           message: this.$t('Do you REALLY want to delete this Pipeline?'),
-          ok: {
-            push: true,
-            color: 'negative'
-          },
-          cancel: {
-            push: true,
-            color: 'positive'
-          },
+          // ok: {
+          //   push: true,
+          //   color: 'negative'
+          // },
+          // cancel: {
+          //   push: true,
+          //   color: 'positive'
+          // },
           persistent: true
         }).onOk(() => {
           this.deletePipeline({
