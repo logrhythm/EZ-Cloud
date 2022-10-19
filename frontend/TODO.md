@@ -10,7 +10,11 @@
   - [ ] Fields
   - [ ] Dialogs
     - [x] Standard Confirm dialog
+    - [x] OpenCollector properties
+    - [x] Pipeline properties
   - [ ] Tables
+  - [ ] Headers
+    - [ ] Breadcrumbs
 - [ ] LogRhythm Beats mapping for Collection Configuration
   - [ ] Azure Event Hub
     - [ ] With custom Mapping
