@@ -6,6 +6,7 @@
 - [ ] Incorporate Axon style UI
   - [x] Left hand side navigation bar
   - [x] Login page
+  - [x] Logout page
   - [ ] Cards
   - [ ] Fields
   - [ ] Dialogs
@@ -19,6 +20,7 @@
     - [ ] Breadcrumbs
   - [x] Large buttons style
   - [ ] Action buttons style
+  - [x] Settings
 - [ ] LogRhythm Beats mapping for Collection Configuration
   - [ ] Azure Event Hub
     - [ ] With custom Mapping
