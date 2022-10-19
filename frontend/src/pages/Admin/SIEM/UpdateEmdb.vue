@@ -400,14 +400,6 @@ export default {
         parent: this,
         title: this.$t('Confirm'),
         message: this.$t('Do you want to connect to Database and update it?'),
-        // ok: {
-        //   push: true,
-        //   color: 'positive'
-        // },
-        // cancel: {
-        //   push: true,
-        //   color: 'negative'
-        // },
         persistent: true
       }).onOk(() => {
         this.doUpdateEmdb()

@@ -243,14 +243,6 @@ export default {
           parent: this,
           title: this.$t('Confirm'),
           message: this.$t('Do you REALLY want to delete this Pipeline?'),
-          // ok: {
-          //   push: true,
-          //   color: 'negative'
-          // },
-          // cancel: {
-          //   push: true,
-          //   color: 'positive'
-          // },
           persistent: true
         }).onOk(() => {
           this.deletePipeline({

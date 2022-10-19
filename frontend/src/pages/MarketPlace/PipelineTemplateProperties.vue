@@ -655,14 +655,6 @@ export default {
             parent: this,
             title: this.$t('Confirm overide'),
             message: confirmationMessage,
-            // ok: {
-            //   push: true,
-            //   color: 'negative'
-            // },
-            // cancel: {
-            //   push: true,
-            //   color: 'positive'
-            // },
             persistent: true
           }).onOk(async () => {
             this.upsertPipeline(

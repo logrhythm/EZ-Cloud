@@ -69,8 +69,6 @@ export default {
         parent: this,
         title: this.$t('Confirm'),
         message: this.$t('A lot of things will NOT work until this is configred. Are you sure you want to ignore this for now?'),
-        // cancel: this.$t('Yes'),
-        // ok: this.$t('No'),
         persistent: true
       }).onOk(() => {
         // Do nothing
