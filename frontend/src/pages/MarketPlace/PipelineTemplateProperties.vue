@@ -403,6 +403,7 @@ import IconPicture from 'components/Pipelines/IconPicture.vue'
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en.json'
 TimeAgo.addDefaultLocale(en)
+import ConfirmDialog from 'components/Dialogs/ConfirmDialog.vue'
 
 export default {
   name: 'PageMarketPipelineTemplateProperties',
@@ -650,16 +651,18 @@ export default {
           }
 
           this.$q.dialog({
+            component: ConfirmDialog,
+            parent: this,
             title: this.$t('Confirm overide'),
             message: confirmationMessage,
-            ok: {
-              push: true,
-              color: 'negative'
-            },
-            cancel: {
-              push: true,
-              color: 'positive'
-            },
+            // ok: {
+            //   push: true,
+            //   color: 'negative'
+            // },
+            // cancel: {
+            //   push: true,
+            //   color: 'positive'
+            // },
             persistent: true
           }).onOk(async () => {
             this.upsertPipeline(
