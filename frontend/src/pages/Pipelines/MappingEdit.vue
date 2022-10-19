@@ -170,7 +170,6 @@
             active-color="primary"
             indicator-color="primary"
             align="justify"
-            narrow-indicator
           >
             <q-tab name="single_log" :label="$t('Single Log')" />
             <q-tab name="multiple_logs" :label="$t('Multiple Logs')" />
