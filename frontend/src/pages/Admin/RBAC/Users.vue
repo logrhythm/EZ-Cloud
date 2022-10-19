@@ -35,7 +35,7 @@
                     </div>
                     <div class="row q-gutter-md">
                       <div class="col" >
-                        <q-btn rounded dense color="primary" icon="add" :label="$t('Add New Account')" style="min-width:14rem;" @click="addNewAccount()" >
+                        <q-btn no-caps dense color="primary" icon="add" :label="$t('Add New Account')" style="min-width:14rem;" @click="addNewAccount()" >
                           <q-tooltip content-style="font-size: 1em">
                             {{ $t('Create a new Account.') }}
                           </q-tooltip>
@@ -139,13 +139,19 @@
 
     <q-dialog v-model="promptForAccountDetails" persistent>
       <q-card style="min-width: 350px">
-        <q-card-section>
+        <q-card-section class="row justify-between">
           <div class="text-h6" v-if="editingAccountId != null">{{ $t('User Account Details') }}</div>
           <div class="text-h6" v-else>{{ $t('New User Account') }}</div>
+          <q-btn dense flat icon="close" color="grey-5" v-close-popup />
         </q-card-section>
 
-        <q-card-section class="q-pt-none">
-          <q-input dense v-model="editingAccountUsername"
+        <q-separator />
+
+        <q-card-section class="">
+          <q-input
+            dense
+            outlined
+            v-model="editingAccountUsername"
             :label="$t('Username')"
             autofocus
             :disable="editingAccountId != null"
@@ -155,7 +161,10 @@
         </q-card-section>
 
         <q-card-section class="q-pt-none q-mb-md">
-          <q-input dense v-model="editingAccountPassword"
+          <q-input
+            dense
+            outlined
+            v-model="editingAccountPassword"
             :label="$t('Password')"
             :type="!showPassword ? 'password' : 'text'"
             :disable="editingAccountId != null"
@@ -179,15 +188,23 @@
         </q-card-section>
 
         <q-card-section class="q-pt-none q-mb-md">
-          <q-select dense v-model="editingAccountRoleUid" :options="rolesOptions" :label="$t('Role')" emit-value map-options />
+          <q-select
+            dense
+            outlined
+            v-model="editingAccountRoleUid"
+            :options="rolesOptions"
+            :label="$t('Role')"
+            emit-value
+            map-options
+          />
         </q-card-section>
 
         <q-separator />
 
         <q-card-actions align="right" class="text-primary">
-          <q-btn flat :label="$t('Cancel')" v-close-popup @click="cleanEditingVariables()" />
-          <q-btn flat :label="$t('Update User Account')" v-close-popup v-if="editingAccountId != null" :disabled="!editingAccountRoleUid || !editingAccountRoleUid.length" @click="addNewOrUpdateUserAccount()" />
-          <q-btn flat :label="$t('Add new User Account')" v-close-popup v-else :disabled="!editingAccountUsername || !editingAccountUsername.length || !editingAccountPassword || !editingAccountPassword.length || !editingAccountRoleUid || !editingAccountRoleUid.length" @click="addNewOrUpdateUserAccount()" />
+          <q-btn no-caps outline :label="$t('Cancel')" v-close-popup @click="cleanEditingVariables()" />
+          <q-btn no-caps color="primary" :label="$t('Update User Account')" v-close-popup v-if="editingAccountId != null" :disabled="!editingAccountRoleUid || !editingAccountRoleUid.length" @click="addNewOrUpdateUserAccount()" />
+          <q-btn no-caps color="primary" :label="$t('Add new User Account')" v-close-popup v-else :disabled="!editingAccountUsername || !editingAccountUsername.length || !editingAccountPassword || !editingAccountPassword.length || !editingAccountRoleUid || !editingAccountRoleUid.length" @click="addNewOrUpdateUserAccount()" />
         </q-card-actions>
       </q-card>
     </q-dialog>
