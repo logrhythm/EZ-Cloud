@@ -392,11 +392,11 @@
           <q-separator />
 
           <q-card-actions align="right" class="text-primary">
-            <div class="q-gutter-x-lg">
+            <!-- <div class="q-gutter-x-lg"> -->
               <q-btn outline no-caps :label="$t('Cancel')" v-close-popup />
               <q-btn color="primary" no-caps class="text-textForPrimaryButton" :label="$t('Update OpenCollector')" v-close-popup v-if="newOpenCollectorUid && newOpenCollectorUid.length" :disabled="!newOpenCollectorName || !newOpenCollectorName.length || !newOpenCollectorHostname || !newOpenCollectorHostname.length || !newOpenCollectorPort || newOpenCollectorPort < 0 || newOpenCollectorPort > 65535 || !newOpenCollectorUsername || !newOpenCollectorUsername.length || ((!newOpenCollectorPassword || !newOpenCollectorPassword.length) && (!newOpenCollectorPrivateKey || !newOpenCollectorPrivateKey.length))" @click="addNewOrUpdateOpenCollector()" />
               <q-btn color="primary" no-caps class="text-textForPrimaryButton" :label="$t('Add new OpenCollector')" v-close-popup v-else :disabled="!newOpenCollectorName || !newOpenCollectorName.length || !newOpenCollectorHostname || !newOpenCollectorHostname.length || !newOpenCollectorPort || newOpenCollectorPort < 0 || newOpenCollectorPort > 65535 || !newOpenCollectorUsername || !newOpenCollectorUsername.length || ((!newOpenCollectorPassword || !newOpenCollectorPassword.length) && (!newOpenCollectorPrivateKey || !newOpenCollectorPrivateKey.length))" @click="addNewOrUpdateOpenCollector()" />
-            </div>
+            <!-- </div> -->
           </q-card-actions>
         </q-card>
       </q-dialog>

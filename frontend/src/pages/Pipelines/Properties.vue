@@ -337,7 +337,7 @@
                     </div>
                     <div class="row q-gutter-md">
                       <div class="col" >
-                        <q-btn rounded dense color="primary" icon="add" :label="$t('Add New Deployment')" style="min-width:14rem;" @click="addNewDeployment()" >
+                        <q-btn no-caps dense color="primary" icon="add" :label="$t('Add New Deployment')" style="min-width:14rem;" @click="addNewDeployment()" >
                           <q-tooltip content-style="font-size: 1em">
                             {{ $t('Create a new Deployment.') }}
                           </q-tooltip>
