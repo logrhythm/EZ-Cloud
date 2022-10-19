@@ -228,6 +228,7 @@ import FieldEditor from 'components/Pipelines/Collection/FieldEditor.vue'
 // import { dump } from 'js-yaml'
 import Vue2Filters from 'vue2-filters'
 import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml'
+import ConfirmDialog from 'components/Dialogs/ConfirmDialog.vue'
 
 export default {
   mixins: [
@@ -303,16 +304,18 @@ export default {
     reverseToLastSavedPrompt () {
       // Ask to confirm
       this.$q.dialog({
+        component: ConfirmDialog,
+        parent: this,
         title: this.$t('Confirm'),
         message: this.$t('Do you REALLY want to lose all your un-saved changes and revert to the last Saved version?'),
-        ok: {
-          push: true,
-          color: 'negative'
-        },
-        cancel: {
-          push: true,
-          color: 'positive'
-        },
+        // ok: {
+        //   push: true,
+        //   color: 'negative'
+        // },
+        // cancel: {
+        //   push: true,
+        //   color: 'positive'
+        // },
         persistent: true
       }).onOk(() => {
         this.reverseToLastSaved()
@@ -354,16 +357,18 @@ export default {
       if (this.collectionConfig && this.collectionConfig.collectionMethod && this.collectionConfig.collectionMethod.length) {
         // Ask to confirm
         this.$q.dialog({
+          component: ConfirmDialog,
+          parent: this,
           title: this.$t('Confirm'),
           message: this.$t('You will lose any un-saved changes and start fresh with the new Collection Method. Are you sure?'),
-          ok: {
-            push: true,
-            color: 'negative'
-          },
-          cancel: {
-            push: true,
-            color: 'positive'
-          },
+          // ok: {
+          //   push: true,
+          //   color: 'negative'
+          // },
+          // cancel: {
+          //   push: true,
+          //   color: 'positive'
+          // },
           persistent: true
         }).onOk(() => {
           this.switchCollectionMethod()
