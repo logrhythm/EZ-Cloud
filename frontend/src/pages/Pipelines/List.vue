@@ -129,8 +129,8 @@
             <q-input
               dense
               outlined
-              v-model="newPipelineName"
               autofocus
+              v-model="newPipelineName"
               :label="$t('Pipeline Name')"
               @keyup.esc="promptForNewPipelineDetails = false"
               :rules="[val => !!val || $t('Pipeline name cannot be empty')]"
