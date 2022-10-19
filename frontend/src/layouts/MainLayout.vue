@@ -4,6 +4,8 @@
       v-model="drawerMenuOpen"
       show-if-above
 
+      mini-to-overlay
+
       :width="57"
       :breakpoint="500"
       bordered
@@ -133,7 +135,6 @@ export default {
   data () {
     return {
       drawerMenuOpen: false,
-      miniState: true,
       // mainLinks: [
       //   {
       //     title: '',
