@@ -355,7 +355,6 @@ export default {
     }
   }, // methods
   mounted () {
-    console.log('mounted - 🚀')
     // First remove any token from previous Login
     this.signOut()
 
@@ -366,7 +365,6 @@ export default {
       this.persistenceLayerAvailabilityCheckTimer = null
       this.checkPersistenceLayerAvailability()
     }, 100)
-    console.log('mounted - 🏁')
   },
   beforeDestroy () {
     if (this.persistenceLayerAvailabilityCheckTimer) {
