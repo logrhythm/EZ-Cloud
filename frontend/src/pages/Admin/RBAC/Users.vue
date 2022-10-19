@@ -197,6 +197,7 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import ConfirmDialog from '../../../components/Dialogs/ConfirmDialog.vue'
 
 export default {
   name: 'PageAdminUsers',
@@ -332,16 +333,18 @@ export default {
     deleteAccountPrompt (row) {
       // ask to confirm
       this.$q.dialog({
+        component: ConfirmDialog,
+        parent: this,
         title: this.$t('Confirm'),
         message: this.$t('Do you REALLY want to delete this User Account?'),
-        ok: {
-          push: true,
-          color: 'negative'
-        },
-        cancel: {
-          push: true,
-          color: 'positive'
-        },
+        // ok: {
+        //   push: true,
+        //   color: 'negative'
+        // },
+        // cancel: {
+        //   push: true,
+        //   color: 'positive'
+        // },
         persistent: true
       }).onOk(() => {
         this.deleteAccount(row ? row.userId : null)
