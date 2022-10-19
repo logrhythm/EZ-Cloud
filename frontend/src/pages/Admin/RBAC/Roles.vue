@@ -31,7 +31,7 @@
                   </div>
                   <div class="row q-gutter-md">
                     <div class="col" >
-                      <q-btn rounded dense color="primary" icon="add" :label="$t('Add New Role')" style="min-width:14rem;" @click="addNewRole()" >
+                      <q-btn no-caps dense color="primary" icon="add" :label="$t('Add New Role')" style="min-width:14rem;" @click="addNewRole()" >
                         <q-tooltip content-style="font-size: 1em">
                           {{ $t('Create a new Role.') }}
                         </q-tooltip>
@@ -127,13 +127,19 @@
 
     <q-dialog v-model="promptForRoleDetails" persistent>
       <q-card style="min-width: 350px">
-        <q-card-section>
+        <q-card-section class="row justify-between">
           <div class="text-h6" v-if="editingRoleUid != null">{{ $t('User Role Details') }}</div>
           <div class="text-h6" v-else>{{ $t('New User Role') }}</div>
+          <q-btn dense flat icon="close" color="grey-5" v-close-popup />
         </q-card-section>
 
-        <q-card-section class="q-pt-none">
-          <q-input dense v-model="editingRoleName"
+        <q-separator />
+
+        <q-card-section class="">
+          <q-input
+            dense
+            outlined
+            v-model="editingRoleName"
             :label="$t('Name')"
             autofocus
             :rules="[val => !!val || $t('Role Name cannot be empty')]"
@@ -154,9 +160,9 @@
         <q-separator />
 
         <q-card-actions align="right" class="text-primary">
-          <q-btn flat :label="$t('Cancel')" v-close-popup @click="cleanEditingVariables()" />
-          <q-btn flat :label="$t('Update User Role')" v-close-popup v-if="editingRoleUid != null" :disabled="!editingRoleName || !editingRoleName.length" @click="addNewOrUpdateUserRole()" />
-          <q-btn flat :label="$t('Add new User Role')" v-close-popup v-else :disabled="!editingRoleName || !editingRoleName.length" @click="addNewOrUpdateUserRole()" />
+          <q-btn no-caps outline :label="$t('Cancel')" v-close-popup @click="cleanEditingVariables()" />
+          <q-btn no-caps color="primary" :label="$t('Update User Role')" v-close-popup v-if="editingRoleUid != null" :disabled="!editingRoleName || !editingRoleName.length" @click="addNewOrUpdateUserRole()" />
+          <q-btn no-caps color="primary" :label="$t('Add new User Role')" v-close-popup v-else :disabled="!editingRoleName || !editingRoleName.length" @click="addNewOrUpdateUserRole()" />
         </q-card-actions>
       </q-card>
     </q-dialog>
