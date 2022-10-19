@@ -167,6 +167,7 @@
 import { mapState, mapActions } from 'vuex'
 import { uid } from 'quasar'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import ConfirmDialog from '../../../components/Dialogs/ConfirmDialog.vue'
 
 export default {
   name: 'PageAdminRoles',
@@ -256,16 +257,18 @@ export default {
     deleteRolePrompt (row) {
       // ask to confirm
       this.$q.dialog({
+        component: ConfirmDialog,
+        parent: this,
         title: this.$t('Confirm'),
         message: this.$t('Do you REALLY want to delete this User Role?'),
-        ok: {
-          push: true,
-          color: 'negative'
-        },
-        cancel: {
-          push: true,
-          color: 'positive'
-        },
+        // ok: {
+        //   push: true,
+        //   color: 'negative'
+        // },
+        // cancel: {
+        //   push: true,
+        //   color: 'positive'
+        // },
         persistent: true
       }).onOk(() => {
         this.deleteRole(row ? row.roleUid : null)
