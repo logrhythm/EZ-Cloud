@@ -12,11 +12,13 @@
     - [x] Standard Confirm dialog
     - [x] OpenCollector properties
     - [x] Pipeline properties
-    - [ ] Account properties
-    - [ ] Role properties
+    - [x] Account properties
+    - [x] Role properties
   - [ ] Tables
   - [ ] Headers
     - [ ] Breadcrumbs
+  - [x] Large buttons style
+  - [ ] Action buttons style
 - [ ] LogRhythm Beats mapping for Collection Configuration
   - [ ] Azure Event Hub
     - [ ] With custom Mapping
