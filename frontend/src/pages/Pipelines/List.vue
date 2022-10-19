@@ -21,7 +21,7 @@
             </div>
             <div class="row q-gutter-md">
               <div class="col" >
-                <q-btn rounded dense color="primary" icon="add" :label="$t('Add New Pipeline')" @click="doPromptForPipelineDetails()" style="min-width:12rem;">
+                <q-btn no-caps dense color="primary" icon="add" :label="$t('Add New Pipeline')" @click="doPromptForPipelineDetails()" style="min-width:12rem;">
                   <q-tooltip content-style="font-size: 1em">
                     {{ $t('Create a new Pipeline.') }}
                   </q-tooltip>
@@ -118,26 +118,55 @@
 
       <q-dialog v-model="promptForNewPipelineDetails" persistent>
         <q-card style="min-width: 350px">
-          <q-card-section>
+          <q-card-section class="row justify-between">
             <div class="text-h6">{{ $t('Pipeline Details') }}</div>
+            <q-btn dense flat icon="close" color="grey-5" v-close-popup />
+          </q-card-section>
+
+          <q-separator />
+
+          <q-card-section class="">
+            <q-input
+              dense
+              outlined
+              v-model="newPipelineName"
+              autofocus
+              :label="$t('Pipeline Name')"
+              @keyup.esc="promptForNewPipelineDetails = false"
+              :rules="[val => !!val || $t('Pipeline name cannot be empty')]"
+            />
           </q-card-section>
 
           <q-card-section class="q-pt-none">
-            <q-input dense v-model="newPipelineName" autofocus :label="$t('Pipeline Name')" @keyup.esc="promptForNewPipelineDetails = false" :rules="[val => !!val || $t('Pipeline name cannot be empty')]" />
-          </q-card-section>
-
-          <q-card-section class="q-pt-none">
-            <q-select dense v-model="newPipelineOpenCollector" :options="openCollectorsOptions" :label="$t('Primary OpenCollector')" emit-value map-options />
+            <q-select
+              dense
+              outlined
+              v-model="newPipelineOpenCollector"
+              :options="openCollectorsOptions"
+              :label="$t('Primary OpenCollector')"
+              emit-value
+              map-options
+            />
           </q-card-section>
 
           <q-card-section class="q-pt-none q-mt-md" v-if="newPipelineStatus">
-            <q-select dense v-model="newPipelineStatus" :options="statusOptions" :label="$t('Status')" emit-value map-options />
+            <q-select
+              dense
+              outlined
+              v-model="newPipelineStatus"
+              :options="statusOptions"
+              :label="$t('Status')"
+              emit-value
+              map-options
+            />
           </q-card-section>
 
-          <q-card-actions align="right" class="text-primary q-mt-md">
-            <q-btn flat :label="$t('Cancel')" v-close-popup />
-            <q-btn flat :label="$t('Update Pipeline')" v-if="newPipelineUid && newPipelineUid.length" v-close-popup :disabled="!newPipelineName.length" @click="updatePipeline()" />
-            <q-btn flat :label="$t('Add new Pipeline')" v-else v-close-popup :disabled="!newPipelineName.length" @click="updatePipeline()" />
+          <q-separator />
+
+          <q-card-actions align="right" class="text-primary ">
+            <q-btn outline no-caps :label="$t('Cancel')" v-close-popup />
+            <q-btn color="primary" no-caps class="text-textForPrimaryButton" :label="$t('Update Pipeline')" v-if="newPipelineUid && newPipelineUid.length" v-close-popup :disabled="!newPipelineName.length" @click="updatePipeline()" />
+            <q-btn color="primary" no-caps class="text-textForPrimaryButton" :label="$t('Add new Pipeline')" v-else v-close-popup :disabled="!newPipelineName.length" @click="updatePipeline()" />
           </q-card-actions>
         </q-card>
       </q-dialog>
