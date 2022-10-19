@@ -37,7 +37,7 @@
             </q-card-section>
 
             <q-card-actions>
-              <q-btn class="q-my-sm full-width" :label="$t('Next')" color="primary" @click="stage='password'" :loading="waitingOnServer" :disable="!username" />
+              <q-btn class="q-my-sm full-width" no-caps :label="$t('Next')" color="primary" @click="stage='password'" :loading="waitingOnServer" :disable="!username" />
             </q-card-actions>
           </q-tab-panel>
 
@@ -68,7 +68,7 @@
             </q-card-section>
 
             <q-card-actions>
-              <q-btn class="q-my-sm full-width" :label="$t('Login')" color="primary" @click="checkCredentials()" :loading="waitingOnServer" :disable="!canWeLogin" />
+              <q-btn class="q-my-sm full-width" no-caps :label="$t('Login')" color="primary" @click="checkCredentials()" :loading="waitingOnServer" :disable="!canWeLogin" />
             </q-card-actions>
           </q-tab-panel>
         </q-tab-panels>
