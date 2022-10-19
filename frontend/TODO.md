@@ -12,6 +12,8 @@
     - [x] Standard Confirm dialog
     - [x] OpenCollector properties
     - [x] Pipeline properties
+    - [ ] Account properties
+    - [ ] Role properties
   - [ ] Tables
   - [ ] Headers
     - [ ] Breadcrumbs
