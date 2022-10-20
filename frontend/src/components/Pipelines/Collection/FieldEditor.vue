@@ -476,7 +476,8 @@ export default {
           color: 'primary'
         },
         cancel: {
-          outline: true
+          outline: true,
+          color: 'primary'
         },
         persistent: true
       }).onOk((newItemName) => {
