@@ -5,7 +5,7 @@
       <q-input
         v-if="isPartOfObject"
         style="width: 20rem;"
-        standout
+        outlined
         v-model="leafName"
         :readonly="true"
         class="col-auto"
@@ -16,7 +16,7 @@
           <!-- Prefix, if any -->
           <q-select
             v-if="template.prefix"
-            standout="bg-blue-4 text-white"
+            outlined
             v-model="internalPrefix"
             emit-value
             map-options
@@ -29,7 +29,7 @@
             v-if="template.type && template.type.name && (template.type.name === 'string' || template.type.name === 'regex' || template.type.name === 'number' || template.type.name === 'password')"
             class="col"
             :class="(template.type && template.type.textType && template.type.textType === 'json' ? 'fixed-font' : '')"
-            standout="bg-blue-4 text-white"
+            outlined
             v-model="internalValue"
             :readonly="(template.readonly ? template.readonly : false || (isPartOfObject && leafInObject && (leafInObject === 'stream_id' || leafInObject === 'stream_name')))"
             :type="template.type && template.type.name && template.type.name === 'password' && !showPassword ? 'password' : 'text'"
@@ -79,7 +79,6 @@
                 spaced
                 inset
                 vertical
-                dark
               />
               <q-icon
                 v-if="template.type && template.type.name && template.type.name === 'password'"
@@ -103,7 +102,7 @@
               v-model="internalValue[subFieldIndex]"
               @deleteSubField="deleteSubFieldEvent"
             />
-            <q-btn no-caps flat dense icon="add" :label="$t('Add Item')" color="primary" @click="addValueToArray()" />
+            <q-btn no-caps dense icon="add" :label="$t('Add Item')" color="primary" @click="addValueToArray()" />
           </div>
           <div v-if="template.type && template.type.name && template.type.name === 'object'" class="q-gutter-y-sm col">
             <FieldEditor
@@ -115,11 +114,11 @@
               v-model="internalValue[subFieldLeafName]"
               @deleteSubField="deleteSubFieldEvent"
             />
-            <q-btn no-caps flat dense icon="add" :label="$t('Add Item')" color="primary" @click="addValueToObject()" />
+            <q-btn no-caps dense icon="add" :label="$t('Add Item')" color="primary" @click="addValueToObject()" />
           </div>
           <q-select
             v-if="template.type && template.type.name && (template.type.name === 'boolean' || template.type.name === 'option')"
-            standout="bg-blue-4 text-white"
+            outlined
             v-model="internalValue"
             class="col"
             emit-value
@@ -130,7 +129,7 @@
           <!-- Suffix, if any -->
           <q-select
             v-if="template.suffix"
-            standout="bg-blue-4 text-white"
+            outlined
             v-model="internalSuffix"
             emit-value
             map-options
@@ -470,15 +469,14 @@ export default {
         prompt: {
           model: '',
           isValid: val => val.length > 0,
-          type: 'text'
+          type: 'text',
+          outlined: true
         },
         ok: {
-          push: true,
           color: 'primary'
         },
         cancel: {
-          push: true,
-          color: 'grey-9'
+          outline: true
         },
         persistent: true
       }).onOk((newItemName) => {
