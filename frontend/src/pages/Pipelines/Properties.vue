@@ -15,14 +15,14 @@
             <q-card-section class="text-h4">
                 {{ $t('Collection') }}
             </q-card-section>
-            <q-card-section class="row items-center">
+            <q-card-section class="">
                 <span class="text-bold">{{ $t('Shipper and Method:') }} </span>
-                <div class="q-ml-md text-center">
-                  <img v-if="collectionShipperOption.icon && collectionShipperOption.icon.length" :src="'/shippers/' + collectionShipperOption.icon + '.svg'" width="64px">
+                <div class="row items-center q-gutter-x-sm">
+                  <img v-if="collectionShipperOption.icon && collectionShipperOption.icon.length" :src="'/shippers/' + collectionShipperOption.icon + '.svg'" width="32px">
                   <div>{{ collectionShipperOption.label }}</div>
                 </div>
-                <div class="q-ml-xl text-center">
-                  <q-icon :name="collectionMethodOption.icon" size="64px" />
+                <div class="row items-center q-gutter-x-sm">
+                  <q-icon :name="collectionMethodOption.icon" size="32px" />
                   <div>{{ collectionMethodOption.label }}</div>
                 </div>
             </q-card-section>
