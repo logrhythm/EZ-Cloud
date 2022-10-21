@@ -8,8 +8,8 @@
   - [x] Login page
   - [x] Logout page
   - [ ] Cards
-  - [ ] Fields
-  - [ ] Dialogs
+  - [x] Fields
+  - [x] Dialogs
     - [x] Standard Confirm dialog
     - [x] OpenCollector properties
     - [x] Pipeline properties
