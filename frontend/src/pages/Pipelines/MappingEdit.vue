@@ -182,7 +182,7 @@
             <q-tab-panel name="single_log">
               <q-input
                 v-model="queueInDataEntrySingleLog"
-                filled
+                outlined
                 autogrow
                 input-style="min-height: 16em;"
                 :label="$t('One single JSON log at a time')"
@@ -214,7 +214,7 @@
             <q-tab-panel name="multiple_logs">
               <q-input
                 v-model="queueInDataEntryMultiLog"
-                filled
+                outlined
                 autogrow
                 input-style="min-height: 16em;"
                 :label="$t('One JSON entry per line')"
@@ -245,7 +245,7 @@
 
             <q-tab-panel name="log_file">
               <q-file
-                filled
+                outlined
                 bottom-slots
                 v-model="manualImportFileInput"
                 :label="$t('Click or Drop a file here')"
