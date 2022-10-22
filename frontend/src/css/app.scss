@@ -8,8 +8,9 @@
   white-space: pre;
 }
 
-// Axon style / To force the buttons to use the right foreground colour (it varies between Dark and Light mode)
-.q-btn.bg-primary
+// Axon style / To force the buttons and badges to use the right foreground colour (it varies between Dark and Light mode)
+.q-btn.bg-primary,
+.q-badge.bg-primary
 {
   color: var(--q-color-textForPrimaryButton) !important;
 }
