@@ -122,6 +122,7 @@
 <script>
 import { mapState } from 'vuex'
 import EssentialLink from 'components/EssentialLink.vue'
+import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import { version } from '../../package.json'
 import { date } from 'quasar'
@@ -130,6 +131,7 @@ export default {
   name: 'MainLayout',
   components: { EssentialLink },
   mixins: [
+    mixinSharedDarkMode, // Shared computed to access and update the DarkMode
     mixinSharedSocket // Shared function and state to access the Socket.io
   ],
   data () {
