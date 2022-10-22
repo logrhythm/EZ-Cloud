@@ -17,11 +17,11 @@
             </q-card-section>
             <q-card-section class="">
                 <span class="text-bold">{{ $t('Shipper and Method:') }} </span>
-                <div class="row items-center q-gutter-x-sm">
+                <div class="row items-center q-gutter-x-sm q-ml-xs">
                   <img v-if="collectionShipperOption.icon && collectionShipperOption.icon.length" :src="'/shippers/' + collectionShipperOption.icon + '.svg'" width="32px">
                   <div>{{ collectionShipperOption.label }}</div>
                 </div>
-                <div class="row items-center q-gutter-x-sm">
+                <div class="row items-center q-gutter-x-sm q-ml-xs">
                   <q-icon :name="collectionMethodOption.icon" size="32px" />
                   <div>{{ collectionMethodOption.label }}</div>
                 </div>
@@ -37,111 +37,122 @@
             </q-card-section>
           </q-card-section>
 
-          <q-separator vertical />
+          <q-card-actions vertical class="justify-start">
+              <q-btn icon="more_horiz" flat >
+                <q-menu anchor="bottom right" self="top right">
+                  <q-item clickable v-close-popup :to="'/Pipelines/' + this.pipelineUid + '/Collection/Edit'">
+                    <q-item-section avatar>
+                      <q-icon name="edit" />
+                    </q-item-section>
+                    <q-item-section>{{ $t('Edit Collection') }}</q-item-section>
+                  </q-item>
+                  <q-item clickable v-close-popup @click="downloadCollectionAsShipperConfigFile()">
+                    <q-item-section avatar>
+                      <q-icon name="download" />
+                    </q-item-section>
+                    <q-item-section>{{ $t('Download Collection configuration as a Shipper configuration file') }}</q-item-section>
+                  </q-item>
+                  <q-item clickable v-close-popup @click="copyCollectionConfigAsShipperFileToClipboard()">
+                    <q-item-section avatar>
+                      <q-icon name="content_copy" />
+                    </q-item-section>
+                    <q-item-section>{{ $t('Copy Collection configuration in Shipper\'s format to Clipboard') }}</q-item-section>
+                  </q-item>
+                  <q-item clickable>
+                    <q-item-section avatar>
+                      <q-icon name="share" />
+                    </q-item-section>
+                    <q-item-section>{{ $t('Share and Import Collection Configuration') }}</q-item-section>
+                    <q-item-section side>
+                      <q-icon name="keyboard_arrow_right" />
+                    </q-item-section>
+                    <q-menu anchor="top start" self="top end">
+                      <q-list style="min-width: 400px">
+                        <q-item clickable v-close-popup @click="downloadCollectionAsEZImportableConfigFile()">
+                          <q-item-section avatar top>
+                            <q-avatar icon="share" color="green-10" text-color="white" >
+                              <q-badge color="primary" floating transparent>
+                                <q-icon name="insert_drive_file" color="white" />
+                              </q-badge>
+                            </q-avatar>
+                          </q-item-section>
 
-          <q-card-actions vertical class="justify-around q-px-md">
-              <q-btn icon="edit" color="primary" :to="'/Pipelines/' + this.pipelineUid + '/Collection/Edit'" >
-                <q-tooltip content-style="font-size: 1rem;">
-                  {{ $t('Edit Collection') }}
-                </q-tooltip>
-              </q-btn>
-              <q-btn icon="download" @click="downloadCollectionAsShipperConfigFile()">
-                <q-tooltip content-style="font-size: 1rem;">
-                  {{ $t('Download Collection configuration as a Shipper configuration file') }}
-                </q-tooltip>
-              </q-btn>
-              <q-btn icon="content_copy" @click="copyCollectionConfigAsShipperFileToClipboard()">
-                <q-tooltip content-style="font-size: 1rem;">
-                  {{ $t('Copy Collection configuration in Shipper\'s format to Clipboard') }}
-                </q-tooltip>
-              </q-btn>
-              <q-btn icon="share">
-                <q-tooltip content-style="font-size: 1rem;">
-                  {{ $t('Share and Import Collection Configuration') }}
-                </q-tooltip>
-                <q-menu>
-                  <q-list style="min-width: 400px">
-                    <q-item clickable v-close-popup @click="downloadCollectionAsEZImportableConfigFile()">
-                      <q-item-section avatar top>
-                        <q-avatar icon="share" color="green-10" text-color="white" >
-                          <q-badge color="primary" floating transparent>
-                            <q-icon name="insert_drive_file" color="white" />
-                          </q-badge>
-                        </q-avatar>
-                      </q-item-section>
+                          <q-item-section>
+                            <q-item-label lines="1">{{ $t('Share as a Local File') }}</q-item-label>
+                            <q-item-label caption>{{ $t('As an importable OC Admin Collection Configuration file') }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
 
-                      <q-item-section>
-                        <q-item-label lines="1">{{ $t('Share as a Local File') }}</q-item-label>
-                        <q-item-label caption>{{ $t('As an importable OC Admin Collection Configuration file') }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
+                        <q-item clickable v-close-popup @click="doShowMarketplaceExportPopup({exportType: 'collection'})">
+                          <q-item-section avatar top>
+                            <q-avatar icon="share" color="green-10" text-color="white" >
+                              <q-badge color="primary" floating transparent>
+                                <q-icon name="cloud" color="white" />
+                              </q-badge>
+                            </q-avatar>
+                          </q-item-section>
 
-                    <q-item clickable v-close-popup @click="doShowMarketplaceExportPopup({exportType: 'collection'})">
-                      <q-item-section avatar top>
-                        <q-avatar icon="share" color="green-10" text-color="white" >
-                          <q-badge color="primary" floating transparent>
-                            <q-icon name="cloud" color="white" />
-                          </q-badge>
-                        </q-avatar>
-                      </q-item-section>
+                          <q-item-section>
+                            <q-item-label lines="1">{{ $t('Share via the Marketplace') }}</q-item-label>
+                            <q-item-label caption>{{ $t('As an importable OC Admin Collection Configuration') }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
 
-                      <q-item-section>
-                        <q-item-label lines="1">{{ $t('Share via the Marketplace') }}</q-item-label>
-                        <q-item-label caption>{{ $t('As an importable OC Admin Collection Configuration') }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
+                        <q-separator />
 
-                    <q-separator />
+                        <q-item clickable v-close-popup @click="collectionConfigurationImportFileInput = null ; showCollectionFileImportPopup = true">
+                          <q-item-section avatar top>
+                            <q-avatar icon="input" color="purple-10" text-color="white" >
+                              <q-badge color="primary" floating transparent>
+                                <q-icon name="insert_drive_file" color="white" />
+                              </q-badge>
+                            </q-avatar>
+                          </q-item-section>
 
-                    <q-item clickable v-close-popup @click="collectionConfigurationImportFileInput = null ; showCollectionFileImportPopup = true">
-                      <q-item-section avatar top>
-                        <q-avatar icon="input" color="purple-10" text-color="white" >
-                          <q-badge color="primary" floating transparent>
-                            <q-icon name="insert_drive_file" color="white" />
-                          </q-badge>
-                        </q-avatar>
-                      </q-item-section>
+                          <q-item-section>
+                            <q-item-label lines="1">{{ $t('Import from Local File') }}</q-item-label>
+                            <q-item-label caption>{{ $t('Import a shared OC Admin Collection Configuration file') }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
 
-                      <q-item-section>
-                        <q-item-label lines="1">{{ $t('Import from Local File') }}</q-item-label>
-                        <q-item-label caption>{{ $t('Import a shared OC Admin Collection Configuration file') }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
+                        <q-item clickable v-close-popup @click="doShowMarketplaceImportPopup({importType: 'collection'})">
+                          <q-item-section avatar top>
+                            <q-avatar icon="input" color="purple-10" text-color="white" >
+                              <q-badge color="primary" floating transparent>
+                                <q-icon name="cloud" color="white" />
+                              </q-badge>
+                            </q-avatar>
+                          </q-item-section>
 
-                    <q-item clickable v-close-popup @click="doShowMarketplaceImportPopup({importType: 'collection'})">
-                      <q-item-section avatar top>
-                        <q-avatar icon="input" color="purple-10" text-color="white" >
-                          <q-badge color="primary" floating transparent>
-                            <q-icon name="cloud" color="white" />
-                          </q-badge>
-                        </q-avatar>
-                      </q-item-section>
+                          <q-item-section>
+                            <q-item-label lines="1">{{ $t('Import from Marketplace') }}</q-item-label>
+                            <q-item-label caption>{{ $t('Import a shared OC Admin Collection Configuration') }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
 
-                      <q-item-section>
-                        <q-item-label lines="1">{{ $t('Import from Marketplace') }}</q-item-label>
-                        <q-item-label caption>{{ $t('Import a shared OC Admin Collection Configuration') }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
+                        <q-separator />
 
-                    <q-separator />
+                        <q-item clickable v-close-popup tag="a" :href="wikiLink('ref-whatsthedifferencecollectionconfigurationshareimport')" target="_blank" >
+                          <q-item-section avatar top>
+                            <q-avatar icon="help_outline" color="info" text-color="black" />
+                          </q-item-section>
 
-                    <q-item clickable v-close-popup tag="a" :href="wikiLink('ref-whatsthedifferencecollectionconfigurationshareimport')" target="_blank" >
-                      <q-item-section avatar top>
-                        <q-avatar icon="help_outline" color="info" text-color="black" />
-                      </q-item-section>
-
-                      <q-item-section>
-                        <q-item-label lines="1">{{ $t('What\'s the difference?') }}</q-item-label>
-                        <q-item-label caption>{{ $t('A quick peek at the Wiki') }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </q-list>
+                          <q-item-section>
+                            <q-item-label lines="1">{{ $t('What\'s the difference?') }}</q-item-label>
+                            <q-item-label caption>{{ $t('A quick peek at the Wiki') }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </q-list>
+                    </q-menu>
+                  </q-item>
+                  <q-separator />
+                  <q-item clickable v-close-popup @click="deleteCollectionPrompt()">
+                    <q-item-section avatar>
+                      <q-icon name="delete" />
+                    </q-item-section>
+                    <q-item-section>{{ $t('Delete Collection Configuration') }}</q-item-section>
+                  </q-item>
                 </q-menu>
-              </q-btn>
-              <q-btn icon="delete" text-color="negative" @click="deleteCollectionPrompt()">
-                <q-tooltip content-style="font-size: 1rem;">
-                  {{ $t('Delete Collection Configuration') }}
-                </q-tooltip>
               </q-btn>
           </q-card-actions>
         </q-card-section>
@@ -163,150 +174,160 @@
             </div>
           </q-card-section>
 
-          <q-separator vertical />
+          <q-card-actions vertical class="justify-start">
+              <q-btn icon="more_horiz" flat >
+                <q-menu anchor="bottom right" self="top right">
+                  <q-item clickable v-close-popup :to="'/Pipelines/' + this.pipelineUid + '/Mapping/Edit'">
+                    <q-item-section avatar>
+                      <q-icon name="edit" />
+                    </q-item-section>
+                    <q-item-section>{{ $t('Edit Mapping') }}</q-item-section>
+                  </q-item>
+                  <q-item clickable v-close-popup disable>
+                    <q-item-section avatar>
+                      <q-icon name="download" />
+                    </q-item-section>
+                    <q-item-section>{{ $t('Download Mapping as JQ Pipeline') }}</q-item-section>
+                  </q-item>
+                  <q-item clickable>
+                    <q-item-section avatar>
+                      <q-icon name="share" />
+                    </q-item-section>
+                    <q-item-section>{{ $t('Share and Import Mapping') }}</q-item-section>
+                    <q-item-section side>
+                      <q-icon name="keyboard_arrow_right" />
+                    </q-item-section>
+                    <q-menu content-style="min-width: 420px">
+                      <q-list style="min-width: 400px">
+                        <q-item-label header>{{ $t('Sanitisation') }}</q-item-label>
+                        <q-item tag="label" v-ripple>
+                          <q-item-section>
+                            <q-item-label>{{ $t('Share Field Frequencies') }}</q-item-label>
+                            <q-item-label caption>{{ $t('Include the frequency statistics for each field') }}</q-item-label>
+                          </q-item-section>
+                          <q-item-section avatar>
+                            <q-toggle v-model="shareFieldFrequencies" />
+                          </q-item-section>
+                        </q-item>
 
-          <q-card-actions vertical class="justify-around q-px-md">
-              <q-btn icon="edit" color="primary" :to="'/Pipelines/' + this.pipelineUid + '/Mapping/Edit'" >
-                <q-tooltip content-style="font-size: 1rem;">
-                  {{ $t('Edit Mapping') }}
-                </q-tooltip>
-              </q-btn>
-              <q-btn icon="download" disable>
-                <q-tooltip content-style="font-size: 1rem;">
-                  {{ $t('Download Mapping as JQ Pipeline') }}
-                </q-tooltip>
-              </q-btn>
-              <q-btn icon="share">
-                <q-tooltip content-style="font-size: 1rem;">
-                  {{ $t('Share and Import Mapping') }}
-                </q-tooltip>
-                <q-menu content-style="min-width: 420px">
-                  <q-list style="min-width: 400px">
-                    <q-item-label header>{{ $t('Sanitisation') }}</q-item-label>
-                    <q-item tag="label" v-ripple>
-                      <q-item-section>
-                        <q-item-label>{{ $t('Share Field Frequencies') }}</q-item-label>
-                        <q-item-label caption>{{ $t('Include the frequency statistics for each field') }}</q-item-label>
-                      </q-item-section>
-                      <q-item-section avatar>
-                        <q-toggle v-model="shareFieldFrequencies" />
-                      </q-item-section>
-                    </q-item>
+                        <q-item tag="label" v-ripple>
+                          <q-item-section>
+                            <q-item-label>{{ $t('Share Field Values') }}</q-item-label>
+                            <q-item-label caption>{{ $t('Include all the observed values for each field') }}</q-item-label>
+                            <q-item-label caption class="text-bold text-italic"><q-icon name="warning" class="q-ma-none q-mr-xs" color="orange" />{{ $t('This could lead to sharing sensitive information') }}</q-item-label>
+                          </q-item-section>
+                          <q-item-section avatar>
+                            <q-toggle color="orange" v-model="shareFieldValues" />
+                          </q-item-section>
+                        </q-item>
 
-                    <q-item tag="label" v-ripple>
-                      <q-item-section>
-                        <q-item-label>{{ $t('Share Field Values') }}</q-item-label>
-                        <q-item-label caption>{{ $t('Include all the observed values for each field') }}</q-item-label>
-                        <q-item-label caption class="text-bold text-italic"><q-icon name="warning" class="q-ma-none q-mr-xs" color="orange" />{{ $t('This could lead to sharing sensitive information') }}</q-item-label>
-                      </q-item-section>
-                      <q-item-section avatar>
-                        <q-toggle color="orange" v-model="shareFieldValues" />
-                      </q-item-section>
-                    </q-item>
+                        <q-item tag="label" v-ripple>
+                          <q-item-section>
+                            <q-item-label>{{ $t('Share Field SIEM Mapping') }}</q-item-label>
+                            <q-item-label caption>{{ $t('Include the SIEM tags mapping for each field') }}</q-item-label>
+                          </q-item-section>
+                          <q-item-section avatar>
+                            <q-toggle v-model="shareFieldMapping" />
+                          </q-item-section>
+                        </q-item>
 
-                    <q-item tag="label" v-ripple>
-                      <q-item-section>
-                        <q-item-label>{{ $t('Share Field SIEM Mapping') }}</q-item-label>
-                        <q-item-label caption>{{ $t('Include the SIEM tags mapping for each field') }}</q-item-label>
-                      </q-item-section>
-                      <q-item-section avatar>
-                        <q-toggle v-model="shareFieldMapping" />
-                      </q-item-section>
-                    </q-item>
+                        <q-item tag="label" v-ripple>
+                          <q-item-section>
+                            <q-item-label>{{ $t('Share Field Modifiers') }}</q-item-label>
+                            <q-item-label caption>{{ $t('Include the modifiers for each field') }}</q-item-label>
+                          </q-item-section>
+                          <q-item-section avatar>
+                            <q-toggle v-model="shareFieldModifiers" />
+                          </q-item-section>
+                        </q-item>
 
-                    <q-item tag="label" v-ripple>
-                      <q-item-section>
-                        <q-item-label>{{ $t('Share Field Modifiers') }}</q-item-label>
-                        <q-item-label caption>{{ $t('Include the modifiers for each field') }}</q-item-label>
-                      </q-item-section>
-                      <q-item-section avatar>
-                        <q-toggle v-model="shareFieldModifiers" />
-                      </q-item-section>
-                    </q-item>
+                        <q-separator />
 
-                    <q-separator />
+                        <q-item clickable v-close-popup @click="downloadMappingAsEZImportableConfigFile()">
+                          <q-item-section avatar top>
+                            <q-avatar icon="share" color="green-10" text-color="white" >
+                              <q-badge color="primary" floating transparent>
+                                <q-icon name="insert_drive_file" color="white" />
+                              </q-badge>
+                            </q-avatar>
+                          </q-item-section>
 
-                    <q-item clickable v-close-popup @click="downloadMappingAsEZImportableConfigFile()">
-                      <q-item-section avatar top>
-                        <q-avatar icon="share" color="green-10" text-color="white" >
-                          <q-badge color="primary" floating transparent>
-                            <q-icon name="insert_drive_file" color="white" />
-                          </q-badge>
-                        </q-avatar>
-                      </q-item-section>
+                          <q-item-section>
+                            <q-item-label lines="1">{{ $t('Share as a Local File') }}</q-item-label>
+                            <q-item-label caption>{{ $t('As an importable OC Admin Mapping file') }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
 
-                      <q-item-section>
-                        <q-item-label lines="1">{{ $t('Share as a Local File') }}</q-item-label>
-                        <q-item-label caption>{{ $t('As an importable OC Admin Mapping file') }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
+                        <q-item clickable v-close-popup @click="doShowMarketplaceExportPopup({exportType: 'mapping'})">
+                          <q-item-section avatar top>
+                            <q-avatar icon="share" color="green-10" text-color="white" >
+                              <q-badge color="primary" floating transparent>
+                                <q-icon name="cloud" color="white" />
+                              </q-badge>
+                            </q-avatar>
+                          </q-item-section>
 
-                    <q-item clickable v-close-popup @click="doShowMarketplaceExportPopup({exportType: 'mapping'})">
-                      <q-item-section avatar top>
-                        <q-avatar icon="share" color="green-10" text-color="white" >
-                          <q-badge color="primary" floating transparent>
-                            <q-icon name="cloud" color="white" />
-                          </q-badge>
-                        </q-avatar>
-                      </q-item-section>
+                          <q-item-section>
+                            <q-item-label lines="1">{{ $t('Share via the Marketplace') }}</q-item-label>
+                            <q-item-label caption>{{ $t('As an importable OC Admin Mapping') }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
 
-                      <q-item-section>
-                        <q-item-label lines="1">{{ $t('Share via the Marketplace') }}</q-item-label>
-                        <q-item-label caption>{{ $t('As an importable OC Admin Mapping') }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
+                        <q-separator />
 
-                    <q-separator />
+                        <q-item clickable v-close-popup @click="collectionConfigurationImportFileInput = null ; showMappingFileImportPopup = true">
+                          <q-item-section avatar top>
+                            <q-avatar icon="input" color="purple-10" text-color="white" >
+                              <q-badge color="primary" floating transparent>
+                                <q-icon name="insert_drive_file" color="white" />
+                              </q-badge>
+                            </q-avatar>
+                          </q-item-section>
 
-                    <q-item clickable v-close-popup @click="collectionConfigurationImportFileInput = null ; showMappingFileImportPopup = true">
-                      <q-item-section avatar top>
-                        <q-avatar icon="input" color="purple-10" text-color="white" >
-                          <q-badge color="primary" floating transparent>
-                            <q-icon name="insert_drive_file" color="white" />
-                          </q-badge>
-                        </q-avatar>
-                      </q-item-section>
+                          <q-item-section>
+                            <q-item-label lines="1">{{ $t('Import from Local File') }}</q-item-label>
+                            <q-item-label caption>{{ $t('Import a shared OC Admin Mapping file') }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
 
-                      <q-item-section>
-                        <q-item-label lines="1">{{ $t('Import from Local File') }}</q-item-label>
-                        <q-item-label caption>{{ $t('Import a shared OC Admin Mapping file') }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
+                        <q-item clickable  v-close-popup @click="doShowMarketplaceImportPopup({importType: 'mapping'})">
+                          <q-item-section avatar top>
+                            <q-avatar icon="input" color="purple-10" text-color="white" >
+                              <q-badge color="primary" floating transparent>
+                                <q-icon name="cloud" color="white" />
+                              </q-badge>
+                            </q-avatar>
+                          </q-item-section>
 
-                    <q-item clickable  v-close-popup @click="doShowMarketplaceImportPopup({importType: 'mapping'})">
-                      <q-item-section avatar top>
-                        <q-avatar icon="input" color="purple-10" text-color="white" >
-                          <q-badge color="primary" floating transparent>
-                            <q-icon name="cloud" color="white" />
-                          </q-badge>
-                        </q-avatar>
-                      </q-item-section>
+                          <q-item-section>
+                            <q-item-label lines="1">{{ $t('Import from Marketplace') }}</q-item-label>
+                            <q-item-label caption>{{ $t('Import a shared OC Admin Mapping') }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
 
-                      <q-item-section>
-                        <q-item-label lines="1">{{ $t('Import from Marketplace') }}</q-item-label>
-                        <q-item-label caption>{{ $t('Import a shared OC Admin Mapping') }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
+                        <q-separator />
 
-                    <q-separator />
+                        <q-item clickable v-close-popup tag="a" :href="wikiLink('ref-whatsthedifferencefieldmappingshareimport')" target="_blank" >
+                          <q-item-section avatar top>
+                            <q-avatar icon="help_outline" color="info" text-color="black" />
+                          </q-item-section>
 
-                    <q-item clickable v-close-popup tag="a" :href="wikiLink('ref-whatsthedifferencefieldmappingshareimport')" target="_blank" >
-                      <q-item-section avatar top>
-                        <q-avatar icon="help_outline" color="info" text-color="black" />
-                      </q-item-section>
-
-                      <q-item-section>
-                        <q-item-label lines="1">{{ $t('What\'s the difference?') }}</q-item-label>
-                        <q-item-label caption>{{ $t('A quick peek at the Wiki') }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </q-list>
+                          <q-item-section>
+                            <q-item-label lines="1">{{ $t('What\'s the difference?') }}</q-item-label>
+                            <q-item-label caption>{{ $t('A quick peek at the Wiki') }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </q-list>
+                    </q-menu>
+                  </q-item>
+                  <q-separator />
+                  <q-item clickable v-close-popup @click="deleteMappingPrompt()">
+                    <q-item-section avatar>
+                      <q-icon name="delete" />
+                    </q-item-section>
+                    <q-item-section>{{ $t('Delete Mapping') }}</q-item-section>
+                  </q-item>
                 </q-menu>
-              </q-btn>
-              <q-btn icon="delete" text-color="negative" @click="deleteMappingPrompt()">
-                <q-tooltip content-style="font-size: 1rem;">
-                  {{ $t('Delete Mapping') }}
-                </q-tooltip>
               </q-btn>
           </q-card-actions>
         </q-card-section>
@@ -393,18 +414,22 @@
             </q-card-section>
           </q-card-section>
 
-          <q-separator vertical />
-
-          <q-card-actions vertical class="justify-around q-px-md">
-              <q-btn icon="add" color="primary" @click="addNewDeployment()" >
-                <q-tooltip content-style="font-size: 1rem;">
-                  {{ $t('Add Deployment') }}
-                </q-tooltip>
-              </q-btn>
-              <q-btn icon="refresh" :loading="dataLoading" @click="loadOpenCollectorsAndPipelines()">
-                <q-tooltip content-style="font-size: 1rem;">
-                  {{ $t('Reload') }}
-                </q-tooltip>
+          <q-card-actions vertical class="justify-start">
+              <q-btn icon="more_horiz" flat >
+                <q-menu anchor="bottom right" self="top right">
+                  <q-item clickable v-close-popup  @click="addNewDeployment()">
+                    <q-item-section avatar>
+                      <q-icon name="add" />
+                    </q-item-section>
+                    <q-item-section>{{ $t('Add Deployment') }}</q-item-section>
+                  </q-item>
+                  <q-item clickable v-close-popup @click="loadOpenCollectorsAndPipelines()">
+                    <q-item-section avatar>
+                      <q-icon name="refresh" />
+                    </q-item-section>
+                    <q-item-section>{{ $t('Reload') }}</q-item-section>
+                  </q-item>
+                </q-menu>
               </q-btn>
           </q-card-actions>
         </q-card-section>
