@@ -750,6 +750,7 @@ import IconPicture from 'components/Pipelines/IconPicture.vue'
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en.json'
 TimeAgo.addDefaultLocale(en)
+import ConfirmDialog from 'components/Dialogs/ConfirmDialog.vue'
 
 export default {
   name: 'PagePipelineProperties',
@@ -923,16 +924,10 @@ export default {
     deleteMappingPrompt () {
       // ask to confirm
       this.$q.dialog({
+        component: ConfirmDialog,
+        parent: this,
         title: this.$t('Confirm'),
         message: this.$t('Do you REALLY want to delete the Mapping information for this Pipeline?'),
-        ok: {
-          push: true,
-          color: 'negative'
-        },
-        cancel: {
-          push: true,
-          color: 'positive'
-        },
         persistent: true
       }).onOk(() => {
         this.deleteMapping()
@@ -960,16 +955,10 @@ export default {
     deleteCollectionPrompt () {
       // ask to confirm
       this.$q.dialog({
+        component: ConfirmDialog,
+        parent: this,
         title: this.$t('Confirm'),
         message: this.$t('Do you REALLY want to delete the Collection information for this Pipeline?'),
-        ok: {
-          push: true,
-          color: 'negative'
-        },
-        cancel: {
-          push: true,
-          color: 'positive'
-        },
         persistent: true
       }).onOk(() => {
         this.deleteCollection()
@@ -1298,16 +1287,10 @@ export default {
         }
 
         this.$q.dialog({
+          component: ConfirmDialog,
+          parent: this,
           title: this.$t('Confirm overide'),
           message: confirmationMessage,
-          ok: {
-            push: true,
-            color: 'negative'
-          },
-          cancel: {
-            push: true,
-            color: 'positive'
-          },
           persistent: true
         }).onOk(async () => {
           // Load full details of the Template
@@ -1678,18 +1661,12 @@ export default {
 
         // ask to confirm
         this.$q.dialog({
+          component: ConfirmDialog,
+          parent: this,
           title: this.$t('Confirm'),
           message: (
             this.$t('Do you REALLY want to delete this Deployment? {unDeployMessage}', { unDeployMessage })
           ),
-          ok: {
-            push: true,
-            color: 'negative'
-          },
-          cancel: {
-            push: true,
-            color: 'positive'
-          },
           persistent: true
         }).onOk(() => {
           this.deleteDeployment({
