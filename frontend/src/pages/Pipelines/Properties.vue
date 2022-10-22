@@ -64,7 +64,7 @@
                     </q-item-section>
                     <q-item-section>{{ $t('Share and Import Collection Configuration') }}</q-item-section>
                     <q-item-section side>
-                      <q-icon name="o_keyboard_arrow_right" />
+                      <q-icon :name="(areWeInLTR ? 'o_keyboard_arrow_right' : 'o_keyboard_arrow_left')" />
                     </q-item-section>
                     <q-menu anchor="top start" self="top end">
                       <q-list style="min-width: 400px">
@@ -195,7 +195,7 @@
                     </q-item-section>
                     <q-item-section>{{ $t('Share and Import Mapping') }}</q-item-section>
                     <q-item-section side>
-                      <q-icon name="o_keyboard_arrow_right" />
+                      <q-icon :name="(areWeInLTR ? 'o_keyboard_arrow_right' : 'o_keyboard_arrow_left')" />
                     </q-item-section>
                     <q-menu content-style="min-width: 420px">
                       <q-list style="min-width: 400px">
