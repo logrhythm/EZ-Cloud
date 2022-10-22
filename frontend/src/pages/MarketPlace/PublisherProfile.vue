@@ -38,7 +38,7 @@
               <div class="text-bold">{{ $t('Identicon:') }}</div>
               <div class="row items-center q-gutter-x-md">
                 <Identicon :identity="publisherDisplayName" />
-                <q-icon name="arrow_forward" size="lg" v-if="editingPublisherName"/>
+                <q-icon name="o_arrow_forward" size="lg" v-if="editingPublisherName"/>
                 <Identicon :identity="newPublisherName" v-if="editingPublisherName"/>
               </div>
             </q-card-section>

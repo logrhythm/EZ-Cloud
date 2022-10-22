@@ -39,7 +39,7 @@
           <q-item-section
           >
             <q-avatar size="24px" class="q-pa-none" square>
-              <q-icon name="link_off" size="sm" color="orange" />
+              <q-icon name="o_link_off" size="sm" color="orange" />
             </q-avatar>
           </q-item-section>
         </q-item>
@@ -54,7 +54,7 @@
           <q-item-section
           >
             <q-avatar size="24px" class="q-pa-none" square>
-              <q-icon name="cloud_off" size="sm" color="orange" />
+              <q-icon name="o_cloud_off" size="sm" color="orange" />
             </q-avatar>
           </q-item-section>
         </q-item>
@@ -159,24 +159,24 @@ export default {
       return [
         {
           title: '',
-          icon: 'home',
+          icon: 'o_home',
           link: '#/Welcome'
         },
         // {
         //   title: 'Status',
-        //   icon: 'dashboard',
+        //   icon: 'o_dashboard',
         //   link: '#/Status'
         // },
         {
           title: '',
           tooltip: this.$t('OpenCollectors'),
-          icon: 'mediation',
+          icon: 'o_mediation',
           link: '#/OpenCollectors'
         },
         {
           title: '',
           tooltip: this.$t('Pipelines'),
-          icon: 'account_tree',
+          icon: 'o_account_tree',
           link: '#/Pipelines'
         }
       ]
@@ -186,7 +186,7 @@ export default {
         {
           title: '',
           tooltip: this.$t('EZ Market Place'),
-          icon: 'storefront',
+          icon: 'o_storefront',
           link: '#/MarketPlace',
           id: 'ezMarketPlace',
           notification: null,
@@ -195,7 +195,7 @@ export default {
           subMenus: [
             {
               title: this.$t('Notifications'),
-              icon: 'mail_outline',
+              icon: 'o_mail_outline',
               id: 'ezMarketPlaceNotifications',
               notification: null,
               notificationColor: 'green',
@@ -204,12 +204,12 @@ export default {
             },
             {
               title: this.$t('Pipeline Templates'),
-              icon: 'account_tree',
+              icon: 'o_account_tree',
               link: '#/MarketPlace/PipelineTemplates'
             },
             {
               title: this.$t('My Profile'),
-              icon: 'person',
+              icon: 'o_person',
               link: '#/MarketPlace/PublisherProfile'
             }
           ]
@@ -220,7 +220,7 @@ export default {
         {
           title: '',
           tooltip: this.$t('Admin'),
-          icon: 'admin_panel_settings',
+          icon: 'o_admin_panel_settings',
           link: '#/Admin',
           needsPriviledge: true,
           id: 'admin',
@@ -231,7 +231,7 @@ export default {
         {
           title: '',
           tooltip: this.$t('Settings'),
-          icon: 'settings',
+          icon: 'o_settings',
           link: '#/Settings'
         },
         {
@@ -240,7 +240,7 @@ export default {
         {
           title: '',
           tooltip: this.$t('Log Out'),
-          icon: 'logout',
+          icon: 'o_logout',
           link: '#/Logout'
         }
       ]

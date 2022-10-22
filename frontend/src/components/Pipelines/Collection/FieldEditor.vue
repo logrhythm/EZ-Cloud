@@ -45,7 +45,7 @@
               />
               <q-icon
                 v-if="template.obfuscation && template.obfuscation.method && template.obfuscation.method.length && updateErrorMessage && updateErrorMessage.length"
-                name="error"
+                name="o_error"
                 :color="inFocus ? 'red-10' : 'alert'"
               >
                 <q-tooltip content-style="font-size: 1rem;">
@@ -55,7 +55,7 @@
               </q-icon>
               <q-icon
                 v-if="template.obfuscation && template.obfuscation.method && template.obfuscation.method.length && obfuscationRequirementNotMet"
-                name="warning"
+                name="o_warning"
                 :color="inFocus ? 'orange-10' : 'warning'"
               >
                 <q-tooltip content-style="font-size: 1rem;">
@@ -64,7 +64,7 @@
               </q-icon>
               <q-icon
                 v-if="template.obfuscation && template.obfuscation.method && template.obfuscation.method.length"
-                :name="obfuscationRequirementNotMet ? 'lock_open' : 'lock'"
+                :name="obfuscationRequirementNotMet ? 'o_lock_open' : 'o_lock'"
                 :color="obfuscationRequirementNotMet ? (inFocus ? 'orange-10' : 'warning') : (inFocus ? 'green-10' : 'positive')"
                 :class="obfuscationRequirementNotMet ? 'cursor-pointer' : ''"
                 @click="obfuscateSecret"
@@ -82,7 +82,7 @@
               />
               <q-icon
                 v-if="template.type && template.type.name && template.type.name === 'password'"
-                :name="showPassword ? 'visibility' : 'visibility_off'"
+                :name="showPassword ? 'o_visibility' : 'o_visibility_off'"
                 class="cursor-pointer"
                 @click="showPassword = !showPassword"
               >
@@ -149,7 +149,7 @@
         />
         <!-- Description, if any -->
         <div v-if="template.description && template.description.length" class="q-mt-xs row" style="opacity: .7">
-          <q-icon name="info" size="xs" color="blue" class="col-auto q-mr-sm" />
+          <q-icon name="o_info" size="xs" color="blue" class="col-auto q-mr-sm" />
           <q-markdown
             class="col"
             :src="template.description"

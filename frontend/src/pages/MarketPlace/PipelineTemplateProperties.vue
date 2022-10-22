@@ -63,12 +63,12 @@
 
                 <div class="row">
                   <div>
-                    <q-icon name="visibility" color="positive" size="lg" v-if="ezMarketPipelineTemplate.status === 'Visible'" />
-                    <q-icon name="visibility_off" style="opacity: .5;" size="lg" v-else-if="ezMarketPipelineTemplate.status === 'Hidden'" />
-                    <q-icon name="pending_actions" color="primary" size="lg" v-else-if="ezMarketPipelineTemplate.status === 'Pending review'" />
-                    <q-icon name="assignment_late" color="negative" style="opacity: .75;" size="lg" v-else-if="ezMarketPipelineTemplate.status === 'Failed Review'" />
-                    <q-icon name="auto_delete" color="negative" style="opacity: .5;" size="lg" v-else-if="ezMarketPipelineTemplate.status === 'To be deleted'" />
-                    <q-icon name="question_mark" color="orange" size="lg" v-else />
+                    <q-icon name="o_visibility" color="positive" size="lg" v-if="ezMarketPipelineTemplate.status === 'Visible'" />
+                    <q-icon name="o_visibility_off" style="opacity: .5;" size="lg" v-else-if="ezMarketPipelineTemplate.status === 'Hidden'" />
+                    <q-icon name="o_pending_actions" color="primary" size="lg" v-else-if="ezMarketPipelineTemplate.status === 'Pending review'" />
+                    <q-icon name="o_assignment_late" color="negative" style="opacity: .75;" size="lg" v-else-if="ezMarketPipelineTemplate.status === 'Failed Review'" />
+                    <q-icon name="o_auto_delete" color="negative" style="opacity: .5;" size="lg" v-else-if="ezMarketPipelineTemplate.status === 'To be deleted'" />
+                    <q-icon name="o_question_mark" color="orange" size="lg" v-else />
                   </div>
                   <div class="q-ml-sm">
                     <div class="text-bold">
@@ -175,7 +175,7 @@
                 <q-input outlined dense debounce="300" v-model="searchFilter" :placeholder="$t('Search')">
                   <template v-slot:append>
                     <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
-                    <q-icon name="search" />
+                    <q-icon name="o_search" />
                   </template>
                 </q-input>
               </div>
@@ -300,7 +300,7 @@
                     <q-input outlined dense debounce="300" v-model="existingPipelineTableSearchFilter" :placeholder="$t('Search')">
                       <template v-slot:append>
                         <q-btn v-if="existingPipelineTableSearchFilter.length" dense flat icon="close" @click="existingPipelineTableSearchFilter=''" />
-                        <q-icon name="search" />
+                        <q-icon name="o_search" />
                       </template>
                     </q-input>
                   </div>
@@ -333,10 +333,10 @@
             </template>
             <template v-slot:body-cell-status="props">
               <q-td :props="props">
-                <q-icon name="arrow_circle_up" color="green" size="md" v-if="props.value === 'Ready'" />
-                <q-icon name="construction" :color="(darkMode ? 'green-3' : 'green-10')" size="md" v-else-if ="props.value === 'Dev'" />
-                <q-icon name="auto_awesome" size="md" v-else-if ="props.value === 'New'" />
-                <q-icon name="help_center" color="grey" size="md" v-else />
+                <q-icon name="o_arrow_circle_up" color="green" size="md" v-if="props.value === 'Ready'" />
+                <q-icon name="o_construction" :color="(darkMode ? 'green-3' : 'green-10')" size="md" v-else-if ="props.value === 'Dev'" />
+                <q-icon name="o_auto_awesome" size="md" v-else-if ="props.value === 'New'" />
+                <q-icon name="o_help_center" color="grey" size="md" v-else />
                 <q-tooltip content-style="font-size: 1em">
                   {{ $t(props.value) }}
                 </q-tooltip>

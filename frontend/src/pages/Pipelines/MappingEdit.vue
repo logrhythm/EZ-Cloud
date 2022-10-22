@@ -82,7 +82,7 @@
                 </q-item>
                 <q-item  style="width: 35rem;">
                   <q-item-section avatar>
-                    <q-icon name="speed" />
+                    <q-icon name="o_speed" />
                   </q-item-section>
                   <q-item-section>
                     <q-slider
@@ -96,7 +96,7 @@
                 </q-item>
                 <q-item  style="width: 35rem;">
                   <q-item-section avatar>
-                    <q-icon name="download" />
+                    <q-icon name="o_download" />
                   </q-item-section>
                   <q-item-section>
                     <q-slider
@@ -110,7 +110,7 @@
                 </q-item>
                 <q-item  style="width: 35rem;">
                   <q-item-section avatar>
-                    <q-icon name="download_for_offline" />
+                    <q-icon name="o_download_for_offline" />
                   </q-item-section>
                   <q-item-section>
                     <q-slider
@@ -149,7 +149,7 @@
               </div>
             </div>
             <q-separator class="q-my-sm" />
-            <q-icon name="info" color="blue-10" size="sm" class="q-mr-sm" /><span>{{ $t('Total Messages sent by the backend: {incomingLogCount}', { incomingLogCount }) }}</span><br>
+            <q-icon name="o_info" color="blue-10" size="sm" class="q-mr-sm" /><span>{{ $t('Total Messages sent by the backend: {incomingLogCount}', { incomingLogCount }) }}</span><br>
             <span>{{ $t('This includes the messages already in transit when the Live Tail got stopped.') }}</span>
           </q-tooltip>
         <q-linear-progress :value="queueIn.length / queueInMaxSize" color="indigo" size="lg" stripe track-color="grey-10" />
@@ -255,8 +255,8 @@
                 input-style="min-height: 15.75em;"
               >
                 <template v-slot:append>
-                  <q-icon v-if="manualImportFileInput !== null" name="close" @click.stop="manualImportFileInput = null" class="cursor-pointer" />
-                  <q-icon name="note_add" @click.stop />
+                  <q-icon v-if="manualImportFileInput !== null" name="o_close" @click.stop="manualImportFileInput = null" class="cursor-pointer" />
+                  <q-icon name="o_note_add" @click.stop />
                 </template>
 
                 <template v-slot:after>
@@ -421,8 +421,8 @@
             >
               <div class="row content-center q-mr-sm q-gutter-y-none" style="width: 3rem;">
                 <q-tooltip content-style="font-size: 1em;">
-                  <q-icon name="stop" :color="(darkMode ? 'blue-10' : 'blue-7')" />{{ $t('Relative frequency {seenInLogCountOverMaxSeenInLog}% ({seenInLogCount} / {maxSeenInLog}).', { seenInLogCountOverMaxSeenInLog: (maxSeenInLog != 0 ? Math.round(item.seenInLogCount / maxSeenInLog * 100) : '_'), seenInLogCount: item.seenInLogCount, maxSeenInLog }) }}<br>
-                  <q-icon name="stop" :color="(darkMode ? 'indigo-10' : 'indigo-7')" />{{ $tc('N/A | Seen in {seenInLogCountOverProcessedLogsCount}% of the logs ({seenInLogCount} / {processedLogsCount}). | Seen in {seenInLogCountOverProcessedLogsCount}% of the logs ({seenInLogCount} / {processedLogsCount}).', processedLogsCount, { seenInLogCountOverProcessedLogsCount: (processedLogsCount != 0 ? Math.round(item.seenInLogCount / processedLogsCount * 100) : '_'), seenInLogCount: item.seenInLogCount, processedLogsCount}) }}
+                  <q-icon name="o_stop" :color="(darkMode ? 'blue-10' : 'blue-7')" />{{ $t('Relative frequency {seenInLogCountOverMaxSeenInLog}% ({seenInLogCount} / {maxSeenInLog}).', { seenInLogCountOverMaxSeenInLog: (maxSeenInLog != 0 ? Math.round(item.seenInLogCount / maxSeenInLog * 100) : '_'), seenInLogCount: item.seenInLogCount, maxSeenInLog }) }}<br>
+                  <q-icon name="o_stop" :color="(darkMode ? 'indigo-10' : 'indigo-7')" />{{ $tc('N/A | Seen in {seenInLogCountOverProcessedLogsCount}% of the logs ({seenInLogCount} / {processedLogsCount}). | Seen in {seenInLogCountOverProcessedLogsCount}% of the logs ({seenInLogCount} / {processedLogsCount}).', processedLogsCount, { seenInLogCountOverProcessedLogsCount: (processedLogsCount != 0 ? Math.round(item.seenInLogCount / processedLogsCount * 100) : '_'), seenInLogCount: item.seenInLogCount, processedLogsCount}) }}
                 </q-tooltip>
                 <q-linear-progress :value="item.seenInLogCount / maxSeenInLog" :color="(darkMode ? 'blue-10' : 'blue-7')" />
                 <q-linear-progress :value="item.seenInLogCount / processedLogsCount" :color="(darkMode ? 'indigo-10' : 'indigo-7')" />
@@ -437,7 +437,7 @@
                 <q-tooltip content-style="font-size: 1em;" anchor="center middle" self="center middle">
                   <div>
                     <div class="row items-center q-gutter-x-sm">
-                      <q-icon name="account_tree" color="blue-3" />
+                      <q-icon name="o_account_tree" color="blue-3" />
                       <div class="fixed-font text-bold">{{ item.name }}</div>
                     </div>
                     <q-separator />

@@ -181,79 +181,79 @@ export default function () {
         shipper: 'jsBeat',
         value: 'flatFile',
         label: 'Flat File',
-        icon: 'description'
+        icon: 'o_description'
       },
       {
         shipper: 'jsBeat',
         value: 'syslog',
         label: 'Syslog',
-        icon: 'input'
+        icon: 'o_input'
       },
       {
         shipper: 'genericbeat',
         value: 'genericbeat',
         label: 'HTTP / REST API',
-        icon: 'language'
+        icon: 'o_language'
       },
       {
         shipper: 'eventhubbeat',
         value: 'eventhubbeat',
         label: 'Azure Event Hub',
-        icon: 'language'
+        icon: 'o_language'
       },
       {
         shipper: 'kafkabeat',
         value: 'kafkabeat',
         label: 'Kafka',
-        icon: 'language'
+        icon: 'o_language'
       },
       {
         shipper: 'pubsubbeat',
         value: 'pubsubbeat',
         label: 'PubSub',
-        icon: 'language'
+        icon: 'o_language'
       },
       {
         shipper: 's3beat',
         value: 's3beat',
         label: 'S3',
-        icon: 'language'
+        icon: 'o_language'
       },
       {
         shipper: 'webhookbeat',
         value: 'webhookbeat',
         label: 'Webhook over HTTP',
-        icon: 'input'
+        icon: 'o_input'
       },
       {
         shipper: 'filebeat',
         value: 'log',
         label: 'Flat File',
-        icon: 'description'
+        icon: 'o_description'
       },
       {
         shipper: 'filebeat',
         value: 'httpjson',
         label: 'HTTP / REST API',
-        icon: 'language'
+        icon: 'o_language'
       },
       {
         shipper: 'filebeat',
         value: 'http_endpoint',
         label: 'HTTP / Web Hook Endpoint',
-        icon: 'cloud_upload'
+        icon: 'o_cloud_upload'
       },
       {
         shipper: 'filebeat',
         value: 'syslog_tcp',
         label: 'Syslog over TCP',
-        icon: 'input'
+        icon: 'o_input'
       },
       {
         shipper: 'filebeat',
         value: 'syslog_udp',
         label: 'Syslog over UDP',
-        icon: 'input'
+        icon: 'o_input'
       }
     ], // collectionMethodsOptions
     openCollectorLogSources: [],

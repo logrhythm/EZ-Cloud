@@ -4,7 +4,7 @@
       <q-card-section horizontal>
         <q-card-section class="col q-ma-none q-pa-none">
           <q-card-section class="text-h4 q-gutter-x-md">
-            <q-icon name="api" />
+            <q-icon name="o_api" />
             <span>{{ $t('EZ Backend Base URLs') }}</span>
           </q-card-section>
           <q-card-section>
@@ -40,7 +40,7 @@
     <q-card class="q-pa-md q-mx-none">
       <q-card-section class="col">
         <div class="text-h4 q-gutter-x-md">
-          <q-icon name="brightness_medium" />
+          <q-icon name="o_brightness_medium" />
           <span>{{ $t('Theme') }}</span>
         </div>
         <q-toggle
@@ -62,7 +62,7 @@
       <q-card-section horizontal>
         <q-card-section class="col q-ma-none q-pa-none">
           <q-card-section class="text-h4 q-gutter-x-md">
-            <q-icon name="translate" />
+            <q-icon name="o_translate" />
             <span>{{ $t('Language') }}</span>
           </q-card-section>
           <q-card-section>

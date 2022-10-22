@@ -59,7 +59,7 @@
                 @keyup.enter="checkCredentials()">
                 <template v-slot:append>
                   <q-icon
-                    :name="showPassword ? 'visibility' : 'visibility_off'"
+                    :name="showPassword ? 'o_visibility' : 'o_visibility_off'"
                     class="cursor-pointer"
                     @click="showPassword = !showPassword"
                   />
@@ -83,7 +83,7 @@
     </form>
 
     <div class="q-mt-lg row items-center q-gutter-x-sm text-white">
-      <q-icon name="translate" size="xs"/>
+      <q-icon name="o_translate" size="xs"/>
       <q-select
         v-model="selectedLanguage"
         :options="langOptions"
@@ -128,7 +128,7 @@
 
           <q-card-section horizontal>
             <q-card-section class="column items-center no-wrap q-gutter-y-sm justify-center q-px-lg">
-              <q-icon name="traffic" size="xl" />
+              <q-icon name="o_traffic" size="xl" />
               <div class="text-bold">{{ $t('Statuses') }}</div>
             </q-card-section>
 
@@ -137,9 +137,9 @@
             <q-card-section class="full-width row items-center no-wrap justify-evenly">
               <div class="column items-center">
                 <div class="text-bold">{{ $t('OC-Admin Container') }}</div>
-                <q-icon name="extension" size="xl" color="positive" v-if="ocAdminState === true"/>
-                <q-icon name="extension_off" size="xl" color="warning" v-else-if="ocAdminState === false"/>
-                <q-icon name="extension" size="xl" color="grey" v-else/>
+                <q-icon name="o_extension" size="xl" color="positive" v-if="ocAdminState === true"/>
+                <q-icon name="o_extension_off" size="xl" color="warning" v-else-if="ocAdminState === false"/>
+                <q-icon name="o_extension" size="xl" color="grey" v-else/>
                 <div v-if="ocAdminState === true">{{ $t('Reachable') }}</div>
                 <div v-else-if="ocAdminState === false">{{ $t('Unreachable') }}</div>
                 <div v-else>{{ $t('Unknown') }}</div>
@@ -147,9 +147,9 @@
 
               <div class="column items-center">
                 <div class="text-bold">{{ $t('OC-DB Container') }}</div>
-                <q-icon name="extension" size="xl" color="positive" v-if="pgSqlState === true"/>
-                <q-icon name="extension_off" size="xl" color="warning" v-else-if="pgSqlState === false"/>
-                <q-icon name="extension" size="xl" color="grey" v-else/>
+                <q-icon name="o_extension" size="xl" color="positive" v-if="pgSqlState === true"/>
+                <q-icon name="o_extension_off" size="xl" color="warning" v-else-if="pgSqlState === false"/>
+                <q-icon name="o_extension" size="xl" color="grey" v-else/>
                 <div v-if="pgSqlState === true">{{ $t('Reachable') }}</div>
                 <div v-else-if="pgSqlState === false">{{ $t('Unreachable') }}</div>
                 <div v-else>{{ $t('Unknown') }}</div>
@@ -157,9 +157,9 @@
 
               <div class="column items-center">
                 <div class="text-bold">{{ $t('Platform Manager') }}</div>
-                <q-icon name="cloud" size="xl" color="positive" v-if="msSqlState === true"/>
-                <q-icon name="cloud_off" size="xl" color="warning" v-else-if="msSqlState === false"/>
-                <q-icon name="cloud" size="xl" color="grey" v-else/>
+                <q-icon name="o_cloud" size="xl" color="positive" v-if="msSqlState === true"/>
+                <q-icon name="o_cloud_off" size="xl" color="warning" v-else-if="msSqlState === false"/>
+                <q-icon name="o_cloud" size="xl" color="grey" v-else/>
                 <div v-if="msSqlState === true">{{ $t('Reachable') }}</div>
                 <div v-else-if="msSqlState === false">{{ $t('Unreachable') }}</div>
                 <div v-else>{{ $t('Unknown') }}</div>

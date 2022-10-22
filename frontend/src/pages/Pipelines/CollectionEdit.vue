@@ -49,7 +49,7 @@
                 </q-item>
                 <q-item  style="width: 20rem;">
                   <q-item-section avatar>
-                    <q-icon name="speed" />
+                    <q-icon name="o_speed" />
                   </q-item-section>
                   <q-item-section>
                     <q-slider
@@ -63,7 +63,7 @@
                 </q-item>
                 <q-item  style="width: 20rem;">
                   <q-item-section avatar>
-                    <q-icon name="download" />
+                    <q-icon name="o_download" />
                   </q-item-section>
                   <q-item-section>
                     <q-slider
@@ -77,7 +77,7 @@
                 </q-item>
                 <q-item  style="width: 20rem;">
                   <q-item-section avatar>
-                    <q-icon name="download_for_offline" />
+                    <q-icon name="o_download_for_offline" />
                   </q-item-section>
                   <q-item-section>
                     <q-slider

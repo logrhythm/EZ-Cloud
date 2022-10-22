@@ -47,7 +47,7 @@
                         <q-input outlined dense debounce="300" v-model="searchFilter" :placeholder="$t('Search')">
                           <template v-slot:append>
                             <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
-                            <q-icon name="search" />
+                            <q-icon name="o_search" />
                           </template>
                         </q-input>
                       </div>
@@ -78,7 +78,7 @@
 
                 <template v-slot:body-cell-roleIsPrivileged="props">
                   <q-td :props="props">
-                    <q-icon name="check_circle_outline" color="green" size="md" v-if="props.value === 1" />
+                    <q-icon name="o_check_circle_outline" color="green" size="md" v-if="props.value === 1" />
                     <q-tooltip content-style="font-size: 1em">
                       <span v-if="props.value === 1">{{ $t('Privileged user') }}</span>
                       <span v-else-if ="props.value === 0">{{ $t('Non-privileged user') }}</span>
@@ -174,7 +174,7 @@
               v-slot:append
             >
               <q-icon
-                :name="showPassword ? 'visibility' : 'visibility_off'"
+                :name="showPassword ? 'o_visibility' : 'o_visibility_off'"
                 class="cursor-pointer"
                 @click="showPassword = !showPassword"
               >

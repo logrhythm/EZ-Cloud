@@ -32,7 +32,7 @@
                 <q-input outlined dense debounce="300" v-model="searchFilter" :placeholder="$t('Search')">
                   <template v-slot:append>
                     <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
-                    <q-icon name="search" />
+                    <q-icon name="o_search" />
                   </template>
                 </q-input>
               </div>
@@ -70,9 +70,9 @@
         </template>
         <template v-slot:body-cell-authenticationMethod="props">
           <q-td :props="props">
-            <q-icon name="password" size="sm" v-if="props.value === 'password'" />
-            <q-icon name="vpn_key" size="sm" v-else-if ="props.value === 'private_key'" />
-            <q-icon name="help_center" color="grey" size="md" v-else />
+            <q-icon name="o_password" size="sm" v-if="props.value === 'password'" />
+            <q-icon name="o_vpn_key" size="sm" v-else-if ="props.value === 'private_key'" />
+            <q-icon name="o_help_center" color="grey" size="md" v-else />
             <q-tooltip content-style="font-size: 1em">
               {{ $t(props.value) }}
             </q-tooltip>
@@ -113,7 +113,7 @@
                   Docker
                   <span v-if="props.row.dockerVersionUnsupported && !(dockerVersionCheck && dockerVersionCheck[props.row.uid] && dockerVersionCheck[props.row.uid].checking)" class="text-bold text-warning"><br>
                   <q-icon
-                    name="warning_amber"
+                    name="o_warning_amber"
                     color="orange"
                     size="1.5em"
                     class="q-ml-sm"
@@ -133,7 +133,7 @@
                 />
                 <q-icon
                   v-if="props.row.dockerVersionUnsupported && !(dockerVersionCheck && dockerVersionCheck[props.row.uid] && dockerVersionCheck[props.row.uid].checking)"
-                  name="warning_amber"
+                  name="o_warning_amber"
                   color="orange"
                   size="2em"
                   class="q-ml-sm"
@@ -147,13 +147,13 @@
                 {{ $t('Check the OpenCollector details and Credentials.') }}
               </q-tooltip>
               <q-icon
-                name="cloud_off"
+                name="o_cloud_off"
                 color="orange"
                 size="2em"
                 class="q-ml-sm"
               />
               <q-icon
-                name="warning_amber"
+                name="o_warning_amber"
                 color="orange"
                 size="2em"
                 class="q-ml-sm"
@@ -177,13 +177,13 @@
                 {{ $t('Check the OpenCollector details and Credentials.') }}
               </q-tooltip>
               <q-icon
-                name="cloud_off"
+                name="o_cloud_off"
                 color="orange"
                 size="2em"
                 class="q-ml-sm"
               />
               <q-icon
-                name="warning_amber"
+                name="o_warning_amber"
                 color="orange"
                 size="2em"
                 class="q-ml-sm"
@@ -407,10 +407,10 @@
         <q-card-section v-for="(job, jobIndex) in shipperInstall" :key="jobIndex">
           <div class="row q-gutter-x-md items-center" v-if="job.collector">
             <q-spinner-dots size="2em" color="teal" v-show="job.onGoing === true" />
-            <q-icon name="thumb_up" size="2em" color="positive" v-show="job.onGoing === false && job.failed === false" >
+            <q-icon name="o_thumb_up" size="2em" color="positive" v-show="job.onGoing === false && job.failed === false" >
               <q-tooltip content-style="font-size: 1em;" >{{ $t('Job completed successfuly') }}</q-tooltip>
             </q-icon>
-            <q-icon name="thumb_down" size="2em" color="negative" v-show="job.onGoing === false && job.failed === true" >
+            <q-icon name="o_thumb_down" size="2em" color="negative" v-show="job.onGoing === false && job.failed === true" >
               <q-tooltip content-style="font-size: 1em;" >{{ $t('Job failed to complete') }}</q-tooltip>
             </q-icon>
             <q-separator vertical />
@@ -426,11 +426,11 @@
             <q-separator vertical size="2px" color="teal" />
             <div class="q-ml-sm col">
               <div v-for="(log, logIndex) in job.console" :key="logIndex">
-                <q-icon name="info" class="q-mr-sm" color="primary" v-if="log.msgCode === 'CONTROL.INFO'"/>
-                <q-icon name="subdirectory_arrow_right" class="q-mr-sm" color="primary" v-if="log.type === 'finished'"/>
-                <q-icon name="error" class="q-mr-sm" color="orange" v-if="log.type === 'error' && log.msgCode === 'ERROR'"/>
-                <q-icon name="error" class="q-mr-sm" color="orange" v-if="log.type === 'error' && log.msgCode === 'EXIT'"/>
-                <q-icon name="info" class="q-mr-sm" color="orange" v-if="log.msgCode === 'CONTROL.ERROR'"/>
+                <q-icon name="o_info" class="q-mr-sm" color="primary" v-if="log.msgCode === 'CONTROL.INFO'"/>
+                <q-icon name="o_subdirectory_arrow_right" class="q-mr-sm" color="primary" v-if="log.type === 'finished'"/>
+                <q-icon name="o_error" class="q-mr-sm" color="orange" v-if="log.type === 'error' && log.msgCode === 'ERROR'"/>
+                <q-icon name="o_error" class="q-mr-sm" color="orange" v-if="log.type === 'error' && log.msgCode === 'EXIT'"/>
+                <q-icon name="o_info" class="q-mr-sm" color="orange" v-if="log.msgCode === 'CONTROL.ERROR'"/>
                 <span
                   :class="(log.type === 'stdout' ? 'fixed-font-console' : '') + ' '
                     + (log.type === 'finished' ? 'text-positive' : '')
