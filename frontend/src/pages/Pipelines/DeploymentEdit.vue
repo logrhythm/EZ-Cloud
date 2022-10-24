@@ -270,9 +270,9 @@
 
               <template v-slot:body-cell-status="props">
                 <q-td :props="props">
-                  <q-icon name="o_thumb_up" color="green" size="md" v-if="props.value === true" />
-                  <q-icon name="o_thumb_down" color="red" size="md" v-else-if ="props.value === false" style="opacity: .6" />
-                  <q-icon name="o_thumb_down_off_alt" color="orange" size="md" v-else style="opacity: .6" />
+                  <q-badge color="green" size="md" v-if="props.value === true" >{{ $t('Suitable')}}</q-badge>
+                  <q-badge color="red" size="md" v-else-if ="props.value === false" >{{ $t('Unsuitable')}}</q-badge>
+                  <q-badge color="orange" size="md" v-else style="opacity: .6" >{{ $t('Unknown')}}</q-badge>
                   <q-tooltip content-style="font-size: 1em">
                     <span v-if="props.value === true">{{ $t('Suitable') }}</span>
                     <span v-else-if ="props.value === false">{{ $t('Unsuitable') }}</span>
@@ -287,11 +287,7 @@
                       v-for="(shipper, index) in props.value"
                       :key="index"
                   >
-                    <q-tooltip content-style="font-size: 1em;" >{{ shipper.name }}</q-tooltip>
-                    <q-avatar square  size="24px" class="q-mr-xs">
-                      <img :src="'/shippers/' + collectionShipperDetails(shipper.name).icon + '.svg'" />
-                    </q-avatar>
-                    <q-badge outline color="grey">v{{ shipper.version }}</q-badge>
+                    <q-badge outline >{{ shipper.name }} - v{{ shipper.version }}</q-badge>
                   </div>
                   <div v-if="props.row.hasNecessaryShipper !== true">
                     <q-tooltip content-style="font-size: 1em;" >
@@ -311,18 +307,16 @@
                         </div>
                       </div>
                     </q-tooltip>
-                    <q-badge outline color="orange" class="q-gutter-x-sm">
+                    <q-badge outline color="orange" class="">
                       <q-icon
                         name="o_warning"
-                        size="sm"
                         color="orange"
+                        class="q-mr-sm"
                       />
-                      <div class="icon-stack">
-                        <img class="img-stack-75" :src="'/shippers/' + collectionShipperDetails((pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : null)).icon + '.svg'"/>
-                        <img class="img-stack-100 img-stack-opacity-50" :src="'/shippers/_block_overlay.svg'"/>
+                      <div>
+                        {{ (pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : 'N/A') }}
                       </div>
                     </q-badge>
-
                   </div>
                 </q-td>
               </template>
