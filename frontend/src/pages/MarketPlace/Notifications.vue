@@ -9,7 +9,7 @@
         <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('EZ Market Place : Notifications') }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
-    <q-card class="q-pa-md q-mx-none">
+    <q-card class="q-pa-none q-mx-none">
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
             <q-card-section class="text-h4">
@@ -131,7 +131,7 @@
 
           <q-separator vertical />
 
-          <q-card-actions vertical class="q-px-md">
+          <q-card-actions vertical class="q-pa-md">
               <q-btn icon="refresh" :loading="dataLoading" color="primary" @click="reloadEzMarketNotifications()">
                 <q-tooltip content-style="font-size: 1rem;">
                   {{ $t('Reload') }}

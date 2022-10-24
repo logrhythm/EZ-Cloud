@@ -7,7 +7,7 @@
   - [x] Left hand side navigation bar
   - [x] Login page
   - [x] Logout page
-  - [ ] Cards
+  - [x] Cards
   - [x] Fields
   - [x] Dialogs
     - [x] Standard Confirm dialog

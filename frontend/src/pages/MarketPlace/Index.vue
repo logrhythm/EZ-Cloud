@@ -6,13 +6,9 @@
             <q-card-section class="text-h4">
                 {{ $t('EZ Market Place') }}
             </q-card-section>
-            <q-card-section>
+            <q-card-section class="q-gutter-lg">
               <q-btn color="primary" icon='mail_outline' :label="$t('View Notifications')" to="/MarketPlace/Notifications" />
-            </q-card-section>
-            <q-card-section>
               <q-btn color="primary" icon='account_tree' :label="$t('View Pipeline Templates')" to="/MarketPlace/PipelineTemplates" />
-            </q-card-section>
-            <q-card-section>
               <q-btn color="primary" icon='person' :label="$t('View My Profile')" to="/MarketPlace/PublisherProfile" />
             </q-card-section>
           </q-card-section>

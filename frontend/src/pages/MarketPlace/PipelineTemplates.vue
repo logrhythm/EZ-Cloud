@@ -9,7 +9,7 @@
         <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('EZ Market Place : Pipeline Templates') }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
-    <q-card class="q-pa-md q-mx-none">
+    <q-card class="q-pa-none q-mx-none">
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
             <q-card-section class="row wrap justify-between">
@@ -183,7 +183,7 @@
 
           <q-separator vertical />
 
-          <q-card-actions vertical class="q-px-md">
+          <q-card-actions vertical class="q-pa-md">
               <q-btn icon="refresh" color="primary" :loading="dataLoading" @click="reloadEzMarketPipelineTemplates()" >
                 <q-tooltip content-style="font-size: 1rem;">
                   {{ $t('Reload') }}
