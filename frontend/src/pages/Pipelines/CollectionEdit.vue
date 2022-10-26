@@ -484,6 +484,28 @@ export default {
           newConf.logsource_name = this.pipeline.name
         }
 
+        // For s3beat:
+        if (this.activeCollectionShipper === 's3beat') {
+          if (this.activeCollectionMethod === 's3beat') {
+            newConf.awsFlag = false
+            newConf.period = '10s'
+            newConf.assumeRoleFlag = false
+            newConf.stsCredsExpirationTime = '1h'
+            newConf['multiline.negate'] = 'true'
+            newConf['traits.inclusion'] = ''
+            newConf['traits.exclusion'] = ''
+            newConf.heartbeatdisabled = false
+            newConf.heartbeatinterval = 60
+          }
+
+          // We are limited to 12 characters to ID the Beat
+          // - let's use the first 3 chars from the UID, so to reduce the chances of collision
+          // - then add the Stream name and full UID
+          // - then truncate back to 12 chars max.
+          newConf.beatIdentifier = String(this.pipeline.uid.substring(0, 3) + '_' + this.pipeline.name.replace(/[^a-zA-Z0-9]/g, '_') + '_' + this.pipeline.uid).substring(0, 12)
+          newConf.logsource_name = this.pipeline.name
+        }
+
         this.collectionConfig = newConf
         this.needsSaving = true
       }

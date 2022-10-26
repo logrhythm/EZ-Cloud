@@ -13,6 +13,8 @@ import collectionMethodTemplatesFilebeatHttpJson from './templates/collectionMet
 import collectionMethodTemplatesGenericbeat from './templates/collectionMethodTemplate.genericbeat'
 // WebHookBeat
 import collectionMethodTemplatesWebhookbeat from './templates/collectionMethodTemplate.webhookbeat'
+// S3Beat
+import collectionMethodTemplatesS3beat from './templates/collectionMethodTemplate.s3beat'
 
 export default function () {
   return {
@@ -38,7 +40,8 @@ export default function () {
       collectionMethodTemplatesFilebeatSyslogTcp, // Filebeat - syslog_tcp
       collectionMethodTemplatesFilebeatHttpJson, // Filebeat - httpjson
       collectionMethodTemplatesGenericbeat, // genericbeat
-      collectionMethodTemplatesWebhookbeat // webhookbeat
+      collectionMethodTemplatesWebhookbeat, // webhookbeat
+      collectionMethodTemplatesS3beat // s3beat
     ], // collectionMethodTemplates
     collectionShippersOptions: [
       {
@@ -71,12 +74,12 @@ export default function () {
       //   icon: 'logrhythm-pubsubbeat',
       //   outputFormat: 'yaml'
       // },
-      // {
-      //   value: 's3beat',
-      //   label: 'LogRhythm S3 Beat (🚧 - Stub)',
-      //   icon: 'logrhythm-s3beat',
-      //   outputFormat: 'yaml'
-      // },
+      {
+        value: 's3beat',
+        label: 'LogRhythm S3 Beat',
+        icon: 'logrhythm-s3beat',
+        outputFormat: 'yaml'
+      },
       {
         value: 'webhookbeat',
         label: 'LogRhythm Webhook Beat (👁‍🗨 - Preview - HTTP Only)',
