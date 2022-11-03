@@ -55,6 +55,5 @@ BEGIN
 		PRINT CONVERT(nvarchar(24), GETDATE(), 121) + ' | INFO: Adding column [dockerVersion] to table [openCollectors].'
 		ALTER TABLE dbo.openCollectors ADD dockerVersion nvarchar(100) NULL
 	END
-	GO
 END
 GO
