@@ -3,6 +3,9 @@
 ### Target: v1.0
 
 ## TO DO
+- Refactor
+  - [ ] Socket - Tail - Streamline `tailInit()` for LR Beats
+
 ## TO FIX
 - Installer
   - [ ] Issue #17 - 0.9.7 installer might not update OpenCollectors table
