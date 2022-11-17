@@ -625,7 +625,7 @@ async function tailInit(socket, payload) {
           tails[payload.tailId]
             // Check we are connected
             .exec('pwd', {
-              exit(code) {
+              exit() {
                 if (socket.connected) {
                   socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🔎 Checking if LRCTL is present in home directory of user...' });
                 }
