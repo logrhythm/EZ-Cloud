@@ -619,10 +619,19 @@ async function tailInit(socket, payload) {
 
           if (socket.connected) {
             socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🚀 Tail starting...' });
-            socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🔎 Checking if LRCTL not present in home directory of user...' });
+            socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🎯 Attempting to connect to host...' });
           }
 
           tails[payload.tailId]
+            // Check we are connected
+            .exec('pwd', {
+              exit(code) {
+                if (socket.connected) {
+                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🔎 Checking if LRCTL is present in home directory of user...' });
+                }
+                return true;
+              }
+            })
             // Check LRCTL is present
             .exec('if [ ! -e "./lrctl" ]; then exit 42; fi;', {
               exit(code) {
