@@ -25,7 +25,7 @@
   - [ ] Azure Event Hub
     - [ ] With custom Mapping
     - [ ] Without custom Mapping
-  - [ ] S3
+  - [x] S3
   - [ ] Azure Event Hub
     - [ ] With custom Mapping
     - [ ] Without custom Mapping
