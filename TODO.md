@@ -8,9 +8,9 @@
 
 ## TO FIX
 - Installer
-  - [ ] Issue #17 - 0.9.7 installer might not update OpenCollectors table
+  - [x] Issue #17 - 0.9.7 installer might not update OpenCollectors table
 - Documentation
-  - [ ] Issue #16 - Document the general `ERROR QUERYING PERSISTENCE LAYER` error code
+  - [x] Issue #16 - Document the general `ERROR QUERYING PERSISTENCE LAYER` error code
 - API
   - [ ] Update Pipeline name doesn't get saved
 
