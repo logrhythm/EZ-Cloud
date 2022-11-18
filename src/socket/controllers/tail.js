@@ -652,7 +652,7 @@ async function tailInit(socket, payload) {
             })
             // ~~Check Beat ID is not already running~~
             // Import configuration
-            .exec(`cat | ./lrctl s3beat config import --fqbn ${logRhythmFullyQualifiedBeatName}`, {
+            .exec(`cat | ./lrctl ${payload.collectionConfig.collectionShipper} config import --fqbn ${logRhythmFullyQualifiedBeatName}`, {
               in: beatConfig,
               err(stderr) {
                 // console.log('STDERR:::' + stderr);
@@ -676,8 +676,8 @@ async function tailInit(socket, payload) {
               }
             })
             // Check the already running instances of this Beat
-            // .exec('./lrctl s3beat status >&2', {
-            .exec('docker ps --format "{{.Names}} // {{.State}} // {{.Status}}" --filter name="s3beat_"', {
+            // .exec('./lrctl genericbeat status >&2', {
+            .exec(`docker ps --format "{{.Names}} // {{.State}} // {{.Status}}" --filter name="${payload.collectionConfig.collectionShipper}_"`, {
               err(stderr) {
                 // console.log('STDERR:::' + stderr);
                 if (socket.connected) {
@@ -699,7 +699,7 @@ async function tailInit(socket, payload) {
               }
             })
             // Stop / Start the Beat ID
-            .exec(`./lrctl s3beat stop --fqbn ${logRhythmFullyQualifiedBeatName} >&2`, {
+            .exec(`./lrctl ${payload.collectionConfig.collectionShipper} stop --fqbn ${logRhythmFullyQualifiedBeatName} >&2`, {
               err(stderr) {
                 // console.log('STDERR:::' + stderr);
                 if (socket.connected) {
@@ -720,7 +720,7 @@ async function tailInit(socket, payload) {
                 }
               }
             })
-            .exec(`./lrctl s3beat start --fqbn ${logRhythmFullyQualifiedBeatName} >&2`, {
+            .exec(`./lrctl ${payload.collectionConfig.collectionShipper} start --fqbn ${logRhythmFullyQualifiedBeatName} >&2`, {
               err(stderr) {
                 // console.log('STDERR:::' + stderr);
                 if (socket.connected) {
@@ -742,7 +742,7 @@ async function tailInit(socket, payload) {
               }
             })
             // Check if the new instance is running
-            // .exec(`./lrctl s3beat status | grep "${logRhythmFullyQualifiedBeatName}" >&2`, {
+            // .exec(`./lrctl genericbeat status | grep "${logRhythmFullyQualifiedBeatName}" >&2`, {
             .exec(`docker ps --format "{{.Names}} // {{.State}} // {{.Status}}" --filter name="${logRhythmFullyQualifiedBeatName}"`, {
               err(stderr) {
                 // console.log('STDERR:::' + stderr);
