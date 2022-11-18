@@ -4,7 +4,7 @@
 
 ## TO DO
 - Refactor
-  - [ ] Socket - Tail - Streamline `tailInit()` for LR Beats
+  - [x] Socket - Tail - Streamline `tailInit()` for LR Beats
 - Beat Support
   - [x] S3
   - [ ] PubSub
