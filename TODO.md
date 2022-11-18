@@ -5,6 +5,11 @@
 ## TO DO
 - Refactor
   - [ ] Socket - Tail - Streamline `tailInit()` for LR Beats
+- Beat Support
+  - [x] S3
+  - [ ] PubSub
+  - [ ] EventHub
+  - [ ] WebHook HTTPS
 
 ## TO FIX
 - Installer
