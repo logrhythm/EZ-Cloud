@@ -1206,9 +1206,15 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
         }
 
         // ##########
-        // genericbeat
+        // LogRhythm Beats (genericbeat, webhookbeat, s3beat)
         // ##########
-        if (beat.name.toLowerCase() === 'genericbeat') {
+        if (
+          beat.name.toLowerCase() === 'genericbeat'
+          || beat.name.toLowerCase() === 'webhookbeat'
+          || beat.name.toLowerCase() === 's3beat'
+        ) {
+          const beatNameLowerCase = beat.name.toLowerCase();
+
           // logrhythmShipperBaseConfig
           // Build the list of steps
 
@@ -1217,7 +1223,7 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
             steps.push(
               {
                 action: `Import Stream configuration for FQBN (${logRhythmFullyQualifiedBeatName})`,
-                command: `cat | ./lrctl genericbeat config import --fqbn ${logRhythmFullyQualifiedBeatName}`,
+                command: `cat | ./lrctl ${beatNameLowerCase} config import --fqbn ${logRhythmFullyQualifiedBeatName}`,
                 stdin: (typeof config === 'string' ? `${config}\n${logrhythmShipperBaseConfig}` : `${JSON.stringify(config)}\n${logrhythmShipperBaseConfig}`)
               }
             );
@@ -1227,65 +1233,65 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
           steps.push(
             // We do a Stop - Start as a Restart would not do anything on a Beat not already running
             {
-              action: 'Stop GenericBeat',
-              command: `./lrctl genericbeat stop --fqbn ${logRhythmFullyQualifiedBeatName}`
+              action: `Stop ${beat.name}`,
+              command: `./lrctl ${beatNameLowerCase} stop --fqbn ${logRhythmFullyQualifiedBeatName}`
             },
             {
-              action: 'Start GenericBeat to take new configuration into account',
-              command: `./lrctl genericbeat start --fqbn ${logRhythmFullyQualifiedBeatName}`
+              action: `Start ${beat.name} to take new configuration into account`,
+              command: `./lrctl ${beatNameLowerCase} start --fqbn ${logRhythmFullyQualifiedBeatName}`
             },
             {
-              action: 'Check Status for all GenericBeat instances',
-              command: './lrctl genericbeat status'
+              action: `Check Status for all ${beat.name} instances`,
+              command: `./lrctl ${beatNameLowerCase} status`
             },
             {
-              action: 'Get GenericBeat logs for this instance (last 10 lines only)',
+              action: `Get ${beat.name} logs for this instance (last 10 lines only)`,
               command: `docker logs --tail 10 "${logRhythmFullyQualifiedBeatName}"`
             }
           );
           streamUpdateForBeatStatus.payload.steps = steps;
         }
 
-        // ##########
-        // webhookbeat
-        // ##########
-        if (beat.name.toLowerCase() === 'webhookbeat') {
-          // logrhythmShipperBaseConfig
-          // Build the list of steps
+        // // ##########
+        // // webhookbeat
+        // // ##########
+        // if (beat.name.toLowerCase() === 'webhookbeat') {
+        //   // logrhythmShipperBaseConfig
+        //   // Build the list of steps
 
-          // Import the Configuration (should only be one, but deal with all of them)
-          beat.config.forEach((config) => {
-            steps.push(
-              {
-                action: `Import Stream configuration for FQBN (${logRhythmFullyQualifiedBeatName})`,
-                command: `cat | ./lrctl webhookbeat config import --fqbn ${logRhythmFullyQualifiedBeatName}`,
-                stdin: (typeof config === 'string' ? `${config}\n${logrhythmShipperBaseConfig}` : `${JSON.stringify(config)}\n${logrhythmShipperBaseConfig}`)
-              }
-            );
-          });
+        //   // Import the Configuration (should only be one, but deal with all of them)
+        //   beat.config.forEach((config) => {
+        //     steps.push(
+        //       {
+        //         action: `Import Stream configuration for FQBN (${logRhythmFullyQualifiedBeatName})`,
+        //         command: `cat | ./lrctl webhookbeat config import --fqbn ${logRhythmFullyQualifiedBeatName}`,
+        //         stdin: (typeof config === 'string' ? `${config}\n${logrhythmShipperBaseConfig}` : `${JSON.stringify(config)}\n${logrhythmShipperBaseConfig}`)
+        //       }
+        //     );
+        //   });
 
-          // Wrap up
-          steps.push(
-            // We do a Stop - Start as a Restart would not do anything on a Beat not already running
-            {
-              action: 'Stop Webhookbeat',
-              command: `./lrctl webhookbeat stop --fqbn ${logRhythmFullyQualifiedBeatName}`
-            },
-            {
-              action: 'Start Webhookbeat to take new configuration into account',
-              command: `./lrctl webhookbeat start --fqbn ${logRhythmFullyQualifiedBeatName}`
-            },
-            {
-              action: 'Check Status for all Webhookbeat instances',
-              command: './lrctl webhookbeat status'
-            },
-            {
-              action: 'Get Webhookbeat logs for this instance (last 10 lines only)',
-              command: `docker logs --tail 10 "${logRhythmFullyQualifiedBeatName}"`
-            }
-          );
-          streamUpdateForBeatStatus.payload.steps = steps;
-        }
+        //   // Wrap up
+        //   steps.push(
+        //     // We do a Stop - Start as a Restart would not do anything on a Beat not already running
+        //     {
+        //       action: 'Stop Webhookbeat',
+        //       command: `./lrctl webhookbeat stop --fqbn ${logRhythmFullyQualifiedBeatName}`
+        //     },
+        //     {
+        //       action: 'Start Webhookbeat to take new configuration into account',
+        //       command: `./lrctl webhookbeat start --fqbn ${logRhythmFullyQualifiedBeatName}`
+        //     },
+        //     {
+        //       action: 'Check Status for all Webhookbeat instances',
+        //       command: './lrctl webhookbeat status'
+        //     },
+        //     {
+        //       action: 'Get Webhookbeat logs for this instance (last 10 lines only)',
+        //       command: `docker logs --tail 10 "${logRhythmFullyQualifiedBeatName}"`
+        //     }
+        //   );
+        //   streamUpdateForBeatStatus.payload.steps = steps;
+        // }
 
         // Add the Steps to the Exec stack
         steps.forEach((step, stepCounter) => {
