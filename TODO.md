@@ -5,7 +5,11 @@
 ## TO DO
 - Refactor
   - [x] Socket - Tail - Streamline `tailInit()` for LR Beats
-  - [ ] API - `updateStreamConfigurationForBeat()` for LR Beats
+  - [x] API - `updateStreamConfigurationForBeat()` for LR Beats
+  - [x] API - `deleteStreamConfigurationForBeat()` for LR Beats
+- Add support for Beats that require file dropped as part of Config
+  - [ ] PubSub
+  - [ ] WebHook HTTPS
 - Beat Support
   - [x] S3
   - [ ] PubSub

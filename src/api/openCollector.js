@@ -1598,48 +1598,54 @@ function deleteStreamConfigurationForBeat(
         }
 
         // ##########
-        // genericbeat
+        // LogRhythm Beats (genericbeat, webhookbeat, s3beat)
         // ##########
-        if (beat.name.toLowerCase() === 'genericbeat') {
+        if (
+          beat.name.toLowerCase() === 'genericbeat'
+          || beat.name.toLowerCase() === 'webhookbeat'
+          || beat.name.toLowerCase() === 's3beat'
+        ) {
+          const beatNameLowerCase = beat.name.toLowerCase();
+
           steps.push(
             {
-              action: `Stop GenericBeat instance (${logRhythmFullyQualifiedBeatName})`,
-              command: `./lrctl genericbeat stop --fqbn ${logRhythmFullyQualifiedBeatName}`,
+              action: `Stop ${beat.name} instance (${logRhythmFullyQualifiedBeatName})`,
+              command: `./lrctl ${beatNameLowerCase} stop --fqbn ${logRhythmFullyQualifiedBeatName}`,
               continueOnFailure: true
             },
             {
-              action: `Remove configuration for this GenericBeat instance (${logRhythmFullyQualifiedBeatName})`,
-              command: `./lrctl genericbeat config remove --yes --fqbn ${logRhythmFullyQualifiedBeatName}`
+              action: `Remove configuration for this ${beat.name} instance (${logRhythmFullyQualifiedBeatName})`,
+              command: `./lrctl ${beatNameLowerCase} config remove --yes --fqbn ${logRhythmFullyQualifiedBeatName}`
             },
             {
-              action: 'Check Status for all GenericBeat instances',
-              command: './lrctl genericbeat status'
+              action: `Check Status for all ${beat.name} instances`,
+              command: `./lrctl ${beatNameLowerCase} status`
             }
           );
           streamConfigDeleteForBeatStatus.payload.steps = steps;
         }
 
-        // ##########
-        // webhookbeat
-        // ##########
-        if (beat.name.toLowerCase() === 'webhookbeat') {
-          steps.push(
-            {
-              action: `Stop WebhookBeat instance (${logRhythmFullyQualifiedBeatName})`,
-              command: `./lrctl webhookbeat stop --fqbn ${logRhythmFullyQualifiedBeatName}`,
-              continueOnFailure: true
-            },
-            {
-              action: `Remove configuration for this WebhookBeat instance (${logRhythmFullyQualifiedBeatName})`,
-              command: `./lrctl webhookbeat config remove --yes --fqbn ${logRhythmFullyQualifiedBeatName}`
-            },
-            {
-              action: 'Check Status for all WebhookBeat instances',
-              command: './lrctl webhookbeat status'
-            }
-          );
-          streamConfigDeleteForBeatStatus.payload.steps = steps;
-        }
+        // // ##########
+        // // webhookbeat
+        // // ##########
+        // if (beat.name.toLowerCase() === 'webhookbeat') {
+        //   steps.push(
+        //     {
+        //       action: `Stop WebhookBeat instance (${logRhythmFullyQualifiedBeatName})`,
+        //       command: `./lrctl webhookbeat stop --fqbn ${logRhythmFullyQualifiedBeatName}`,
+        //       continueOnFailure: true
+        //     },
+        //     {
+        //       action: `Remove configuration for this WebhookBeat instance (${logRhythmFullyQualifiedBeatName})`,
+        //       command: `./lrctl webhookbeat config remove --yes --fqbn ${logRhythmFullyQualifiedBeatName}`
+        //     },
+        //     {
+        //       action: 'Check Status for all WebhookBeat instances',
+        //       command: './lrctl webhookbeat status'
+        //     }
+        //   );
+        //   streamConfigDeleteForBeatStatus.payload.steps = steps;
+        // }
 
         // Add the Steps to the Exec stack
         steps.forEach((step, stepCounter) => {
