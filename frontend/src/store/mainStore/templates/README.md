@@ -12,6 +12,7 @@
   - string
   - number
   - regex
+  - file
 - options
 - prefix
 - suffix // s, m, KiB, MiB
@@ -35,7 +36,7 @@
       name: '', // array, object, boolean, string, password, number, regex, option
       of: { // for array and object
         type: {
-          name: '', // array, object, boolean, string, password, number, regex, option
+          name: '', // array, object, boolean, string, password, number, regex, option, file
           multilines: false // for string and regex
           of: ...
         },
@@ -68,6 +69,11 @@
           compulsory: false, // Set to True to display the option to obfuscate in the UI
           method: 'oc_encrypt', // Method of obfuscation
           obfuscatedFormatCheckRegex: '[0-9]\\|\\|.{23,}' // Regex to validate the field is correctly obfuscated. Example of properly obfuscated field using the "oc_encrypt" method: 2||64isxHMCDZfsEWhchnl+RTGW6RCjcOtxTjTBotLmtAzXTxMSc1jCPv7xPrtXO8nr4796WpAzSduLAENtAjs=
+        },
+        fileOptions: { // For file type.
+          dropIn: false, // Do we drop the file content into a specific location on the disk. If False, the content is left as is in the field, just like a multiline string.
+          dropInPath: '', // Where on the disk to drop the file to
+          valueInConfig: '' // Path or file name to use as the value for the field
         },
         description: '', // Markdown formatted documentation
         required: false, // Toggles the "Required" flag in the UI
@@ -103,6 +109,11 @@
       compulsory: false, // Set to True to display the option to obfuscate in the UI
       method: 'oc_encrypt', // Method of obfuscation
       obfuscatedFormatCheckRegex: '[0-9]\\|\\|.{23,}' // Regex to validate the field is correctly obfuscated. Example of properly obfuscated field using the "oc_encrypt" method: 2||64isxHMCDZfsEWhchnl+RTGW6RCjcOtxTjTBotLmtAzXTxMSc1jCPv7xPrtXO8nr4796WpAzSduLAENtAjs=
+    },
+    fileOptions: { // For file type.
+      dropIn: false, // Do we drop the file content into a specific location on the disk. If False, the content is left as is in the field, just like a multiline string.
+      dropInPath: '', // Where on the disk to drop the file to
+      valueInConfig: '' // Path or file name to use as the value for the field
     },
     description: '', // Markdown formatted documentation for the field
     required: false, // Toggles the "Required" flag in the UI
