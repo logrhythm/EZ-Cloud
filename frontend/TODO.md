@@ -41,6 +41,7 @@
   - [x] Add sticky title and X close button
   - [x] Make bottom panel sticky, with `[Close]` button
   - [ ] Deduplicate error messages
+- [ ] Admin - MS SQL - Add Test button
 - [ ] Add a simple Wizard from landing page
   - [ ] Ask for name for Log Source
   - [ ] Create collection configuation
