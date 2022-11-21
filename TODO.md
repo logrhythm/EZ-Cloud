@@ -15,6 +15,7 @@
   - [ ] PubSub
   - [ ] EventHub
   - [ ] WebHook HTTPS
+- [ ] API - Admin - MS SQL - Add MS SQL test
 
 ## TO FIX
 - Installer
