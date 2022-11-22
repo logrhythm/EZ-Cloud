@@ -59,7 +59,7 @@
     - [ ] Ability to Enable / Commit the Log Source creation
 
 ## TO FIX
-- [ ] JSON to Yaml Collection config fails with `TypeError: jsonConfig.forEach is not a function`
+- [x] JSON to Yaml Collection config fails with `TypeError: jsonConfig.forEach is not a function`
 
 ## TO TEST
 

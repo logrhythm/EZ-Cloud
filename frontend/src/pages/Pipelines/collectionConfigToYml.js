@@ -294,13 +294,13 @@ function collectionConfigToYml (collectionConfig) {
     //   valueInConfig: '/beats/webhookbeat/config/webhookbeat.crt', // Path or file name to use as the value for the field
     //   maxFileSize: null // Maximum file size, in bytes. Ignored if not set (or set to null)
     // }
-    jsonConfig.forEach((configPath) => {
+    Object.keys(jsonConfig).forEach((configPath) => {
       if (
-        configPath &&
-        typeof configPath === 'object' &&
-        !Array.isArray(configPath)
+        jsonConfig[configPath] &&
+        typeof jsonConfig[configPath] === 'object' &&
+        !Array.isArray(jsonConfig[configPath])
       ) {
-        configPath = configPath.valueInConfig
+        jsonConfig[configPath] = jsonConfig[configPath].valueInConfig
       }
     })
 
