@@ -57,6 +57,7 @@
     - [ ] Ability to rename Log Source
     - [ ] Ability to assign Log Source to other Open Collectors
     - [ ] Ability to Enable / Commit the Log Source creation
+- [ ] Provide Beats's configuration to Backend when starting Tail
 
 ## TO FIX
 - [x] JSON to Yaml Collection config fails with `TypeError: jsonConfig.forEach is not a function`
