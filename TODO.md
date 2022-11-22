@@ -16,6 +16,7 @@
   - [ ] EventHub
   - [ ] WebHook HTTPS
 - [ ] API - Admin - MS SQL - Add MS SQL test
+- [ ] Use Beats's configuration provided by Frontend when starting Tail, instead of using local copy of `collectionConfigToYml()`
 
 ## TO FIX
 - Installer
