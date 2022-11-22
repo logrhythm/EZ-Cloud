@@ -278,6 +278,42 @@ exports.collectionConfigToYml = (collectionConfig) => {
       delete jsonConfig.response
     }
 
+    //  ##       ########        ########  ########    ###    ########  ######
+    //  ##       ##     ##       ##     ## ##         ## ##      ##    ##    ##
+    //  ##       ##     ##       ##     ## ##        ##   ##     ##    ##
+    //  ##       ########        ########  ######   ##     ##    ##     ######
+    //  ##       ##   ##         ##     ## ##       #########    ##          ##
+    //  ##       ##    ##        ##     ## ##       ##     ##    ##    ##    ##
+    //  ######## ##     ##       ########  ######## ##     ##    ##     ######
+
+    // ***********
+    // Deal with File fields
+
+    // File fields are recorded as an Object:
+    // { // For file type.
+    //   dropIn: true, // Do we drop the file content into a specific location on the disk. If False, the content is left as is in the field, just like a multiline string.
+    //   dropInPath: '{{beat_config_volume}}/webhookbeat.crt', // Where on the disk to drop the file to
+    //   valueInConfig: '/beats/webhookbeat/config/webhookbeat.crt', // Path or file name to use as the value for the field
+    //   maxFileSize: null // Maximum file size, in bytes. Ignored if not set (or set to null)
+    // }
+    Object.keys(jsonConfig).forEach((configPath) => {
+      if (
+        jsonConfig[configPath] &&
+        typeof jsonConfig[configPath] === 'object' &&
+        !Array.isArray(jsonConfig[configPath])
+      ) {
+        jsonConfig[configPath] = jsonConfig[configPath].valueInConfig
+      }
+    })
+
+    //   ######  ##       ########    ###    ##    ##       ##     ## ########
+    //  ##    ## ##       ##         ## ##   ###   ##       ##     ## ##     ##
+    //  ##       ##       ##        ##   ##  ####  ##       ##     ## ##     ##
+    //  ##       ##       ######   ##     ## ## ## ##       ##     ## ########
+    //  ##       ##       ##       ######### ##  ####       ##     ## ##
+    //  ##    ## ##       ##       ##     ## ##   ###       ##     ## ##
+    //   ######  ######## ######## ##     ## ##    ##        #######  ##
+
     // ***********
     // Remove any leafs set to null
     const jsonConfigClean = JSON.parse(JSON.stringify(jsonConfig, (key, value) => {
