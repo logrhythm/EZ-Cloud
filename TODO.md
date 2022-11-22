@@ -25,7 +25,7 @@
 - API
   - [ ] Update Pipeline name doesn't get saved
   - [x] Crash when no MasterID is returned from EMDB
-  - [ ] Issue #21 - Deployment fails at last step with LR 7.9 SIEM
+  - [x] Issue #21 - Deployment fails at last step with LR 7.9 SIEM
 
 ## TO TEST
 
