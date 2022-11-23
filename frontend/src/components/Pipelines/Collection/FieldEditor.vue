@@ -130,22 +130,94 @@
             :readonly="(template.readonly ? template.readonly : false)"
           />
           <!-- File -->
-          <q-file
+          <div
             v-if="template.type && template.type.name && template.type.name === 'file'"
-            filled
-            bottom-slots
-            v-model="internalValue"
-            :label="$t('Click or Drop a file here')"
-            input-style="min-width: 24em;min-height: 4em;"
-            :max-file-size="(template.fileOptions && template.fileOptions.maxFileSize ? template.fileOptions.maxFileSize : undefined)"
           >
-            <template v-slot:append>
-              <q-icon v-if="!(internalValue === null || internalValue === '')" name="o_close" @click.stop="internalValue = null" class="cursor-pointer" />
-              <!-- <q-icon name="o_note_add" @click.stop /> -->
-              <q-icon name="o_cloud_upload" color="primary" @click.stop="internalValue = null" class="cursor-pointer" />
-              <q-icon name="o_cloud_upload" :color="(internalValue === null || internalValue === '' ? 'green' : 'primary')" @click.stop="importFile(internalValue)" class="cursor-pointer" />
-            </template>
-          </q-file>
+            <!-- <div class="text-grey">{{internalValue}}</div> -->
+            <!--
+            {
+              "dropIn":"true",
+              "dropInPath":"{{beat_config_volume}}/webhookbeat.key",
+              "valueInConfig":"/beats/webhookbeat/config/webhookbeat.key",
+              "fileContentBase64":"LS0tLSBCRUdJTiBTU0gyIFBVQkxJQyBLRVkgLS0tLQpBQUFBQjNOemFDMXljMkVBQUFBQkpRQUFBUUIvbkFtT2pUbWV6TlVES1l2RWVJUmYyWW53TTkvdVVHMWQwQllzCmM4L3RSdHgrUkdpN04ybFVicDcyOE1YR3dkbkw5b2Q0Y0l0emt5L3pWZExaRTJjeWNPYTE4eEJLOWNPV21jS1MKMEE4RllCeEVRV0ovcTlZVlVnWmJGS2ZZR2FHUXhzRVIrQTB3L2ZYOEFMdWs3OGt0UDMxSzY5TGNRZ3hJc2w3cgpOenhzb09RS0ovQ0l4T0dNTXhjellUaUVvTHZRaGFwRlFNczNGTDk2ZGlkS3IvUWJyZkIxV1Q2czM4MzhTRWFYCmZnWnZMZWYxWUIyeG1maGJUOU9YRkUzRlh2aDJVUEJmTitmZkU3aWlheVFmLzJYUis4ajRONGJXMzBEaVB0T1EKTEdVckgxeTVYL3JwTlpObFdXMitqR0l4cVp0Z1dnN2xUeTNtWHk1eDgzNlNqLzZMCi0tLS0gRU5EIFNTSDIgUFVCTElDIEtFWSAtLS0t",
+              "fileSizeBytes":422
+            }
+            -->
+            <div class="flex q-gutter-lg">
+              <div
+                v-if="internalValue && internalValue.fileContentBase64 && internalValue.fileContentBase64.length"
+              >
+                <div>File attached.</div>
+                <div>({{internalValue.fileSizeBytes}} bytes)</div>
+              </div>
+              <div
+                v-else
+              >
+                <div>No file attached.</div>
+              </div>
+              <div class="q-gutter-x-md">
+                <q-btn
+                  no-caps
+                  dense
+                  icon="o_upload_file"
+                  :label="$t('Upload File')"
+                  color="primary"
+                  :disabled="showFileUpload"
+                  @click="showFileUpload = true"
+                />
+                <q-btn
+                  icon="o_delete"
+                  class=""
+                  text-color="negative"
+                  :disabled="!(internalValue && internalValue.fileContentBase64 && internalValue.fileContentBase64.length)"
+                >
+                  <!-- @click="" -->
+                  <q-tooltip content-style="font-size: 1rem;">
+                    {{ $t('Delete') }}
+                  </q-tooltip>
+                </q-btn>
+              </div>
+            </div>
+            <div
+              class="flex q-mt-sm"
+              v-if="template.type && template.type.name && template.type.name === 'file' && showFileUpload"
+            >
+                <!-- input-style="min-width: 24em;max-width: 30em;min-height: 4em;max-height: 4em;" -->
+              <q-file
+                filled
+                bottom-slots
+                v-model="fileUploadContent"
+                :label="$t('Click or Drop a file here')"
+                input-style="width: 24em;max-width: 24em;height: 4em;"
+                style="width: 26em;"
+                :max-file-size="(template.fileOptions && template.fileOptions.maxFileSize ? template.fileOptions.maxFileSize : undefined)"
+              >
+                <template v-slot:append>
+                  <q-icon v-if="!(fileUploadContent === null || fileUploadContent === '')" name="o_close" @click.stop="fileUploadContent = null" class="cursor-pointer" />
+                  <!-- <q-icon name="o_cloud_upload" color="primary" @click.stop="fileUploadContent = null" class="cursor-pointer" />
+                  <q-icon name="o_cloud_upload" :color="(fileUploadContent === null || fileUploadContent === '' ? 'green' : 'primary')" @click.stop="importFile(fileUploadContent)" class="cursor-pointer" /> -->
+                </template>
+              </q-file>
+              <q-separator spaced vertical />
+              <div class="column justify-between">
+                <q-btn
+                  class="q-mb-sm"
+                  no-caps
+                  dense
+                  icon="o_cloud_upload"
+                  :label="$t('Upload')"
+                  color="primary"
+                  @click="importFile(fileUploadContent)"
+                />
+                <q-btn
+                  no-caps
+                  dense
+                  :label="$t('Cancel')"
+                  @click="showFileUpload = false"
+                />
+              </div>
+            </div>
+          </div>
           <!-- Suffix, if any -->
           <q-select
             v-if="template.suffix"
@@ -248,7 +320,9 @@ export default {
       showPassword: false,
       inFocus: false,
       waitingForBackend: false,
-      updateErrorMessage: '' // To store returned error message from API when obfuscating secret
+      updateErrorMessage: '', // To store returned error message from API when obfuscating secret
+      fileUploadContent: null,
+      showFileUpload: false
     }
   }, // data
   computed: {
@@ -602,12 +676,16 @@ export default {
         this.$q.notify({
           type: 'negative',
           color: 'negative',
-          icon: 'report_problem',
+          icon: 'o_report_problem',
           message: this.$t('Failed to obfuscate the Secret. Error message:'),
           caption: payload.captionForLogAndPopup,
           timeout: 4000
         })
       }
+    },
+    importFile (fileUploadContent) {
+      this.showFileUpload = false
+      // TODO: Upload to API, and get back Base64 entry to put in the config object
     }
   } // methods
 }

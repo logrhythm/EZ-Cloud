@@ -12,17 +12,6 @@ export default {
   definition: [
     // Required
     {
-      name: 'hostname',
-      label: 'Webhook Listener Hostname/IP',
-      type: {
-        name: 'string'
-      },
-      description: 'Provide the hostname or IP address for the Webhook endpoint only; do not include the query parameters string.',
-      default: '',
-      required: true,
-      group: 'Required'
-    },
-    {
       name: 'portnumber',
       label: 'Port Number',
       type: {
@@ -34,6 +23,20 @@ export default {
       max: 65535,
       required: true,
       group: 'Required'
+    },
+
+    // Binding
+
+    {
+      name: 'hostname',
+      label: 'Webhook Listener Hostname/IP',
+      type: {
+        name: 'string'
+      },
+      description: 'Optional: Provide the hostname or IP address for the Webhook endpoint only; do not include the query parameters string.',
+      default: '',
+      required: false,
+      group: 'Binding'
     },
 
     // HTTPS
