@@ -35,7 +35,7 @@
   - [ ] Kafka
   - ...
 - [ ] Add File drop field type to Collection Configuration
-  - [ ] Internal template
+  - [x] Internal template
   - [ ] Collection Configuration Editor
 - [ ] Add a simple Wizard from landing page
   - [ ] Ask for name for Log Source
