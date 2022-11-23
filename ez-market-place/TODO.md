@@ -21,6 +21,7 @@
   - [ ] External webhook management
 
 ## TO FIX
+- [ ] Grant Admin user to DELETE record
 
 ## TO TEST
 
