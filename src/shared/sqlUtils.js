@@ -504,6 +504,7 @@ async function getSiemMasterLicenseId(updateConfigDB = false) {
       masterLicenseIdList
       && masterLicenseIdList.payload
       && Array.isArray(masterLicenseIdList.payload)
+      && masterLicenseIdList.payload.length >= 1
     ) {
       masterLicenseId = masterLicenseIdList.payload[0].masterId;
     }

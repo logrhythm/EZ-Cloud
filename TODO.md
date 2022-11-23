@@ -23,6 +23,7 @@
   - [x] Issue #16 - Document the general `ERROR QUERYING PERSISTENCE LAYER` error code
 - API
   - [ ] Update Pipeline name doesn't get saved
+  - [x] Crash when no MasterID is returned from EMDB
 
 ## TO TEST
 
