@@ -9,6 +9,12 @@
   - [ ] List of Pipeline Templates
 - Events
   - [ ] Event system
+    - [ ] New Publisher
+    - [ ] Updated Publisher
+    - [ ] New Pipeline Template
+    - [ ] Updated Pipeline Template
+    - [ ] New Notification
+    - [ ] Updated Notification
   - [ ] Trigger external webhook
 - Admin
   - [ ] Event management
