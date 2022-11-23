@@ -1,5 +1,23 @@
 # TODO - EZ Market Place
 
+### Target: v1.1
+
+## TO DO
+- Statistics
+  - [ ] Pipeline Templates stats
+- Front page
+  - [ ] List of Pipeline Templates
+- Events
+  - [ ] Event system
+  - [ ] Trigger external webhook
+- Admin
+  - [ ] Event management
+  - [ ] External webhook management
+
+## TO FIX
+
+## TO TEST
+
 ### Target: v1.0
 
 ## TO DO
