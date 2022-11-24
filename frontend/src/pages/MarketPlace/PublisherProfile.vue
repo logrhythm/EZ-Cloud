@@ -113,7 +113,7 @@ export default {
           this.$q.notify({
             type: 'negative',
             color: 'negative',
-            icon: 'report_problem',
+            icon: 'o_report_problem',
             message: this.$t('Error loading Publisher\'s details'),
             caption: payload.messageForLogAndPopup || ''
           })
