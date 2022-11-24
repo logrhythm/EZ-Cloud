@@ -740,7 +740,7 @@ export default {
             thereWasAnError = true
             this.$root.$emit('addAndShowErrorToErrorPanel',
               {
-                code: 'CantReadFileImportCollection',
+                code: 'CantReadFile',
                 messageForLogAndPopup: (
                   this.$t('Error trying to open the file. Error: {errorMessage}', { errorMessage: error.message })
                 )
