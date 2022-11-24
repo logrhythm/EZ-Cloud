@@ -318,6 +318,59 @@ function collectionConfigToYml (collectionConfig) {
       return (value === null ? undefined : value)
     }))
 
+    // ***********
+    // Create a proper object, expanding from the notted notation in field names
+    let cycles = 0 // To fail safely after a certain number of iterations
+    let foundDots = -1
+    // For do several passes, until no changes are made any more (no more Dots)
+    while (cycles < 100 && foundDots !== 0) {
+      cycles++
+      foundDots = (
+        // Go recursively through the object to track the entries with "The Dot"
+        function goDeeper (branch, depth) {
+          let changesMade = 0
+          if (branch && typeof branch === 'object') {
+            Object.keys(branch).forEach((subBranchKey) => {
+              // Check for the dot
+              // If dot
+              //  split with dot
+              //  extract first part
+              //  extract second part (= everything minus the firstpart)
+              //  check if `jsonConfigClean[first part]` exists as object
+              //  If exists
+              //   Add new key with second part, and with Value as value
+              //  Else
+              //   create new key with second part, and with Value as value
+              //  Delete Key by returning `undefined`
+              // Else
+              //  Keep non-`null` value
+              const parts = subBranchKey.split('.')
+              if (parts && Array.isArray(parts) && parts.length > 1) {
+                // We found the dot!
+                const firstPart = parts[0]
+                const secondPart = parts.slice(1).join('.')
+
+                if (branch[firstPart] && typeof branch[firstPart] === 'object' && !Array.isArray(branch[firstPart])) {
+                  branch[firstPart][secondPart] = branch[subBranchKey]
+                } else {
+                  branch[firstPart] = {}
+                  branch[firstPart][secondPart] = branch[subBranchKey]
+                }
+                changesMade++
+                delete branch[subBranchKey]
+              }
+              if (branch[subBranchKey] === null) {
+                delete branch[subBranchKey]
+              } else {
+                goDeeper(branch[subBranchKey], depth + 1)
+              }
+            })
+          }
+          return changesMade
+        }
+      )(jsonConfigClean, 0)
+    }
+
     //  ########  ##     ## ########  ##       ####  ######  ##     ##
     //  ##     ## ##     ## ##     ## ##        ##  ##    ## ##     ##
     //  ##     ## ##     ## ##     ## ##        ##  ##       ##     ##

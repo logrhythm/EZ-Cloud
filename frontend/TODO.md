@@ -34,6 +34,7 @@
   - [ ] PubSub
   - [ ] Kafka
   - ...
+- [x] Create proper Beats Collection Configuration object, expanding from the notted notation in field names
 - [ ] Add File drop field type to Collection Configuration
   - [x] Internal template
   - [x] Collection Configuration Editor
