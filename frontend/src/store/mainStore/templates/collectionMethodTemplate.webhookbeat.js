@@ -62,7 +62,8 @@ export default {
       fileOptions: { // For file type.
         dropIn: true, // Do we drop the file content into a specific location on the disk. If False, the content is left as is in the field, just like a multiline string.
         dropInPath: '{{beat_config_volume}}/webhookbeat.crt', // Where on the disk to drop the file to
-        valueInConfig: '/beats/webhookbeat/config/webhookbeat.crt' // Path or file name to use as the value for the field
+        valueInConfig: '/beats/webhookbeat/config/webhookbeat.crt', // Path or file name to use as the value for the field
+        maxFileSize: null // Maximum file size, in bytes. Ignored if not set (or set to null)
       },
       description: 'SSL Certificate for HTTPS.',
       default: '',

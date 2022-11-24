@@ -92,6 +92,7 @@
               </q-icon>
             </template>
           </q-input>
+          <!-- Array -->
           <div v-if="template.type && template.type.name && template.type.name === 'array'" class="q-gutter-y-sm col">
             <FieldEditor
               v-for="(subField, subFieldIndex) in (internalValue && Array.isArray(internalValue) ? internalValue : [])"
@@ -104,6 +105,7 @@
             />
             <q-btn no-caps dense icon="add" :label="$t('Add Item')" color="primary" @click="addValueToArray()" />
           </div>
+          <!-- Object -->
           <div v-if="template.type && template.type.name && template.type.name === 'object'" class="q-gutter-y-sm col">
             <FieldEditor
               v-for="(subField, subFieldLeafName) in (internalValue && typeof internalValue === 'object' ? internalValue : {})"
@@ -116,6 +118,7 @@
             />
             <q-btn no-caps dense icon="add" :label="$t('Add Item')" color="primary" @click="addValueToObject()" />
           </div>
+          <!-- Booleans and Options -->
           <q-select
             v-if="template.type && template.type.name && (template.type.name === 'boolean' || template.type.name === 'option')"
             outlined
@@ -126,6 +129,23 @@
             :options="(template.options ? template.options : (template.type.name === 'boolean' ? [{ value: true, label: $t('True') }, { value: false, label: $t('False') }] : []))"
             :readonly="(template.readonly ? template.readonly : false)"
           />
+          <!-- File -->
+          <q-file
+            v-if="template.type && template.type.name && template.type.name === 'file'"
+            filled
+            bottom-slots
+            v-model="internalValue"
+            :label="$t('Click or Drop a file here')"
+            input-style="min-width: 24em;min-height: 4em;"
+            :max-file-size="(template.fileOptions && template.fileOptions.maxFileSize ? template.fileOptions.maxFileSize : undefined)"
+          >
+            <template v-slot:append>
+              <q-icon v-if="!(internalValue === null || internalValue === '')" name="o_close" @click.stop="internalValue = null" class="cursor-pointer" />
+              <!-- <q-icon name="o_note_add" @click.stop /> -->
+              <q-icon name="o_cloud_upload" color="primary" @click.stop="internalValue = null" class="cursor-pointer" />
+              <q-icon name="o_cloud_upload" :color="(internalValue === null || internalValue === '' ? 'green' : 'primary')" @click.stop="importFile(internalValue)" class="cursor-pointer" />
+            </template>
+          </q-file>
           <!-- Suffix, if any -->
           <q-select
             v-if="template.suffix"
@@ -329,6 +349,11 @@ export default {
           }
           if (this.template.type.name === 'boolean') {
             value = Boolean(value)
+          }
+          if (this.template.type.name === 'file') {
+            if (value === '') {
+              value = null
+            }
           }
         }
 

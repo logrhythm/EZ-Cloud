@@ -73,7 +73,8 @@
         fileOptions: { // For file type.
           dropIn: false, // Do we drop the file content into a specific location on the disk. If False, the content is left as is in the field, just like a multiline string.
           dropInPath: '', // Where on the disk to drop the file to
-          valueInConfig: '' // Path or file name to use as the value for the field
+          valueInConfig: '', // Path or file name to use as the value for the field
+          maxFileSize: null // Maximum file size, in bytes. Ignored if not set (or set to null)
         },
         description: '', // Markdown formatted documentation
         required: false, // Toggles the "Required" flag in the UI
@@ -113,7 +114,8 @@
     fileOptions: { // For file type.
       dropIn: false, // Do we drop the file content into a specific location on the disk. If False, the content is left as is in the field, just like a multiline string.
       dropInPath: '', // Where on the disk to drop the file to
-      valueInConfig: '' // Path or file name to use as the value for the field
+      valueInConfig: '', // Path or file name to use as the value for the field
+      maxFileSize: null // Maximum file size, in bytes. Ignored if not set (or set to null)
     },
     description: '', // Markdown formatted documentation for the field
     required: false, // Toggles the "Required" flag in the UI
