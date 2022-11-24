@@ -161,9 +161,9 @@
                   dense
                   icon="o_note_add"
                   :label="$t('Load File')"
-                  color="primary"
+                  :color="(internalValue && internalValue.fileContentBase64 && internalValue.fileContentBase64.length ? undefined : 'primary')"
                   :disabled="showFileUpload"
-                  @click="showFileUpload = true"
+                  @click="fileToUpload = null; showFileUpload = true"
                 />
                 <q-btn
                   icon="o_delete"
@@ -171,10 +171,16 @@
                   text-color="negative"
                   :disabled="!(internalValue && internalValue.fileContentBase64 && internalValue.fileContentBase64.length)"
                 >
-                  <!-- @click="" -->
-                  <q-tooltip content-style="font-size: 1rem;">
+                  <q-tooltip content-style="font-size: 1rem;" v-if="internalValue && internalValue.fileContentBase64 && internalValue.fileContentBase64.length">
                     {{ $t('Delete') }}
                   </q-tooltip>
+                  <q-menu anchor="top end" self="top left" auto-close content-class="bg-negative text-white">
+                    <q-list dense>
+                      <q-item clickable @click="internalValue = null">
+                        <q-item-section>{{ $t('Confirm') }}</q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
                 </q-btn>
               </div>
             </div>
@@ -186,16 +192,14 @@
               <q-file
                 filled
                 bottom-slots
-                v-model="fileUploadContent"
+                v-model="fileToUpload"
                 :label="$t('Click or Drop a file here')"
                 input-style="width: 24em;max-width: 24em;height: 4em;"
                 style="width: 26em;"
                 :max-file-size="(template.fileOptions && template.fileOptions.maxFileSize ? template.fileOptions.maxFileSize : undefined)"
               >
                 <template v-slot:append>
-                  <q-icon v-if="!(fileUploadContent === null || fileUploadContent === '')" name="o_close" @click.stop="fileUploadContent = null" class="cursor-pointer" />
-                  <!-- <q-icon name="o_cloud_upload" color="primary" @click.stop="fileUploadContent = null" class="cursor-pointer" />
-                  <q-icon name="o_cloud_upload" :color="(fileUploadContent === null || fileUploadContent === '' ? 'green' : 'primary')" @click.stop="loadFile(fileUploadContent)" class="cursor-pointer" /> -->
+                  <q-icon v-if="!(fileToUpload === null || fileToUpload === '')" name="o_close" @click.stop="fileToUpload = null" class="cursor-pointer" />
                 </template>
               </q-file>
               <q-separator spaced vertical />
@@ -207,7 +211,7 @@
                   icon="o_upload_file"
                   :label="$t('Load')"
                   color="primary"
-                  @click="loadFile(fileUploadContent)"
+                  @click="loadFile(fileToUpload)"
                 />
                 <q-btn
                   no-caps
@@ -321,7 +325,7 @@ export default {
       inFocus: false,
       waitingForBackend: false,
       updateErrorMessage: '', // To store returned error message from API when obfuscating secret
-      fileUploadContent: null,
+      fileToUpload: null,
       showFileUpload: false
     }
   }, // data
@@ -760,7 +764,6 @@ export default {
           }
         }
       }
-      // ****************
     }
   } // methods
 }
