@@ -81,6 +81,14 @@ function collectionConfigToYml (collectionConfig) {
       collectionMethod = 'syslog'
     }
 
+    //  ######## #### ##       ######## ########  ########    ###    ########
+    //  ##        ##  ##       ##       ##     ## ##         ## ##      ##
+    //  ##        ##  ##       ##       ##     ## ##        ##   ##     ##
+    //  ######    ##  ##       ######   ########  ######   ##     ##    ##
+    //  ##        ##  ##       ##       ##     ## ##       #########    ##
+    //  ##        ##  ##       ##       ##     ## ##       ##     ##    ##
+    //  ##       #### ######## ######## ########  ######## ##     ##    ##
+
     // Make sure we have a Request Transform array
     if (jsonConfig.request === undefined) {
       jsonConfig.request = {}
@@ -268,11 +276,27 @@ function collectionConfigToYml (collectionConfig) {
       delete jsonConfig.response
     }
 
+    //   ######  ##       ########    ###    ##    ##       ##     ## ########
+    //  ##    ## ##       ##         ## ##   ###   ##       ##     ## ##     ##
+    //  ##       ##       ##        ##   ##  ####  ##       ##     ## ##     ##
+    //  ##       ##       ######   ##     ## ## ## ##       ##     ## ########
+    //  ##       ##       ##       ######### ##  ####       ##     ## ##
+    //  ##    ## ##       ##       ##     ## ##   ###       ##     ## ##
+    //   ######  ######## ######## ##     ## ##    ##        #######  ##
+
     // ***********
     // Remove any leafs set to null
     const jsonConfigClean = JSON.parse(JSON.stringify(jsonConfig, (key, value) => {
       return (value === null ? undefined : value)
     }))
+
+    //  ########  ##     ## ########  ##       ####  ######  ##     ##
+    //  ##     ## ##     ## ##     ## ##        ##  ##    ## ##     ##
+    //  ##     ## ##     ## ##     ## ##        ##  ##       ##     ##
+    //  ########  ##     ## ########  ##        ##   ######  #########
+    //  ##        ##     ## ##     ## ##        ##        ## ##     ##
+    //  ##        ##     ## ##     ## ##        ##  ##    ## ##     ##
+    //  ##         #######  ########  ######## ####  ######  ##     ##
 
     // ***********
     // Decide if we are facing a Filebeat style config file
