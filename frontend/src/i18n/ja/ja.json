@@ -619,5 +619,11 @@
   "Edit MS SQL Connection setting": "MS SQL 接続設定の編集",
   "Not found": "見つかりません",
   "Success": "成功",
-  "Now that the MS SQL Connection is configured, the Database must be updated for all the features of OC Admin to work.": "MS SQL 接続が構成されたので、OC Admin のすべての機能が動作するようにデータベースを更新する必要があります。"
+  "Now that the MS SQL Connection is configured, the Database must be updated for all the features of OC Admin to work.": "MS SQL 接続が構成されたので、OC Admin のすべての機能が動作するようにデータベースを更新する必要があります。",
+  "Load": "ロード",
+  "Load File": "ファイルのロード",
+  "Loading file...": "ファイルを読み込んでいます...",
+  "File loaded": "ファイルがロードされました",
+  "Only one file is accepted. You tried to import multiple files.": "ファイルは 1 つだけ受け付けます。 複数のファイルをインポートしようとしました。",
+  "Problem while loading file": "ファイルのロード中に問題が発生しました"
 }

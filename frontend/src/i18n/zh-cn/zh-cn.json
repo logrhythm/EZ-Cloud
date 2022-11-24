@@ -619,5 +619,11 @@
   "Edit MS SQL Connection setting": "编辑 MS SQL 连接设置",
   "Not found": "未找到",
   "Success": "成功",
-  "Now that the MS SQL Connection is configured, the Database must be updated for all the features of OC Admin to work.": "现在 MS SQL 连接已配置，必须更新数据库才能使 OC Admin 的所有功能正常工作。"
+  "Now that the MS SQL Connection is configured, the Database must be updated for all the features of OC Admin to work.": "现在 MS SQL 连接已配置，必须更新数据库才能使 OC Admin 的所有功能正常工作。",
+  "Load": "加载",
+  "Load File": "加载文件",
+  "Loading file...": "加载文件...",
+  "File loaded": "文件已加载",
+  "Only one file is accepted. You tried to import multiple files.": "只接受一个文件。 您试图导入多个文件。",
+  "Problem while loading file": "加载文件时出现问题"
 }

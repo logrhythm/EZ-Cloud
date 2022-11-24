@@ -619,5 +619,11 @@
   "Edit MS SQL Connection setting": "Bearbeiten Sie die MS SQL-Verbindungseinstellung",
   "Not found": "Nicht gefunden",
   "Success": "Erfolg",
-  "Now that the MS SQL Connection is configured, the Database must be updated for all the features of OC Admin to work.": "Nachdem die MS SQL-Verbindung konfiguriert ist, muss die Datenbank aktualisiert werden, damit alle Funktionen von OC Admin funktionieren."
+  "Now that the MS SQL Connection is configured, the Database must be updated for all the features of OC Admin to work.": "Nachdem die MS SQL-Verbindung konfiguriert ist, muss die Datenbank aktualisiert werden, damit alle Funktionen von OC Admin funktionieren.",
+  "Load": "Belastung",
+  "Load File": "Lade Datei",
+  "Loading file...": "Datei wird geladen...",
+  "File loaded": "Datei geladen",
+  "Only one file is accepted. You tried to import multiple files.": "Es wird nur eine Datei akzeptiert. Sie haben versucht, mehrere Dateien zu importieren.",
+  "Problem while loading file": "Problem beim Laden der Datei"
 }
