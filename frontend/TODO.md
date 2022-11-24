@@ -36,7 +36,8 @@
   - ...
 - [ ] Add File drop field type to Collection Configuration
   - [x] Internal template
-  - [ ] Collection Configuration Editor
+  - [x] Collection Configuration Editor
+  - [ ] Pass file information to Backend during Tail and Deployment
 - [ ] Error reporting card to deal with many errors
   - [x] Add sticky title and X close button
   - [x] Make bottom panel sticky, with `[Close]` button
@@ -61,6 +62,7 @@
 
 ## TO FIX
 - [x] JSON to Yaml Collection config fails with `TypeError: jsonConfig.forEach is not a function`
+- [ ] Mapping Field Editor - `@` sign in field name is not escaped and cause JQ to fail import
 
 ## TO TEST
 
