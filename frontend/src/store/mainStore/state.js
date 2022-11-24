@@ -186,12 +186,12 @@ export default function () {
         label: 'Flat File',
         icon: 'o_description'
       },
-      {
-        shipper: 'jsBeat',
-        value: 'syslog',
-        label: 'Syslog',
-        icon: 'o_input'
-      },
+      // {
+      //   shipper: 'jsBeat',
+      //   value: 'syslog',
+      //   label: 'Syslog',
+      //   icon: 'o_input'
+      // },
       {
         shipper: 'genericbeat',
         value: 'genericbeat',
