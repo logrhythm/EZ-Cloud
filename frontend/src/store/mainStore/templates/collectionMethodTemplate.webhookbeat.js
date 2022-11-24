@@ -51,9 +51,12 @@ export default {
         { value: 'true', label: 'Enable HTTPS' },
         { value: 'false', label: 'Disable HTTPS' }
       ],
-      description: 'Enforce HTTPS or operate the Webhook Beat without any transport encryption.',
+      description: `Enforce HTTPS or operate the Webhook Beat without any transport encryption.
+
+> NOTE
+> If **Enable HTTPS** is selected, a **SSL certificate File** and a **SSL Private Key File** must be provided below.`,
       default: 'false',
-      required: true,
+      required: false,
       group: 'HTTPS'
     },
     {
@@ -68,7 +71,9 @@ export default {
         valueInConfig: '/beats/webhookbeat/config/webhookbeat.crt', // Path or file name to use as the value for the field
         maxFileSize: null // Maximum file size, in bytes. Ignored if not set (or set to null)
       },
-      description: 'SSL Certificate for HTTPS.',
+      description: `SSL Certificate for HTTPS. 
+
+Required if **Enable HTTPS** is selected under **SSL Flag** above.`,
       default: '',
       required: true,
       group: 'HTTPS'
@@ -84,7 +89,9 @@ export default {
         dropInPath: '{{beat_config_volume}}/webhookbeat.key', // Where on the disk to drop the file to
         valueInConfig: '/beats/webhookbeat/config/webhookbeat.key' // Path or file name to use as the value for the field
       },
-      description: 'SSL Private Key for HTTPS.',
+      description: `SSL Private Key for HTTPS. 
+
+Required if **Enable HTTPS** is selected under **SSL Flag** above.`,
       default: '',
       required: true,
       group: 'HTTPS'
