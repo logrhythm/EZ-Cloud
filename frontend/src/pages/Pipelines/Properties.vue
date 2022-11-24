@@ -1048,7 +1048,7 @@ export default {
         notificationPopupId({
           type: 'negative',
           color: 'negative',
-          icon: 'report_problem',
+          icon: 'o_report_problem',
           message: this.$t('Problem while downloading Collection Configuration file:'),
           caption: status
         })
@@ -1069,7 +1069,7 @@ export default {
           this.$q.notify({
             type: 'negative',
             color: 'negative',
-            icon: 'report_problem',
+            icon: 'o_report_problem',
             message: this.$t('Problem while copying Collection Configuration file to Clipboard')
           })
         })
@@ -1103,7 +1103,7 @@ export default {
         notificationPopupId({
           type: 'negative',
           color: 'negative',
-          icon: 'report_problem',
+          icon: 'o_report_problem',
           message: this.$t('Problem while downloading Importable Collection Configuration file:'),
           caption: status
         })
@@ -1278,7 +1278,7 @@ export default {
             notificationPopupId({
               type: 'negative',
               color: 'negative',
-              icon: 'report_problem',
+              icon: 'o_report_problem',
               message: this.$t('Problem while importing Shared Collection Configuration file'),
               caption: fileName
             })
@@ -1424,7 +1424,7 @@ export default {
           notificationPopupId({
             type: 'negative',
             color: 'negative',
-            icon: 'report_problem',
+            icon: 'o_report_problem',
             message: (
               importCollectionConfiguration
                 ? this.$t('Problem while importing Shared Collection Configuration from Template.')
@@ -1489,7 +1489,7 @@ export default {
           this.$q.notify({
             type: 'negative',
             color: 'negative',
-            icon: 'report_problem',
+            icon: 'o_report_problem',
             message: this.$t('Error loading Publisher\'s details'),
             caption: payload.messageForLogAndPopup || ''
           })
@@ -1549,7 +1549,7 @@ export default {
         notificationPopupId({
           type: 'negative',
           color: 'negative',
-          icon: 'report_problem',
+          icon: 'o_report_problem',
           message: this.$t('Problem while downloading Importable Fields Mapping file:'),
           caption: status
         })
@@ -1663,7 +1663,7 @@ export default {
             notificationPopupId({
               type: 'negative',
               color: 'negative',
-              icon: 'report_problem',
+              icon: 'o_report_problem',
               message: this.$t('Problem while importing Shared Fields Mapping file'),
               caption: fileName
             })
