@@ -10,7 +10,6 @@
 - Add support for Beats that require file dropped as part of Config
   - [ ] PubSub
   - [ ] WebHook HTTPS
-  - [ ] API - Base64 encode uploaded File
 - Beat Support
   - [x] S3
   - [ ] PubSub
