@@ -159,8 +159,8 @@
                 <q-btn
                   no-caps
                   dense
-                  icon="o_upload_file"
-                  :label="$t('Upload File')"
+                  icon="o_note_add"
+                  :label="$t('Load File')"
                   color="primary"
                   :disabled="showFileUpload"
                   @click="showFileUpload = true"
@@ -195,7 +195,7 @@
                 <template v-slot:append>
                   <q-icon v-if="!(fileUploadContent === null || fileUploadContent === '')" name="o_close" @click.stop="fileUploadContent = null" class="cursor-pointer" />
                   <!-- <q-icon name="o_cloud_upload" color="primary" @click.stop="fileUploadContent = null" class="cursor-pointer" />
-                  <q-icon name="o_cloud_upload" :color="(fileUploadContent === null || fileUploadContent === '' ? 'green' : 'primary')" @click.stop="importFile(fileUploadContent)" class="cursor-pointer" /> -->
+                  <q-icon name="o_cloud_upload" :color="(fileUploadContent === null || fileUploadContent === '' ? 'green' : 'primary')" @click.stop="loadFile(fileUploadContent)" class="cursor-pointer" /> -->
                 </template>
               </q-file>
               <q-separator spaced vertical />
@@ -204,10 +204,10 @@
                   class="q-mb-sm"
                   no-caps
                   dense
-                  icon="o_cloud_upload"
-                  :label="$t('Upload')"
+                  icon="o_upload_file"
+                  :label="$t('Load')"
                   color="primary"
-                  @click="importFile(fileUploadContent)"
+                  @click="loadFile(fileUploadContent)"
                 />
                 <q-btn
                   no-caps
@@ -535,7 +535,7 @@ export default {
     }
   }, // computed
   methods: {
-    ...mapActions('mainStore', ['obfuscateSecretForOpenCollector']),
+    ...mapActions('mainStore', ['obfuscateSecretForOpenCollector', 'base64EncodeFile']),
     formatNumber (value) {
       // One day we will implement a number formatter
       return value
@@ -683,9 +683,84 @@ export default {
         })
       }
     },
-    importFile (fileUploadContent) {
+    async loadFile (filesInput) {
       this.showFileUpload = false
-      // TODO: Upload to API, and get back Base64 entry to put in the config object
+      let fileName
+
+      if (filesInput == null) {
+        console.log('[loadFile] - 🟠 - No file selected.')
+      } else {
+        // Deal with multiple or single file(s)
+        if (Array.isArray(filesInput)) {
+          this.$root.$emit('addAndShowErrorToErrorPanel',
+            {
+              code: 'TooManyFiles',
+              messageForLogAndPopup: this.$t('Only one file is accepted. You tried to import multiple files.')
+            }
+          )
+        } else {
+          // Get the file name
+          fileName = (
+            filesInput &&
+            filesInput.name &&
+            filesInput.name.length
+              ? filesInput.name
+              : undefined
+          )
+
+          const notificationPopupId = this.$q.notify({
+            icon: 'o_upload_file',
+            message: this.$t('Loading file...'),
+            caption: fileName,
+            type: 'ongoing'
+          })
+
+          let thereWasAnError = false
+
+          try {
+            // Read the Import file
+            const fileContentAsArrayBuffer = await filesInput.arrayBuffer()
+
+            this.internalValue = {
+              dropIn: (!!(this.template && this.template.fileOptions && this.template.fileOptions.dropIn === true)),
+              valueInConfig: (this.template && this.template.fileOptions && this.template.fileOptions.valueInConfig ? this.template.fileOptions.valueInConfig : fileName),
+              dropInPath: (this.template && this.template.fileOptions && this.template.fileOptions.dropInPath ? this.template.fileOptions.dropInPath : fileName),
+              fileContentBase64: Buffer.from(fileContentAsArrayBuffer).toString('base64'),
+              fileSizeBytes: filesInput.size
+            }
+
+            notificationPopupId({
+              type: 'positive',
+              color: 'positive',
+              icon: 'o_check',
+              message: this.$t('File loaded'),
+              caption: fileName
+            })
+          } catch (error) {
+            thereWasAnError = true
+            this.$root.$emit('addAndShowErrorToErrorPanel',
+              {
+                code: 'CantReadFileImportCollection',
+                messageForLogAndPopup: (
+                  this.$t('Error trying to open the file. Error: {errorMessage}', { errorMessage: error.message })
+                )
+              }
+            )
+          }
+
+          if (thereWasAnError) {
+            notificationPopupId({
+              type: 'negative',
+              color: 'negative',
+              icon: 'o_report_problem',
+              message: this.$t('Problem while loading file'),
+              caption: fileName
+            })
+            console.log('Error: Problem while loading file')
+          }
+        }
+      }
+      // ****************
     }
   } // methods
 }

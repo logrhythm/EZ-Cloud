@@ -603,6 +603,27 @@ export function obfuscateSecretForOpenCollector ({ state }, payload) {
 }
 
 // ######################################################################
+// Base64 Encoding of Files
+// ######################################################################
+
+export function base64EncodeFile ({ state }, payload) {
+  postDataToSite({
+    apiUrl: '/oc/Base64EncodeFile',
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    targetObjectName: (payload && payload.targetObjectName ? payload.targetObjectName : ''),
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    silent: true,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    apiCallParams: (payload && payload.apiCallParams ? payload.apiCallParams : undefined),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: (payload && payload.debug ? payload.debug : false)
+  })
+}
+
+// ######################################################################
 // USER ACCOUNTS MANAGEMENT
 // ######################################################################
 
@@ -1514,7 +1535,7 @@ export function getDataFromSite (params = {
           notificationPopupId({
             type: 'negative',
             color: 'negative',
-            icon: 'report_problem',
+            icon: 'o_report_problem',
             message: messageForLogAndPopup,
             caption: captionForLogAndPopup,
             timeout: 4000
@@ -1702,7 +1723,7 @@ export function postDataToSite (params = {
           notificationPopupId({
             type: 'negative',
             color: 'negative',
-            icon: 'report_problem',
+            icon: 'o_report_problem',
             message: messageForLogAndPopup,
             caption: captionForLogAndPopup,
             timeout: 4000
