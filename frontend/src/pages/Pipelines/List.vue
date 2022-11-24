@@ -132,6 +132,7 @@
               autofocus
               v-model="newPipelineName"
               :label="$t('Pipeline Name')"
+              :readonly="!!(newPipelineUid && newPipelineUid.length)"
               @keyup.esc="promptForNewPipelineDetails = false"
               :rules="[val => !!val || $t('Pipeline name cannot be empty')]"
             />
