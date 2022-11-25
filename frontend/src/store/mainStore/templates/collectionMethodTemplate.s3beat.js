@@ -136,14 +136,10 @@ If set to "**Running on-premise (not in AWS)**", all fields of the **Authenticat
       name: 'multiline.negate',
       label: 'Enable multiline pattern Regex',
       type: {
-        name: 'option'
+        name: 'boolean'
       },
-      options: [
-        { value: 'true', label: 'Enable' },
-        { value: 'false', label: 'Disable' }
-      ],
       description: 'Enable multiline pattern Regex.',
-      default: 'false',
+      default: false,
       required: true,
       group: 'Multilines'
     },
