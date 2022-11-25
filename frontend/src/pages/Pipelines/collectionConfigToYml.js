@@ -318,6 +318,14 @@ function collectionConfigToYml (collectionConfig) {
       return (value === null ? undefined : value)
     }))
 
+    //  ######## ##     ## ########     ###    ##    ## ########        ##     ## ########
+    //  ##        ##   ##  ##     ##   ## ##   ###   ## ##     ##       ##     ## ##     ##
+    //  ##         ## ##   ##     ##  ##   ##  ####  ## ##     ##       ##     ## ##     ##
+    //  ######      ###    ########  ##     ## ## ## ## ##     ##       ##     ## ########
+    //  ##         ## ##   ##        ######### ##  #### ##     ##       ##     ## ##
+    //  ##        ##   ##  ##        ##     ## ##   ### ##     ##       ##     ## ##
+    //  ######## ##     ## ##        ##     ## ##    ## ########         #######  ##
+
     // ***********
     // Create a proper object, expanding from the notted notation in field names
     let cycles = 0 // To fail safely after a certain number of iterations
