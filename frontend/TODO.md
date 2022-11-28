@@ -38,8 +38,8 @@
   - [x] Internal template
   - [ ] Collection Configuration Editor
 - [ ] Error reporting card to deal with many errors
-  - [ ] Add sticky title and X close button
-  - [ ] Make bottom panel sticky, with `[Close]` button
+  - [x] Add sticky title and X close button
+  - [x] Make bottom panel sticky, with `[Close]` button
   - [ ] Deduplicate error messages
 - [ ] Add a simple Wizard from landing page
   - [ ] Ask for name for Log Source

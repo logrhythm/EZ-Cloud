@@ -84,30 +84,36 @@
     <!-- Error messages display. Responds to "addAndShowErrorToErrorPanel" events -->
 
     <q-dialog v-model="showErrorPanel" persistent>
-      <q-card style="min-width: 350px">
-        <q-card-section class="q-pb-none">
+      <q-card style="min-width: 450px">
+        <q-card-section class="row justify-between q-py-sm">
           <div class="text-h6">{{ $t('What did just go wrong?') }}</div>
+          <q-btn dense flat icon="close" color="grey-5" v-close-popup />
         </q-card-section>
-        <q-card-section class="q-pt-none" v-if="errorPanelDetails && Array.isArray(errorPanelDetails)">
+        <q-separator />
+        <q-card-section class="q-py-xs" v-if="errorPanelDetails && Array.isArray(errorPanelDetails)">
           <div class="text-bold text-italic">{{ $tc('| {count} error occured. | {count} errors occured.', errorPanelDetails.length) }}</div>
         </q-card-section>
 
-        <q-card-section class="" v-for="(detail, index) in errorPanelDetails" :key="index">
-          <div class="">
-              <div class="row q-my-sm">
-                <q-separator vertical size="2px" color="orange" />
-                <div class="q-ml-sm">
-                  <div class="text-overline">{{ $t('Message Code:') }}</div>
-                  <div class="q-ml-sm text-bold">{{ detail.code }}</div>
-                  <div class="q-mt-sm text-overline">{{ $t('Message:') }}</div>
-                  <div class="q-ml-sm text-italic">{{ detail.message }}</div>
-                  <div class="q-mt-sm text-overline">{{ $t('More information available at:') }}</div>
-                  <div class="q-ml-sm"><a :href="detail.wikiLink" target="_blank" class="text-primary">{{ detail.wikiLink }}</a></div>
+        <q-scroll-area
+          style="height: 300px; "
+          visible
+        >
+          <q-card-section class="q-px-xs" v-for="(detail, index) in errorPanelDetails" :key="index">
+            <div class="">
+                <div class="row q-my-sm">
+                  <q-separator vertical size="2px" color="orange" />
+                  <div class="q-ml-sm">
+                    <div class="text-overline">{{ $t('Message Code:') }}</div>
+                    <div class="q-ml-sm text-bold">{{ detail.code }}</div>
+                    <div class="q-mt-sm text-overline">{{ $t('Message:') }}</div>
+                    <div class="q-ml-sm text-italic">{{ detail.message }}</div>
+                    <div class="q-mt-sm text-overline">{{ $t('More information available at:') }}</div>
+                    <div class="q-ml-sm"><a :href="detail.wikiLink" target="_blank" class="text-primary">{{ detail.wikiLink }}</a></div>
+                  </div>
                 </div>
-              </div>
-          </div>
-        </q-card-section>
-
+            </div>
+          </q-card-section>
+        </q-scroll-area>
         <q-separator />
 
         <q-card-actions align="right">
