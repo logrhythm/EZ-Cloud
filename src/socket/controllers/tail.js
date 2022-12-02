@@ -25,6 +25,8 @@ async function tailInit(socket, payload) {
     && payload.collectionConfig.collectionShipper.length > 0
     && payload.collectionConfig.collectionMethod
     && payload.collectionConfig.collectionMethod.length > 0
+    && payload.collectionConfigYml
+    && payload.collectionConfigYml.length > 0
   ) {
     // Check the tailId doesn't already exist
     if (!tails[payload.tailId]) {
@@ -39,7 +41,7 @@ async function tailInit(socket, payload) {
         tails[payload.tailId] = new SSH(configSsh);
 
         if (payload.collectionConfig.collectionShipper === 'filebeat') {
-          const inputYml = collectionConfigToYml(payload.collectionConfig);
+          const inputYml = payload.collectionConfigYml;
 
           const filebeatConfig = `filebeat.inputs:\n${inputYml}\n\noutput.console:\n  enabled: true\n  pretty: false\nlogging.level: error\n`;
           tails[payload.tailId]
