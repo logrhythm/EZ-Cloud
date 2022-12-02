@@ -39,7 +39,8 @@
 - [ ] Add File drop field type to Collection Configuration
   - [x] Internal template
   - [x] Collection Configuration Editor
-  - [ ] Pass file information to Backend during Tail and Deployment
+  - [x] Pass file information to Backend during Tail
+  - [ ] Pass file information to Backend during Deployment
 - [ ] Error reporting card to deal with many errors
   - [x] Add sticky title and X close button
   - [x] Make bottom panel sticky, with `[Close]` button
