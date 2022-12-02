@@ -35,7 +35,7 @@
   - [ ] Kafka
   - ...
 - [x] Create proper Beats Collection Configuration object, expanding from the notted notation in field names
-- [ ] Pprovide Beats's configuration to Backend when starting Tail
+- [x] Provide Beats's configuration to Backend when starting Tail
 - [ ] Add File drop field type to Collection Configuration
   - [x] Internal template
   - [x] Collection Configuration Editor

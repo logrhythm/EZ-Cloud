@@ -202,7 +202,7 @@
                       </q-tooltip>
                     </q-btn>
                     <q-btn class="row" dense icon="close" flat :disable="!queueInDataEntrySingleLog.length" @click="queueInDataEntrySingleLog = ''" >
-                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;" v-if="queueInDataEntrySingleLog.length">
                         {{ $t('Clear out') }}
                       </q-tooltip>
                     </q-btn>
@@ -234,7 +234,7 @@
                       </q-tooltip>
                     </q-btn>
                     <q-btn class="row" dense icon="close" flat :disable="!queueInDataEntryMultiLog.length" @click="queueInDataEntryMultiLog = ''" >
-                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;" v-if="queueInDataEntryMultiLog.length">
                         {{ $t('Clear out') }}
                       </q-tooltip>
                     </q-btn>
@@ -315,7 +315,7 @@
                       </q-menu>
                     </q-btn>
                     <q-btn class="row" dense icon="close" flat :disable="manualImportFileInput == null" @click="manualImportFileInput = null" >
-                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;" v-if="manualImportFileInput != null">
                         {{ $t('Clear out file selection') }}
                       </q-tooltip>
                     </q-btn>
@@ -623,7 +623,7 @@
                   </q-btn>
                   <q-separator />
                   <q-btn round dense flat icon="clear" @click="communicationLogsOutput=''" color="red" :disable="!communicationLogsOutput || (communicationLogsOutput && communicationLogsOutput.length === 0)">
-                    <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                    <q-tooltip content-style="font-size: 1rem; min-width: 10rem;" v-if="communicationLogsOutput && communicationLogsOutput.length">
                       {{ $t('Clear') }}
                     </q-tooltip>
                   </q-btn>
@@ -654,6 +654,7 @@ import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedRightToLeft from 'src/mixins/mixin-Shared-RightToLeft'
 import mixinSharedBuildJq from 'src/mixins/mixin-Shared-BuildJq'
 import Vue2Filters from 'vue2-filters'
+import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml'
 
 export default {
   name: 'PagePipelineBuilder',
@@ -1471,7 +1472,8 @@ export default {
 
     initTail () {
       if (this.socket && this.socket.connected) {
-        this.socket.emit('tail.init', { pipelineUid: this.pipelineUid, tailId: this.pipelineUid, collectionConfig: this.pipeline.collectionConfig })
+        const collectionConfigYml = collectionConfigToYml(this.pipeline.collectionConfig)
+        this.socket.emit('tail.init', { pipelineUid: this.pipelineUid, tailId: this.pipelineUid, collectionConfig: this.pipeline.collectionConfig, collectionConfigYml })
       }
     },
 
