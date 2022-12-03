@@ -255,7 +255,7 @@ async function tailInit(socket, payload) {
               exit(code) {
                 // console.log('CODE:::' + code + ' 📃');
                 if (code === 0 && socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🔎 Listing the already running instances of this Beat...' });
+                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '📄 Importing files into Beat configuration...' });
                   return true;
                 }
                 return false;
@@ -265,6 +265,72 @@ async function tailInit(socket, payload) {
                 if (socket.connected) {
                   socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
                 }
+              }
+            });
+
+          // Drop any necessary files in
+          // TODO: Go through the config to spot Files to be dropped in, and drop them :)
+          // A file object always has `valueInConfig` and `fileContentBase64`
+          // stream.collectionConfig
+          // {
+          //   "collectionShipper":"webhookbeat",
+          //   "collectionMethod":"webhookbeat",
+          //   "hostname":"",
+          //   "portnumber":"8123",
+          //   "sslflag":false,
+          //   "heartbeatdisabled":false,
+          //   "heartbeatinterval":60,
+          //   "beatIdentifier":"419_Webhook_",
+          //   "logsource_name":"Webhook HTTP",
+          //   "certFilePath":{
+          //     "dropIn":true,
+          //     "valueInConfig":"/beats/webhookbeat/config/webhookbeat.crt",
+          //     "dropInPath":"{{beat_config_volume}}/webhookbeat.crt",
+          //     "fileContentBase64":"LS0tLSBCRUdJTiBTU0gyIFBVQkxJQyB.....BLRVkgLS0tLQ==",
+          //     "fileSizeBytes":442
+          //   },
+          //   "keyFilePath":{
+          //     "dropIn":true,
+          //     "valueInConfig":"/beats/webhookbeat/config/webhookbeat.key",
+          //     "dropInPath":"{{beat_config_volume}}/webhookbeat.key",
+          //     "fileContentBase64":"LS0tLSBCRUdJ.....IFBVQkxJQyBLRVkgLS0tLQ==",
+          //     "fileSizeBytes":442
+          //   }
+          // }
+          tails[payload.tailId]
+            // Import configuration
+            .exec('pwd 1> /dev/null', {
+              in: beatConfig,
+              err(stderr) {
+                // console.log('STDERR:::' + stderr);
+                if (socket.connected) {
+                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+                }
+              },
+              exit(code) {
+                // console.log('CODE:::' + code + ' 📃');
+                if (code === 0 && socket.connected) {
+                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '📄 File imported' });
+                  return true;
+                }
+                return false;
+              },
+              out(stdout) {
+                // console.log('STDOUT:::' + stdout);
+                if (socket.connected) {
+                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+                }
+              }
+            });
+
+          tails[payload.tailId]
+            // Dummy action to post log message to Frontend
+            .exec('pwd', {
+              exit() {
+                if (socket.connected) {
+                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🔎 Listing the already running instances of this Beat...' });
+                }
+                return true;
               }
             })
             // Check the already running instances of this Beat
