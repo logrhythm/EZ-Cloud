@@ -1220,6 +1220,7 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
 
           // Import the Configuration (should only be one, but deal with all of them)
           beat.config.forEach((config) => {
+            // Push the config itself
             steps.push(
               {
                 action: `Import Stream configuration for FQBN (${logRhythmFullyQualifiedBeatName})`,
@@ -1227,6 +1228,35 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
                 stdin: (typeof config === 'string' ? `${config}\n${logrhythmShipperBaseConfig}` : `${JSON.stringify(config)}\n${logrhythmShipperBaseConfig}`)
               }
             );
+
+            // Go through the config to spot Files to be dropped in, and drop them :)
+            // A file object always has `valueInConfig` and `fileContentBase64`
+            // stream.collectionConfig
+            // {
+            //   "collectionShipper":"webhookbeat",
+            //   "collectionMethod":"webhookbeat",
+            //   "hostname":"",
+            //   "portnumber":"8123",
+            //   "sslflag":false,
+            //   "heartbeatdisabled":false,
+            //   "heartbeatinterval":60,
+            //   "beatIdentifier":"419_Webhook_",
+            //   "logsource_name":"Webhook HTTP",
+            //   "certFilePath":{
+            //     "dropIn":true,
+            //     "valueInConfig":"/beats/webhookbeat/config/webhookbeat.crt",
+            //     "dropInPath":"{{beat_config_volume}}/webhookbeat.crt",
+            //     "fileContentBase64":"LS0tLSBCRUdJTiBTU0gyIFBVQkxJQyB.....BLRVkgLS0tLQ==",
+            //     "fileSizeBytes":442
+            //   },
+            //   "keyFilePath":{
+            //     "dropIn":true,
+            //     "valueInConfig":"/beats/webhookbeat/config/webhookbeat.key",
+            //     "dropInPath":"{{beat_config_volume}}/webhookbeat.key",
+            //     "fileContentBase64":"LS0tLSBCRUdJ.....IFBVQkxJQyBLRVkgLS0tLQ==",
+            //     "fileSizeBytes":442
+            //   }
+            // }
           });
 
           // Wrap up
