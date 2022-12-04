@@ -40,6 +40,22 @@ async function tailInit(socket, payload) {
       ) {
         tails[payload.tailId] = new SSH(configSsh);
 
+        // Go through the config to spot Files to be dropped in, and drop them :)
+        // A file object always has `dropIn`, `valueInConfig` and `fileContentBase64`
+        // Value of `dropIn` must be true
+        const dropInFiles = []; // To store any found Drop In files in the config
+        Object.keys(payload.collectionConfig).forEach((configPath) => {
+          if (
+            payload.collectionConfig[configPath]
+            && payload.collectionConfig[configPath].dropIn === true
+            && payload.collectionConfig[configPath].valueInConfig
+            && payload.collectionConfig[configPath].valueInConfig.length
+            && payload.collectionConfig[configPath].fileContentBase64 != null
+          ) {
+            dropInFiles.push(payload.collectionConfig[configPath]);
+          }
+        });
+
         if (payload.collectionConfig.collectionShipper === 'filebeat') {
           const inputYml = payload.collectionConfigYml;
 
@@ -194,6 +210,11 @@ async function tailInit(socket, payload) {
             `${beatName
             }_${beatId}`
           );
+          // Configuration volume name for Beat
+          const beatConfigVolumeName = String(
+            `${beatName
+            }_config_${beatId}`
+          );
           // Get collection config
           const inputYmlRaw = collectionConfigToYml(payload.collectionConfig);
           // Replace config's beatIdentifier with this Tail's beatId
@@ -270,8 +291,10 @@ async function tailInit(socket, payload) {
 
           // Drop any necessary files in
           // TODO: Go through the config to spot Files to be dropped in, and drop them :)
-          // A file object always has `valueInConfig` and `fileContentBase64`
-          // stream.collectionConfig
+          // A file object always has `dropIn`, `valueInConfig` and `fileContentBase64`
+          // `dropIn` must be true
+
+          // payload.collectionConfig
           // {
           //   "collectionShipper":"webhookbeat",
           //   "collectionMethod":"webhookbeat",
@@ -286,42 +309,182 @@ async function tailInit(socket, payload) {
           //     "dropIn":true,
           //     "valueInConfig":"/beats/webhookbeat/config/webhookbeat.crt",
           //     "dropInPath":"{{beat_config_volume}}/webhookbeat.crt",
-          //     "fileContentBase64":"LS0tLSBCRUdJTiBTU0gyIFBVQkxJQyB.....BLRVkgLS0tLQ==",
+          //     "fileContentBase64":"LS0tLSBCRUdJTiBTU0gyIF.....IFBVQkxJQyBLRVkgLS0tLQ==",
           //     "fileSizeBytes":442
           //   },
           //   "keyFilePath":{
           //     "dropIn":true,
           //     "valueInConfig":"/beats/webhookbeat/config/webhookbeat.key",
           //     "dropInPath":"{{beat_config_volume}}/webhookbeat.key",
-          //     "fileContentBase64":"LS0tLSBCRUdJ.....IFBVQkxJQyBLRVkgLS0tLQ==",
+          //     "fileContentBase64":"LS0tLSBCRUdJTiBTU0gyIF.....IFBVQkxJQyBLRVkgLS0tLQ==",
+          //     "fileSizeBytes":442
+          //   },
+          //   "bogus.keyFilePath":{
+          //     "dropIn":true,
+          //     "valueInConfig":"/beats/webhookbeat/config/bogus_webhookbeat.key",
+          //     "dropInPath":"{{beat_config_volume}}/bogus_webhookbeat.key",
+          //     "fileContentBase64":"LS0tLSBCRUdJTiBTU0gyIF.....IFBVQkxJQyBLRVkgLS0tLQ==",
           //     "fileSizeBytes":442
           //   }
           // }
-          tails[payload.tailId]
-            // Import configuration
-            .exec('pwd 1> /dev/null', {
-              in: beatConfig,
-              err(stderr) {
-                // console.log('STDERR:::' + stderr);
-                if (socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+          if (dropInFiles && Array.isArray(dropInFiles) && dropInFiles.length) {
+            // Some files must be dropped in the Beat's config volume
+
+            // Create a unique ID for the Helper/Utility Container
+            const utilityContainerId = `cp-helper_oc-admin_${Math.floor(Math.random() * 16777216).toString(16).padStart(6, '0')}`;
+            // Create a temporary file name, based on the Helper/Utility Container name
+            const tempFilePath = String(`/tmp/${utilityContainerId}`)
+              .replaceAll('//', '/')
+              .replaceAll('"', '');
+
+            tails[payload.tailId]
+              // Import configuration
+              .exec(`docker container create --name "${utilityContainerId}" -v "${beatConfigVolumeName}:/cp_target" alpine 1>/dev/null`, {
+                err(stderr) {
+                  // console.log('STDERR:::' + stderr);
+                  if (socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+                  }
+                },
+                exit(code) {
+                  // console.log('CODE:::' + code + ' 📃');
+                  if (code === 0 && socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: `📄 Utility container created ("${utilityContainerId}")` });
+                    return true;
+                  }
+                  return false;
+                },
+                out(stdout) {
+                  // console.log('STDOUT:::' + stdout);
+                  if (socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+                  }
                 }
-              },
-              exit(code) {
-                // console.log('CODE:::' + code + ' 📃');
-                if (code === 0 && socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '📄 File imported' });
+              });
+
+            // Loop through them and add the right tasks to deal with each of them
+            dropInFiles.forEach((fileToDrop) => {
+              //   "certFilePath":{
+              //     "dropIn":true,
+              //     "valueInConfig":"/beats/webhookbeat/config/webhookbeat.crt",
+              //     "dropInPath":"{{beat_config_volume}}/webhookbeat.crt",
+              //     "fileContentBase64":"LS0tLSBCRUdJTiBTU0gyIF.....IFBVQkxJQyBLRVkgLS0tLQ==",
+              //     "fileSizeBytes":442
+              //   },
+              const copyTargetPath = String(`/cp_target/${fileToDrop.dropInPath}`)
+                .replaceAll('//', '/')
+                .replaceAll('"', '');
+              // fileToDrop.fileContentBase64 is Base64 encoded.
+              const fileContentBinary = Buffer.from(fileToDrop.fileContentBase64, 'base64').toString('latin1');
+
+              tails[payload.tailId]
+                // Import configuration
+                .exec(`cat > ${tempFilePath}`, {
+                  in: fileContentBinary,
+                  err(stderr) {
+                    // console.log('STDERR:::' + stderr);
+                    if (socket.connected) {
+                      socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+                    }
+                  },
+                  exit(code) {
+                    // console.log('CODE:::' + code + ' 📃');
+                    if (code === 0 && socket.connected) {
+                      socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: `📄 Drop file content into temporary file: "${tempFilePath}" (${fileToDrop.fileSizeBytes} bytes)` });
+                      return true;
+                    }
+                    return false;
+                  },
+                  out(stdout) {
+                    // console.log('STDOUT:::' + stdout);
+                    if (socket.connected) {
+                      socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+                    }
+                  }
+                })
+                .exec(`docker cp "${tempFilePath}" "${utilityContainerId}:${copyTargetPath}" 1>/dev/null`, {
+                  err(stderr) {
+                    // console.log('STDERR:::' + stderr);
+                    if (socket.connected) {
+                      socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+                    }
+                  },
+                  exit(code) {
+                    // console.log('CODE:::' + code + ' 📃');
+                    if (code === 0 && socket.connected) {
+                      socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: `📄 File imported. Referrenced in Beat's configuration as: "${fileToDrop.valueInConfig}"` });
+                      return true;
+                    }
+                    return false;
+                  },
+                  out(stdout) {
+                    // console.log('STDOUT:::' + stdout);
+                    if (socket.connected) {
+                      socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+                    }
+                  }
+                });
+            });
+
+            tails[payload.tailId]
+              // Clean up
+              .exec(`rm -f "${tempFilePath}" 1>/dev/null`, {
+                err(stderr) {
+                  // console.log('STDERR:::' + stderr);
+                  if (socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+                  }
+                },
+                exit(code) {
+                  // console.log('CODE:::' + code + ' 📃');
+                  if (code === 0 && socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: `📄 Remove temporary file: "${tempFilePath}"` });
+                    return true;
+                  }
+                  return false;
+                },
+                out(stdout) {
+                  // console.log('STDOUT:::' + stdout);
+                  if (socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+                  }
+                }
+              })
+              .exec(`docker container rm "${utilityContainerId}" 1>/dev/null`, {
+                in: beatConfig,
+                err(stderr) {
+                  // console.log('STDERR:::' + stderr);
+                  if (socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+                  }
+                },
+                exit(code) {
+                  // console.log('CODE:::' + code + ' 📃');
+                  if (code === 0 && socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: `📄 Utility container removed ("${utilityContainerId}")` });
+                    return true;
+                  }
+                  return false;
+                },
+                out(stdout) {
+                  // console.log('STDOUT:::' + stdout);
+                  if (socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+                  }
+                }
+              });
+          } else {
+            tails[payload.tailId]
+            // Dummy action to post log message to Frontend
+              .exec('pwd', {
+                exit() {
+                  if (socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '📄 No file need to be imported.' });
+                  }
                   return true;
                 }
-                return false;
-              },
-              out(stdout) {
-                // console.log('STDOUT:::' + stdout);
-                if (socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
-                }
-              }
-            });
+              });
+          }
 
           tails[payload.tailId]
             // Dummy action to post log message to Frontend
