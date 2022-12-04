@@ -33,8 +33,8 @@ export default {
       type: {
         name: 'string'
       },
-      description: 'Optional: Provide the hostname or IP address for the Webhook endpoint only; do not include the query parameters string.',
-      default: '',
+      description: 'Optional: Provide the hostname or IP address for the Webhook endpoint only; do not include the query parameters string. It will default to "localhost" if nothing is provided.',
+      default: 'localhost',
       required: false,
       group: 'Binding'
     },
@@ -43,19 +43,15 @@ export default {
 
     {
       name: 'sslflag',
-      label: 'SSL Flag',
+      label: 'Enable HTTPS',
       type: {
-        name: 'option'
+        name: 'boolean'
       },
-      options: [
-        { value: 'true', label: 'Enable HTTPS' },
-        { value: 'false', label: 'Disable HTTPS' }
-      ],
       description: `Enforce HTTPS or operate the Webhook Beat without any transport encryption.
 
 > NOTE
-> If **Enable HTTPS** is selected, a **SSL certificate File** and a **SSL Private Key File** must be provided below.`,
-      default: 'false',
+> If **Enable HTTPS** is set to **True**, a **SSL certificate File** and a **SSL Private Key File** must be provided below.`,
+      default: false,
       required: false,
       group: 'HTTPS'
     },
@@ -67,7 +63,7 @@ export default {
       },
       fileOptions: { // For file type.
         dropIn: true, // Do we drop the file content into a specific location on the disk. If False, the content is left as is in the field, just like a multiline string.
-        dropInPath: '{{beat_config_volume}}/webhookbeat.crt', // Where on the disk to drop the file to
+        dropInPath: '/webhookbeat.crt', // Where on the disk to drop the file to
         valueInConfig: '/beats/webhookbeat/config/webhookbeat.crt', // Path or file name to use as the value for the field
         maxFileSize: null // Maximum file size, in bytes. Ignored if not set (or set to null)
       },
@@ -86,7 +82,7 @@ Required if **Enable HTTPS** is selected under **SSL Flag** above.`,
       },
       fileOptions: { // For file type.
         dropIn: true, // Do we drop the file content into a specific location on the disk. If False, the content is left as is in the field, just like a multiline string.
-        dropInPath: '{{beat_config_volume}}/webhookbeat.key', // Where on the disk to drop the file to
+        dropInPath: '/webhookbeat.key', // Where on the disk to drop the file to
         valueInConfig: '/beats/webhookbeat/config/webhookbeat.key' // Path or file name to use as the value for the field
       },
       description: `SSL Private Key for HTTPS. 
