@@ -289,44 +289,10 @@ async function tailInit(socket, payload) {
               }
             });
 
-          // Drop any necessary files in
-          // TODO: Go through the config to spot Files to be dropped in, and drop them :)
+          // Go through the config to spot Files to be dropped in, and drop them :)
           // A file object always has `dropIn`, `valueInConfig` and `fileContentBase64`
           // `dropIn` must be true
 
-          // payload.collectionConfig
-          // {
-          //   "collectionShipper":"webhookbeat",
-          //   "collectionMethod":"webhookbeat",
-          //   "hostname":"",
-          //   "portnumber":"8123",
-          //   "sslflag":false,
-          //   "heartbeatdisabled":false,
-          //   "heartbeatinterval":60,
-          //   "beatIdentifier":"419_Webhook_",
-          //   "logsource_name":"Webhook HTTP",
-          //   "certFilePath":{
-          //     "dropIn":true,
-          //     "valueInConfig":"/beats/webhookbeat/config/webhookbeat.crt",
-          //     "dropInPath":"{{beat_config_volume}}/webhookbeat.crt",
-          //     "fileContentBase64":"LS0tLSBCRUdJTiBTU0gyIF.....IFBVQkxJQyBLRVkgLS0tLQ==",
-          //     "fileSizeBytes":442
-          //   },
-          //   "keyFilePath":{
-          //     "dropIn":true,
-          //     "valueInConfig":"/beats/webhookbeat/config/webhookbeat.key",
-          //     "dropInPath":"{{beat_config_volume}}/webhookbeat.key",
-          //     "fileContentBase64":"LS0tLSBCRUdJTiBTU0gyIF.....IFBVQkxJQyBLRVkgLS0tLQ==",
-          //     "fileSizeBytes":442
-          //   },
-          //   "bogus.keyFilePath":{
-          //     "dropIn":true,
-          //     "valueInConfig":"/beats/webhookbeat/config/bogus_webhookbeat.key",
-          //     "dropInPath":"{{beat_config_volume}}/bogus_webhookbeat.key",
-          //     "fileContentBase64":"LS0tLSBCRUdJTiBTU0gyIF.....IFBVQkxJQyBLRVkgLS0tLQ==",
-          //     "fileSizeBytes":442
-          //   }
-          // }
           if (dropInFiles && Array.isArray(dropInFiles) && dropInFiles.length) {
             // Some files must be dropped in the Beat's config volume
 
