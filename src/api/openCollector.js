@@ -1069,6 +1069,24 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
         // Load the base config file for LogRhythm shippers
         const logrhythmShipperBaseConfig = fs.readFileSync(path.join(process.env.baseDirname, 'resources', 'LogRhythm_shippers-base_config.yaml'));
 
+        // TODO: Bring here the File drop mecanism from Tail
+
+        // // Go through the config to spot Files to be dropped in, and drop them :)
+        // // A file object always has `dropIn`, `valueInConfig` and `fileContentBase64`
+        // // Value of `dropIn` must be true
+        // const dropInFiles = []; // To store any found Drop In files in the config
+        // Object.keys(stream.collectionConfig).forEach((configPath) => {
+        //   if (
+        //     stream.collectionConfig[configPath]
+        //     && stream.collectionConfig[configPath].dropIn === true
+        //     && stream.collectionConfig[configPath].valueInConfig
+        //     && stream.collectionConfig[configPath].valueInConfig.length
+        //     && stream.collectionConfig[configPath].fileContentBase64 != null
+        //   ) {
+        //     dropInFiles.push(stream.collectionConfig[configPath]);
+        //   }
+        // });
+
         // ##########
         // Filebeat
         // ##########
