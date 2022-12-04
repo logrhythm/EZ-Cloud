@@ -42,7 +42,7 @@ export default {
     // HTTPS
 
     {
-      name: 'sslflag',
+      name: 'sslFlag',
       label: 'Enable HTTPS',
       type: {
         name: 'boolean'
