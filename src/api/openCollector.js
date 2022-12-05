@@ -1017,9 +1017,24 @@ const streamUpdateForBeatStatusArray = {};
 function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollector, beat, stream) {
   /* eslint-disable no-param-reassign */
   // Check we are ship-shape with the params
-  const missingOpenCollector = !(openCollector && openCollector.uid && openCollector.uid.length);
-  const missingBeat = !(beat && beat.name && beat.name.length && beat.config && Array.isArray(beat.config));
-  const missingStream = !(stream && stream.uid && stream.uid.length);
+  const missingOpenCollector = !(
+    openCollector
+    && openCollector.uid
+    && openCollector.uid.length
+  );
+  const missingBeat = !(
+    beat
+    && beat.name
+    && beat.name.length
+    && beat.config
+    && Array.isArray(beat.config)
+    && beat.sourceJsonConfig
+  );
+  const missingStream = !(
+    stream
+    && stream.uid
+    && stream.uid.length
+  );
   if (
     !missingOpenCollector
     && !missingBeat
@@ -1071,21 +1086,21 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
 
         // TODO: Bring here the File drop mecanism from Tail
 
-        // // Go through the config to spot Files to be dropped in, and drop them :)
-        // // A file object always has `dropIn`, `valueInConfig` and `fileContentBase64`
-        // // Value of `dropIn` must be true
-        // const dropInFiles = []; // To store any found Drop In files in the config
-        // Object.keys(stream.collectionConfig).forEach((configPath) => {
-        //   if (
-        //     stream.collectionConfig[configPath]
-        //     && stream.collectionConfig[configPath].dropIn === true
-        //     && stream.collectionConfig[configPath].valueInConfig
-        //     && stream.collectionConfig[configPath].valueInConfig.length
-        //     && stream.collectionConfig[configPath].fileContentBase64 != null
-        //   ) {
-        //     dropInFiles.push(stream.collectionConfig[configPath]);
-        //   }
-        // });
+        // Go through the config to spot Files to be dropped in, and drop them :)
+        // A file object always has `dropIn`, `valueInConfig` and `fileContentBase64`
+        // Value of `dropIn` must be true
+        const dropInFiles = []; // To store any found Drop In files in the config
+        Object.keys(stream.sourceJsonConfig).forEach((configPath) => {
+          if (
+            stream.sourceJsonConfig[configPath]
+            && stream.sourceJsonConfig[configPath].dropIn === true
+            && stream.sourceJsonConfig[configPath].valueInConfig
+            && stream.sourceJsonConfig[configPath].valueInConfig.length
+            && stream.sourceJsonConfig[configPath].fileContentBase64 != null
+          ) {
+            dropInFiles.push(stream.sourceJsonConfig[configPath]);
+          }
+        });
 
         // ##########
         // Filebeat
