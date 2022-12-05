@@ -48,7 +48,7 @@ export default {
       group: 'Required'
     },
     {
-      name: 'subscription.name',
+      name: 'consumerID',
       label: 'Consumer ID',
       type: {
         name: 'string'
