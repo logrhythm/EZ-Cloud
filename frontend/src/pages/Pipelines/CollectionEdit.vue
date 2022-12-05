@@ -449,7 +449,9 @@ export default {
           }
         }
 
-        // For LogRhythm Beats:
+        // Identification for LogRhythm Beats:
+        // `collectionMethodTemplate.identificationStyle` is an array of flags
+        // LogRhythm Beats use the `logrhythmBeat` flag
         if (
           this.collectionMethodTemplate &&
           this.collectionMethodTemplate.identificationStyle &&
