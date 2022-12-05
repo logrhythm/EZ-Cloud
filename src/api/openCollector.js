@@ -1245,6 +1245,8 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
           beat.name.toLowerCase() === 'genericbeat'
           || beat.name.toLowerCase() === 'webhookbeat'
           || beat.name.toLowerCase() === 's3beat'
+          || beat.name.toLowerCase() === 'pubsubbeat'
+          || beat.name.toLowerCase() === 'kafkabeat'
         ) {
           const beatNameLowerCase = beat.name.toLowerCase();
 
