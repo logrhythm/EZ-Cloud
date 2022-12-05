@@ -22,6 +22,7 @@ export default {
     time_format: '2006-01-02T15:04:05Z07:00',
     cursor_header_type: 'custom_header'
   },
+  identificationStyle: ['logrhythmBeat'],
   definition: [
     // Required
     {

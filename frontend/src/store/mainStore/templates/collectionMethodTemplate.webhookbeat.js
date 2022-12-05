@@ -16,6 +16,7 @@ export default {
     heartbeatdisabled: false,
     heartbeatinterval: 60
   },
+  identificationStyle: ['logrhythmBeat'],
   definition: [
     // Required
     {

@@ -451,10 +451,10 @@ export default {
 
         // For LogRhythm Beats:
         if (
-          this.activeCollectionShipper === 'genericbeat' ||
-          this.activeCollectionShipper === 'webhookbeat' ||
-          this.activeCollectionShipper === 's3beat' ||
-          this.activeCollectionShipper === 'pubsubbeat'
+          this.collectionMethodTemplate &&
+          this.collectionMethodTemplate.identificationStyle &&
+          Array.isArray(this.collectionMethodTemplate.identificationStyle) &&
+          this.collectionMethodTemplate.identificationStyle.includes('logrhythmBeat')
         ) {
           // We are limited to 12 characters to ID the Beat
           // - let's use the first 3 chars from the UID, so to reduce the chances of collision
