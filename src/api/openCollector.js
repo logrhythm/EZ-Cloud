@@ -1084,23 +1084,23 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
         // Load the base config file for LogRhythm shippers
         const logrhythmShipperBaseConfig = fs.readFileSync(path.join(process.env.baseDirname, 'resources', 'LogRhythm_shippers-base_config.yaml'));
 
-        // TODO: Bring here the File drop mecanism from Tail
-
         // Go through the config to spot Files to be dropped in, and drop them :)
         // A file object always has `dropIn`, `valueInConfig` and `fileContentBase64`
         // Value of `dropIn` must be true
         const dropInFiles = []; // To store any found Drop In files in the config
-        Object.keys(stream.sourceJsonConfig).forEach((configPath) => {
-          if (
-            stream.sourceJsonConfig[configPath]
-            && stream.sourceJsonConfig[configPath].dropIn === true
-            && stream.sourceJsonConfig[configPath].valueInConfig
-            && stream.sourceJsonConfig[configPath].valueInConfig.length
-            && stream.sourceJsonConfig[configPath].fileContentBase64 != null
-          ) {
-            dropInFiles.push(stream.sourceJsonConfig[configPath]);
-          }
-        });
+        if (beat && beat.sourceJsonConfig) {
+          Object.keys(beat.sourceJsonConfig).forEach((configPath) => {
+            if (
+              beat.sourceJsonConfig[configPath]
+              && beat.sourceJsonConfig[configPath].dropIn === true
+              && beat.sourceJsonConfig[configPath].valueInConfig
+              && beat.sourceJsonConfig[configPath].valueInConfig.length
+              && beat.sourceJsonConfig[configPath].fileContentBase64 != null
+            ) {
+              dropInFiles.push(beat.sourceJsonConfig[configPath]);
+            }
+          });
+        }
 
         // ##########
         // Filebeat
@@ -1250,6 +1250,12 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
 
           // logrhythmShipperBaseConfig
           // Build the list of steps
+          // Configuration volume name for Beat
+
+          const beatConfigVolumeName = String(
+            `${beatNameLowerCase
+            }_config_${logRhythmBeatIdentifier}`
+          );
 
           // Import the Configuration (should only be one, but deal with all of them)
           beat.config.forEach((config) => {
@@ -1261,36 +1267,67 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
                 stdin: (typeof config === 'string' ? `${config}\n${logrhythmShipperBaseConfig}` : `${JSON.stringify(config)}\n${logrhythmShipperBaseConfig}`)
               }
             );
-
-            // Go through the config to spot Files to be dropped in, and drop them :)
-            // A file object always has `valueInConfig` and `fileContentBase64`
-            // stream.collectionConfig
-            // {
-            //   "collectionShipper":"webhookbeat",
-            //   "collectionMethod":"webhookbeat",
-            //   "hostname":"",
-            //   "portnumber":"8123",
-            //   "sslflag":false,
-            //   "heartbeatdisabled":false,
-            //   "heartbeatinterval":60,
-            //   "beatIdentifier":"419_Webhook_",
-            //   "logsource_name":"Webhook HTTP",
-            //   "certFilePath":{
-            //     "dropIn":true,
-            //     "valueInConfig":"/beats/webhookbeat/config/webhookbeat.crt",
-            //     "dropInPath":"{{beat_config_volume}}/webhookbeat.crt",
-            //     "fileContentBase64":"LS0tLSBCRUdJTiBTU0gyIFBVQkxJQyB.....BLRVkgLS0tLQ==",
-            //     "fileSizeBytes":442
-            //   },
-            //   "keyFilePath":{
-            //     "dropIn":true,
-            //     "valueInConfig":"/beats/webhookbeat/config/webhookbeat.key",
-            //     "dropInPath":"{{beat_config_volume}}/webhookbeat.key",
-            //     "fileContentBase64":"LS0tLSBCRUdJ.....IFBVQkxJQyBLRVkgLS0tLQ==",
-            //     "fileSizeBytes":442
-            //   }
-            // }
           });
+
+          // Drop the "Drop In" files, if any
+          if (dropInFiles && Array.isArray(dropInFiles) && dropInFiles.length) {
+            // Some files must be dropped in the Beat's config volume
+
+            // Create a unique ID for the Helper/Utility Container
+            const utilityContainerId = `cp-helper_oc-admin_${Math.floor(Math.random() * 16777216).toString(16).padStart(6, '0')}`;
+            // Create a temporary file name, based on the Helper/Utility Container name
+            const tempFilePath = String(`/tmp/${utilityContainerId}`)
+              .replaceAll('//', '/')
+              .replaceAll('"', '');
+
+            steps.push(
+              { // Import configuration
+                action: `Create utility container ("${utilityContainerId}")`,
+                command: `docker container create --name "${utilityContainerId}" -v "${beatConfigVolumeName}:/cp_target" alpine 1>/dev/null`
+              }
+            );
+
+            // Loop through them and add the right tasks to deal with each of them
+            dropInFiles.forEach((fileToDrop) => {
+              //   "certFilePath":{
+              //     "dropIn":true,
+              //     "valueInConfig":"/beats/webhookbeat/config/webhookbeat.crt",
+              //     "dropInPath":"{{beat_config_volume}}/webhookbeat.crt",
+              //     "fileContentBase64":"LS0tLSBCRUdJTiBTU0gyIF.....IFBVQkxJQyBLRVkgLS0tLQ==",
+              //     "fileSizeBytes":442
+              //   },
+              const copyTargetPath = String(`/cp_target/${fileToDrop.dropInPath}`)
+                .replaceAll('//', '/')
+                .replaceAll('"', '');
+              // fileToDrop.fileContentBase64 is Base64 encoded.
+              const fileContentBinary = Buffer.from(fileToDrop.fileContentBase64, 'base64').toString('latin1');
+
+              // Import File
+              steps.push(
+                {
+                  action: `Drop file content into temporary file: "${tempFilePath}" (${fileToDrop.fileSizeBytes} bytes)`,
+                  command: `cat > ${tempFilePath}`,
+                  stdin: fileContentBinary
+                },
+                {
+                  action: `Importing file referrenced in Beat's configuration as: "${fileToDrop.valueInConfig}"`,
+                  command: `docker cp "${tempFilePath}" "${utilityContainerId}:${copyTargetPath}" 1>/dev/null`
+                }
+              );
+            });
+
+            // Clean up
+            steps.push(
+              {
+                action: `Remove temporary file: "${tempFilePath}"`,
+                command: `rm -f "${tempFilePath}" 1>/dev/null`
+              },
+              {
+                action: `Remove utility container ("${utilityContainerId}")`,
+                command: `docker container rm "${utilityContainerId}" 1>/dev/null`
+              }
+            );
+          }
 
           // Wrap up
           steps.push(
@@ -1384,6 +1421,7 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
           });
       } catch (errorCaught) {
         streamUpdateForBeatStatus.errors.push(`Exception: ${errorCaught.message}`);
+        streamUpdateForBeatStatus.stillUpdating = false;
       }
     }).catch(() => {
       streamUpdateForBeatStatus.errors.push(`Failed to get SSH configuration for OpenCollector (based on provided UID: ${openCollector.uid}).`);
@@ -1402,6 +1440,7 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
     }
     streamUpdateForBeatStatus.stillUpdating = false;
   }
+  logToSystem('Debug', `updateStreamConfigurationForBeat - Errors for API: ${JSON.stringify(streamUpdateForBeatStatus.errors, null, ' ')}`);
   /* eslint-enable no-param-reassign */
 }
 
