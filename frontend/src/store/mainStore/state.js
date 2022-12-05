@@ -15,6 +15,10 @@ import collectionMethodTemplatesGenericbeat from './templates/collectionMethodTe
 import collectionMethodTemplatesWebhookbeat from './templates/collectionMethodTemplate.webhookbeat'
 // S3Beat
 import collectionMethodTemplatesS3beat from './templates/collectionMethodTemplate.s3beat'
+// PubSub
+import collectionMethodTemplatesPubSubbeat from './templates/collectionMethodTemplate.pubsubbeat'
+// EventHub
+// Kafka
 
 export default function () {
   return {
@@ -41,7 +45,8 @@ export default function () {
       collectionMethodTemplatesFilebeatHttpJson, // Filebeat - httpjson
       collectionMethodTemplatesGenericbeat, // genericbeat
       collectionMethodTemplatesWebhookbeat, // webhookbeat
-      collectionMethodTemplatesS3beat // s3beat
+      collectionMethodTemplatesS3beat, // s3beat
+      collectionMethodTemplatesPubSubbeat // pubsubbeat
     ], // collectionMethodTemplates
     collectionShippersOptions: [
       {
@@ -68,12 +73,12 @@ export default function () {
       //   icon: 'logrhythm-kafkabeat',
       //   outputFormat: 'yaml'
       // },
-      // {
-      //   value: 'pubsubbeat',
-      //   label: 'LogRhythm PubSub Beat (🚧 - Stub)',
-      //   icon: 'logrhythm-pubsubbeat',
-      //   outputFormat: 'yaml'
-      // },
+      {
+        value: 'pubsubbeat',
+        label: 'LogRhythm PubSub Beat',
+        icon: 'logrhythm-pubsubbeat',
+        outputFormat: 'yaml'
+      },
       {
         value: 's3beat',
         label: 'LogRhythm S3 Beat',
@@ -82,7 +87,7 @@ export default function () {
       },
       {
         value: 'webhookbeat',
-        label: 'LogRhythm Webhook Beat (👁‍🗨 - Preview - HTTP Only)',
+        label: 'LogRhythm Webhook Beat',
         icon: 'logrhythm-webhookbeat',
         outputFormat: 'yaml'
       // },
