@@ -815,7 +815,8 @@ export default {
                 name: caller.beatName,
                 config: [ // API expect an array of configuration files' content, but we so far only have one to provide
                   this.beatConfigForStream
-                ]
+                ],
+                sourceJsonConfig: (this.pipeline && this.pipeline.collectionConfig ? this.pipeline.collectionConfig : {})
               },
               stream: {
                 uid: (caller && caller.pipeline && caller.pipeline.uid && caller.pipeline.uid.length ? caller.pipeline.uid : undefined),
