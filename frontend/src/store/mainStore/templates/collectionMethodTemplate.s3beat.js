@@ -9,6 +9,17 @@
 export default {
   shipper: 's3beat',
   collectionMethod: 's3beat',
+  initialDefaultValues: {
+    awsFlag: false,
+    period: '10s',
+    assumeRoleFlag: false,
+    stsCredsExpirationTime: '1h',
+    'multiline.negate': 'true',
+    'traits.inclusion': '',
+    'traits.exclusion': '',
+    heartbeatdisabled: false,
+    heartbeatinterval: 60
+  },
   definition: [
     // Required
     {

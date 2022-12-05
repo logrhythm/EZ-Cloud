@@ -449,72 +449,13 @@ export default {
           }
         }
 
-        // For genericbeat:
-        if (this.activeCollectionShipper === 'genericbeat') {
-          if (this.activeCollectionMethod === 'genericbeat') {
-            newConf.url = ''
-            newConf.request_method = 'GET'
-            newConf.auth_type = 'noauth'
-            newConf.filter_type = 'nofilter'
-            newConf.heartbeatdisabled = false
-            newConf.heartbeatinterval = 60
-            newConf.pagination_type = 'nopagination'
-            newConf.period = '60s'
-            newConf.sorting_enabled = false
-            newConf.time_format = '2006-01-02T15:04:05Z07:00'
-            newConf.cursor_header_type = 'custom_header'
-          }
-
-          // We are limited to 12 characters to ID the Beat
-          // - let's use the first 3 chars from the UID, so to reduce the chances of collision
-          // - then add the Stream name and full UID
-          // - then truncate back to 12 chars max.
-          newConf.beatIdentifier = String(this.pipeline.uid.substring(0, 3) + '_' + this.pipeline.name.replace(/[^a-zA-Z0-9]/g, '_') + '_' + this.pipeline.uid).substring(0, 12)
-          newConf.logsource_name = this.pipeline.name
-        }
-
-        // For webhookbeat:
-        if (this.activeCollectionShipper === 'webhookbeat') {
-          if (this.activeCollectionMethod === 'webhookbeat') {
-            newConf.hostname = ''
-            newConf.portnumber = 8080
-            newConf.sslflag = false
-            newConf.heartbeatdisabled = false
-            newConf.heartbeatinterval = 60
-          }
-
-          // We are limited to 12 characters to ID the Beat
-          // - let's use the first 3 chars from the UID, so to reduce the chances of collision
-          // - then add the Stream name and full UID
-          // - then truncate back to 12 chars max.
-          newConf.beatIdentifier = String(this.pipeline.uid.substring(0, 3) + '_' + this.pipeline.name.replace(/[^a-zA-Z0-9]/g, '_') + '_' + this.pipeline.uid).substring(0, 12)
-          newConf.logsource_name = this.pipeline.name
-        }
-
-        // For s3beat:
-        if (this.activeCollectionShipper === 's3beat') {
-          if (this.activeCollectionMethod === 's3beat') {
-            newConf.awsFlag = false
-            newConf.period = '10s'
-            newConf.assumeRoleFlag = false
-            newConf.stsCredsExpirationTime = '1h'
-            newConf['multiline.negate'] = 'true'
-            newConf['traits.inclusion'] = ''
-            newConf['traits.exclusion'] = ''
-            newConf.heartbeatdisabled = false
-            newConf.heartbeatinterval = 60
-          }
-
-          // We are limited to 12 characters to ID the Beat
-          // - let's use the first 3 chars from the UID, so to reduce the chances of collision
-          // - then add the Stream name and full UID
-          // - then truncate back to 12 chars max.
-          newConf.beatIdentifier = String(this.pipeline.uid.substring(0, 3) + '_' + this.pipeline.name.replace(/[^a-zA-Z0-9]/g, '_') + '_' + this.pipeline.uid).substring(0, 12)
-          newConf.logsource_name = this.pipeline.name
-        }
-
-        // For pubsubbeat:
-        if (this.activeCollectionShipper === 'pubsubbeat') {
+        // For LogRhythm Beats:
+        if (
+          this.activeCollectionShipper === 'genericbeat' ||
+          this.activeCollectionShipper === 'webhookbeat' ||
+          this.activeCollectionShipper === 's3beat' ||
+          this.activeCollectionShipper === 'pubsubbeat'
+        ) {
           // We are limited to 12 characters to ID the Beat
           // - let's use the first 3 chars from the UID, so to reduce the chances of collision
           // - then add the Stream name and full UID

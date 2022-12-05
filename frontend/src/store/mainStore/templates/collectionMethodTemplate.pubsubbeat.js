@@ -8,7 +8,9 @@ export default {
     'subscription.retain_acked_messages': false,
     'subscription.retention_duration': '168h',
     'json.enabled': true,
-    'json.add_error_key': true
+    'json.add_error_key': true,
+    heartbeatdisabled: false,
+    heartbeatinterval: 60
   },
   definition: [
     // Required

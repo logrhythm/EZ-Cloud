@@ -9,6 +9,13 @@
 export default {
   shipper: 'webhookbeat',
   collectionMethod: 'webhookbeat',
+  initialDefaultValues: {
+    hostname: '',
+    portnumber: 8080,
+    sslflag: false,
+    heartbeatdisabled: false,
+    heartbeatinterval: 60
+  },
   definition: [
     // Required
     {
