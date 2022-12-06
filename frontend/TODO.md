@@ -46,22 +46,25 @@
   - [x] Make bottom panel sticky, with `[Close]` button
   - [ ] Deduplicate error messages
 - [ ] Admin - MS SQL - Add Test button
-- [ ] Add a simple Wizard from landing page
-  - [ ] Ask for name for Log Source
-  - [ ] Create collection configuation
-    - [ ] Pick Shipper
-    - [ ] Pick type of collection (Flat File, Syslog, REST, etc...)
-    - [ ] Configure it
-  - [ ] Pick up Open Collector
-    - [ ] Add one if none in the list
-    - [ ] Offer to deploy required Shipper if not already on OC
-  - [ ] Create field mapping
-    - [ ] Run pre-configured Tail
-  - [ ] Recap page
-    - [ ] Ability to rename Log Source
-    - [ ] Ability to assign Log Source to other Open Collectors
-    - [ ] Ability to Enable / Commit the Log Source creation
-- [ ] Provide Beats's configuration to Backend when starting Tail
+- [ ] Landing page
+  - [ ] News from EZ Market Place
+  - [ ] Common tasks
+  - [ ] Add a simple Wizard
+    - [ ] Ask for name for Log Source
+    - [ ] Create collection configuation
+      - [ ] Pick Shipper
+      - [ ] Pick type of collection (Flat File, Syslog, REST, etc...)
+      - [ ] Configure it
+    - [ ] Pick up Open Collector
+      - [ ] Add one if none in the list
+      - [ ] Offer to deploy required Shipper if not already on OC
+    - [ ] Create field mapping
+      - [ ] Run pre-configured Tail
+    - [ ] Recap page
+      - [ ] Ability to rename Log Source
+      - [ ] Ability to assign Log Source to other Open Collectors
+      - [ ] Ability to Enable / Commit the Log Source creation
+- [x] Provide Beats's configuration to Backend when starting Tail
 
 ## TO FIX
 - [x] JSON to Yaml Collection config fails with `TypeError: jsonConfig.forEach is not a function`
