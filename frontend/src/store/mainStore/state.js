@@ -20,6 +20,7 @@ import collectionMethodTemplatesPubSubbeat from './templates/collectionMethodTem
 // Kafka
 import collectionMethodTemplatesKafkabeat from './templates/collectionMethodTemplate.kafkabeat'
 // EventHub
+import collectionMethodTemplatesEventHubbeatCustom from './templates/collectionMethodTemplate.eventhubbeat.custom.mapping'
 
 export default function () {
   return {
@@ -48,7 +49,8 @@ export default function () {
       collectionMethodTemplatesWebhookbeat, // webhookbeat
       collectionMethodTemplatesS3beat, // s3beat
       collectionMethodTemplatesPubSubbeat, // pubsubbeat
-      collectionMethodTemplatesKafkabeat
+      collectionMethodTemplatesKafkabeat, // kafkabeat
+      collectionMethodTemplatesEventHubbeatCustom // eventhubbeat - With custom mapping
     ], // collectionMethodTemplates
     collectionShippersOptions: [
       {
@@ -57,12 +59,12 @@ export default function () {
         icon: 'jsBeat',
         outputFormat: 'json'
       },
-      // {
-      //   value: 'eventhubbeat',
-      //   label: 'LogRhythm Azure Event Hub Beat (🚧 - Stub)',
-      //   icon: 'logrhythm-eventhubbeat',
-      //   outputFormat: 'yaml'
-      // },
+      {
+        value: 'eventhubbeat',
+        label: 'LogRhythm Azure Event Hub Beat',
+        icon: 'logrhythm-eventhubbeat',
+        outputFormat: 'yaml'
+      },
       {
         value: 'genericbeat',
         label: 'LogRhythm Generic HTTP Rest Beat',
@@ -207,8 +209,14 @@ export default function () {
       },
       {
         shipper: 'eventhubbeat',
-        value: 'eventhubbeat',
-        label: 'Azure Event Hub',
+        value: 'eventhubbeat-standard',
+        label: 'Azure Event Hub - Default Mapping',
+        icon: 'o_language'
+      },
+      {
+        shipper: 'eventhubbeat',
+        value: 'eventhubbeat-custom',
+        label: 'Azure Event Hub - With custom Mapping',
         icon: 'o_language'
       },
       {
