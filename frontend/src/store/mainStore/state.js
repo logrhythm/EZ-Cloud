@@ -269,8 +269,16 @@ export default function () {
     openCollectorLogSources: [],
     userAccounts: [], // EZ Users on EZ Server
     userRoles: [], // Roles for EZ Users on EZ Server
-    errorWikiUrlBase: 'https://github.com/logrhythm/EZ-Cloud/wiki/Error-Messages#',
-    helpWikiUrlBase: 'https://github.com/logrhythm/EZ-Cloud/wiki/Help#',
+    errorWikiUrlBase: ( // Base URL for the Documentation page with Error codes
+      process.env.DEV
+        ? 'https://docs-staging.logrhythm.com/docs/OCbeats/logrhythm-open-collector/oc-admin/oc-admin-error-messages#OCAdminErrorMessages-'
+        : 'https://docs.logrhythm.com/docs/OCbeats/logrhythm-open-collector/oc-admin/oc-admin-error-messages#OCAdminErrorMessages-'
+    ),
+    helpWikiUrlBase: ( // Base URL for the Help Documentation page
+      process.env.DEV
+        ? 'https://docs-staging.logrhythm.com/docs/OCbeats/logrhythm-open-collector/oc-admin/navigating-and-using-oc-admin#NavigatingandUsingOCAdmin-'
+        : 'https://docs.logrhythm.com/docs/OCbeats/logrhythm-open-collector/oc-admin/navigating-and-using-oc-admin#NavigatingandUsingOCAdmin-'
+    ),
     deployment: {
       uid: null, // UID of the EZ Server
       version: null // EZ Server's version
