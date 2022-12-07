@@ -51,7 +51,7 @@ export default {
         name: 'option'
       },
       options: [
-        { value: 'true', label: 'Runninng in AWS' },
+        { value: 'true', label: 'Running in AWS' },
         { value: 'false', label: 'Running on-premise (not in AWS)' }
       ],
       description: `Flag if the Beat is running inside of AWS, or if it is running on-premise or in a different Cloud provider.
