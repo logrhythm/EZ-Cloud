@@ -201,6 +201,7 @@ async function tailInit(socket, payload) {
           || payload.collectionConfig.collectionShipper === 's3beat'
           || payload.collectionConfig.collectionShipper === 'pubsubbeat'
           || payload.collectionConfig.collectionShipper === 'kafkabeat'
+          || payload.collectionConfig.collectionShipper === 'eventhubbeat'
         ) {
           // Get a clean Beat name
           const beatName = payload.collectionConfig.collectionShipper.toLowerCase().trim();
