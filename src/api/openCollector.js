@@ -1239,7 +1239,7 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
         }
 
         // ##########
-        // LogRhythm Beats (genericbeat, webhookbeat, s3beat)
+        // LogRhythm Beats (genericbeat, webhookbeat, s3beat, ...)
         // ##########
         if (
           beat.name.toLowerCase() === 'genericbeat'
@@ -1247,6 +1247,7 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
           || beat.name.toLowerCase() === 's3beat'
           || beat.name.toLowerCase() === 'pubsubbeat'
           || beat.name.toLowerCase() === 'kafkabeat'
+          || beat.name.toLowerCase() === 'eventhubbeat'
         ) {
           const beatNameLowerCase = beat.name.toLowerCase();
 
