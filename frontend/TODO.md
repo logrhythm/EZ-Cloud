@@ -1,5 +1,39 @@
 # TODO - Frontend
 
+### Target: v2.0
+
+## TO DO
+- [ ] Incorporate Axon style UI
+  - [ ] Tables
+  - [ ] Headers
+    - [ ] Breadcrumbs
+  - [ ] Action buttons style
+- [ ] LogRhythm Beats mapping for Collection Configuration
+  - [ ] ...
+- [ ] Error reporting card to deal with many errors
+  - [ ] Deduplicate error messages
+- [ ] Admin - MS SQL - Add Test button
+- [ ] Landing page
+  - [ ] Add a simple Wizard
+    - [ ] Ask for name for Log Source
+    - [ ] Create collection configuation
+      - [ ] Pick Shipper
+      - [ ] Pick type of collection (Flat File, Syslog, REST, etc...)
+      - [ ] Configure it
+    - [ ] Pick up Open Collector
+      - [ ] Add one if none in the list
+      - [ ] Offer to deploy required Shipper if not already on OC
+    - [ ] Create field mapping
+      - [ ] Run pre-configured Tail
+    - [ ] Recap page
+      - [ ] Ability to rename Log Source
+      - [ ] Ability to assign Log Source to other Open Collectors
+      - [ ] Ability to Enable / Commit the Log Source creation
+
+## TO FIX
+
+## TO TEST
+
 ### Target: v1.0
 
 ## TO DO
@@ -26,44 +60,24 @@
     - [ ] With custom Mapping
     - [ ] Without custom Mapping
   - [x] S3
-  - [ ] Azure Event Hub
-    - [ ] With custom Mapping
-    - [ ] Without custom Mapping
-  - [ ] WebHook
-    - [ ] https
-  - [ ] PubSub
-  - [ ] Kafka
-  - ...
+  - [x] WebHook
+    - [x] https
+  - [x] PubSub
+  - [x] Kafka
 - [x] Create proper Beats Collection Configuration object, expanding from the notted notation in field names
 - [x] Provide Beats's configuration to Backend when starting Tail
-- [ ] Add File drop field type to Collection Configuration
+- [x] Add File drop field type to Collection Configuration
   - [x] Internal template
   - [x] Collection Configuration Editor
   - [x] Pass file information to Backend during Tail
-  - [ ] Pass file information to Backend during Deployment
+  - [x] Pass file information to Backend during Deployment
 - [ ] Error reporting card to deal with many errors
   - [x] Add sticky title and X close button
   - [x] Make bottom panel sticky, with `[Close]` button
-  - [ ] Deduplicate error messages
 - [ ] Admin - MS SQL - Add Test button
 - [ ] Landing page
   - [ ] News from EZ Market Place
   - [ ] Common tasks
-  - [ ] Add a simple Wizard
-    - [ ] Ask for name for Log Source
-    - [ ] Create collection configuation
-      - [ ] Pick Shipper
-      - [ ] Pick type of collection (Flat File, Syslog, REST, etc...)
-      - [ ] Configure it
-    - [ ] Pick up Open Collector
-      - [ ] Add one if none in the list
-      - [ ] Offer to deploy required Shipper if not already on OC
-    - [ ] Create field mapping
-      - [ ] Run pre-configured Tail
-    - [ ] Recap page
-      - [ ] Ability to rename Log Source
-      - [ ] Ability to assign Log Source to other Open Collectors
-      - [ ] Ability to Enable / Commit the Log Source creation
 - [x] Provide Beats's configuration to Backend when starting Tail
 - [x] Update link to the Wiki
   - [x] Move to `docs.logrhythm.com`
