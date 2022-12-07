@@ -65,6 +65,9 @@
       - [ ] Ability to assign Log Source to other Open Collectors
       - [ ] Ability to Enable / Commit the Log Source creation
 - [x] Provide Beats's configuration to Backend when starting Tail
+- [x] Update link to the Wiki
+  - [x] Move to `docs.logrhythm.com`
+  - [x] Use Staging Doc during Dev
 
 ## TO FIX
 - [x] JSON to Yaml Collection config fails with `TypeError: jsonConfig.forEach is not a function`
