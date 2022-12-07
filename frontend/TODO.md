@@ -62,6 +62,7 @@
       - [ ] Implement skipping OC Pipeline deployment
       - [ ] Implement pick Azure Eventhub LS Type in SIEM
         - skip LST creation
+        - skip MPE rule creation
         - skip Log Processing Policy creation
       - [ ] Implement disable Field Mapping edit
   - [x] S3
