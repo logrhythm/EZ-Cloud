@@ -11,7 +11,7 @@ function isLoggedIn (to, from, next) {
   }
 }
 
-// Check if we have a JWT token, and redirect to /Login if not
+// Update the tab/window title
 function updateTitle (to, from, next) {
   let pageTitle = ''
 
