@@ -84,6 +84,7 @@
 - [ ] Landing page
   - [ ] News from EZ Market Place
   - [ ] Common tasks
+  - [ ] Recent items
 - [x] Provide Beats's configuration to Backend when starting Tail
 - [x] Update link to the Wiki
   - [x] Move to `docs.logrhythm.com`
