@@ -81,7 +81,11 @@ If set to "**Running on-premise (not in AWS)**", all fields of the **Authenticat
       description: `Enter the access key of your s3beat AWS application, which you should have saved from the [Configure AWS S3 section](https://docs.logrhythm.com/docs/OCbeats/aws-s3-beat/configure-aws-s3).
 
 > NOTE
-> The secret access key and access keys are saved in encrypted format.`,
+> This is only required when running the Beat outside of AWS.
+
+> NOTE
+> The secret access key and access keys are saved in encrypted format.
+`,
       default: '',
       required: true,
       group: 'Authentication for non-AWS deployment'
@@ -98,6 +102,9 @@ If set to "**Running on-premise (not in AWS)**", all fields of the **Authenticat
         obfuscatedFormatCheckRegex: '[0-9]\\|\\|.{23,}' // Example: 2||64isxHMCDZfsEWhchnl+RTGW6RCjcOtxTjTBotLmtAzXTxMSc1jCPv7xPrtXO8nr4796WpAzSduLAENtAjs=
       },
       description: `Enter the s3beat secret access key of your s3beat AWS application, which you should have saved from the [Configure AWS S3 section](https://docs.logrhythm.com/docs/OCbeats/aws-s3-beat/configure-aws-s3).
+
+> NOTE
+> This is only required when running the Beat outside of AWS.
 
 > NOTE
 > The secret access key and access keys are saved in encrypted format.`,
@@ -120,7 +127,7 @@ If set to "**Running on-premise (not in AWS)**", all fields of the **Authenticat
       ],
       description: 'Enable cross-account access of some objects.',
       default: 'false',
-      required: true,
+      required: false,
       group: 'Cross-account Access'
     },
     {
@@ -138,7 +145,7 @@ If set to "**Running on-premise (not in AWS)**", all fields of the **Authenticat
       },
       description: 'Enter your s3beat ARN for the Assume role cross account access in the format `arn:aws:iam::{Account-A-ID}:role/{Assume_role_name}` .',
       default: '',
-      required: true,
+      required: false,
       group: 'Cross-account Access'
     },
 
@@ -152,7 +159,7 @@ If set to "**Running on-premise (not in AWS)**", all fields of the **Authenticat
       },
       description: 'Enable multiline pattern Regex.',
       default: false,
-      required: true,
+      required: false,
       group: 'Multilines'
     },
     {
@@ -163,7 +170,7 @@ If set to "**Running on-premise (not in AWS)**", all fields of the **Authenticat
       },
       description: 'Enter the Regex used to separate multiline messages.',
       default: '',
-      required: true,
+      required: false,
       group: 'Multilines'
     },
     {
@@ -178,7 +185,7 @@ If set to "**Running on-premise (not in AWS)**", all fields of the **Authenticat
       ],
       description: '',
       default: 'after',
-      required: true,
+      required: false,
       group: 'Multilines'
     },
 

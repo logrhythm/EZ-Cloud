@@ -242,7 +242,7 @@ export default function () {
       {
         shipper: 'webhookbeat',
         value: 'webhookbeat',
-        label: 'Webhook over HTTP',
+        label: 'Webhook over HTTP and HTTPS',
         icon: 'o_input'
       },
       {
