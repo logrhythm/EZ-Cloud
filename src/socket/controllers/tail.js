@@ -219,7 +219,7 @@ async function tailInit(socket, payload) {
             }_config_${beatId}`
           );
           // Get collection config
-          const inputYmlRaw = collectionConfigToYml(payload.collectionConfig);
+          const inputYmlRaw = payload.collectionConfigYml;
           // Replace config's beatIdentifier with this Tail's beatId
           const configBeatIdentifier = (
             payload.collectionConfig.beatIdentifier
