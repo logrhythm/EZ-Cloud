@@ -625,5 +625,13 @@
   "Loading file...": "파일 로드 중...",
   "File loaded": "파일 로드됨",
   "Only one file is accepted. You tried to import multiple files.": "하나의 파일만 허용됩니다. 여러 파일을 가져오려고 했습니다.",
-  "Problem while loading file": "파일을 로드하는 동안 문제가 발생했습니다."
+  "Problem while loading file": "파일을 로드하는 동안 문제가 발생했습니다.",
+  "No name": "이름 없음",
+  "Start": "시작",
+  "Recent": "최근의",
+  "Latest": "최근 소식",
+  "Create, Edit and Manage my OpenCollectors...": "내 OpenCollector 생성, 편집 및 관리...",
+  "Create, Edit and Manage my Pipelines...": "내 파이프라인 생성, 편집 및 관리...",
+  "Check my Notifications...": "내 알림 확인...",
+  "Browse the Marketplace...": "마켓플레이스 둘러보기..."
 }

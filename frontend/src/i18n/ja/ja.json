@@ -625,5 +625,13 @@
   "Loading file...": "ファイルを読み込んでいます...",
   "File loaded": "ファイルがロードされました",
   "Only one file is accepted. You tried to import multiple files.": "ファイルは 1 つだけ受け付けます。 複数のファイルをインポートしようとしました。",
-  "Problem while loading file": "ファイルのロード中に問題が発生しました"
+  "Problem while loading file": "ファイルのロード中に問題が発生しました",
+  "No name": "ノーネーム",
+  "Start": "始める",
+  "Recent": "最近",
+  "Latest": "最新ニュース",
+  "Create, Edit and Manage my OpenCollectors...": "自分の OpenCollectors を作成、編集、管理...",
+  "Create, Edit and Manage my Pipelines...": "パイプラインを作成、編集、管理...",
+  "Check my Notifications...": "通知を確認...",
+  "Browse the Marketplace...": "マーケットプレイスを参照..."
 }

@@ -625,5 +625,13 @@
   "Loading file...": "تحميل الملف ...",
   "File loaded": "تم تحميل الملف",
   "Only one file is accepted. You tried to import multiple files.": "يتم قبول ملف واحد فقط. لقد حاولت استيراد عدة ملفات.",
-  "Problem while loading file": "مشكلة أثناء تحميل الملف"
+  "Problem while loading file": "مشكلة أثناء تحميل الملف",
+  "No name": "بدون اسم",
+  "Start": "بداية",
+  "Recent": "مؤخرًا",
+  "Latest": "أحدث الأخبار",
+  "Create, Edit and Manage my OpenCollectors...": "إنشاء وتحرير وإدارة OpenCollectors الخاصة بي ...",
+  "Create, Edit and Manage my Pipelines...": "إنشاء خطوط الأنابيب وتحريرها وإدارتها ...",
+  "Check my Notifications...": "تحقق من تنبيهاتي ...",
+  "Browse the Marketplace...": "تصفح السوق ..."
 }

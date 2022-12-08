@@ -216,7 +216,7 @@
   "Do you REALLY want to delete this User Role?": "האם אתה באמת רוצה למחוק את תפקיד המשתמש הזה?",
   "Admin : SIEM : Manage MS SQL Connection": "מנהל מערכת: SIEM: ניהול חיבור MS SQL",
   "MS SQL Connection": "חיבור MS SQL",
-  "OC-Admin backend needs access to the SIEM database for certain operations, like listing and managing the OpenCollector and OC-Admin related Log Sources.": "OC-Admin  זקוק לגישה למסד הנתונים של SIEM עבור פעולות מסוימות, כמו רישום וניהול מקורות היומן הקשורים ל-OpenCollector ול-OC-Admin.",
+  "OC-Admin backend needs access to the SIEM database for certain operations, like listing and managing the OpenCollector and OC-Admin related Log Sources.": " OC-Admin  זקוק לגישה למסד הנתונים של SIEM עבור פעולות מסוימות, כמו רישום וניהול מקורות היומן הקשורים ל-OpenCollector ול-OC-Admin.",
   "To accomplish this, it needs to know the PM or XM address and SQL credentials.": "כדי להשיג זאת, הוא צריך לדעת את כתובת PM או XM ואת האישורים של SQL.",
   "Hostname (XM or Platform Manager)": "שם מארח (XM או מנהל פלטפורמה)",
   "Hostname cannot be empty": "שם המארח לא יכול להיות ריק",
@@ -625,5 +625,13 @@
   "Loading file...": "טוען קובץ...",
   "File loaded": "הקובץ נטען",
   "Only one file is accepted. You tried to import multiple files.": "רק קובץ אחד מתקבל. ניסית לייבא מספר קבצים.",
-  "Problem while loading file": "בעיה בעת טעינת הקובץ"
+  "Problem while loading file": "בעיה בעת טעינת הקובץ",
+  "No name": "ללא שם",
+  "Start": "הַתחָלָה",
+  "Recent": "לאחרונה",
+  "Latest": "חדשות אחרונות",
+  "Create, Edit and Manage my OpenCollectors...": "צור, ערוך ונהל את OpenCollectors שלי...",
+  "Create, Edit and Manage my Pipelines...": "צור, ערוך ונהל את הצינורות שלי...",
+  "Check my Notifications...": "בדוק את ההתראות שלי...",
+  "Browse the Marketplace...": "עיין ב-Marketplace..."
 }

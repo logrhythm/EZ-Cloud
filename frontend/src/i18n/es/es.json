@@ -625,5 +625,13 @@
   "Loading file...": "Cargando archivo...",
   "File loaded": "Archivo cargado",
   "Only one file is accepted. You tried to import multiple files.": "Solo se acepta un archivo. Ha intentado importar varios archivos.",
-  "Problem while loading file": "Problema al cargar archivo"
+  "Problem while loading file": "Problema al cargar archivo",
+  "No name": "Sin nombre",
+  "Start": "comienzo",
+  "Recent": "Reciente",
+  "Latest": "Últimas noticias",
+  "Create, Edit and Manage my OpenCollectors...": "Crear, editar y administrar mis OpenCollectors...",
+  "Create, Edit and Manage my Pipelines...": "Crear, editar y administrar mis tuberías...",
+  "Check my Notifications...": "Revisa mis notificaciones...",
+  "Browse the Marketplace...": "Explorar el Mercado..."
 }

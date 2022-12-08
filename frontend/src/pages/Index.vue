@@ -18,7 +18,7 @@
       <div class="column justify-around" style="max-width: 35rem;">
         <div>
           <div class="text-h6 q-pb-none">
-            Start
+            {{ $t('Start') }}
           </div>
           <div class=" q-pt-none">
             <q-list padding class="" v-if="commonTasks">
@@ -46,7 +46,7 @@
         </div>
         <div>
           <div class="text-h6 q-pb-none">
-            Recent
+            {{ $t('Recent') }}
           </div>
           <!-- {
             name: 'Event Hub - Custom Mapping',
@@ -78,7 +78,7 @@
       <div class="column" style="width: 35rem;">
         <div>
           <div class="text-h6 q-pb-none">
-            Latest
+            {{ $t('Latest') }}
           </div>
           <div class=" q-pt-none">
             <q-scroll-area style="height: 38rem;" visible >
@@ -176,22 +176,22 @@ export default {
       hideNeedToConfigureMsSqlPopup: false,
       commonTasks: [ // List of the Common tasks
         {
-          label: 'Create, Edit and Manage my OpenCollectors...',
+          label: this.$t('Create, Edit and Manage my OpenCollectors...'),
           icon: 'o_mediation',
           link: '#/OpenCollectors'
         },
         {
-          label: 'Create, Edit and Manage my Pipelines...',
+          label: this.$t('Create, Edit and Manage my Pipelines...'),
           icon: 'o_account_tree',
           link: '#/Pipelines'
         },
         {
-          label: 'Check my Notifications...',
+          label: this.$t('Check my Notifications...'),
           icon: 'o_mail_outline',
           link: '#/MarketPlace/Notifications'
         },
         {
-          label: 'Browse the Marketplace...',
+          label: this.$t('Browse the Marketplace...'),
           icon: 'o_storefront',
           link: '#/MarketPlace/PipelineTemplates'
         }
@@ -254,7 +254,7 @@ export default {
         Array.isArray(recentItemsStored)
           ? recentItemsStored.map((recentItem) => (
             {
-              label: recentItem.name || 'No name',
+              label: recentItem.name || this.$t('No name'),
               icon: (recentItem.type === 'pipeline' ? 'o_account_tree' : 'o_description'),
               link: recentItem.link || (recentItem.type === 'pipeline' ? '#/Pipelines' : '#/Welcome'),
               lastVisit: recentItem.lastVisit || 0,

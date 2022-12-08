@@ -625,5 +625,13 @@
   "Loading file...": "加载文件...",
   "File loaded": "文件已加载",
   "Only one file is accepted. You tried to import multiple files.": "只接受一个文件。 您试图导入多个文件。",
-  "Problem while loading file": "加载文件时出现问题"
+  "Problem while loading file": "加载文件时出现问题",
+  "No name": "无名",
+  "Start": "开始",
+  "Recent": "最近的",
+  "Latest": "最新消息",
+  "Create, Edit and Manage my OpenCollectors...": "创建、编辑和管理我的 OpenCollectors...",
+  "Create, Edit and Manage my Pipelines...": "创建、编辑和管理我的管道...",
+  "Check my Notifications...": "检查我的通知...",
+  "Browse the Marketplace...": "浏览市场..."
 }
