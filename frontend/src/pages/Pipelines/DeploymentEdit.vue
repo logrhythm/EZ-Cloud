@@ -665,9 +665,7 @@ export default {
           const skipDeploymentStepsFromTemplate = (this.collectionMethodTemplates
             .find(template => template.collectionMethod === this.pipeline.collectionConfig.collectionMethod) || {})
             .skipDeploymentSteps || []
-          const actualDeploymentSteps = deploymentSteps.filter((step) => skipDeploymentStepsFromTemplate.includes(step.uid))
-
-          console.log('deploymentSteps, actualDeploymentSteps', deploymentSteps, actualDeploymentSteps) // XXXX
+          const actualDeploymentSteps = deploymentSteps.filter((step) => !skipDeploymentStepsFromTemplate.includes(step.uid))
 
           deploymentStatuses.push(
             {
