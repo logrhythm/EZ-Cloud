@@ -80,7 +80,6 @@
 - [x] Error reporting card to deal with many errors
   - [x] Add sticky title and X close button
   - [x] Make bottom panel sticky, with `[Close]` button
-- [ ] Admin - MS SQL - Add Test button
 - [x] Landing page
   - [x] News from EZ Market Place
   - [x] Common tasks
