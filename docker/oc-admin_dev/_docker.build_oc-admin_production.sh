@@ -82,6 +82,9 @@ fi
 #  - Build Backent
 
 if [[ "$*" == *notempimage* ]]; then
+  echo "### RUN BUILD COMMAND ON CONTAINER IN INTERACTIVE MODE..."
+  docker exec -it $containerId ash -c 'cd EZ-Cloud && npm run buildDockerFull'
+else
   echo "### SPIN TEMPORARY \`oc-admin_dev\` IMAGE (./_docker.run-oc-admin_dev.sh --build_only)..."
   if [[ -f "_docker.run-oc-admin_dev.sh" ]]; then
     chmod +x _docker.run-oc-admin_dev.sh
@@ -90,9 +93,6 @@ if [[ "$*" == *notempimage* ]]; then
     echo "### 🔴 ERROR: \`_docker.run-oc-admin_dev.sh\` SCRIPT IS NOT FOUND. BUILD PROCESS CANCELLED"
     exit 1
   fi
-else
-  echo "### RUN BUILD COMMAND ON CONTAINER IN INTERACTIVE MODE..."
-  docker exec -it $containerId ash -c 'cd EZ-Cloud && npm run buildDockerFull'
 fi
 
 # Double check the files are good, and Dockerise the life out of that thing!
