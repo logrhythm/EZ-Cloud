@@ -98,12 +98,65 @@
       </div>
     </div>
     <div class="q-mx-xl">
-      <q-card>
-        <q-card-section class="text-h5">
-          News
+      <q-card style="max-height: 15rem; min-height: 10rem;">
+        <q-card-section class="text-h6 q-pb-none">
+          Latest
         </q-card-section>
         <q-card-section>
-          ...
+          <q-scroll-area style="height: 10rem;">
+            <q-list
+              padding
+              class=""
+              v-if="newsItems"
+              separator
+            >
+            <!-- {
+              title: '',
+              icon: '',
+              markdownBody: '',
+              link: '',
+              chip: [
+                {
+                  label: '',
+                  colour: ''
+                }
+              ]
+            } -->
+              <q-item
+                v-for="(item, index) in newsItems"
+                :key="index"
+                tag="a"
+                :href="item.link"
+                target="_blank"
+                clickable
+              >
+                <q-badge
+                  v-if="item.chip"
+                  class="q-mr-sm"
+                  :color="(item.chip.colour ? item.chip.colour : undefined)"
+                  :label="(item.chip.label ? item.chip.label : undefined)"
+                  floating
+                ></q-badge>
+
+                <q-item-section top avatar>
+                  <q-icon :name="item.icon" />
+                </q-item-section>
+
+                <!-- <q-item-section>{{ item.title }}</q-item-section> -->
+                <q-item-section>
+                  <q-item-label class="text-bold">{{ item.title }}</q-item-label>
+                  <!-- <q-item-label>{{ item.markdownBody }}</q-item-label> -->
+                  <q-item-label>
+                    <q-markdown
+                      class="col"
+                      :src="item.markdownBody"
+                      no-heading-anchor-links
+                    />
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-scroll-area>
         </q-card-section>
       </q-card>
     </div>
@@ -168,41 +221,39 @@ export default {
           link: '#/MarketPlace/PipelineTemplates'
         }
       ],
-      // recentItemsStored: [
-      //   {
-      //     name: 'Event Hub - Custom Mapping',
-      //     type: 'pipeline',
-      //     uid: '7f698a00-b6de-4672-be34-249eb5873059',
-      //     link: '#/Pipelines/7f698a00-b6de-4672-be34-249eb5873059/Properties',
-      //     lastVisit: ''
-      //   },
-      //   {
-      //     name: 'fix @ me',
-      //     type: 'pipeline',
-      //     uid: 'dbb77ea6-a9c3-4718-a62f-7048e0f33932',
-      //     link: '#/Pipelines/dbb77ea6-a9c3-4718-a62f-7048e0f33932/Properties',
-      //     lastVisit: ''
-      // },
-      // {
-      //   name: '',
-      //   type: '',
-      //   uid: '',
-      //   link: '#/Pipelines//Properties',
-      //   lastVisit: ''
-      // }
-      // ],
       newsItems: [
+        // {
+        //   title: '',
+        //   icon: '',
+        //   markdownBody: '',
+        //   link: '',
+        //   chip: {
+        //     label: '',
+        //     colour: ''
+        //   }
+        // }
         {
-          title: '',
-          icon: '',
+          title: 'OC Admin v1.0 is out',
+          icon: 'o_celebration',
           markdownBody: '',
-          link: '',
-          chip: [
-            {
-              label: '',
-              colour: ''
-            }
-          ]
+          link: 'https://docs.logrhythm.com/docs/OCbeats/logrhythm-open-collector/open-collector-installation-and-user-guide/initialize-the-oc-admin',
+          chip: {
+            label: 'Release',
+            colour: 'primary'
+          }
+        },
+        {
+          title: 'Inside Japan\'s most minimalist homes',
+          icon: 'o_home',
+          markdownBody: `*Close to nature and beautifully minimalist, the Zen-like interiors featured in a new book offer a glimpse inside the Japanese mindset.*
+
+"The home – before it is a place of beauty – is a place for safety, and assessed according to its alignment with its natural surroundings," says Mihoko Iida, whose new book Japanese Interiors takes a look inside some of Japan's most interesting private homes. From urban apartments to mountain and seaside escapes, the spaces featured in the book all share this idea of what home interiors mean in Japan, and how they are informed by a sense of harmony and balance with their surrounding environment.
+
+![Houses are beautiful!](https://ychef.files.bbci.co.uk/180x180/p0d1g72g.jpg "Houses are beautiful!")
+
+At Lotus House there is a floating staircase on the rear wall, and the living room overlooks the lotus pond. As the architect Kuma puts it: "The lightness of the stone is an expression of the gentle lotus petals." According to Iida, the term 'interiors' is defined rather differently in Japan. "When Japanese people talk about interiors, it's more about where the sunlight enters a room, how the wind travels through the entrance," she explains. "Or creating a space to withstand the natural elements in the mountains or along the coast."
+`,
+          link: 'https://www.bbc.com/culture/article/20221206-japans-most-zen-like-minimalist-interiors'
         }
       ]
     }
