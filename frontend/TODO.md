@@ -91,7 +91,7 @@
 
 ## TO FIX
 - [x] JSON to Yaml Collection config fails with `TypeError: jsonConfig.forEach is not a function`
-- [ ] Mapping Field Editor - `@` sign in field name is not escaped and cause JQ to fail import
+- [x] Mapping Field Editor - `@` sign in field name is not escaped and cause JQ to fail import
 
 ## TO TEST
 
