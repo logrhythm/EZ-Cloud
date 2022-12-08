@@ -490,7 +490,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('mainStore', ['openCollectorBeats', 'loggedInUser', 'collectionShippersOptions']),
+    ...mapState('mainStore', ['openCollectorBeats', 'loggedInUser', 'collectionShippersOptions', 'collectionMethodTemplates']),
     ...mapGetters('mainStore', ['openCollectorLogSources']),
     pipeline () {
       const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
@@ -662,6 +662,10 @@ export default {
           deploymentStatus.isDeployment = isDeployment // True: it's a deployment. Flase: it's un Un-Deploy.
           deploymentStatuses = JSON.parse(JSON.stringify(deploymentStatuses))
         } else {
+          // const collectionMethod = (this.collectionMethodTemplates
+          //   .find(template => template.collectionMethod === this.pipeline.collectionConfig.collectionMethod) || {}).collectionMethod
+          // const skipDeploymentSteps = deploymentSteps.filter( (step) => step.uid === collectionMethod)
+
           deploymentStatuses.push(
             {
               openCollectorUid: selectedRow.openCollector.uid,
