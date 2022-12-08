@@ -1337,6 +1337,49 @@ export function updateEzMarketPublisherDetails ({ state, commit }, { toName, onS
 }
 
 // ######################################################################
+// Landing Page News Feed
+// ######################################################################
+
+export function loadLatestNews ({ state, commit }) {
+  // Building the full URL of the API root
+  const ezMarketApiBaseUrl = state.ezMarket.server.baseUrl + state.ezMarket.server.baseApiPath
+  const messageUid = 'latestNews'
+
+  if (messageUid && messageUid.length) {
+    console.log('☁️ Downloading Latest News from EZ Cloud Market Place...')
+
+    // Using Fetch here, instead of getDataFromSite to avoid CORS problems
+    fetch(ezMarketApiBaseUrl + '/notifications/' + messageUid, {
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+      headers: {
+        'ez-publisher': (state.ezMarket && state.ezMarket.ezMarketUid ? state.ezMarket.ezMarketUid : ''),
+        'ez-server-version': (state.deployment && state.deployment.version ? state.deployment.version : ''),
+        'ez-client-version': (version || '')
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok.')
+        }
+        return response.json()
+      })
+      .then(data => {
+        if (data && data.records && Array.isArray(data.records)) {
+          // Push the whole lot to the State
+          commit('updateLatestNews', data.records)
+          console.log('✔️ [API SUCCESS] Succesfully loaded the Latest News.')
+        } else {
+          throw new Error('Returned data wasn\'t a proper JSON array.')
+        }
+      })
+      .catch(error => {
+        console.log('⚠️ [API ERROR] Loading error: ' + error.message)
+      })
+  }
+}
+
+// ######################################################################
 // HELPERS
 // ######################################################################
 

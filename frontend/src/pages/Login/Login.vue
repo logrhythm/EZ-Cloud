@@ -267,7 +267,7 @@ export default {
     }
   }, // computed
   methods: {
-    ...mapActions('mainStore', ['signIn', 'signOut', 'reloadEzMarketNotifications', 'getPersistenceLayerAvailability']),
+    ...mapActions('mainStore', ['signIn', 'signOut', 'reloadEzMarketNotifications', 'getPersistenceLayerAvailability', 'loadLatestNews']),
     checkCredentials () {
       if (this.canWeLogin === true) { // Don't even try checking if we can't
         if (this.lastAttemptFailedTimer) {
@@ -295,6 +295,8 @@ export default {
       if (this.jwtToken && this.jwtToken.length) {
         // Connect Socket.io
         this.connectSocket()
+        // Check for News feed from EZ Cloud Market, for the Landing Page
+        this.loadLatestNews()
         // Check for Notifications on EZ Cloud Market
         this.reloadEzMarketNotifications()
         // And move to Welcome page

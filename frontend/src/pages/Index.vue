@@ -84,11 +84,11 @@
             <q-scroll-area style="height: 38rem;" visible >
               <q-list
                 padding
-                v-if="newsItems"
+                v-if="latestNews"
                 class="q-gutter-y-sm"
               >
                 <q-item
-                  v-for="(item, index) in newsItems"
+                  v-for="(item, index) in latestNews"
                   :key="index"
                   tag="a"
                   :href="item.link"
@@ -160,12 +160,11 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-{{ JSON.stringify(newsItems) }}
   </q-page>
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 import { version } from '../../package.json'
 import ConfirmDialog from '../components/Dialogs/ConfirmDialog.vue'
 
@@ -196,39 +195,39 @@ export default {
           icon: 'o_storefront',
           link: '#/MarketPlace/PipelineTemplates'
         }
-      ],
-      newsItems: [
-        // {
-        //   title: '',
-        //   icon: '',
-        //   markdownBody: '',
-        //   link: '',
-        //   chip: {
-        //     label: '',
-        //     colour: ''
-        //   }
-        // }
-        {
-          title: 'OC Admin v1.0 is out',
-          icon: 'o_celebration',
-          markdownBody: 'Click for more information.',
-          link: 'https://docs.logrhythm.com/docs/OCbeats/logrhythm-open-collector/open-collector-installation-and-user-guide/initialize-the-oc-admin',
-          chip: {
-            label: 'Release',
-            colour: 'primary'
-          }
-        },
-        {
-          title: 'Visit our Innovation Portal',
-          icon: 'o_how_to_vote',
-          markdownBody: 'Join other customers to review our new designs, vote on your favourites and help shape the LogRhythm products.',
-          link: 'https://community.logrhythm.com/t5/Innovation-Portal/idb-p/InnovationPortal'
-        }
+      // ],
+      // latestNews: [
+      //   // {
+      //   //   title: '',
+      //   //   icon: '',
+      //   //   markdownBody: '',
+      //   //   link: '',
+      //   //   chip: {
+      //   //     label: '',
+      //   //     colour: ''
+      //   //   }
+      //   // }
+      //   {
+      //     title: 'OC Admin v1.0 is out',
+      //     icon: 'o_celebration',
+      //     markdownBody: 'Click for more information.',
+      //     link: 'https://docs.logrhythm.com/docs/OCbeats/logrhythm-open-collector/open-collector-installation-and-user-guide/initialize-the-oc-admin',
+      //     chip: {
+      //       label: 'Release',
+      //       colour: 'primary'
+      //     }
+      //   },
+      //   {
+      //     title: 'Visit our Innovation Portal',
+      //     icon: 'o_how_to_vote',
+      //     markdownBody: 'Join other customers to review our new designs, vote on your favourites and help shape the LogRhythm products.',
+      //     link: 'https://community.logrhythm.com/t5/Innovation-Portal/idb-p/InnovationPortal'
+      //   }
       ]
     }
   },
   computed: {
-    ...mapState('mainStore', ['deployment', 'extraInformation']),
+    ...mapState('mainStore', ['deployment', 'extraInformation', 'latestNews']),
     serverVersion () {
       return (this.deployment && this.deployment.version ? this.deployment.version : '?.?.?')
     },
@@ -270,6 +269,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions('mainStore', ['loadLatestNews']),
     promptIgnoreConfigureMsSql () {
       this.$q.dialog({
         component: ConfirmDialog,
@@ -283,6 +283,10 @@ export default {
         this.hideNeedToConfigureMsSqlPopup = true
       })
     }
+  },
+  mounted () {
+    // Check for News feed from EZ Cloud Market, for the Landing Page
+    // this.loadLatestNews()
   }
 }
 </script>

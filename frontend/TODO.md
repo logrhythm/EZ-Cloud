@@ -81,8 +81,8 @@
   - [x] Add sticky title and X close button
   - [x] Make bottom panel sticky, with `[Close]` button
 - [ ] Admin - MS SQL - Add Test button
-- [ ] Landing page
-  - [ ] News from EZ Market Place
+- [x] Landing page
+  - [x] News from EZ Market Place
   - [x] Common tasks
   - [x] Recent items
 - [x] Provide Beats's configuration to Backend when starting Tail

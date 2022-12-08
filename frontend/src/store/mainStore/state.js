@@ -352,6 +352,7 @@ export default function () {
         name: 'OC_Admin_get_EZ_Versions',
         version: '20220803.01'
       }
-    ]
+    ],
+    latestNews: [] // For the News feed of the Landing Page (Welcome)
   }
 }
