@@ -175,7 +175,7 @@
           </q-card-section>
 
           <q-card-actions vertical class="justify-start">
-              <q-btn icon="more_horiz" flat >
+              <q-btn icon="more_horiz" flat :disable="!customMappingAllowed">
                 <q-menu anchor="bottom right" self="top right">
                   <q-item clickable v-close-popup :to="'/Pipelines/' + this.pipelineUid + '/Mapping/Edit'">
                     <q-item-section avatar>
@@ -839,7 +839,7 @@ export default {
   },
   computed: {
     ...mapGetters('mainStore', ['openCollectors', 'pipelines']),
-    ...mapState('mainStore', ['collectionMethodsOptions', 'collectionShippersOptions', 'ezMarketPipelineTemplates', 'helpWikiUrlBase', 'ezMarketPublisherDetails']),
+    ...mapState('mainStore', ['collectionMethodsOptions', 'collectionShippersOptions', 'collectionMethodTemplates', 'ezMarketPipelineTemplates', 'helpWikiUrlBase', 'ezMarketPublisherDetails']),
     pipeline () {
       const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
       return (pipeline || {
@@ -936,6 +936,14 @@ export default {
     },
     publisherDisplayName () {
       return (this.ezMarketPublisherDetails ? this.ezMarketPublisherDetails.displayName : null)
+    },
+    customMappingAllowed () {
+      // Enable or disable the kebab menu to manage the Field Mapping
+      const mappingStyle = (this.collectionMethodTemplates
+        .find(template => template.collectionMethod === this.pipeline.collectionConfig.collectionMethod) || {})
+        .mappingStyle || 'custom'
+      console.log('customMappingAllowed', mappingStyle)
+      return mappingStyle !== 'default'
     }
   },
   methods: {
