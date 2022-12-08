@@ -940,9 +940,8 @@ export default {
     customMappingAllowed () {
       // Enable or disable the kebab menu to manage the Field Mapping
       const mappingStyle = (this.collectionMethodTemplates
-        .find(template => template.collectionMethod === this.pipeline.collectionConfig.collectionMethod) || {})
+        .find(template => template.collectionMethod === this.collectionMethod) || {})
         .mappingStyle || 'custom'
-      console.log('customMappingAllowed', mappingStyle)
       return mappingStyle !== 'default'
     }
   },
