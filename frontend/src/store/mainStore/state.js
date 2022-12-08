@@ -13,6 +13,15 @@ import collectionMethodTemplatesFilebeatHttpJson from './templates/collectionMet
 import collectionMethodTemplatesGenericbeat from './templates/collectionMethodTemplate.genericbeat'
 // WebHookBeat
 import collectionMethodTemplatesWebhookbeat from './templates/collectionMethodTemplate.webhookbeat'
+// S3Beat
+import collectionMethodTemplatesS3beat from './templates/collectionMethodTemplate.s3beat'
+// PubSub
+import collectionMethodTemplatesPubSubbeat from './templates/collectionMethodTemplate.pubsubbeat'
+// Kafka
+import collectionMethodTemplatesKafkabeat from './templates/collectionMethodTemplate.kafkabeat'
+// EventHub
+import collectionMethodTemplatesEventHubbeatDefault from './templates/collectionMethodTemplate.eventhubbeat.default.mapping'
+import collectionMethodTemplatesEventHubbeatCustom from './templates/collectionMethodTemplate.eventhubbeat.custom.mapping'
 
 export default function () {
   return {
@@ -38,7 +47,12 @@ export default function () {
       collectionMethodTemplatesFilebeatSyslogTcp, // Filebeat - syslog_tcp
       collectionMethodTemplatesFilebeatHttpJson, // Filebeat - httpjson
       collectionMethodTemplatesGenericbeat, // genericbeat
-      collectionMethodTemplatesWebhookbeat // webhookbeat
+      collectionMethodTemplatesWebhookbeat, // webhookbeat
+      collectionMethodTemplatesS3beat, // s3beat
+      collectionMethodTemplatesPubSubbeat, // pubsubbeat
+      collectionMethodTemplatesKafkabeat, // kafkabeat
+      collectionMethodTemplatesEventHubbeatDefault, // eventhubbeat - With default mapping
+      collectionMethodTemplatesEventHubbeatCustom // eventhubbeat - With custom mapping
     ], // collectionMethodTemplates
     collectionShippersOptions: [
       {
@@ -47,39 +61,39 @@ export default function () {
         icon: 'jsBeat',
         outputFormat: 'json'
       },
-      // {
-      //   value: 'eventhubbeat',
-      //   label: 'LogRhythm Azure Event Hub Beat (🚧 - Stub)',
-      //   icon: 'logrhythm-eventhubbeat',
-      //   outputFormat: 'yaml'
-      // },
+      {
+        value: 'eventhubbeat',
+        label: 'LogRhythm Azure Event Hub Beat',
+        icon: 'logrhythm-eventhubbeat',
+        outputFormat: 'yaml'
+      },
       {
         value: 'genericbeat',
         label: 'LogRhythm Generic HTTP Rest Beat',
         icon: 'logrhythm-genericbeat',
         outputFormat: 'yaml'
       },
-      // {
-      //   value: 'kafkabeat',
-      //   label: 'LogRhythm Kafka Beat (🚧 - Stub)',
-      //   icon: 'logrhythm-kafkabeat',
-      //   outputFormat: 'yaml'
-      // },
-      // {
-      //   value: 'pubsubbeat',
-      //   label: 'LogRhythm PubSub Beat (🚧 - Stub)',
-      //   icon: 'logrhythm-pubsubbeat',
-      //   outputFormat: 'yaml'
-      // },
-      // {
-      //   value: 's3beat',
-      //   label: 'LogRhythm S3 Beat (🚧 - Stub)',
-      //   icon: 'logrhythm-s3beat',
-      //   outputFormat: 'yaml'
-      // },
+      {
+        value: 'kafkabeat',
+        label: 'LogRhythm Kafka Beat',
+        icon: 'logrhythm-kafkabeat',
+        outputFormat: 'yaml'
+      },
+      {
+        value: 'pubsubbeat',
+        label: 'LogRhythm PubSub Beat',
+        icon: 'logrhythm-pubsubbeat',
+        outputFormat: 'yaml'
+      },
+      {
+        value: 's3beat',
+        label: 'LogRhythm S3 Beat',
+        icon: 'logrhythm-s3beat',
+        outputFormat: 'yaml'
+      },
       {
         value: 'webhookbeat',
-        label: 'LogRhythm Webhook Beat (👁‍🗨 - Preview - HTTP Only)',
+        label: 'LogRhythm Webhook Beat',
         icon: 'logrhythm-webhookbeat',
         outputFormat: 'yaml'
       // },
@@ -181,86 +195,100 @@ export default function () {
         shipper: 'jsBeat',
         value: 'flatFile',
         label: 'Flat File',
-        icon: 'description'
+        icon: 'o_description'
       },
-      {
-        shipper: 'jsBeat',
-        value: 'syslog',
-        label: 'Syslog',
-        icon: 'input'
-      },
+      // {
+      //   shipper: 'jsBeat',
+      //   value: 'syslog',
+      //   label: 'Syslog',
+      //   icon: 'o_input'
+      // },
       {
         shipper: 'genericbeat',
         value: 'genericbeat',
         label: 'HTTP / REST API',
-        icon: 'language'
+        icon: 'o_language'
       },
       {
         shipper: 'eventhubbeat',
-        value: 'eventhubbeat',
-        label: 'Azure Event Hub',
-        icon: 'language'
+        value: 'eventhubbeat-default',
+        label: 'Azure Event Hub - Default Mapping',
+        icon: 'o_language'
+      },
+      {
+        shipper: 'eventhubbeat',
+        value: 'eventhubbeat-custom',
+        label: 'Azure Event Hub - With custom Mapping',
+        icon: 'o_language'
       },
       {
         shipper: 'kafkabeat',
         value: 'kafkabeat',
         label: 'Kafka',
-        icon: 'language'
+        icon: 'o_language'
       },
       {
         shipper: 'pubsubbeat',
         value: 'pubsubbeat',
         label: 'PubSub',
-        icon: 'language'
+        icon: 'o_language'
       },
       {
         shipper: 's3beat',
         value: 's3beat',
         label: 'S3',
-        icon: 'language'
+        icon: 'o_language'
       },
       {
         shipper: 'webhookbeat',
         value: 'webhookbeat',
-        label: 'Webhook over HTTP',
-        icon: 'input'
+        label: 'Webhook over HTTP and HTTPS',
+        icon: 'o_input'
       },
       {
         shipper: 'filebeat',
         value: 'log',
         label: 'Flat File',
-        icon: 'description'
+        icon: 'o_description'
       },
       {
         shipper: 'filebeat',
         value: 'httpjson',
         label: 'HTTP / REST API',
-        icon: 'language'
+        icon: 'o_language'
       },
       {
         shipper: 'filebeat',
         value: 'http_endpoint',
         label: 'HTTP / Web Hook Endpoint',
-        icon: 'cloud_upload'
+        icon: 'o_cloud_upload'
       },
       {
         shipper: 'filebeat',
         value: 'syslog_tcp',
         label: 'Syslog over TCP',
-        icon: 'input'
+        icon: 'o_input'
       },
       {
         shipper: 'filebeat',
         value: 'syslog_udp',
         label: 'Syslog over UDP',
-        icon: 'input'
+        icon: 'o_input'
       }
     ], // collectionMethodsOptions
     openCollectorLogSources: [],
     userAccounts: [], // EZ Users on EZ Server
     userRoles: [], // Roles for EZ Users on EZ Server
-    errorWikiUrlBase: 'https://github.com/logrhythm/EZ-Cloud/wiki/Error-Messages#',
-    helpWikiUrlBase: 'https://github.com/logrhythm/EZ-Cloud/wiki/Help#',
+    errorWikiUrlBase: ( // Base URL for the Documentation page with Error codes
+      process.env.DEV
+        ? 'https://docs-staging.logrhythm.com/docs/OCbeats/logrhythm-open-collector/oc-admin/oc-admin-error-messages#OCAdminErrorMessages-'
+        : 'https://docs.logrhythm.com/docs/OCbeats/logrhythm-open-collector/oc-admin/oc-admin-error-messages#OCAdminErrorMessages-'
+    ),
+    helpWikiUrlBase: ( // Base URL for the Help Documentation page
+      process.env.DEV
+        ? 'https://docs-staging.logrhythm.com/docs/OCbeats/logrhythm-open-collector/oc-admin/navigating-and-using-oc-admin#NavigatingandUsingOCAdmin-'
+        : 'https://docs.logrhythm.com/docs/OCbeats/logrhythm-open-collector/oc-admin/navigating-and-using-oc-admin#NavigatingandUsingOCAdmin-'
+    ),
     deployment: {
       uid: null, // UID of the EZ Server
       version: null // EZ Server's version
@@ -318,12 +346,13 @@ export default function () {
       },
       {
         name: 'OC_Admin_Upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource',
-        version: '20220215.01'
+        version: '20221129.02'
       },
       {
         name: 'OC_Admin_get_EZ_Versions',
         version: '20220803.01'
       }
-    ]
+    ],
+    latestNews: [] // For the News feed of the Landing Page (Welcome)
   }
 }

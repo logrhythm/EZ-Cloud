@@ -32,7 +32,10 @@
 
           <div v-else>
             <q-card-section class="q-pt-none">
-              <q-input dense v-model="siemMsSqlHost"
+              <q-input
+                dense
+                outlined
+                v-model="siemMsSqlHost"
                 :disable="loadingMsSqlConfig"
                 :label="$t('Hostname (XM or Platform Manager)')"
                 autofocus
@@ -41,7 +44,10 @@
             </q-card-section>
 
             <q-card-section class="q-pt-none">
-              <q-input dense v-model="siemMsSqlPort"
+              <q-input
+                dense
+                outlined
+                v-model="siemMsSqlPort"
                 :disable="loadingMsSqlConfig"
                 :label="$t('MS SQL Port')"
                 type="number"
@@ -53,7 +59,10 @@
             </q-card-section>
 
             <q-card-section class="q-pt-none">
-              <q-input dense v-model="siemMsSqlUsername"
+              <q-input
+                dense
+                outlined
+                v-model="siemMsSqlUsername"
                 :disable="loadingMsSqlConfig"
                 :label="$t('Username')"
                 :rules="[val => !!val || $t('Username cannot be empty')]"
@@ -61,7 +70,10 @@
             </q-card-section>
 
             <q-card-section class="q-pt-none">
-              <q-input dense v-model="siemMsSqlPassword"
+              <q-input
+                dense
+                outlined
+                v-model="siemMsSqlPassword"
                 :disable="loadingMsSqlConfig"
                 type="password"
                 :label="$t('Password')"

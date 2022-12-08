@@ -1017,9 +1017,24 @@ const streamUpdateForBeatStatusArray = {};
 function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollector, beat, stream) {
   /* eslint-disable no-param-reassign */
   // Check we are ship-shape with the params
-  const missingOpenCollector = !(openCollector && openCollector.uid && openCollector.uid.length);
-  const missingBeat = !(beat && beat.name && beat.name.length && beat.config && Array.isArray(beat.config));
-  const missingStream = !(stream && stream.uid && stream.uid.length);
+  const missingOpenCollector = !(
+    openCollector
+    && openCollector.uid
+    && openCollector.uid.length
+  );
+  const missingBeat = !(
+    beat
+    && beat.name
+    && beat.name.length
+    && beat.config
+    && Array.isArray(beat.config)
+    && beat.sourceJsonConfig
+  );
+  const missingStream = !(
+    stream
+    && stream.uid
+    && stream.uid.length
+  );
   if (
     !missingOpenCollector
     && !missingBeat
@@ -1068,6 +1083,24 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
 
         // Load the base config file for LogRhythm shippers
         const logrhythmShipperBaseConfig = fs.readFileSync(path.join(process.env.baseDirname, 'resources', 'LogRhythm_shippers-base_config.yaml'));
+
+        // Go through the config to spot Files to be dropped in, and drop them :)
+        // A file object always has `dropIn`, `valueInConfig` and `fileContentBase64`
+        // Value of `dropIn` must be true
+        const dropInFiles = []; // To store any found Drop In files in the config
+        if (beat && beat.sourceJsonConfig) {
+          Object.keys(beat.sourceJsonConfig).forEach((configPath) => {
+            if (
+              beat.sourceJsonConfig[configPath]
+              && beat.sourceJsonConfig[configPath].dropIn === true
+              && beat.sourceJsonConfig[configPath].valueInConfig
+              && beat.sourceJsonConfig[configPath].valueInConfig.length
+              && beat.sourceJsonConfig[configPath].fileContentBase64 != null
+            ) {
+              dropInFiles.push(beat.sourceJsonConfig[configPath]);
+            }
+          });
+        }
 
         // ##########
         // Filebeat
@@ -1206,81 +1239,116 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
         }
 
         // ##########
-        // genericbeat
+        // LogRhythm Beats (genericbeat, webhookbeat, s3beat, ...)
         // ##########
-        if (beat.name.toLowerCase() === 'genericbeat') {
+        if (
+          beat.name.toLowerCase() === 'genericbeat'
+          || beat.name.toLowerCase() === 'webhookbeat'
+          || beat.name.toLowerCase() === 's3beat'
+          || beat.name.toLowerCase() === 'pubsubbeat'
+          || beat.name.toLowerCase() === 'kafkabeat'
+          || beat.name.toLowerCase() === 'eventhubbeat'
+        ) {
+          const beatNameLowerCase = beat.name.toLowerCase();
+
           // logrhythmShipperBaseConfig
           // Build the list of steps
+          // Configuration volume name for Beat
 
-          // Import the Configuration (should only be one, but deal with all of them)
-          beat.config.forEach((config) => {
-            steps.push(
-              {
-                action: `Import Stream configuration for FQBN (${logRhythmFullyQualifiedBeatName})`,
-                command: `cat | ./lrctl genericbeat config import --fqbn ${logRhythmFullyQualifiedBeatName}`,
-                stdin: (typeof config === 'string' ? `${config}\n${logrhythmShipperBaseConfig}` : `${JSON.stringify(config)}\n${logrhythmShipperBaseConfig}`)
-              }
-            );
-          });
-
-          // Wrap up
-          steps.push(
-            // We do a Stop - Start as a Restart would not do anything on a Beat not already running
-            {
-              action: 'Stop GenericBeat',
-              command: `./lrctl genericbeat stop --fqbn ${logRhythmFullyQualifiedBeatName}`
-            },
-            {
-              action: 'Start GenericBeat to take new configuration into account',
-              command: `./lrctl genericbeat start --fqbn ${logRhythmFullyQualifiedBeatName}`
-            },
-            {
-              action: 'Check Status for all GenericBeat instances',
-              command: './lrctl genericbeat status'
-            },
-            {
-              action: 'Get GenericBeat logs for this instance (last 10 lines only)',
-              command: `docker logs --tail 10 "${logRhythmFullyQualifiedBeatName}"`
-            }
+          const beatConfigVolumeName = String(
+            `${beatNameLowerCase
+            }_config_${logRhythmBeatIdentifier}`
           );
-          streamUpdateForBeatStatus.payload.steps = steps;
-        }
-
-        // ##########
-        // webhookbeat
-        // ##########
-        if (beat.name.toLowerCase() === 'webhookbeat') {
-          // logrhythmShipperBaseConfig
-          // Build the list of steps
 
           // Import the Configuration (should only be one, but deal with all of them)
           beat.config.forEach((config) => {
+            // Push the config itself
             steps.push(
               {
                 action: `Import Stream configuration for FQBN (${logRhythmFullyQualifiedBeatName})`,
-                command: `cat | ./lrctl webhookbeat config import --fqbn ${logRhythmFullyQualifiedBeatName}`,
+                command: `cat | ./lrctl ${beatNameLowerCase} config import --fqbn ${logRhythmFullyQualifiedBeatName}`,
                 stdin: (typeof config === 'string' ? `${config}\n${logrhythmShipperBaseConfig}` : `${JSON.stringify(config)}\n${logrhythmShipperBaseConfig}`)
               }
             );
           });
 
+          // Drop the "Drop In" files, if any
+          if (dropInFiles && Array.isArray(dropInFiles) && dropInFiles.length) {
+            // Some files must be dropped in the Beat's config volume
+
+            // Create a unique ID for the Helper/Utility Container
+            const utilityContainerId = `cp-helper_oc-admin_${Math.floor(Math.random() * 16777216).toString(16).padStart(6, '0')}`;
+            // Create a temporary file name, based on the Helper/Utility Container name
+            const tempFilePath = String(`/tmp/${utilityContainerId}`)
+              .replaceAll('//', '/')
+              .replaceAll('"', '');
+
+            steps.push(
+              { // Import configuration
+                action: `Create utility container ("${utilityContainerId}")`,
+                command: `docker container create --name "${utilityContainerId}" -v "${beatConfigVolumeName}:/cp_target" alpine 1>/dev/null`
+              }
+            );
+
+            // Loop through them and add the right tasks to deal with each of them
+            dropInFiles.forEach((fileToDrop) => {
+              //   "certFilePath":{
+              //     "dropIn":true,
+              //     "valueInConfig":"/beats/webhookbeat/config/webhookbeat.crt",
+              //     "dropInPath":"{{beat_config_volume}}/webhookbeat.crt",
+              //     "fileContentBase64":"LS0tLSBCRUdJTiBTU0gyIF.....IFBVQkxJQyBLRVkgLS0tLQ==",
+              //     "fileSizeBytes":442
+              //   },
+              const copyTargetPath = String(`/cp_target/${fileToDrop.dropInPath}`)
+                .replaceAll('//', '/')
+                .replaceAll('"', '');
+              // fileToDrop.fileContentBase64 is Base64 encoded.
+              const fileContentBinary = Buffer.from(fileToDrop.fileContentBase64, 'base64').toString('latin1');
+
+              // Import File
+              steps.push(
+                {
+                  action: `Drop file content into temporary file: "${tempFilePath}" (${fileToDrop.fileSizeBytes} bytes)`,
+                  command: `cat > ${tempFilePath}`,
+                  stdin: fileContentBinary
+                },
+                {
+                  action: `Importing file referrenced in Beat's configuration as: "${fileToDrop.valueInConfig}"`,
+                  command: `docker cp "${tempFilePath}" "${utilityContainerId}:${copyTargetPath}" 1>/dev/null`
+                }
+              );
+            });
+
+            // Clean up
+            steps.push(
+              {
+                action: `Remove temporary file: "${tempFilePath}"`,
+                command: `rm -f "${tempFilePath}" 1>/dev/null`
+              },
+              {
+                action: `Remove utility container ("${utilityContainerId}")`,
+                command: `docker container rm "${utilityContainerId}" 1>/dev/null`
+              }
+            );
+          }
+
           // Wrap up
           steps.push(
             // We do a Stop - Start as a Restart would not do anything on a Beat not already running
             {
-              action: 'Stop Webhookbeat',
-              command: `./lrctl webhookbeat stop --fqbn ${logRhythmFullyQualifiedBeatName}`
+              action: `Stop ${beat.name}`,
+              command: `./lrctl ${beatNameLowerCase} stop --fqbn ${logRhythmFullyQualifiedBeatName}`
             },
             {
-              action: 'Start Webhookbeat to take new configuration into account',
-              command: `./lrctl webhookbeat start --fqbn ${logRhythmFullyQualifiedBeatName}`
+              action: `Start ${beat.name} to take new configuration into account`,
+              command: `./lrctl ${beatNameLowerCase} start --fqbn ${logRhythmFullyQualifiedBeatName}`
             },
             {
-              action: 'Check Status for all Webhookbeat instances',
-              command: './lrctl webhookbeat status'
+              action: `Check Status for all ${beat.name} instances`,
+              command: `./lrctl ${beatNameLowerCase} status`
             },
             {
-              action: 'Get Webhookbeat logs for this instance (last 10 lines only)',
+              action: `Get ${beat.name} logs for this instance (last 10 lines only)`,
               command: `docker logs --tail 10 "${logRhythmFullyQualifiedBeatName}"`
             }
           );
@@ -1356,6 +1424,7 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
           });
       } catch (errorCaught) {
         streamUpdateForBeatStatus.errors.push(`Exception: ${errorCaught.message}`);
+        streamUpdateForBeatStatus.stillUpdating = false;
       }
     }).catch(() => {
       streamUpdateForBeatStatus.errors.push(`Failed to get SSH configuration for OpenCollector (based on provided UID: ${openCollector.uid}).`);
@@ -1374,6 +1443,7 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
     }
     streamUpdateForBeatStatus.stillUpdating = false;
   }
+  logToSystem('Debug', `updateStreamConfigurationForBeat - Errors for API: ${JSON.stringify(streamUpdateForBeatStatus.errors, null, ' ')}`);
   /* eslint-enable no-param-reassign */
 }
 
@@ -1592,44 +1662,28 @@ function deleteStreamConfigurationForBeat(
         }
 
         // ##########
-        // genericbeat
+        // LogRhythm Beats (genericbeat, webhookbeat, s3beat)
         // ##########
-        if (beat.name.toLowerCase() === 'genericbeat') {
-          steps.push(
-            {
-              action: `Stop GenericBeat instance (${logRhythmFullyQualifiedBeatName})`,
-              command: `./lrctl genericbeat stop --fqbn ${logRhythmFullyQualifiedBeatName}`,
-              continueOnFailure: true
-            },
-            {
-              action: `Remove configuration for this GenericBeat instance (${logRhythmFullyQualifiedBeatName})`,
-              command: `./lrctl genericbeat config remove --yes --fqbn ${logRhythmFullyQualifiedBeatName}`
-            },
-            {
-              action: 'Check Status for all GenericBeat instances',
-              command: './lrctl genericbeat status'
-            }
-          );
-          streamConfigDeleteForBeatStatus.payload.steps = steps;
-        }
+        if (
+          beat.name.toLowerCase() === 'genericbeat'
+          || beat.name.toLowerCase() === 'webhookbeat'
+          || beat.name.toLowerCase() === 's3beat'
+        ) {
+          const beatNameLowerCase = beat.name.toLowerCase();
 
-        // ##########
-        // webhookbeat
-        // ##########
-        if (beat.name.toLowerCase() === 'webhookbeat') {
           steps.push(
             {
-              action: `Stop WebhookBeat instance (${logRhythmFullyQualifiedBeatName})`,
-              command: `./lrctl webhookbeat stop --fqbn ${logRhythmFullyQualifiedBeatName}`,
+              action: `Stop ${beat.name} instance (${logRhythmFullyQualifiedBeatName})`,
+              command: `./lrctl ${beatNameLowerCase} stop --fqbn ${logRhythmFullyQualifiedBeatName}`,
               continueOnFailure: true
             },
             {
-              action: `Remove configuration for this WebhookBeat instance (${logRhythmFullyQualifiedBeatName})`,
-              command: `./lrctl webhookbeat config remove --yes --fqbn ${logRhythmFullyQualifiedBeatName}`
+              action: `Remove configuration for this ${beat.name} instance (${logRhythmFullyQualifiedBeatName})`,
+              command: `./lrctl ${beatNameLowerCase} config remove --yes --fqbn ${logRhythmFullyQualifiedBeatName}`
             },
             {
-              action: 'Check Status for all WebhookBeat instances',
-              command: './lrctl webhookbeat status'
+              action: `Check Status for all ${beat.name} instances`,
+              command: `./lrctl ${beatNameLowerCase} status`
             }
           );
           streamConfigDeleteForBeatStatus.payload.steps = steps;

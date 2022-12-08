@@ -333,3 +333,29 @@ export function updateExtraInformation (state, payload) {
     }
   }
 }
+
+// Landing Page News Feed
+
+export function updateLatestNews (state, payload) {
+  if (payload && Array.isArray(payload)) {
+    try {
+      payload.forEach((updatedNotification) => {
+        if (
+          updatedNotification &&
+          updatedNotification.messageUid &&
+          updatedNotification.messageUid.length &&
+          updatedNotification.messageContent &&
+          updatedNotification.messageContent.length
+        ) {
+          try {
+            state.latestNews = JSON.parse(updatedNotification.messageContent)
+          } catch (error) {
+            // Fails silently
+          }
+        }
+      })
+    } catch (err) {
+      // Fails silently
+    }
+  }
+}

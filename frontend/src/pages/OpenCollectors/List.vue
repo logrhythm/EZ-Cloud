@@ -20,7 +20,7 @@
             </div>
             <div class="row q-gutter-md">
               <div class="col" >
-                <q-btn rounded dense color="primary" icon="add" :label="$t('Add New OpenCollector')" @click="doPromptForOpenCollectorDetails()" style="min-width:15rem;">
+                <q-btn dense no-caps color="primary" icon="add" :label="$t('Add New OpenCollector')" @click="doPromptForOpenCollectorDetails()" style="min-width:15rem;">
                   <q-tooltip content-style="font-size: 1em">
                     {{ $t('Create a new OpenCollector.') }}
                   </q-tooltip>
@@ -32,7 +32,7 @@
                 <q-input outlined dense debounce="300" v-model="searchFilter" :placeholder="$t('Search')">
                   <template v-slot:append>
                     <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
-                    <q-icon name="search" />
+                    <q-icon name="o_search" />
                   </template>
                 </q-input>
               </div>
@@ -70,9 +70,9 @@
         </template>
         <template v-slot:body-cell-authenticationMethod="props">
           <q-td :props="props">
-            <q-icon name="password" size="sm" v-if="props.value === 'password'" />
-            <q-icon name="vpn_key" size="sm" v-else-if ="props.value === 'private_key'" />
-            <q-icon name="help_center" color="grey" size="md" v-else />
+            <q-icon name="o_password" size="sm" v-if="props.value === 'password'" />
+            <q-icon name="o_vpn_key" size="sm" v-else-if ="props.value === 'private_key'" />
+            <q-icon name="o_help_center" color="grey" size="md" v-else />
             <q-tooltip content-style="font-size: 1em">
               {{ $t(props.value) }}
             </q-tooltip>
@@ -113,7 +113,7 @@
                   Docker
                   <span v-if="props.row.dockerVersionUnsupported && !(dockerVersionCheck && dockerVersionCheck[props.row.uid] && dockerVersionCheck[props.row.uid].checking)" class="text-bold text-warning"><br>
                   <q-icon
-                    name="warning_amber"
+                    name="o_warning_amber"
                     color="orange"
                     size="1.5em"
                     class="q-ml-sm"
@@ -133,7 +133,7 @@
                 />
                 <q-icon
                   v-if="props.row.dockerVersionUnsupported && !(dockerVersionCheck && dockerVersionCheck[props.row.uid] && dockerVersionCheck[props.row.uid].checking)"
-                  name="warning_amber"
+                  name="o_warning_amber"
                   color="orange"
                   size="2em"
                   class="q-ml-sm"
@@ -147,13 +147,13 @@
                 {{ $t('Check the OpenCollector details and Credentials.') }}
               </q-tooltip>
               <q-icon
-                name="cloud_off"
+                name="o_cloud_off"
                 color="orange"
                 size="2em"
                 class="q-ml-sm"
               />
               <q-icon
-                name="warning_amber"
+                name="o_warning_amber"
                 color="orange"
                 size="2em"
                 class="q-ml-sm"
@@ -177,13 +177,13 @@
                 {{ $t('Check the OpenCollector details and Credentials.') }}
               </q-tooltip>
               <q-icon
-                name="cloud_off"
+                name="o_cloud_off"
                 color="orange"
                 size="2em"
                 class="q-ml-sm"
               />
               <q-icon
-                name="warning_amber"
+                name="o_warning_amber"
                 color="orange"
                 size="2em"
                 class="q-ml-sm"
@@ -298,61 +298,105 @@
 
       <q-dialog v-model="promptForNewOpenCollectorDetails" persistent>
         <q-card style="min-width: 350px">
-          <q-card-section>
+          <q-card-section class="row justify-between">
             <div class="text-h6" v-if="newOpenCollectorUid && newOpenCollectorUid.length">{{ $t('OpenCollector Details') }}</div>
             <div class="text-h6" v-else>{{ $t('New OpenCollector') }}</div>
-          </q-card-section>
-
-          <q-card-section class="q-pt-none">
-            <q-input dense v-model="newOpenCollectorName" autofocus :label="$t('OpenCollector Name')" @keyup.esc="promptForNewOpenCollectorDetails = false" :rules="[val => !!val || $t('OpenCollector name cannot be empty')]" />
+            <q-btn dense flat icon="close" color="grey-5" v-close-popup />
           </q-card-section>
 
           <q-separator />
 
-          <q-card-section class="q-pt-none">
-            <div class="text-overline">{{ $t('Host') }}</div>
-            <q-input dense v-model="newOpenCollectorHostname" :label="$t('Host name')" @keyup.esc="promptForNewOpenCollectorDetails = false" :rules="[val => !!val || $t('OpenCollector Host name cannot be empty')]" />
+          <q-card-section class="">
+            <q-input
+              dense
+              outlined
+              v-model="newOpenCollectorName"
+              autofocus
+              :label="$t('OpenCollector Name')"
+              @keyup.esc="promptForNewOpenCollectorDetails = false"
+              :rules="[val => !!val || $t('OpenCollector name cannot be empty')]"
+            />
           </q-card-section>
 
           <q-card-section class="q-pt-none">
-            <q-input dense v-model="newOpenCollectorPort" type="number" :label="$t('SSH Port')" @keyup.esc="promptForNewOpenCollectorDetails = false" :rules="[val => !!val || $t('OpenCollector port cannot be empty')]" />
+            <div class="text-overline text-uppercase">{{ $t('Host') }}</div>
+            <q-input
+              dense
+              outlined
+              v-model="newOpenCollectorHostname"
+              :label="$t('Host name')" @keyup.esc="promptForNewOpenCollectorDetails = false"
+              :rules="[val => !!val || $t('OpenCollector Host name cannot be empty')]"
+            />
           </q-card-section>
 
-          <q-separator />
+          <q-card-section class="q-pt-none">
+            <q-input
+              dense
+              outlined
+              v-model="newOpenCollectorPort"
+              type="number"
+              :label="$t('SSH Port')"
+              @keyup.esc="promptForNewOpenCollectorDetails = false"
+              :rules="[val => !!val || $t('OpenCollector port cannot be empty')]"
+            />
+          </q-card-section>
 
           <q-card-section class="q-pt-none">
-            <div class="text-overline">{{ $t('Authentication') }}</div>
+            <div class="text-overline text-uppercase">{{ $t('Authentication') }}</div>
 
-            <q-input dense v-model="newOpenCollectorUsername" :label="$t('SSH User name')" hint="" @keyup.esc="promptForNewOpenCollectorDetails = false" />
+            <q-input
+              dense
+              outlined
+              v-model="newOpenCollectorUsername"
+              :label="$t('SSH User name')"
+              hint=""
+              @keyup.esc="promptForNewOpenCollectorDetails = false"
+            />
 
             <q-tabs
               v-model="newOpenCollectorAuthMethod"
               active-color="primary"
               indicator-color="primary"
               align="justify"
-              narrow-indicator
+              no-caps
             >
               <q-tab name="password" :label="$t('Password')" />
               <q-tab name="private_key" :label="$t('Private Key')" />
             </q-tabs>
 
-            <q-separator />
-
             <q-tab-panels v-model="newOpenCollectorAuthMethod" animated>
               <q-tab-panel name="password">
-                <q-input dense v-model="newOpenCollectorPassword" type="password" :label="$t('SSH Password')" hint="" @keyup.esc="promptForNewOpenCollectorDetails = false" />
+                <q-input
+                  dense
+                  outlined
+                  v-model="newOpenCollectorPassword"
+                  type="password"
+                  :label="$t('SSH Password')"
+                  @keyup.esc="promptForNewOpenCollectorDetails = false"
+                />
               </q-tab-panel>
 
               <q-tab-panel name="private_key">
-                <q-input dense v-model="newOpenCollectorPrivateKey" type="textarea" :label="$t('SSH Private Key')" hint="" @keyup.esc="promptForNewOpenCollectorDetails = false" />
+                <q-input
+                  dense
+                  outlined
+                  v-model="newOpenCollectorPrivateKey"
+                  type="textarea"
+                  :label="$t('SSH Private Key')"
+                  @keyup.esc="promptForNewOpenCollectorDetails = false"
+                />
               </q-tab-panel>
             </q-tab-panels>
           </q-card-section>
 
+          <q-separator />
+
           <q-card-actions align="right" class="text-primary">
-            <q-btn flat :label="$t('Cancel')" v-close-popup />
-            <q-btn flat :label="$t('Update OpenCollector')" v-close-popup v-if="newOpenCollectorUid && newOpenCollectorUid.length" :disabled="!newOpenCollectorName || !newOpenCollectorName.length || !newOpenCollectorHostname || !newOpenCollectorHostname.length || !newOpenCollectorPort || newOpenCollectorPort < 0 || newOpenCollectorPort > 65535 || !newOpenCollectorUsername || !newOpenCollectorUsername.length || ((!newOpenCollectorPassword || !newOpenCollectorPassword.length) && (!newOpenCollectorPrivateKey || !newOpenCollectorPrivateKey.length))" @click="addNewOrUpdateOpenCollector()" />
-            <q-btn flat :label="$t('Add new OpenCollector')" v-close-popup v-else :disabled="!newOpenCollectorName || !newOpenCollectorName.length || !newOpenCollectorHostname || !newOpenCollectorHostname.length || !newOpenCollectorPort || newOpenCollectorPort < 0 || newOpenCollectorPort > 65535 || !newOpenCollectorUsername || !newOpenCollectorUsername.length || ((!newOpenCollectorPassword || !newOpenCollectorPassword.length) && (!newOpenCollectorPrivateKey || !newOpenCollectorPrivateKey.length))" @click="addNewOrUpdateOpenCollector()" />
+            <!-- <div class="q-gutter-x-lg"> -->
+              <q-btn outline no-caps :label="$t('Cancel')" v-close-popup />
+              <q-btn color="primary" no-caps class="text-textForPrimaryButton" :label="$t('Update OpenCollector')" v-close-popup v-if="newOpenCollectorUid && newOpenCollectorUid.length" :disabled="!newOpenCollectorName || !newOpenCollectorName.length || !newOpenCollectorHostname || !newOpenCollectorHostname.length || !newOpenCollectorPort || newOpenCollectorPort < 0 || newOpenCollectorPort > 65535 || !newOpenCollectorUsername || !newOpenCollectorUsername.length || ((!newOpenCollectorPassword || !newOpenCollectorPassword.length) && (!newOpenCollectorPrivateKey || !newOpenCollectorPrivateKey.length))" @click="addNewOrUpdateOpenCollector()" />
+              <q-btn color="primary" no-caps class="text-textForPrimaryButton" :label="$t('Add new OpenCollector')" v-close-popup v-else :disabled="!newOpenCollectorName || !newOpenCollectorName.length || !newOpenCollectorHostname || !newOpenCollectorHostname.length || !newOpenCollectorPort || newOpenCollectorPort < 0 || newOpenCollectorPort > 65535 || !newOpenCollectorUsername || !newOpenCollectorUsername.length || ((!newOpenCollectorPassword || !newOpenCollectorPassword.length) && (!newOpenCollectorPrivateKey || !newOpenCollectorPrivateKey.length))" @click="addNewOrUpdateOpenCollector()" />
+            <!-- </div> -->
           </q-card-actions>
         </q-card>
       </q-dialog>
@@ -363,10 +407,10 @@
         <q-card-section v-for="(job, jobIndex) in shipperInstall" :key="jobIndex">
           <div class="row q-gutter-x-md items-center" v-if="job.collector">
             <q-spinner-dots size="2em" color="teal" v-show="job.onGoing === true" />
-            <q-icon name="thumb_up" size="2em" color="positive" v-show="job.onGoing === false && job.failed === false" >
+            <q-icon name="o_thumb_up" size="2em" color="positive" v-show="job.onGoing === false && job.failed === false" >
               <q-tooltip content-style="font-size: 1em;" >{{ $t('Job completed successfuly') }}</q-tooltip>
             </q-icon>
-            <q-icon name="thumb_down" size="2em" color="negative" v-show="job.onGoing === false && job.failed === true" >
+            <q-icon name="o_thumb_down" size="2em" color="negative" v-show="job.onGoing === false && job.failed === true" >
               <q-tooltip content-style="font-size: 1em;" >{{ $t('Job failed to complete') }}</q-tooltip>
             </q-icon>
             <q-separator vertical />
@@ -382,11 +426,11 @@
             <q-separator vertical size="2px" color="teal" />
             <div class="q-ml-sm col">
               <div v-for="(log, logIndex) in job.console" :key="logIndex">
-                <q-icon name="info" class="q-mr-sm" color="primary" v-if="log.msgCode === 'CONTROL.INFO'"/>
-                <q-icon name="subdirectory_arrow_right" class="q-mr-sm" color="primary" v-if="log.type === 'finished'"/>
-                <q-icon name="error" class="q-mr-sm" color="orange" v-if="log.type === 'error' && log.msgCode === 'ERROR'"/>
-                <q-icon name="error" class="q-mr-sm" color="orange" v-if="log.type === 'error' && log.msgCode === 'EXIT'"/>
-                <q-icon name="info" class="q-mr-sm" color="orange" v-if="log.msgCode === 'CONTROL.ERROR'"/>
+                <q-icon name="o_info" class="q-mr-sm" color="primary" v-if="log.msgCode === 'CONTROL.INFO'"/>
+                <q-icon name="o_subdirectory_arrow_right" class="q-mr-sm" color="primary" v-if="log.type === 'finished'"/>
+                <q-icon name="o_error" class="q-mr-sm" color="orange" v-if="log.type === 'error' && log.msgCode === 'ERROR'"/>
+                <q-icon name="o_error" class="q-mr-sm" color="orange" v-if="log.type === 'error' && log.msgCode === 'EXIT'"/>
+                <q-icon name="o_info" class="q-mr-sm" color="orange" v-if="log.msgCode === 'CONTROL.ERROR'"/>
                 <span
                   :class="(log.type === 'stdout' ? 'fixed-font-console' : '') + ' '
                     + (log.type === 'finished' ? 'text-positive' : '')
@@ -410,6 +454,7 @@ import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadC
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 import { uid } from 'quasar'
+import ConfirmDialog from 'components/Dialogs/ConfirmDialog.vue'
 
 // import shippersFallbackUrls from 'src/pages/OpenCollectors/shippers_fallback_urls.json'
 
@@ -866,16 +911,10 @@ export default {
       if (typeof row !== 'undefined') {
         // ask to confirm
         this.$q.dialog({
+          component: ConfirmDialog,
+          parent: this,
           title: this.$t('Confirm'),
           message: this.$t('Do you REALLY want to delete this OpenCollector?'),
-          ok: {
-            push: true,
-            color: 'negative'
-          },
-          cancel: {
-            push: true,
-            color: 'positive'
-          },
           persistent: true
         }).onOk(() => {
           this.deleteOpenCollector({

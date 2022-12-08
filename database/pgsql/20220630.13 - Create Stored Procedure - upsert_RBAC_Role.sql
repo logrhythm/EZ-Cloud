@@ -2,6 +2,7 @@
 -- Author:		Tony Massé
 -- Create date: 2022-06-30
 -- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
+-- Modified on: 2022-08-19 - To allow changing the Privilege without renaming if NULL is provided as @name
 -- Description:	Upsert Role record, based on its UID
 -- =============================================
 
@@ -22,7 +23,7 @@ BEGIN
     -- Else:
     -- - add an entry in rbacRoles
 
-    INSERT INTO public."rbacRoles"
+    INSERT INTO public."rbacRoles" AS rr
     (
         "uid",
         "name",
@@ -31,12 +32,12 @@ BEGIN
     VALUES
     (
         "@uid",
-        "@name",
+        COALESCE("@name", 'No name - ' || gen_random_uuid()::TEXT),
         "@isPrivileged"
     )
     ON CONFLICT ("uid") DO
         UPDATE SET
-            "name" = "@name"
+            "name" = COALESCE("@name", rr."name") -- If provided NULL for this, we re-use the current value
             ,"isPrivileged" = "@isPrivileged"
     ;
 END
@@ -101,6 +102,16 @@ REVOKE ALL ON PROCEDURE public."upsert_RBAC_Role"
 --   '669a21c1-27fd-40e4-a386-b0ab0e5fb0c3'
 --   , 'Role Name - Admin Priviledge - Updated - Downgraded'
 --   , FALSE -- User
+-- );
+
+-- SELECT * FROM public."rbacRoles" WHERE "uid" = '669a21c1-27fd-40e4-a386-b0ab0e5fb0c3';
+
+-- -- Update Admin Role's priviledge without touching the name
+
+-- CALL public."upsert_RBAC_Role" (
+--   '669a21c1-27fd-40e4-a386-b0ab0e5fb0c3'
+--   , NULL
+--   , TRUE -- Admin
 -- );
 
 -- SELECT * FROM public."rbacRoles" WHERE "uid" = '669a21c1-27fd-40e4-a386-b0ab0e5fb0c3';

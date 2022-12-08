@@ -31,7 +31,7 @@
                   </div>
                   <div class="row q-gutter-md">
                     <div class="col" >
-                      <q-btn rounded dense color="primary" icon="add" :label="$t('Add New Role')" style="min-width:14rem;" @click="addNewRole()" >
+                      <q-btn no-caps dense color="primary" icon="add" :label="$t('Add New Role')" style="min-width:14rem;" @click="addNewRole()" >
                         <q-tooltip content-style="font-size: 1em">
                           {{ $t('Create a new Role.') }}
                         </q-tooltip>
@@ -43,7 +43,7 @@
                       <q-input outlined dense debounce="300" v-model="searchFilter" :placeholder="$t('Search')">
                         <template v-slot:append>
                           <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
-                          <q-icon name="search" />
+                          <q-icon name="o_search" />
                         </template>
                       </q-input>
                     </div>
@@ -74,7 +74,7 @@
 
               <template v-slot:body-cell-roleIsPrivileged="props">
                 <q-td :props="props">
-                  <q-icon name="check_circle_outline" color="green" size="md" v-if="props.value === 1" />
+                  <q-icon name="o_check_circle_outline" color="green" size="md" v-if="props.value === 1" />
                   <q-tooltip content-style="font-size: 1em">
                     <span v-if="props.value === 1">{{ $t('Privileged role') }}</span>
                     <span v-else-if ="props.value === 0">{{ $t('Non-privileged role') }}</span>
@@ -127,13 +127,19 @@
 
     <q-dialog v-model="promptForRoleDetails" persistent>
       <q-card style="min-width: 350px">
-        <q-card-section>
+        <q-card-section class="row justify-between">
           <div class="text-h6" v-if="editingRoleUid != null">{{ $t('User Role Details') }}</div>
           <div class="text-h6" v-else>{{ $t('New User Role') }}</div>
+          <q-btn dense flat icon="close" color="grey-5" v-close-popup />
         </q-card-section>
 
-        <q-card-section class="q-pt-none">
-          <q-input dense v-model="editingRoleName"
+        <q-separator />
+
+        <q-card-section class="">
+          <q-input
+            dense
+            outlined
+            v-model="editingRoleName"
             :label="$t('Name')"
             autofocus
             :rules="[val => !!val || $t('Role Name cannot be empty')]"
@@ -154,9 +160,9 @@
         <q-separator />
 
         <q-card-actions align="right" class="text-primary">
-          <q-btn flat :label="$t('Cancel')" v-close-popup @click="cleanEditingVariables()" />
-          <q-btn flat :label="$t('Update User Role')" v-close-popup v-if="editingRoleUid != null" :disabled="!editingRoleName || !editingRoleName.length" @click="addNewOrUpdateUserRole()" />
-          <q-btn flat :label="$t('Add new User Role')" v-close-popup v-else :disabled="!editingRoleName || !editingRoleName.length" @click="addNewOrUpdateUserRole()" />
+          <q-btn no-caps outline :label="$t('Cancel')" v-close-popup @click="cleanEditingVariables()" />
+          <q-btn no-caps color="primary" :label="$t('Update User Role')" v-close-popup v-if="editingRoleUid != null" :disabled="!editingRoleName || !editingRoleName.length" @click="addNewOrUpdateUserRole()" />
+          <q-btn no-caps color="primary" :label="$t('Add new User Role')" v-close-popup v-else :disabled="!editingRoleName || !editingRoleName.length" @click="addNewOrUpdateUserRole()" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -167,6 +173,7 @@
 import { mapState, mapActions } from 'vuex'
 import { uid } from 'quasar'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import ConfirmDialog from '../../../components/Dialogs/ConfirmDialog.vue'
 
 export default {
   name: 'PageAdminRoles',
@@ -256,16 +263,10 @@ export default {
     deleteRolePrompt (row) {
       // ask to confirm
       this.$q.dialog({
+        component: ConfirmDialog,
+        parent: this,
         title: this.$t('Confirm'),
         message: this.$t('Do you REALLY want to delete this User Role?'),
-        ok: {
-          push: true,
-          color: 'negative'
-        },
-        cancel: {
-          push: true,
-          color: 'positive'
-        },
         persistent: true
       }).onOk(() => {
         this.deleteRole(row ? row.roleUid : null)

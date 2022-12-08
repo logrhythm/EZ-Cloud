@@ -9,6 +9,20 @@
 export default {
   shipper: 'genericbeat',
   collectionMethod: 'genericbeat',
+  initialDefaultValues: {
+    url: '',
+    request_method: 'GET',
+    auth_type: 'noauth',
+    filter_type: 'nofilter',
+    heartbeatdisabled: false,
+    heartbeatinterval: 60,
+    pagination_type: 'nopagination',
+    period: '60s',
+    sorting_enabled: false,
+    time_format: '2006-01-02T15:04:05Z07:00',
+    cursor_header_type: 'custom_header'
+  },
+  identificationStyle: ['logrhythmBeat'],
   definition: [
     // Required
     {

@@ -9,19 +9,16 @@
 export default {
   shipper: 'webhookbeat',
   collectionMethod: 'webhookbeat',
+  initialDefaultValues: {
+    hostname: '',
+    portnumber: 8080,
+    sslflag: false,
+    heartbeatdisabled: false,
+    heartbeatinterval: 60
+  },
+  identificationStyle: ['logrhythmBeat'],
   definition: [
     // Required
-    {
-      name: 'hostname',
-      label: 'Webhook Listener Hostname/IP',
-      type: {
-        name: 'string'
-      },
-      description: 'Provide the hostname or IP address for the Webhook endpoint only; do not include the query parameters string.',
-      default: '',
-      required: true,
-      group: 'Required'
-    },
     {
       name: 'portnumber',
       label: 'Port Number',
@@ -35,20 +32,73 @@ export default {
       required: true,
       group: 'Required'
     },
+
+    // Binding
+
     {
-      name: 'sslflag',
-      label: 'SSL Flag',
+      name: 'hostname',
+      label: 'Webhook Listener Hostname/IP',
       type: {
-        name: 'option'
+        name: 'string'
       },
-      options: [
-        { value: 'true', label: 'Enable HTTPS' },
-        { value: 'false', label: 'Disable HTTPS' }
-      ],
-      description: 'Enforce HTTPS or operate the Webhook Beat without any transport encryption.',
-      default: 'false',
+      description: 'Optional: Provide the hostname or IP address for the Webhook endpoint only; do not include the query parameters string. It will default to "localhost" if nothing is provided.',
+      default: 'localhost',
+      required: false,
+      group: 'Binding'
+    },
+
+    // HTTPS
+
+    {
+      name: 'sslFlag',
+      label: 'Enable HTTPS',
+      type: {
+        name: 'boolean'
+      },
+      description: `Enforce HTTPS or operate the Webhook Beat without any transport encryption.
+
+> NOTE
+> If **Enable HTTPS** is set to **True**, a **SSL certificate File** and a **SSL Private Key File** must be provided below.`,
+      default: false,
+      required: false,
+      group: 'HTTPS'
+    },
+    {
+      name: 'certFilePath',
+      label: 'SSL certificate File',
+      type: {
+        name: 'file'
+      },
+      fileOptions: { // For file type.
+        dropIn: true, // Do we drop the file content into a specific location on the disk. If False, the content is left as is in the field, just like a multiline string.
+        dropInPath: '/webhookbeat.crt', // Where on the disk to drop the file to
+        valueInConfig: '/beats/webhookbeat/config/webhookbeat.crt', // Path or file name to use as the value for the field
+        maxFileSize: null // Maximum file size, in bytes. Ignored if not set (or set to null)
+      },
+      description: `SSL Certificate for HTTPS. 
+
+Required if **Enable HTTPS** is selected under **SSL Flag** above.`,
+      default: '',
       required: true,
-      group: 'Required'
+      group: 'HTTPS'
+    },
+    {
+      name: 'keyFilePath',
+      label: 'SSL Private Key File',
+      type: {
+        name: 'file'
+      },
+      fileOptions: { // For file type.
+        dropIn: true, // Do we drop the file content into a specific location on the disk. If False, the content is left as is in the field, just like a multiline string.
+        dropInPath: '/webhookbeat.key', // Where on the disk to drop the file to
+        valueInConfig: '/beats/webhookbeat/config/webhookbeat.key' // Path or file name to use as the value for the field
+      },
+      description: `SSL Private Key for HTTPS. 
+
+Required if **Enable HTTPS** is selected under **SSL Flag** above.`,
+      default: '',
+      required: true,
+      group: 'HTTPS'
     },
 
     // EZ Internal

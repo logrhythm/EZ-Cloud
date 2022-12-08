@@ -84,6 +84,72 @@ router.get('/', async (req, res) => {
 });
 
 /**
+ * Get the Notifications / Messages for OC Admin's News Feed
+ */
+router.get('/latestNews', async (req, res) => {
+  let foundRecords = [];
+  let thereWasAnError = false;
+
+  try {
+    // Query the DB
+    foundRecords = await db.pool.query({
+      namedPlaceholders: true,
+      sql: `
+        SELECT
+          messages.uid AS messageUid,
+          messages.sent_On AS sentOn,
+          messages.updated_On AS updatedOn,
+          publishers_recipient.display_name AS recipient,
+          publishers_sender.display_name AS sender,
+          statuses.name AS statusName,
+          statuses.description AS statusDescription,
+          messages.message AS messageContent,
+          messages.flags AS messageFlags
+        FROM messages
+          LEFT OUTER JOIN publishers publishers_recipient
+            ON messages.recipient_Uid = publishers_recipient.uid
+          LEFT OUTER JOIN publishers publishers_sender
+            ON messages.sender_Uid = publishers_sender.uid
+          INNER JOIN statuses
+            ON messages.status = statuses.id
+        WHERE
+          (
+            statuses.id = 5 -- The item is marked as Not Read
+            OR
+            statuses.id = 6 -- The item is marked as Read
+          )
+          AND
+          (
+            messages.recipient_Uid = :publisherUid -- Items sent to the Publisher him/herself
+          )
+        ORDER BY
+          sentOn DESC -- Newest items on top
+      `
+    },
+    {
+      // Named parameters
+      publisherUid: '731a0451-7726-11ed-afbb-02eaeef99643' // OC Admin - News Feed
+    });
+  } catch (error) {
+    thereWasAnError = true;
+  }
+
+  // Ship it out!
+  res.json(
+    {
+      action: 'get_notifications_and_messages_to_oc_admin_news_feed',
+      description: 'Get the list of Notifications / Messages for OC Admin\'s News Feed',
+      pageNumber: 1,
+      pageSize: 100000,
+      found: foundRecords.length,
+      returned: foundRecords.length,
+      records: foundRecords,
+      error: (thereWasAnError ? 'Error querying the database' : undefined)
+    }
+  );
+});
+
+/**
  * Get the content of a specific Notification / Message
  */
 router.get('/:id', async (req, res) => {

@@ -25,6 +25,8 @@ async function tailInit(socket, payload) {
     && payload.collectionConfig.collectionShipper.length > 0
     && payload.collectionConfig.collectionMethod
     && payload.collectionConfig.collectionMethod.length > 0
+    && payload.collectionConfigYml
+    && payload.collectionConfigYml.length > 0
   ) {
     // Check the tailId doesn't already exist
     if (!tails[payload.tailId]) {
@@ -38,8 +40,24 @@ async function tailInit(socket, payload) {
       ) {
         tails[payload.tailId] = new SSH(configSsh);
 
+        // Go through the config to spot Files to be dropped in, and drop them :)
+        // A file object always has `dropIn`, `valueInConfig` and `fileContentBase64`
+        // Value of `dropIn` must be true
+        const dropInFiles = []; // To store any found Drop In files in the config
+        Object.keys(payload.collectionConfig).forEach((configPath) => {
+          if (
+            payload.collectionConfig[configPath]
+            && payload.collectionConfig[configPath].dropIn === true
+            && payload.collectionConfig[configPath].valueInConfig
+            && payload.collectionConfig[configPath].valueInConfig.length
+            && payload.collectionConfig[configPath].fileContentBase64 != null
+          ) {
+            dropInFiles.push(payload.collectionConfig[configPath]);
+          }
+        });
+
         if (payload.collectionConfig.collectionShipper === 'filebeat') {
-          const inputYml = collectionConfigToYml(payload.collectionConfig);
+          const inputYml = payload.collectionConfigYml;
 
           const filebeatConfig = `filebeat.inputs:\n${inputYml}\n\noutput.console:\n  enabled: true\n  pretty: false\nlogging.level: error\n`;
           tails[payload.tailId]
@@ -177,7 +195,14 @@ async function tailInit(socket, payload) {
                 }
               }
             });
-        } else if (payload.collectionConfig.collectionShipper === 'genericbeat') {
+        } else if (
+          payload.collectionConfig.collectionShipper === 'genericbeat'
+          || payload.collectionConfig.collectionShipper === 'webhookbeat'
+          || payload.collectionConfig.collectionShipper === 's3beat'
+          || payload.collectionConfig.collectionShipper === 'pubsubbeat'
+          || payload.collectionConfig.collectionShipper === 'kafkabeat'
+          || payload.collectionConfig.collectionShipper === 'eventhubbeat'
+        ) {
           // Get a clean Beat name
           const beatName = payload.collectionConfig.collectionShipper.toLowerCase().trim();
           // eslint-disable-next-line max-len
@@ -188,8 +213,13 @@ async function tailInit(socket, payload) {
             `${beatName
             }_${beatId}`
           );
+          // Configuration volume name for Beat
+          const beatConfigVolumeName = String(
+            `${beatName
+            }_config_${beatId}`
+          );
           // Get collection config
-          const inputYmlRaw = collectionConfigToYml(payload.collectionConfig);
+          const inputYmlRaw = payload.collectionConfigYml;
           // Replace config's beatIdentifier with this Tail's beatId
           const configBeatIdentifier = (
             payload.collectionConfig.beatIdentifier
@@ -205,10 +235,19 @@ async function tailInit(socket, payload) {
 
           if (socket.connected) {
             socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🚀 Tail starting...' });
-            socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🔎 Checking if LRCTL not present in home directory of user...' });
+            socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🎯 Attempting to connect to host...' });
           }
 
           tails[payload.tailId]
+            // Check we are connected
+            .exec('pwd', {
+              exit() {
+                if (socket.connected) {
+                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🔎 Checking if LRCTL is present in home directory of user...' });
+                }
+                return true;
+              }
+            })
             // Check LRCTL is present
             .exec('if [ ! -e "./lrctl" ]; then exit 42; fi;', {
               exit(code) {
@@ -229,7 +268,7 @@ async function tailInit(socket, payload) {
             })
             // ~~Check Beat ID is not already running~~
             // Import configuration
-            .exec(`cat | ./lrctl genericbeat config import --fqbn ${logRhythmFullyQualifiedBeatName}`, {
+            .exec(`cat | ./lrctl ${payload.collectionConfig.collectionShipper} config import --fqbn ${logRhythmFullyQualifiedBeatName}`, {
               in: beatConfig,
               err(stderr) {
                 // console.log('STDERR:::' + stderr);
@@ -240,7 +279,7 @@ async function tailInit(socket, payload) {
               exit(code) {
                 // console.log('CODE:::' + code + ' 📃');
                 if (code === 0 && socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🔎 Listing the already running instances of this Beat...' });
+                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '📄 Importing files into Beat configuration...' });
                   return true;
                 }
                 return false;
@@ -251,10 +290,184 @@ async function tailInit(socket, payload) {
                   socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
                 }
               }
+            });
+
+          // Go through the config to spot Files to be dropped in, and drop them :)
+          // A file object always has `dropIn`, `valueInConfig` and `fileContentBase64`
+          // `dropIn` must be true
+
+          if (dropInFiles && Array.isArray(dropInFiles) && dropInFiles.length) {
+            // Some files must be dropped in the Beat's config volume
+
+            // Create a unique ID for the Helper/Utility Container
+            const utilityContainerId = `cp-helper_oc-admin_${Math.floor(Math.random() * 16777216).toString(16).padStart(6, '0')}`;
+            // Create a temporary file name, based on the Helper/Utility Container name
+            const tempFilePath = String(`/tmp/${utilityContainerId}`)
+              .replaceAll('//', '/')
+              .replaceAll('"', '');
+
+            tails[payload.tailId]
+              // Import configuration
+              .exec(`docker container create --name "${utilityContainerId}" -v "${beatConfigVolumeName}:/cp_target" alpine 1>/dev/null`, {
+                err(stderr) {
+                  // console.log('STDERR:::' + stderr);
+                  if (socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+                  }
+                },
+                exit(code) {
+                  // console.log('CODE:::' + code + ' 📃');
+                  if (code === 0 && socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: `📄 Utility container created ("${utilityContainerId}")` });
+                    return true;
+                  }
+                  return false;
+                },
+                out(stdout) {
+                  // console.log('STDOUT:::' + stdout);
+                  if (socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+                  }
+                }
+              });
+
+            // Loop through them and add the right tasks to deal with each of them
+            dropInFiles.forEach((fileToDrop) => {
+              //   "certFilePath":{
+              //     "dropIn":true,
+              //     "valueInConfig":"/beats/webhookbeat/config/webhookbeat.crt",
+              //     "dropInPath":"{{beat_config_volume}}/webhookbeat.crt",
+              //     "fileContentBase64":"LS0tLSBCRUdJTiBTU0gyIF.....IFBVQkxJQyBLRVkgLS0tLQ==",
+              //     "fileSizeBytes":442
+              //   },
+              const copyTargetPath = String(`/cp_target/${fileToDrop.dropInPath}`)
+                .replaceAll('//', '/')
+                .replaceAll('"', '');
+              // fileToDrop.fileContentBase64 is Base64 encoded.
+              const fileContentBinary = Buffer.from(fileToDrop.fileContentBase64, 'base64').toString('latin1');
+
+              tails[payload.tailId]
+                // Import configuration
+                .exec(`cat > ${tempFilePath}`, {
+                  in: fileContentBinary,
+                  err(stderr) {
+                    // console.log('STDERR:::' + stderr);
+                    if (socket.connected) {
+                      socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+                    }
+                  },
+                  exit(code) {
+                    // console.log('CODE:::' + code + ' 📃');
+                    if (code === 0 && socket.connected) {
+                      socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: `📄 Drop file content into temporary file: "${tempFilePath}" (${fileToDrop.fileSizeBytes} bytes)` });
+                      return true;
+                    }
+                    return false;
+                  },
+                  out(stdout) {
+                    // console.log('STDOUT:::' + stdout);
+                    if (socket.connected) {
+                      socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+                    }
+                  }
+                })
+                .exec(`docker cp "${tempFilePath}" "${utilityContainerId}:${copyTargetPath}" 1>/dev/null`, {
+                  err(stderr) {
+                    // console.log('STDERR:::' + stderr);
+                    if (socket.connected) {
+                      socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+                    }
+                  },
+                  exit(code) {
+                    // console.log('CODE:::' + code + ' 📃');
+                    if (code === 0 && socket.connected) {
+                      socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: `📄 File imported. Referrenced in Beat's configuration as: "${fileToDrop.valueInConfig}"` });
+                      return true;
+                    }
+                    return false;
+                  },
+                  out(stdout) {
+                    // console.log('STDOUT:::' + stdout);
+                    if (socket.connected) {
+                      socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+                    }
+                  }
+                });
+            });
+
+            tails[payload.tailId]
+              // Clean up
+              .exec(`rm -f "${tempFilePath}" 1>/dev/null`, {
+                err(stderr) {
+                  // console.log('STDERR:::' + stderr);
+                  if (socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+                  }
+                },
+                exit(code) {
+                  // console.log('CODE:::' + code + ' 📃');
+                  if (code === 0 && socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: `📄 Remove temporary file: "${tempFilePath}"` });
+                    return true;
+                  }
+                  return false;
+                },
+                out(stdout) {
+                  // console.log('STDOUT:::' + stdout);
+                  if (socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+                  }
+                }
+              })
+              .exec(`docker container rm "${utilityContainerId}" 1>/dev/null`, {
+                in: beatConfig,
+                err(stderr) {
+                  // console.log('STDERR:::' + stderr);
+                  if (socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+                  }
+                },
+                exit(code) {
+                  // console.log('CODE:::' + code + ' 📃');
+                  if (code === 0 && socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: `📄 Utility container removed ("${utilityContainerId}")` });
+                    return true;
+                  }
+                  return false;
+                },
+                out(stdout) {
+                  // console.log('STDOUT:::' + stdout);
+                  if (socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
+                  }
+                }
+              });
+          } else {
+            tails[payload.tailId]
+            // Dummy action to post log message to Frontend
+              .exec('pwd', {
+                exit() {
+                  if (socket.connected) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '📄 No file need to be imported.' });
+                  }
+                  return true;
+                }
+              });
+          }
+
+          tails[payload.tailId]
+            // Dummy action to post log message to Frontend
+            .exec('pwd', {
+              exit() {
+                if (socket.connected) {
+                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🔎 Listing the already running instances of this Beat...' });
+                }
+                return true;
+              }
             })
             // Check the already running instances of this Beat
             // .exec('./lrctl genericbeat status >&2', {
-            .exec('docker ps --format "{{.Names}} // {{.State}} // {{.Status}}" --filter name="genericbeat_"', {
+            .exec(`docker ps --format "{{.Names}} // {{.State}} // {{.Status}}" --filter name="${payload.collectionConfig.collectionShipper}_"`, {
               err(stderr) {
                 // console.log('STDERR:::' + stderr);
                 if (socket.connected) {
@@ -276,7 +489,7 @@ async function tailInit(socket, payload) {
               }
             })
             // Stop / Start the Beat ID
-            .exec(`./lrctl genericbeat stop --fqbn ${logRhythmFullyQualifiedBeatName} >&2`, {
+            .exec(`./lrctl ${payload.collectionConfig.collectionShipper} stop --fqbn ${logRhythmFullyQualifiedBeatName} >&2`, {
               err(stderr) {
                 // console.log('STDERR:::' + stderr);
                 if (socket.connected) {
@@ -297,9 +510,7 @@ async function tailInit(socket, payload) {
                 }
               }
             })
-            // eslint-disable-next-line max-len
-            // .exec(`./lrctl --versions-file versions.yml genericbeat start --fqbn ${logRhythmFullyQualifiedBeatName} >&2`, { // To test new/special Beats
-            .exec(`./lrctl genericbeat start --fqbn ${logRhythmFullyQualifiedBeatName} >&2`, {
+            .exec(`./lrctl ${payload.collectionConfig.collectionShipper} start --fqbn ${logRhythmFullyQualifiedBeatName} >&2`, {
               err(stderr) {
                 // console.log('STDERR:::' + stderr);
                 if (socket.connected) {
@@ -322,212 +533,6 @@ async function tailInit(socket, payload) {
             })
             // Check if the new instance is running
             // .exec(`./lrctl genericbeat status | grep "${logRhythmFullyQualifiedBeatName}" >&2`, {
-            .exec(`docker ps --format "{{.Names}} // {{.State}} // {{.Status}}" --filter name="${logRhythmFullyQualifiedBeatName}"`, {
-              err(stderr) {
-                // console.log('STDERR:::' + stderr);
-                if (socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
-                }
-              },
-              exit(code) {
-                if (code === 0 && socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '📑 Tailing the Beat\'s own internal logs to EZ Client...' });
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '📑 Tailing the realtime data...' });
-                  return true;
-                }
-                return false;
-              },
-              out(stdout) {
-                // console.log('STDOUT:::' + stdout);
-                if (socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stdout });
-                }
-              }
-            })
-            // Get the logs of the Beat sent to STDOUT to get them in the Client's Shipper's Comms
-            .exec(`docker logs --follow --since 10s "${logRhythmFullyQualifiedBeatName}" >&2 & cat | sudo -S tail -F /var/lib/docker/volumes/${beatName}_spool_volume_${beatId}/_data/realtime.tail`, {
-              in: (configSsh.pass ? configSsh.pass : ''),
-              err(stderr) {
-                // console.log('STDERR:::' + stderr);
-                if (socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
-                }
-              },
-              exit(code) {
-                // console.log('CODE:::' + code + ' 📑');
-                if (socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🟥 Tailing Terminated.' });
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'EXIT', payload: code });
-                }
-                // eslint-disable-next-line no-use-before-define
-                setTimeout(tailKillShipper, 2500, socket, payload);
-              },
-              out(stdout) {
-                // console.log('STDOUT:::' + stdout);
-                if (socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
-                }
-              }
-            })
-            .on('end', (err) => {
-              // console.log('END:::' + err);
-              if (socket.connected) {
-                socket.emit('tail.log', { tailId: payload.tailId, code: 'END', payload: err });
-              }
-              // eslint-disable-next-line no-use-before-define
-              setTimeout(tailKillShipper, 1000, socket, payload);
-            })
-            .start({
-              failure() {
-                // console.log('FAILURE:::' + err);
-                if (socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'FAILURE' });
-                }
-              }
-            });
-        } else if (payload.collectionConfig.collectionShipper === 'webhookbeat') {
-          // Get a clean Beat name
-          const beatName = payload.collectionConfig.collectionShipper.toLowerCase().trim();
-          // eslint-disable-next-line max-len
-          // Create a new Beat ID for the Tail (different from the Prod one, but using UID of Stream)
-          const beatId = String(`T_${payload.pipelineUid}`).replace(/[^a-zA-Z0-9]/g, '_').substring(0, 12);
-          // Fully Qualified Beat Name
-          const logRhythmFullyQualifiedBeatName = String(
-            `${beatName
-            }_${beatId}`
-          );
-          // Get collection config
-          const inputYmlRaw = collectionConfigToYml(payload.collectionConfig);
-          // Replace config's beatIdentifier with this Tail's beatId
-          const configBeatIdentifier = (
-            payload.collectionConfig.beatIdentifier
-            && payload.collectionConfig.beatIdentifier.length
-              ? payload.collectionConfig.beatIdentifier
-              : 'beatIdentifier NOT FOUND' // If none found, just use a random string so next step does nothing
-          );
-          const inputYml = String(inputYmlRaw).replace(new RegExp(configBeatIdentifier, 'g'), beatId);
-          // Load the base Tail config file for LogRhythm shippers
-          const logrhythmShipperBaseTailConfig = fs.readFileSync(path.join(process.env.baseDirname, 'resources', 'LogRhythm_shippers-base_tail_config.yaml'));
-          // Combine it with collection part
-          const beatConfig = `${inputYml}\n\n${logrhythmShipperBaseTailConfig}\n`;
-
-          if (socket.connected) {
-            socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🚀 Tail starting...' });
-            socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🔎 Checking if LRCTL not present in home directory of user...' });
-          }
-
-          tails[payload.tailId]
-            // Check LRCTL is present
-            .exec('if [ ! -e "./lrctl" ]; then exit 42; fi;', {
-              exit(code) {
-                if (code === 42) {
-                  // If LRCTL doesn't exist,
-                  // simply stop now.
-                  if (socket.connected) {
-                    socket.emit('tail.log', { tailId: payload.tailId, code: 'ERROR', payload: 'LRCTL not present in home directory of user' });
-                    socket.emit('tail.log', { tailId: payload.tailId, code: 'EXIT', payload: code });
-                  }
-                  return false;
-                }
-                if (socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '📥 Importing Beat configuration...' });
-                }
-                return true;
-              }
-            })
-            // ~~Check Beat ID is not already running~~
-            // Import configuration
-            .exec(`cat | ./lrctl webhookbeat config import --fqbn ${logRhythmFullyQualifiedBeatName}`, {
-              in: beatConfig,
-              err(stderr) {
-                // console.log('STDERR:::' + stderr);
-                if (socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
-                }
-              },
-              exit(code) {
-                // console.log('CODE:::' + code + ' 📃');
-                if (code === 0 && socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🔎 Listing the already running instances of this Beat...' });
-                  return true;
-                }
-                return false;
-              },
-              out(stdout) {
-                // console.log('STDOUT:::' + stdout);
-                if (socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
-                }
-              }
-            })
-            // Check the already running instances of this Beat
-            // .exec('./lrctl webhookbeat status >&2', {
-            .exec('docker ps --format "{{.Names}} // {{.State}} // {{.Status}}" --filter name="webhookbeat_"', {
-              err(stderr) {
-                // console.log('STDERR:::' + stderr);
-                if (socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
-                }
-              },
-              exit(code) {
-                if (code === 0 && socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: `🟥 Stopping the Beat ID "${logRhythmFullyQualifiedBeatName}"...` });
-                  return true;
-                }
-                return false;
-              },
-              out(stdout) {
-                // console.log('STDOUT:::' + stdout);
-                if (socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stdout });
-                }
-              }
-            })
-            // Stop / Start the Beat ID
-            .exec(`./lrctl webhookbeat stop --fqbn ${logRhythmFullyQualifiedBeatName} >&2`, {
-              err(stderr) {
-                // console.log('STDERR:::' + stderr);
-                if (socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
-                }
-              },
-              exit(code) {
-                if (code === 0 && socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: `🟢 Starting the Beat ID "${logRhythmFullyQualifiedBeatName}"...` });
-                  return true;
-                }
-                return false;
-              },
-              out(stdout) {
-                // console.log('STDOUT:::' + stdout);
-                if (socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
-                }
-              }
-            })
-            .exec(`./lrctl webhookbeat start --fqbn ${logRhythmFullyQualifiedBeatName} >&2`, {
-              err(stderr) {
-                // console.log('STDERR:::' + stderr);
-                if (socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
-                }
-              },
-              exit(code) {
-                if (code === 0 && socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🔎 Checking if the new instance is running...' });
-                  return true;
-                }
-                return false;
-              },
-              out(stdout) {
-                // console.log('STDOUT:::' + stdout);
-                if (socket.connected) {
-                  socket.emit('tail.log', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
-                }
-              }
-            })
-            // Check if the new instance is running
-            // .exec(`./lrctl webhookbeat status | grep "${logRhythmFullyQualifiedBeatName}" >&2`, {
             .exec(`docker ps --format "{{.Names}} // {{.State}} // {{.Status}}" --filter name="${logRhythmFullyQualifiedBeatName}"`, {
               err(stderr) {
                 // console.log('STDERR:::' + stderr);

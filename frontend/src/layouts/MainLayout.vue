@@ -1,15 +1,12 @@
 <template>
-  <q-layout view="lHh lpR fFf">
+  <q-layout view="lHh Lpr fFf">
     <q-drawer
       v-model="drawerMenuOpen"
       show-if-above
 
-      :mini="miniState"
-      @mouseover="miniState = false"
-      @mouseout="miniState = true"
       mini-to-overlay
 
-      :width="300"
+      :width="57"
       :breakpoint="500"
       bordered
 
@@ -24,8 +21,8 @@
         >
           <q-list padding class="">
             <EssentialLink
-              v-for="link in mainLinks"
-              :key="link.title"
+              v-for="(link, index) in mainLinks"
+              :key="index"
               v-bind="link"
             />
           </q-list>
@@ -35,38 +32,30 @@
 
         <q-item v-if="needToConfigureMsSql">
           <q-tooltip content-style="font-size: 1rem;">
+            <span class="text-orange text-bold">{{ $t('SIEM Not Connected') }}</span><br>
             {{ $t('The connection details to the SQL server on the SIEM are missing.') }}<br>
             {{ $t('A lot of things will not work until this is configred.') }}
           </q-tooltip>
           <q-item-section
-            side
           >
             <q-avatar size="24px" class="q-pa-none" square>
-              <q-icon name="link_off" size="sm" color="orange" />
+              <q-icon name="o_link_off" size="sm" color="orange" />
             </q-avatar>
-          </q-item-section>
-
-          <q-item-section>
-            <q-item-label class="text-orange">{{ $t('SIEM Not Connected') }}</q-item-label>
           </q-item-section>
         </q-item>
         <q-separator class="q-my-xs" v-if="needToConfigureMsSql"/>
 
         <q-item v-if="!socket.connected">
           <q-tooltip content-style="font-size: 1rem;">
+            <span class="text-orange text-bold">{{ $t('Disconnected') }}</span><br>
             {{ $t('Live connection with server has been lost.') }}<br>
             {{ $t('Some features might not work anymore.') }}
           </q-tooltip>
           <q-item-section
-            side
           >
             <q-avatar size="24px" class="q-pa-none" square>
-              <q-icon name="cloud_off" size="sm" color="orange" />
+              <q-icon name="o_cloud_off" size="sm" color="orange" />
             </q-avatar>
-          </q-item-section>
-
-          <q-item-section>
-            <q-item-label class="text-orange">{{ $t('Disconnected') }}</q-item-label>
           </q-item-section>
         </q-item>
         <q-separator class="q-my-xs" v-if="!socket.connected"/>
@@ -95,30 +84,36 @@
     <!-- Error messages display. Responds to "addAndShowErrorToErrorPanel" events -->
 
     <q-dialog v-model="showErrorPanel" persistent>
-      <q-card style="min-width: 350px">
-        <q-card-section class="q-pb-none">
+      <q-card style="min-width: 450px">
+        <q-card-section class="row justify-between q-py-sm">
           <div class="text-h6">{{ $t('What did just go wrong?') }}</div>
+          <q-btn dense flat icon="close" color="grey-5" v-close-popup />
         </q-card-section>
-        <q-card-section class="q-pt-none" v-if="errorPanelDetails && Array.isArray(errorPanelDetails)">
+        <q-separator />
+        <q-card-section class="q-py-xs" v-if="errorPanelDetails && Array.isArray(errorPanelDetails)">
           <div class="text-bold text-italic">{{ $tc('| {count} error occured. | {count} errors occured.', errorPanelDetails.length) }}</div>
         </q-card-section>
 
-        <q-card-section class="" v-for="(detail, index) in errorPanelDetails" :key="index">
-          <div class="">
-              <div class="row q-my-sm">
-                <q-separator vertical size="2px" color="orange" />
-                <div class="q-ml-sm">
-                  <div class="text-overline">{{ $t('Message Code:') }}</div>
-                  <div class="q-ml-sm text-bold">{{ detail.code }}</div>
-                  <div class="q-mt-sm text-overline">{{ $t('Message:') }}</div>
-                  <div class="q-ml-sm text-italic">{{ detail.message }}</div>
-                  <div class="q-mt-sm text-overline">{{ $t('More information available at:') }}</div>
-                  <div class="q-ml-sm"><a :href="detail.wikiLink" target="_blank" class="text-primary">{{ detail.wikiLink }}</a></div>
+        <q-scroll-area
+          style="height: 300px; "
+          visible
+        >
+          <q-card-section class="q-px-xs" v-for="(detail, index) in errorPanelDetails" :key="index">
+            <div class="">
+                <div class="row q-my-sm">
+                  <q-separator vertical size="2px" color="orange" />
+                  <div class="q-ml-sm">
+                    <div class="text-overline">{{ $t('Message Code:') }}</div>
+                    <div class="q-ml-sm text-bold">{{ detail.code }}</div>
+                    <div class="q-mt-sm text-overline">{{ $t('Message:') }}</div>
+                    <div class="q-ml-sm text-italic">{{ detail.message }}</div>
+                    <div class="q-mt-sm text-overline">{{ $t('More information available at:') }}</div>
+                    <div class="q-ml-sm"><a :href="detail.wikiLink" target="_blank" class="text-primary">{{ detail.wikiLink }}</a></div>
+                  </div>
                 </div>
-              </div>
-          </div>
-        </q-card-section>
-
+            </div>
+          </q-card-section>
+        </q-scroll-area>
         <q-separator />
 
         <q-card-actions align="right">
@@ -133,6 +128,7 @@
 <script>
 import { mapState } from 'vuex'
 import EssentialLink from 'components/EssentialLink.vue'
+import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import { version } from '../../package.json'
 import { date } from 'quasar'
@@ -141,88 +137,12 @@ export default {
   name: 'MainLayout',
   components: { EssentialLink },
   mixins: [
+    mixinSharedDarkMode, // Shared computed to access and update the DarkMode
     mixinSharedSocket // Shared function and state to access the Socket.io
   ],
   data () {
     return {
       drawerMenuOpen: false,
-      miniState: true,
-      // mainLinks: [
-      //   {
-      //     title: '',
-      //     icon: 'home',
-      //     link: '#/Welcome'
-      //   },
-      //   // {
-      //   //   title: 'Status',
-      //   //   icon: 'dashboard',
-      //   //   link: '#/Status'
-      //   // },
-      //   {
-      //     title: this.$t('OpenCollectors'),
-      //     icon: 'mediation',
-      //     link: '#/OpenCollectors'
-      //   },
-      //   {
-      //     title: this.$t('Pipelines'),
-      //     icon: 'account_tree',
-      //     link: '#/Pipelines'
-      //   }
-      // ],
-      // lowLinks: [
-      //   {
-      //     title: this.$t('EZ Market Place'),
-      //     icon: 'storefront',
-      //     link: '#/MarketPlace',
-      //     id: 'ezMarketPlace',
-      //     notification: 5,
-      //     notificationColor: 'green',
-      //     notificationTextColor: 'white',
-      //     subMenus: [
-      //       {
-      //         title: this.$t('Notifications'),
-      //         icon: 'mail_outline',
-      //         link: '#/MarketPlace/Notifications'
-      //       },
-      //       {
-      //         title: this.$t('Pipeline Templates'),
-      //         icon: 'account_tree',
-      //         link: '#/MarketPlace/PipelineTemplates'
-      //       },
-      //       {
-      //         title: this.$t('My Profile'),
-      //         icon: 'person',
-      //         link: '#/MarketPlace/PublisherProfile'
-      //       }
-      //     ]
-      //   },
-      //   {
-      //     separator: true
-      //   },
-      //   {
-      //     title: this.$t('Admin'),
-      //     icon: 'admin_panel_settings',
-      //     link: '#/Admin',
-      //     needsPriviledge: true,
-      //     id: 'admin',
-      //     notification: null,
-      //     notificationColor: 'negative',
-      //     notificationTextColor: 'white'
-      //   },
-      //   {
-      //     title: this.$t('Settings'),
-      //     icon: 'settings',
-      //     link: '#/Settings'
-      //   },
-      //   {
-      //     separator: true
-      //   },
-      //   {
-      //     title: this.$t('Log Out'),
-      //     icon: 'logout',
-      //     link: '#/Logout'
-      //   }
-      // ],
       version: version,
       showErrorPanel: false,
       errorPanelDetails: []
@@ -245,22 +165,24 @@ export default {
       return [
         {
           title: '',
-          icon: 'home',
+          icon: 'o_home',
           link: '#/Welcome'
         },
         // {
         //   title: 'Status',
-        //   icon: 'dashboard',
+        //   icon: 'o_dashboard',
         //   link: '#/Status'
         // },
         {
-          title: this.$t('OpenCollectors'),
-          icon: 'mediation',
+          title: '',
+          tooltip: this.$t('OpenCollectors'),
+          icon: 'o_mediation',
           link: '#/OpenCollectors'
         },
         {
-          title: this.$t('Pipelines'),
-          icon: 'account_tree',
+          title: '',
+          tooltip: this.$t('Pipelines'),
+          icon: 'o_account_tree',
           link: '#/Pipelines'
         }
       ]
@@ -268,8 +190,9 @@ export default {
     lowLinks () {
       return [
         {
-          title: this.$t('EZ Market Place'),
-          icon: 'storefront',
+          title: '',
+          tooltip: this.$t('EZ Market Place'),
+          icon: 'o_storefront',
           link: '#/MarketPlace',
           id: 'ezMarketPlace',
           notification: null,
@@ -278,7 +201,7 @@ export default {
           subMenus: [
             {
               title: this.$t('Notifications'),
-              icon: 'mail_outline',
+              icon: 'o_mail_outline',
               id: 'ezMarketPlaceNotifications',
               notification: null,
               notificationColor: 'green',
@@ -287,12 +210,12 @@ export default {
             },
             {
               title: this.$t('Pipeline Templates'),
-              icon: 'account_tree',
+              icon: 'o_account_tree',
               link: '#/MarketPlace/PipelineTemplates'
             },
             {
               title: this.$t('My Profile'),
-              icon: 'person',
+              icon: 'o_person',
               link: '#/MarketPlace/PublisherProfile'
             }
           ]
@@ -301,8 +224,9 @@ export default {
           separator: true
         },
         {
-          title: this.$t('Admin'),
-          icon: 'admin_panel_settings',
+          title: '',
+          tooltip: this.$t('Admin'),
+          icon: 'o_admin_panel_settings',
           link: '#/Admin',
           needsPriviledge: true,
           id: 'admin',
@@ -311,16 +235,18 @@ export default {
           notificationTextColor: 'white'
         },
         {
-          title: this.$t('Settings'),
-          icon: 'settings',
+          title: '',
+          tooltip: this.$t('Settings'),
+          icon: 'o_settings',
           link: '#/Settings'
         },
         {
           separator: true
         },
         {
-          title: this.$t('Log Out'),
-          icon: 'logout',
+          title: '',
+          tooltip: this.$t('Log Out'),
+          icon: 'o_logout',
           link: '#/Logout'
         }
       ]

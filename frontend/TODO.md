@@ -1,5 +1,100 @@
 # TODO - Frontend
 
+### Target: v2.0
+
+## TO DO
+- [ ] Incorporate Axon style UI
+  - [ ] Tables
+  - [ ] Headers
+    - [ ] Breadcrumbs
+  - [ ] Action buttons style
+- [ ] LogRhythm Beats mapping for Collection Configuration
+  - [ ] ...
+- [ ] Error reporting card to deal with many errors
+  - [ ] Deduplicate error messages
+- [ ] Admin - MS SQL - Add Test button
+- [ ] Landing page
+  - [ ] Add a simple Wizard
+    - [ ] Ask for name for Log Source
+    - [ ] Create collection configuation
+      - [ ] Pick Shipper
+      - [ ] Pick type of collection (Flat File, Syslog, REST, etc...)
+      - [ ] Configure it
+    - [ ] Pick up Open Collector
+      - [ ] Add one if none in the list
+      - [ ] Offer to deploy required Shipper if not already on OC
+    - [ ] Create field mapping
+      - [ ] Run pre-configured Tail
+    - [ ] Recap page
+      - [ ] Ability to rename Log Source
+      - [ ] Ability to assign Log Source to other Open Collectors
+      - [ ] Ability to Enable / Commit the Log Source creation
+
+## TO FIX
+
+## TO TEST
+
+### Target: v1.0
+
+## TO DO
+- [ ] Incorporate Axon style UI
+  - [x] Left hand side navigation bar
+  - [x] Login page
+  - [x] Logout page
+  - [x] Cards
+  - [x] Fields
+  - [x] Dialogs
+    - [x] Standard Confirm dialog
+    - [x] OpenCollector properties
+    - [x] Pipeline properties
+    - [x] Account properties
+    - [x] Role properties
+  - [ ] Tables
+  - [ ] Headers
+    - [ ] Breadcrumbs
+  - [x] Large buttons style
+  - [ ] Action buttons style
+  - [x] Settings
+- [x] LogRhythm Beats mapping for Collection Configuration
+  - [x] Azure Event Hub
+    - [x] With custom Mapping
+    - [x] Without custom Mapping
+      - [x] Implement skipping OC Pipeline deployment
+      - [x] Implement pick Azure Eventhub LS Type in SIEM
+        - skip LST creation
+        - skip MPE rule creation
+        - skip Log Processing Policy creation
+      - [x] Implement disable Field Mapping edit
+  - [x] S3
+  - [x] WebHook
+    - [x] https
+  - [x] PubSub
+  - [x] Kafka
+- [x] Create proper Beats Collection Configuration object, expanding from the notted notation in field names
+- [x] Provide Beats's configuration to Backend when starting Tail
+- [x] Add File drop field type to Collection Configuration
+  - [x] Internal template
+  - [x] Collection Configuration Editor
+  - [x] Pass file information to Backend during Tail
+  - [x] Pass file information to Backend during Deployment
+- [x] Error reporting card to deal with many errors
+  - [x] Add sticky title and X close button
+  - [x] Make bottom panel sticky, with `[Close]` button
+- [x] Landing page
+  - [x] News from EZ Market Place
+  - [x] Common tasks
+  - [x] Recent items
+- [x] Provide Beats's configuration to Backend when starting Tail
+- [x] Update link to the Wiki
+  - [x] Move to `docs.logrhythm.com`
+  - [x] Use Staging Doc during Dev
+
+## TO FIX
+- [x] JSON to Yaml Collection config fails with `TypeError: jsonConfig.forEach is not a function`
+- [x] Mapping Field Editor - `@` sign in field name is not escaped and cause JQ to fail import
+
+## TO TEST
+
 ### Target: v0.9
 
 ## TO DO
@@ -63,7 +158,7 @@
 - [x] Erroneous "SIEM Not Connected" alert message on Windows deployment
 - [x] Issue #12 - [BUG] Pipeline import from EZ Market Place - Wrong icon colour on "Import Both" button in Day mode
 - [x] Issue #11 - [BUG] Fields Mapping - Incorrect LR MPE tags for Outbound bytes type fields
-- [ ] Top bar not stuck to top left of screen in Admin : SIEM : Update EMDB
+- [x] Top bar not stuck to top left of screen in Admin : SIEM : Update EMDB
 
 ## TO TEST
 - [x] Translated message in deployment steps roll over status (especially Skipped steps)

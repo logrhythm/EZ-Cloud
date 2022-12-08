@@ -1,5 +1,34 @@
 # TODO - Backend
 
+### Target: v1.0
+
+## TO DO
+- Refactor
+  - [x] Socket - Tail - Streamline `tailInit()` for LR Beats
+  - [x] API - `updateStreamConfigurationForBeat()` for LR Beats
+  - [x] API - `deleteStreamConfigurationForBeat()` for LR Beats
+- Add support for Beats that require file dropped as part of Config
+  - [ ] PubSub
+  - [ ] WebHook HTTPS
+- Beat Support
+  - [x] S3
+  - [ ] PubSub
+  - [ ] EventHub
+  - [ ] WebHook HTTPS
+- [ ] API - Admin - MS SQL - Add MS SQL test
+- [x] Use Beats's configuration provided by Frontend when starting Tail, instead of using local copy of `collectionConfigToYml()`
+
+## TO FIX
+- Installer
+  - [x] Issue #17 - 0.9.7 installer might not update OpenCollectors table
+- Documentation
+  - [x] Issue #16 - Document the general `ERROR QUERYING PERSISTENCE LAYER` error code
+- API
+  - [x] Crash when no MasterID is returned from EMDB
+  - [x] Issue #21 - Deployment fails at last step with LR 7.9 SIEM
+
+## TO TEST
+
 ### Target: v0.9
 
 ## TO DO
@@ -20,8 +49,8 @@
   - [x] Check connection to the SQL systems at start-up and keep checkin until they are all good
   - [x] Function to retrieve the current Persistence Layer Availability
   - [x] Add API to check Persistence Layer Availability
-  - [ ] Move Stored Procedures and Views from EZ database to EMDB
-    - [ ] Rename specific Stored Procedure and Views to match EMDB style
+  - [x] Move Stored Procedures and Views from EZ database to EMDB
+    - [x] Rename specific Stored Procedure and Views to match EMDB style
       - [x] upsert_LogSource_Type.sql
       - [x] clone_MPE_Rule.sql
       - [x] upsert_MPE_SubRule.sql
@@ -30,7 +59,7 @@
       - [x] upsert_Log_Source_Virtualisation_Template_Item.sql
       - [x] list_OpenCollector_Log_Sources.sql
       - [x] upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource.sql
-      - [ ] get_SIEM_Master_ID
+      - [x] get_SIEM_Master_ID
   - [x] Create EZ_Get_Versions view to gather EZ DB's content versions
 - SQL Utils
   - [x] Split utilitarian functions to deal with both MS SQL and PostgreSQL
@@ -66,7 +95,7 @@
 ## TO FIX
 - [x] Save/Read of Fields Mapping from PgSQL
 - [x] Tail actions doesn't fail if no or incomplete SSH details for Primary OC for Pipeline
-- [ ] Linux obfuscation executable
+- [x] Linux obfuscation executable
 
 ## TO TEST
 

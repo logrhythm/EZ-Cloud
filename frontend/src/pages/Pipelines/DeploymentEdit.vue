@@ -35,7 +35,7 @@
                       <q-input outlined dense debounce="300" v-model="searchFilter" :placeholder="$t('Search')">
                         <template v-slot:append>
                           <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
-                          <q-icon name="search" />
+                          <q-icon name="o_search" />
                         </template>
                       </q-input>
                     </div>
@@ -74,12 +74,12 @@
                       <div>
                         <div class="row justify-between q-my-sm q-mr-sm">
                           <div class="row items-center q-gutter-x-sm">
-                            <q-icon name="list" color="blue-3" size="md" />
+                            <q-icon name="o_list" color="blue-3" size="md" />
                             <div class="text-h6">Deployment Steps</div>
                           </div>
                           <div class="q-gutter-x-md">
-                            <q-icon name="warning" color="orange" size="md" v-if="props.row && props.row.deploymentStatus && props.row.deploymentStatus.error === true" />
-                            <q-icon name="task_alt" color="positive" size="md" v-else-if="props.row && props.row.deploymentStatus && props.row.deploymentStatus.completed === true" />
+                            <q-icon name="o_warning" color="orange" size="md" v-if="props.row && props.row.deploymentStatus && props.row.deploymentStatus.error === true" />
+                            <q-icon name="o_task_alt" color="positive" size="md" v-else-if="props.row && props.row.deploymentStatus && props.row.deploymentStatus.completed === true" />
                             <q-circular-progress
                               :value="Math.round(deploymentProgressFor(props.row, 'deploymentStatus').done)"
                               show-value
@@ -102,27 +102,27 @@
                             <q-item-section>
                               <q-item-label>
                                 <div class="row items-center no-wrap">
-                                  <q-icon name="arrow_right" size="sm" :class="(step.status === 'On-going' || step.status === 'Error' ? '' : 'invisible')" />
+                                  <q-icon name="o_arrow_right" size="sm" :class="(step.status === 'On-going' || step.status === 'Error' ? '' : 'invisible')" />
                                   <div class="force-long-text-wrap ellipsis-3-lines" :class="(step.status === 'On-going' || step.status === 'Error' ? 'text-bold' : '')" >{{ step.name }}</div>
                                 </div>
                               </q-item-label>
                             </q-item-section>
                             <q-item-section side>
-                              <q-icon v-if="step.status === 'Not started'" name="hourglass_empty" size="sm" color="grey" />
-                              <q-icon v-else-if="step.status === 'To skip'" name="redo" size="sm" color="grey" />
-                              <q-icon v-else-if="step.status === 'Pending'" name="hourglass_top" size="sm" color="grey-3" />
+                              <q-icon v-if="step.status === 'Not started'" name="o_hourglass_empty" size="sm" color="grey" />
+                              <q-icon v-else-if="step.status === 'To skip'" name="o_redo" size="sm" color="grey" />
+                              <q-icon v-else-if="step.status === 'Pending'" name="o_hourglass_top" size="sm" color="grey-3" />
                               <q-spinner-dots v-else-if="step.status === 'On-going'" color="blue-10" size="2em" />
-                              <q-icon v-else-if="step.status === 'Completed'" name="task_alt" size="sm" color="positive" />
-                              <q-icon v-else-if="step.status === 'Skipped'" name="redo" size="sm" color="green-4" style="opacity: .5;" />
-                              <q-icon v-else-if="step.status === 'Error'" name="error" size="sm" color="orange" />
-                              <q-icon v-else-if="step.status === 'Cancelled'" name="block" size="sm" color="grey" />
+                              <q-icon v-else-if="step.status === 'Completed'" name="o_task_alt" size="sm" color="positive" />
+                              <q-icon v-else-if="step.status === 'Skipped'" name="o_redo" size="sm" color="green-4" style="opacity: .5;" />
+                              <q-icon v-else-if="step.status === 'Error'" name="o_error" size="sm" color="orange" />
+                              <q-icon v-else-if="step.status === 'Cancelled'" name="o_block" size="sm" color="grey" />
                             </q-item-section>
                           </q-item>
                         </div>
                         <div v-if="props.row && deploymentProgressFor(props.row, 'deploymentStatus').errorAbsolute">
                           <q-separator />
                           <div class="row items-center col no-wrap">
-                            <q-icon name="warning" color="orange" size="md" />
+                            <q-icon name="o_warning" color="orange" size="md" />
                             <q-separator vertical class="q-mx-sm"/>
                             <q-separator vertical color="negative" size="0.2rem" class="q-ml-none q-mr-sm"/>
                             <div class="q-my-sm">
@@ -135,7 +135,7 @@
                         <div v-if="props.row && deploymentProgressFor(props.row, 'deploymentStatus').skippedAbsolute">
                           <q-separator />
                           <div class="row items-center col no-wrap">
-                            <q-icon name="redo" color="green-4" size="md" />
+                            <q-icon name="o_redo" color="green-4" size="md" />
                             <q-separator vertical class="q-mx-sm"/>
                             <div class="q-my-sm">
                               <div class="text-bold">{{ $tc('| One step has been skipped. | {count} steps have been skipped.', Math.round(deploymentProgressFor(props.row, 'deploymentStatus').skippedAbsolute)) }}</div>
@@ -183,12 +183,12 @@
                       <div>
                         <div class="row justify-between q-my-sm q-mr-sm">
                           <div class="row items-center q-gutter-x-sm">
-                            <q-icon name="list" color="blue-3" size="md" />
+                            <q-icon name="o_list" color="blue-3" size="md" />
                             <div class="text-h6">{{ $t('Un-Deployment Steps') }}</div>
                           </div>
                           <div class="q-gutter-x-md">
-                            <q-icon name="warning" color="orange" size="md" v-if="props.row && props.row.unDeployStatus && props.row.unDeployStatus.error === true" />
-                            <q-icon name="task_alt" color="positive" size="md" v-else-if="props.row && props.row.unDeployStatus && props.row.unDeployStatus.completed === true" />
+                            <q-icon name="o_warning" color="orange" size="md" v-if="props.row && props.row.unDeployStatus && props.row.unDeployStatus.error === true" />
+                            <q-icon name="o_task_alt" color="positive" size="md" v-else-if="props.row && props.row.unDeployStatus && props.row.unDeployStatus.completed === true" />
                             <q-circular-progress
                               :value="Math.round(deploymentProgressFor(props.row, 'unDeployStatus').done)"
                               show-value
@@ -211,27 +211,27 @@
                             <q-item-section>
                               <q-item-label>
                                 <div class="row items-center no-wrap">
-                                  <q-icon name="arrow_right" size="sm" :class="(step.status === 'On-going' || step.status === 'Error' ? '' : 'invisible')" />
+                                  <q-icon name="o_arrow_right" size="sm" :class="(step.status === 'On-going' || step.status === 'Error' ? '' : 'invisible')" />
                                   <div class="force-long-text-wrap ellipsis-3-lines" :class="(step.status === 'On-going' || step.status === 'Error' ? 'text-bold' : '')" >{{ step.name }}</div>
                                 </div>
                               </q-item-label>
                             </q-item-section>
                             <q-item-section side>
-                              <q-icon v-if="step.status === 'Not started'" name="hourglass_empty" size="sm" color="grey" />
-                              <q-icon v-else-if="step.status === 'To skip'" name="redo" size="sm" color="grey" />
-                              <q-icon v-else-if="step.status === 'Pending'" name="hourglass_top" size="sm" color="grey-3" />
+                              <q-icon v-if="step.status === 'Not started'" name="o_hourglass_empty" size="sm" color="grey" />
+                              <q-icon v-else-if="step.status === 'To skip'" name="o_redo" size="sm" color="grey" />
+                              <q-icon v-else-if="step.status === 'Pending'" name="o_hourglass_top" size="sm" color="grey-3" />
                               <q-spinner-dots v-else-if="step.status === 'On-going'" color="blue-10" size="2em" />
-                              <q-icon v-else-if="step.status === 'Completed'" name="task_alt" size="sm" color="positive" />
-                              <q-icon v-else-if="step.status === 'Skipped'" name="redo" size="sm" color="green-4" style="opacity: .5;" />
-                              <q-icon v-else-if="step.status === 'Error'" name="error" size="sm" color="orange" />
-                              <q-icon v-else-if="step.status === 'Cancelled'" name="block" size="sm" color="grey" />
+                              <q-icon v-else-if="step.status === 'Completed'" name="o_task_alt" size="sm" color="positive" />
+                              <q-icon v-else-if="step.status === 'Skipped'" name="o_redo" size="sm" color="green-4" style="opacity: .5;" />
+                              <q-icon v-else-if="step.status === 'Error'" name="o_error" size="sm" color="orange" />
+                              <q-icon v-else-if="step.status === 'Cancelled'" name="o_block" size="sm" color="grey" />
                             </q-item-section>
                           </q-item>
                         </div>
                         <div v-if="props.row && deploymentProgressFor(props.row, 'unDeployStatus').errorAbsolute">
                           <q-separator />
                           <div class="row items-center col no-wrap">
-                            <q-icon name="warning" color="orange" size="md" />
+                            <q-icon name="o_warning" color="orange" size="md" />
                             <q-separator vertical class="q-mx-sm"/>
                             <q-separator vertical color="negative" size="0.2rem" class="q-ml-none q-mr-sm"/>
                             <div class="q-my-sm">
@@ -244,7 +244,7 @@
                         <div v-if="props.row && deploymentProgressFor(props.row, 'unDeployStatus').skippedAbsolute">
                           <q-separator />
                           <div class="row items-center col no-wrap">
-                            <q-icon name="redo" color="green-4" size="md" />
+                            <q-icon name="o_redo" color="green-4" size="md" />
                             <q-separator vertical class="q-mx-sm"/>
                             <div class="q-my-sm">
                               <div class="text-bold">{{ $tc('| One step has been skipped. | {count} steps have been skipped.', Math.round(deploymentProgressFor(props.row, 'unDeployStatus').skippedAbsolute)) }} </div>
@@ -270,9 +270,9 @@
 
               <template v-slot:body-cell-status="props">
                 <q-td :props="props">
-                  <q-icon name="thumb_up" color="green" size="md" v-if="props.value === true" />
-                  <q-icon name="thumb_down" color="red" size="md" v-else-if ="props.value === false" style="opacity: .6" />
-                  <q-icon name="thumb_down_off_alt" color="orange" size="md" v-else style="opacity: .6" />
+                  <q-badge color="green" size="md" v-if="props.value === true" >{{ $t('Suitable')}}</q-badge>
+                  <q-badge color="red" size="md" v-else-if ="props.value === false" >{{ $t('Unsuitable')}}</q-badge>
+                  <q-badge color="orange" size="md" v-else style="opacity: .6" >{{ $t('Unknown')}}</q-badge>
                   <q-tooltip content-style="font-size: 1em">
                     <span v-if="props.value === true">{{ $t('Suitable') }}</span>
                     <span v-else-if ="props.value === false">{{ $t('Unsuitable') }}</span>
@@ -287,18 +287,14 @@
                       v-for="(shipper, index) in props.value"
                       :key="index"
                   >
-                    <q-tooltip content-style="font-size: 1em;" >{{ shipper.name }}</q-tooltip>
-                    <q-avatar square  size="24px" class="q-mr-xs">
-                      <img :src="'/shippers/' + collectionShipperDetails(shipper.name).icon + '.svg'" />
-                    </q-avatar>
-                    <q-badge outline color="grey">v{{ shipper.version }}</q-badge>
+                    <q-badge outline >{{ shipper.name }} - v{{ shipper.version }}</q-badge>
                   </div>
                   <div v-if="props.row.hasNecessaryShipper !== true">
                     <q-tooltip content-style="font-size: 1em;" >
                       {{ $t('The necessary Shipper to collect this source is not installed on this collector.') }}<br><br>
                       {{ $t('Please go to the Collectors page to deploy this Shipper on this Collector.') }}<br><br>
                       <q-icon
-                        name="info"
+                        name="o_info"
                         size="sm"
                         color="info"
                         class="q-mr-sm"
@@ -311,18 +307,16 @@
                         </div>
                       </div>
                     </q-tooltip>
-                    <q-badge outline color="orange" class="q-gutter-x-sm">
+                    <q-badge outline color="orange" class="">
                       <q-icon
-                        name="warning"
-                        size="sm"
+                        name="o_warning"
                         color="orange"
+                        class="q-mr-sm"
                       />
-                      <div class="icon-stack">
-                        <img class="img-stack-75" :src="'/shippers/' + collectionShipperDetails((pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : null)).icon + '.svg'"/>
-                        <img class="img-stack-100 img-stack-opacity-50" :src="'/shippers/_block_overlay.svg'"/>
+                      <div>
+                        {{ (pipeline && pipeline.collectionConfig && pipeline.collectionConfig.collectionShipper ? pipeline.collectionConfig.collectionShipper : 'N/A') }}
                       </div>
                     </q-badge>
-
                   </div>
                 </q-td>
               </template>
@@ -496,7 +490,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('mainStore', ['openCollectorBeats', 'loggedInUser', 'collectionShippersOptions']),
+    ...mapState('mainStore', ['openCollectorBeats', 'loggedInUser', 'collectionShippersOptions', 'collectionMethodTemplates']),
     ...mapGetters('mainStore', ['openCollectorLogSources']),
     pipeline () {
       const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
@@ -668,6 +662,11 @@ export default {
           deploymentStatus.isDeployment = isDeployment // True: it's a deployment. Flase: it's un Un-Deploy.
           deploymentStatuses = JSON.parse(JSON.stringify(deploymentStatuses))
         } else {
+          const skipDeploymentStepsFromTemplate = (this.collectionMethodTemplates
+            .find(template => template.collectionMethod === this.pipeline.collectionConfig.collectionMethod) || {})
+            .skipDeploymentSteps || []
+          const actualDeploymentSteps = deploymentSteps.filter((step) => !skipDeploymentStepsFromTemplate.includes(step.uid))
+
           deploymentStatuses.push(
             {
               openCollectorUid: selectedRow.openCollector.uid,
@@ -676,7 +675,7 @@ export default {
               completed: false,
               isDeployment: isDeployment, // True: it's a deployment. Flase: it's un Un-Deploy.
               logs: [],
-              steps: JSON.parse(JSON.stringify(deploymentSteps))
+              steps: JSON.parse(JSON.stringify(actualDeploymentSteps))
             }
           )
         }
@@ -821,7 +820,8 @@ export default {
                 name: caller.beatName,
                 config: [ // API expect an array of configuration files' content, but we so far only have one to provide
                   this.beatConfigForStream
-                ]
+                ],
+                sourceJsonConfig: (this.pipeline && this.pipeline.collectionConfig ? this.pipeline.collectionConfig : {})
               },
               stream: {
                 uid: (caller && caller.pipeline && caller.pipeline.uid && caller.pipeline.uid.length ? caller.pipeline.uid : undefined),

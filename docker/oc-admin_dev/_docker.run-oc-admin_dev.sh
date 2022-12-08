@@ -4,6 +4,7 @@
 # Author:      Tony Massé
 # Create date: 2022-07-11
 # Modified on: 2022-07-13 - To increase user watches, instances and queued events limits on the Docker host
+# Modified on: 2022-12-02 - To start container in auto-restart, and tail logs instead of running in interactive mode
 # Description: Pull and Start Dev version of the OC-Admin container `oc-admin_dev`.
 #              Can be used to just build the content of the `oc-admin` container, with the `--build_only` flag.
 # Parameters:
@@ -56,7 +57,12 @@ else
   echo "### RELOADING SYSCTL CONFIGURATION..."
   sudo sysctl -p
 
-  echo "### RUN CONTAINER IN INTERACTIVE MODE..."
-  docker run --interactive --tty --publish 8400:8400/tcp --network logrhythm --volume oc-admin_dev:/app/EZ-Cloud/dist --name oc-admin tonymasse/oc-admin_dev
+  # echo "### RUN CONTAINER IN INTERACTIVE MODE..."
+  # docker run --interactive --tty --publish 8400:8400/tcp --network logrhythm --volume oc-admin_dev:/app/EZ-Cloud/dist --name oc-admin tonymasse/oc-admin_dev
+  echo "### START CONTAINER..."
+  docker run --detach --restart unless-stopped --tty --publish 8400:8400/tcp --network logrhythm --volume oc-admin_dev:/app/EZ-Cloud/dist --name oc-admin tonymasse/oc-admin_dev
+
+  echo "### FOLLOW CONTAINER'S LOGS..."
+  docker logs --follow oc-admin
 
 fi

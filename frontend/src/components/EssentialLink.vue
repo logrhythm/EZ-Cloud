@@ -3,11 +3,14 @@
     clickable
     :tag="(subMenus && subMenus.length ? undefined : 'a')"
     :href="(subMenus && subMenus.length ? undefined : link)"
-    v-if="title !== null"
+    v-if="title !== null || tooltip !== null"
   >
+    <q-tooltip content-style="font-size: 1rem;" v-if="tooltip !== null">
+      {{ tooltip }}
+    </q-tooltip>
     <q-item-section
       v-if="icon"
-      side
+      :side="!!(title && title.length)"
     >
       <q-avatar size="24px" class="q-pa-none" square>
         <q-icon :name="icon" size="sm" :color="(isPageActive ? 'primary' : '')" />
@@ -22,18 +25,15 @@
       </q-avatar>
     </q-item-section>
 
-    <q-item-section>
+    <q-item-section v-if="title && title.length">
       <q-item-label :class="(isPageActive ? 'text-primary' : '')">{{ title }}</q-item-label>
-      <!-- <q-item-label caption>
-        {{ caption }}
-      </q-item-label> -->
     </q-item-section>
 
     <q-menu auto-close anchor="center start" self="center start" v-if="subMenus && subMenus.length">
       <q-list padding class="">
         <EssentialLink
-          v-for="subMenu in subMenus"
-          :key="subMenu.title"
+          v-for="(subMenu, index) in subMenus"
+          :key="index"
           v-bind="subMenu"
         />
       </q-list>
@@ -55,6 +55,11 @@ export default {
     title: {
       type: String,
       // required: true,
+      default: null
+    },
+
+    tooltip: {
+      type: String,
       default: null
     },
 

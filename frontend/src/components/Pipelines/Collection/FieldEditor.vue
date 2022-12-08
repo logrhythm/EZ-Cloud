@@ -5,7 +5,7 @@
       <q-input
         v-if="isPartOfObject"
         style="width: 20rem;"
-        standout
+        outlined
         v-model="leafName"
         :readonly="true"
         class="col-auto"
@@ -16,7 +16,7 @@
           <!-- Prefix, if any -->
           <q-select
             v-if="template.prefix"
-            standout="bg-blue-4 text-white"
+            outlined
             v-model="internalPrefix"
             emit-value
             map-options
@@ -29,7 +29,7 @@
             v-if="template.type && template.type.name && (template.type.name === 'string' || template.type.name === 'regex' || template.type.name === 'number' || template.type.name === 'password')"
             class="col"
             :class="(template.type && template.type.textType && template.type.textType === 'json' ? 'fixed-font' : '')"
-            standout="bg-blue-4 text-white"
+            outlined
             v-model="internalValue"
             :readonly="(template.readonly ? template.readonly : false || (isPartOfObject && leafInObject && (leafInObject === 'stream_id' || leafInObject === 'stream_name')))"
             :type="template.type && template.type.name && template.type.name === 'password' && !showPassword ? 'password' : 'text'"
@@ -45,7 +45,7 @@
               />
               <q-icon
                 v-if="template.obfuscation && template.obfuscation.method && template.obfuscation.method.length && updateErrorMessage && updateErrorMessage.length"
-                name="error"
+                name="o_error"
                 :color="inFocus ? 'red-10' : 'alert'"
               >
                 <q-tooltip content-style="font-size: 1rem;">
@@ -55,7 +55,7 @@
               </q-icon>
               <q-icon
                 v-if="template.obfuscation && template.obfuscation.method && template.obfuscation.method.length && obfuscationRequirementNotMet"
-                name="warning"
+                name="o_warning"
                 :color="inFocus ? 'orange-10' : 'warning'"
               >
                 <q-tooltip content-style="font-size: 1rem;">
@@ -64,7 +64,7 @@
               </q-icon>
               <q-icon
                 v-if="template.obfuscation && template.obfuscation.method && template.obfuscation.method.length"
-                :name="obfuscationRequirementNotMet ? 'lock_open' : 'lock'"
+                :name="obfuscationRequirementNotMet ? 'o_lock_open' : 'o_lock'"
                 :color="obfuscationRequirementNotMet ? (inFocus ? 'orange-10' : 'warning') : (inFocus ? 'green-10' : 'positive')"
                 :class="obfuscationRequirementNotMet ? 'cursor-pointer' : ''"
                 @click="obfuscateSecret"
@@ -79,11 +79,10 @@
                 spaced
                 inset
                 vertical
-                dark
               />
               <q-icon
                 v-if="template.type && template.type.name && template.type.name === 'password'"
-                :name="showPassword ? 'visibility' : 'visibility_off'"
+                :name="showPassword ? 'o_visibility' : 'o_visibility_off'"
                 class="cursor-pointer"
                 @click="showPassword = !showPassword"
               >
@@ -93,6 +92,7 @@
               </q-icon>
             </template>
           </q-input>
+          <!-- Array -->
           <div v-if="template.type && template.type.name && template.type.name === 'array'" class="q-gutter-y-sm col">
             <FieldEditor
               v-for="(subField, subFieldIndex) in (internalValue && Array.isArray(internalValue) ? internalValue : [])"
@@ -103,8 +103,9 @@
               v-model="internalValue[subFieldIndex]"
               @deleteSubField="deleteSubFieldEvent"
             />
-            <q-btn no-caps flat dense icon="add" :label="$t('Add Item')" color="primary" @click="addValueToArray()" />
+            <q-btn no-caps dense icon="add" :label="$t('Add Item')" color="primary" @click="addValueToArray()" />
           </div>
+          <!-- Object -->
           <div v-if="template.type && template.type.name && template.type.name === 'object'" class="q-gutter-y-sm col">
             <FieldEditor
               v-for="(subField, subFieldLeafName) in (internalValue && typeof internalValue === 'object' ? internalValue : {})"
@@ -115,11 +116,12 @@
               v-model="internalValue[subFieldLeafName]"
               @deleteSubField="deleteSubFieldEvent"
             />
-            <q-btn no-caps flat dense icon="add" :label="$t('Add Item')" color="primary" @click="addValueToObject()" />
+            <q-btn no-caps dense icon="add" :label="$t('Add Item')" color="primary" @click="addValueToObject()" />
           </div>
+          <!-- Booleans and Options -->
           <q-select
             v-if="template.type && template.type.name && (template.type.name === 'boolean' || template.type.name === 'option')"
-            standout="bg-blue-4 text-white"
+            outlined
             v-model="internalValue"
             class="col"
             emit-value
@@ -127,10 +129,103 @@
             :options="(template.options ? template.options : (template.type.name === 'boolean' ? [{ value: true, label: $t('True') }, { value: false, label: $t('False') }] : []))"
             :readonly="(template.readonly ? template.readonly : false)"
           />
+          <!-- File -->
+          <div
+            v-if="template.type && template.type.name && template.type.name === 'file'"
+          >
+            <!-- <div class="text-grey">{{internalValue}}</div> -->
+            <!--
+            {
+              "dropIn":"true",
+              "dropInPath":"{{beat_config_volume}}/webhookbeat.key",
+              "valueInConfig":"/beats/webhookbeat/config/webhookbeat.key",
+              "fileContentBase64":"LS0tLSBCRUdJTiBTU0gyIFBVQkxJQyBLRVkgLS0tLQpBQUFBQjNOemFDMXljMkVBQUFBQkpRQUFBUUIvbkFtT2pUbWV6TlVES1l2RWVJUmYyWW53TTkvdVVHMWQwQllzCmM4L3RSdHgrUkdpN04ybFVicDcyOE1YR3dkbkw5b2Q0Y0l0emt5L3pWZExaRTJjeWNPYTE4eEJLOWNPV21jS1MKMEE4RllCeEVRV0ovcTlZVlVnWmJGS2ZZR2FHUXhzRVIrQTB3L2ZYOEFMdWs3OGt0UDMxSzY5TGNRZ3hJc2w3cgpOenhzb09RS0ovQ0l4T0dNTXhjellUaUVvTHZRaGFwRlFNczNGTDk2ZGlkS3IvUWJyZkIxV1Q2czM4MzhTRWFYCmZnWnZMZWYxWUIyeG1maGJUOU9YRkUzRlh2aDJVUEJmTitmZkU3aWlheVFmLzJYUis4ajRONGJXMzBEaVB0T1EKTEdVckgxeTVYL3JwTlpObFdXMitqR0l4cVp0Z1dnN2xUeTNtWHk1eDgzNlNqLzZMCi0tLS0gRU5EIFNTSDIgUFVCTElDIEtFWSAtLS0t",
+              "fileSizeBytes":422
+            }
+            -->
+            <div class="flex q-gutter-lg">
+              <div
+                v-if="internalValue && internalValue.fileContentBase64 && internalValue.fileContentBase64.length"
+              >
+                <div>File attached.</div>
+                <div>({{internalValue.fileSizeBytes}} bytes)</div>
+              </div>
+              <div
+                v-else
+              >
+                <div>No file attached.</div>
+              </div>
+              <div class="q-gutter-x-md">
+                <q-btn
+                  no-caps
+                  dense
+                  icon="o_note_add"
+                  :label="$t('Load File')"
+                  :color="(internalValue && internalValue.fileContentBase64 && internalValue.fileContentBase64.length ? undefined : 'primary')"
+                  :disabled="showFileUpload"
+                  @click="fileToUpload = null; showFileUpload = true"
+                />
+                <q-btn
+                  icon="o_delete"
+                  class=""
+                  text-color="negative"
+                  :disabled="!(internalValue && internalValue.fileContentBase64 && internalValue.fileContentBase64.length)"
+                >
+                  <q-tooltip content-style="font-size: 1rem;" v-if="internalValue && internalValue.fileContentBase64 && internalValue.fileContentBase64.length">
+                    {{ $t('Delete') }}
+                  </q-tooltip>
+                  <q-menu anchor="top end" self="top left" auto-close content-class="bg-negative text-white">
+                    <q-list dense>
+                      <q-item clickable @click="internalValue = null">
+                        <q-item-section>{{ $t('Confirm') }}</q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
+                </q-btn>
+              </div>
+            </div>
+            <div
+              class="flex q-mt-sm"
+              v-if="template.type && template.type.name && template.type.name === 'file' && showFileUpload"
+            >
+                <!-- input-style="min-width: 24em;max-width: 30em;min-height: 4em;max-height: 4em;" -->
+              <q-file
+                filled
+                bottom-slots
+                v-model="fileToUpload"
+                :label="$t('Click or Drop a file here')"
+                input-style="width: 24em;max-width: 24em;height: 4em;"
+                style="width: 26em;"
+                :max-file-size="(template.fileOptions && template.fileOptions.maxFileSize ? template.fileOptions.maxFileSize : undefined)"
+              >
+                <template v-slot:append>
+                  <q-icon v-if="!(fileToUpload === null || fileToUpload === '')" name="o_close" @click.stop="fileToUpload = null" class="cursor-pointer" />
+                </template>
+              </q-file>
+              <q-separator spaced vertical />
+              <div class="column justify-between">
+                <q-btn
+                  class="q-mb-sm"
+                  no-caps
+                  dense
+                  icon="o_upload_file"
+                  :label="$t('Load')"
+                  color="primary"
+                  @click="loadFile(fileToUpload)"
+                />
+                <q-btn
+                  no-caps
+                  dense
+                  :label="$t('Cancel')"
+                  @click="showFileUpload = false"
+                />
+              </div>
+            </div>
+          </div>
           <!-- Suffix, if any -->
           <q-select
             v-if="template.suffix"
-            standout="bg-blue-4 text-white"
+            outlined
             v-model="internalSuffix"
             emit-value
             map-options
@@ -150,7 +245,7 @@
         />
         <!-- Description, if any -->
         <div v-if="template.description && template.description.length" class="q-mt-xs row" style="opacity: .7">
-          <q-icon name="info" size="xs" color="blue" class="col-auto q-mr-sm" />
+          <q-icon name="o_info" size="xs" color="blue" class="col-auto q-mr-sm" />
           <q-markdown
             class="col"
             :src="template.description"
@@ -183,6 +278,7 @@
 import FieldEditor from 'components/Pipelines/Collection/FieldEditor.vue'
 import { uid } from 'quasar'
 import { mapActions } from 'vuex'
+import ConfirmDialog from '../../Dialogs/ConfirmDialog.vue'
 
 export default {
   name: 'FieldEditor',
@@ -228,7 +324,9 @@ export default {
       showPassword: false,
       inFocus: false,
       waitingForBackend: false,
-      updateErrorMessage: '' // To store returned error message from API when obfuscating secret
+      updateErrorMessage: '', // To store returned error message from API when obfuscating secret
+      fileToUpload: null,
+      showFileUpload: false
     }
   }, // data
   computed: {
@@ -329,6 +427,11 @@ export default {
           }
           if (this.template.type.name === 'boolean') {
             value = Boolean(value)
+          }
+          if (this.template.type.name === 'file') {
+            if (value === '') {
+              value = null
+            }
           }
         }
 
@@ -436,7 +539,7 @@ export default {
     }
   }, // computed
   methods: {
-    ...mapActions('mainStore', ['obfuscateSecretForOpenCollector']),
+    ...mapActions('mainStore', ['obfuscateSecretForOpenCollector', 'base64EncodeFile']),
     formatNumber (value) {
       // One day we will implement a number formatter
       return value
@@ -469,15 +572,15 @@ export default {
         prompt: {
           model: '',
           isValid: val => val.length > 0,
-          type: 'text'
+          type: 'text',
+          outlined: true
         },
         ok: {
-          push: true,
           color: 'primary'
         },
         cancel: {
-          push: true,
-          color: 'grey-9'
+          outline: true,
+          color: 'primary'
         },
         persistent: true
       }).onOk((newItemName) => {
@@ -509,16 +612,10 @@ export default {
       if (!(this.value == null || this.value === '')) {
         // Ask to confirm
         this.$q.dialog({
+          component: ConfirmDialog,
+          parent: this,
           title: this.$t('Confirm'),
           message: this.$t('Do you REALLY want to delete this entry?'),
-          ok: {
-            push: true,
-            color: 'negative'
-          },
-          cancel: {
-            push: true,
-            color: 'positive'
-          },
           persistent: true
         }).onOk(() => {
           this.deleteSubField()
@@ -583,11 +680,89 @@ export default {
         this.$q.notify({
           type: 'negative',
           color: 'negative',
-          icon: 'report_problem',
+          icon: 'o_report_problem',
           message: this.$t('Failed to obfuscate the Secret. Error message:'),
           caption: payload.captionForLogAndPopup,
           timeout: 4000
         })
+      }
+    },
+    async loadFile (filesInput) {
+      this.showFileUpload = false
+      let fileName
+
+      if (filesInput == null) {
+        console.log('[loadFile] - 🟠 - No file selected.')
+      } else {
+        // Deal with multiple or single file(s)
+        if (Array.isArray(filesInput)) {
+          this.$root.$emit('addAndShowErrorToErrorPanel',
+            {
+              code: 'TooManyFiles',
+              messageForLogAndPopup: this.$t('Only one file is accepted. You tried to import multiple files.')
+            }
+          )
+        } else {
+          // Get the file name
+          fileName = (
+            filesInput &&
+            filesInput.name &&
+            filesInput.name.length
+              ? filesInput.name
+              : undefined
+          )
+
+          const notificationPopupId = this.$q.notify({
+            icon: 'o_upload_file',
+            message: this.$t('Loading file...'),
+            caption: fileName,
+            type: 'ongoing'
+          })
+
+          let thereWasAnError = false
+
+          try {
+            // Read the Import file
+            const fileContentAsArrayBuffer = await filesInput.arrayBuffer()
+
+            this.internalValue = {
+              dropIn: (!!(this.template && this.template.fileOptions && this.template.fileOptions.dropIn === true)),
+              valueInConfig: (this.template && this.template.fileOptions && this.template.fileOptions.valueInConfig ? this.template.fileOptions.valueInConfig : fileName),
+              dropInPath: (this.template && this.template.fileOptions && this.template.fileOptions.dropInPath ? this.template.fileOptions.dropInPath : fileName),
+              fileContentBase64: Buffer.from(fileContentAsArrayBuffer).toString('base64'),
+              fileSizeBytes: filesInput.size
+            }
+
+            notificationPopupId({
+              type: 'positive',
+              color: 'positive',
+              icon: 'o_check',
+              message: this.$t('File loaded'),
+              caption: fileName
+            })
+          } catch (error) {
+            thereWasAnError = true
+            this.$root.$emit('addAndShowErrorToErrorPanel',
+              {
+                code: 'CantReadFile',
+                messageForLogAndPopup: (
+                  this.$t('Error trying to open the file. Error: {errorMessage}', { errorMessage: error.message })
+                )
+              }
+            )
+          }
+
+          if (thereWasAnError) {
+            notificationPopupId({
+              type: 'negative',
+              color: 'negative',
+              icon: 'o_report_problem',
+              message: this.$t('Problem while loading file'),
+              caption: fileName
+            })
+            console.log('Error: Problem while loading file')
+          }
+        }
       }
     }
   } // methods

@@ -8,6 +8,33 @@ export default {
   }, // computed
 
   methods: {
+    sanitisePathName (pathName) {
+      // Sanitise the Path Name
+      let safePathName = pathName
+      if (
+        pathName &&
+        String(pathName).includes('@')
+      ) {
+        // Break the path into component
+        const pathComponents = String(pathName).split('.')
+        const safePathComponents = []
+        // Suround each component with quotes that contains the '@' sign
+        pathComponents.forEach((pc) => {
+          safePathComponents.push(
+            (
+              String(pc).includes('@')
+                ? `"${pc}"`
+                : pc
+            )
+          )
+          // if (String(pc).includes('@')) {
+          //   pc = `"${pc}"`
+          // }
+        })
+        safePathName = safePathComponents.join('.')
+      }
+      return safePathName
+    },
     buildJqFilterFromParams (pipelineUid, pipelineName, beatName, loggedInUser) {
       let jqFilter = ''
       // webhookbeat_254_EH_254a3
@@ -89,47 +116,47 @@ export default {
           path.modifiers.forEach(pm => {
             if (pm === 'Fan out') {
               const flattenArrayId = 'flatten_array_' + path.name.replace(/[^a-zA-Z0-9]/g, '_')
-              flattenArrays.push(path.name)
+              flattenArrays.push(this.sanitisePathName(path.name))
 
               flattenArrayPlaceholder.push(
                 flattenArrayPlaceholderTemplate
                   .replace(/{{EZ_flatten_array_id}}/g, flattenArrayId)
                   .replace(/{{EZ_message_root}}/g, messageRoot)
-                  .replace(/{{EZ_flatten_array_field_path}}/g, path.name)
+                  .replace(/{{EZ_flatten_array_field_path}}/g, this.sanitisePathName(path.name))
               )
             } else if (pm === 'Sub Rule selector') {
               subRulesAddFieldPlaceholder.push(
                 subRulesAddFieldPlaceholderTemplate
                   .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-                  .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+                  .replace(/{{EZ_field_doted_path_placeholder}}/g, this.sanitisePathName(path.name))
                   .replace(/{{EZ_mdi_tag_placeholder}}/g, 'tag1')
               )
             } else if (pm === 'Sub Rule qualifier 1') {
               subRulesAddFieldPlaceholder.push(
                 subRulesAddFieldPlaceholderTemplate
                   .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-                  .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+                  .replace(/{{EZ_field_doted_path_placeholder}}/g, this.sanitisePathName(path.name))
                   .replace(/{{EZ_mdi_tag_placeholder}}/g, 'tag2')
               )
             } else if (pm === 'Sub Rule qualifier 2') {
               subRulesAddFieldPlaceholder.push(
                 subRulesAddFieldPlaceholderTemplate
                   .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-                  .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+                  .replace(/{{EZ_field_doted_path_placeholder}}/g, this.sanitisePathName(path.name))
                   .replace(/{{EZ_mdi_tag_placeholder}}/g, 'tag3')
               )
             } else if (pm === 'Sub Rule qualifier 3') {
               subRulesAddFieldPlaceholder.push(
                 subRulesAddFieldPlaceholderTemplate
                   .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-                  .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+                  .replace(/{{EZ_field_doted_path_placeholder}}/g, this.sanitisePathName(path.name))
                   .replace(/{{EZ_mdi_tag_placeholder}}/g, 'tag4')
               )
             } else if (pm === 'Sub Rule qualifier 4') {
               subRulesAddFieldPlaceholder.push(
                 subRulesAddFieldPlaceholderTemplate
                   .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-                  .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+                  .replace(/{{EZ_field_doted_path_placeholder}}/g, this.sanitisePathName(path.name))
                   .replace(/{{EZ_mdi_tag_placeholder}}/g, 'tag5')
               )
             }
@@ -154,6 +181,9 @@ export default {
           })
         }
 
+        // Sanitise the Path Name
+        const safePathName = this.sanitisePathName(path.name)
+
         // Mapping of the fields
         if (path.mappedField && path.mappedField.length) {
           if (isSubFannedOutBranch) {
@@ -166,7 +196,7 @@ export default {
                 )
                 .replace(
                   /{{EZ_flatten_array_field_doted_path_placeholder}}/g,
-                  path.name
+                  safePathName
                     .replace(flattenArrayPathName, '') // Remove the part of the path that is the flatten array's own path
                     .replace(/\[\d+\]/, '') // remove any array numerical ID (like [0], [1], etc...)
                 )
@@ -177,7 +207,7 @@ export default {
             addFieldPlaceholder.push(
               addFieldPlaceholderTemplate
                 .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-                .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+                .replace(/{{EZ_field_doted_path_placeholder}}/g, safePathName)
                 .replace(/{{EZ_mdi_field_placeholder}}/g, path.mappedField)
             )
           }
@@ -208,7 +238,7 @@ export default {
                     )
                     .replace(
                       /{{EZ_field_doted_path_placeholder}}/g,
-                      path.name
+                      this.sanitisePathName(path.name)
                         .replace(flattenArrayPathName, '') // Remove the part of the path that is the flatten array's own path
                         .replace(/\[\d+\]/, '') // remove any array numerical ID (like [0], [1], etc...)
                     )
@@ -222,7 +252,7 @@ export default {
                 timestampAddFieldPlaceholder.push(
                   timestampAddFieldPlaceholderTemplate
                     .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-                    .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+                    .replace(/{{EZ_field_doted_path_placeholder}}/g, this.sanitisePathName(path.name))
                     .replace(/{{EZ_date_parser_placeholder}}/g, dateParser)
                 )
               }
@@ -235,7 +265,7 @@ export default {
         //   subRulesAddFieldPlaceholder.push(
         //     subRulesAddFieldPlaceholderTemplate
         //       .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-        //       .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+        //       .replace(/{{EZ_field_doted_path_placeholder}}/g, this.sanitisePathName(path.name))
         //       .replace(/{{EZ_mdi_tag_placeholder}}/g, path.mappedField)
         //   )
         // }
@@ -264,7 +294,7 @@ export default {
       //   //   subRulesAddFieldPlaceholder.push(
       //   //     subRulesAddFieldPlaceholderTemplate
       //   //       .replace(/{{EZ_message_placeholder}}/g, messagePlaceholder)
-      //   //       .replace(/{{EZ_field_doted_path_placeholder}}/g, path.name)
+      //   //       .replace(/{{EZ_field_doted_path_placeholder}}/g, this.sanitisePathName(path.name))
       //   //       .replace(/{{EZ_mdi_tag_placeholder}}/g, path.mappedField)
       //   //   )
       //   // }

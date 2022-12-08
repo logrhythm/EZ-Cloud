@@ -17,6 +17,7 @@
   "Username is required": "Username is required",
   "Password": "Password",
   "Authentication failed.": "Authentication failed.",
+  "Next": "Next",
   "Login": "Login",
   "Statuses": "Statuses",
   "OC-Admin Container": "OC-Admin Container",
@@ -618,5 +619,19 @@
   "Edit MS SQL Connection setting": "Edit MS SQL Connection setting",
   "Not found": "Not found",
   "Success": "Success",
-  "Now that the MS SQL Connection is configured, the Database must be updated for all the features of OC Admin to work.": "Now that the MS SQL Connection is configured, the Database must be updated for all the features of OC Admin to work."
+  "Now that the MS SQL Connection is configured, the Database must be updated for all the features of OC Admin to work.": "Now that the MS SQL Connection is configured, the Database must be updated for all the features of OC Admin to work.",
+  "Load": "Load",
+  "Load File": "Load File",
+  "Loading file...": "Loading file...",
+  "File loaded": "File loaded",
+  "Only one file is accepted. You tried to import multiple files.": "Only one file is accepted. You tried to import multiple files.",
+  "Problem while loading file": "Problem while loading file",
+  "No name": "No name",
+  "Start": "Start",
+  "Recent": "Recent",
+  "Latest": "Latest",
+  "Create, Edit and Manage my OpenCollectors...": "Create, Edit and Manage my OpenCollectors...",
+  "Create, Edit and Manage my Pipelines...": "Create, Edit and Manage my Pipelines...",
+  "Check my Notifications...": "Check my Notifications...",
+  "Browse the Marketplace...": "Browse the Marketplace..."
 }

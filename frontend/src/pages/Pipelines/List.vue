@@ -21,7 +21,7 @@
             </div>
             <div class="row q-gutter-md">
               <div class="col" >
-                <q-btn rounded dense color="primary" icon="add" :label="$t('Add New Pipeline')" @click="doPromptForPipelineDetails()" style="min-width:12rem;">
+                <q-btn no-caps dense color="primary" icon="add" :label="$t('Add New Pipeline')" @click="doPromptForPipelineDetails()" style="min-width:12rem;">
                   <q-tooltip content-style="font-size: 1em">
                     {{ $t('Create a new Pipeline.') }}
                   </q-tooltip>
@@ -33,7 +33,7 @@
                 <q-input outlined dense debounce="300" v-model="searchFilter" :placeholder="$t('Search')">
                   <template v-slot:append>
                     <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
-                    <q-icon name="search" />
+                    <q-icon name="o_search" />
                   </template>
                 </q-input>
               </div>
@@ -67,10 +67,10 @@
         </template>
         <template v-slot:body-cell-status="props">
           <q-td :props="props">
-            <q-icon name="arrow_circle_up" color="green" size="md" v-if="props.value === 'Ready'" />
-            <q-icon name="construction" :color="(darkIsEnabled ? 'green-3' : 'green-10')" size="md" v-else-if ="props.value === 'Dev'" />
-            <q-icon name="auto_awesome" size="md" v-else-if ="props.value === 'New'" />
-            <q-icon name="help_center" color="grey" size="md" v-else />
+            <q-icon name="o_arrow_circle_up" color="green" size="md" v-if="props.value === 'Ready'" />
+            <q-icon name="o_construction" :color="(darkIsEnabled ? 'green-3' : 'green-10')" size="md" v-else-if ="props.value === 'Dev'" />
+            <q-icon name="o_auto_awesome" size="md" v-else-if ="props.value === 'New'" />
+            <q-icon name="o_help_center" color="grey" size="md" v-else />
             <q-tooltip content-style="font-size: 1em">
               {{ $t(props.value) }}
             </q-tooltip>
@@ -118,26 +118,56 @@
 
       <q-dialog v-model="promptForNewPipelineDetails" persistent>
         <q-card style="min-width: 350px">
-          <q-card-section>
+          <q-card-section class="row justify-between">
             <div class="text-h6">{{ $t('Pipeline Details') }}</div>
+            <q-btn dense flat icon="close" color="grey-5" v-close-popup />
+          </q-card-section>
+
+          <q-separator />
+
+          <q-card-section class="">
+            <q-input
+              dense
+              outlined
+              autofocus
+              v-model="newPipelineName"
+              :label="$t('Pipeline Name')"
+              :readonly="!!(newPipelineUid && newPipelineUid.length)"
+              @keyup.esc="promptForNewPipelineDetails = false"
+              :rules="[val => !!val || $t('Pipeline name cannot be empty')]"
+            />
           </q-card-section>
 
           <q-card-section class="q-pt-none">
-            <q-input dense v-model="newPipelineName" autofocus :label="$t('Pipeline Name')" @keyup.esc="promptForNewPipelineDetails = false" :rules="[val => !!val || $t('Pipeline name cannot be empty')]" />
-          </q-card-section>
-
-          <q-card-section class="q-pt-none">
-            <q-select dense v-model="newPipelineOpenCollector" :options="openCollectorsOptions" :label="$t('Primary OpenCollector')" emit-value map-options />
+            <q-select
+              dense
+              outlined
+              v-model="newPipelineOpenCollector"
+              :options="openCollectorsOptions"
+              :label="$t('Primary OpenCollector')"
+              emit-value
+              map-options
+            />
           </q-card-section>
 
           <q-card-section class="q-pt-none q-mt-md" v-if="newPipelineStatus">
-            <q-select dense v-model="newPipelineStatus" :options="statusOptions" :label="$t('Status')" emit-value map-options />
+            <q-select
+              dense
+              outlined
+              v-model="newPipelineStatus"
+              :options="statusOptions"
+              :label="$t('Status')"
+              emit-value
+              map-options
+            />
           </q-card-section>
 
-          <q-card-actions align="right" class="text-primary q-mt-md">
-            <q-btn flat :label="$t('Cancel')" v-close-popup />
-            <q-btn flat :label="$t('Update Pipeline')" v-if="newPipelineUid && newPipelineUid.length" v-close-popup :disabled="!newPipelineName.length" @click="updatePipeline()" />
-            <q-btn flat :label="$t('Add new Pipeline')" v-else v-close-popup :disabled="!newPipelineName.length" @click="updatePipeline()" />
+          <q-separator />
+
+          <q-card-actions align="right" class="text-primary ">
+            <q-btn outline no-caps :label="$t('Cancel')" v-close-popup />
+            <q-btn color="primary" no-caps class="text-textForPrimaryButton" :label="$t('Update Pipeline')" v-if="newPipelineUid && newPipelineUid.length" v-close-popup :disabled="!newPipelineName.length" @click="updatePipeline()" />
+            <q-btn color="primary" no-caps class="text-textForPrimaryButton" :label="$t('Add new Pipeline')" v-else v-close-popup :disabled="!newPipelineName.length" @click="updatePipeline()" />
           </q-card-actions>
         </q-card>
       </q-dialog>
@@ -149,6 +179,7 @@ import { mapState, mapGetters, mapActions } from 'vuex'
 import mixinSharedRightToLeft from 'src/mixins/mixin-Shared-RightToLeft'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
+import ConfirmDialog from 'components/Dialogs/ConfirmDialog.vue'
 
 export default {
   name: 'PagePipelinesList',
@@ -238,16 +269,10 @@ export default {
       if (typeof row !== 'undefined') {
         // ask to confirm
         this.$q.dialog({
+          component: ConfirmDialog,
+          parent: this,
           title: this.$t('Confirm'),
           message: this.$t('Do you REALLY want to delete this Pipeline?'),
-          ok: {
-            push: true,
-            color: 'negative'
-          },
-          cancel: {
-            push: true,
-            color: 'positive'
-          },
           persistent: true
         }).onOk(() => {
           this.deletePipeline({

@@ -17,6 +17,7 @@
   "Username is required": "Benutzername wird benötigt",
   "Password": "Passwort",
   "Authentication failed.": "Authentifizierung fehlgeschlagen.",
+  "Next": "Nächste",
   "Login": "Anmeldung",
   "Statuses": "Status",
   "OC-Admin Container": "OC-Admin-Container",
@@ -618,5 +619,19 @@
   "Edit MS SQL Connection setting": "Bearbeiten Sie die MS SQL-Verbindungseinstellung",
   "Not found": "Nicht gefunden",
   "Success": "Erfolg",
-  "Now that the MS SQL Connection is configured, the Database must be updated for all the features of OC Admin to work.": "Nachdem die MS SQL-Verbindung konfiguriert ist, muss die Datenbank aktualisiert werden, damit alle Funktionen von OC Admin funktionieren."
+  "Now that the MS SQL Connection is configured, the Database must be updated for all the features of OC Admin to work.": "Nachdem die MS SQL-Verbindung konfiguriert ist, muss die Datenbank aktualisiert werden, damit alle Funktionen von OC Admin funktionieren.",
+  "Load": "Belastung",
+  "Load File": "Lade Datei",
+  "Loading file...": "Datei wird geladen...",
+  "File loaded": "Datei geladen",
+  "Only one file is accepted. You tried to import multiple files.": "Es wird nur eine Datei akzeptiert. Sie haben versucht, mehrere Dateien zu importieren.",
+  "Problem while loading file": "Problem beim Laden der Datei",
+  "No name": "Kein Name",
+  "Start": "Anfang",
+  "Recent": "Jüngste",
+  "Latest": "Neuesten Nachrichten",
+  "Create, Edit and Manage my OpenCollectors...": "Erstelle, bearbeite und verwalte meine OpenCollectors...",
+  "Create, Edit and Manage my Pipelines...": "Meine Pipelines erstellen, bearbeiten und verwalten...",
+  "Check my Notifications...": "Überprüfen Sie meine Benachrichtigungen...",
+  "Browse the Marketplace...": "Durchsuchen Sie den Marktplatz ..."
 }

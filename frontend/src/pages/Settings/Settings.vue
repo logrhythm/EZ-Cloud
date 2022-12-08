@@ -1,18 +1,34 @@
 <template>
-  <q-page class="q-gutter-sm q-pa-xl">
-    <q-card class="q-pa-md q-mx-none" v-if="devMode">
+  <q-page class="q-gutter-y-sm q-pa-xl">
+    <q-card class="" v-if="devMode">
       <q-card-section horizontal>
-        <q-card-section class="col">
-          <div class="text-h4">{{ $t('EZ Backend Base URLs') }}</div>
-          <q-input v-model="ezBackendBaseUrlWeb" :label="$t('Website')" autofocus />
-          <q-input v-model="ezBackendBaseUrlApi" :label="$t('API')"  />
-          <q-input v-model="ezBackendBaseUrlSocket" :label="$t('Socket')"  />
+        <q-card-section class="col q-ma-none q-pa-none">
+          <q-card-section class="text-h4 q-gutter-x-md">
+            <q-icon name="o_api" />
+            <span>{{ $t('EZ Backend Base URLs') }}</span>
+          </q-card-section>
+          <q-card-section>
+            <q-input v-model="ezBackendBaseUrlWeb" outlined :label="$t('Website')" autofocus />
+          </q-card-section>
+          <q-card-section>
+            <q-input v-model="ezBackendBaseUrlApi" outlined :label="$t('API')"  />
+          </q-card-section>
+          <q-card-section>
+            <q-input v-model="ezBackendBaseUrlSocket" outlined :label="$t('Socket')"  />
+          </q-card-section>
         </q-card-section>
 
         <q-separator vertical />
 
-        <q-card-actions>
-          <q-btn glossy class="full-height" color="primary" icon="save" @click="saveSettings()" :loading="savingAction" >
+        <!-- <q-card-actions vertical class="justify-around q-px-md">
+            <q-btn icon="edit" color="primary" :to="'/Pipelines/' + this.pipelineUid + '/Collection/Edit'" >
+              <q-tooltip content-style="font-size: 1rem;">
+                {{ $t('Edit Collection') }}
+              </q-tooltip>
+            </q-btn> -->
+
+        <q-card-actions vertical class="justify-around q-px-md">
+          <q-btn color="primary" icon="save" @click="saveSettings()" :loading="savingAction" >
             <q-tooltip content-style="font-size: 1em">
               {{ $t('Save settings to local web browser.') }}
             </q-tooltip>
@@ -23,7 +39,10 @@
 
     <q-card class="q-pa-md q-mx-none">
       <q-card-section class="col">
-        <div class="text-h4">{{ $t('Theme') }}</div>
+        <div class="text-h4 q-gutter-x-md">
+          <q-icon name="o_brightness_medium" />
+          <span>{{ $t('Theme') }}</span>
+        </div>
         <q-toggle
           v-model="darkMode"
           checked-icon="dark_mode"
@@ -39,23 +58,29 @@
       </q-card-section>
     </q-card>
 
-    <q-card class="q-pa-md q-mx-none">
+    <q-card>
       <q-card-section horizontal>
-        <q-card-section class="col">
-          <div class="text-h4">{{ $t('Language') }}</div>
+        <q-card-section class="col q-ma-none q-pa-none">
+          <q-card-section class="text-h4 q-gutter-x-md">
+            <q-icon name="o_translate" />
+            <span>{{ $t('Language') }}</span>
+          </q-card-section>
+          <q-card-section>
             <q-select
               v-model="selectedLanguage"
               :options="langOptions"
+              outlined
               emit-value
               map-options
               style="min-width: 150px"
             />
+          </q-card-section>
         </q-card-section>
 
         <q-separator vertical />
 
-        <q-card-actions>
-          <q-btn glossy class="full-height" color="primary" icon="save" @click="saveLanguageSettings()" :loading="savingAction" >
+        <q-card-actions vertical class="justify-around q-px-md">
+          <q-btn color="primary" icon="save" @click="saveLanguageSettings()" :loading="savingAction" >
             <q-tooltip content-style="font-size: 1em">
               {{ $t('Save settings to local web browser.') }}
             </q-tooltip>

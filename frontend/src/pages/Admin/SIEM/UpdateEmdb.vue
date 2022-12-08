@@ -35,9 +35,9 @@
                   <q-item>
                     <q-item-section avatar>
                       <q-spinner-dots v-if="loadingEmdbVersions" color="blue-10" size="2em" />
-                      <q-icon v-else-if="siemEmdbVersions && siemEmdbVersions.sqlServerIsUp === false" name="block" size="sm" color="warning" />
-                      <q-icon v-else-if="siemEmdbVersions && siemEmdbVersions.sqlServerIsUp" name="task_alt" size="sm" color="positive" />
-                      <q-icon v-else name="block" size="sm" color="grey" />
+                      <q-icon v-else-if="siemEmdbVersions && siemEmdbVersions.sqlServerIsUp === false" name="o_block" size="sm" color="warning" />
+                      <q-icon v-else-if="siemEmdbVersions && siemEmdbVersions.sqlServerIsUp" name="o_task_alt" size="sm" color="positive" />
+                      <q-icon v-else name="o_block" size="sm" color="grey" />
                     </q-item-section>
                     <q-item-section>
                       <q-item-label>{{ $t('MS SQL Server') }}</q-item-label>
@@ -51,9 +51,9 @@
                   <q-item>
                     <q-item-section avatar>
                       <q-spinner-dots v-if="loadingEmdbVersions" color="blue-10" size="2em" />
-                      <q-icon v-else-if="siemEmdbVersions && siemEmdbVersions.ezDatabaseExists === false" name="block" size="sm" color="warning" />
-                      <q-icon v-else-if="siemEmdbVersions && siemEmdbVersions.ezDatabaseExists" name="task_alt" size="sm" color="positive" />
-                      <q-icon v-else name="block" size="sm" color="grey" />
+                      <q-icon v-else-if="siemEmdbVersions && siemEmdbVersions.ezDatabaseExists === false" name="o_block" size="sm" color="warning" />
+                      <q-icon v-else-if="siemEmdbVersions && siemEmdbVersions.ezDatabaseExists" name="o_task_alt" size="sm" color="positive" />
+                      <q-icon v-else name="o_block" size="sm" color="grey" />
                     </q-item-section>
                     <q-item-section>
                       <q-item-label>{{ $t('EZ Database') }}</q-item-label>
@@ -68,9 +68,9 @@
                   <q-item>
                     <q-item-section avatar>
                       <q-spinner-dots v-if="loadingEmdbVersions" color="blue-10" size="2em" />
-                      <q-icon v-else-if="siemEmdbVersions && siemEmdbVersions.viewGet_EZ_VersionsExists === false" name="block" size="sm" color="warning" />
-                      <q-icon v-else-if="siemEmdbVersions && siemEmdbVersions.viewGet_EZ_VersionsExists" name="task_alt" size="sm" color="positive" />
-                      <q-icon v-else name="block" size="sm" color="grey" />
+                      <q-icon v-else-if="siemEmdbVersions && siemEmdbVersions.viewGet_EZ_VersionsExists === false" name="o_block" size="sm" color="warning" />
+                      <q-icon v-else-if="siemEmdbVersions && siemEmdbVersions.viewGet_EZ_VersionsExists" name="o_task_alt" size="sm" color="positive" />
+                      <q-icon v-else name="o_block" size="sm" color="grey" />
                     </q-item-section>
                     <q-item-section>
                       <q-item-label>{{ $t('EZ Versions View') }}</q-item-label>
@@ -99,9 +99,9 @@
                   >
                     <q-item-section avatar>
                       <q-spinner-dots v-if="loadingEmdbVersions" color="blue-10" size="2em" />
-                      <q-icon v-else-if="requiredVersionForEzDbPartByName(storedProcedureAndViewsVersion.name) <= storedProcedureAndViewsVersion.version" name="task_alt" size="sm" color="positive" />
-                      <q-icon v-else-if="requiredVersionForEzDbPartByName(storedProcedureAndViewsVersion.name) > storedProcedureAndViewsVersion.version" name="upgrade" size="sm" color="warning" />
-                      <q-icon v-else name="block" size="sm" color="grey" />
+                      <q-icon v-else-if="requiredVersionForEzDbPartByName(storedProcedureAndViewsVersion.name) <= storedProcedureAndViewsVersion.version" name="o_task_alt" size="sm" color="positive" />
+                      <q-icon v-else-if="requiredVersionForEzDbPartByName(storedProcedureAndViewsVersion.name) > storedProcedureAndViewsVersion.version" name="o_upgrade" size="sm" color="warning" />
+                      <q-icon v-else name="o_block" size="sm" color="grey" />
                     </q-item-section>
                     <q-item-section>
                       <q-item-label>EZ Database component: {{ storedProcedureAndViewsVersion.name }}</q-item-label>
@@ -117,22 +117,22 @@
                   >
                     <q-item-section avatar>
                       <q-spinner-dots v-if="loadingEmdbVersions" color="blue-10" size="2em" />
-                      <q-icon v-else-if="storedProcedureAndViewsVersion.requiredVersion <= storedProcedureAndViewsVersion.detectedVersion" name="task_alt" size="sm" color="positive">
+                      <q-icon v-else-if="storedProcedureAndViewsVersion.requiredVersion <= storedProcedureAndViewsVersion.detectedVersion" name="o_task_alt" size="sm" color="positive">
                         <q-tooltip content-style="font-size: 1rem;">
                           {{ $t('Up to date') }}
                         </q-tooltip>
                       </q-icon>
-                      <q-icon v-else-if="storedProcedureAndViewsVersion.requiredVersion > storedProcedureAndViewsVersion.detectedVersion" name="upgrade" size="sm" color="warning">
+                      <q-icon v-else-if="storedProcedureAndViewsVersion.requiredVersion > storedProcedureAndViewsVersion.detectedVersion" name="o_upgrade" size="sm" color="warning">
                         <q-tooltip content-style="font-size: 1rem;">
                           {{ $t('Needs upgrading') }}
                         </q-tooltip>
                       </q-icon>
-                      <q-icon v-else-if="!storedProcedureAndViewsVersion.detectedVersion" name="upgrade" size="sm" color="warning">
+                      <q-icon v-else-if="!storedProcedureAndViewsVersion.detectedVersion" name="o_upgrade" size="sm" color="warning">
                         <q-tooltip content-style="font-size: 1rem;">
                           {{ $t('Needs upgrading') }}
                         </q-tooltip>
                       </q-icon>
-                      <q-icon v-else name="block" size="sm" color="grey">
+                      <q-icon v-else name="o_block" size="sm" color="grey">
                         <q-tooltip content-style="font-size: 1rem;">
                           {{ $t('Unknown or not needed') }}
                         </q-tooltip>
@@ -204,7 +204,10 @@
 
             <div v-else>
               <q-card-section class="q-pt-none">
-                <q-input dense v-model="siemMsSqlUsername"
+                <q-input
+                  dense
+                  outlined
+                  v-model="siemMsSqlUsername"
                   :disable="loadingMsSqlConfig"
                   :label="$t('Username')"
                   :rules="[val => !!val || $t('Username cannot be empty')]"
@@ -212,7 +215,10 @@
               </q-card-section>
 
               <q-card-section class="q-pt-none">
-                <q-input dense v-model="siemMsSqlPassword"
+                <q-input
+                  dense
+                  outlined
+                  v-model="siemMsSqlPassword"
                   :disable="loadingMsSqlConfig"
                   type="password"
                   :label="$t('Password')"
@@ -259,7 +265,10 @@
 
             <div v-else>
               <q-card-section class="q-pt-none">
-                <q-input dense v-model="siemMsSqlHost"
+                <q-input
+                  dense
+                  outlined
+                  v-model="siemMsSqlHost"
                   disable
                   :label="$t('Hostname (XM or Platform Manager)')"
                   autofocus
@@ -268,7 +277,10 @@
               </q-card-section>
 
               <q-card-section class="q-pt-none">
-                <q-input dense v-model="siemMsSqlPort"
+                <q-input
+                  dense
+                  outlined
+                  v-model="siemMsSqlPort"
                   disable
                   :label="$t('MS SQL Port')"
                   type="number"
@@ -326,6 +338,7 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import ConfirmDialog from '../../../components/Dialogs/ConfirmDialog.vue'
 
 export default {
   name: 'PageAdminSiemUpdateEmdb',
@@ -395,16 +408,10 @@ export default {
     promptToUpdateEmdb () {
       // ask to confirm
       this.$q.dialog({
+        component: ConfirmDialog,
+        parent: this,
         title: this.$t('Confirm'),
         message: this.$t('Do you want to connect to Database and update it?'),
-        ok: {
-          push: true,
-          color: 'positive'
-        },
-        cancel: {
-          push: true,
-          color: 'negative'
-        },
         persistent: true
       }).onOk(() => {
         this.doUpdateEmdb()

@@ -49,7 +49,7 @@
                 </q-item>
                 <q-item  style="width: 20rem;">
                   <q-item-section avatar>
-                    <q-icon name="speed" />
+                    <q-icon name="o_speed" />
                   </q-item-section>
                   <q-item-section>
                     <q-slider
@@ -63,7 +63,7 @@
                 </q-item>
                 <q-item  style="width: 20rem;">
                   <q-item-section avatar>
-                    <q-icon name="download" />
+                    <q-icon name="o_download" />
                   </q-item-section>
                   <q-item-section>
                     <q-slider
@@ -77,7 +77,7 @@
                 </q-item>
                 <q-item  style="width: 20rem;">
                   <q-item-section avatar>
-                    <q-icon name="download_for_offline" />
+                    <q-icon name="o_download_for_offline" />
                   </q-item-section>
                   <q-item-section>
                     <q-slider
@@ -228,6 +228,7 @@ import FieldEditor from 'components/Pipelines/Collection/FieldEditor.vue'
 // import { dump } from 'js-yaml'
 import Vue2Filters from 'vue2-filters'
 import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml'
+import ConfirmDialog from 'components/Dialogs/ConfirmDialog.vue'
 
 export default {
   mixins: [
@@ -303,16 +304,10 @@ export default {
     reverseToLastSavedPrompt () {
       // Ask to confirm
       this.$q.dialog({
+        component: ConfirmDialog,
+        parent: this,
         title: this.$t('Confirm'),
         message: this.$t('Do you REALLY want to lose all your un-saved changes and revert to the last Saved version?'),
-        ok: {
-          push: true,
-          color: 'negative'
-        },
-        cancel: {
-          push: true,
-          color: 'positive'
-        },
         persistent: true
       }).onOk(() => {
         this.reverseToLastSaved()
@@ -354,16 +349,10 @@ export default {
       if (this.collectionConfig && this.collectionConfig.collectionMethod && this.collectionConfig.collectionMethod.length) {
         // Ask to confirm
         this.$q.dialog({
+          component: ConfirmDialog,
+          parent: this,
           title: this.$t('Confirm'),
           message: this.$t('You will lose any un-saved changes and start fresh with the new Collection Method. Are you sure?'),
-          ok: {
-            push: true,
-            color: 'negative'
-          },
-          cancel: {
-            push: true,
-            color: 'positive'
-          },
           persistent: true
         }).onOk(() => {
           this.switchCollectionMethod()
@@ -382,6 +371,13 @@ export default {
         const newConf = {
           collectionShipper: this.activeCollectionShipper,
           collectionMethod: this.activeCollectionMethod
+        }
+
+        // Set the initial default values based on the Template, if available
+        if (this.collectionMethodTemplate && this.collectionMethodTemplate.initialDefaultValues) {
+          Object.keys(this.collectionMethodTemplate.initialDefaultValues).forEach((fieldName) => {
+            newConf[fieldName] = this.collectionMethodTemplate.initialDefaultValues[fieldName]
+          })
         }
 
         // For filebeat:
@@ -453,40 +449,15 @@ export default {
           }
         }
 
-        // For genericbeat:
-        if (this.activeCollectionShipper === 'genericbeat') {
-          if (this.activeCollectionMethod === 'genericbeat') {
-            newConf.url = ''
-            newConf.request_method = 'GET'
-            newConf.auth_type = 'noauth'
-            newConf.filter_type = 'nofilter'
-            newConf.heartbeatdisabled = false
-            newConf.heartbeatinterval = 60
-            newConf.pagination_type = 'nopagination'
-            newConf.period = '60s'
-            newConf.sorting_enabled = false
-            newConf.time_format = '2006-01-02T15:04:05Z07:00'
-            newConf.cursor_header_type = 'custom_header'
-          }
-
-          // We are limited to 12 characters to ID the Beat
-          // - let's use the first 3 chars from the UID, so to reduce the chances of collision
-          // - then add the Stream name and full UID
-          // - then truncate back to 12 chars max.
-          newConf.beatIdentifier = String(this.pipeline.uid.substring(0, 3) + '_' + this.pipeline.name.replace(/[^a-zA-Z0-9]/g, '_') + '_' + this.pipeline.uid).substring(0, 12)
-          newConf.logsource_name = this.pipeline.name
-        }
-
-        // For webhookbeat:
-        if (this.activeCollectionShipper === 'webhookbeat') {
-          if (this.activeCollectionMethod === 'webhookbeat') {
-            newConf.hostname = ''
-            newConf.portnumber = 8080
-            newConf.sslflag = false
-            newConf.heartbeatdisabled = false
-            newConf.heartbeatinterval = 60
-          }
-
+        // Identification for LogRhythm Beats:
+        // `collectionMethodTemplate.identificationStyle` is an array of flags
+        // LogRhythm Beats use the `logrhythmBeat` flag
+        if (
+          this.collectionMethodTemplate &&
+          this.collectionMethodTemplate.identificationStyle &&
+          Array.isArray(this.collectionMethodTemplate.identificationStyle) &&
+          this.collectionMethodTemplate.identificationStyle.includes('logrhythmBeat')
+        ) {
           // We are limited to 12 characters to ID the Beat
           // - let's use the first 3 chars from the UID, so to reduce the chances of collision
           // - then add the Stream name and full UID

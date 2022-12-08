@@ -82,7 +82,7 @@
                 </q-item>
                 <q-item  style="width: 35rem;">
                   <q-item-section avatar>
-                    <q-icon name="speed" />
+                    <q-icon name="o_speed" />
                   </q-item-section>
                   <q-item-section>
                     <q-slider
@@ -96,7 +96,7 @@
                 </q-item>
                 <q-item  style="width: 35rem;">
                   <q-item-section avatar>
-                    <q-icon name="download" />
+                    <q-icon name="o_download" />
                   </q-item-section>
                   <q-item-section>
                     <q-slider
@@ -110,7 +110,7 @@
                 </q-item>
                 <q-item  style="width: 35rem;">
                   <q-item-section avatar>
-                    <q-icon name="download_for_offline" />
+                    <q-icon name="o_download_for_offline" />
                   </q-item-section>
                   <q-item-section>
                     <q-slider
@@ -149,7 +149,7 @@
               </div>
             </div>
             <q-separator class="q-my-sm" />
-            <q-icon name="info" color="blue-10" size="sm" class="q-mr-sm" /><span>{{ $t('Total Messages sent by the backend: {incomingLogCount}', { incomingLogCount }) }}</span><br>
+            <q-icon name="o_info" color="blue-10" size="sm" class="q-mr-sm" /><span>{{ $t('Total Messages sent by the backend: {incomingLogCount}', { incomingLogCount }) }}</span><br>
             <span>{{ $t('This includes the messages already in transit when the Live Tail got stopped.') }}</span>
           </q-tooltip>
         <q-linear-progress :value="queueIn.length / queueInMaxSize" color="indigo" size="lg" stripe track-color="grey-10" />
@@ -170,7 +170,6 @@
             active-color="primary"
             indicator-color="primary"
             align="justify"
-            narrow-indicator
           >
             <q-tab name="single_log" :label="$t('Single Log')" />
             <q-tab name="multiple_logs" :label="$t('Multiple Logs')" />
@@ -183,7 +182,7 @@
             <q-tab-panel name="single_log">
               <q-input
                 v-model="queueInDataEntrySingleLog"
-                filled
+                outlined
                 autogrow
                 input-style="min-height: 16em;"
                 :label="$t('One single JSON log at a time')"
@@ -203,7 +202,7 @@
                       </q-tooltip>
                     </q-btn>
                     <q-btn class="row" dense icon="close" flat :disable="!queueInDataEntrySingleLog.length" @click="queueInDataEntrySingleLog = ''" >
-                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;" v-if="queueInDataEntrySingleLog.length">
                         {{ $t('Clear out') }}
                       </q-tooltip>
                     </q-btn>
@@ -215,7 +214,7 @@
             <q-tab-panel name="multiple_logs">
               <q-input
                 v-model="queueInDataEntryMultiLog"
-                filled
+                outlined
                 autogrow
                 input-style="min-height: 16em;"
                 :label="$t('One JSON entry per line')"
@@ -235,7 +234,7 @@
                       </q-tooltip>
                     </q-btn>
                     <q-btn class="row" dense icon="close" flat :disable="!queueInDataEntryMultiLog.length" @click="queueInDataEntryMultiLog = ''" >
-                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;" v-if="queueInDataEntryMultiLog.length">
                         {{ $t('Clear out') }}
                       </q-tooltip>
                     </q-btn>
@@ -246,7 +245,7 @@
 
             <q-tab-panel name="log_file">
               <q-file
-                filled
+                outlined
                 bottom-slots
                 v-model="manualImportFileInput"
                 :label="$t('Click or Drop a file here')"
@@ -256,8 +255,8 @@
                 input-style="min-height: 15.75em;"
               >
                 <template v-slot:append>
-                  <q-icon v-if="manualImportFileInput !== null" name="close" @click.stop="manualImportFileInput = null" class="cursor-pointer" />
-                  <q-icon name="note_add" @click.stop />
+                  <q-icon v-if="manualImportFileInput !== null" name="o_close" @click.stop="manualImportFileInput = null" class="cursor-pointer" />
+                  <q-icon name="o_note_add" @click.stop />
                 </template>
 
                 <template v-slot:after>
@@ -316,7 +315,7 @@
                       </q-menu>
                     </q-btn>
                     <q-btn class="row" dense icon="close" flat :disable="manualImportFileInput == null" @click="manualImportFileInput = null" >
-                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                      <q-tooltip content-style="font-size: 1rem; min-width: 10rem;" v-if="manualImportFileInput != null">
                         {{ $t('Clear out file selection') }}
                       </q-tooltip>
                     </q-btn>
@@ -422,8 +421,8 @@
             >
               <div class="row content-center q-mr-sm q-gutter-y-none" style="width: 3rem;">
                 <q-tooltip content-style="font-size: 1em;">
-                  <q-icon name="stop" :color="(darkMode ? 'blue-10' : 'blue-7')" />{{ $t('Relative frequency {seenInLogCountOverMaxSeenInLog}% ({seenInLogCount} / {maxSeenInLog}).', { seenInLogCountOverMaxSeenInLog: (maxSeenInLog != 0 ? Math.round(item.seenInLogCount / maxSeenInLog * 100) : '_'), seenInLogCount: item.seenInLogCount, maxSeenInLog }) }}<br>
-                  <q-icon name="stop" :color="(darkMode ? 'indigo-10' : 'indigo-7')" />{{ $tc('N/A | Seen in {seenInLogCountOverProcessedLogsCount}% of the logs ({seenInLogCount} / {processedLogsCount}). | Seen in {seenInLogCountOverProcessedLogsCount}% of the logs ({seenInLogCount} / {processedLogsCount}).', processedLogsCount, { seenInLogCountOverProcessedLogsCount: (processedLogsCount != 0 ? Math.round(item.seenInLogCount / processedLogsCount * 100) : '_'), seenInLogCount: item.seenInLogCount, processedLogsCount}) }}
+                  <q-icon name="o_stop" :color="(darkMode ? 'blue-10' : 'blue-7')" />{{ $t('Relative frequency {seenInLogCountOverMaxSeenInLog}% ({seenInLogCount} / {maxSeenInLog}).', { seenInLogCountOverMaxSeenInLog: (maxSeenInLog != 0 ? Math.round(item.seenInLogCount / maxSeenInLog * 100) : '_'), seenInLogCount: item.seenInLogCount, maxSeenInLog }) }}<br>
+                  <q-icon name="o_stop" :color="(darkMode ? 'indigo-10' : 'indigo-7')" />{{ $tc('N/A | Seen in {seenInLogCountOverProcessedLogsCount}% of the logs ({seenInLogCount} / {processedLogsCount}). | Seen in {seenInLogCountOverProcessedLogsCount}% of the logs ({seenInLogCount} / {processedLogsCount}).', processedLogsCount, { seenInLogCountOverProcessedLogsCount: (processedLogsCount != 0 ? Math.round(item.seenInLogCount / processedLogsCount * 100) : '_'), seenInLogCount: item.seenInLogCount, processedLogsCount}) }}
                 </q-tooltip>
                 <q-linear-progress :value="item.seenInLogCount / maxSeenInLog" :color="(darkMode ? 'blue-10' : 'blue-7')" />
                 <q-linear-progress :value="item.seenInLogCount / processedLogsCount" :color="(darkMode ? 'indigo-10' : 'indigo-7')" />
@@ -438,7 +437,7 @@
                 <q-tooltip content-style="font-size: 1em;" anchor="center middle" self="center middle">
                   <div>
                     <div class="row items-center q-gutter-x-sm">
-                      <q-icon name="account_tree" color="blue-3" />
+                      <q-icon name="o_account_tree" color="blue-3" />
                       <div class="fixed-font text-bold">{{ item.name }}</div>
                     </div>
                     <q-separator />
@@ -624,7 +623,7 @@
                   </q-btn>
                   <q-separator />
                   <q-btn round dense flat icon="clear" @click="communicationLogsOutput=''" color="red" :disable="!communicationLogsOutput || (communicationLogsOutput && communicationLogsOutput.length === 0)">
-                    <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                    <q-tooltip content-style="font-size: 1rem; min-width: 10rem;" v-if="communicationLogsOutput && communicationLogsOutput.length">
                       {{ $t('Clear') }}
                     </q-tooltip>
                   </q-btn>
@@ -655,6 +654,7 @@ import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedRightToLeft from 'src/mixins/mixin-Shared-RightToLeft'
 import mixinSharedBuildJq from 'src/mixins/mixin-Shared-BuildJq'
 import Vue2Filters from 'vue2-filters'
+import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml'
 
 export default {
   name: 'PagePipelineBuilder',
@@ -1472,7 +1472,8 @@ export default {
 
     initTail () {
       if (this.socket && this.socket.connected) {
-        this.socket.emit('tail.init', { pipelineUid: this.pipelineUid, tailId: this.pipelineUid, collectionConfig: this.pipeline.collectionConfig })
+        const collectionConfigYml = collectionConfigToYml(this.pipeline.collectionConfig)
+        this.socket.emit('tail.init', { pipelineUid: this.pipelineUid, tailId: this.pipelineUid, collectionConfig: this.pipeline.collectionConfig, collectionConfigYml })
       }
     },
 

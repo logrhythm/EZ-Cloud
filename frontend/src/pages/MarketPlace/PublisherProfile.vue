@@ -9,7 +9,7 @@
         <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('EZ Market Place : My Profile') }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
-    <q-card class="q-pa-md q-mx-none">
+    <q-card class="q-pa-none q-mx-none">
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
             <q-card-section class="text-h4">
@@ -38,7 +38,7 @@
               <div class="text-bold">{{ $t('Identicon:') }}</div>
               <div class="row items-center q-gutter-x-md">
                 <Identicon :identity="publisherDisplayName" />
-                <q-icon name="arrow_forward" size="lg" v-if="editingPublisherName"/>
+                <q-icon name="o_arrow_forward" size="lg" v-if="editingPublisherName"/>
                 <Identicon :identity="newPublisherName" v-if="editingPublisherName"/>
               </div>
             </q-card-section>
@@ -47,7 +47,7 @@
 
           <q-separator vertical />
 
-          <q-card-actions vertical class="justify-around q-px-md">
+          <q-card-actions vertical class="justify-around q-pa-md">
               <q-btn icon="edit" :loading="dataLoading" color="primary" :disabled="editingPublisherName" @click="editProfileDetails()">
                 <q-tooltip content-style="font-size: 1rem;" v-if="!editingPublisherName">
                   {{ $t('Reload') }}
@@ -113,7 +113,7 @@ export default {
           this.$q.notify({
             type: 'negative',
             color: 'negative',
-            icon: 'report_problem',
+            icon: 'o_report_problem',
             message: this.$t('Error loading Publisher\'s details'),
             caption: payload.messageForLogAndPopup || ''
           })

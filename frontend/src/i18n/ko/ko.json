@@ -17,6 +17,7 @@
   "Username is required": "사용자 이름은 필수 항목입니다.",
   "Password": "비밀번호",
   "Authentication failed.": "인증 실패.",
+  "Next": "다음",
   "Login": "로그인",
   "Statuses": "상태",
   "OC-Admin Container": "OC-Admin 컨테이너",
@@ -618,5 +619,19 @@
   "Edit MS SQL Connection setting": "MS SQL 연결 설정 편집",
   "Not found": "찾을 수 없음",
   "Success": "성공",
-  "Now that the MS SQL Connection is configured, the Database must be updated for all the features of OC Admin to work.": "이제 MS SQL 연결이 구성되었으므로 OC Admin의 모든 기능이 작동하려면 데이터베이스를 업데이트해야 합니다."
+  "Now that the MS SQL Connection is configured, the Database must be updated for all the features of OC Admin to work.": "이제 MS SQL 연결이 구성되었으므로 OC Admin의 모든 기능이 작동하려면 데이터베이스를 업데이트해야 합니다.",
+  "Load": "짐",
+  "Load File": "파일 로드",
+  "Loading file...": "파일 로드 중...",
+  "File loaded": "파일 로드됨",
+  "Only one file is accepted. You tried to import multiple files.": "하나의 파일만 허용됩니다. 여러 파일을 가져오려고 했습니다.",
+  "Problem while loading file": "파일을 로드하는 동안 문제가 발생했습니다.",
+  "No name": "이름 없음",
+  "Start": "시작",
+  "Recent": "최근의",
+  "Latest": "최근 소식",
+  "Create, Edit and Manage my OpenCollectors...": "내 OpenCollector 생성, 편집 및 관리...",
+  "Create, Edit and Manage my Pipelines...": "내 파이프라인 생성, 편집 및 관리...",
+  "Check my Notifications...": "내 알림 확인...",
+  "Browse the Marketplace...": "마켓플레이스 둘러보기..."
 }

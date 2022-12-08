@@ -3,6 +3,7 @@
 # Create date: 2022-07-05
 # Modified on: 2022-07-25 - Add tools to allow Build for Docker
 # Modified on: 2022-07-26 - Add option to do a full build for Docker
+# Modified on: 2022-12-02 - Change branch to v1.0, expose 8080 too
 # Description: Describe container `oc-admin_dev`, based on NodeJS
 #              This container is designed to develop, as opposed
 #              to run, the OC Admin (formerly EZ Cloud) Backend,
@@ -25,11 +26,11 @@ COPY . .
 # Moving this out of the of Docker and in the build Bash script
 # RUN git clone https://github.com/logrhythm/EZ-Cloud.git
 
-EXPOSE 8400
+EXPOSE 8400 8080
 
 CMD cd "EZ-Cloud" \
     && echo "### SWITCHING TO THE CURRENT BRANCH..." \
-    && git checkout v0.9 \
+    && git checkout v1.0 \
     && echo "### GETTING THE LATEST CHANGES FROM REPO..." \
     && git pull \
     && echo "### BRINGING IN ENVIRONMENT..." \

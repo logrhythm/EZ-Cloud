@@ -6,7 +6,7 @@
       <div class="text-h6" style="opacity:.4">
         {{ $t('You have successfuly logged out.') }}
       </div>
-      <q-btn :label="$t('Log Back In')" to="/Login" color="primary" />
+      <q-btn no-caps :label="$t('Log Back In')" to="/Login" color="primary" />
   </q-page>
 </template>
 
