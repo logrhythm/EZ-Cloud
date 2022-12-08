@@ -662,9 +662,12 @@ export default {
           deploymentStatus.isDeployment = isDeployment // True: it's a deployment. Flase: it's un Un-Deploy.
           deploymentStatuses = JSON.parse(JSON.stringify(deploymentStatuses))
         } else {
-          // const collectionMethod = (this.collectionMethodTemplates
-          //   .find(template => template.collectionMethod === this.pipeline.collectionConfig.collectionMethod) || {}).collectionMethod
-          // const skipDeploymentSteps = deploymentSteps.filter( (step) => step.uid === collectionMethod)
+          const skipDeploymentStepsFromTemplate = (this.collectionMethodTemplates
+            .find(template => template.collectionMethod === this.pipeline.collectionConfig.collectionMethod) || {})
+            .skipDeploymentSteps || []
+          const actualDeploymentSteps = deploymentSteps.filter((step) => skipDeploymentStepsFromTemplate.includes(step.uid))
+
+          console.log('deploymentSteps, actualDeploymentSteps', deploymentSteps, actualDeploymentSteps) // XXXX
 
           deploymentStatuses.push(
             {
@@ -674,7 +677,7 @@ export default {
               completed: false,
               isDeployment: isDeployment, // True: it's a deployment. Flase: it's un Un-Deploy.
               logs: [],
-              steps: JSON.parse(JSON.stringify(deploymentSteps))
+              steps: JSON.parse(JSON.stringify(actualDeploymentSteps))
             }
           )
         }
