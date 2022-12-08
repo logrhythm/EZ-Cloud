@@ -20,6 +20,7 @@ import collectionMethodTemplatesPubSubbeat from './templates/collectionMethodTem
 // Kafka
 import collectionMethodTemplatesKafkabeat from './templates/collectionMethodTemplate.kafkabeat'
 // EventHub
+import collectionMethodTemplatesEventHubbeatDefault from './templates/collectionMethodTemplate.eventhubbeat.default.mapping'
 import collectionMethodTemplatesEventHubbeatCustom from './templates/collectionMethodTemplate.eventhubbeat.custom.mapping'
 
 export default function () {
@@ -50,6 +51,7 @@ export default function () {
       collectionMethodTemplatesS3beat, // s3beat
       collectionMethodTemplatesPubSubbeat, // pubsubbeat
       collectionMethodTemplatesKafkabeat, // kafkabeat
+      collectionMethodTemplatesEventHubbeatDefault, // eventhubbeat - With default mapping
       collectionMethodTemplatesEventHubbeatCustom // eventhubbeat - With custom mapping
     ], // collectionMethodTemplates
     collectionShippersOptions: [
@@ -209,7 +211,7 @@ export default function () {
       },
       {
         shipper: 'eventhubbeat',
-        value: 'eventhubbeat-standard',
+        value: 'eventhubbeat-default',
         label: 'Azure Event Hub - Default Mapping',
         icon: 'o_language'
       },
