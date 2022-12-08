@@ -36,8 +36,6 @@ export default {
           name: itemName,
           type: 'pipeline',
           uid: this.$route.params.pipelineUid,
-          // link: `#/Pipelines/${this.$route.params.pipelineUid}/Properties`,
-          // link: this.$route.fullPath,
           link: `#${this.$route.fullPath}`,
           lastVisit: Date.now()
         }
@@ -57,8 +55,10 @@ export default {
           // Update Recent Items with the new one
           const existingRecentItem = recentItemsArray.find((ri) => ri.uid === newItem.uid)
           if (existingRecentItem) {
-            // eslint-disable-next-line no-const-assign
-            existingRecentItem = { ...newItem }
+            existingRecentItem.name = newItem.name
+            existingRecentItem.type = newItem.type
+            existingRecentItem.lastVisit = newItem.lastVisit
+            existingRecentItem.link = newItem.link
           } else {
             recentItemsArray.push(newItem)
           }
