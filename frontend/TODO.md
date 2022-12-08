@@ -55,16 +55,16 @@
   - [x] Large buttons style
   - [ ] Action buttons style
   - [x] Settings
-- [ ] LogRhythm Beats mapping for Collection Configuration
-  - [ ] Azure Event Hub
-    - [ ] With custom Mapping
-    - [ ] Without custom Mapping
-      - [ ] Implement skipping OC Pipeline deployment
-      - [ ] Implement pick Azure Eventhub LS Type in SIEM
+- [x] LogRhythm Beats mapping for Collection Configuration
+  - [x] Azure Event Hub
+    - [x] With custom Mapping
+    - [x] Without custom Mapping
+      - [x] Implement skipping OC Pipeline deployment
+      - [x] Implement pick Azure Eventhub LS Type in SIEM
         - skip LST creation
         - skip MPE rule creation
         - skip Log Processing Policy creation
-      - [ ] Implement disable Field Mapping edit
+      - [x] Implement disable Field Mapping edit
   - [x] S3
   - [x] WebHook
     - [x] https
@@ -77,7 +77,7 @@
   - [x] Collection Configuration Editor
   - [x] Pass file information to Backend during Tail
   - [x] Pass file information to Backend during Deployment
-- [ ] Error reporting card to deal with many errors
+- [x] Error reporting card to deal with many errors
   - [x] Add sticky title and X close button
   - [x] Make bottom panel sticky, with `[Close]` button
 - [ ] Admin - MS SQL - Add Test button
