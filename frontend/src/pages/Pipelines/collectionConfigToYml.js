@@ -74,12 +74,6 @@ function collectionConfigToYml (collectionConfig) {
   try {
     const jsonConfig = Object.assign({}, collectionConfig)
     let collectionMethod = jsonConfig.collectionMethod || ''
-    if (collectionMethod === 'syslog_udp') {
-      collectionMethod = 'syslog'
-    }
-    if (collectionMethod === 'syslog_tcp') {
-      collectionMethod = 'syslog'
-    }
 
     //  ######## #### ##       ######## ########  ########    ###    ########
     //  ##        ##  ##       ##       ##     ## ##         ## ##      ##
@@ -88,6 +82,13 @@ function collectionConfigToYml (collectionConfig) {
     //  ##        ##  ##       ##       ##     ## ##       #########    ##
     //  ##        ##  ##       ##       ##     ## ##       ##     ##    ##
     //  ##       #### ######## ######## ########  ######## ##     ##    ##
+
+    if (collectionMethod === 'syslog_udp') {
+      collectionMethod = 'syslog'
+    }
+    if (collectionMethod === 'syslog_tcp') {
+      collectionMethod = 'syslog'
+    }
 
     // Make sure we have a Request Transform array
     if (jsonConfig.request === undefined) {
