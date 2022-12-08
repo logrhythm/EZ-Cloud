@@ -250,8 +250,6 @@ function collectionConfigToYml (collectionConfig) {
 
     // ***********
     // Trash our own stuff, as it has nothing to do in the file Yaml
-    delete jsonConfig.collectionShipper
-    delete jsonConfig.collectionMethod
     delete jsonConfig.EZ__Auth_Basic__enable
     delete jsonConfig.EZ__Auth_Basic__username
     delete jsonConfig.EZ__Auth_Basic__password
@@ -299,7 +297,9 @@ function collectionConfigToYml (collectionConfig) {
       if (
         jsonConfig[configPath] &&
         typeof jsonConfig[configPath] === 'object' &&
-        !Array.isArray(jsonConfig[configPath])
+        !Array.isArray(jsonConfig[configPath]) &&
+        jsonConfig[configPath].valueInConfig &&
+        jsonConfig[configPath].valueInConfig.length
       ) {
         jsonConfig[configPath] = jsonConfig[configPath].valueInConfig
       }
