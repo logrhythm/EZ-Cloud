@@ -229,6 +229,7 @@ export default {
       } catch (err) {
         //
       }
+
       return (
         recentItemsStored &&
         Array.isArray(recentItemsStored)
@@ -236,11 +237,16 @@ export default {
             {
               label: recentItem.name || 'No name',
               icon: (recentItem.type === 'pipeline' ? 'o_account_tree' : 'o_description'),
-              link: recentItem.link || (recentItem.type === 'pipeline' ? '#/Pipelines' : '#/Welcome')
+              link: recentItem.link || (recentItem.type === 'pipeline' ? '#/Pipelines' : '#/Welcome'),
+              lastVisit: recentItem.lastVisit || 0,
+              type: recentItem.type || 'pipeline',
+              uid: recentItem.uid || ''
             }
           ))
           : []
-      ).slice(-5)
+      )
+        .sort((a, b) => a.lastVisit - b.lastVisit)
+        .slice(-5)
     }
   },
   methods: {
