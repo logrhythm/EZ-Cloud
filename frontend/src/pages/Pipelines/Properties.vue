@@ -1720,6 +1720,9 @@ export default {
       if (this.pipelineUid !== this.$route.params.pipelineUid) {
         this.pipelineUid = this.$route.params.pipelineUid
       }
+
+      // Record the page in Recent Items
+      this.updateRecentItems()
     }
   }
 }
