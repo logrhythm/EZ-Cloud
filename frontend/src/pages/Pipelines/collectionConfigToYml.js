@@ -305,6 +305,42 @@ function collectionConfigToYml (collectionConfig) {
       }
     })
 
+    //  ######## ##     ## ######## ##    ## ######## ##     ## ##     ## ########
+    //  ##       ##     ## ##       ###   ##    ##    ##     ## ##     ## ##     ##
+    //  ##       ##     ## ##       ####  ##    ##    ##     ## ##     ## ##     ##
+    //  ######   ##     ## ######   ## ## ##    ##    ######### ##     ## ########
+    //  ##        ##   ##  ##       ##  ####    ##    ##     ## ##     ## ##     ##
+    //  ##         ## ##   ##       ##   ###    ##    ##     ## ##     ## ##     ##
+    //  ########    ###    ######## ##    ##    ##    ##     ##  #######  ########
+
+    if (jsonConfig.collectionShipper === 'eventhubbeat') {
+      if (collectionMethod === 'eventhubbeat-default') {
+        collectionMethod = 'eventhubbeat'
+      }
+      if (collectionMethod === 'eventhubbeat-custom') {
+        collectionMethod = 'eventhubbeat'
+      }
+
+      if (
+        jsonConfig.connectionstring &&
+        typeof jsonConfig.connectionstring === 'object' &&
+        !Array.isArray(jsonConfig.connectionstring)
+      ) {
+        const connectionstringAsArray = []
+        try {
+          Object.keys(jsonConfig.connectionstring).forEach((csKey) => {
+            connectionstringAsArray.push(
+              `${jsonConfig.connectionstring[csKey]},${csKey}`
+            )
+          })
+        } catch {
+          // jsonConfig.connectionstring = connectionstringAsArray
+        } finally {
+          jsonConfig.connectionstring = connectionstringAsArray
+        }
+      }
+    }
+
     //   ######  ##       ########    ###    ##    ##       ##     ## ########
     //  ##    ## ##       ##         ## ##   ###   ##       ##     ## ##     ##
     //  ##       ##       ##        ##   ##  ####  ##       ##     ## ##     ##
@@ -312,6 +348,11 @@ function collectionConfigToYml (collectionConfig) {
     //  ##       ##       ##       ######### ##  ####       ##     ## ##
     //  ##    ## ##       ##       ##     ## ##   ###       ##     ## ##
     //   ######  ######## ######## ##     ## ##    ##        #######  ##
+
+    // ***********
+    // Remove our own stuff, as it has nothing to do in the YAML
+    delete jsonConfig.collectionShipper
+    delete jsonConfig.collectionMethod
 
     // ***********
     // Remove any leafs set to null
