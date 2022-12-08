@@ -28,7 +28,7 @@ export default {
     heartbeatinterval: 60
   },
   identificationStyle: ['logrhythmBeat'],
-  mappingStyle: 'custom', // `custom`: will offer the Field Mapping option, or `default`: will NOT offer to do Field Mappings
+  mappingStyle: 'default', // `custom`: will offer the Field Mapping option, or `default`: will NOT offer to do Field Mappings. If not provided, falls back to 'custom'
   skipDeploymentSteps: [
     // 'e745e0e6-60f6-4857-8afa-f8ea0663b6c3', // Deploy: Create and drop Beat's configuration in right location
     'd004f165-a028-4183-8e6d-f64534357c5d', // Deploy: Import JQ Pipeline into OpenCollector
