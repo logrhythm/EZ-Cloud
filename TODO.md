@@ -8,13 +8,13 @@
   - [x] API - `updateStreamConfigurationForBeat()` for LR Beats
   - [x] API - `deleteStreamConfigurationForBeat()` for LR Beats
 - Add support for Beats that require file dropped as part of Config
-  - [ ] PubSub
-  - [ ] WebHook HTTPS
+  - [x] PubSub
+  - [x] WebHook HTTPS
 - Beat Support
   - [x] S3
-  - [ ] PubSub
-  - [ ] EventHub
-  - [ ] WebHook HTTPS
+  - [x] PubSub
+  - [x] EventHub
+  - [x] WebHook HTTPS
 - [ ] API - Admin - MS SQL - Add MS SQL test
 - [x] Use Beats's configuration provided by Frontend when starting Tail, instead of using local copy of `collectionConfigToYml()`
 
