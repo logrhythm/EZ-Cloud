@@ -87,16 +87,31 @@ let cachedJwtConfig;
  * @returns JWT configuration as Object
  */
 async function getJwtConfig(ignoreCache = false) {
-  if (!cachedJwtConfig || ignoreCache) {
-    cachedJwtConfig = getConfig('jwt.json');
+  if (
+    ignoreCache
+    || !cachedJwtConfig
+    || !(cachedJwtConfig && cachedJwtConfig.secret && cachedJwtConfig.secret.length)
+  ) {
+    logToSystem('Debug', `getJwtConfig(ignoreCache = ${ignoreCache}) - 🔑 - Cache miss. Getting configuration again.`);
+    cachedJwtConfig = await getConfig('jwt.json');
   }
   return cachedJwtConfig;
 }
 
 let cachedEzMarketConfig;
 async function getEzMarketConfig(ignoreCache = false) {
-  if (!cachedEzMarketConfig || ignoreCache) {
-    cachedEzMarketConfig = getConfig('ez-market-place.json');
+  if (
+    ignoreCache
+    || !cachedEzMarketConfig
+    || !(
+      cachedEzMarketConfig
+      && cachedEzMarketConfig.server
+      && cachedEzMarketConfig.server.baseUrl
+      && cachedEzMarketConfig.server.baseUrl.length
+    )
+  ) {
+    logToSystem('Debug', `getEzMarketConfig(ignoreCache = ${ignoreCache}) - 🛒 - Cache miss. Getting configuration again.`);
+    cachedEzMarketConfig = await getConfig('ez-market-place.json');
   }
   return cachedEzMarketConfig;
 }

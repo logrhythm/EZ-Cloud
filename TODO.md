@@ -26,6 +26,8 @@
 - API
   - [x] Crash when no MasterID is returned from EMDB
   - [x] Issue #21 - Deployment fails at last step with LR 7.9 SIEM
+- Athentication
+  - [x] Private key for encryption of JWT token is cached incorectly as empty if OC-DB is not ready on the first try
 
 ## TO TEST
 
