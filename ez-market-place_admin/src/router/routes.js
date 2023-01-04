@@ -1,9 +1,9 @@
 import { createApp } from 'vue'
 import { LoginCallback } from '@okta/okta-vue'
 
-// import { Store } from '../store/index.js'
 import store from '../store'
-import { productName } from '../../package.json'
+import packageDetails from '../../package.json'
+const productName = packageDetails.productName
 
 // // Check if we have a JWT token, and redirect to /Login if not
 // function isLoggedIn (to, from, next) {

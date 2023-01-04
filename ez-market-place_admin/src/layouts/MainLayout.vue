@@ -92,8 +92,9 @@
 <script>
 import { mapState, mapGetters } from 'vuex'
 import EssentialLink from 'components/EssentialLink.vue'
-import { version } from '../../package.json'
 import { date } from 'quasar'
+import packageDetails from '../../package.json'
+const version = packageDetails.version
 
 export default {
   name: 'MainLayout',
