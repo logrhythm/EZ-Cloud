@@ -2,6 +2,8 @@
   <router-view />
 </template>
 <script>
+import { useQuasar } from 'quasar'
+
 export default {
   name: 'App',
   mounted () {
@@ -20,7 +22,8 @@ export default {
       settingsDarkMode = false
     }
     // And assign!
-    this.$q.dark.set(
+    const $q = useQuasar()
+    $q.dark.set(
       settingsDarkMode
     )
   }
