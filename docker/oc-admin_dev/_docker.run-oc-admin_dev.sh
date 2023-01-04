@@ -5,6 +5,7 @@
 # Create date: 2022-07-11
 # Modified on: 2022-07-13 - To increase user watches, instances and queued events limits on the Docker host
 # Modified on: 2022-12-02 - To start container in auto-restart, and tail logs instead of running in interactive mode
+# Modified on: 2023-01-04 - To start container in build mode using specific entrypoint instead of environment variable
 # Description: Pull and Start Dev version of the OC-Admin container `oc-admin_dev`.
 #              Can be used to just build the content of the `oc-admin` container, with the `--build_only` flag.
 # Parameters:
@@ -39,7 +40,8 @@ if [[ "$*" == *build_only* ]]; then
   # Start a temporary `oc-admin_dev` copy, then build the `oc-admin` image
 
   echo "### RUN CONTAINER IN BUILING MODE..."
-  docker run --interactive --tty --rm --volume oc-admin_dev:/app/EZ-Cloud/dist --env BUILD_OC_ADMIN_IMAGE="TRUE" tonymasse/oc-admin_dev
+  # docker run --interactive --tty --rm --volume oc-admin_dev:/app/EZ-Cloud/dist --env BUILD_OC_ADMIN_IMAGE="TRUE" tonymasse/oc-admin_dev
+  docker run --interactive --tty --rm --volume oc-admin_dev:/app/EZ-Cloud/dist --entrypoint="/app/_entrypoint.buildDockerFull.sh" tonymasse/oc-admin_dev
 
 else
 
