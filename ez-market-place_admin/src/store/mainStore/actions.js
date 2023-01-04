@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { uid } from 'quasar'
-import { i18n } from 'boot/i18n'
+import i18n from 'boot/i18n'
 // import { version } from '../../../package.json'
 
 const app = createApp()
