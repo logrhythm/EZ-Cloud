@@ -36,7 +36,7 @@
                     <div class="row q-gutter-md">
                       <div class="col" >
                         <q-btn rounded dense color="primary" icon="add" label="Add New Account" style="min-width:14rem;" @click="addNewAccount()" >
-                          <q-tooltip content-style="font-size: 1em">
+                          <q-tooltip style="font-size: 1em">
                             Create a new Account.
                           </q-tooltip>
                         </q-btn>
@@ -53,7 +53,7 @@
                       </div>
                       <!-- <q-separator vertical dark color="orange" /> -->
                       <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadAccountsAndRoles()">
-                        <q-tooltip content-style="font-size: 1em">
+                        <q-tooltip style="font-size: 1em">
                           Reload the list of Accounts.
                         </q-tooltip>
                       </q-btn>
@@ -64,12 +64,12 @@
                 <template v-slot:body-cell-actions="props">
                   <q-td :props="props">
                     <q-btn flat dense icon="edit" @click="doPromptForAccountDetails(props.row)">
-                      <q-tooltip content-style="font-size: 1em">
+                      <q-tooltip style="font-size: 1em">
                         {{ $t('Edit Account details') }}
                       </q-tooltip>
                     </q-btn>
                     <q-btn flat dense icon="delete" color="negative" @click="deleteAccountPrompt(props.row)">
-                      <q-tooltip content-style="font-size: 1em">
+                      <q-tooltip style="font-size: 1em">
                         {{ $t('Delete Account') }}
                       </q-tooltip>
                     </q-btn>
@@ -79,7 +79,7 @@
                 <template v-slot:body-cell-roleIsPrivileged="props">
                   <q-td :props="props">
                     <q-icon name="check_circle_outline" color="green" size="md" v-if="props.value === 1" />
-                    <q-tooltip content-style="font-size: 1em">
+                    <q-tooltip style="font-size: 1em">
                       <span v-if="props.value === 1">Privileged user</span>
                       <span v-else-if ="props.value === 0">Non-privileged user</span>
                       <span v-else>{{ props.value }}</span>
@@ -122,12 +122,12 @@
 
           <q-card-actions vertical class="justify-around q-px-md">
               <q-btn icon="add" color="primary" @click="addNewAccount()" >
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   Add Account
                 </q-tooltip>
               </q-btn>
               <q-btn icon="refresh" :loading="dataLoading" @click="loadAccountsAndRoles()">
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   Reload
                 </q-tooltip>
               </q-btn>
@@ -169,7 +169,7 @@
                 class="cursor-pointer"
                 @click="showPassword = !showPassword"
               >
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   <span v-if="showPassword">Hide</span><span v-else>Show</span> Secret
                 </q-tooltip>
               </q-icon>

@@ -45,7 +45,7 @@
                       <q-icon name="assignment_late" color="negative" style="opacity: .75;" size="lg" v-else-if="pipelineTemplate.statusName === 'Failed Review'" />
                       <q-icon name="auto_delete" color="negative" style="opacity: .5;" size="lg" v-else-if="pipelineTemplate.statusName === 'To be deleted'" />
                       <q-icon name="question_mark" color="orange" size="lg" v-else />
-                      <q-tooltip content-style="font-size: 1em">
+                      <q-tooltip style="font-size: 1em">
                         <span class="text-bold">Status ID:</span> {{ pipelineTemplate.statusId }}
                       </q-tooltip>
                     </div>
@@ -115,7 +115,7 @@
 
           <q-card-actions vertical class="justify-around q-px-md">
               <q-btn icon="published_with_changes" color="primary" @click="save()">
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   Force save new Stats
                 </q-tooltip>
               </q-btn>
@@ -131,7 +131,7 @@
                 Icon / Logo
               <q-space />
               <q-icon name="save_as" color="positive" v-if="pictureNeedsSaving">
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   Needs saving
                 </q-tooltip>
               </q-icon>
@@ -280,15 +280,15 @@
 
           <q-card-actions vertical class="justify-around q-px-md">
               <q-btn icon="edit" color="primary" @click="pictureImportPanel=true">
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   Update the picture
                 </q-tooltip>
               </q-btn>
               <q-btn icon="delete" :loading="dataLoading">
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   Remove the picture
                 </q-tooltip>
-                <q-menu content-class="bg-negative text-white" anchor="top end" self="top start">
+                <q-menu class="bg-negative text-white" anchor="top end" self="top start">
                   <q-list>
                     <!-- <q-item v-close-popup @click="removePicture()" disabled> -->
                     <q-item clickable v-close-popup @click="removePicture()">
@@ -308,7 +308,7 @@
                 Readme
               <q-space />
               <q-icon name="save_as" color="positive" v-if="readmeNeedsSaving">
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   Needs saving
                 </q-tooltip>
               </q-icon>
@@ -361,10 +361,10 @@
 
           <q-card-actions vertical class="justify-around q-px-md">
               <q-btn icon="delete" :loading="dataLoading">
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   Remove Readme content
                 </q-tooltip>
-                <q-menu content-class="bg-negative text-white" anchor="top end" self="top start">
+                <q-menu class="bg-negative text-white" anchor="top end" self="top start">
                   <q-list>
                     <q-item clickable v-close-popup @click="removeReadme()">
                       <q-item-section>Confirm</q-item-section>
@@ -383,7 +383,7 @@
               Collection Configuration
               <q-space />
               <q-icon name="save_as" color="positive" v-if="collectionConfigurationNeedsSaving">
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   Needs saving
                 </q-tooltip>
               </q-icon>
@@ -412,12 +412,12 @@
 
           <q-card-actions vertical class="justify-around q-px-md">
             <q-btn icon="edit" color="primary" @click="editCollectionConfiguration = !editCollectionConfiguration">
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   Edit Collection Configuration
                 </q-tooltip>
               </q-btn>
               <q-btn icon="share">
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   Share and Import Collection Configuration
                 </q-tooltip>
                 <q-menu>
@@ -457,10 +457,10 @@
                 </q-menu>
               </q-btn>
               <q-btn icon="delete" :loading="dataLoading">
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   Delete Collection Configuration
                 </q-tooltip>
-                <q-menu content-class="bg-negative text-white" anchor="top end" self="top start">
+                <q-menu class="bg-negative text-white" anchor="top end" self="top start">
                   <q-list>
                     <q-item clickable  v-close-popup @click="removeCollectionConfiguration()" >
                       <q-item-section>Confirm</q-item-section>
@@ -479,7 +479,7 @@
               Options
               <q-space />
               <q-icon name="save_as" color="positive" v-if="optionsNeedsSaving">
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   Needs saving
                 </q-tooltip>
               </q-icon>
@@ -499,10 +499,10 @@
 
           <q-card-actions vertical class="justify-around q-px-md">
             <q-btn icon="delete" :loading="dataLoading">
-              <q-tooltip content-style="font-size: 1rem;">
+              <q-tooltip style="font-size: 1rem;">
                 Delete Options
               </q-tooltip>
-              <q-menu content-class="bg-negative text-white" anchor="top end" self="top start">
+              <q-menu class="bg-negative text-white" anchor="top end" self="top start">
                 <q-list>
                   <q-item clickable  v-close-popup @click="removeOptions()" >
                     <q-item-section>Confirm</q-item-section>
@@ -521,7 +521,7 @@
               Fields Mapping
               <q-space />
               <q-icon name="save_as" color="positive" v-if="fieldsMappingNeedsSaving">
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   Needs saving
                 </q-tooltip>
               </q-icon>
@@ -555,15 +555,15 @@
 
           <q-card-actions vertical class="justify-around q-px-md">
             <q-btn icon="edit" color="primary" @click="editFieldsMapping = !editFieldsMapping">
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   Edit Fields Mapping
                 </q-tooltip>
               </q-btn>
               <q-btn icon="share">
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   Share and Import Mapping
                 </q-tooltip>
-                <q-menu content-style="min-width: 420px">
+                <q-menu style="min-width: 420px">
                   <q-list style="min-width: 400px">
                     <q-item-label header>Sanitisation</q-item-label>
                     <q-item tag="label" v-ripple>
@@ -643,10 +643,10 @@
                 </q-menu>
               </q-btn>
               <q-btn icon="delete" :loading="dataLoading">
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   Delete Fields Mapping
                 </q-tooltip>
-                <q-menu content-class="bg-negative text-white" anchor="top end" self="top start">
+                <q-menu class="bg-negative text-white" anchor="top end" self="top start">
                   <q-list>
                     <q-item clickable  v-close-popup @click="removeFieldsMapping()" >
                       <q-item-section>Confirm</q-item-section>

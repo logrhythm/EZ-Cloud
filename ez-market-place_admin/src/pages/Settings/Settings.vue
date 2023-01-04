@@ -13,7 +13,7 @@
 
         <q-card-actions>
           <q-btn glossy class="full-height" color="primary" icon="save" @click="saveSettings()" :loading="savingAction" >
-            <q-tooltip content-style="font-size: 1em">
+            <q-tooltip style="font-size: 1em">
               {{ $t('Save settings to local web browser.') }}
             </q-tooltip>
           </q-btn>
@@ -31,7 +31,7 @@
           size="4rem"
           keep-color
         >
-          <q-tooltip content-style="font-size: 1em">
+          <q-tooltip style="font-size: 1em">
             {{ $t('Switch between Light and Dark mode') }}
           </q-tooltip>
         </q-toggle>
