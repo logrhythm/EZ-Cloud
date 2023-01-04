@@ -337,7 +337,7 @@ export default {
   mounted () {
     this.$root.$on('addAndShowErrorToErrorPanel', this.prepareAndShowErrorPanel)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     this.$root.$off('addAndShowErrorToErrorPanel')
   }
 }

@@ -1,4 +1,4 @@
-import Vue from 'vue'
+import { createApp } from 'vue'
 import { LoginCallback } from '@okta/okta-vue'
 
 // import { Store } from '../store/index.js'
@@ -15,6 +15,8 @@ import { productName } from '../../package.json'
 //     // next()
 //   }
 // }
+
+const app = createApp()
 
 // Update the tab/window's title
 function updateTitle (to, from, next) {
@@ -45,13 +47,13 @@ async function updateUser (to, from) {
 
   // If none, check if we are Okta authenticated, and if we are, store the new token in Store
   if (!(token && token.length)) {
-    if (Vue.prototype.$auth.isAuthenticated) {
+    if (app.config.globalProperties.$auth.isAuthenticated) {
       try {
-        const oktaToken = await Vue.prototype.$auth.getAccessToken()
+        const oktaToken = await app.config.globalProperties.$auth.getAccessToken()
         let userDetails = null
         if (oktaToken) {
           try {
-            userDetails = await Vue.prototype.$auth.getUser()
+            userDetails = await app.config.globalProperties.$auth.getUser()
           } catch (error) {
             console.log(error)
           }
@@ -168,7 +170,7 @@ const routes = [
   // Always leave this as last one,
   // but you can also remove it
   {
-    path: '*',
+    path: '/:catchAll(.*)*',
     meta: { title: 'Oops...' },
     component: () => import('layouts/MainLayout.vue'),
     children: [

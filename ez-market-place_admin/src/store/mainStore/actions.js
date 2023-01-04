@@ -1,7 +1,9 @@
-import Vue from 'vue'
+import { createApp } from 'vue'
 import { uid } from 'quasar'
 import { i18n } from 'boot/i18n'
 // import { version } from '../../../package.json'
+
+const app = createApp()
 
 // ######################################################################
 // AUTHENTICATION
@@ -25,7 +27,7 @@ export async function signOut ({ commit }, payload) {
 
   // Logout from Okta
   if (payload && payload.signOutOkta === true) {
-    await Vue.prototype.$auth.signOut()
+    await app.config.globalProperties.$auth.signOut()
   }
 }
 

@@ -16,7 +16,7 @@
                 :filter="searchFilter"
                 :loading="dataLoading"
                 rows-per-page-label="Pipeline Templates per page:"
-                :pagination.sync="pagination"
+                :pagination="pagination"
               >
                 <template v-slot:top>
                   <div class="full-width row wrap justify-between">
@@ -148,7 +148,7 @@
                         <span>Mapped fields: {{ props.row.pipelineTemplateStats.mappedFields }}</span>&nbsp;(<span class="text-bold">{{ Math.round(props.value * 100) / 100 }}%</span>)
                       </q-tooltip>
                       <q-circular-progress
-                        :value="Math.round(props.value)"
+                        :model-value="Math.round(props.value)"
                         show-value
                         :font-size="(props.value < 100 ? '0.5em' : '0.4em')"
                         size="2.8em"

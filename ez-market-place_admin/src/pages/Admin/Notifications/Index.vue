@@ -47,7 +47,7 @@
                 :filter="searchFilter"
                 :loading="dataLoading"
                 rows-per-page-label="Notifications per page:"
-                :pagination.sync="pagination"
+                :pagination="pagination"
               >
                 <template v-slot:top>
                   <div class="full-width row wrap justify-between">

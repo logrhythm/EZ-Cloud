@@ -1,7 +1,9 @@
-import Vue from 'vue'
+import { createApp } from 'vue'
+
+const app = createApp()
 
 export function userIsLoggedIn (state) {
-  console.log('userIsLoggedIn', !!Vue.prototype.$auth.isAuthenticated, state.jwtToken.length, !!state.jwtToken.length)
-  // return !!Vue.prototype.$auth.isAuthenticated
+  console.log('userIsLoggedIn', !!app.config.globalProperties.$auth.isAuthenticated, state.jwtToken.length, !!state.jwtToken.length)
+  // return !!app.config.globalProperties.$auth.isAuthenticated
   return !!state.jwtToken.length
 }
