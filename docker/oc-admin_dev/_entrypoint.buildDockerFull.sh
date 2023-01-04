@@ -27,5 +27,8 @@ fi
 echo "### Run \`Init\` entry point..."
 /app/_entrypoint.init.sh
 
+echo "### Jump into \`/app/EZ-Cloud\` directory..."
+cd /app/EZ-Cloud
+
 echo "### Run \`npm run buildDockerFull\`..."
 npm run buildDockerFull
