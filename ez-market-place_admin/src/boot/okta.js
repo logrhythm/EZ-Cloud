@@ -24,4 +24,5 @@ export default boot(({ app }) => {
   })
 
   app.use(OktaVue, { oktaAuth })
+  app.provide('Auth', oktaAuth)
 })
