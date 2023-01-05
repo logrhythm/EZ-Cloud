@@ -2,9 +2,10 @@
   <router-view />
 </template>
 <script>
+import { defineComponent } from 'vue'
 import { useQuasar } from 'quasar'
 
-export default {
+export default defineComponent({
   name: 'App',
   mounted () {
     // set to Dark Mode
@@ -27,5 +28,5 @@ export default {
       settingsDarkMode
     )
   }
-}
+})
 </script>
