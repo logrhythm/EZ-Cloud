@@ -1,9 +1,9 @@
-import { createApp } from 'vue'
+// import { createApp } from 'vue'
 import { uid } from 'quasar'
 import i18n from 'boot/i18n'
 // import { version } from '../../../package.json'
 
-const app = createApp()
+// const app = createApp()
 
 // ######################################################################
 // AUTHENTICATION
@@ -26,8 +26,9 @@ export async function signOut ({ commit }, payload) {
   commit('getUserRoles', [])
 
   // Logout from Okta
-  if (payload && payload.signOutOkta === true) {
-    await app.config.globalProperties.$auth.signOut()
+  if (payload && payload.signOutOkta === true && payload.auth) {
+    // await app.config.globalProperties.$auth.signOut()
+    await payload.auth.signOut()
   }
 }
 
