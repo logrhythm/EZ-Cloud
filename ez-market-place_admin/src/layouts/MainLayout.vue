@@ -336,10 +336,10 @@ export default {
     }
   },
   mounted () {
-    this.$root.$on('addAndShowErrorToErrorPanel', this.prepareAndShowErrorPanel)
+    this.$bus.on('addAndShowErrorToErrorPanel', this.prepareAndShowErrorPanel)
   },
   beforeUnmount () {
-    this.$root.$off('addAndShowErrorToErrorPanel')
+    this.$bus.off('addAndShowErrorToErrorPanel')
   }
 }
 </script>

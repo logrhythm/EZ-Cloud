@@ -326,7 +326,7 @@ export default {
     },
     addNewOrUpdateUserAccountFailure (payload) {
       // Pop this to the screen (via MainLayout)
-      this.$root.$emit('addAndShowErrorToErrorPanel', payload)
+      this.$bus.emit('addAndShowErrorToErrorPanel', payload)
       this.loadAccounts()
     },
     deleteAccountPrompt (row) {

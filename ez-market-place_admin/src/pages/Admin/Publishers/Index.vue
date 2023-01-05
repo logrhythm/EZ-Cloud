@@ -231,7 +231,7 @@ export default {
     },
     addNewOrUpdatePublisherFailure (payload) {
       // Pop this to the screen (via MainLayout)
-      this.$root.$emit('addAndShowErrorToErrorPanel', payload)
+      this.$bus.emit('addAndShowErrorToErrorPanel', payload)
       this.loadPublishers()
     }
   },

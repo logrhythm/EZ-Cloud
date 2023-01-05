@@ -25,7 +25,8 @@ module.exports = function (/* ctx */) {
       'axios',
       'global-constants', // Global Constants - TM 2021-04-23
       'notify-defaults', // Default values for Notify - TM 2021-05-10
-      'okta' // Okta authentication - TM 2023-01-05
+      'okta', // Okta authentication - TM 2023-01-05
+      'event-bus' // Event Bus - TM 2023-01-05
     ],
 
     // https://v1.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css

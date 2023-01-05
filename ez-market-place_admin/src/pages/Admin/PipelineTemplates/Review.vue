@@ -1086,7 +1086,7 @@ export default {
     },
     updatePipelineTemplateFailure (payload) {
       // Pop this to the screen (via MainLayout)
-      this.$root.$emit('addAndShowErrorToErrorPanel', payload)
+      this.$bus.emit('addAndShowErrorToErrorPanel', payload)
       this.loadPipelineTemplate()
     },
     extractPictureEditorContentPngBase64 (newValue) {
@@ -1219,7 +1219,7 @@ export default {
           ? rejectedEntries[0].file.name
           : ''
       )
-      this.$root.$emit('addAndShowErrorToErrorPanel',
+      this.$bus.emit('addAndShowErrorToErrorPanel',
         {
           code: 'BadFileExtentionImportCollection',
           messageForLogAndPopup: `Only .ezCollection files are accepted. You tried to import "${badFileName}".`
@@ -1234,7 +1234,7 @@ export default {
       } else {
         // Deal with multiple or single file(s)
         if (Array.isArray(filesInput)) {
-          this.$root.$emit('addAndShowErrorToErrorPanel',
+          this.$bus.emit('addAndShowErrorToErrorPanel',
             {
               code: 'TooManyFilesImportCollection',
               messageForLogAndPopup: `Only one .ezCollection file is accepted. You tried to import ${filesInput.length} files.`
@@ -1334,7 +1334,7 @@ export default {
               })
             } catch (error) {
               thereWasAnError = true
-              this.$root.$emit('addAndShowErrorToErrorPanel',
+              this.$bus.emit('addAndShowErrorToErrorPanel',
                 {
                   code: 'CantParseFileImportCollection',
                   messageForLogAndPopup: `Error trying to parse the content of ${filesInput.length} file. Error: ${error.message}`
@@ -1343,7 +1343,7 @@ export default {
             }
           } catch (error) {
             thereWasAnError = true
-            this.$root.$emit('addAndShowErrorToErrorPanel',
+            this.$bus.emit('addAndShowErrorToErrorPanel',
               {
                 code: 'CantReadFileImportCollection',
                 messageForLogAndPopup: `Error trying to open ${filesInput.length} file. Error: ${error.message}`
@@ -1447,7 +1447,7 @@ export default {
           ? rejectedEntries[0].file.name
           : ''
       )
-      this.$root.$emit('addAndShowErrorToErrorPanel',
+      this.$bus.emit('addAndShowErrorToErrorPanel',
         {
           code: 'BadFileExtentionImportMapping',
           messageForLogAndPopup: `Only .ezFieldsMapping files are accepted. You tried to import "${badFileName}".`
@@ -1462,7 +1462,7 @@ export default {
       } else {
         // Deal with multiple or single file(s)
         if (Array.isArray(filesInput)) {
-          this.$root.$emit('addAndShowErrorToErrorPanel',
+          this.$bus.emit('addAndShowErrorToErrorPanel',
             {
               code: 'TooManyFilesImportMapping',
               messageForLogAndPopup: `Only one .ezFieldsMapping file is accepted. You tried to import ${filesInput.length} files.`
@@ -1514,7 +1514,7 @@ export default {
               })
             } catch (error) {
               thereWasAnError = true
-              this.$root.$emit('addAndShowErrorToErrorPanel',
+              this.$bus.emit('addAndShowErrorToErrorPanel',
                 {
                   code: 'CantParseFileImportMapping',
                   messageForLogAndPopup: `Error trying to parse the content of ${filesInput.length} file. Error: ${error.message}`
@@ -1523,7 +1523,7 @@ export default {
             }
           } catch (error) {
             thereWasAnError = true
-            this.$root.$emit('addAndShowErrorToErrorPanel',
+            this.$bus.emit('addAndShowErrorToErrorPanel',
               {
                 code: 'CantReadFileImportMapping',
                 messageForLogAndPopup: `Error trying to open ${filesInput.length} file. Error: ${error.message}`
