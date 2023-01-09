@@ -48,8 +48,7 @@ async function updateUser (to, from) {
   const token = (store() && store().state && store().state.mainStore && store().state.mainStore.jwtToken ? store().state.mainStore.jwtToken : '')
 
   const isAuthenticated = (auth ? await auth.isAuthenticated() : false)
-  console.log('isAuthenticated', isAuthenticated)
-  console.log('!!isAuthenticated', !!isAuthenticated)
+  console.log('isAuthenticated (Okta)', isAuthenticated)
 
   // If none, check if we are Okta authenticated, and if we are, store the new token in Store
   if (!(token && token.length)) {
