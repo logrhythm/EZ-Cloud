@@ -39,7 +39,7 @@
 
             <q-card-section>
               <q-table
-                :data="tableData"
+                :rows="tableData"
                 :columns="columns"
                 row-key="messageUid"
                 dense

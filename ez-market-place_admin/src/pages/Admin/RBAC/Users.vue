@@ -18,7 +18,7 @@
             </q-card-section>
             <q-card-section>
               <q-table
-                :data="tableData"
+                :rows="tableData"
                 :columns="columns"
                 row-key="userId"
                 dense
