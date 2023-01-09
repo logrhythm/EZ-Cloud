@@ -1,6 +1,5 @@
-import { createApp } from 'vue'
-import { LoginCallback } from '@okta/okta-vue'
-
+// import { createApp } from 'vue'
+import { LoginCallback, useAuth } from '@okta/okta-vue'
 import store from '../store'
 import packageDetails from '../../package.json'
 const productName = packageDetails.productName
@@ -16,7 +15,7 @@ const productName = packageDetails.productName
 //   }
 // }
 
-const app = createApp()
+// const app = createApp()
 
 // Update the tab/window's title
 function updateTitle (to, from, next) {
@@ -42,18 +41,26 @@ function updateTitle (to, from, next) {
 
 // Update the user details, if logged in
 async function updateUser (to, from) {
+  // Obtain the current oktaAuth instance
+  const auth = useAuth()
+
   // Get the previously stored JWT Token
   const token = (store() && store().state && store().state.mainStore && store().state.mainStore.jwtToken ? store().state.mainStore.jwtToken : '')
 
+  const isAuthenticated = (auth ? await auth.isAuthenticated() : false)
+  console.log('isAuthenticated', isAuthenticated)
+  console.log('!!isAuthenticated', !!isAuthenticated)
+
   // If none, check if we are Okta authenticated, and if we are, store the new token in Store
   if (!(token && token.length)) {
-    if (app.config.globalProperties.$auth.isAuthenticated) {
+    // if (app.config.globalProperties.$auth.isAuthenticated) {
+    if (auth && !!(await auth.isAuthenticated())) {
       try {
-        const oktaToken = await app.config.globalProperties.$auth.getAccessToken()
+        const oktaToken = await auth.getAccessToken()
         let userDetails = null
         if (oktaToken) {
           try {
-            userDetails = await app.config.globalProperties.$auth.getUser()
+            userDetails = await auth.getUser()
           } catch (error) {
             console.log(error)
           }
