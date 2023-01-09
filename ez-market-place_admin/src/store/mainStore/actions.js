@@ -1,6 +1,4 @@
 import { uid } from 'quasar'
-import i18n from 'boot/i18n'
-// import { version } from '../../../package.json'
 
 // ######################################################################
 // AUTHENTICATION
@@ -541,6 +539,14 @@ export function apiCall (params = {
   if (typeof params.onSuccessCallBack === 'undefined') { params.onSuccessCallBack = null }
   if (typeof params.onErrorCallBack === 'undefined') { params.onErrorCallBack = null }
 
+  const i18nT = (
+    typeof params.caller.$t === 'function'
+      ? params.caller.$t
+      : (text) => {
+          return text
+        }
+  )
+
   if (params.debug) {
     console.log('apiCall -- BEGIN')
   }
@@ -550,8 +556,8 @@ export function apiCall (params = {
     params.httpVerb === 'PUT' ||
     params.httpVerb === 'DELETE' ||
     params.httpVerb === 'PATCH'
-      ? i18n.t('Uploading')
-      : i18n.t('Downloading')
+      ? i18nT('Uploading')
+      : i18nT('Downloading')
   )
 
   const messageResult = (
@@ -559,8 +565,8 @@ export function apiCall (params = {
     params.httpVerb === 'PUT' ||
     params.httpVerb === 'DELETE' ||
     params.httpVerb === 'PATCH'
-      ? i18n.t('uploaded')
-      : i18n.t('loaded')
+      ? i18nT('uploaded')
+      : i18nT('loaded')
   )
 
   if (!params.silent && params.caller && params.caller.$q) {
@@ -608,9 +614,9 @@ export function apiCall (params = {
 
           // Update caption message
           if (params.countDataLabel && Array.isArray(response.data.records)) {
-            captionForLogAndPopup = i18n.t('Succesfully loaded') + ' ' + response.data.records.length + ' ' + params.dataLabel + '.'
+            captionForLogAndPopup = i18nT('Succesfully loaded') + ' ' + response.data.records.length + ' ' + params.dataLabel + '.'
           } else {
-            captionForLogAndPopup = i18n.t('Succesfully loaded') + ' ' + params.dataLabel + '.'
+            captionForLogAndPopup = i18nT('Succesfully loaded') + ' ' + params.dataLabel + '.'
           }
         }
 
@@ -621,25 +627,25 @@ export function apiCall (params = {
 
         if (response.data.error && response.data.error.length > 0) {
           queryResultedInError = true
-          messageForLogAndPopup = i18n.t('EZ Market API returned an error.')
+          messageForLogAndPopup = i18nT('EZ Market API returned an error.')
           if (process.env.DEV) {
             captionForLogAndPopup = response.data.error
           }
         } else {
           queryResultedInError = false
-          messageForLogAndPopup = (messageForLogAndPopup && messageForLogAndPopup.length ? messageForLogAndPopup + ' / ' : '') + i18n.t(`Succesfully ${messageResult}`) + ' ' + params.dataLabel + '.'
+          messageForLogAndPopup = (messageForLogAndPopup && messageForLogAndPopup.length ? messageForLogAndPopup + ' / ' : '') + i18nT(`Succesfully ${messageResult}`) + ' ' + params.dataLabel + '.'
         }
       } else {
         queryResultedInError = true
-        messageForLogAndPopup = i18n.t('Invalid response') + '.'
-        captionForLogAndPopup = i18n.t('No "response" object in AJAX response')
+        messageForLogAndPopup = i18nT('Invalid response') + '.'
+        captionForLogAndPopup = i18nT('No "response" object in AJAX response')
       }
     })
     .catch(function (errorMessage) {
       if (params.debug) {
         console.log('apiCall -- Catch')
       }
-      messageForLogAndPopup = i18n.t('EZ Market API returned an error.')
+      messageForLogAndPopup = i18nT('EZ Market API returned an error.')
       captionForLogAndPopup = (typeof errorMessage !== 'object' ? errorMessage : JSON.stringify(errorMessage))
       queryResultedInError = true
     })
@@ -649,7 +655,7 @@ export function apiCall (params = {
       }
       if (queryResultedInError) {
         if (params.logToConsole) {
-          console.log('⚠️ ' + i18n.t('[API ERROR]') + ' ' + messageForLogAndPopup + (captionForLogAndPopup && captionForLogAndPopup.length ? ' // ' + captionForLogAndPopup : ''))
+          console.log('⚠️ ' + i18nT('[API ERROR]') + ' ' + messageForLogAndPopup + (captionForLogAndPopup && captionForLogAndPopup.length ? ' // ' + captionForLogAndPopup : ''))
         }
         if (!params.silent && notificationPopupId) {
           notificationPopupId({
@@ -675,7 +681,7 @@ export function apiCall (params = {
         }
       } else {
         if (params.logToConsole) {
-          console.log('✔️ ' + i18n.t('[API SUCCESS]') + ' ' + messageForLogAndPopup + (captionForLogAndPopup && captionForLogAndPopup.length ? ' // ' + captionForLogAndPopup : ''))
+          console.log('✔️ ' + i18nT('[API SUCCESS]') + ' ' + messageForLogAndPopup + (captionForLogAndPopup && captionForLogAndPopup.length ? ' // ' + captionForLogAndPopup : ''))
         }
         if (!params.silent && notificationPopupId) {
           notificationPopupId({
