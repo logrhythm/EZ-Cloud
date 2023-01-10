@@ -1,9 +1,8 @@
-import Vue from 'vue'
-import { LoginCallback } from '@okta/okta-vue'
-
-// import { Store } from '../store/index.js'
+// import { createApp } from 'vue'
+import { LoginCallback, useAuth } from '@okta/okta-vue'
 import store from '../store'
-import { productName } from '../../package.json'
+import packageDetails from '../../package.json'
+const productName = packageDetails.productName
 
 // // Check if we have a JWT token, and redirect to /Login if not
 // function isLoggedIn (to, from, next) {
@@ -15,6 +14,8 @@ import { productName } from '../../package.json'
 //     // next()
 //   }
 // }
+
+// const app = createApp()
 
 // Update the tab/window's title
 function updateTitle (to, from, next) {
@@ -40,18 +41,25 @@ function updateTitle (to, from, next) {
 
 // Update the user details, if logged in
 async function updateUser (to, from) {
+  // Obtain the current oktaAuth instance
+  const auth = useAuth()
+
   // Get the previously stored JWT Token
   const token = (store() && store().state && store().state.mainStore && store().state.mainStore.jwtToken ? store().state.mainStore.jwtToken : '')
 
+  const isAuthenticated = (auth ? await auth.isAuthenticated() : false)
+  console.log('isAuthenticated (Okta)', isAuthenticated)
+
   // If none, check if we are Okta authenticated, and if we are, store the new token in Store
   if (!(token && token.length)) {
-    if (Vue.prototype.$auth.isAuthenticated) {
+    // if (app.config.globalProperties.$auth.isAuthenticated) {
+    if (auth && !!(await auth.isAuthenticated())) {
       try {
-        const oktaToken = await Vue.prototype.$auth.getAccessToken()
+        const oktaToken = await auth.getAccessToken()
         let userDetails = null
         if (oktaToken) {
           try {
-            userDetails = await Vue.prototype.$auth.getUser()
+            userDetails = await auth.getUser()
           } catch (error) {
             console.log(error)
           }
@@ -168,7 +176,7 @@ const routes = [
   // Always leave this as last one,
   // but you can also remove it
   {
-    path: '*',
+    path: '/:catchAll(.*)*',
     meta: { title: 'Oops...' },
     component: () => import('layouts/MainLayout.vue'),
     children: [

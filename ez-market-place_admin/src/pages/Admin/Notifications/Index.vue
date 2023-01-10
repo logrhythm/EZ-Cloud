@@ -13,7 +13,7 @@
             </q-card-section> -->
             <!-- <q-card-section class="flex flex-center">
               <q-btn dense color="primary" icon="refresh" :loading="statusesLoading" @click="loadStatuses()">
-                <q-tooltip content-style="font-size: 1em">
+                <q-tooltip style="font-size: 1em">
                   Reload the list of Statuses.
                 </q-tooltip>
               </q-btn>
@@ -26,7 +26,7 @@
 
             <!-- <q-card-section class="flex flex-center">
               <q-btn dense color="primary" icon="refresh" :loading="notificationsLoading" @click="loadNotifications()">
-                <q-tooltip content-style="font-size: 1em">
+                <q-tooltip style="font-size: 1em">
                   Reload the list of Notifications.
                 </q-tooltip>
               </q-btn>
@@ -39,7 +39,7 @@
 
             <q-card-section>
               <q-table
-                :data="tableData"
+                :rows="tableData"
                 :columns="columns"
                 row-key="messageUid"
                 dense
@@ -47,7 +47,7 @@
                 :filter="searchFilter"
                 :loading="dataLoading"
                 rows-per-page-label="Notifications per page:"
-                :pagination.sync="pagination"
+                :pagination="pagination"
               >
                 <template v-slot:top>
                   <div class="full-width row wrap justify-between">
@@ -57,7 +57,7 @@
                     <div class="row q-gutter-md">
                       <div class="col" >
                         <q-btn rounded dense color="primary" icon="add" label="Add New Notification" style="min-width:14rem;" @click="addNewNotification()" >
-                          <q-tooltip content-style="font-size: 1em">
+                          <q-tooltip style="font-size: 1em">
                             Create a new Notification.
                           </q-tooltip>
                         </q-btn>
@@ -74,7 +74,7 @@
                       </div>
                       <!-- <q-separator vertical dark color="orange" /> -->
                       <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadNotifications()">
-                        <q-tooltip content-style="font-size: 1em">
+                        <q-tooltip style="font-size: 1em">
                           Reload the list of Notifications.
                         </q-tooltip>
                       </q-btn>
@@ -85,12 +85,12 @@
                 <template v-slot:body-cell-actions="props">
                   <q-td :props="props">
                     <q-btn flat dense icon="edit" @click="doPromptForNotificationEdit(props.row)">
-                      <q-tooltip content-style="font-size: 1em">
+                      <q-tooltip style="font-size: 1em">
                         {{ $t('Edit Message') }}
                       </q-tooltip>
                     </q-btn>
                     <!-- <q-btn flat dense icon="delete" color="negative" @click="deleteNotificationPrompt(props.row)">
-                      <q-tooltip content-style="font-size: 1em">
+                      <q-tooltip style="font-size: 1em">
                         {{ $t('Delete Notification') }}
                       </q-tooltip>
                     </q-btn> -->
@@ -113,7 +113,7 @@
                       :disabled="props.row.statusName === 'Read'"
                       @click="updateNotificationStatusTo({messageFullDetails: props.row, toStatus: 'Read'})"
                     >
-                      <q-tooltip content-style="font-size: 1rem;" v-if="props.row.statusName === 'Unread'">
+                      <q-tooltip style="font-size: 1rem;" v-if="props.row.statusName === 'Unread'">
                         {{ $t('Mark as Read') }}
                       </q-tooltip>
                     </q-btn>
@@ -124,7 +124,7 @@
                       :disabled="props.row.statusName === 'Unread'"
                       @click="updateNotificationStatusTo({messageFullDetails: props.row, toStatus: 'Unread'})"
                     >
-                      <q-tooltip content-style="font-size: 1rem;" v-if="props.row.statusName === 'Read'">
+                      <q-tooltip style="font-size: 1rem;" v-if="props.row.statusName === 'Read'">
                         {{ $t('Mark as Unread') }}
                       </q-tooltip>
                     </q-btn>
@@ -134,7 +134,7 @@
                       dense
                       color="negative"
                     >
-                      <q-tooltip content-style="font-size: 1rem;">
+                      <q-tooltip style="font-size: 1rem;">
                         {{ $t('Delete') }}
                       </q-tooltip>
                       <q-menu anchor="top right" self="top left">
@@ -147,7 +147,7 @@
                             <q-item-section side>
                               <q-icon name="keyboard_arrow_right" />
                             </q-item-section>
-                            <q-menu content-class="bg-negative text-white" anchor="top end" self="top start">
+                            <q-menu class="bg-negative text-white" anchor="top end" self="top start">
                               <q-list>
                                 <q-item clickable v-close-popup @click="deleteNotificationById(props.row.messageUid)">
                                   <q-item-section>Confirm</q-item-section>
@@ -170,7 +170,7 @@
                       <q-icon name="visibility" color="orange" size="md" v-else-if="props.value === 'Visible'" />
                       <q-icon name="auto_delete" color="negative" style="opacity: .5;" size="md" v-else-if="props.value === 'To be deleted'" />
                       <q-icon name="question_mark" color="orange" size="md" v-else />
-                      <q-tooltip content-style="font-size: 1em">
+                      <q-tooltip style="font-size: 1em">
                         {{ props.row.statusDescription }}
                       </q-tooltip>
                       <br>
@@ -200,7 +200,7 @@
                 <template v-slot:body-cell-sentOn="props">
                   <q-td :props="props">
                     <div>
-                      <q-tooltip content-style="font-size: 1rem;">
+                      <q-tooltip style="font-size: 1rem;">
                         {{ props.value }}
                       </q-tooltip>
                       {{ timeAgo(props.value) }}
@@ -211,7 +211,7 @@
                 <template v-slot:body-cell-updatedOn="props">
                   <q-td :props="props">
                     <div>
-                      <q-tooltip content-style="font-size: 1rem;">
+                      <q-tooltip style="font-size: 1rem;">
                         {{ props.value }}
                       </q-tooltip>
                       {{ timeAgo(props.value) }}
@@ -278,7 +278,6 @@
             <template v-slot:option="scope">
               <q-item
                 v-bind="scope.itemProps"
-                v-on="scope.itemEvents"
                 v-if="scope.opt.label && scope.opt.label !== '<hr>'"
               >
                 <q-item-section>
@@ -318,7 +317,6 @@
             <template v-slot:option="scope">
               <q-item
                 v-bind="scope.itemProps"
-                v-on="scope.itemEvents"
                 v-if="scope.opt.label && scope.opt.label !== '<hr>'"
               >
                 <q-item-section>
@@ -646,7 +644,7 @@ export default {
     },
     addNewOrUpdateNotificationFailure (payload) {
       // Pop this to the screen (via MainLayout)
-      this.$root.$emit('addAndShowErrorToErrorPanel', payload)
+      this.$bus.emit('addAndShowErrorToErrorPanel', payload)
       this.loadNotifications()
     },
     timeAgo (timestamp) {

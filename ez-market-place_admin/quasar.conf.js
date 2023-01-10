@@ -24,7 +24,9 @@ module.exports = function (/* ctx */) {
       'i18n',
       'axios',
       'global-constants', // Global Constants - TM 2021-04-23
-      'notify-defaults' // Default values for Notify - TM 2021-05-10
+      'notify-defaults', // Default values for Notify - TM 2021-05-10
+      'okta', // Okta authentication - TM 2023-01-05
+      'event-bus' // Event Bus - TM 2023-01-05
     ],
 
     // https://v1.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
@@ -70,7 +72,8 @@ module.exports = function (/* ctx */) {
       // https://v1.quasar.dev/quasar-cli/handling-webpack
       // "chain" is a webpack-chain object https://github.com/neutrinojs/webpack-chain
       chainWebpack (chain) {
-        chain.plugin('eslint-webpack-plugin')
+        chain
+          .plugin('eslint-webpack-plugin')
           .use(ESLintPlugin, [{ extensions: ['js', 'vue'] }])
       },
 
@@ -88,7 +91,7 @@ module.exports = function (/* ctx */) {
     // https://v1.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-framework
     framework: {
       iconSet: 'material-icons', // Quasar icon set
-      lang: 'en-us', // Quasar language pack
+      lang: 'en-US', // Quasar language pack
       config: {},
 
       // Possible values for "importStrategy":
