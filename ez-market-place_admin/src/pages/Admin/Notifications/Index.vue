@@ -278,7 +278,6 @@
             <template v-slot:option="scope">
               <q-item
                 v-bind="scope.itemProps"
-                v-on="scope.itemEvents"
                 v-if="scope.opt.label && scope.opt.label !== '<hr>'"
               >
                 <q-item-section>
@@ -318,7 +317,6 @@
             <template v-slot:option="scope">
               <q-item
                 v-bind="scope.itemProps"
-                v-on="scope.itemEvents"
                 v-if="scope.opt.label && scope.opt.label !== '<hr>'"
               >
                 <q-item-section>
