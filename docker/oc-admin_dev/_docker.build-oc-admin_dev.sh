@@ -36,7 +36,7 @@ echo "### CLONE GIT REPO..."
 git clone https://github.com/logrhythm/EZ-Cloud.git
 
 echo "### BUILD \`oc-admin_dev\` DOCKER IMAGE..."
-docker build -t tonymasse/oc-admin_dev:v1.1 -t tonymasse/oc-admin_dev:latest ./
+docker build -t tonymasse/oc-admin_dev:v1.2 -t tonymasse/oc-admin_dev:latest ./
 
 echo "### Done."
 
