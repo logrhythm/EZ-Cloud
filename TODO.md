@@ -28,6 +28,8 @@
   - [x] Issue #21 - Deployment fails at last step with LR 7.9 SIEM
 - Athentication
   - [x] Private key for encryption of JWT token is cached incorectly as empty if OC-DB is not ready on the first try
+- SIEM SQL
+  - [x] Issue #28 - Last step of Deployment always fail the first time
 
 ## TO TEST
 

@@ -775,7 +775,7 @@ ___________  DO NOT MODIFY THE LINE BELOW  __________
 
 						-- Add the identifier, only if @HostIdentifierID is not null, as it otherwhise cause an error
 						IF @HostIdentifierID IS NOT NULL
-							exec LogRhythm_EMDB_HostIdentifierToMsgSource_Insert @HostIdentifierID=@HostIdentifierID,@MsgSourceID=@TmpMsgSourceID,@MsgSourceFormat=1
+							exec [LogRhythmEMDB].[dbo].[LogRhythm_EMDB_HostIdentifierToMsgSource_Insert] @HostIdentifierID=@HostIdentifierID,@MsgSourceID=@TmpMsgSourceID,@MsgSourceFormat=1
 
 						-- Remove the processed item
 						DELETE TOP (1) #keyed_temp_HostIdentifiers where active_key = 1
