@@ -3,6 +3,7 @@
 # =============================================
 # Author:      Tony Massé
 # Create date: 2022-07-11
+# Modified on: 2023-01-04 - Up container build version to v1.1
 # Description: Build the Dev version of the OC-Admin container `oc-admin_dev`.
 # Parameters:
 #  --help         Shows Help message
@@ -35,7 +36,7 @@ echo "### CLONE GIT REPO..."
 git clone https://github.com/logrhythm/EZ-Cloud.git
 
 echo "### BUILD \`oc-admin_dev\` DOCKER IMAGE..."
-docker build -t tonymasse/oc-admin_dev:v0.9.1 -t tonymasse/oc-admin_dev:latest ./
+docker build -t tonymasse/oc-admin_dev:v1.2 -t tonymasse/oc-admin_dev:latest ./
 
 echo "### Done."
 
