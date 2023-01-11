@@ -19,7 +19,8 @@ GO
 -- Update date: 2022-02-15 - Collect Log Source Identifiers for the OC Log Source, to then re-apply them after they get deleted
 -- Update date: 2022-08-03 - To add `EZ_VERSION` flag
 -- Update date: 2022-11-29 - To deal with SIEM v7.9.x and above (add @EventLogFilter)
--- EZ_VERSION: 20221129.02 :EZ_VERSION
+-- Update date: 2023-01-11 - To fix bug #28 / ENG-23871 - "Could not find stored procedure 'LogRhythm_EMDB_HostIdentifierToMsgSource_Insert'."
+-- EZ_VERSION: 20230111.01 :EZ_VERSION
 -- =============================================
 
 CREATE PROCEDURE [dbo].[OC_Admin_Upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource] 
@@ -775,7 +776,7 @@ ___________  DO NOT MODIFY THE LINE BELOW  __________
 
 						-- Add the identifier, only if @HostIdentifierID is not null, as it otherwhise cause an error
 						IF @HostIdentifierID IS NOT NULL
-							exec LogRhythm_EMDB_HostIdentifierToMsgSource_Insert @HostIdentifierID=@HostIdentifierID,@MsgSourceID=@TmpMsgSourceID,@MsgSourceFormat=1
+							exec [LogRhythmEMDB].[dbo].[LogRhythm_EMDB_HostIdentifierToMsgSource_Insert] @HostIdentifierID=@HostIdentifierID,@MsgSourceID=@TmpMsgSourceID,@MsgSourceFormat=1
 
 						-- Remove the processed item
 						DELETE TOP (1) #keyed_temp_HostIdentifiers where active_key = 1

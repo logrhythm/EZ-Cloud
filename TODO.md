@@ -8,13 +8,13 @@
   - [x] API - `updateStreamConfigurationForBeat()` for LR Beats
   - [x] API - `deleteStreamConfigurationForBeat()` for LR Beats
 - Add support for Beats that require file dropped as part of Config
-  - [ ] PubSub
-  - [ ] WebHook HTTPS
+  - [x] PubSub
+  - [x] WebHook HTTPS
 - Beat Support
   - [x] S3
-  - [ ] PubSub
-  - [ ] EventHub
-  - [ ] WebHook HTTPS
+  - [x] PubSub
+  - [x] EventHub
+  - [x] WebHook HTTPS
 - [ ] API - Admin - MS SQL - Add MS SQL test
 - [x] Use Beats's configuration provided by Frontend when starting Tail, instead of using local copy of `collectionConfigToYml()`
 
@@ -26,6 +26,10 @@
 - API
   - [x] Crash when no MasterID is returned from EMDB
   - [x] Issue #21 - Deployment fails at last step with LR 7.9 SIEM
+- Athentication
+  - [x] Private key for encryption of JWT token is cached incorectly as empty if OC-DB is not ready on the first try
+- SIEM SQL
+  - [x] Issue #28 - Last step of Deployment always fail the first time
 
 ## TO TEST
 
