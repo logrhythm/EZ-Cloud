@@ -441,7 +441,7 @@ updateScript() {
   # Attempt to curl the updated lrctl script from the prod URL
   # If the curl returns a non-zero exit code, fail
   local temp_file="${BASH_SOURCE[0]}_temp"
-  curl --silent --fail "${prod_script_file_url}" > "${temp_file}"
+  curl --silent --fail --location "${prod_script_file_url}" > "${temp_file}"
   if [[ $? -ne "0" ]]; then
     echo "Failed to fetch ${prod_script_file_url}."
     rm -f "${temp_file}"
