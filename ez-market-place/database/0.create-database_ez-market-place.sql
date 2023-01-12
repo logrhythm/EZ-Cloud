@@ -91,6 +91,71 @@ INSERT IGNORE INTO `statuses` (`id`, `name`, `description`) VALUES
 	(6, 'Read', 'The item is marked as Read');
 /*!40000 ALTER TABLE `statuses` ENABLE KEYS */;
 
+--
+-- Create table `statistics`
+--
+CREATE TABLE IF NOT EXISTS statistics (
+  uid CHAR(40) NOT NULL DEFAULT uuid(),
+  date DATE NOT NULL DEFAULT current_timestamp,
+  deployment_uid CHAR(40) NOT NULL,
+  deployment_master_id INT(11) NOT NULL,
+  publisher_uid CHAR(40) NOT NULL,
+  count INT(11) NOT NULL DEFAULT 0,
+  server_version VARCHAR(20) DEFAULT NULL,
+  client_version VARCHAR(20) DEFAULT NULL,
+  PRIMARY KEY (date, deployment_uid, publisher_uid, deployment_master_id)
+)
+ENGINE = INNODB,
+AVG_ROW_LENGTH = 226,
+CHARACTER SET utf8mb4,
+COLLATE utf8mb4_general_ci;
+
+--
+-- Create index `deploymentUid` on table `statistics`
+--
+ALTER TABLE statistics 
+  ADD INDEX deploymentUid(deployment_uid);
+
+--
+-- Create index `publisherUid` on table `statistics`
+--
+ALTER TABLE statistics 
+  ADD INDEX publisherUid(publisher_uid);
+
+--
+-- Create index `masterId` on table `statistics`
+--
+ALTER TABLE statistics 
+  ADD INDEX masterId(deployment_master_id);
+
+--
+-- Create index `server_version` on table `statistics`
+--
+ALTER TABLE statistics 
+  ADD INDEX server_version(server_version);
+
+--
+-- Create index `client_version` on table `statistics`
+--
+ALTER TABLE statistics 
+  ADD INDEX client_version(client_version);
+
+
+--
+-- Create table `aka_redirections`
+--
+
+CREATE TABLE `aka_redirections` (
+	`uid` CHAR(40) NOT NULL DEFAULT UUID() COLLATE 'utf8mb4_general_ci',
+	`short_path` VARCHAR(1024) NOT NULL DEFAULT UUID() COLLATE 'utf8mb4_general_ci',
+	`target_server` VARCHAR(2048) NOT NULL DEFAULT 'https://docs.logrhythm.com' COLLATE 'utf8mb4_general_ci',
+	`target_path` VARCHAR(4096) NOT NULL DEFAULT '/docs' COLLATE 'utf8mb4_general_ci',
+	PRIMARY KEY (`uid`),
+	UNIQUE INDEX `short_path` (`short_path`)
+)
+COLLATE='utf8mb4_unicode_ci'
+;
+
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
