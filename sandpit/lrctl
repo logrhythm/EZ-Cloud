@@ -14,7 +14,7 @@ lrctl_new_shell_after_group_membership=1
 lrctl_docker_membership_return_code=255
 ocdb_repo="gcr.io/lrcollection"
 ocdb_version="6.0.2"
-ocadmin_repo="tonymasse/oc-admin"
+ocadmin_repo="tonymasse"
 ocadmin_version="v1.0.1"
 
 lrctl_volume_mounts=()
