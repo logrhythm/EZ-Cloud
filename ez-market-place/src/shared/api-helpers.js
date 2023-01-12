@@ -56,6 +56,9 @@ const publisherSchema = yup.object().shape(
 // Number of days to look back. Passed via HTTP Parameter (URL or Body).
 const daysLookBackSchema = yup.number().required();
 
+// Path of the Help page to redirect to. Passed via HTTP Parameter (URL or Body).
+const redirectorPathSchema = yup.string().required();
+
 // Fall back error message
 const defaultErrorMessage = 'Error updating or querying the database';
 
@@ -252,6 +255,25 @@ function safeDaysLookBackUid(req, idParamName) {
 }
 
 /**
+ * Extract and sanitise Help Path for redirection
+ * @param {*} req Express Router's request object
+ * @param {*} idParamName Name of the parameter to look for in the request
+ * @returns Sanitised Help Path
+ */
+function safeRedirectorPath(req, pathParamName) {
+  // Get the raw Days Look Back
+  const redirectorPath = reqQuery(req, pathParamName);
+console.log('redirectorPath: ', redirectorPath); // XXXX
+  // Check validity
+  if (redirectorPathSchema.isValidSync(redirectorPath)) {
+    return redirectorPath;
+  }
+
+  // Fall back to NULL
+  return null;
+}
+
+/**
  * Get the list of Statuses
  * @returns The list of Statuses
  */
@@ -293,6 +315,7 @@ module.exports = {
   publisherUidSchema,
   publisherSchema,
   daysLookBackSchema,
+  redirectorPathSchema,
   defaultErrorMessage,
   reqParam,
   reqQuery,
@@ -303,5 +326,6 @@ module.exports = {
   safePublisherUid,
   safePublisherObject,
   safeDaysLookBackUid,
+  safeRedirectorPath,
   getStatuses
 };
