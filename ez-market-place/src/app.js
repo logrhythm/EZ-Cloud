@@ -13,6 +13,7 @@ app.use(bodyParser.json({ limit: '5mb' }));
 
 const middlewares = require('./middlewares');
 const api = require('./api');
+const redirector = require('./redirector');
 
 // Extract the deployment and publisher UIDs from the "ez-publisher" Header
 app.use(middlewares.extractDeploymentAndPublishUids);
@@ -39,6 +40,8 @@ app.get('/test', (req, res) => {
 });
 
 app.use('/API/v1', api);
+// For Help page redirection
+app.use('/aka', redirector);
 
 // // Static web site hosting:
 // // - First, the home page

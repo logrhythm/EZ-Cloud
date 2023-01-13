@@ -1,0 +1,1183 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd)"
+script_name=$(basename "${BASH_SOURCE[0]}")
+
+# === LRCTL VARIABLES ===
+
+lrctl_debug=0
+lrctl_version="6.5.5"
+lrctl_image=""
+lrctl_new_shell_after_group_membership=1
+lrctl_docker_membership_return_code=255
+ocdb_repo="gcr.io/lrcollection"
+ocdb_version="6.0.2"
+ocadmin_repo="tonymasse"
+ocadmin_version="v1.0.1"
+
+lrctl_volume_mounts=()
+# Expose the hosts Docker socket to the container.
+lrctl_volume_mounts+=(/var/run/docker.sock:/var/run/docker.sock)
+# Mount the docker config directory which contains the auth info for gcr.io.
+lrctl_volume_mounts+=(${HOME}/.docker:/root/.docker)
+# Mount our working directory
+container_working_dir="/cwd"
+lrctl_volume_mounts+=($PWD:${container_working_dir})
+# LRCTL config volume
+lrctl_config_volume="lrctl_state_info"
+# LRCTL config .yml
+lrctl_config_yml="auto_update.yml"
+# Starting value for global auto_update
+global_autoupdate_enabled="true"
+
+# Output file path, if provided
+output_file_path=""
+
+# Arguments needed to set file permissions and working dir
+set_permissions=0
+
+# Specify to use the local versions file 
+local_versions_volume="lrctl_versions_info"
+local_versions_realpath=""
+local_versions_mount_path="/lrctl/versions/versions.yml"
+
+# URLs to check
+prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/EZCloud/latest.yml"
+container_registry_url="https://gcr.io"
+
+# prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/EZCloud/lrctl"
+prod_script_file_url="https://github.com/logrhythm/EZ-Cloud/raw/v1.0/sandpit/lrctl"
+
+# Track the files that should be cleaned up. We add one file just to avoid the
+# array being empty.
+cleanup_files=(mktemp)
+
+# Proxy settings
+http_proxy=${http_proxy:-""}
+https_proxy=${https_proxy:-""}
+
+# === CLEANUP ===
+
+cleanupFile() {
+  cleanup_files+=("${1}")
+}
+
+cleanUp() {
+  rm -rf "${cleanup_files[@]}"
+}
+trap 'cleanUp' INT TERM HUP EXIT
+
+# === YAML FNS ===
+
+# Courtesy of https://stackoverflow.com/a/21189044
+# For example,
+#
+# services:
+#  lrctl:
+#    image: gcr.io/lrcollection/lrctl
+#    version: 0.1.0
+#  open-collector:
+#    image: gcr.io/lrcollection/opencollector
+#    version: 0.1.0
+#  metrics:
+#    image: gcr.io/lrcollection/metrics
+#    version: 0.1.0
+#  eventhubbeat:
+#    image: gcr.io/lrcollection/beats/eventhubbeat
+#    version: 0.1.0
+#
+# will become:
+#
+# services_lrctl_image="gcr.io/lrcollection/lrctl"
+# services_lrctl_version="0.1.0"
+# services_open-collector_image="gcr.io/lrcollection/opencollector"
+# services_open-collector_version="0.1.0"
+# services_metrics_image="gcr.io/lrcollection/metrics"
+# services_metrics_version="0.1.0"
+# services_eventhubbeat_image="gcr.io/lrcollection/beats/eventhubbeat"
+# services_eventhubbeat_version="0.1.0"
+parse_yaml() {
+  local s='[[:space:]]*' w='[a-zA-Z0-9_-]*' fs=$(echo @ | tr @ '\034')
+
+  echo "$@" | sed -ne "s|^\($s\):|\1|" \
+    -e "s|^\($s\)\($w\)$s:$s[\"']\(.*\)[\"']$s\$|\1$fs\2$fs\3|p" \
+    -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p" |
+    awk -F$fs '{
+      indent = length($1)/2;
+      vname[indent] = $2;
+      for (i in vname) {if (i > indent) {delete vname[i]}}
+      if (length($3) > 0) {
+         vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+         printf("%s%s=\"%s\"\n", vn, $2, $3);
+      }
+   }'
+}
+
+# === DOCKER CONTAINER FNS ===
+removeContainerIfExists() {
+  local found=$(docker container ls -a | grep "\<$1\>")
+  if [[ ! -z "$found" ]]; then
+    # Force remove if container is a running instance
+    docker container rm -f "$1" 1> /dev/null
+  fi
+}
+
+# === DOCKER VOLUME FNS ===
+
+dockerVolumeExists() {
+  local volume_name="$1"
+  # Check if the volume exists without causing the script to exit on error due to errexit option
+  docker volume ls | grep "\<${volume_name}\>" &> /dev/null && found=$? || found=$?
+  local output="FALSE"
+  if [[ $found == 0 ]]; then
+    output="TRUE"
+  fi
+  echo "${output}"
+}
+
+createDockerVolume() {
+  # Save the volume name and preserve the rest of the parameters to pass to the volume create command
+  local volume_name="$1"
+  shift 1
+
+  if [[ $(dockerVolumeExists "${volume_name}") == "TRUE" ]]; then
+    removeDockerVolume "${volume_name}"
+  fi
+
+  # The "$@" does not expand the same way as when in echo. Hence, doing this ugly workaround.
+  docker volume create "$@" "${volume_name}" 1> /dev/null
+}
+
+removeDockerVolume() {
+  local volume_name="$1"
+  docker volume rm "${volume_name}" 1> /dev/null
+}
+
+isTarFile() {
+  local filename="${1}"
+  # If the file command is installed, use it. Otherwise, fallback to checking the extension.
+  if command > /dev/null -v file; then
+    file "${filename}" | grep "tar archive" &> /dev/null
+  else
+    if [[ "${filename}" =~ ^(.*[.]tar) ]]; then
+      return 0
+    elif [[ "${filename}" =~ ^(.*[.]tar[.].*) ]]; then
+      return 0
+    elif [[ "${filename}" =~ ^(.*[.]tgz) ]]; then
+      return 0
+    fi
+    return 1
+  fi
+
+}
+
+copyToVolume() {
+  local input="$1"
+  local volume_name="$2"
+  local container_name="cp_helper"
+  local mount_point="/cp_target"
+
+  removeContainerIfExists "${container_name}"
+  docker container create --name "${container_name}" -v "${volume_name}:${mount_point}" alpine \
+    1> /dev/null
+  if isTarFile "${input}"; then
+    cat "${input}" | docker cp - "${container_name}:${mount_point}"
+  else
+    docker cp "${input}" "${container_name}:${mount_point}"
+  fi
+  docker container rm "${container_name}" 1> /dev/null
+}
+
+# === DOCKER IMAGE FNS ===
+
+# Return the image IDs matching the image name.
+checkForImage() {
+  local image="$1"
+  docker image ls -q "${image}" 2> /dev/null
+}
+
+# Pull an image
+pullImage() {
+  local image="$1"
+  local name="${2:-}"
+  if [[ -z "${name}" ]]; then
+    name="${image}"
+  fi
+
+  # If we do have a copy of the image locally, don't pull the image
+  if [[ -n "$(checkForImage ${image})" ]]; then
+    return
+  fi
+
+  printf >&3 "Pulling down ${name} version ${image}..."
+  if [[ "${lrctl_debug}" -gt 0 ]]; then
+    printf >&3 "\n"
+    docker pull "${image}"
+  else
+    docker pull "${image}" 1> /dev/null
+  fi
+  printf >&3 "COMPLETE\n"
+}
+
+# === DOCKER INIT FNS ===
+
+# Make sure that the user is in the docker group. This allows the current user
+# to not have to run sudo to execute docker calls.
+ensureUserIsInDockerGroup() {
+  local docker_group="docker"
+
+  # The call to id is wrapped in a sub-call, because it can return a non-zero
+  # exit code if a group name cannot be found. Also, we are purposefully not specifying the
+  # username, in the call to id. Without it, the command will check the current
+  # process credentials without reading the groups that are directly assigned.
+  # It is possible that a user will be included in a group by other means than
+  # direct inclusion.
+  if echo "$(id ${USER} -nG 2> /dev/null)" | grep -qw "${docker_group}"; then
+    printf >&3 "${USER} belongs to ${docker_group}\n"
+  else
+    if [[ "$USER" == "root" ]]; then
+       echo "User is root. Skip adding user to ${docker_group} group."
+    else
+      # Add the user to the docker group.
+      printf >&3 "${USER} does not belong to ${docker_group}. Adding..."
+      sudo gpasswd -a "${USER}" "${docker_group}" 1> /dev/null
+      printf >&3 "DONE\n"
+
+      printf >&3 "Running init again to complete the setup.\n"
+      sudo -Eu $USER "${BASH_SOURCE[0]}" init
+
+      if [[ "${lrctl_new_shell_after_group_membership}" -gt 0 ]]; then
+        printf >&3 "Starting a new shell so that the docker membership will be enabled.\n"
+        exec sudo su - $USER
+      fi
+    fi
+    return ${lrctl_docker_membership_return_code}
+  fi
+}
+
+# check if docker is installed on machine
+installDockerCE() {
+  curl -fsSL https://get.docker.com/ | sh
+  sudo systemctl start docker
+  sudo systemctl enable docker
+  # Disable exit on error so that we can capture the return status from ensureUserIsInDockerGroup.
+  set +e
+  ensureUserIsInDockerGroup
+  set -e
+}
+
+get_distribution() {
+  lsb_dist=""
+	# Every system that we officially support has /etc/os-release
+	if [ -r /etc/os-release ]; then
+		lsb_dist="$(. /etc/os-release && echo "$ID")"
+	fi
+	# Returning an empty string here should be alright since the
+	# case statements don't act unless you provide an actual value
+ echo "${lsb_dist}"
+}
+
+# Check the docker version
+checkDockerVersion() {
+  local target_client_major=18
+  local target_client_minor=6
+  local target_daemon_major=18
+  local target_daemon_minor=6
+  local target_client_version="${target_client_major}.${target_client_minor}"
+  local target_daemon_version="${target_daemon_major}.${target_daemon_minor}"
+
+  local docker_version=$(docker version)
+  local client_version_major=$(echo "${docker_version}" | grep -m 1 "Version:" | tr -d " \t" | cut -f2 -d ":" | cut -c1-2)
+  local client_version_minor=$(echo "${docker_version}" | grep -m 1 "Version:" | tr -d " \t" | cut -f2 -d ":" | cut -c4-5)
+  local daemon_version_major=$(echo "${docker_version}" | grep "Version:" | sed -n 2p | tr -d " \t" | cut -f2 -d ":" | cut -c1-2)
+  local daemon_version_minor=$(echo "${docker_version}" | grep "Version:" | sed -n 2p | tr -d " \t" | cut -f2 -d ":" | cut -c4-5)
+
+  if [[ "${client_version_major}" < $target_client_major ]]; then
+    echo >&2 "Docker client version ${client_version_major} is less than required minimum version of ${target_client_version}"
+    exit 1
+  fi
+  if [[ ("${client_version_major}" == $target_client_major) && ("${client_version_minor#0}" < $target_client_minor) ]]; then
+    echo >&2 "Docker client version ${client_version_major}.${client_version_minor} is less than required minimum version of ${target_client_version}"
+    exit 1
+  fi
+
+  if [[ "${daemon_version_major}" < $target_daemon_major ]]; then
+    echo >&2 "Docker daemon version ${daemon_version_major} is less than required minimum version of ${target_daemon_version}"
+    exit 1
+  fi
+  if [[ ("${daemon_version_major}" == $target_daemon_major) && ("${daemon_version_minor#0}" < $target_daemon_minor) ]]; then
+    echo >&2 "Docker daemon version ${daemon_version_major}.${daemon_version_minor} is less than required minimum version of ${target_daemon_version}"
+    exit 1
+  fi
+}
+
+# === CONNECTION FNS ===
+
+# Retrieve the specified URL.
+getUrl() {
+  local url="${1}"
+  curl -sSL --fail "${url}"
+}
+
+# Check that the specified URL can be reached.
+checkUrl() {
+  local url="${1}"
+  local err_file=$(mktemp)
+  cleanupFile "${err_file}"
+
+  printf >&3 "Checking connection to %s..." "${url}"
+  if getUrl "${url}" 1> /dev/null 2> "${err_file}"; then
+    printf >&3 "SUCCESS\n"
+  else
+    printf >&3 "FAIL\n"
+    printf >&3 "%s\n\n" "$(< "${err_file}")"
+    return 1
+  fi
+}
+
+# === COMMAND AVAILABILITY ===
+
+# Check that the specified command is available.
+checkCommand() {
+  local cmd="${1}"
+  printf >&3 "Checking availability of %s..." "${cmd}"
+  if command -v "${cmd}" &> /dev/null; then
+    printf >&3 "SUCCESS\n"
+  else
+    printf >&3 "FAIL\n"
+    return 1
+  fi
+} 
+
+# === LRCTL FNS ===
+
+# Execute checks to see if the pre-requisites are installed and certain
+# connections can be made.
+check() {
+  local fail_count=0
+
+  if ! checkUrl "${container_registry_url}"; then
+    fail_count=$(($fail_count + 1))
+  fi
+
+  # If not using a local versions file, then check connectivity to the the prod
+  # versions file.
+  if [[ -z "${local_versions_realpath}" ]]; then
+    if ! checkUrl "${prod_versions_file_url}"; then
+      fail_count=$(($fail_count + 1))
+    fi
+  fi
+
+  if ! checkCommand docker; then    
+   if [[ $(get_distribution) != "rhel" ]]; then
+      echo "Docker is not currently installed. This is a requirement for Open Collector. Would you like to install Community Edition of Docker (Docker CE)? (y/n)"
+      read doInstallDocker    
+      if [[ ( "$doInstallDocker" == "y" ) || ( "$doInstallDocker" == "Y" ) ]]; then
+        installDockerCE
+      else
+        printf >&3 "Please install the docker client tools before proceeding.\n"
+        fail_count=$(($fail_count + 1))  
+      fi 
+    else 
+      printf >&3 "Please install the docker client tools before proceeding.\n"
+      fail_count=$(($fail_count + 1))  
+    fi
+  fi
+
+  if [[ "${fail_count}" -gt 0 ]]; then
+    printf >&3 "%s of the checks failed.\n" "${fail_count}"
+    return 1
+  else
+    printf >&3 "All of the checks succeeded.\n"
+  fi
+} 
+
+ensureDockerIsAccessable() {
+  # Disable exit on error so that we can capture the return status from docker version.
+  set +e
+    docker version &> /dev/null
+    daemon_status=$?
+    if [[ "${daemon_status}" -gt "0" ]]; then
+      echo "Docker daemon cannot be reached. New shell signin required."
+      exit 1
+    fi
+  set -e
+}
+
+
+getScriptVersion() {
+  printf >&3 "\nLrctl Script Version: ${lrctl_version}\n\n"
+}
+
+replaceSelf() {
+  echo "Updating Lrctl script to lastest version..."
+  local new_script="$1"
+
+  chmod +x "${new_script}"
+  mv "${new_script}" "${BASH_SOURCE[0]}"
+  echo "Update complete."
+}
+
+# Replaces the current script with latest.
+updateScript() {
+  if [[ $(dockerVolumeExists "${lrctl_config_volume}") == "FALSE" ]]; then
+    createLRCTLConfigVolume
+  fi
+
+  # Failure to validate/update should not prevent users from being able to execute lrctl
+  set +e
+
+  # Is autoupdate enabled or disabled
+  local container_name="cp_helper"
+  local mount_point="/cp_target"
+  local file_content=$(docker run --name ${container_name} --rm -v ${lrctl_config_volume}:/${mount_point} alpine cat ${mount_point}/${lrctl_config_yml})
+  global_autoupdate_enabled=$(echo "$file_content" | awk '{print $2}' | xargs)
+  if [[ "${global_autoupdate_enabled}" == "false" ]]; then
+    return 0
+  fi
+
+  # Attempt to curl the updated lrctl script from the prod URL
+  # If the curl returns a non-zero exit code, fail
+  local temp_file="${BASH_SOURCE[0]}_temp"
+  curl --silent --fail --location "${prod_script_file_url}" > "${temp_file}"
+  if [[ $? -ne "0" ]]; then
+    echo "Failed to fetch ${prod_script_file_url}."
+    rm -f "${temp_file}"
+    return 1
+  fi
+  
+  # Check in ${temp_file} for "lrctl_version=" key
+  # If the grep returns a non-zero exit code, fail
+  grep -w --silent "lrctl_version=" "${temp_file}"
+  if [[ $? -ne "0" ]]; then
+    echo "Malformed LRCTL file downloaded from ${prod_script_file_url}."
+    rm -f "${temp_file}"
+    return 1
+  fi
+
+  # Compare checksums for equivalence
+  local remote_check_sum=$(cat ${temp_file} | sha256sum | awk '{print $1}')
+  local local_check_sum=$(cat ${BASH_SOURCE[0]} | sha256sum | awk '{print $1}')
+  if [[ "$remote_check_sum" == "$local_check_sum" ]]; then
+    rm -f "${temp_file}"
+    return 0
+  fi
+
+  # Replace current script with latest
+  replaceSelf "${temp_file}"
+  set -e
+
+  return 0
+}
+
+# Initialize the host so that lrctl can run properly.
+init() {
+ # Disable exit on error so that we can capture the return status from ensureUserIsInDockerGroup.
+  set +e
+  ensureUserIsInDockerGroup
+  ensureDockerIsAccessable
+  local docker_membership_status=$?
+  set -e
+  case ${docker_membership_status} in
+    0)
+      # No errors and the user was already in the docker group; proceed with init
+      ;;
+    ${lrctl_docker_membership_return_code})
+      # User was added to the docker group; do not proceed with init until a new session is started
+      return 0
+      ;;
+    *)
+      # Something bad has happened; return the status code
+      return "${docker_membership_status}"
+      ;;
+  esac
+
+  # NOTE: The Docker version check must come after the user has been allowed to talk to Docker.
+  checkDockerVersion
+
+  echo -n "Enabling docker daemon..."
+  set +e
+  sudo systemctl enable docker
+  if [[ ${PIPESTATUS[0]} == 1 ]]; then echo "FAILED, run 'systemctl enable docker' as root so docker runs automatically on system start up!!!"; else echo "SUCCESS"; fi
+  set -e
+
+  # Create LRCTL config volume and .yml file
+  createLRCTLConfigVolume
+
+  local msg=""
+  msg+="Initialization is complete. You may proceed to use ${script_name}. "
+  msg+="For help, run\n  ./${script_name} help\n"
+  printf >&3 "${msg}"
+}
+
+# Create LRCTL_state_info volume and auto_update.yml to hold LRCTL config data
+createLRCTLConfigVolume() {
+  echo 'Creating lrctl_state_info volume'
+  createDockerVolume "${lrctl_config_volume}"
+  echo "auto_update: true" > "${lrctl_config_yml}"
+  copyToVolume "${lrctl_config_yml}" "${lrctl_config_volume}"
+  rm "${lrctl_config_yml}"
+}
+
+setupLocalMount() {
+  if [[ "$set_permissions" -eq 1 ]]; then
+    # Add the proper uid/gid flags
+    docker_args+=("--uid" "$(id -u $(whoami))")
+    docker_args+=("--gid" "$(id -g $(whoami))")
+    
+    # Add working dir flags so any created files persist to user directory
+    docker_args+=("--working-dir" "${container_working_dir}")
+  fi
+}
+
+# Pull the lrctl image if it is not already downloaded. This pulls the image
+# quietly unlike if it is pulled during the initial run.
+pullLrctlImage() {
+  pullImage "${lrctl_image}" "lrctl"
+}
+
+# Run the LRCTL container
+runLrctl() {
+  docker_args=(-i --rm --name lrctl --env script_version=${lrctl_version})
+
+  for vol_mount in "${lrctl_volume_mounts[@]}"; do
+    docker_args+=(-v "${vol_mount}")
+  done
+
+  if [[ -n "${local_versions_realpath}" ]]; then
+    local mount_dir=$(dirname "${local_versions_mount_path}")
+    docker_args+=(-v "${local_versions_volume}:${mount_dir}")
+  fi
+
+  if [[ -t 0 ]]; then
+    docker_args+=(-t)
+  fi
+
+  # Add the image and the args that were passed to this function
+  docker_args+=("${lrctl_image}" "$@")
+  if [[ "$http_proxy" != "" ]]; then
+    echo "Using proxy setting: http_proxy=${http_proxy}"
+    docker_args+=("--env" "http_proxy=${http_proxy}")
+  fi
+  if [[ "$https_proxy" != "" ]]; then
+    echo "Using proxy setting: https_proxy=${https_proxy}"
+    docker_args+=("--env" "https_proxy=${https_proxy}")
+  fi
+
+  setupLocalMount
+
+  if [[ "${lrctl_debug}" -gt 0 ]]; then
+    echo >&2 "Docker Run Args: ${docker_args[@]}"
+  fi
+
+  docker run "${docker_args[@]}"
+}
+
+processVersionsInfo() {
+  # Default to the latest local image of lrctl we have
+  services_lrctl_image="gcr.io/lrcollection/lrctl"
+  services_lrctl_version="$(docker image ls gcr.io/lrcollection/lrctl | awk 'NR==2{print $2}')"
+  if [[ -n "${local_versions_realpath}" ]]; then
+    # Copy the versions info into a volume
+    createDockerVolume "${local_versions_volume}"
+    copyToVolume "${local_versions_realpath}" "${local_versions_volume}"
+
+    eval "$(parse_yaml "$(cat "${local_versions_realpath}")")" 2> /dev/null || true
+  else
+    if [[ "${global_autoupdate_enabled}" == "true" ]]; then
+      eval "$(parse_yaml "$(curl --fail --silent "${prod_versions_file_url}")")" 2> /dev/null || true
+    fi
+  fi
+  lrctl_image=$(echo "${services_lrctl_image}:${services_lrctl_version}" || true)
+
+  if [[ -z "$services_lrctl_version" ]]; then
+    echo >&2 "Unable to fetch latest version information from github. If this is your initial install, check your firewall settings."
+    exit 1
+  fi
+
+}
+
+ocdbContainerStart(){
+  echo "### Create/Start OC-DB (\`oc-db\`) container for PostgreSQL using \`oc-db\` Volume..."
+  docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
+  
+  sleep 5
+  echo "done"
+}
+
+# === EZ OC Start ===
+
+#=====Initializing OC admin and start ===
+function initializingOcDB() {
+  echo "start initializing DB"
+  strongPassword=false
+  countUser=$( docker exec -i oc-db psql --username=postgres --dbname oc-admin -c "select count(*) from public.\"rbacUserToRole\";"  || true )
+  echo $countUser
+
+  rm -rf ocdbDir 2> /dev/null
+  mkdir -p ocdbDir 2> /dev/null
+  cd ocdbDir
+  CONTAINER_DB_FILE_BASE="/app/database/pgsql"
+  #GITHUB_REPO_URL_BASE="https://raw.githubusercontent.com/logrhythm/versions/EZCloud"
+  DB_CREATION_SCRIPT=""
+  if [ "$1" == "start" ]
+  then
+    DB_CREATION_SCRIPT="create_database.sh"
+  else
+    DB_CREATION_SCRIPT="reset_ocAdmin_password.sh"
+  fi
+
+  echo ""
+  echo "Please provide a password for the default user ocAdmin."
+  echo "Or press [CTRL]+[C] to abandon."
+  echo ""
+  echo "Rules:"
+  
+  # Prompt for pass if `OC_ADMIN_PASSWORD` isn't already set with at least a 6 character long password
+  # And keep looping until a 6+ character long password is provided, or user press CTRL+C
+  # Password verification is prompted to make sure the user knows which password it is, unlike Brandon Pace
+  PASSWORDS_DIDNT_MATCH=0
+  until false
+  do
+    if [[ $PASSWORDS_DIDNT_MATCH -eq 0 ]]
+    then
+      OC_ADMIN_PASSWORD_ONE=""
+      until false
+      do 
+        if [ ${#OC_ADMIN_PASSWORD_ONE} -gt 5 ]
+        then
+          break
+        else
+          echo " - Password should have a mix of lowercase, uppercase, number and signs/non-alphanumerical(?,#,@,!,$,&,%) characters"
+          echo " - Password must have a minimum of 6 characters"
+          echo ""
+          read -sp 'Password: ' OC_ADMIN_PASSWORD_ONE </dev/tty
+          echo ""
+          echo ""
+          
+        fi
+      done
+
+      strongPassword=false
+      len="${#OC_ADMIN_PASSWORD_ONE}"
+
+      if test $len -ge 6 ; then
+
+          echo "$OC_ADMIN_PASSWORD_ONE" | grep -q [0-9]
+
+          if test $? -eq 0 ; then
+
+                echo "$OC_ADMIN_PASSWORD_ONE" | grep -q [A-Z]
+
+                      if test $? -eq 0 ; then
+
+                          echo "$OC_ADMIN_PASSWORD_ONE" | grep -q [a-z]
+
+                            if test $? -eq 0 ; then 
+
+                              echo "$OC_ADMIN_PASSWORD_ONE" | grep -q '[]:/?#@!$&'"'"'()*+,;=%[]'
+
+                                if test $? -eq 0 ; then
+                                  strongPassword=true
+                                  echo "Strong password"
+                            
+                                else
+                                  strongPassword=false
+                                  echo "weak password. Please include special chars"
+                                
+                                fi                       
+      
+                            else
+                              strongPassword=false
+                              echo "weak password. Please include lower case char"
+
+                            fi
+                        else
+                          strongPassword=false
+                          echo "weak password. Please include capital char" 
+
+                      fi
+                else
+
+            echo "weak password. Please include numbers"   
+
+          fi
+
+      else
+          strongPassword=false
+          echo "weak password. Please enter a password with a minimum of 6 characters"
+
+      fi
+
+      #if [[ ${#OC_ADMIN_PASSWORD_ONE} -ge 6 && "$OC_ADMIN_PASSWORD_ONE" == *[A-Z]* && "$OC_ADMIN_PASSWORD_ONE" == *[a-z]* && "$OC_ADMIN_PASSWORD_ONE" == *[0-9]* ]] && [[ ! "$OC_ADMIN_PASSWORD_ONE"  =~ ^[a-zA-Z0-9]+$ ]]
+      if $strongPassword
+      then
+        read -sp 'Please re-enter to verify: ' OC_ADMIN_PASSWORD_TWO </dev/tty
+        echo ""
+        echo ""
+        if [ "$OC_ADMIN_PASSWORD_ONE" = "$OC_ADMIN_PASSWORD_TWO" ]; then
+          OC_ADMIN_PASSWORD="$OC_ADMIN_PASSWORD_ONE"
+          PASSWORDS_DIDNT_MATCH=1
+        else
+          echo "Error: Passwords do not match. Please try again."
+          PASSWORDS_DIDNT_MATCH=0
+        fi
+        OC_ADMIN_PASSWORD_ONE=""
+        OC_ADMIN_PASSWORD_TWO=""
+      else
+        PASSWORDS_DIDNT_MATCH=0
+        OC_ADMIN_PASSWORD_ONE=""
+        OC_ADMIN_PASSWORD_TWO=""
+      fi
+    else
+      break
+    fi
+  done
+
+  unset OC_ADMIN_PASSWORD_ONE
+  unset OC_ADMIN_PASSWORD_TWO
+
+  # Create a clean folder
+  echo "### CREATING A CLEAN DIRECTORY (\`./pgsql\`)..."
+  mkdir -p pgsql 2> /dev/null
+  # Clean up
+  rm -f pgsql/create_database.sh 2> /dev/null
+  rm -f pgsql/*.sql 2> /dev/null
+
+  echo "### WALK IN \`./pgsql\` DIRECTORY..."
+  cd pgsql
+
+  # Get the DB creation files
+  echo "### DOWNLOADING \"$CONTAINER_DB_FILE_BASE/$DB_CREATION_SCRIPT\"..."
+  docker exec -i oc-admin cat "$CONTAINER_DB_FILE_BASE/$DB_CREATION_SCRIPT" > "$DB_CREATION_SCRIPT"
+  if [ "$1" == "start" ]
+  then
+    echo "### PARSING \"$DB_CREATION_SCRIPT\" TO DISCOVER FILES TO DOWNLOAD..."
+    IFS=$(echo -en "\n\b")
+    for SQL_FILE_NAME in $(cat $DB_CREATION_SCRIPT | grep --only-matching "^\\s*cat\\s\+\"[0-9]\+[^\|]\+"  | grep --only-matching "\"[^\"]\+\"" | grep --only-matching "[^\"]\+")
+    do
+        echo "### DOWNLOADING \"$CONTAINER_DB_FILE_BASE/$SQL_FILE_NAME\"..."
+        docker exec -i oc-admin cat "$CONTAINER_DB_FILE_BASE/$SQL_FILE_NAME" > "$SQL_FILE_NAME"
+    done
+  else
+    SQL_FILE_NAME="20220819. - Reset OCAdmin Password.sql"
+    docker exec -i oc-admin cat "$CONTAINER_DB_FILE_BASE/$SQL_FILE_NAME" > "$SQL_FILE_NAME"
+  fi
+
+  echo "### RUN DATABASE CREATION SCRIPTS..."
+  chmod +x "$DB_CREATION_SCRIPT"
+  # Environment variable `OC_ADMIN_PASSWORD` will be used to create the `ocAdmin` user
+  export OC_ADMIN_PASSWORD
+  bash "$DB_CREATION_SCRIPT"
+  # Clear OC_ADMIN_PASSWORD
+  unset OC_ADMIN_PASSWORD
+  cd ..
+  sleep 5
+  echo "Password set for user ocAdmin."
+
+}
+
+function cleanOcDbImages() {
+  DOCKER_IMAGE_IDS=$( docker images | grep "oc-db" | awk '{print $3}' )
+  if [ -z "$DOCKER_IMAGE_IDS" -o "$DOCKER_IMAGE_IDS" == " " ]; then
+    echo "---- No images available for deletion ----"
+  else
+     docker rmi -f $DOCKER_IMAGE_IDS
+  fi
+}
+
+function cleanOcDbContainer() {
+  DOCKER_CONTAINER_IDS=$( docker ps -a -q -f name="oc-db" )
+  if [ -z "$DOCKER_CONTAINER_IDS" -o "$DOCKER_CONTAINER_IDS" == " " ]; then
+    echo "---- No Container available for deletion ----"
+  else
+     docker rm -f $DOCKER_CONTAINER_IDS
+  fi
+}
+
+function cleanOcAdminImages() {
+  DOCKER_IMAGE_IDS=$( docker images | grep "oc-admin" | awk '{print $3}' )
+  if [ -z "$DOCKER_IMAGE_IDS" -o "$DOCKER_IMAGE_IDS" == " " ]; then
+    echo "---- No images available for deletion ----"
+  else
+     docker rmi -f $DOCKER_IMAGE_IDS
+  fi
+}
+
+function cleanOcAdminContainer() {
+  DOCKER_CONTAINER_IDS=$( docker ps -a -q -f name="oc-admin" )
+  if [ -z "$DOCKER_CONTAINER_IDS" -o "$DOCKER_CONTAINER_IDS" == " " ]; then
+    echo "---- No Container available for deletion ----"
+  else
+     docker rm -f $DOCKER_CONTAINER_IDS
+  fi
+}
+
+processStartOC_DB(){
+  
+  isOcDbVolume=false
+  volumes=$(docker volume ls  --format '{{.Name}}')
+  for volume in $volumes
+  do
+    if [ "$volume" == "oc-db" ]
+    then
+      isOcDbVolume=true
+    fi
+  done
+
+  if $isOcDbVolume 
+  then
+		isOcDbcontainer=$( docker ps -q -f name='oc-db' )
+		
+		if [[ -n "$isOcDbcontainer" ]]; then
+			echo "oc-db container is already running"
+		else
+      isCloseOcDbcontainer=$( docker ps -a -q -f name='oc-db' )
+      if [[ -n "$isCloseOcDbcontainer" ]]; then
+           echo "oc-db container starting..."
+          docker start oc-db
+          echo "oc-db container started"
+      else
+        isOcDBImage=$( docker images -q ${ocadmin_repo}/oc-db:${ocadmin_version} )
+        if [[ -n "$isOcDBImage" ]]; then
+          echo "oc-db container starting..."
+          docker start oc-db
+          sleep 10
+          echo "oc-db container started"
+        else
+          echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
+          docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
+          sleep 10
+          echo "oc-db container started"
+        fi
+      fi
+		fi
+  else
+    echo "### Create \`oc-db\` Volume..."
+    docker volume create oc-db
+    echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
+		docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
+    sleep 10
+    echo "oc-db container started"
+  fi
+}
+
+processStopOC_DB(){
+  #check oc-db container is up and runing or not
+  isOcAdmincontainer=$( docker ps -q -f name='oc-db' )
+  if [[ -n "$isOcAdmincontainer" ]]; 
+  then
+    echo "oc-db container stopping.."
+    docker stop oc-db
+    echo "oc-db container stopped"
+  else
+    echo "no oc-db container started"
+  fi
+}
+
+processRestartOC_DB(){
+  #check oc-db container is up and runing or not
+  isOcAdmincontainer=$( docker ps -q -f name='oc-db' )
+  if [[ -n "$isOcAdmincontainer" ]]; 
+  then
+      echo "oc-db container restart starting..."
+      #docker stop oc-db
+      docker restart oc-db
+      #cleanOcDbContainer
+      #cleanOcDbImages
+      #processStartOC_DB
+      echo "oc-db container restarted"
+  else
+      echo "no oc-db container started"
+  fi
+}
+
+processRestartOC_ADMIN(){
+  #check oc-admin container is up and runing or not
+  isOcAdmincontainer=$( docker ps -q -f name='oc-admin' )
+  echo "$isOcAdmincontainer"
+  if [[ -n "$isOcAdmincontainer" ]]; 
+  then
+      echo "oc-admin container restarting..."
+      #docker stop oc-admin
+      docker restart oc-admin
+      #cleanOcAdminContainer
+      #cleanOcAdminImages
+      #processStartOC_ADMIN
+      echo "oc-admin container restarted"
+  else
+      echo "no oc-admin container restarted"
+  fi
+}
+
+function checkOcAdminDataBase(){
+  #check oc-admin Database up and running or not
+  isDBAvailable=false
+  countUser=$( docker exec -i oc-db psql --username=postgres --dbname oc-admin -X -A -w -t -c "select count(*) from public.\"rbacUserToRole\";"  || true ) 2> /dev/null
+  if [[ -z "$countUser" ]]; 
+  then
+    isDBAvailable=false
+    echo "oc-admin database not available" 1>&2
+  else
+    if [[ "$countUser" > 0 ]];
+    then
+      isDBAvailable=true
+      echo "oc-admin database available"
+    else
+      isDBAvailable=false
+      echo "ocAdmin user not available"
+    fi
+  fi
+
+  #if data base not available so create oc-admin DB
+  if $isDBAvailable 
+  then
+    echo "oc-admin database available"
+  else
+    echo "oc-admin database is not present"
+    initializingOcDB start
+    sleep 10
+  fi 
+}
+
+processStartOC_ADMIN(){
+  #check oc-db container is up and runing or not
+  isOcDBcontainer=$( docker ps -q -f name='oc-db' )
+  if [[ -n "$isOcDBcontainer" ]];
+  then
+    #check oc-admn container is up and runing or not
+    isOcAdmincontainer=$( docker ps -q -f name='oc-admin' )
+    if [[ -n "$isOcAdmincontainer" ]]; then
+      echo "oc-admin container is already running"
+    else
+      #check oc-admn container is available or not
+      isCloseOcAdmincontainer=$( docker ps -a -q -f name='oc-admin' )
+      if [[ -n "$isCloseOcAdmincontainer" ]]; then
+        echo "oc-admin container is starting..."
+        docker start oc-admin
+        echo "oc-admin container started"
+      else
+        #check oc-admin image available or not
+        isOcAdminImage=$( docker images -q ${ocadmin_repo}/oc-admin:${ocadmin_version} )
+        if [[ -n "$isOcAdmincontainer" ]]; 
+        then
+          echo "oc-admin container is starting..."
+          docker start oc-admin
+          echo "oc-admin container started"
+        else
+          echo "### RUN \`oc-admin\` CONTAINER..."
+          docker run --detach --publish 8400:8400/tcp --network logrhythm --name oc-admin ${ocadmin_repo}/oc-admin:${ocadmin_version}
+          sleep 10
+        fi
+      fi
+      sleep 10
+      #check oc-admin data base exits or not
+      checkOcAdminDataBase
+      echo "oc-admin container started"
+    fi
+  else
+    echo "oc-db container is not running. Please start oc-db container first"
+  fi
+}
+
+resetAdminUser(){
+  
+  #check oc-admin Database up and running or not
+  isDBAvailable=false
+  countUser=$( docker exec -i oc-db psql --username=postgres --dbname oc-admin -X -A -w -t -c "select count(*) from public.\"rbacUserToRole\";"  || true )
+  if [[ -z "$countUser" ]]; 
+  then
+    isDBAvailable=false
+    echo "oc-admin database not available" 1>&2
+  else
+    if [[ "$countUser" > 0 ]];
+    then
+      isDBAvailable=true
+      echo "oc-admin database available"
+    else
+      isDBAvailable=false
+      echo "oc-admin user not available"
+    fi
+  fi
+
+  #if data base not available so create oc-admin DB
+  if $isDBAvailable 
+  then
+    initializingOcDB restart
+  else
+    echo "Either oc-admin database not available or ocAdmin user not available"
+  fi   
+  echo "New password set"
+}
+
+processStopOC_ADMIN(){
+  isOcAdmincontainer=$( docker ps -q -f name='oc-admin' )
+  echo "$isOcAdmincontainer"
+  
+  if [[ -n "$isOcAdmincontainer" ]]; 
+  then
+      echo "oc-admin container is stopping..."
+      docker stop oc-admin
+      echo "oc-admin container stopped"
+  else
+      echo "no oc-admin container stopped"
+  fi
+}
+
+helpFunction(){
+      echo ""
+      echo "Options:"
+      echo "   --help                     Shows this help"
+      echo "   oc-db start                Start oc-db container"
+      echo "   oc-db stop                 Stop oc-db container"
+      echo "   oc-db restart              Restart oc-db container"
+      echo "   oc-admin start             Start oc-admin container"
+      echo "   oc-admin stop              Stop oc-admin container"
+      echo "   oc-admin restart    	  Restart oc-admin container"
+      echo "   oc-admin resetAdminUser    resetAdminUser oc-admin container"
+      echo ""
+}
+# === EZ OC END ===
+# === MAIN PROCESSING ===
+
+# Create a new file handler (3) which will be used for the this script's
+# output.  We ared doing this redirection so that we can control this script's
+# output separately from commands that this script will run
+exec 3>&1
+
+# Check for arguments that are meant for this script.
+first_non_flag_arg=""
+args=()
+
+if [[ $# -eq 0 ]] ; then
+    # Run the lrctl in the container
+    args+=("--help")
+fi
+
+if [[ "$*" == *install* || "$*" == *outfile* ]]; then
+  # Set permissions for writing to user working dir
+  set_permissions=1
+fi
+
+while (("$#")); do
+  case "${1}" in
+    "--lrctl-debug")
+      lrctl_debug=$(($lrctl_debug + 1))
+      shift 1
+      ;;
+    "--no-new-shell")
+      lrctl_new_shell_after_group_membership=0
+      shift 1
+      ;;
+    "--dev")
+      # Pass along the flag to the container.
+      args+=($1)
+      lrctl_image="bazel/cmd/lrctl:stamped_image"
+      shift 1
+      ;;
+    "-V")
+      ;&
+    "--versions-file")
+      if [[ -z "$2" ]]; then
+        echo "Version file url or absolute directory must be specified with the --versions-file flag."
+        exit 1
+      elif [[ "$2" =~ ^(http[s]?://) ]]; then
+        # If we specify a url for the versions-file, pass the flag to args
+        args+=("${1}" "${2}")
+      else
+        # Else the versions file is local
+        local_versions_realpath=$(realpath "${2}")
+        args+=("${1}" "${local_versions_mount_path}")
+      fi
+
+      shift 2
+      ;;
+    *)
+      if [[ -z "${first_non_flag_arg}" ]]; then
+        first_non_flag_arg="${1}"
+      fi
+      args+=($1)
+      shift 1
+      ;;
+  esac
+
+done
+
+# Check for commands meant for this shell script.
+case "${first_non_flag_arg:-}" in
+  check)
+    check
+    ;;
+  init)
+    check
+    init
+    ;;
+  script-version)
+    getScriptVersion
+    ;;
+  *)
+  
+    # Check if args has autoupdate and no dev flag. Skip condition if it does.
+    if [[ "${args[@]}" != *"autoupdate"* && "${args[@]}" != *"--dev"* ]]; then
+      updateScript
+    fi
+    # Check if args has the dev flag. Skip condition if it does.
+    if [[ "${args[@]}" != *"--dev"* ]]; then
+      # Read which images will be used.
+      processVersionsInfo
+
+      # Pull the image down silently if we don't already have it. We do this so
+      # that the user does not see the Docker pull information that would happen
+      # if the pull happens during the run.
+      if [[ "${global_autoupdate_enabled}" == "true" ]]; then
+        pullLrctlImage
+      fi
+    fi
+
+     # Run the lrctl in the container
+    if [ "${args[0]}" == "oc-db" ] || [ "${args[0]}" == "oc-admin" ] 
+      then
+        if [ "${args[0]}" == "oc-db" ]
+          
+          then
+            case ${args[1]} in
+              #case 1
+              "--help") helpFunction ;;
+
+              #case 2
+              "start") processStartOC_DB ;;
+                
+              #case 3
+              "stop") processStopOC_DB ;;
+
+              #case 4
+              "restart") processRestartOC_DB ;;
+
+            esac
+        fi
+        if [ "${args[0]}" == "oc-admin" ]
+          then
+            case ${args[1]} in
+              #case 1
+              "--help") helpFunction ;;
+
+              #case 2
+              "start") processStartOC_ADMIN ;;
+                
+              #case 3
+              "stop") processStopOC_ADMIN ;;
+
+              #case 4
+              "restart") processRestartOC_ADMIN ;;
+
+              #case 5
+              "resetadminuser") resetAdminUser ;;
+            esac
+        fi 
+      else
+        runLrctl "${args[@]}" 
+    fi
+    ;;
+esac
