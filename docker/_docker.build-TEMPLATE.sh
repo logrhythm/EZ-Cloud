@@ -5,6 +5,7 @@
 # Create date: 2022-07-25 (Template creation date)
 # Modified on: 2022-08-05 - To add Help and `--latest` parameter
 # Modified on: 2023-01-13 - To use `ash` instead of `bash`, so it can be run from inside the `oc-admin_dev` container
+# Modified on: 2023-01-13 - To add Grype verification command
 # Description: Build `oc-admin` Docker container image
 # =============================================
 
@@ -27,6 +28,9 @@ fi
 
 echo "### BUILD DOCKER IMAGE..."
 #_DOCKER_COMMAND_GOES_HERE
+
+echo "### SECURITY CHECK DOCKER IMAGE WITH GRYPE..."
+#_GRYPE_COMMAND_GOES_HERE
 
 echo "### Done."
 
