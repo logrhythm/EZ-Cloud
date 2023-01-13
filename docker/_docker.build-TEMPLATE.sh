@@ -1,9 +1,10 @@
-#!/usr/bin/env bash
+#!/usr/bin/env ash
 
 # =============================================
 # Author:      Tony Massé
 # Create date: 2022-07-25 (Template creation date)
 # Modified on: 2022-08-05 - To add Help and `--latest` parameter
+# Modified on: 2023-01-13 - To use `ash` instead of `bash`, so it can be run from inside the `oc-admin_dev` container
 # Description: Build `oc-admin` Docker container image
 # =============================================
 
