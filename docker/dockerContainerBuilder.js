@@ -89,7 +89,7 @@ if (
 
   try {
     const dockerCommand = `docker build --tag "tonymasse/oc-admin:${versionTag}" --tag "tonymasse/oc-admin:$LATEST_TAG" --file "${dockerFilePath}" "${distSubDirectory}"`;
-    const grypeCommand = `docker run --rm --volume /var/run/docker.sock:/var/run/docker.sock --name Grype anchore/grype:latest "tonymasse/oc-admin:${versionTag}" --add-cpes-if-none`;
+    const grypeCommand = `docker run --rm --volume /var/run/docker.sock:/var/run/docker.sock anchore/grype:latest "tonymasse/oc-admin:${versionTag}" --add-cpes-if-none`;
     const dockerScriptPath = path.join(distDirectory, '_docker.build-oc-admin.sh');
 
     // Read template from disk
