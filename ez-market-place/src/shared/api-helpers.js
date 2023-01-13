@@ -261,11 +261,14 @@ function safeDaysLookBackUid(req, idParamName) {
  * @returns Sanitised Help Path
  */
 function safeRedirectorPath(req, pathParamName) {
-  // Get the raw Days Look Back
-  const redirectorPath = reqQuery(req, pathParamName);
-console.log('redirectorPath: ', redirectorPath); // XXXX
+  // Get the raw Path back
+  const redirectorPath = reqParam(req, pathParamName);
+
   // Check validity
-  if (redirectorPathSchema.isValidSync(redirectorPath)) {
+  if (
+    redirectorPathSchema.isValidSync(redirectorPath)
+    && (String(req.params.file || '').indexOf('\0') === -1) // Got a char #0 in the path? Go get lost.
+  ) {
     return redirectorPath;
   }
 

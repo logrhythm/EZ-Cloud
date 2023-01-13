@@ -145,16 +145,42 @@ ALTER TABLE statistics
 -- Create table `aka_redirections`
 --
 
-CREATE TABLE `aka_redirections` (
-	`uid` CHAR(40) NOT NULL DEFAULT UUID() COLLATE 'utf8mb4_general_ci',
-	`short_path` VARCHAR(1024) NOT NULL DEFAULT UUID() COLLATE 'utf8mb4_general_ci',
+CREATE TABLE IF NOT EXISTS `aka_redirections` (
+	`uid` CHAR(40) NOT NULL DEFAULT uuid() COLLATE 'utf8mb4_general_ci',
+	`short_path` VARCHAR(1024) NOT NULL DEFAULT uuid() COLLATE 'utf8mb4_general_ci',
 	`target_server` VARCHAR(2048) NOT NULL DEFAULT 'https://docs.logrhythm.com' COLLATE 'utf8mb4_general_ci',
 	`target_path` VARCHAR(4096) NOT NULL DEFAULT '/docs' COLLATE 'utf8mb4_general_ci',
+  `created` timestamp NOT NULL DEFAULT current_timestamp(),
+  `modified` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+	`status` TINYINT(4) UNSIGNED NOT NULL DEFAULT 0,
 	PRIMARY KEY (`uid`),
-	UNIQUE INDEX `short_path` (`short_path`)
+  KEY `status` (`status`),
+	UNIQUE INDEX `short_path` (`short_path`),
+  CONSTRAINT `FK_aka_redirections_statuses` FOREIGN KEY (`status`) REFERENCES `ez-market-place`.`statuses` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION
 )
 COLLATE='utf8mb4_unicode_ci'
 ;
+
+
+/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
+/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET NAMES utf8 */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+-- Dumping data for table ez-market-place.aka_redirections: ~3 rows (approximately)
+/*!40000 ALTER TABLE `aka_redirections` DISABLE KEYS */;
+INSERT IGNORE INTO `aka_redirections` (`uid`, `short_path`, `target_server`, `target_path`, `created`, `modified`, `status`) VALUES
+	('aab13e80-6e5c-11ed-ab7f-000c29f38390', 'OCAdminErrorMessages-nolivesocket', 'https://docs.logrhythm.com', '/docs/OCbeats/logrhythm-open-collector/oc-admin/oc-admin-error-messages#OCAdminErrorMessages-nolivesocket', '2023-01-13 14:23:06', '2023-01-13 14:47:05', 0),
+	('d1c2d213-6e5f-11ed-ab7f-000c29f38390', 'OCAdminHelp-ref-whatsthedifferencefieldmappingshareimport', 'https://docs.logrhythm.com', '/docs/OCbeats/logrhythm-open-collector/oc-admin/oc-admin-user-guide/oc-admin-pipelines/oc-admin-mapping-editor#OCAdminMappingEditor-sharing-importing-fields-mapping', '2023-01-13 14:45:39', '2023-01-13 14:45:40', 0),
+	('deb26e8d-6e5e-11ed-ab7f-000c29f38390', 'OCAdminHelp-ref-whatsthedifferencecollectionconfigurationshareimport', 'https://docs.logrhythm.com', '/docs/OCbeats/logrhythm-open-collector/oc-admin/oc-admin-user-guide/oc-admin-pipelines/oc-admin-collection-configuration#OCAdminCollectionConfiguration-sharing-importing-collection-configuration', '2023-01-13 14:38:52', '2023-01-13 14:40:26', 0);
+/*!40000 ALTER TABLE `aka_redirections` ENABLE KEYS */;
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
