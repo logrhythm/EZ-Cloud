@@ -20,7 +20,8 @@ GO
 -- Update date: 2022-08-03 - To add `EZ_VERSION` flag
 -- Update date: 2022-11-29 - To deal with SIEM v7.9.x and above (add @EventLogFilter)
 -- Update date: 2023-01-11 - To fix bug #28 / ENG-23871 - "Could not find stored procedure 'LogRhythm_EMDB_HostIdentifierToMsgSource_Insert'."
--- EZ_VERSION: 20230111.01 :EZ_VERSION
+-- Update date: 2023-01-15 - To deal with SIEM v7.11.x and above (add @WatchFileRenameOnRollover)
+-- EZ_VERSION: 20230115.01 :EZ_VERSION
 -- =============================================
 
 CREATE PROCEDURE [dbo].[OC_Admin_Upsert_Log_Source_Virtualisation_To_OpenCollector_LogSource] 
@@ -220,67 +221,68 @@ BEGIN
 
 		-- Declare about half a million variables...
 
-		DECLARE @MsgSourceID              int
-		DECLARE @SystemMonitorID          int
-		DECLARE @HostID                   int
-		DECLARE @HostName                 varchar(100)
-		DECLARE @MsgSourceTypeID          int
-		DECLARE @Name                     varchar(100)
-		DECLARE @ShortDesc                varchar(255)
-		DECLARE @LongDesc                 varchar(2000)
-		DECLARE @MsgSourceDateFormatID    int
-		DECLARE @CollectionDepth          int
-		DECLARE @MsgsPerCycle             int
-		DECLARE @FilePath                 varchar(255)
-		DECLARE @MonitorStart             datetime
-		DECLARE @MonitorStop              datetime
-		DECLARE @DefMsgTTL                smallint
-		DECLARE @DefMsgArchiveMode        tinyint
-		DECLARE @MPEMode                  tinyint
-		DECLARE @MPEPolicyID              int
-		DECLARE @IsVirtual                tinyint
-		DECLARE @RecordStatus             tinyint
-		DECLARE @LogMartMode              bigint
-		DECLARE @UDLAConnectionString     varchar(1000)
-		DECLARE @UDLAStateField           varchar(100)
-		DECLARE @UDLAStateFieldType       tinyint
-		DECLARE @UDLAStateFieldConversion varchar(1000)
-		DECLARE @UDLAQueryStatement       varchar(max)
-		DECLARE @UDLAOutputFormat         varchar(max)
-		DECLARE @UDLAUniqueIdentifier     varchar(1000)
-		DECLARE @UDLAMsgDateField         varchar(100)
-		DECLARE @UDLAGetUTCDateStatement  varchar(500)
-		DECLARE @PersistentConnection     bit
-		DECLARE @Status                   tinyint
-		DECLARE @MaxLogDate               datetime
-		DECLARE @MsgRegexStart            varchar(1000)
-		DECLARE @MsgRegexDelimeter        varchar(1000)
-		DECLARE @MsgRegexEnd              varchar(1000)
-		DECLARE @RecursionDepth           int
-		DECLARE @IsDirectory              tinyint
-		DECLARE @Inclusions               varchar(256)
-		DECLARE @Exclusions               varchar(256)
-		DECLARE @Parameter1               int
-		DECLARE @Parameter2               int
-		DECLARE @Parameter3               int
-		DECLARE @StatePosition            varbinary(max)
-		DECLARE @StateLastUpdated         bigint
-		DECLARE @CompressionType          tinyint
-		DECLARE @UDLAConnectionType       tinyint
-		DECLARE @Parameter4               int
-		DECLARE @CollectionThreadTimeout  int
-		DECLARE @VirtualSourceRegex       varchar(max) = ''
-		DECLARE @VirtualSourceSortOrder   int = 1
-		DECLARE @VirtualSourceCatchAllID  int = NULL
-		DECLARE @VirtualSourceParentID    int = NULL
-		DECLARE @IsLoadBalanced           tinyint
-		DECLARE @UserID                   int = NULL
-		DECLARE @UseRestrictedAdmin       bit = 1
-		DECLARE @LookupGUID		          bit = 1
-		DECLARE @LookupSID				  bit = 1
-		DECLARE @ReadPublisherMetadata    bit = 1
-		DECLARE @DaysToWatchModifiedFiles int = 1
-		DECLARE @EventLogFilter           varchar(max) = '' -- For SIEM v7.9.0 and above
+		DECLARE @MsgSourceID                int
+		DECLARE @SystemMonitorID            int
+		DECLARE @HostID                     int
+		DECLARE @HostName                   varchar(100)
+		DECLARE @MsgSourceTypeID            int
+		DECLARE @Name                       varchar(100)
+		DECLARE @ShortDesc                  varchar(255)
+		DECLARE @LongDesc                   varchar(2000)
+		DECLARE @MsgSourceDateFormatID      int
+		DECLARE @CollectionDepth            int
+		DECLARE @MsgsPerCycle               int
+		DECLARE @FilePath                   varchar(255)
+		DECLARE @MonitorStart               datetime
+		DECLARE @MonitorStop                datetime
+		DECLARE @DefMsgTTL                  smallint
+		DECLARE @DefMsgArchiveMode          tinyint
+		DECLARE @MPEMode                    tinyint
+		DECLARE @MPEPolicyID                int
+		DECLARE @IsVirtual                  tinyint
+		DECLARE @RecordStatus               tinyint
+		DECLARE @LogMartMode                bigint
+		DECLARE @UDLAConnectionString       varchar(1000)
+		DECLARE @UDLAStateField             varchar(100)
+		DECLARE @UDLAStateFieldType         tinyint
+		DECLARE @UDLAStateFieldConversion   varchar(1000)
+		DECLARE @UDLAQueryStatement         varchar(max)
+		DECLARE @UDLAOutputFormat           varchar(max)
+		DECLARE @UDLAUniqueIdentifier       varchar(1000)
+		DECLARE @UDLAMsgDateField           varchar(100)
+		DECLARE @UDLAGetUTCDateStatement    varchar(500)
+		DECLARE @PersistentConnection       bit
+		DECLARE @Status                     tinyint
+		DECLARE @MaxLogDate                 datetime
+		DECLARE @MsgRegexStart              varchar(1000)
+		DECLARE @MsgRegexDelimeter          varchar(1000)
+		DECLARE @MsgRegexEnd                varchar(1000)
+		DECLARE @RecursionDepth             int
+		DECLARE @IsDirectory                tinyint
+		DECLARE @Inclusions                 varchar(256)
+		DECLARE @Exclusions                 varchar(256)
+		DECLARE @Parameter1                 int
+		DECLARE @Parameter2                 int
+		DECLARE @Parameter3                 int
+		DECLARE @StatePosition              varbinary(max)
+		DECLARE @StateLastUpdated           bigint
+		DECLARE @CompressionType            tinyint
+		DECLARE @UDLAConnectionType         tinyint
+		DECLARE @Parameter4                 int
+		DECLARE @CollectionThreadTimeout    int
+		DECLARE @VirtualSourceRegex         varchar(max) = ''
+		DECLARE @VirtualSourceSortOrder     int = 1
+		DECLARE @VirtualSourceCatchAllID    int = NULL
+		DECLARE @VirtualSourceParentID      int = NULL
+		DECLARE @IsLoadBalanced             tinyint
+		DECLARE @UserID                     int = NULL
+		DECLARE @UseRestrictedAdmin         bit = 1
+		DECLARE @LookupGUID		            bit = 1
+		DECLARE @LookupSID				    bit = 1
+		DECLARE @ReadPublisherMetadata      bit = 1
+		DECLARE @DaysToWatchModifiedFiles   int = 1
+		DECLARE @EventLogFilter             varchar(max) = '' -- For SIEM v7.9.0 and above
+		DECLARE @WatchFileRenameOnRollover  bit = 1 -- For SIEM v7.11.0 and above
 
 		-- And affect them with the result from @temp_LS_Details that match the mother LS ID (@OpenCollectorMotherLogSourceID)
 
@@ -483,8 +485,8 @@ ___________  DO NOT MODIFY THE LINE BELOW  __________
 
 			DECLARE @UpsertedMsgSourceID int
 			SET @UpsertedMsgSourceID=NULL
-			IF EXISTS (SELECT * FROM [LogRhythmEMDB].[dbo].[SCDBVersion] WHERE [Major] >= 7 AND [Minor] >= 9)
-				BEGIN -- SIEM v7.9.0 and above
+			IF EXISTS (SELECT * FROM [LogRhythmEMDB].[dbo].[SCDBVersion] WHERE [Major] >= 7 AND [Minor] >= 11)
+				BEGIN -- SIEM v7.11.0 and above
 					EXEC [LogRhythmEMDB].[dbo].[LogRhythm_EMDB_MsgSource_Insert]
 						@MsgSourceID=@UpsertedMsgSourceID OUTPUT,
 						@SystemMonitorID=@SystemMonitorID,
@@ -544,69 +546,136 @@ ___________  DO NOT MODIFY THE LINE BELOW  __________
 						@ReadPublisherMetadata = @ReadPublisherMetadata,
 						@DaysToWatchModifiedFiles = @DaysToWatchModifiedFiles,
 						@UseRestrictedAdmin = @UseRestrictedAdmin,
-						@EventLogFilter = @EventLogFilter
+						@EventLogFilter = @EventLogFilter,
+						@WatchFileRenameOnRollover = @WatchFileRenameOnRollover
 				END
 			ELSE
-				BEGIN -- SIEM up to 7.8.x
-					EXEC [LogRhythmEMDB].[dbo].[LogRhythm_EMDB_MsgSource_Insert]
-						@MsgSourceID=@UpsertedMsgSourceID OUTPUT,
-						@SystemMonitorID=@SystemMonitorID,
-						@HostID=@HostID,
-						@MsgSourceTypeID=@RelatedLsTypeID,
-						@MPEPolicyID=@VirtualSourceTemplateItemMPEPolicyID,
-						@Name=@UpsertedVirtualLogSourceName,
-						@ShortDesc=@ShortDescWithUID,
-						@LongDesc=@LongDescWithUID,
-						@FilePath = @FilePath,
-						@MsgSourceDateFormatID = @MsgSourceDateFormatID,
-						@CollectionDepth = @CollectionDepth,
-						@MonitorStart = @MonitorStart,
-						@MonitorStop = @MonitorStop,
-						@DefMsgTTL = @DefMsgTTL,
-						@DefMsgArchiveMode = @DefMsgArchiveMode,
-						@MPEMode = @MPEMode,
-						@LogMartMode = @LogMartMode,
-						@MsgsPerCycle = @MsgsPerCycle,
-						@IsVirtual = @IsVirtual,
-						@RecordStatus = @RecordStatus,
-						@UDLAConnectionString = @UDLAConnectionString,
-						@UDLAStateField = @UDLAStateField,
-						@UDLAStateFieldType = @UDLAStateFieldType,
-						@UDLAStateFieldConversion = @UDLAStateFieldConversion,
-						@UDLAQueryStatement = @UDLAQueryStatement,
-						@UDLAOutputFormat = @UDLAOutputFormat,
-						@UDLAUniqueIdentifier = @UDLAUniqueIdentifier,
-						@UDLAMsgDateField = @UDLAMsgDateField,
-						@UDLAGetUTCDateStatement = @UDLAGetUTCDateStatement,
-						@PersistentConnection = @PersistentConnection,
-						@Status = @Status,
-						@MaxLogDate = @MaxLogDate,
-						@MsgRegexStart = @MsgRegexStart,
-						@MsgRegexDelimeter = @MsgRegexDelimeter,
-						@MsgRegexEnd = @MsgRegexEnd,
-						@RecursionDepth = @RecursionDepth,
-						@IsDirectory = @IsDirectory,
-						@Inclusions = @Inclusions,
-						@Exclusions = @Exclusions,
-						@Parameter1 = @Parameter1,
-						@Parameter2 = @Parameter2,
-						@Parameter3 = @Parameter3,
-						@StatePosition = @StatePosition,
-						@StateLastUpdated = @StateLastUpdated,
-						@CompressionType = @CompressionType,
-						@UDLAConnectionType = @UDLAConnectionType,
-						@Parameter4 = @Parameter4,
-						@CollectionThreadTimeout = @CollectionThreadTimeout,
-						@VirtualSourceRegex = @VirtualSourceTemplateItemRegex,
-						@VirtualSourceSortOrder = @UpsertedVirtualSourceSortOrder,
-						@VirtualSourceCatchAllID = @MsgSourceID,
-						@VirtualSourceParentID = @MsgSourceID,
-						@IsLoadBalanced = @IsLoadBalanced,
-						@LookupGUID = @LookupGUID,
-						@LookupSID = @LookupSID,
-						@ReadPublisherMetadata = @ReadPublisherMetadata,
-						@DaysToWatchModifiedFiles = @DaysToWatchModifiedFiles,
-						@UseRestrictedAdmin = @UseRestrictedAdmin
+				BEGIN
+					IF EXISTS (SELECT * FROM [LogRhythmEMDB].[dbo].[SCDBVersion] WHERE [Major] >= 7 AND [Minor] >= 9)
+						BEGIN -- SIEM v7.9.0 and above
+							EXEC [LogRhythmEMDB].[dbo].[LogRhythm_EMDB_MsgSource_Insert]
+								@MsgSourceID=@UpsertedMsgSourceID OUTPUT,
+								@SystemMonitorID=@SystemMonitorID,
+								@HostID=@HostID,
+								@MsgSourceTypeID=@RelatedLsTypeID,
+								@MPEPolicyID=@VirtualSourceTemplateItemMPEPolicyID,
+								@Name=@UpsertedVirtualLogSourceName,
+								@ShortDesc=@ShortDescWithUID,
+								@LongDesc=@LongDescWithUID,
+								@FilePath = @FilePath,
+								@MsgSourceDateFormatID = @MsgSourceDateFormatID,
+								@CollectionDepth = @CollectionDepth,
+								@MonitorStart = @MonitorStart,
+								@MonitorStop = @MonitorStop,
+								@DefMsgTTL = @DefMsgTTL,
+								@DefMsgArchiveMode = @DefMsgArchiveMode,
+								@MPEMode = @MPEMode,
+								@LogMartMode = @LogMartMode,
+								@MsgsPerCycle = @MsgsPerCycle,
+								@IsVirtual = @IsVirtual,
+								@RecordStatus = @RecordStatus,
+								@UDLAConnectionString = @UDLAConnectionString,
+								@UDLAStateField = @UDLAStateField,
+								@UDLAStateFieldType = @UDLAStateFieldType,
+								@UDLAStateFieldConversion = @UDLAStateFieldConversion,
+								@UDLAQueryStatement = @UDLAQueryStatement,
+								@UDLAOutputFormat = @UDLAOutputFormat,
+								@UDLAUniqueIdentifier = @UDLAUniqueIdentifier,
+								@UDLAMsgDateField = @UDLAMsgDateField,
+								@UDLAGetUTCDateStatement = @UDLAGetUTCDateStatement,
+								@PersistentConnection = @PersistentConnection,
+								@Status = @Status,
+								@MaxLogDate = @MaxLogDate,
+								@MsgRegexStart = @MsgRegexStart,
+								@MsgRegexDelimeter = @MsgRegexDelimeter,
+								@MsgRegexEnd = @MsgRegexEnd,
+								@RecursionDepth = @RecursionDepth,
+								@IsDirectory = @IsDirectory,
+								@Inclusions = @Inclusions,
+								@Exclusions = @Exclusions,
+								@Parameter1 = @Parameter1,
+								@Parameter2 = @Parameter2,
+								@Parameter3 = @Parameter3,
+								@StatePosition = @StatePosition,
+								@StateLastUpdated = @StateLastUpdated,
+								@CompressionType = @CompressionType,
+								@UDLAConnectionType = @UDLAConnectionType,
+								@Parameter4 = @Parameter4,
+								@CollectionThreadTimeout = @CollectionThreadTimeout,
+								@VirtualSourceRegex = @VirtualSourceTemplateItemRegex,
+								@VirtualSourceSortOrder = @UpsertedVirtualSourceSortOrder,
+								@VirtualSourceCatchAllID = @MsgSourceID,
+								@VirtualSourceParentID = @MsgSourceID,
+								@IsLoadBalanced = @IsLoadBalanced,
+								@LookupGUID = @LookupGUID,
+								@LookupSID = @LookupSID,
+								@ReadPublisherMetadata = @ReadPublisherMetadata,
+								@DaysToWatchModifiedFiles = @DaysToWatchModifiedFiles,
+								@UseRestrictedAdmin = @UseRestrictedAdmin,
+								@EventLogFilter = @EventLogFilter
+						END
+					ELSE
+						BEGIN -- SIEM up to 7.8.x
+							EXEC [LogRhythmEMDB].[dbo].[LogRhythm_EMDB_MsgSource_Insert]
+								@MsgSourceID=@UpsertedMsgSourceID OUTPUT,
+								@SystemMonitorID=@SystemMonitorID,
+								@HostID=@HostID,
+								@MsgSourceTypeID=@RelatedLsTypeID,
+								@MPEPolicyID=@VirtualSourceTemplateItemMPEPolicyID,
+								@Name=@UpsertedVirtualLogSourceName,
+								@ShortDesc=@ShortDescWithUID,
+								@LongDesc=@LongDescWithUID,
+								@FilePath = @FilePath,
+								@MsgSourceDateFormatID = @MsgSourceDateFormatID,
+								@CollectionDepth = @CollectionDepth,
+								@MonitorStart = @MonitorStart,
+								@MonitorStop = @MonitorStop,
+								@DefMsgTTL = @DefMsgTTL,
+								@DefMsgArchiveMode = @DefMsgArchiveMode,
+								@MPEMode = @MPEMode,
+								@LogMartMode = @LogMartMode,
+								@MsgsPerCycle = @MsgsPerCycle,
+								@IsVirtual = @IsVirtual,
+								@RecordStatus = @RecordStatus,
+								@UDLAConnectionString = @UDLAConnectionString,
+								@UDLAStateField = @UDLAStateField,
+								@UDLAStateFieldType = @UDLAStateFieldType,
+								@UDLAStateFieldConversion = @UDLAStateFieldConversion,
+								@UDLAQueryStatement = @UDLAQueryStatement,
+								@UDLAOutputFormat = @UDLAOutputFormat,
+								@UDLAUniqueIdentifier = @UDLAUniqueIdentifier,
+								@UDLAMsgDateField = @UDLAMsgDateField,
+								@UDLAGetUTCDateStatement = @UDLAGetUTCDateStatement,
+								@PersistentConnection = @PersistentConnection,
+								@Status = @Status,
+								@MaxLogDate = @MaxLogDate,
+								@MsgRegexStart = @MsgRegexStart,
+								@MsgRegexDelimeter = @MsgRegexDelimeter,
+								@MsgRegexEnd = @MsgRegexEnd,
+								@RecursionDepth = @RecursionDepth,
+								@IsDirectory = @IsDirectory,
+								@Inclusions = @Inclusions,
+								@Exclusions = @Exclusions,
+								@Parameter1 = @Parameter1,
+								@Parameter2 = @Parameter2,
+								@Parameter3 = @Parameter3,
+								@StatePosition = @StatePosition,
+								@StateLastUpdated = @StateLastUpdated,
+								@CompressionType = @CompressionType,
+								@UDLAConnectionType = @UDLAConnectionType,
+								@Parameter4 = @Parameter4,
+								@CollectionThreadTimeout = @CollectionThreadTimeout,
+								@VirtualSourceRegex = @VirtualSourceTemplateItemRegex,
+								@VirtualSourceSortOrder = @UpsertedVirtualSourceSortOrder,
+								@VirtualSourceCatchAllID = @MsgSourceID,
+								@VirtualSourceParentID = @MsgSourceID,
+								@IsLoadBalanced = @IsLoadBalanced,
+								@LookupGUID = @LookupGUID,
+								@LookupSID = @LookupSID,
+								@ReadPublisherMetadata = @ReadPublisherMetadata,
+								@DaysToWatchModifiedFiles = @DaysToWatchModifiedFiles,
+								@UseRestrictedAdmin = @UseRestrictedAdmin
+						END
 				END
 
 			-- Update the Mother LS (to set @VirtualSourceCatchAllID)
