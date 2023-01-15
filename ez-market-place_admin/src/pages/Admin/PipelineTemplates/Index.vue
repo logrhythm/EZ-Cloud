@@ -8,7 +8,7 @@
             </q-card-section>
             <q-card-section>
               <q-table
-                :data="tableData"
+                :rows="tableData"
                 :columns="columns"
                 row-key="pipelineTemplateUid"
                 dense
@@ -16,7 +16,7 @@
                 :filter="searchFilter"
                 :loading="dataLoading"
                 rows-per-page-label="Pipeline Templates per page:"
-                :pagination.sync="pagination"
+                :pagination="pagination"
               >
                 <template v-slot:top>
                   <div class="full-width row wrap justify-between">
@@ -26,7 +26,7 @@
                     <div class="row q-gutter-md">
                       <div class="col" >
                         <q-btn rounded dense color="primary" icon="add" label="Add New Pipeline Template" style="min-width:14rem;" @click="addNewPipelineTemplate()" >
-                          <q-tooltip content-style="font-size: 1em">
+                          <q-tooltip style="font-size: 1em">
                             Create a new Pipeline Template.
                           </q-tooltip>
                         </q-btn>
@@ -42,7 +42,7 @@
                         </q-input>
                       </div>
                       <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadPipelineTemplates()">
-                        <q-tooltip content-style="font-size: 1em">
+                        <q-tooltip style="font-size: 1em">
                           Reload the list of Pipeline Templates.
                         </q-tooltip>
                       </q-btn>
@@ -53,7 +53,7 @@
                 <template v-slot:body-cell-actions="props">
                   <q-td :props="props">
                     <q-btn flat dense icon="edit" @click="doPromptForPipelineTemplateEdit(props.row)">
-                      <q-tooltip content-style="font-size: 1em">
+                      <q-tooltip style="font-size: 1em">
                         {{ $t('Edit Pipeline Template') }}
                       </q-tooltip>
                     </q-btn>
@@ -63,7 +63,7 @@
                       dense
                       :to="`PipelineTemplates/${props.row.pipelineTemplateUid}/Review`"
                     >
-                      <q-tooltip content-style="font-size: 1rem;">
+                      <q-tooltip style="font-size: 1rem;">
                         {{ $t('Review Pipeline Template') }}
                       </q-tooltip>
                     </q-btn>
@@ -73,7 +73,7 @@
                       dense
                       color="negative"
                     >
-                      <q-tooltip content-style="font-size: 1rem;">
+                      <q-tooltip style="font-size: 1rem;">
                         {{ $t('Delete') }}
                       </q-tooltip>
                       <q-menu anchor="top right" self="top left">
@@ -86,7 +86,7 @@
                             <q-item-section side>
                               <q-icon name="keyboard_arrow_right" />
                             </q-item-section>
-                            <q-menu content-class="bg-negative text-white" anchor="top end" self="top start">
+                            <q-menu class="bg-negative text-white" anchor="top end" self="top start">
                               <q-list>
                                 <q-item clickable v-close-popup @click="deletePipelineTemplateById(props.row.pipelineTemplateUid)">
                                   <q-item-section>Confirm</q-item-section>
@@ -109,7 +109,7 @@
                       <q-icon name="assignment_late" color="negative" style="opacity: .75;" size="md" v-else-if="props.value === 'Failed Review'" />
                       <q-icon name="auto_delete" color="negative" style="opacity: .5;" size="md" v-else-if="props.value === 'To be deleted'" />
                       <q-icon name="question_mark" color="orange" size="md" v-else />
-                      <q-tooltip content-style="font-size: 1em">
+                      <q-tooltip style="font-size: 1em">
                         {{ props.row.statusDescription }}
                       </q-tooltip>
                       <br>
@@ -143,12 +143,12 @@
                       v-if="props.value"
                       class="row q-gutter-x-md items-center"
                     >
-                      <q-tooltip content-style="font-size: 1em">
+                      <q-tooltip style="font-size: 1em">
                         <span>Detected fields: {{ props.row.pipelineTemplateStats.detectedFields }}</span><br>
                         <span>Mapped fields: {{ props.row.pipelineTemplateStats.mappedFields }}</span>&nbsp;(<span class="text-bold">{{ Math.round(props.value * 100) / 100 }}%</span>)
                       </q-tooltip>
                       <q-circular-progress
-                        :value="Math.round(props.value)"
+                        :model-value="Math.round(props.value)"
                         show-value
                         :font-size="(props.value < 100 ? '0.5em' : '0.4em')"
                         size="2.8em"
@@ -172,7 +172,7 @@
                 <template v-slot:body-cell-pipelineTemplateCreatedOn="props">
                   <q-td :props="props">
                     <div>
-                      <q-tooltip content-style="font-size: 1rem;">
+                      <q-tooltip style="font-size: 1rem;">
                         {{ props.value }}
                       </q-tooltip>
                       {{ timeAgo(props.value) }}
@@ -183,7 +183,7 @@
                 <template v-slot:body-cell-pipelineTemplateModifiedOn="props">
                   <q-td :props="props">
                     <div>
-                      <q-tooltip content-style="font-size: 1rem;">
+                      <q-tooltip style="font-size: 1rem;">
                         {{ props.value }}
                       </q-tooltip>
                       {{ timeAgo(props.value) }}
@@ -236,7 +236,6 @@
             <template v-slot:option="scope">
               <q-item
                 v-bind="scope.itemProps"
-                v-on="scope.itemEvents"
                 v-if="scope.opt.label && scope.opt.label !== '<hr>'"
               >
                 <q-item-section>
@@ -522,7 +521,7 @@ export default {
     },
     addNewOrUpdatePipelineTemplateFailure (payload) {
       // Pop this to the screen (via MainLayout)
-      this.$root.$emit('addAndShowErrorToErrorPanel', payload)
+      this.$bus.emit('addAndShowErrorToErrorPanel', payload)
       this.loadPipelineTemplates()
     },
     timeAgo (timestamp) {

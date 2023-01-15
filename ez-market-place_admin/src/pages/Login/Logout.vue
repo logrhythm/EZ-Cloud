@@ -28,7 +28,8 @@ export default {
   mounted () {
     // First remove any token from previous Login
     this.signOut({
-      signOutOkta: !!this.$auth.isAuthenticated
+      signOutOkta: !!this.$auth.isAuthenticated,
+      auth: this.$auth
     })
   }
 }

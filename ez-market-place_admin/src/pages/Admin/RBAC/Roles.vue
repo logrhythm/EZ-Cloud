@@ -14,7 +14,7 @@
           </q-card-section>
           <q-card-section>
             <q-table
-              :data="tableData"
+              :rows="tableData"
               :columns="columns"
               row-key="roleUid"
               dense
@@ -22,7 +22,7 @@
               :filter="searchFilter"
               :loading="dataLoading"
               rows-per-page-label="Roles per page:"
-              :pagination.sync="pagination"
+              :pagination="pagination"
             >
               <template v-slot:top>
                 <div class="full-width row wrap justify-between">
@@ -32,7 +32,7 @@
                   <div class="row q-gutter-md">
                     <div class="col" >
                       <q-btn rounded dense color="primary" icon="add" label="Add New Role" style="min-width:14rem;" @click="addNewRole()" >
-                        <q-tooltip content-style="font-size: 1em">
+                        <q-tooltip style="font-size: 1em">
                           Create a new Role.
                         </q-tooltip>
                       </q-btn>
@@ -49,7 +49,7 @@
                     </div>
                     <!-- <q-separator vertical dark color="orange" /> -->
                     <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadRoles()">
-                      <q-tooltip content-style="font-size: 1em">
+                      <q-tooltip style="font-size: 1em">
                         Reload the list of Roles.
                       </q-tooltip>
                     </q-btn>
@@ -60,12 +60,12 @@
               <template v-slot:body-cell-actions="props">
                 <q-td :props="props">
                   <q-btn flat dense icon="edit" @click="doPromptForRoleDetails(props.row)">
-                    <q-tooltip content-style="font-size: 1em">
+                    <q-tooltip style="font-size: 1em">
                       {{ $t('Edit Role details') }}
                     </q-tooltip>
                   </q-btn>
                   <q-btn flat dense icon="delete" color="negative" @click="deleteRolePrompt(props.row)">
-                    <q-tooltip content-style="font-size: 1em">
+                    <q-tooltip style="font-size: 1em">
                       {{ $t('Delete Role') }}
                     </q-tooltip>
                   </q-btn>
@@ -75,7 +75,7 @@
               <template v-slot:body-cell-roleIsPrivileged="props">
                 <q-td :props="props">
                   <q-icon name="check_circle_outline" color="green" size="md" v-if="props.value === 1" />
-                  <q-tooltip content-style="font-size: 1em">
+                  <q-tooltip style="font-size: 1em">
                     <span v-if="props.value === 1">Privileged user</span>
                     <span v-else-if ="props.value === 0">Non-privileged user</span>
                     <span v-else>{{ props.value }}</span>
@@ -110,12 +110,12 @@
 
         <q-card-actions vertical class="justify-around q-px-md">
             <q-btn icon="add" color="primary" @click="addNewRole()" >
-              <q-tooltip content-style="font-size: 1rem;">
+              <q-tooltip style="font-size: 1rem;">
                 Add Role
               </q-tooltip>
             </q-btn>
             <q-btn icon="refresh" :loading="dataLoading" @click="loadRoles()">
-              <q-tooltip content-style="font-size: 1rem;">
+              <q-tooltip style="font-size: 1rem;">
                 Reload
               </q-tooltip>
             </q-btn>
@@ -250,7 +250,7 @@ export default {
     },
     addNewOrUpdateUserRoleFailure (payload) {
       // Pop this to the screen (via MainLayout)
-      this.$root.$emit('addAndShowErrorToErrorPanel', payload)
+      this.$bus.emit('addAndShowErrorToErrorPanel', payload)
       this.loadRoles()
     },
     deleteRolePrompt (row) {

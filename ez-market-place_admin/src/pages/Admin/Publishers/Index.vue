@@ -8,7 +8,7 @@
             </q-card-section>
             <q-card-section>
               <q-table
-                :data="tableData"
+                :rows="tableData"
                 :columns="columns"
                 row-key="publisherUid"
                 dense
@@ -16,7 +16,7 @@
                 :filter="searchFilter"
                 :loading="dataLoading"
                 rows-per-page-label="Publishers per page:"
-                :pagination.sync="pagination"
+                :pagination="pagination"
               >
                 <template v-slot:top>
                   <div class="full-width row wrap justify-between">
@@ -26,7 +26,7 @@
                     <div class="row q-gutter-md">
                       <div class="col" >
                         <q-btn rounded dense color="primary" icon="add" label="Add New Publisher" style="min-width:14rem;" @click="addNewPublisher()" >
-                          <q-tooltip content-style="font-size: 1em">
+                          <q-tooltip style="font-size: 1em">
                             Create a new Publisher.
                           </q-tooltip>
                         </q-btn>
@@ -42,7 +42,7 @@
                         </q-input>
                       </div>
                       <q-btn dense outline icon="refresh" :loading="dataLoading" @click="loadPublishers()">
-                        <q-tooltip content-style="font-size: 1em">
+                        <q-tooltip style="font-size: 1em">
                           Reload the list of Publishers.
                         </q-tooltip>
                       </q-btn>
@@ -53,7 +53,7 @@
                 <template v-slot:body-cell-actions="props">
                   <q-td :props="props">
                     <q-btn flat dense icon="edit" @click="doPromptForPublisherEdit(props.row)">
-                      <q-tooltip content-style="font-size: 1em">
+                      <q-tooltip style="font-size: 1em">
                         {{ $t('Rename Publisher') }}
                       </q-tooltip>
                     </q-btn>
@@ -63,10 +63,10 @@
                       dense
                       color="negative"
                     >
-                      <q-tooltip content-style="font-size: 1rem;">
+                      <q-tooltip style="font-size: 1rem;">
                         {{ $t('Delete') }}
                       </q-tooltip>
-                      <q-menu content-class="bg-negative text-white" anchor="top right" self="top left">
+                      <q-menu class="bg-negative text-white" anchor="top right" self="top left">
                         <q-list>
                           <q-item clickable v-close-popup @click="deletePublisherById(props.row.publisherUid)">
                             <q-item-section>Confirm</q-item-section>
@@ -231,7 +231,7 @@ export default {
     },
     addNewOrUpdatePublisherFailure (payload) {
       // Pop this to the screen (via MainLayout)
-      this.$root.$emit('addAndShowErrorToErrorPanel', payload)
+      this.$bus.emit('addAndShowErrorToErrorPanel', payload)
       this.loadPublishers()
     }
   },

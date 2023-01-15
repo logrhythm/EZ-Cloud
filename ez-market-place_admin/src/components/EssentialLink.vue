@@ -1,7 +1,6 @@
 <template>
   <q-item
     clickable
-    tag="a"
     :href="link"
     v-if="title !== null"
   >

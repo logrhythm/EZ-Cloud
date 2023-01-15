@@ -17,7 +17,7 @@
 
           <q-card-actions vertical class="q-px-md">
               <q-btn icon="refresh" color="primary" :loading="dataLoading" disabled >
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   {{ $t('Reload') }}
                 </q-tooltip>
               </q-btn>

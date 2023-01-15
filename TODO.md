@@ -1,5 +1,15 @@
 # TODO - Backend
 
+### Target: v1.1
+
+## TO DO
+- [ ] API - Admin - MS SQL - Add MS SQL test
+- [ ] Remove depency to and remove local copy of `collectionConfigToYml()`
+
+## TO FIX
+
+## TO TEST
+
 ### Target: v1.0
 
 ## TO DO

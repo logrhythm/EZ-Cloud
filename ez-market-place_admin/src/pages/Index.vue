@@ -29,7 +29,8 @@
 
 <script>
 import { mapState } from 'vuex'
-import { version } from '../../package.json'
+import packageDetails from '../../package.json'
+const version = packageDetails.version
 
 export default {
   name: 'PageIndex',

@@ -1,6 +1,6 @@
 # TODO - Frontend
 
-### Target: v2.0
+### Target: v1.1
 
 ## TO DO
 - [ ] Incorporate Axon style UI
