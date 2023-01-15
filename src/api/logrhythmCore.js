@@ -317,6 +317,17 @@ router.post('/UpdateOpenCollectorLogSourceWithLogSourceVirtualisation', async (r
 // ##########################################################################################
 // GetSiemDatabaseStatusAndVersions
 // ##########################################################################################
+function addToSqlObjectIfPopulated(source, branch, target) {
+  if (
+    source
+    && source[branch]
+    && Array.isArray(source[branch])
+    && source[branch].length
+  ) {
+    // eslint-disable-next-line no-param-reassign
+    target[branch] = target[branch].concat(source[branch]);
+  }
+}
 
 router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
   // Steps
@@ -374,14 +385,8 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
       // eslint-disable-next-line max-len
       siemDatabaseStatusAndStatusAndVersions.sqlServerVersion = sqlServerVersionList.payload[0].sqlVersion;
     }
-    if (
-      sqlServerVersionList
-      && sqlServerVersionList.errors
-      && Array.isArray(sqlServerVersionList.errors)
-      && sqlServerVersionList.errors.length
-    ) {
-      sqlResponses.errors = sqlResponses.errors.concat(sqlServerVersionList.errors);
-    }
+    addToSqlObjectIfPopulated(sqlServerVersionList, 'errors', sqlResponses);
+    addToSqlObjectIfPopulated(sqlServerVersionList, 'outputs', sqlResponses);
   }
 
   // Check `EZ` DATABASE exists
@@ -417,14 +422,8 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
       // eslint-disable-next-line max-len, prefer-destructuring
       siemDatabaseStatusAndStatusAndVersions.ezDatabaseStatus = ezDbStatusList.payload[0];
     }
-    if (
-      ezDbStatusList
-      && ezDbStatusList.errors
-      && Array.isArray(ezDbStatusList.errors)
-      && ezDbStatusList.errors.length
-    ) {
-      sqlResponses.errors = sqlResponses.errors.concat(ezDbStatusList.errors);
-    }
+    addToSqlObjectIfPopulated(ezDbStatusList, 'errors', sqlResponses);
+    addToSqlObjectIfPopulated(ezDbStatusList, 'outputs', sqlResponses);
   }
 
   // Check `OC_Admin_get_EZ_Versions` VIEW exists
@@ -454,22 +453,9 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
       siemDatabaseStatusAndStatusAndVersions.viewGet_EZ_VersionsExists = true;
       // eslint-disable-next-line max-len, prefer-destructuring
       siemDatabaseStatusAndStatusAndVersions.viewGet_EZ_VersionsDetails = viewGet_EZ_VersionsList.payload[0];
-      if (
-        viewGet_EZ_VersionsList.errors
-        && Array.isArray(viewGet_EZ_VersionsList.errors)
-        && viewGet_EZ_VersionsList.errors.length
-      ) {
-        sqlResponses.errors = sqlResponses.errors.concat(viewGet_EZ_VersionsList.errors);
-      }
-      if (
-        viewGet_EZ_VersionsList
-        && viewGet_EZ_VersionsList.errors
-        && Array.isArray(viewGet_EZ_VersionsList.errors)
-        && viewGet_EZ_VersionsList.errors.length
-      ) {
-        sqlResponses.errors = sqlResponses.errors.concat(viewGet_EZ_VersionsList.errors);
-      }
     }
+    addToSqlObjectIfPopulated(viewGet_EZ_VersionsList, 'errors', sqlResponses);
+    addToSqlObjectIfPopulated(viewGet_EZ_VersionsList, 'outputs', sqlResponses);
   }
 
   // Get the version of the Stored Procedures and Views
@@ -493,14 +479,8 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
       // eslint-disable-next-line max-len
       siemDatabaseStatusAndStatusAndVersions.storedProcedureAndViewsVersions = siemDatabaseVersionsList.payload;
     }
-    if (
-      siemDatabaseVersionsList
-      && siemDatabaseVersionsList.errors
-      && Array.isArray(siemDatabaseVersionsList.errors)
-      && siemDatabaseVersionsList.errors.length
-    ) {
-      sqlResponses.errors = sqlResponses.errors.concat(siemDatabaseVersionsList.errors);
-    }
+    addToSqlObjectIfPopulated(siemDatabaseVersionsList, 'errors', sqlResponses);
+    addToSqlObjectIfPopulated(siemDatabaseVersionsList, 'outputs', sqlResponses);
   }
 
   res.json(
