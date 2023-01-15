@@ -335,6 +335,11 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
     viewGet_EZ_VersionsDetails: null,
     storedProcedureAndViewsVersions: []
   };
+  // To store the cummulted errors and outputs, if any
+  const sqlResponses = {
+    errors: [],
+    outputs: []
+  };
 
   if (
     process.env.databaseMode === 'mssql'
@@ -369,6 +374,14 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
       // eslint-disable-next-line max-len
       siemDatabaseStatusAndStatusAndVersions.sqlServerVersion = sqlServerVersionList.payload[0].sqlVersion;
     }
+    if (
+      sqlServerVersionList
+      && sqlServerVersionList.errors
+      && Array.isArray(sqlServerVersionList.errors)
+      && sqlServerVersionList.errors.length
+    ) {
+      sqlResponses.errors = sqlResponses.errors.concat(sqlServerVersionList.errors);
+    }
   }
 
   // Check `EZ` DATABASE exists
@@ -383,15 +396,15 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
       },
       targetVariable: ezDbStatusList,
       query: `
-      SELECT TOP (1)
-        [name] AS 'name',
-        [create_date] AS 'createdOn',
-        [state_desc] AS 'status'
-      FROM
-        [sys].[databases]
-      WHERE name = 'EZ'
-      ;
-    `
+        SELECT TOP (1)
+          [name] AS 'name',
+          [create_date] AS 'createdOn',
+          [state_desc] AS 'status'
+        FROM
+          [sys].[databases]
+        WHERE name = 'EZ'
+        ;
+      `
     });
 
     if (
@@ -403,6 +416,14 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
       siemDatabaseStatusAndStatusAndVersions.ezDatabaseExists = true;
       // eslint-disable-next-line max-len, prefer-destructuring
       siemDatabaseStatusAndStatusAndVersions.ezDatabaseStatus = ezDbStatusList.payload[0];
+    }
+    if (
+      ezDbStatusList
+      && ezDbStatusList.errors
+      && Array.isArray(ezDbStatusList.errors)
+      && ezDbStatusList.errors.length
+    ) {
+      sqlResponses.errors = sqlResponses.errors.concat(ezDbStatusList.errors);
     }
   }
 
@@ -433,6 +454,21 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
       siemDatabaseStatusAndStatusAndVersions.viewGet_EZ_VersionsExists = true;
       // eslint-disable-next-line max-len, prefer-destructuring
       siemDatabaseStatusAndStatusAndVersions.viewGet_EZ_VersionsDetails = viewGet_EZ_VersionsList.payload[0];
+      if (
+        viewGet_EZ_VersionsList.errors
+        && Array.isArray(viewGet_EZ_VersionsList.errors)
+        && viewGet_EZ_VersionsList.errors.length
+      ) {
+        sqlResponses.errors = sqlResponses.errors.concat(viewGet_EZ_VersionsList.errors);
+      }
+      if (
+        viewGet_EZ_VersionsList
+        && viewGet_EZ_VersionsList.errors
+        && Array.isArray(viewGet_EZ_VersionsList.errors)
+        && viewGet_EZ_VersionsList.errors.length
+      ) {
+        sqlResponses.errors = sqlResponses.errors.concat(viewGet_EZ_VersionsList.errors);
+      }
     }
   }
 
@@ -457,12 +493,20 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
       // eslint-disable-next-line max-len
       siemDatabaseStatusAndStatusAndVersions.storedProcedureAndViewsVersions = siemDatabaseVersionsList.payload;
     }
+    if (
+      siemDatabaseVersionsList
+      && siemDatabaseVersionsList.errors
+      && Array.isArray(siemDatabaseVersionsList.errors)
+      && siemDatabaseVersionsList.errors.length
+    ) {
+      sqlResponses.errors = sqlResponses.errors.concat(siemDatabaseVersionsList.errors);
+    }
   }
 
   res.json(
     {
-      errors: [],
-      outputs: [],
+      errors: sqlResponses.errors,
+      outputs: sqlResponses.outputs,
       payload: siemDatabaseStatusAndStatusAndVersions,
       stillChecking: false
     }
