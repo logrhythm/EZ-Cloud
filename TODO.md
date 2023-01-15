@@ -16,6 +16,7 @@
   - [x] EventHub
   - [x] WebHook HTTPS
 - [ ] API - Admin - MS SQL - Add MS SQL test
+- [x] API - Admin - Update Database - Do not use `EZ` as target DB when testing MS SQL availability/version
 - [x] Use Beats's configuration provided by Frontend when starting Tail, instead of using local copy of `collectionConfigToYml()`
 
 ## TO FIX

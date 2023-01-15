@@ -345,6 +345,11 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
     // Check SQL Server presence and response
     const sqlServerVersionList = {};
     await getDataFromMsSql({
+      msSqlConfig: {
+        options: {
+          database: 'master'
+        }
+      },
       targetVariable: sqlServerVersionList,
       query: `
       SELECT @@version AS 'sqlVersion';
@@ -371,6 +376,11 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
     // Check SQL Server presence and response
     const ezDbStatusList = {};
     await getDataFromMsSql({
+      msSqlConfig: {
+        options: {
+          database: 'master'
+        }
+      },
       targetVariable: ezDbStatusList,
       query: `
       SELECT TOP (1)
@@ -427,7 +437,7 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
   }
 
   // Get the version of the Stored Procedures and Views
-  if (siemDatabaseStatusAndStatusAndVersions.sqlServerIsUp) {
+  if (siemDatabaseStatusAndStatusAndVersions.ezDatabaseExists) {
     const siemDatabaseVersionsList = {};
     await getDataFromMsSql({
       targetVariable: siemDatabaseVersionsList,
