@@ -18,6 +18,13 @@
         "buildDockerFrontendAndImport": "echo \"🚀 Build Frontend and Import (🎯 Docker)...\" && cd frontend && npm install && quasar build && cp -af dist/spa/* ../public_web_root/ && cd ..",
         "buildDockerWithFrontend": "echo \"🚀 Build With Frontend (🎯 Docker)...\" && npm run buildDockerFrontendAndImport && npm run buildDocker",
         "buildDockerFull": "echo \"🚀 Build Full (🎯 Docker)...\" && npm run buildDockerWithFrontend",
+        "buildDockerCreateImage": "echo \"🚀 Create Image (🎯 Docker)...\" && cd dist && chmod +x _docker.build-oc-admin.sh && ./_docker.build-oc-admin.sh && cd ..",
+        "buildDockerCreateImageLatest": "echo \"🚀 Create Image (🎯 Docker)...\" && cd dist && chmod +x _docker.build-oc-admin.sh && ./_docker.build-oc-admin.sh --latest && cd ..",
+        "buildDockerFullAndCreateImage": "echo \"🚀 Build Full And Create Image (🎯 Docker)...\" && npm run buildDockerFull && npm run buildDockerCreateImage",
+        "buildDockerFullAndCreateImageLatest": "echo \"🚀 Build Full And Create Image (🎯 Docker)...\" && npm run buildDockerFull && npm run buildDockerCreateImageLatest",
+        "buildDockerPublishImage": "echo \"🚀 Publish Image (🎯 Docker)...\" && docker login && docker push --all-tags tonymasse/oc-admin",
+        "buildDockerFullAndPublishImage": "echo \"🚀 Build Full And Create And Publish Image (🎯 Docker)...\" && npm run buildDockerFullAndCreateImage && npm run buildDockerPublishImage",
+        "buildDockerFullAndPublishImageLatest": "echo \"🚀 Build Full And Create And Publish Image (🎯 Docker)...\" && npm run buildDockerFullAndCreateImageLatest && npm run buildDockerPublishImage",
         "installService": "node installer/installService.js",
         "uninstallService": "node installer/uninstallService.js"
     },

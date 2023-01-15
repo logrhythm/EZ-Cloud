@@ -26,7 +26,10 @@
   - [x] EventHub
   - [x] WebHook HTTPS
 - [ ] API - Admin - MS SQL - Add MS SQL test
+- [x] API - Admin - Update Database - Do not use `EZ` as target DB when testing MS SQL availability/version
+- [x] API - Admin - Update Database - Return errors to the user when checking the DB version details
 - [x] Use Beats's configuration provided by Frontend when starting Tail, instead of using local copy of `collectionConfigToYml()`
+- [x] API - `logrhythmCore` - `UpdateOpenCollectorLogSourceWithLogSourceVirtualisation` - Support for LR v7.11 SIEM
 
 ## TO FIX
 - Installer
@@ -36,6 +39,10 @@
 - API
   - [x] Crash when no MasterID is returned from EMDB
   - [x] Issue #21 - Deployment fails at last step with LR 7.9 SIEM
+- Athentication
+  - [x] Private key for encryption of JWT token is cached incorectly as empty if OC-DB is not ready on the first try
+- SIEM SQL
+  - [x] Issue #28 - Last step of Deployment always fail the first time
 
 ## TO TEST
 

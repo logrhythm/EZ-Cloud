@@ -90,11 +90,10 @@ else
     chmod +x _docker.run-oc-admin_dev.sh
     ./_docker.run-oc-admin_dev.sh --build_only
   else
-    echo "### 🔴 ERROR: \`_docker.run-oc-admin_dev.sh\` SCRIPT IS NOT FOUND. BUILD PROCESS CANCELLED"
+    echo "### �~_~T� ERROR: \`_docker.run-oc-admin_dev.sh\` SCRIPT IS NOT FOUND. BUILD PROCESS CANCELLED"
     exit 1
   fi
 fi
-
 # Double check the files are good, and Dockerise the life out of that thing!
 
 echo "### CHECK FILES ARE READY TO BUILD CONTAINERISED..."

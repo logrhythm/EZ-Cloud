@@ -4,6 +4,7 @@
  * Changes log:
  * Tony Massé - 2022-07-25 - Adapt `installerBuilder` to bild Docker Container
  * Tony Massé - 2022-08-05 - Add `LATEST_TAG` to the Docker command
+ * Tony Massé - 2023-01-13 - Add Grype verification command
  */
 
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -88,6 +89,7 @@ if (
 
   try {
     const dockerCommand = `docker build --tag "tonymasse/oc-admin:${versionTag}" --tag "tonymasse/oc-admin:$LATEST_TAG" --file "${dockerFilePath}" "${distSubDirectory}"`;
+    const grypeCommand = `docker run --rm --volume /var/run/docker.sock:/var/run/docker.sock anchore/grype:latest "tonymasse/oc-admin:${versionTag}" --add-cpes-if-none`;
     const dockerScriptPath = path.join(distDirectory, '_docker.build-oc-admin.sh');
 
     // Read template from disk
@@ -95,6 +97,7 @@ if (
 
     // Replace token
     dockerScriptTemplate = String(dockerScriptTemplate).replaceAll('#_DOCKER_COMMAND_GOES_HERE', dockerCommand);
+    dockerScriptTemplate = String(dockerScriptTemplate).replaceAll('#_GRYPE_COMMAND_GOES_HERE', grypeCommand);
 
     // Write to disk
     fs.writeFileSync(dockerScriptPath, dockerScriptTemplate);
@@ -102,7 +105,8 @@ if (
     /* eslint-disable no-console */
     console.log('🟢 Docker Container building script created.');
     console.log('You now want to run the following command:');
-    console.log('cd /var/lib/docker/volumes/oc-admin_dev/_data/ && chmod +x _docker.build-oc-admin.sh && _docker.build-oc-admin.sh');
+    // console.log('cd /var/lib/docker/volumes/oc-admin_dev/_data/ && chmod +x _docker.build-oc-admin.sh && _docker.build-oc-admin.sh');
+    console.log('cd dist/ && chmod +x _docker.build-oc-admin.sh && _docker.build-oc-admin.sh');
     console.log('🏁');
     console.log('');
     /* eslint-enable no-console */
