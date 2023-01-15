@@ -317,6 +317,17 @@ router.post('/UpdateOpenCollectorLogSourceWithLogSourceVirtualisation', async (r
 // ##########################################################################################
 // GetSiemDatabaseStatusAndVersions
 // ##########################################################################################
+function addToSqlObjectIfPopulated(source, branch, target) {
+  if (
+    source
+    && source[branch]
+    && Array.isArray(source[branch])
+    && source[branch].length
+  ) {
+    // eslint-disable-next-line no-param-reassign
+    target[branch] = target[branch].concat(source[branch]);
+  }
+}
 
 router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
   // Steps
@@ -335,6 +346,11 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
     viewGet_EZ_VersionsDetails: null,
     storedProcedureAndViewsVersions: []
   };
+  // To store the cummulted errors and outputs, if any
+  const sqlResponses = {
+    errors: [],
+    outputs: []
+  };
 
   if (
     process.env.databaseMode === 'mssql'
@@ -345,6 +361,11 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
     // Check SQL Server presence and response
     const sqlServerVersionList = {};
     await getDataFromMsSql({
+      msSqlConfig: {
+        options: {
+          database: 'master'
+        }
+      },
       targetVariable: sqlServerVersionList,
       query: `
       SELECT @@version AS 'sqlVersion';
@@ -364,6 +385,8 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
       // eslint-disable-next-line max-len
       siemDatabaseStatusAndStatusAndVersions.sqlServerVersion = sqlServerVersionList.payload[0].sqlVersion;
     }
+    addToSqlObjectIfPopulated(sqlServerVersionList, 'errors', sqlResponses);
+    addToSqlObjectIfPopulated(sqlServerVersionList, 'outputs', sqlResponses);
   }
 
   // Check `EZ` DATABASE exists
@@ -371,17 +394,22 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
     // Check SQL Server presence and response
     const ezDbStatusList = {};
     await getDataFromMsSql({
+      msSqlConfig: {
+        options: {
+          database: 'master'
+        }
+      },
       targetVariable: ezDbStatusList,
       query: `
-      SELECT TOP (1)
-        [name] AS 'name',
-        [create_date] AS 'createdOn',
-        [state_desc] AS 'status'
-      FROM
-        [sys].[databases]
-      WHERE name = 'EZ'
-      ;
-    `
+        SELECT TOP (1)
+          [name] AS 'name',
+          [create_date] AS 'createdOn',
+          [state_desc] AS 'status'
+        FROM
+          [sys].[databases]
+        WHERE name = 'EZ'
+        ;
+      `
     });
 
     if (
@@ -394,6 +422,8 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
       // eslint-disable-next-line max-len, prefer-destructuring
       siemDatabaseStatusAndStatusAndVersions.ezDatabaseStatus = ezDbStatusList.payload[0];
     }
+    addToSqlObjectIfPopulated(ezDbStatusList, 'errors', sqlResponses);
+    addToSqlObjectIfPopulated(ezDbStatusList, 'outputs', sqlResponses);
   }
 
   // Check `OC_Admin_get_EZ_Versions` VIEW exists
@@ -424,10 +454,12 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
       // eslint-disable-next-line max-len, prefer-destructuring
       siemDatabaseStatusAndStatusAndVersions.viewGet_EZ_VersionsDetails = viewGet_EZ_VersionsList.payload[0];
     }
+    addToSqlObjectIfPopulated(viewGet_EZ_VersionsList, 'errors', sqlResponses);
+    addToSqlObjectIfPopulated(viewGet_EZ_VersionsList, 'outputs', sqlResponses);
   }
 
   // Get the version of the Stored Procedures and Views
-  if (siemDatabaseStatusAndStatusAndVersions.sqlServerIsUp) {
+  if (siemDatabaseStatusAndStatusAndVersions.ezDatabaseExists) {
     const siemDatabaseVersionsList = {};
     await getDataFromMsSql({
       targetVariable: siemDatabaseVersionsList,
@@ -447,12 +479,14 @@ router.get('/GetSiemDatabaseStatusAndVersions', async (req, res) => {
       // eslint-disable-next-line max-len
       siemDatabaseStatusAndStatusAndVersions.storedProcedureAndViewsVersions = siemDatabaseVersionsList.payload;
     }
+    addToSqlObjectIfPopulated(siemDatabaseVersionsList, 'errors', sqlResponses);
+    addToSqlObjectIfPopulated(siemDatabaseVersionsList, 'outputs', sqlResponses);
   }
 
   res.json(
     {
-      errors: [],
-      outputs: [],
+      errors: sqlResponses.errors,
+      outputs: sqlResponses.outputs,
       payload: siemDatabaseStatusAndStatusAndVersions,
       stillChecking: false
     }
