@@ -19,6 +19,7 @@ COPY . .
 
 RUN chmod +x bin/encryptionTool
 RUN rm -rf config/
+RUN rm -f config.sample/database.json
 
 EXPOSE 8400
 
