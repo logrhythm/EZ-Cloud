@@ -6,6 +6,7 @@
 - [ ] API - Admin - MS SQL - Add MS SQL test
 - [ ] Remove depency to and remove local copy of `collectionConfigToYml()`
 - [x] Docker - Build `config/` at run time to accomodate Docker volumes
+- [x] Docker - Generate new HTTPS self-signed certificates and keys at each build
 
 ## TO FIX
 
