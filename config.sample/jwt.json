@@ -1,3 +1,4 @@
 {
-    "secret": "A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS"
+    "secret": "CHANGE_ME_WITH_A_SUPER_LONG_STRING_OF_RANDOM_CHARACTERS",
+    "ttl": "24h"
 }

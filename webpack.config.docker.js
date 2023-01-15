@@ -46,7 +46,7 @@ module.exports = {
     // Copy all the necessary sample files to the relevant place under dist/
     new CopyPlugin({
       patterns: [
-        { from: 'config.dist', to: path.join('..', 'config'), toType: 'dir' },
+        // { from: 'config.dist', to: path.join('..', 'config'), toType: 'dir' }, // Removed as now handled by startup script from config.sample/
         { from: 'config.sample', to: path.join('..', 'config.sample'), toType: 'dir' },
         { from: 'public_web_root', to: path.join('..', 'public_web_root'), toType: 'dir' },
         { from: '.env.sample', to: path.join('..', '.env.sample'), toType: 'file' },
@@ -74,7 +74,7 @@ module.exports = {
       onBuildExit: {
         scripts: [
           // Build the MS SQL DB script for Docker deployments
-          `cd ${path.join(__dirname, 'dist', distSubDir)} && zip "${path.join(__dirname, 'dist', `${distSubDir}.EZ_database_for_Docker.zip`)}" database/create_database_for_Docker.bat database/*.00*.sql database/*.09*.sql database/*.10*.sql database/*.11*.sql database/*.12*.sql database/*.13*.sql database/*.14*.sql database/*.15*.sql database/*.16*.sql`,
+          `cd ${path.join(__dirname, 'dist', distSubDir)} && zip "${path.join(__dirname, 'dist', `${distSubDir}.EZ_database_for_Docker.zip`)}" database/create_database_for_Docker.bat database/*.00*.sql database/*.09*.sql database/*.10*.sql database/*.11*.sql database/*.12*.sql database/*.13*.sql database/*.14*.sql database/*.15*.sql database/*.16*.sql database/*.24*.sql database/*.25*.sql `,
           // Build the Docker Container
           `node ${path.join(__dirname, 'docker', 'dockerContainerBuilder')} --distDirectory "dist" --distSubDirectory "${distSubDir}/" --dockerFile "./Dockerfile" --dockerBuildScriptTemplate "${path.join('docker', '_docker.build-TEMPLATE.sh')}" `
         ],
