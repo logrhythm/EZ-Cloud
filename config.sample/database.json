@@ -5,11 +5,11 @@
             "type":"default",
             "options":{
                 "userName":"sa",
-                "password":"**whoopsy**"
+                "password":"CHANGE_ME"
             }
         },
         "options":{
-            "encrypt":false,
+            "encrypt":true,
             "port": 1433,
             "database":"EZ",
             "requestTimeout": 30000

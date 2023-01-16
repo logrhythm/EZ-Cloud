@@ -92,8 +92,9 @@
 <script>
 import { mapState, mapGetters } from 'vuex'
 import EssentialLink from 'components/EssentialLink.vue'
-import { version } from '../../package.json'
 import { date } from 'quasar'
+import packageDetails from '../../package.json'
+const version = packageDetails.version
 
 export default {
   name: 'MainLayout',
@@ -335,10 +336,10 @@ export default {
     }
   },
   mounted () {
-    this.$root.$on('addAndShowErrorToErrorPanel', this.prepareAndShowErrorPanel)
+    this.$bus.on('addAndShowErrorToErrorPanel', this.prepareAndShowErrorPanel)
   },
-  beforeDestroy () {
-    this.$root.$off('addAndShowErrorToErrorPanel')
+  beforeUnmount () {
+    this.$bus.off('addAndShowErrorToErrorPanel')
   }
 }
 </script>

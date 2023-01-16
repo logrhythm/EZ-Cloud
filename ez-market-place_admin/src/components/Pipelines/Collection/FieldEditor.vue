@@ -48,7 +48,7 @@
                 name="error"
                 :color="inFocus ? 'red-10' : 'alert'"
               >
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   Failed to obfuscate the Secret. Error message:<br>
                   <span class="text-italic">{{ updateErrorMessage }}</span>
                 </q-tooltip>
@@ -58,7 +58,7 @@
                 name="warning"
                 :color="inFocus ? 'orange-10' : 'warning'"
               >
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   This Secret must be obfuscated/encrypted to produce a valid configuration
                 </q-tooltip>
               </q-icon>
@@ -69,7 +69,7 @@
                 :class="obfuscationRequirementNotMet ? 'cursor-pointer' : ''"
                 @click="obfuscateSecret"
               >
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   <span v-if="obfuscationRequirementNotMet">Obfuscate/encrypt this Secret</span>
                   <span v-else>Your Secret is properly obfuscated</span>
                 </q-tooltip>
@@ -87,7 +87,7 @@
                 class="cursor-pointer"
                 @click="showPassword = !showPassword"
               >
-                <q-tooltip content-style="font-size: 1rem;">
+                <q-tooltip style="font-size: 1rem;">
                   <span v-if="showPassword">Hide</span><span v-else>Show</span> Secret
                 </q-tooltip>
               </q-icon>
@@ -170,7 +170,7 @@
           :disabled="false || (isPartOfObject && leafInObject && (leafInObject === 'stream_id' || leafInObject === 'stream_name'))"
           @click="deleteSubFieldPrompt()"
         >
-          <q-tooltip content-style="font-size: 1rem;">
+          <q-tooltip style="font-size: 1rem;">
             Delete entry
           </q-tooltip>
         </q-btn>

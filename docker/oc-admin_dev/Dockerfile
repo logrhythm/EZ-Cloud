@@ -7,6 +7,7 @@
 # Modified on: 2023-01-04 - Remove option to do a full build for Docker via Environment variable
 # Modified on: 2023-01-04 - Break down Init, Run and Build into different entrypoint scripts
 # Modified on: 2023-01-11 - Add Docker to container, as a fundation to build and publish Docker images from container itself
+# Modified on: 2023-01-15 - Add OpenSSL to container, as a fundation to create sample HTTPS keys and certs at build time
 # Description: Describe container `oc-admin_dev`, based on NodeJS
 #              This container is designed to develop, as opposed
 #              to run, the OC Admin (formerly EZ Cloud) Backend,
@@ -20,6 +21,7 @@ RUN apk add git
 RUN apk add uuidgen
 RUN apk add zip
 RUN apk add docker
+RUN apk add openssl
 
 WORKDIR /app
 

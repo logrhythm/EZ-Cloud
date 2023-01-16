@@ -15,7 +15,7 @@ lrctl_docker_membership_return_code=255
 ocdb_repo="gcr.io/lrcollection"
 ocdb_version="6.0.2"
 ocadmin_repo="tonymasse"
-ocadmin_version="v1.0.1"
+ocadmin_version="v1.1.0"
 
 lrctl_volume_mounts=()
 # Expose the hosts Docker socket to the container.
@@ -48,7 +48,7 @@ prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/EZC
 container_registry_url="https://gcr.io"
 
 # prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/EZCloud/lrctl"
-prod_script_file_url="https://github.com/logrhythm/EZ-Cloud/raw/v1.0/sandpit/lrctl"
+prod_script_file_url="https://github.com/logrhythm/EZ-Cloud/raw/v1.1/sandpit/lrctl"
 
 # Track the files that should be cleaned up. We add one file just to avoid the
 # array being empty.
@@ -815,6 +815,55 @@ function cleanOcAdminContainer() {
   fi
 }
 
+createOcAdminConfigVolume(){
+  if [[ $(dockerVolumeExists "oc-admin_config") == "TRUE" ]]; then
+    echo "Using existing OC Admin configuration volume"
+  else
+    echo "Creating OC Admin configuration volume"
+    docker volume create "oc-admin_config" 1> /dev/null
+  fi
+}
+
+migrateOcAdminConfigToVolume(){
+  # Check oc-admin exist. (In Stopped or Started mode)
+  isOcAdminContainer=$( docker ps -a -q -f name='oc-admin' )
+  if [[ -n "$isOcAdminContainer" ]]; then
+    # Inspect to check it has the volume `oc-admin_config` mounted
+    isOcAdminConfigVolumeMounted=$( docker inspect "oc-admin" --format "{{(index .Mounts 0).Name}}" 2> /dev/null | grep "oc-admin_config" )
+    if [[ ! -n "$isOcAdminConfigVolumeMounted" ]]; then
+      # Copy config files from current oc-admin to oc-admin_config volume
+      echo "### MIGRATING OC-ADMIN CONFIGURATION..."
+
+      # Create a clean temp folder
+      echo "### CREATING A CLEAN DIRECTORY (\`./oc-admin-config-migration\`)..."
+      mkdir -p oc-admin-config-migration 2> /dev/null
+
+      # Clean up
+      rm -f oc-admin-config-migration/* 2> /dev/null
+
+      # Copy the files to the temp directory
+      docker cp "oc-admin:/app/config/ez-market-place.json" "oc-admin-config-migration/ez-market-place.json" 2> /dev/null
+      docker cp "oc-admin:/app/config/secure.json" "oc-admin-config-migration/secure.json" 2> /dev/null
+      docker cp "oc-admin:/app/config/jwt.json" "oc-admin-config-migration/jwt.json" 2> /dev/null
+      docker cp "oc-admin:/app/config/https.cert.pem" "oc-admin-config-migration/https.cert.pem" 2> /dev/null
+      docker cp "oc-admin:/app/config/https.key.pem" "oc-admin-config-migration/https.key.pem" 2> /dev/null
+      docker cp "oc-admin:/app/config/https.keytmp.pem" "oc-admin-config-migration/https.keytmp.pem" 2> /dev/null
+
+      # Tar them up, so we can call copyToVolume once
+      tar cf "oc-admin-config-migration/oc-admin-config-migration.tar" -C oc-admin-config-migration/ ez-market-place.json secure.json jwt.json https.cert.pem https.key.pem https.keytmp.pem
+
+      # Make sure the volume exists
+      createOcAdminConfigVolume
+
+      # Copy them into volume `oc-admin_config`
+      copyToVolume "oc-admin-config-migration/oc-admin-config-migration.tar" "oc-admin_config"
+
+      # Clean up
+      rm -rf oc-admin-config-migration 2> /dev/null
+    fi
+  fi
+}
+
 processStartOC_DB(){
   
   isOcDbVolume=false
@@ -848,7 +897,7 @@ processStartOC_DB(){
           echo "oc-db container started"
         else
           echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
-          docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
+          docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach --restart unless-stopped ${ocdb_repo}/oc-db:${ocdb_version}
           sleep 10
           echo "oc-db container started"
         fi
@@ -901,8 +950,19 @@ processRestartOC_ADMIN(){
   if [[ -n "$isOcAdmincontainer" ]]; 
   then
       echo "oc-admin container restarting..."
+      ocAdminImage="${ocadmin_repo}/oc-admin:${ocadmin_version}"
+      if [[ -n "$(checkForImage ${ocAdminImage})" ]];
+      then
+        docker restart oc-admin
+      else
+        docker stop oc-admin
+        migrateOcAdminConfigToVolume
+        cleanOcAdminContainer
+        cleanOcAdminImages
+        processStartOC_ADMIN
+      fi
       #docker stop oc-admin
-      docker restart oc-admin
+      #docker restart oc-admin
       #cleanOcAdminContainer
       #cleanOcAdminImages
       #processStartOC_ADMIN
@@ -967,9 +1027,11 @@ processStartOC_ADMIN(){
           docker start oc-admin
           echo "oc-admin container started"
         else
+          # Make sure the config volume exists
+          createOcAdminConfigVolume
+          # Kick off OC Admin
           echo "### RUN \`oc-admin\` CONTAINER..."
-          docker run --detach --publish 8400:8400/tcp --network logrhythm --name oc-admin ${ocadmin_repo}/oc-admin:${ocadmin_version}
-          sleep 10
+          docker run --detach --restart unless-stopped --publish 8400:8400/tcp --network logrhythm --volume oc-admin_config:/app/config --name oc-admin ${ocadmin_repo}/oc-admin:${ocadmin_version}
         fi
       fi
       sleep 10
