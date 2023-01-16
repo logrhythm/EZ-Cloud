@@ -6,7 +6,8 @@
 - [ ] Incorporate Axon style UI
   - [ ] Tables
   - [ ] Headers
-    - [ ] Logo
+    - [x] Header on all pages
+    - [x] Logo in Header
     - [x] Breadcrumbs
   - [ ] Action buttons style
 - [ ] LogRhythm Beats mapping for Collection Configuration

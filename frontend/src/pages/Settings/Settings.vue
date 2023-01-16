@@ -1,9 +1,14 @@
 <template>
   <q-page class="q-pa-sm">
-  <BreadCrumbs
-    :crumbs="breadCrumbs"
-    :pageTitle="$t('Settings')"
-  />
+    <q-header bordered :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
+      <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
+        <img class="q-mr-md" src="logrhythm_logo_wide.svg" alt="LogRhythm Open Collector">
+      </q-toolbar>
+    </q-header>
+    <BreadCrumbs
+      :crumbs="breadCrumbs"
+      :pageTitle="$t('Settings')"
+    />
     <div class="q-gutter-y-sm">
       <q-card class="" v-if="devMode">
         <q-card-section horizontal>

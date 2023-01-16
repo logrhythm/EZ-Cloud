@@ -1,5 +1,10 @@
 <template>
   <q-page class="q-pa-md">
+    <q-header bordered :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
+      <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
+        <img class="q-mr-md" src="logrhythm_logo_wide.svg" alt="LogRhythm Open Collector">
+      </q-toolbar>
+    </q-header>
     <BreadCrumbs
       :crumbs="breadCrumbs"
       :pageTitle="$t('OpenCollectors')"
@@ -454,6 +459,7 @@
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
+import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
@@ -466,6 +472,7 @@ import BreadCrumbs from 'components/BreadCrumbs.vue'
 export default {
   name: 'PageOpenCollectorsList',
   mixins: [
+    mixinSharedDarkMode, // Shared computed to access and update the DarkMode
     mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
     mixinSharedSocket, // Shared function and state to access the Socket.io
     mixinSharedShipperAndCollectionsHelpers // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods

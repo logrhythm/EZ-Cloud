@@ -1,5 +1,10 @@
 <template>
   <q-page class="q-pa-md">
+    <q-header bordered :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
+      <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
+        <img class="q-mr-md" src="logrhythm_logo_wide.svg" alt="LogRhythm Open Collector">
+      </q-toolbar>
+    </q-header>
     <!-- <q-btn class="q-mt-sm" label="Open Editor" to="/Pipelines/b9f7c85a-a278-11eb-bcbc-0242ac130002/Edit" color="primary"/> -->
     <BreadCrumbs
       :crumbs="breadCrumbs"
@@ -180,6 +185,7 @@
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
+import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedRightToLeft from 'src/mixins/mixin-Shared-RightToLeft'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
@@ -189,6 +195,7 @@ import BreadCrumbs from 'components/BreadCrumbs.vue'
 export default {
   name: 'PagePipelinesList',
   mixins: [
+    mixinSharedDarkMode, // Shared computed to access and update the DarkMode
     mixinSharedRightToLeft, // Shared functions to deal with LTR/RTL languages
     mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
     mixinSharedShipperAndCollectionsHelpers // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods

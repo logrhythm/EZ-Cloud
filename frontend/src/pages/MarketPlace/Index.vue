@@ -1,5 +1,10 @@
 <template>
   <q-page class="q-pa-sm">
+    <q-header bordered :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
+      <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
+        <img class="q-mr-md" src="logrhythm_logo_wide.svg" alt="LogRhythm Open Collector">
+      </q-toolbar>
+    </q-header>
     <BreadCrumbs
       :crumbs="breadCrumbs"
       :pageTitle="$t('EZ Market Place')"

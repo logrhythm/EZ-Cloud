@@ -1,5 +1,10 @@
 <template>
   <q-page class="column justify-around">
+    <q-header bordered :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
+      <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
+        <img class="q-mr-md" src="logrhythm_logo_wide.svg" alt="LogRhythm Open Collector">
+      </q-toolbar>
+    </q-header>
     <div class="flex flex-center">
       <div>
         <div class="text-h2" style="opacity:.4">
@@ -165,11 +170,15 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
+import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import { version } from '../../package.json'
 import ConfirmDialog from '../components/Dialogs/ConfirmDialog.vue'
 
 export default {
   name: 'PageIndex',
+  mixins: [
+    mixinSharedDarkMode // Shared computed to access and update the DarkMode
+  ],
   data () {
     return {
       version: version,
