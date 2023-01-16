@@ -10,6 +10,7 @@
     - [x] Logo in Header
     - [x] Breadcrumbs
   - [ ] Action buttons style
+  - [ ] Marketplace Template listing as Cards
 - [ ] LogRhythm Beats mapping for Collection Configuration
   - [ ] ...
 - [ ] Error reporting card to deal with many errors
