@@ -6,7 +6,8 @@
 - [ ] Incorporate Axon style UI
   - [ ] Tables
   - [ ] Headers
-    - [ ] Breadcrumbs
+    - [ ] Logo
+    - [x] Breadcrumbs
   - [ ] Action buttons style
 - [ ] LogRhythm Beats mapping for Collection Configuration
   - [ ] ...
@@ -31,7 +32,9 @@
       - [ ] ~~Ability to Enable / Commit the Log Source creation~~ (👈 low value, low priority. Might resurect if users demand)
 
 ## TO FIX
-
+- Translations
+  - [ ] Title for Pipeline Properties
+  - [ ] Title for Pipeline Collection Builder
 ## TO TEST
 
 ### Target: v1.0

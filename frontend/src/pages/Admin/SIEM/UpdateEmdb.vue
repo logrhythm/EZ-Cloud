@@ -5,9 +5,13 @@
         <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Admin')" :to="'/Admin'" />
         <q-separator spaced vertical />
         <q-btn no-caps flat dense icon="link" color="primary" :label="$t('Manage MS SQL Connection')" to="/Admin/SIEM/MsSql" />
-        <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('Admin : SIEM : Update Database') }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
+
+    <BreadCrumbs
+      :crumbs="breadCrumbs"
+      :pageTitle="$t('Update Database')"
+    />
 
     <div class="q-gutter-y-sm">
       <q-card class="">
@@ -339,12 +343,14 @@
 import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import ConfirmDialog from '../../../components/Dialogs/ConfirmDialog.vue'
+import BreadCrumbs from 'components/BreadCrumbs.vue'
 
 export default {
   name: 'PageAdminSiemUpdateEmdb',
   mixins: [
     mixinSharedDarkMode // Shared computed to access and update the DarkMode
   ],
+  components: { BreadCrumbs },
   data () {
     return {
       loadingEmdbVersions: false,
@@ -401,6 +407,24 @@ export default {
         })
       }
       return returnArray
+    },
+    breadCrumbs () {
+      return [
+        {
+          icon: 'o_home',
+          link: '/Welcome'
+        },
+        {
+          title: this.$t('Admin'),
+          link: '/Admin'
+        },
+        {
+          title: 'SIEM'
+        },
+        {
+          title: this.$t('Update Database')
+        }
+      ]
     }
   },
   methods: {

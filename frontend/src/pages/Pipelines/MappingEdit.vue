@@ -48,7 +48,7 @@
         <q-btn no-caps flat dense icon="visibility" :label="$t('Show JQ')" v-if="!showJqOutput" @click="buildJqFilter(); buildJqTransform(); showJqOutput = true" />
         <q-btn no-caps flat dense icon="visibility_off" :label="$t('Hide JQ output')" v-else @click="showJqOutput = false" />
 
-        <q-toolbar-title style="opacity:.4" class="text-center">{{ $tc('Mapping Builder | Mapping Builder: {pipelineName} | Mapping Builder: {pipelineName}', (pipelineName && pipelineName.length ? 1 : 0), { pipelineName }) }}</q-toolbar-title>
+        <q-space />
 
         <q-btn no-caps flat dense icon="pending" :label="$t('Advanced')">
           <!-- <q-menu max-width="450px" content-style="width:450px"> -->
@@ -129,6 +129,10 @@
       </q-toolbar>
     </q-header>
     <div class="">
+      <BreadCrumbs
+        :crumbs="breadCrumbs"
+        :pageTitle="$tc('Mapping Builder | Mapping Builder: {pipelineName} | Mapping Builder: {pipelineName}', (pipelineName && pipelineName.length ? 1 : 0), { pipelineName })"
+      />
       <!-- <div class="q-mt-md">
         <span class="text-bold">needsSaving: </span>{{ needsSaving }}
       </div> -->
@@ -653,6 +657,7 @@ import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedRightToLeft from 'src/mixins/mixin-Shared-RightToLeft'
 import mixinSharedBuildJq from 'src/mixins/mixin-Shared-BuildJq'
+import BreadCrumbs from 'components/BreadCrumbs.vue'
 import Vue2Filters from 'vue2-filters'
 import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml'
 
@@ -666,6 +671,7 @@ export default {
     mixinSharedBuildJq, // Shared JQ Building functions (Filter and Transform)
     Vue2Filters.mixin
   ],
+  components: { BreadCrumbs },
   data () {
     return {
       pipelineUid: '', // UUID of the pipeline, used as the UUID of the tail too. Needed to be able to kill it on the server
@@ -869,7 +875,33 @@ export default {
     }, // queueInWindow
     queueProcessWindow () {
       return JSON.stringify(this.queueProcess)
-    } // queueProcessWindow
+    }, // queueProcessWindow
+    breadCrumbs () {
+      return [
+        {
+          icon: 'o_home',
+          link: '/Welcome'
+        },
+        {
+          title: this.$t('Pipelines'),
+          link: '/Pipelines'
+        },
+        {
+          title: (this.pipeline && this.pipeline.name && this.pipeline.name.length ? this.pipeline.name : '...'),
+          icon: null,
+          link: `/Pipelines/${this.pipelineUid}/Properties`,
+          disabled: !(this.pipelineUid && this.pipelineUid.length)
+        },
+        {
+          title: this.$t('Properties'),
+          link: `/Pipelines/${this.pipelineUid}/Properties`,
+          disabled: !(this.pipelineUid && this.pipelineUid.length)
+        },
+        {
+          title: this.$tc('Mapping Builder | Mapping Builder: {pipelineName} | Mapping Builder: {pipelineName}', 0)
+        }
+      ]
+    }
   },
 
   methods: {

@@ -1,5 +1,9 @@
 <template>
   <q-page class="q-pa-md">
+    <BreadCrumbs
+      :crumbs="breadCrumbs"
+      :pageTitle="$t('OpenCollectors')"
+    />
       <q-table
         :title="$t('OpenCollectors')"
         :data="tableData"
@@ -455,6 +459,7 @@ import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 import { uid } from 'quasar'
 import ConfirmDialog from 'components/Dialogs/ConfirmDialog.vue'
+import BreadCrumbs from 'components/BreadCrumbs.vue'
 
 // import shippersFallbackUrls from 'src/pages/OpenCollectors/shippers_fallback_urls.json'
 
@@ -465,6 +470,7 @@ export default {
     mixinSharedSocket, // Shared function and state to access the Socket.io
     mixinSharedShipperAndCollectionsHelpers // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
   ],
+  components: { BreadCrumbs },
   data () {
     return {
       searchFilter: '',
@@ -539,6 +545,17 @@ export default {
     },
     tableLoading () {
       return this.dataLoading // Coming from the Mixin: mixinSharedLoadCollectorsAndPipelines
+    },
+    breadCrumbs () {
+      return [
+        {
+          icon: 'o_home',
+          link: '/Welcome'
+        },
+        {
+          title: this.$t('OpenCollectors')
+        }
+      ]
     }
     // shippersUrls: {
     //   get () {

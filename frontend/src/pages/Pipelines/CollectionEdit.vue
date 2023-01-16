@@ -17,7 +17,7 @@
         <q-btn no-caps flat dense icon="visibility" label="Show JQ" v-if="!showJqOutput" @click="buildJqFilter(); buildJqTransform(); showJqOutput = true" />
         <q-btn no-caps flat dense icon="visibility_off" label="Hide JQ output" v-else @click="showJqOutput = false" /> -->
 
-        <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('Collection Builder') }}<span v-if="pipeline && pipeline.name && pipeline.name.length">:  {{ pipeline.name }}</span></q-toolbar-title>
+        <q-space />
 
         <q-btn no-caps flat dense icon="pending" :label="$t('Advanced')"  >
           <q-menu>
@@ -96,6 +96,10 @@
       </q-toolbar>
     </q-header>
     <div class="q-gutter-y-md">
+      <BreadCrumbs
+        :crumbs="breadCrumbs"
+        :pageTitle="(pipeline && pipeline.name && pipeline.name.length ? `Collection Builder: ${pipeline.name}` : 'Collection Builder')"
+      />
       <q-card>
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
@@ -229,6 +233,7 @@ import FieldEditor from 'components/Pipelines/Collection/FieldEditor.vue'
 import Vue2Filters from 'vue2-filters'
 import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml'
 import ConfirmDialog from 'components/Dialogs/ConfirmDialog.vue'
+import BreadCrumbs from 'components/BreadCrumbs.vue'
 
 export default {
   mixins: [
@@ -236,7 +241,7 @@ export default {
     mixinSharedDarkMode, // Shared computed to access and update the DarkMode
     Vue2Filters.mixin
   ],
-  components: { FieldEditor },
+  components: { BreadCrumbs, FieldEditor },
 
   data () {
     return {
@@ -296,6 +301,32 @@ export default {
       } else {
         return { value: 'unknown', label: this.$t('Unknown'), icon: 'help_center' }
       }
+    },
+    breadCrumbs () {
+      return [
+        {
+          icon: 'o_home',
+          link: '/Welcome'
+        },
+        {
+          title: this.$t('Pipelines'),
+          link: '/Pipelines'
+        },
+        {
+          title: (this.pipeline && this.pipeline.name && this.pipeline.name.length ? this.pipeline.name : '...'),
+          icon: null,
+          link: `/Pipelines/${this.pipelineUid}/Properties`,
+          disabled: !(this.pipelineUid && this.pipelineUid.length)
+        },
+        {
+          title: this.$t('Properties'),
+          link: `/Pipelines/${this.pipelineUid}/Properties`,
+          disabled: !(this.pipelineUid && this.pipelineUid.length)
+        },
+        {
+          title: this.$t('Collection Builder')
+        }
+      ]
     }
   },
 

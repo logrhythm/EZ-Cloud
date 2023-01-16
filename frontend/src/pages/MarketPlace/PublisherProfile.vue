@@ -9,6 +9,10 @@
         <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('EZ Market Place : My Profile') }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
+    <BreadCrumbs
+      :crumbs="breadCrumbs"
+      :pageTitle="$t('EZ Market Place : My Profile')"
+    />
     <q-card class="q-pa-none q-mx-none">
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
@@ -73,13 +77,14 @@
 import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import Identicon from 'components/Publisher/Identicon.vue'
+import BreadCrumbs from 'components/BreadCrumbs.vue'
 
 export default {
   name: 'PageMarketPublisherProfile',
   mixins: [
     mixinSharedDarkMode // Shared computed to access and update the DarkMode
   ],
-  components: { Identicon },
+  components: { BreadCrumbs, Identicon },
   data () {
     return {
       dataLoading: false,
@@ -92,6 +97,21 @@ export default {
     ...mapState('mainStore', ['ezMarketNotification', 'ezMarketNotifications', 'ezMarketPublisherDetails']),
     publisherDisplayName () {
       return (this.ezMarketPublisherDetails ? this.ezMarketPublisherDetails.displayName : null)
+    },
+    breadCrumbs () {
+      return [
+        {
+          icon: 'o_home',
+          link: '/Welcome'
+        },
+        {
+          title: this.$t('EZ Market Place'),
+          link: '/MarketPlace'
+        },
+        {
+          title: this.$t('My Profile')
+        }
+      ]
     }
   }, // computed
   methods: {

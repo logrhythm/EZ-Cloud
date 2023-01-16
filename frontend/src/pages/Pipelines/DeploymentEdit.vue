@@ -3,10 +3,12 @@
     <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
         <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Properties')" :to="'/Pipelines/' + this.pipelineUid + '/Properties'" />
-        <q-separator vertical />
-        <q-toolbar-title style="opacity:.4" class="text-center">{{ $tc('Edit Deployment | Edit Deployment: {pipelineName} | Edit Deployment: {pipelineName}', (pipeline && pipeline.name && pipeline.name.length ? 1 : 0), { pipelineName: (pipeline && pipeline.name && pipeline.name.length ? pipeline.name : '') }) }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
+    <BreadCrumbs
+      :crumbs="breadCrumbs"
+      :pageTitle="$tc('Edit Deployment | Edit Deployment: {pipelineName} | Edit Deployment: {pipelineName}', (pipeline && pipeline.name && pipeline.name.length ? 1 : 0), { pipelineName: (pipeline && pipeline.name && pipeline.name.length ? pipeline.name : '') })"
+    />
     <div class=" q-gutter-y-sm">
       <q-card>
         <q-card-section class="col q-ma-none q-pa-none">
@@ -336,6 +338,7 @@ import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadC
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedBuildJq from 'src/mixins/mixin-Shared-BuildJq'
+import BreadCrumbs from 'components/BreadCrumbs.vue'
 
 export default {
   mixins: [
@@ -344,6 +347,7 @@ export default {
     mixinSharedDarkMode, // Shared computed to access and update the DarkMode
     mixinSharedBuildJq // Shared JQ Building functions (Filter and Transform)
   ],
+  components: { BreadCrumbs },
   data () {
     return {
       pipelineUid: '',
@@ -615,6 +619,32 @@ export default {
           ? this.collectionConfigOutputFor(collectionShipperOption.outputFormat, this.pipeline.collectionConfig)
           : ''
       )
+    },
+    breadCrumbs () {
+      return [
+        {
+          icon: 'o_home',
+          link: '/Welcome'
+        },
+        {
+          title: this.$t('Pipelines'),
+          link: '/Pipelines'
+        },
+        {
+          title: (this.pipeline && this.pipeline.name && this.pipeline.name.length ? this.pipeline.name : '...'),
+          icon: null,
+          link: `/Pipelines/${this.pipelineUid}/Properties`,
+          disabled: !(this.pipelineUid && this.pipelineUid.length)
+        },
+        {
+          title: this.$t('Properties'),
+          link: `/Pipelines/${this.pipelineUid}/Properties`,
+          disabled: !(this.pipelineUid && this.pipelineUid.length)
+        },
+        {
+          title: this.$tc('Edit Deployment | Edit Deployment: {pipelineName} | Edit Deployment: {pipelineName}', 0)
+        }
+      ]
     }
   },
 

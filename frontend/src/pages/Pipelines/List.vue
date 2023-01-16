@@ -1,6 +1,10 @@
 <template>
   <q-page class="q-pa-md">
     <!-- <q-btn class="q-mt-sm" label="Open Editor" to="/Pipelines/b9f7c85a-a278-11eb-bcbc-0242ac130002/Edit" color="primary"/> -->
+    <BreadCrumbs
+      :crumbs="breadCrumbs"
+      :pageTitle="$t('Pipelines')"
+    />
       <q-table
         :title="$t('Pipelines')"
         :data="tableData"
@@ -180,6 +184,7 @@ import mixinSharedRightToLeft from 'src/mixins/mixin-Shared-RightToLeft'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 import ConfirmDialog from 'components/Dialogs/ConfirmDialog.vue'
+import BreadCrumbs from 'components/BreadCrumbs.vue'
 
 export default {
   name: 'PagePipelinesList',
@@ -188,6 +193,7 @@ export default {
     mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
     mixinSharedShipperAndCollectionsHelpers // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
   ],
+  components: { BreadCrumbs },
   data () {
     return {
       searchFilter: '',
@@ -258,6 +264,17 @@ export default {
     },
     darkIsEnabled () {
       return this.$q.dark.isActive
+    },
+    breadCrumbs () {
+      return [
+        {
+          icon: 'o_home',
+          link: '/Welcome'
+        },
+        {
+          title: this.$t('Pipelines')
+        }
+      ]
     }
   },
   methods: {

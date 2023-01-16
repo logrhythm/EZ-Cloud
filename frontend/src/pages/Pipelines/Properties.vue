@@ -3,12 +3,10 @@
     <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
         <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to List')" :to="'/Pipelines'" />
-
-        <q-toolbar-title style="opacity:.4" class="text-center">Pipeline Properties<span v-if="pipeline && pipeline.name && pipeline.name.length">:  {{ pipeline.name }}</span></q-toolbar-title>
-
       </q-toolbar>
     </q-header>
     <div class=" q-gutter-y-sm">
+      <BreadCrumbs :crumbs="breadCrumbs" :pageTitle="(pipeline && pipeline.name && pipeline.name.length ? `Pipeline Properties: ${pipeline.name}` : 'Pipeline Properties')"/>
       <q-card>
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
@@ -769,6 +767,7 @@ import mixinSharedRightToLeft from 'src/mixins/mixin-Shared-RightToLeft'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 // import { dump } from 'js-yaml'
 import { exportFile, copyToClipboard } from 'quasar'
+import BreadCrumbs from 'components/BreadCrumbs.vue'
 import MarketPlaceExport from 'components/Pipelines/MarketPlace/Export.vue'
 import Identicon from 'components/Publisher/Identicon.vue'
 import IconPicture from 'components/Pipelines/IconPicture.vue'
@@ -786,7 +785,7 @@ export default {
     mixinSharedRightToLeft, // Shared functions to deal with LTR/RTL languages
     mixinSharedShipperAndCollectionsHelpers // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
   ],
-  components: { MarketPlaceExport, Identicon, IconPicture },
+  components: { BreadCrumbs, MarketPlaceExport, Identicon, IconPicture },
   data () {
     return {
       // pipelineUid: '7dc7d568-a90e-11eb-bcbc-0242ac130002'
@@ -943,6 +942,27 @@ export default {
         .find(template => template.collectionMethod === this.collectionMethod) || {})
         .mappingStyle || 'custom'
       return mappingStyle !== 'default'
+    },
+    breadCrumbs () {
+      return [
+        {
+          icon: 'o_home',
+          link: '/Welcome'
+        },
+        {
+          title: 'Pipelines',
+          link: '/Pipelines'
+        },
+        {
+          title: (this.pipeline && this.pipeline.name && this.pipeline.name.length ? this.pipeline.name : '...'),
+          icon: null,
+          link: `/Pipelines/${this.pipelineUid}/Properties`,
+          disabled: true
+        },
+        {
+          title: 'Properties'
+        }
+      ]
     }
   },
   methods: {

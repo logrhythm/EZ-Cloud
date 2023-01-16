@@ -3,9 +3,12 @@
     <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
         <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Admin')" :to="'/Admin'" />
-        <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('Admin : RBAC : Manage User Roles') }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
+    <BreadCrumbs
+      :crumbs="breadCrumbs"
+      :pageTitle="$t('Manage User Roles')"
+    />
     <q-card class="">
       <q-card-section horizontal>
         <q-card-section class="col q-ma-none q-pa-none">
@@ -174,12 +177,14 @@ import { mapState, mapActions } from 'vuex'
 import { uid } from 'quasar'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import ConfirmDialog from '../../../components/Dialogs/ConfirmDialog.vue'
+import BreadCrumbs from 'components/BreadCrumbs.vue'
 
 export default {
   name: 'PageAdminRoles',
   mixins: [
     mixinSharedDarkMode // Shared computed to access and update the DarkMode
   ],
+  components: { BreadCrumbs },
   data () {
     return {
       searchFilter: '',
@@ -209,6 +214,24 @@ export default {
     },
     dataLoading () {
       return this.rolesLoading
+    },
+    breadCrumbs () {
+      return [
+        {
+          icon: 'o_home',
+          link: '/Welcome'
+        },
+        {
+          title: this.$t('Admin'),
+          link: '/Admin'
+        },
+        {
+          title: 'RBAC'
+        },
+        {
+          title: this.$t('Manage Manage User Roles')
+        }
+      ]
     }
   },
   methods: {

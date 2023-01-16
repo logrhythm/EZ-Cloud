@@ -6,9 +6,13 @@
         <q-separator spaced vertical />
         <q-btn no-caps flat dense icon="mail_outline" color="primary" :label="$t('View Notifications')" to="/MarketPlace/Notifications" />
         <q-btn no-caps flat dense icon='person' :label="$t('View My Profile')" to="/MarketPlace/PublisherProfile" />
-        <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('EZ Market Place : Pipeline Templates') }}</q-toolbar-title>
+        <!-- <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('EZ Market Place : Pipeline Templates') }}</q-toolbar-title> -->
       </q-toolbar>
     </q-header>
+    <BreadCrumbs
+      :crumbs="breadCrumbs"
+      :pageTitle="$t('Pipeline Templates')"
+    />
     <q-card class="q-pa-none q-mx-none">
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
@@ -200,6 +204,7 @@ import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import Identicon from 'components/Publisher/Identicon.vue'
 import IconPicture from 'components/Pipelines/IconPicture.vue'
+import BreadCrumbs from 'components/BreadCrumbs.vue'
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en.json'
 TimeAgo.addDefaultLocale(en)
@@ -209,7 +214,7 @@ export default {
   mixins: [
     mixinSharedDarkMode // Shared computed to access and update the DarkMode
   ],
-  components: { Identicon, IconPicture },
+  components: { Identicon, IconPicture, BreadCrumbs },
   data () {
     return {
       searchFilter: '',
@@ -237,6 +242,21 @@ export default {
     ...mapState('mainStore', ['collectionMethodsOptions', 'collectionShippersOptions', 'ezMarketPipelineTemplates']),
     tableData () {
       return this.ezMarketPipelineTemplates
+    },
+    breadCrumbs () {
+      return [
+        {
+          icon: 'o_home',
+          link: '/Welcome'
+        },
+        {
+          title: this.$t('EZ Market Place'),
+          link: '/MarketPlace'
+        },
+        {
+          title: this.$t('Pipeline Templates')
+        }
+      ]
     }
   }, // computed
   methods: {
