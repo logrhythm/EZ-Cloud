@@ -14,21 +14,21 @@
   - [ ] Deduplicate error messages
 - [ ] Admin - MS SQL - Add Test button
 - [ ] Landing page
-  - [ ] Add a simple Wizard
-    - [ ] Ask for name for Log Source
-    - [ ] Create collection configuation
-      - [ ] Pick Shipper
-      - [ ] Pick type of collection (Flat File, Syslog, REST, etc...)
-      - [ ] Configure it
-    - [ ] Pick up Open Collector
-      - [ ] Add one if none in the list
-      - [ ] Offer to deploy required Shipper if not already on OC
-    - [ ] Create field mapping
-      - [ ] Run pre-configured Tail
-    - [ ] Recap page
-      - [ ] Ability to rename Log Source
-      - [ ] Ability to assign Log Source to other Open Collectors
-      - [ ] Ability to Enable / Commit the Log Source creation
+  - [ ] ~~Add a simple Wizard~~ (👈 low value, low priority. Might resurect if users demand)
+    - [ ] ~~Ask for name for Log Source~~ (👈 low value, low priority. Might resurect if users demand)
+    - [ ] ~~Create collection configuation~~ (👈 low value, low priority. Might resurect if users demand)
+      - [ ] ~~Pick Shipper~~ (👈 low value, low priority. Might resurect if users demand)
+      - [ ] ~~Pick type of collection (Flat File, Syslog, REST, etc...)~~ (👈 low value, low priority. Might resurect if users demand)
+      - [ ] ~~Configure it~~ (👈 low value, low priority. Might resurect if users demand)
+    - [ ] ~~Pick up Open Collector~~ (👈 low value, low priority. Might resurect if users demand)
+      - [ ] ~~Add one if none in the list~~ (👈 low value, low priority. Might resurect if users demand)
+      - [ ] ~~Offer to deploy required Shipper if not already on OC~~ (👈 low value, low priority. Might resurect if users demand)
+    - [ ] ~~Create field mapping~~ (👈 low value, low priority. Might resurect if users demand)
+      - [ ] ~~Run pre-configured Tail~~ (👈 low value, low priority. Might resurect if users demand)
+    - [ ] ~~Recap page~~ (👈 low value, low priority. Might resurect if users demand)
+      - [ ] ~~Ability to rename Log Source~~ (👈 low value, low priority. Might resurect if users demand)
+      - [ ] ~~Ability to assign Log Source to other Open Collectors~~ (👈 low value, low priority. Might resurect if users demand)
+      - [ ] ~~Ability to Enable / Commit the Log Source creation~~ (👈 low value, low priority. Might resurect if users demand)
 
 ## TO FIX
 
