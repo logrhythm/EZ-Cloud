@@ -9,7 +9,6 @@
 
     <BreadCrumbs
       :crumbs="breadCrumbs"
-      :pageTitle="$t('Manage MS SQL Connection')"
     />
 
     <q-card class="">

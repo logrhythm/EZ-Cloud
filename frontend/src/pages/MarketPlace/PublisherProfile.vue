@@ -9,7 +9,6 @@
     </q-header>
     <BreadCrumbs
       :crumbs="breadCrumbs"
-      :pageTitle="$t('EZ Market Place : My Profile')"
     />
     <q-card class="q-pa-none q-mx-none">
         <q-card-section horizontal>

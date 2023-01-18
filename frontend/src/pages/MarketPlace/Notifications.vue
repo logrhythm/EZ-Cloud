@@ -9,14 +9,14 @@
     </q-header>
     <BreadCrumbs
       :crumbs="breadCrumbs"
-      :pageTitle="$t('Notifications')"
     />
+      <!-- :pageTitle="$t('Notifications')" -->
     <q-card class="q-pa-none q-mx-none">
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
-            <!-- <q-card-section class="text-h4">
+            <q-card-section class="text-h4">
                 {{ $t('Notifications') }}
-            </q-card-section> -->
+            </q-card-section>
             <!-- <q-card-section>
                 <ul>
                   <li

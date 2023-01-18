@@ -9,7 +9,6 @@
 
     <BreadCrumbs
       :crumbs="breadCrumbs"
-      :pageTitle="$t('Update Database')"
     />
 
     <div class="q-gutter-y-sm">

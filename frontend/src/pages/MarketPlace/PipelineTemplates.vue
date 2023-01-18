@@ -10,7 +10,6 @@
     </q-header>
     <BreadCrumbs
       :crumbs="breadCrumbs"
-      :pageTitle="$t('Pipeline Templates')"
     />
     <q-card class="q-pa-none q-mx-none">
         <q-card-section horizontal>

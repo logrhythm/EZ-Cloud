@@ -7,7 +7,6 @@
     </q-header>
     <BreadCrumbs
       :crumbs="breadCrumbs"
-      :pageTitle="$t('OpenCollectors')"
     />
       <q-table
         :title="$t('OpenCollectors')"

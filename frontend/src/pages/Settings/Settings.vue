@@ -7,7 +7,6 @@
     </q-header>
     <BreadCrumbs
       :crumbs="breadCrumbs"
-      :pageTitle="$t('Settings')"
     />
     <div class="q-gutter-y-sm">
       <q-card class="" v-if="devMode">

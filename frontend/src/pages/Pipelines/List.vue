@@ -8,7 +8,6 @@
     <!-- <q-btn class="q-mt-sm" label="Open Editor" to="/Pipelines/b9f7c85a-a278-11eb-bcbc-0242ac130002/Edit" color="primary"/> -->
     <BreadCrumbs
       :crumbs="breadCrumbs"
-      :pageTitle="$t('Pipelines')"
     />
       <q-table
         :title="$t('Pipelines')"

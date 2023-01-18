@@ -7,7 +7,6 @@
     </q-header>
     <BreadCrumbs
       :crumbs="breadCrumbs"
-      :pageTitle="$t('Admin')"
     />
 
     <div class="q-gutter-y-sm">

@@ -3,11 +3,11 @@
     <q-header bordered :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
         <img class="q-mr-md" src="logrhythm_logo_wide.svg" alt="LogRhythm Open Collector">
+        <q-btn no-caps flat dense icon="o_person" color="primary" :label="$t('Manage User Accounts')" to="/Admin/RBAC/Users" />
       </q-toolbar>
     </q-header>
     <BreadCrumbs
       :crumbs="breadCrumbs"
-      :pageTitle="$t('Manage User Roles')"
     />
     <q-card class="">
       <q-card-section horizontal>
