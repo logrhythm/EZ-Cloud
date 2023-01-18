@@ -9,6 +9,7 @@
 - [x] Docker - Generate new HTTPS self-signed certificates and keys at each build
 
 ## TO FIX
+- [x] Fix #38 - Some clients send SQL port as string
 
 ## TO TEST
 

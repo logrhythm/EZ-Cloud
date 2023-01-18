@@ -566,7 +566,7 @@ router.post('/UpdateMsSqlConfig', async (req, res) => {
         },
         options: {
           encrypt: !!req.body.encrypt, // Force boolean, failsafe to False if not provided
-          port: req.body.port || 1433, // Failsafe to default MS SQL port
+          port: parseInt(req.body.port, 10) || 1433, // Failsafe to default MS SQL port
           database: 'EZ',
           requestTimeout: 30000
         }
