@@ -3,8 +3,6 @@
     <q-header bordered :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
         <img class="q-mr-md" src="logrhythm_logo_wide.svg" alt="LogRhythm Open Collector">
-        <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Market Place')" :to="'/MarketPlace'" />
-        <q-separator spaced vertical />
         <q-btn no-caps flat dense icon="account_tree" color="primary" :label="$t('View Pipeline Templates')" to="/MarketPlace/PipelineTemplates" />
         <q-btn no-caps flat dense icon='person' :label="$t('View My Profile')" to="/MarketPlace/PublisherProfile" />
       </q-toolbar>

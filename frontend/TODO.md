@@ -5,10 +5,11 @@
 ## TO DO
 - [ ] Incorporate Axon style UI
   - [ ] Tables
-  - [ ] Headers
+  - [x] Headers
     - [x] Header on all pages
     - [x] Logo in Header
     - [x] Breadcrumbs
+    - [x] Remove unecessary "Return" buttons
   - [ ] Action buttons style
   - [ ] Marketplace Template listing as Cards
 - [ ] LogRhythm Beats mapping for Collection Configuration

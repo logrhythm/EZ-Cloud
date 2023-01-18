@@ -27,8 +27,6 @@
         --- Max messages in Queue In
         --- Max messages in Processed Logs
  -->
-        <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Properties')" :to="'/Pipelines/' + this.pipelineUid + '/Properties'" />
-        <q-separator vertical />
         <q-btn no-caps flat dense icon="save" :label="$t('Save')" color="primary" :disabled="!needsSaving" @click="save()" />
         <q-btn no-caps flat dense icon="restore" :label="$t('Reverse to last saved')" @click="reverseToLastSaved()" />
         <q-separator vertical />
