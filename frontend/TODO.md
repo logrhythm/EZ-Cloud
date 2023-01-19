@@ -38,6 +38,7 @@
 - Translations
   - [ ] Title for Pipeline Properties
   - [ ] Title for Pipeline Collection Builder
+  - [ ] Breadcrumbs
 ## TO TEST
 
 ### Target: v1.0
