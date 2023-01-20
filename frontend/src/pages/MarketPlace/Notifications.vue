@@ -163,7 +163,9 @@ import { toSvg } from 'jdenticon'
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en.json'
 import BreadCrumbs from 'components/BreadCrumbs.vue'
-TimeAgo.addDefaultLocale(en)
+if (TimeAgo.getDefaultLocale() == null) {
+  TimeAgo.addDefaultLocale(en)
+}
 
 export default {
   name: 'PageMarketNotifications',
