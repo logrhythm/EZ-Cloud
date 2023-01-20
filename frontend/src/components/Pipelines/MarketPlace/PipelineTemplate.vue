@@ -43,7 +43,6 @@
             :color="(darkMode ? 'teal-14' : 'teal-14')"
             :track-color="(darkMode ? 'grey-9' : 'grey-3')"
           />
-            <!-- :color="(darkMode ? 'blue-3' : 'blue-10')" -->
         </div>
         <div v-else>
           -
@@ -58,7 +57,21 @@
       </q-card-section>
 
       <q-card-section class="col row justify-end items-start">
-        <q-btn icon="more_horiz" dense flat />
+        <q-btn icon="more_horiz" dense flat >
+          <q-menu anchor="bottom right" self="top right">
+            <q-list style="min-width: 100px">
+              <q-item clickable v-close-popup
+                :to="'/MarketPlace/PipelineTemplates/' + uid + '/Properties'"
+                :disable="!(status && status === 'Visible')"
+              >
+                <q-item-section avatar>
+                  <q-icon name="launch" />
+                </q-item-section>
+                <q-item-section>{{ $t('Open') }}</q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-btn>
       </q-card-section>
     </q-card-section>
 
