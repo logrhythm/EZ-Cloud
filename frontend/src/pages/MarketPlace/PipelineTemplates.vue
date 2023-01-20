@@ -41,138 +41,25 @@
                 :loading="dataLoading"
                 :rows-per-page-label="$t('Pipeline Templates per page:')"
                 :pagination.sync="pagination"
+                grid
+                hide-header
               >
-
-                <template v-slot:body-cell-actions="props">
-                  <q-td :props="props">
-                    <div>
-                      <q-btn
-                        flat
-                        dense
-                        icon="launch"
-                        :to="'/MarketPlace/PipelineTemplates/' + props.row.uid + '/Properties'"
-                        :disable="!(props.row.status && props.row.status === 'Visible')"
-                      >
-                      </q-btn>
-                      <q-tooltip content-style="font-size: 1em" v-if="props.row.status && props.row.status === 'Visible'">
-                        {{ $t('Open this Pipeline Template') }}
-                      </q-tooltip>
-                      <q-tooltip content-style="font-size: 1em" v-else>
-                        {{ $t('Still Pending Review.') }}<br>
-                        {{ $t('Can\'t open.') }}
-                      </q-tooltip>
-                    </div>
-                  </q-td>
-                </template>
-
-                <template v-slot:body-cell-status="props">
-                  <q-td :props="props">
-                    <div>
-                      <q-icon name="o_visibility" color="positive" size="md" v-if="props.value === 'Visible'" />
-                      <q-icon name="o_visibility_off" style="opacity: .5;" size="md" v-else-if="props.value === 'Hidden'" />
-                      <q-icon name="o_pending_actions" color="primary" size="md" v-else-if="props.value === 'Pending review'" />
-                      <q-icon name="o_assignment_late" color="negative" style="opacity: .75;" size="md" v-else-if="props.value === 'Failed Review'" />
-                      <q-icon name="o_auto_delete" color="negative" style="opacity: .5;" size="md" v-else-if="props.value === 'To be deleted'" />
-                      <q-icon name="o_question_mark" color="orange" size="md" v-else />
-                      <q-tooltip content-style="font-size: 1em">
-                        {{ $t(props.row.statusDescription) }}
-                      </q-tooltip>
-                      <br>
-                      {{ $t(props.value) }}
-                    </div>
-                  </q-td>
-                </template>
-
-                <template v-slot:body-cell-publisher="props">
-                  <q-td :props="props">
-                    <Identicon :identity="props.value" />
-                    <div>
-                      {{ props.value }}
-                    </div>
-                  </q-td>
-                </template>
-
-                <template v-slot:body-cell-iconPicture="props">
-                  <q-td :props="props">
-                    <IconPicture
-                      :pngBase64="props.value"
-                      :size="70"
-                    />
-                  </q-td>
-                </template>
-
-                <template v-slot:body-cell-pipelineTemplateCollectionStats="props">
-                  <q-td :props="props">
-                    <q-tooltip content-style="font-size: 1em">
-                      {{ $t('Shipper: {collectionShipperLabel}', { collectionShipperLabel: collectionShipperByValue(props.row.stats.collectionShipper).label }) }}<br>
-                      {{ $t('Method: {collectionMethodLabel}', {collectionMethodLabel: collectionMethodByValue(props.row.stats.collectionMethod).label }) }}
-                    </q-tooltip>
-                    <div
-                      v-if="props.value"
-                      class="row items-center justify-evenly"
-                    >
-                      <img v-if="collectionShipperByValue(props.row.stats.collectionShipper).icon.length" :src="'/shippers/' + collectionShipperByValue(props.row.stats.collectionShipper).icon + '.svg'" width="60px">
-                      <q-icon :name="collectionMethodByValue(props.row.stats.collectionMethod).icon" size="60px" />
-                    </div>
-                    <div v-else>
-                      -
-                    </div>
-                  </q-td>
-                </template>
-
-                <template v-slot:body-cell-pipelineTemplateFieldsMappingStats="props">
-                  <q-td :props="props">
-                    <div
-                      v-if="props.value"
-                      class="row items-center justify-center"
-                    >
-                      <q-tooltip content-style="font-size: 1em">
-                        <span>{{ $t('Detected fields: {detectedFields}', { detectedFields: props.row.stats.detectedFields }) }}</span><br>
-                        <span>{{ $t('Mapped fields: {mappedFields} ({mappedFieldsPercent}%)', { mappedFields: props.row.stats.mappedFields, mappedFieldsPercent: Math.round(props.value * 100) / 100 }) }}</span><br>
-                      </q-tooltip>
-                      <q-circular-progress
-                        class="q-mr-md"
-                        :value="Math.round(props.value)"
-                        show-value
-                        :font-size="(props.value < 100 ? '0.5em' : '0.4em')"
-                        size="2.8em"
-                        :thickness="0.2"
-                        :color="(darkMode ? 'blue-3' : 'blue-10')"
-                        :track-color="(darkMode ? 'grey-9' : 'grey-3')"
-                      />
-                      <div class="column q-gutter-y-xs">
-                        <q-badge :color="(props.row.stats && props.row.stats.sharedFieldFrequencies ? 'positive' : 'grey')" text-color="black" :label="$t('Shared Frequency')" />
-                        <!-- <q-badge :color="(props.row.stats && props.row.stats.sharedFieldValues ? 'orange' : 'grey')" text-color="black" label="Shared Values" /> -->
-                        <q-badge :color="(props.row.stats && props.row.stats.sharedFieldMapping ? 'positive' : 'grey')" text-color="black" :label="$t('Shared Mapping')" />
-                        <q-badge :color="(props.row.stats && props.row.stats.sharedFieldModifiers ? 'positive' : 'grey')" text-color="black" :label="$t('Shared Modifiers')" />
-                      </div>
-                    </div>
-                    <div v-else>
-                      -
-                    </div>
-                  </q-td>
-                </template>
-
-                <template v-slot:body-cell-created="props">
-                  <q-td :props="props">
-                    <div>
-                      <q-tooltip content-style="font-size: 1rem;">
-                        {{ props.value }}
-                      </q-tooltip>
-                      {{ timeAgo(props.value) }}
-                    </div>
-                  </q-td>
-                </template>
-
-                <template v-slot:body-cell-modified="props">
-                  <q-td :props="props">
-                    <div>
-                      <q-tooltip content-style="font-size: 1rem;">
-                        {{ props.value }}
-                      </q-tooltip>
-                      {{ timeAgo(props.value) }}
-                    </div>
-                  </q-td>
+                <template v-slot:item="props">
+                  <PipelineTemplate
+                    v-bind="props.row"
+                    :topIndicator="(
+                      props.row.status !== 'Visible'
+                        ?
+                          {
+                            text: props.row.status,
+                            showBar: true,
+                            icon: 'o_warning',
+                            color: 'deep-orange'
+                          }
+                        : {}
+                    )
+                    "
+                  />
                 </template>
 
               </q-table>
@@ -200,19 +87,22 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
-import Identicon from 'components/Publisher/Identicon.vue'
-import IconPicture from 'components/Pipelines/IconPicture.vue'
+// import Identicon from 'components/Publisher/Identicon.vue'
+// import IconPicture from 'components/Pipelines/IconPicture.vue'
 import BreadCrumbs from 'components/BreadCrumbs.vue'
+import PipelineTemplate from 'components/Pipelines/MarketPlace/PipelineTemplate.vue'
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en.json'
-TimeAgo.addDefaultLocale(en)
+if (TimeAgo.getDefaultLocale() == null) {
+  TimeAgo.addDefaultLocale(en)
+}
 
 export default {
   name: 'PageMarketPipelineTemplates',
   mixins: [
     mixinSharedDarkMode // Shared computed to access and update the DarkMode
   ],
-  components: { Identicon, IconPicture, BreadCrumbs },
+  components: { /* Identicon, IconPicture, */ BreadCrumbs, PipelineTemplate },
   data () {
     return {
       searchFilter: '',
