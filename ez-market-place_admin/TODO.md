@@ -20,6 +20,8 @@
         - [ ] Better UI
       - [ ] Procedural scrubber to remove Shared Values
   - [ ] Sends Message/Notification to Pipeline's Publisher
+- Admin AKA Redirection
+  - [ ] Admin page for Documentation redirection 
 
 ## TO FIX
 - Multi Factor Authentication
