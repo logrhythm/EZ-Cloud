@@ -17,9 +17,13 @@
 - Admin
   - [ ] Event management
   - [ ] External webhook management
+  - [ ] AKA redirection conten
+- Documentation redirection system
+  - [x] Offer Documentation redirection page and DB
+
 
 ## TO FIX
-- [ ] Grant Admin user to DELETE record
+- [x] Grant Admin user to DELETE record
 
 ## TO TEST
 
