@@ -5,8 +5,6 @@
 ## TO DO
 - Statistics
   - [ ] Pipeline Templates stats
-- Front page
-  - [ ] List of Pipeline Templates
 - Events
   - [ ] Event system
     - [ ] New Publisher
