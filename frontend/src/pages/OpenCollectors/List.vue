@@ -1,5 +1,5 @@
 <template>
-  <q-page class="q-pa-md">
+  <q-page class="q-pa-sm">
     <q-header bordered :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
         <img class="q-mr-md" src="logrhythm_logo_wide.svg" alt="LogRhythm Open Collector">
@@ -54,11 +54,11 @@
         </template>
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
-            <!-- <q-btn flat dense icon="launch" @click="openOpenCollector(props.row)" >
+            <q-btn flat dense icon="launch" @click="openOpenCollector(props.row)" >
               <q-tooltip content-style="font-size: 1em">
-                {{ $t('Open this OpenCollector') }}
+                {{ $t('Manage this OpenCollector') }}
               </q-tooltip>
-            </q-btn> -->
+            </q-btn>
             <q-btn flat dense icon="refresh" @click="refreshOpenCollector(props.row.uid)">
               <q-tooltip content-style="font-size: 1em">
                 {{ $t('Refresh stats for this OpenCollector') }}
@@ -578,7 +578,7 @@ export default {
     ...mapActions('mainStore', ['upsertOpenCollector', 'deleteOpenCollector', 'loadShippersUrls']),
     ...mapActions('mainStore', ['getOpenCollectorsOsVersion', 'getOpenCollectorsDockerVersion', 'getOpenCollectorsOcVersion', 'getOpenCollectorsFilebeatVersion', 'getOpenCollectorsOcAndActiveBeatsVersion', 'getOpenCollectorsjsBeatVersion']),
     openOpenCollector (row) {
-      this.$router.push({ path: '/OpenCollectors/' + row.uid + '/View' })
+      this.$router.push({ path: '/OpenCollectors/' + row.uid + '/Manage' })
     }, // openOpenCollector
     refreshOpenCollector (uid) {
       if (uid && uid.length) {

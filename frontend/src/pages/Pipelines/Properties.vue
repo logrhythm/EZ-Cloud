@@ -5,8 +5,8 @@
         <img class="q-mr-md" src="logrhythm_logo_wide.svg" alt="LogRhythm Open Collector">
       </q-toolbar>
     </q-header>
+    <BreadCrumbs :crumbs="breadCrumbs" :pageTitle="(pipeline && pipeline.name && pipeline.name.length ? `Pipeline Properties: ${pipeline.name}` : 'Pipeline Properties')"/>
     <div class=" q-gutter-y-sm">
-      <BreadCrumbs :crumbs="breadCrumbs" :pageTitle="(pipeline && pipeline.name && pipeline.name.length ? `Pipeline Properties: ${pipeline.name}` : 'Pipeline Properties')"/>
       <q-card>
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">

@@ -94,11 +94,11 @@
         </q-btn> -->
       </q-toolbar>
     </q-header>
+    <BreadCrumbs
+      :crumbs="breadCrumbs"
+      :pageTitle="(pipeline && pipeline.name && pipeline.name.length ? `Collection Builder: ${pipeline.name}` : 'Collection Builder')"
+    />
     <div class="q-gutter-y-md">
-      <BreadCrumbs
-        :crumbs="breadCrumbs"
-        :pageTitle="(pipeline && pipeline.name && pipeline.name.length ? `Collection Builder: ${pipeline.name}` : 'Collection Builder')"
-      />
       <q-card>
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
