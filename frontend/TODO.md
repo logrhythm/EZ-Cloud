@@ -19,6 +19,10 @@
 - [ ] Error reporting card to deal with many errors
   - [ ] Deduplicate error messages
 - [ ] Admin - MS SQL - Add Test button
+- [ ] Open Collector - Stats and troubleshooting
+  - [x] Create embryo Manage Open Collector page
+  - [ ] Import UI/UX work
+  - [ ] Get Open Collector information (stats, containers, ...)
 - [ ] Landing page
   - [ ] ~~Add a simple Wizard~~ (👈 low value, low priority. Might resurect if users demand)
     - [ ] ~~Ask for name for Log Source~~ (👈 low value, low priority. Might resurect if users demand)
