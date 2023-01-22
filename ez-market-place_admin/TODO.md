@@ -8,6 +8,8 @@
   - [ ] Add graph for
     - [ ] High level Market stats
     - [ ] Pipeline Templates stats
+- Front page
+  - [ ] List of Pipeline Templates
 - Admin Pipelines
   - [ ] Review Pipeline
     - [ ] Collection
