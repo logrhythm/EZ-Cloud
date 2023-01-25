@@ -1190,7 +1190,7 @@ https://dev-7887806.okta.com/api/v1/logs?since=2021-09-01T18:29:00Z&until=2021-1
       group: 'Sorting Field'
     },
 
-    // Request Headers and Parameters
+    // Request Headers, Body and Parameters
 
     {
       name: 'headers',
@@ -1220,7 +1220,32 @@ https://dev-7887806.okta.com/api/v1/logs?since=2021-09-01T18:29:00Z&until=2021-1
 `,
       default: '',
       required: false,
-      group: 'Request Headers and Parameters'
+      group: 'Request Headers, Body and Parameters'
+    },
+    {
+      name: 'postBody',
+      label: 'Request Body',
+      type: {
+        name: 'object',
+        of: {
+          type: {
+            name: 'string'
+          },
+          default: '',
+          required: true
+        }
+      },
+      description: `Optionally provide the Request Body supported by the API as Key:Value pairs.
+::: tip Examples
+
+| Key | Value |
+| --- | ----- |
+| apiKey | 957edab0-00bd-4d00-8617-011594f01e92 |
+:::
+`,
+      default: '',
+      required: false,
+      group: 'Request Headers, Body and Parameters'
     },
     {
       name: 'params',
@@ -1250,7 +1275,7 @@ https://dev-7887806.okta.com/api/v1/logs?since=2021-09-01T18:29:00Z&until=2021-1
 `,
       default: '',
       required: false,
-      group: 'Request Headers and Parameters'
+      group: 'Request Headers, Body and Parameters'
     },
 
     // Response Data Field
