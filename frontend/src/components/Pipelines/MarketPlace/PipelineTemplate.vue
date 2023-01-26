@@ -1,5 +1,13 @@
 <template>
-  <q-card bordered class="q-ma-sm" >
+  <q-card
+    v-ripple="!!(status && status === 'Visible')"
+    class="q-ma-sm"
+    @click="goTo('/MarketPlace/PipelineTemplates/' + uid + '/Properties')"
+    :class="status && status === 'Visible' ? 'cursor-pointer q-hoverable' : ''"
+    bordered
+    style="max-width: 20rem"
+  >
+    <span class="q-focus-helper"></span>
     <q-badge
       v-if="topIndicator_.showBadge"
       floating
@@ -57,8 +65,8 @@
       </q-card-section>
 
       <q-card-section class="col row justify-end items-start">
-        <q-btn icon="more_horiz" dense flat >
-          <q-menu anchor="bottom right" self="top right">
+        <q-btn icon="more_horiz" dense flat @click.stop="showKebabMenu = !showKebabMenu">
+          <q-menu anchor="bottom right" self="top right" v-model="showKebabMenu">
             <q-list style="min-width: 100px">
               <q-item clickable v-close-popup
                 :to="'/MarketPlace/PipelineTemplates/' + uid + '/Properties'"
@@ -75,12 +83,12 @@
       </q-card-section>
     </q-card-section>
 
-    <q-card-section class="">
-      <div class="text-center">{{ name }}</div>
+    <q-card-section class="q-my-md q-py-none q-gutter-xs">
+      <div class="text-center q-mb-sm">{{ name }}</div>
       <div class="text-center text-caption">Published by {{ publisher }}</div>
     </q-card-section>
 
-    <q-card-section>
+    <q-card-section class="q-my-md q-py-none">
       <div class="row wrap items-center justify-center q-gutter-xs">
         <q-badge outline rounded :color="(stats && stats.sharedFieldFrequencies ? (darkMode ? 'teal-14' : 'teal-14') : 'grey')" text-color="black" :label="$t('Shared Frequency')" />
         <!-- <q-badge outline rounded :color="(stats && stats.sharedFieldValues ? 'orange' : 'grey')" text-color="black" label="Shared Values" /> -->
@@ -89,7 +97,7 @@
       </div>
     </q-card-section>
 
-    <q-card-section>
+    <q-card-section class="q-my-md q-py-none">
       <div>
         <q-tooltip content-style="font-size: 1rem;">
           {{ modified }}
@@ -98,7 +106,7 @@
       </div>
     </q-card-section>
 
-    <q-card-actions align="right">
+    <!-- <q-card-actions align="right">
       <div>
         <q-btn
           :label="$t('Open')"
@@ -117,7 +125,7 @@
         </q-tooltip>
       </div>
 
-    </q-card-actions>
+    </q-card-actions> -->
 
   </q-card>
 </template>
@@ -178,12 +186,13 @@ export default {
   data () {
     return {
       defaultTopIndicator: {
-        type: '', // String - Information, Warning, Error
+        type: ' ', // String - Information, Warning, Error
         text: '', // String
         color: '', // String - Must be a pure Quasar color, like "red", "green", "orange". No "Brand" like "negative", "positive", "warning". Not a numbered variation like "red-4".
         icon: '', // String
         showBar: false, // Bool
-        showBadge: false // Bool
+        showBadge: false, // Bool
+        showKebabMenu: true
       }
     }
   },
@@ -218,6 +227,11 @@ export default {
         // Fails silently
       }
       return formattedTimeAgo
+    },
+    goTo (target) {
+      if (this.status && this.status === 'Visible') {
+        this.$router.push(target)
+      }
     }
   }
 }
