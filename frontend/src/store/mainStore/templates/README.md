@@ -184,6 +184,7 @@
 }
 ```
 #### Simple String field
+```
 {
   name: 'url',
   label: 'API URL',
@@ -195,6 +196,7 @@
   required: true,
   group: 'Required'
 }
+```
 
 #### Multiline String field
 ```
