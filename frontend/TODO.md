@@ -13,7 +13,7 @@
     - [x] Breadcrumbs
     - [x] Remove unecessary "Return" buttons
   - [ ] Action buttons style
-  - [ ] Marketplace Template listing as Cards
+  - [x] Marketplace Template listing as Cards
 - [ ] LogRhythm Beats mapping for Collection Configuration
   - [ ] ...
 - [ ] Error reporting card to deal with many errors
