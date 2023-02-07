@@ -68,15 +68,17 @@
         <q-btn icon="more_horiz" dense flat @click.stop="showKebabMenu = !showKebabMenu">
           <q-menu anchor="bottom right" self="top right" v-model="showKebabMenu">
             <q-list style="min-width: 100px">
-              <q-item clickable v-close-popup
-                :to="'/MarketPlace/PipelineTemplates/' + uid + '/Properties'"
-                :disable="!(status && status === 'Visible')"
-              >
-                <q-item-section avatar>
-                  <q-icon name="launch" />
-                </q-item-section>
-                <q-item-section>{{ $t('Open') }}</q-item-section>
-              </q-item>
+              <slot name="kebabMenuItems">
+                <q-item clickable v-close-popup
+                  :to="'/MarketPlace/PipelineTemplates/' + uid + '/Properties'"
+                  :disable="!(status && status === 'Visible')"
+                >
+                  <q-item-section avatar>
+                    <q-icon name="launch" />
+                  </q-item-section>
+                  <q-item-section>{{ $t('Open') }}</q-item-section>
+                </q-item>
+              </slot>
             </q-list>
           </q-menu>
         </q-btn>
