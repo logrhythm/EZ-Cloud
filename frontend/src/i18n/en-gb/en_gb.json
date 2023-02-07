@@ -636,5 +636,20 @@
   "Browse the Marketplace...": "Browse the Marketplace...",
   "Open": "Open",
   "Last modified: {lastModified}": "Last modified: {lastModified}",
-  "Manage this OpenCollector": "Manage this OpenCollector"
+  "Manage this OpenCollector": "Manage this OpenCollector",
+  "Basic Information": "Basic Information",
+  "Host Name": "Host Name",
+  "Host Version": "Host Version",
+  "Docker - {dockerVersion}": "Docker - {dockerVersion}",
+  "Linux - {osVersion}": "Linux - {osVersion}",
+  "OpenCollector Version": "OpenCollector Version",
+  "Containers": "Containers",
+  "Start Container": "Start Container",
+  "Stop Container": "Stop Container",
+  "Restart Container": "Restart Container",
+  "Export Configuration to File": "Export Configuration to File",
+  "Import Configuration from File": "Import Configuration from File",
+  "View Configuration": "View Configuration",
+  "Export Logs to File": "Export Logs to File",
+  "View Real Time Logs": "View Real Time Logs"
 }
