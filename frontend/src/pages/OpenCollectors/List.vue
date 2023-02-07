@@ -54,7 +54,7 @@
         </template>
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
-            <q-btn flat dense icon="launch" @click="openOpenCollector(props.row)" >
+            <q-btn flat dense icon="troubleshoot" @click="openOpenCollector(props.row)" >
               <q-tooltip content-style="font-size: 1em">
                 {{ $t('Manage this OpenCollector') }}
               </q-tooltip>
