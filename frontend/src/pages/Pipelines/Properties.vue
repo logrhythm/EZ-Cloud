@@ -468,7 +468,7 @@
     </q-dialog>
 
     <q-dialog v-model="showMarketplaceImportPopup" persistent>
-      <q-card style="min-width: 900px">
+      <q-card style="min-width: 1050px">
         <q-card-section>
           <div class="text-h6" v-if="marketplaceImportPopupType === 'collection'">{{ $t('Import OC Admin Collection Configuration') }}</div>
           <div class="text-h6" v-else-if="marketplaceImportPopupType === 'mapping'">{{ $t('Import OC Admin Fields Mapping') }}</div>
@@ -527,8 +527,8 @@
                         color: 'deep-orange'
                       }
                     : {}
-                )
-                "
+                )"
+                onClickOpenKebabMenu
               >
               <template v-slot:kebabMenuItems>
                 <q-item clickable v-close-popup
@@ -889,7 +889,7 @@ export default {
       marketplaceImportPopupPagination: {
         sortBy: 'created',
         descending: true, // Most recent on top
-        rowsPerPage: 4
+        rowsPerPage: 6
       },
       marketplaceImportPopupDataLoading: false,
       loadingMarketPublisherDetails: false,

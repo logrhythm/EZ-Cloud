@@ -65,7 +65,7 @@
       </q-card-section>
 
       <q-card-section class="col row justify-end items-start">
-        <q-btn icon="more_horiz" dense flat @click.stop="showKebabMenu = !showKebabMenu">
+        <q-btn icon="more_horiz" dense flat @click.stop="">
           <q-menu anchor="bottom right" self="top right" v-model="showKebabMenu">
             <q-list style="min-width: 100px">
               <slot name="kebabMenuItems">
@@ -179,6 +179,10 @@ export default {
     status: {
       type: String,
       default: null
+    },
+    onClickOpenKebabMenu: {
+      type: Boolean,
+      default: false
     }
   },
   mixins: [
@@ -187,14 +191,14 @@ export default {
   components: { IconPicture },
   data () {
     return {
+      showKebabMenu: false, // Toggle of the Kebab Menu
       defaultTopIndicator: {
         type: ' ', // String - Information, Warning, Error
         text: '', // String
         color: '', // String - Must be a pure Quasar color, like "red", "green", "orange". No "Brand" like "negative", "positive", "warning". Not a numbered variation like "red-4".
         icon: '', // String
         showBar: false, // Bool
-        showBadge: false, // Bool
-        showKebabMenu: true
+        showBadge: false // Bool
       }
     }
   },
@@ -232,7 +236,11 @@ export default {
     },
     goTo (target) {
       if (this.status && this.status === 'Visible') {
-        this.$router.push(target)
+        if (this.onClickOpenKebabMenu === true) {
+          this.showKebabMenu = !this.showKebabMenu
+        } else {
+          this.$router.push(target)
+        }
       }
     }
   }
