@@ -53,149 +53,140 @@
         </q-card-section>
       </q-card>
 
-      <q-card>
-        <q-card-section horizontal>
-          <q-card-section class="col q-ma-none q-pa-none">
-            <q-card-section class="">
-                <q-table
-                :data="tableData"
-                :columns="columns"
-                row-key="uid"
-                dense
-                :no-data-label="$t('No Container to display.')"
-                :filter="searchFilter"
-                :loading="dataLoading"
-                :rows-per-page-label="$t('Containers per page:')"
-                :pagination.sync="pagination"
-              >
-                <template v-slot:top>
-                  <div class="full-width row wrap justify-between">
-                    <q-space />
-                    <div class="row q-gutter-md">
-                      <div style="width:300px;">
-                        <q-input outlined dense debounce="300" v-model="searchFilter" :placeholder="$t('Search')">
-                          <template v-slot:append>
-                            <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
-                            <q-icon name="o_search" />
-                          </template>
-                        </q-input>
-                      </div>
-                    </div>
-                  </div>
-                </template>
+      <q-table
+        :data="tableData"
+        :columns="columns"
+        row-key="uid"
+        dense
+        :no-data-label="$t('No Container to display.')"
+        :filter="searchFilter"
+        :loading="dataLoading"
+        :rows-per-page-label="$t('Containers per page:')"
+        :pagination.sync="pagination"
+      >
+        <template v-slot:top>
+          <div class="full-width row wrap justify-between">
+            <q-space />
+            <div class="row q-gutter-md">
+              <div style="width:300px;">
+                <q-input outlined dense debounce="300" v-model="searchFilter" :placeholder="$t('Search')">
+                  <template v-slot:append>
+                    <q-btn v-if="searchFilter.length" dense flat icon="close" @click="searchFilter=''" />
+                    <q-icon name="o_search" />
+                  </template>
+                </q-input>
+              </div>
+            </div>
+          </div>
+        </template>
 
-                <template v-slot:body-cell-actions="props">
-                  <q-td :props="props">
-                    <q-btn flat dense icon="more_horiz">
-                      <!-- <q-menu anchor="bottom right" self="top right"> -->
-                      <q-menu>
-                        <q-list style="min-width: 100px">
-                          <q-item clickable v-close-popup
-                            @click="doStartStopContainer(props.row)"
-                            :disable="!(props.row && props.row.pid !== 0)"
-                          >
-                            <q-item-section avatar>
-                              <q-icon name="o_play_arrow" />
-                            </q-item-section>
-                            <q-item-section>{{ $t('Start Container') }}</q-item-section>
-                          </q-item>
-                          <q-item clickable v-close-popup
-                            @click="doStartStopContainer(props.row)"
-                            :disable="!(props.row && props.row.pid !== 0)"
-                          >
-                            <q-item-section avatar>
-                              <q-icon name="o_stop" />
-                            </q-item-section>
-                            <q-item-section>{{ $t('Stop Container') }}</q-item-section>
-                          </q-item>
-                          <q-item clickable v-close-popup
-                            @click="doStartStopContainer(props.row)"
-                            :disable="!(props.row && props.row.pid !== 0)"
-                          >
-                            <q-item-section avatar>
-                              <q-icon name="o_restart_alt" />
-                            </q-item-section>
-                            <q-item-section>{{ $t('Restart Container') }}</q-item-section>
-                          </q-item>
-                          <q-separator />
-                          <q-item clickable v-close-popup
-                            @click="doStartStopContainer(props.row)"
-                            :disable="!(props.row && props.row.pid !== 0)"
-                          >
-                            <q-item-section avatar>
-                              <q-icon name="o_file_download" />
-                            </q-item-section>
-                            <q-item-section>{{ $t('Export Configuration to File') }}</q-item-section>
-                          </q-item>
-                          <q-item clickable v-close-popup
-                            @click="doStartStopContainer(props.row)"
-                            :disable="!(props.row && props.row.pid !== 0)"
-                          >
-                            <q-item-section avatar>
-                              <q-icon name="o_file_upload" />
-                            </q-item-section>
-                            <q-item-section>{{ $t('Import Configuration from File') }}</q-item-section>
-                          </q-item>
-                          <q-item clickable v-close-popup
-                            @click="doStartStopContainer(props.row)"
-                            :disable="!(props.row && props.row.pid !== 0)"
-                          >
-                            <q-item-section avatar>
-                              <q-icon name="o_source" />
-                            </q-item-section>
-                            <q-item-section>{{ $t('View Configuration') }}</q-item-section>
-                          </q-item>
-                          <q-separator />
-                          <q-item clickable v-close-popup
-                            @click="doStartStopContainer(props.row)"
-                            :disable="!(props.row && props.row.pid !== 0)"
-                          >
-                            <q-item-section avatar>
-                              <q-icon name="o_file_download" />
-                            </q-item-section>
-                            <q-item-section>{{ $t('Export Logs to File') }}</q-item-section>
-                          </q-item>
-                          <q-item clickable v-close-popup
-                            @click="doStartStopContainer(props.row)"
-                            :disable="!(props.row && props.row.pid !== 0)"
-                          >
-                            <q-item-section avatar>
-                              <q-icon name="o_text_snippet" />
-                            </q-item-section>
-                            <q-item-section>{{ $t('View Real Time Logs') }}</q-item-section>
-                          </q-item>
-                          <q-separator />
-                        </q-list>
-                      </q-menu>
-                    </q-btn>
-                    <q-btn flat dense :icon="(props.row && props.row.pids && props.row.pids.instant !== 0 ? 'o_stop' : 'o_play_arrow')" @click="doStartStopContainer(props.row)">
-                      <q-tooltip content-style="font-size: 1em">
-                        {{ $t((props.row && props.row.pids && props.row.pids.instant !== 0 ? 'Stop Container' : 'Start Container')) }}
-                      </q-tooltip>
-                    </q-btn>
-                  </q-td>
-                </template>
+        <template v-slot:body-cell-actions="props">
+          <q-td :props="props">
+            <q-btn flat dense icon="more_horiz">
+              <!-- <q-menu anchor="bottom right" self="top right"> -->
+              <q-menu>
+                <q-list style="min-width: 100px">
+                  <q-item clickable v-close-popup
+                    @click="doStartStopContainer(props.row)"
+                    :disable="!(props.row && props.row.pid !== 0)"
+                  >
+                    <q-item-section avatar>
+                      <q-icon name="o_play_arrow" />
+                    </q-item-section>
+                    <q-item-section>{{ $t('Start Container') }}</q-item-section>
+                  </q-item>
+                  <q-item clickable v-close-popup
+                    @click="doStartStopContainer(props.row)"
+                    :disable="!(props.row && props.row.pid !== 0)"
+                  >
+                    <q-item-section avatar>
+                      <q-icon name="o_stop" />
+                    </q-item-section>
+                    <q-item-section>{{ $t('Stop Container') }}</q-item-section>
+                  </q-item>
+                  <q-item clickable v-close-popup
+                    @click="doStartStopContainer(props.row)"
+                    :disable="!(props.row && props.row.pid !== 0)"
+                  >
+                    <q-item-section avatar>
+                      <q-icon name="o_restart_alt" />
+                    </q-item-section>
+                    <q-item-section>{{ $t('Restart Container') }}</q-item-section>
+                  </q-item>
+                  <q-separator />
+                  <q-item clickable v-close-popup
+                    @click="doStartStopContainer(props.row)"
+                    :disable="!(props.row && props.row.pid !== 0)"
+                  >
+                    <q-item-section avatar>
+                      <q-icon name="o_file_download" />
+                    </q-item-section>
+                    <q-item-section>{{ $t('Export Configuration to File') }}</q-item-section>
+                  </q-item>
+                  <q-item clickable v-close-popup
+                    @click="doStartStopContainer(props.row)"
+                    :disable="!(props.row && props.row.pid !== 0)"
+                  >
+                    <q-item-section avatar>
+                      <q-icon name="o_file_upload" />
+                    </q-item-section>
+                    <q-item-section>{{ $t('Import Configuration from File') }}</q-item-section>
+                  </q-item>
+                  <q-item clickable v-close-popup
+                    @click="doStartStopContainer(props.row)"
+                    :disable="!(props.row && props.row.pid !== 0)"
+                  >
+                    <q-item-section avatar>
+                      <q-icon name="o_source" />
+                    </q-item-section>
+                    <q-item-section>{{ $t('View Configuration') }}</q-item-section>
+                  </q-item>
+                  <q-separator />
+                  <q-item clickable v-close-popup
+                    @click="doStartStopContainer(props.row)"
+                    :disable="!(props.row && props.row.pid !== 0)"
+                  >
+                    <q-item-section avatar>
+                      <q-icon name="o_file_download" />
+                    </q-item-section>
+                    <q-item-section>{{ $t('Export Logs to File') }}</q-item-section>
+                  </q-item>
+                  <q-item clickable v-close-popup
+                    @click="doStartStopContainer(props.row)"
+                    :disable="!(props.row && props.row.pid !== 0)"
+                  >
+                    <q-item-section avatar>
+                      <q-icon name="o_text_snippet" />
+                    </q-item-section>
+                    <q-item-section>{{ $t('View Real Time Logs') }}</q-item-section>
+                  </q-item>
+                </q-list>
+              </q-menu>
+            </q-btn>
+            <q-btn flat dense :icon="(props.row && props.row.pids && props.row.pids.instant !== 0 ? 'o_stop' : 'o_play_arrow')" @click="doStartStopContainer(props.row)">
+              <q-tooltip content-style="font-size: 1em">
+                {{ $t((props.row && props.row.pids && props.row.pids.instant !== 0 ? 'Stop Container' : 'Start Container')) }}
+              </q-tooltip>
+            </q-btn>
+          </q-td>
+        </template>
 
-                <template v-slot:body-cell-status="props">
-                  <q-td :props="props">
-                    <q-badge rounded color="green" :label="$t('Running')" v-if="props.value === true" />
-                    <q-badge rounded color="red" :label="$t('Stopped')" v-else-if="props.value === false" />
-                    <q-badge rounded color="grey" :label="$t('Unknown')" v-else />
-                    <!-- <q-icon name="o_arrow_circle_up" color="green" size="md" v-if="props.value === true" />
-                    <q-icon name="o_arrow_circle_down" color="red" size="md" v-else-if ="props.value === false" />
-                    <q-icon name="o_help_center" color="grey" size="md" v-else />
-                    <q-tooltip content-style="font-size: 1em">
-                      <span v-if="props.value === true">{{ $t('Enabled') }}</span>
-                      <span v-else-if ="props.value === false">{{ $t('Disabled / Un-deployed') }}</span>
-                      <span v-else>{{ props.value }}</span>
-                    </q-tooltip> -->
-                  </q-td>
-                </template>
-              </q-table>
-            </q-card-section>
-          </q-card-section>
-        </q-card-section>
-      </q-card>
+        <template v-slot:body-cell-status="props">
+          <q-td :props="props">
+            <q-badge rounded color="green" :label="$t('Running')" v-if="props.value === true" />
+            <q-badge rounded color="red" :label="$t('Stopped')" v-else-if="props.value === false" />
+            <q-badge rounded color="grey" :label="$t('Unknown')" v-else />
+            <!-- <q-icon name="o_arrow_circle_up" color="green" size="md" v-if="props.value === true" />
+            <q-icon name="o_arrow_circle_down" color="red" size="md" v-else-if ="props.value === false" />
+            <q-icon name="o_help_center" color="grey" size="md" v-else />
+            <q-tooltip content-style="font-size: 1em">
+              <span v-if="props.value === true">{{ $t('Enabled') }}</span>
+              <span v-else-if ="props.value === false">{{ $t('Disabled / Un-deployed') }}</span>
+              <span v-else>{{ props.value }}</span>
+            </q-tooltip> -->
+          </q-td>
+        </template>
+      </q-table>
 
       <!-- <q-card>
         <q-card-section horizontal>
