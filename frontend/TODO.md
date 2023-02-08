@@ -9,7 +9,7 @@
     - [x] Header on all pages
     - [x] Logo in Header
       - [x] for Dark mode
-      - [ ] for Light mode
+      - [x] for Light mode
     - [x] Breadcrumbs
     - [x] Remove unecessary "Return" buttons
   - [ ] Action buttons style
