@@ -4,10 +4,17 @@
 
 ## TO DO
 - [ ] API - Admin - MS SQL - Add MS SQL test
+- [ ] API - Troubleshoot - Start Container
+- [ ] API - Troubleshoot - Stop Container
+- [ ] API - Troubleshoot - Restart Container
+- [ ] API - Troubleshoot - Get Logs from Container
+- [ ] API - Troubleshoot - Export Configuration from LR container
+- [ ] API - Troubleshoot - Import Configuration from LR container
 - [ ] Remove depency to and remove local copy of `collectionConfigToYml()`
 - [x] Docker - Build `config/` at run time to accomodate Docker volumes
 - [x] Docker - Generate new HTTPS self-signed certificates and keys at each build
-- [ ] Socket - Docker Stats Tail
+- [x] Socket - Docker Stats Tail
+- [ ] Socket - Troubleshoot - Docker live Logs from container
 
 ## TO FIX
 - [x] Fix #38 - Some clients send SQL port as string
