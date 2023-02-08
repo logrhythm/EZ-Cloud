@@ -651,5 +651,18 @@
   "Import Configuration from File": "Import Configuration from File",
   "View Configuration": "View Configuration",
   "Export Logs to File": "Export Logs to File",
-  "View Real Time Logs": "View Real Time Logs"
+  "View Real Time Logs": "View Real Time Logs",
+  "CPU": "CPU",
+  "Memory Usage / Limit": "Memory Usage / Limit",
+  "Memory Percentage": "Memory Percentage",
+  "Net I/O": "Net I/O",
+  "Block I/O": "Block I/O",
+  "Processes": "Processes",
+  "Container ID": "Container ID",
+  "Start Live Statistics": "Start Live Statistics",
+  "Stop Live Statistics": "Stop Live Statistics",
+  "Manage": "Manage",
+  "No Container to display.": "No Container to display.",
+  "Containers per page:": "Containers per page:",
+  "Stopped": "Stopped"
 }
