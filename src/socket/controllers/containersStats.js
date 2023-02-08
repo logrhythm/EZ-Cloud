@@ -40,7 +40,8 @@ async function statsInit(socket, payload) {
               return true;
             }
           })
-          .exec('docker stats -a --no-trunc --format "{{ json . }}/* OC_ADMIN-DockerStats */"', {
+          // .exec('docker stats -a --no-trunc --format "{{ json . }}/* OC_ADMIN-DockerStats */"', {
+          .exec('docker stats --all --no-trunc --format "{{ json . }}{{/* OC_ADMIN-DockerStats */}}"', {
             err(stderr) {
               // console.log('STDERR:::' + stderr);
               if (socket.connected) {
@@ -155,7 +156,7 @@ async function tailKillShipper(socket, payload) {
               return false;
             }
           })
-          .exec('kill $(ps auxwwww | grep "/\\* OC_ADMIN-DockerStats \\*/" | grep -v "grep" | cut -f 1 -d " ") && echo -e "Docker Stats process terminated.";', {
+          .exec('kill $(ps auxwwww | grep "/\\* OC_ADMIN-DockerStats \\*/" | grep -v "grep" | grep -o "^\\s*\\d\\+") && echo -e "Docker Stats process terminated.";', {
             err(stderr) {
               // console.log('STDERR:::' + stderr);
               if (socket.connected) {
