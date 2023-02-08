@@ -21,8 +21,17 @@
 - [ ] Admin - MS SQL - Add Test button
 - [ ] Open Collector - Stats and troubleshooting
   - [x] Create embryo Manage Open Collector page
-  - [ ] Import UI/UX work
-  - [ ] Get Open Collector information (stats, containers, ...)
+  - [x] Import UI/UX work
+  - [x] Get Open Collector information (stats, containers, ...)
+  - [ ] Implement managing tasks
+    - [ ] Start Container
+    - [ ] Stop Container
+    - [ ] Restart Container
+    - [ ] Export Configuration from LR container to file
+    - [ ] Import Configuration from LR container from file
+    - [ ] View Configuration from LR container
+    - [ ] Export Logs from Container to file
+    - [ ] View Logs from Container in real time
 - [ ] Landing page
   - [ ] ~~Add a simple Wizard~~ (👈 low value, low priority. Might resurect if users demand)
     - [ ] ~~Ask for name for Log Source~~ (👈 low value, low priority. Might resurect if users demand)
