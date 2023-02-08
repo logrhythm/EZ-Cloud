@@ -1,6 +1,7 @@
 const { isValidAuth } = require('./middleware');
 const { tailInit, tailKill } = require('./controllers/tail');
 const { installShipper } = require('./controllers/installShipper');
+const { statsInit, statsKill } = require('./controllers/containersStats');
 
 // Load the System Logging functions
 const { logToSystem } = require('../shared/systemLogging');
@@ -43,6 +44,21 @@ function socketConnect(socket) {
     logToSystem('Information', `SOCKET | ${socket.id} | ${socket.handshake.auth.user} | shipper.install - Installation of a log Shipper has been requested`);
     installShipper(socket, payload);
   }); // On: shipper.install
+
+  // -------------------------------
+  // Container Stats Tails
+
+  // A new Container Stats Tail is requested
+  socket.on('statsTail.init', (payload) => {
+    logToSystem('Information', `SOCKET | ${socket.id} | ${socket.handshake.auth.user} | statsTail.init - New Log Source Tail has been requested.`);
+    statsInit(socket, payload);
+  }); // On: statsTail.init
+
+  // Killing an existing Container Stats Tail
+  socket.on('statsTail.kill', (payload) => {
+    logToSystem('Information', `SOCKET | ${socket.id} | ${socket.handshake.auth.user} | statsTail.kill - Log Source Tail termination has been requested.`);
+    statsKill(socket, payload);
+  }); // On: statsTail.kill
 }
 
 module.exports = {
