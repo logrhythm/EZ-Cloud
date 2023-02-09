@@ -50,6 +50,17 @@
               </div>
             </q-card-section>
           </q-card-section>
+          <!-- <q-card-section class="" style="width: 1000px">
+            <div class="text-overline">
+              containerLogs (debug) XXXX
+            </div>
+            <q-input
+              v-model="containerLogs"
+              outlined
+              type="textarea"
+              ref="containerLogsField"
+            />
+          </q-card-section> -->
         </q-card-section>
       </q-card>
 
@@ -66,7 +77,30 @@
       >
         <template v-slot:top>
           <div class="full-width row wrap justify-between">
-            <q-space />
+            <div class="col row justify-center">
+              <q-slider
+                style="width:300px;"
+                v-model="liveStatisticsStage"
+                dense
+                track-size="12px"
+                thumb-size="20px"
+                marker-labels-class="text-grey"
+                markers
+                :marker-labels="stageMarkerLabels"
+                :label-always="(liveStatisticsStage > 0) && (liveStatisticsStage < 3)"
+                :label-value="stageLabels[liveStatisticsStage]"
+                :min="0"
+                :max="3"
+                readonly
+              />
+              <!--
+                color="purple"
+                label-color="red"
+                label-text-color="orange"
+                track-color="green"
+                readonly
+              -->
+            </div>
             <div class="row q-gutter-md">
               <div style="width:300px;">
                 <q-input outlined dense debounce="300" v-model="searchFilter" :placeholder="$t('Search')">
@@ -257,6 +291,21 @@ export default {
         sortBy: 'name',
         descending: false,
         rowsPerPage: 25
+      },
+      containerLogs: '', // Real time logs from the container
+      alwaysScrollToBottom: true, // Shall we keep scrolling to the bottom of the Container Logs
+      liveStatisticsStage: 0,
+      stageMarkerLabels: {
+        0: 'Idle',
+        1: 'Started',
+        2: 'Connected',
+        3: 'Receiving'
+      },
+      stageLabels: {
+        0: 'Stopped',
+        1: 'Connecting to host...',
+        2: 'Waiting for data...',
+        3: 'Receiving Real Time Data'
       }
     }
   },
@@ -410,109 +459,109 @@ export default {
         this.socket.emit('statsTail.kill', { openCollectorUid: this.openCollectorUid })
       }
     },
+    scrollToBottom (logFieldName) {
+      try {
+        const logField = this.$refs[logFieldName || 'containerLogsField'].$refs.input
+        logField.scrollTop = logField.scrollHeight
+      } catch (error) {
+        console.log('ERROR - scrollToBottom - ', error)
+      }
+    },
     handleSocketOnTailLog (payload) {
-      // If we are getting data from the remote job, breack it in multiple lines (if \n is found in it) and push it in the queueIn
       if (
-        payload.code &&
-        payload.code === 'STDOUT' &&
-        payload.payload &&
+        payload &&
         payload.openCollectorUid &&
         payload.openCollectorUid === this.openCollectorUid
       ) {
-        // console.log('STDOUT', payload.payload) // XXXX
-        // console.log('STDOUT', payload) // XXXX
-        // {
-        //     "openCollectorUid": "2b31b21b-c40c-4216-9fd6-3d5bebe3d30d",
-        //     "code": "STDOUT",
-        //     "payload": "{\"BlockIO\":\"0B / 0B\",\"CPUPerc\":\"0.00%\",\"Container\":\"aceb078bf98a\",\"ID\":\"aceb078bf98a8ac3373b82b893faec9890904b9e7eca1c8f773f7335283d2aed\",\"MemPerc\":\"0.00%\",\"MemUsage\":\"0B / 0B\",\"Name\":\"compose-swagger-1\",\"NetIO\":\"0B / 0B\",\"PIDs\":\"0\"}\n{\"BlockIO\":\"0B / 0B\",\"CPUPerc\":\"0.00%\",\"Container\":\"56b6cf9ac82a\",\"ID\":\"56b6cf9ac82ae58095ebe2aa286b0c1981bb37402150b9a3da254ac6fd342ea2\",\"MemPerc\":\"0.00%\",\"MemUsage\":\"0B / 0B\",\"Name\":\"compose-ted-rest-1\",\"NetIO\":\"0B / 0B\",\"PIDs\":\"0\"}\n{\"BlockIO\":\"0B / 0B\",\"CPUPerc\":\"0.00%\",\"Container\":\"64f65327eefd\",\"ID\":\"64f65327eefdacd6ea09e245138883d4b9594ec2da270b4898ec34efe92d7835\",\"MemPerc\":\"0.00%\",\"MemUsage\":\"0B / 0B\",\"Name\":\"compose-adminer-1\",\"NetIO\":\"0B / 0B\",\"PIDs\":\"0\"}\n{\"BlockIO\":\"0B / 0B\",\"CPUPerc\":\"0.00%\",\"Container\":\"57d0835889ae\",\"ID\":\"57d0835889aed8df1f6b0b155b677a9f80a186ebc3267a8e848a395f2075d5eb\",\"MemPerc\":\"0.00%\",\"MemUsage\":\"0B / 0B\",\"Name\":\"compose-ted-db-1\",\"NetIO\":\"0B / 0B\",\"PIDs\":\"0\"}\n{\"BlockIO\":\"4.01GB / 94.1MB\",\"CPUPerc\":\"8.73%\",\"Container\":\"7275e31ecaa6\",\"ID\":\"7275e31ecaa616dea086e1d0d722b662ee944fb902a79777764065401a2ec38d\",\"MemPerc\":\"34.83%\",\"MemUsage\":\"673.6MiB / 1.889GiB\",\"Name\":\"ted-dev\",\"NetIO\":\"61.3MB / 887MB\",\"PIDs\":\"380\"}\n{\"BlockIO\":\"0B / 0B\",\"CPUPerc\":\"0.00%\",\"Container\":\"5b272e6ac2b9\",\"ID\":\"5b272e6ac2b9a44418e72ef4f8bf05e33441e0fd8ca6a95e069acf7912d561e0\",\"MemPerc\":\"0.00%\",\"MemUsage\":\"0B / 0B\",\"Name\":\"gracious_shaw\",\"NetIO\":\"0B / 0B\",\"PIDs\":\"0\"}\n{\"BlockIO\":\"0B / 0B\",\"CPUPerc\":\"0.00%\",\"Container\":\"6dbe6bc6fd5f\",\"ID\":\"6dbe6bc6fd5f6c8b5bb4e84eb2fa1d130b1a38c975fdf1041b9a0ec1da6c693d\",\"MemPerc\":\"0.00%\",\"MemUsage\":\"0B / 0B\",\"Name\":\"mariadb\",\"NetIO\":\"0B / 0B\",\"PIDs\":\"0\"}\n{\"BlockIO\":\"7.14GB / 242MB\",\"CPUPerc\":\"10.80%\",\"Container\":\"280810e0bf6c\",\"ID\":\"280810e0bf6c0a6a5594ca83b33bb0afa8d85188c8c2e187fca685de8436a087\",\"MemPerc\":\"261.18%\",\"MemUsage\":\"4.933GiB / 1.889GiB\",\"Name\":\"oc-admin\",\"NetIO\":\"26.5MB / 6.71MB\",\"PIDs\":\"4596\"}\n{\"BlockIO\":\"374MB / 5.83MB\",\"CPUPerc\":\"0.00%\",\"Container\":\"0bff8eedd486\",\"ID\":\"0bff8eedd4869c63dde890ff92d18945d34da934b0f6a44b65f099472547422f\",\"MemPerc\":\"0.70%\",\"MemUsage\":\"13.55MiB / 1.889GiB\",\"Name\":\"oc-db\",\"NetIO\":\"1.41MB / 3.99MB\",\"PIDs\":\"7\"}\n"
-        // }
-
-        // {
-        //     "openCollectorUid": "2b31b21b-c40c-4216-9fd6-3d5bebe3d30d",
-        //     "code": "STDOUT",
-        //     "payload": "\u001b[2J\u001b[H"
-        // }
-
-        // {
-        //     "openCollectorUid": "2b31b21b-c40c-4216-9fd6-3d5bebe3d30d",
-        //     "code": "STDOUT",
-        //     "payload": "\u001b[2J\u001b[H{\"BlockIO\":\"0B / 0B\",\"CPUPerc\":\"0.00%\",\"Container\":\"aceb078bf98a\",\"ID\":\"aceb078bf98a8ac3373b82b893faec9890904b9e7eca1c8f773f7335283d2aed\",\"MemPerc\":\"0.00%\",\"MemUsage\":\"0B / 0B\",\"Name\":\"compose-swagger-1\",\"NetIO\":\"0B / 0B\",\"PIDs\":\"0\"}\n{\"BlockIO\":\"0B / 0B\",\"CPUPerc\":\"0.00%\",\"Container\":\"56b6cf9ac82a\",\"ID\":\"56b6cf9ac82ae58095ebe2aa286b0c1981bb37402150b9a3da254ac6fd342ea2\",\"MemPerc\":\"0.00%\",\"MemUsage\":\"0B / 0B\",\"Name\":\"compose-ted-rest-1\",\"NetIO\":\"0B / 0B\",\"PIDs\":\"0\"}\n{\"BlockIO\":\"0B / 0B\",\"CPUPerc\":\"0.00%\",\"Container\":\"64f65327eefd\",\"ID\":\"64f65327eefdacd6ea09e245138883d4b9594ec2da270b4898ec34efe92d7835\",\"MemPerc\":\"0.00%\",\"MemUsage\":\"0B / 0B\",\"Name\":\"compose-adminer-1\",\"NetIO\":\"0B / 0B\",\"PIDs\":\"0\"}\n{\"BlockIO\":\"0B / 0B\",\"CPUPerc\":\"0.00%\",\"Container\":\"57d0835889ae\",\"ID\":\"57d0835889aed8df1f6b0b155b677a9f80a186ebc3267a8e848a395f2075d5eb\",\"MemPerc\":\"0.00%\",\"MemUsage\":\"0B / 0B\",\"Name\":\"compose-ted-db-1\",\"NetIO\":\"0B / 0B\",\"PIDs\":\"0\"}\n{\"BlockIO\":\"4.02GB / 94.1MB\",\"CPUPerc\":\"10.39%\",\"Container\":\"7275e31ecaa6\",\"ID\":\"7275e31ecaa616dea086e1d0d722b662ee944fb902a79777764065401a2ec38d\",\"MemPerc\":\"35.00%\",\"MemUsage\":\"676.9MiB / 1.889GiB\",\"Name\":\"ted-dev\",\"NetIO\":\"61.3MB / 887MB\",\"PIDs\":\"380\"}\n{\"BlockIO\":\"0B / 0B\",\"CPUPerc\":\"0.00%\",\"Container\":\"5b272e6ac2b9\",\"ID\":\"5b272e6ac2b9a44418e72ef4f8bf05e33441e0fd8ca6a95e069acf7912d561e0\",\"MemPerc\":\"0.00%\",\"MemUsage\":\"0B / 0B\",\"Name\":\"gracious_shaw\",\"NetIO\":\"0B / 0B\",\"PIDs\":\"0\"}\n{\"BlockIO\":\"0B / 0B\",\"CPUPerc\":\"0.00%\",\"Container\":\"6dbe6bc6fd5f\",\"ID\":\"6dbe6bc6fd5f6c8b5bb4e84eb2fa1d130b1a38c975fdf1041b9a0ec1da6c693d\",\"MemPerc\":\"0.00%\",\"MemUsage\":\"0B / 0B\",\"Name\":\"mariadb\",\"NetIO\":\"0B / 0B\",\"PIDs\":\"0\"}\n{\"BlockIO\":\"7.14GB / 242MB\",\"CPUPerc\":\"30.04%\",\"Container\":\"280810e0bf6c\",\"ID\":\"280810e0bf6c0a6a5594ca83b33bb0afa8d85188c8c2e187fca685de8436a087\",\"MemPerc\":\"258.37%\",\"MemUsage\":\"4.88GiB / 1.889GiB\",\"Name\":\"oc-admin\",\"NetIO\":\"26.8MB / 6.76MB\",\"PIDs\":\"4582\"}\n{\"BlockIO\":\"374MB / 5.83MB\",\"CPUPerc\":\"0.01%\",\"Container\":\"0bff8eedd486\",\"ID\":\"0bff8eedd4869c63dde890ff92d18945d34da934b0f6a44b65f099472547422f\",\"MemPerc\":\"0.70%\",\"MemUsage\":\"13.55MiB / 1.889GiB\",\"Name\":\"oc-db\",\"NetIO\":\"1.42MB / 4MB\",\"PIDs\":\"7\"}\n"
-        // }
-
-        // Stripping the shell formatting characters that Docker Stats adds before its payload
-        const cleanPayload = String(payload.payload).replace('\u001b[2J\u001b[H', '') || ''
-        if (cleanPayload.includes('{')) {
-          // console.log('STDOUT', cleanPayload) // XXXX
-          try {
-            // eslint-disable-next-line quotes
-            // console.log(cleanPayload.split("\n").filter((line) => String(line).includes('{')).join(','))
-            this.containersListRaw = JSON.parse(`[${
-              cleanPayload
-              // eslint-disable-next-line quotes
-                .split("\n")
-                .filter((line) => String(line)
-                .includes('{'))
-                .join(',')}]`)
-          } catch (error) {
-            console.log('ERROR', error)
+        // If we are getting data from the remote job, breack it in multiple lines (if \n is found in it) and push it in the queueIn
+        if (
+          payload.code === 'STDOUT' &&
+          payload.payload
+        ) {
+          const cleanPayload = String(payload.payload).replace('\u001b[2J\u001b[H', '') || ''
+          if (cleanPayload.includes('{')) {
+            try {
+              this.containersListRaw = JSON.parse(`[${
+                cleanPayload
+                // eslint-disable-next-line quotes
+                  .split("\n")
+                  .filter((line) => String(line)
+                  .includes('{'))
+                  .join(',')}]`)
+            } catch (error) {
+              console.log('ERROR', error)
+            }
           }
         }
-      }
 
-      // If we are getting STDERR data from the remote job, breack it in multiple lines (if \n is found in it) and log it to the console
-      if (
-        payload.code &&
-        payload.code === 'STDERR' &&
-        payload.payload &&
-        payload.openCollectorUid &&
-        payload.openCollectorUid === this.openCollectorUid
-      ) {
-        // this.addLineToCommunicationLog(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
-        this.addLineToCommunicationLog(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
-        // if (typeof payload.payload === 'string') {
-        //   console.log(payload.payload)
-        //   // const newPayload = []
-        //   // // eslint-disable-next-line quotes
-        //   // payload.payload.split("\n").forEach(lr => {
-        //   //   console.log(lr)
-        //   // })
-        //   // this.queueInAdd({ values: newPayload })
-        // } else {
-        //   console.log(payload.payload)
-        //   // this.queueInAdd({ values: payload.payload })
-        // }
-      }
+        // If we are getting STDERR data from the remote job, breack it in multiple lines (if \n is found in it) and log it
+        if (
+          payload.code === 'STDERR'
+        ) {
+          if (typeof payload.payload === 'string') {
+            // eslint-disable-next-line quotes
+            payload.payload.split("\n").forEach(lr => {
+              this.addLineToCommunicationLog(`${payload.code} | ${lr || ''}`)
+            })
+          } else {
+            console.log(payload.payload)
+          }
+        }
 
-      // If we are getting ERROR data from the remote job, log it to the console as error
-      if (
-        payload.code &&
-        payload.code === 'ERROR' &&
-        payload.payload &&
-        payload.openCollectorUid &&
-        payload.openCollectorUid === this.openCollectorUid
-      ) {
-        this.addLineToCommunicationLog(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
-        this.showNotificationWithActionToLogs(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
-      }
+        // If we are getting STAGE data from the remote job, use it to track the stage progression
+        if (
+          payload.code === 'STAGE'
+        ) {
+          if (typeof payload.payload === 'string') {
+            // Update the Stage
+            try {
+              this.liveStatisticsStage = {
+                Stopped: 0,
+                'Container Stats Tail Ended': 0,
+                'Container Stats Tail Started': 1,
+                'Connected to host': 2,
+                'Receiving Real Time Data': 3
+              }[payload.payload] || 0
+            } catch (error) {
+              console.log('STAGE | Unknown Stage. Error:', error)
+            }
 
-      if (
-        payload.code === 'END' &&
-        payload.openCollectorUid &&
-        payload.openCollectorUid === this.openCollectorUid
-      ) {
-        this.isLiveStatisticsRunning = false
-        this.addLineToCommunicationLog(`${payload.code} | Closing this Tail. | ${(payload.payload !== undefined ? payload.payload : '🏁')}`)
-        this.showNotificationWithActionToLogs(`${payload.code} | Closing this Tail. (${(payload.payload !== undefined ? payload.payload : '🏁')})`, 'info')
-      }
+            if (this.liveStatisticsStage > 0) { // If we are above Stopped/Idle, then surely we are running
+              this.isLiveStatisticsRunning = true
+            }
 
-      // If the remote job died, push it to the Comm Log
-      if (
-        payload.code === 'EXIT' &&
-        payload.openCollectorUid &&
-        payload.openCollectorUid === this.openCollectorUid
-      ) {
-        this.isLiveStatisticsRunning = false
-        this.addLineToCommunicationLog(`${payload.code} | Tailjob exited. | ${(payload.payload !== undefined ? payload.payload : '🏁')}`)
+            // // eslint-disable-next-line quotes
+            // payload.payload.split("\n").forEach(lr => {
+            //   this.addLineToCommunicationLog(`${payload.code} | ${lr || ''}`)
+            // })
+          } else {
+            console.log(payload.payload)
+          }
+        }
+
+        // If we are getting ERROR data from the remote job, log it to the console as error
+        if (
+          payload.code === 'ERROR'
+        ) {
+          this.addLineToCommunicationLog(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
+          this.showNotificationWithActionToLogs(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
+        }
+
+        if (
+          payload.code === 'END'
+        ) {
+          this.isLiveStatisticsRunning = false
+          this.addLineToCommunicationLog(`${payload.code} | Closing this Tail. | ${(payload.payload !== undefined ? payload.payload : '🏁')}`)
+          this.showNotificationWithActionToLogs(`${payload.code} | Closing this Tail. (${(payload.payload !== undefined ? payload.payload : '🏁')})`, 'info')
+        }
+
+        // If the remote job died, push it to the Comm Log
+        if (
+          payload.code === 'EXIT'
+        ) {
+          this.isLiveStatisticsRunning = false
+          this.addLineToCommunicationLog(`${payload.code} | Tailjob exited. | ${(payload.payload !== undefined ? payload.payload : '🏁')}`)
+        }
       }
     },
 
@@ -564,20 +613,44 @@ export default {
       }
     },
     addLineToCommunicationLog (payload) {
+      this.addLineToContainerLog(payload)
+      // if (payload !== undefined) {
+      //   // Dump the string or strings (if multiline) into new line(s) in the console
+      //   if (typeof payload === 'string') {
+      //     // this.communicationLogsOutput += payload + (payload.endsWith("\n") ? '' : "\n")
+      //     // eslint-disable-next-line quotes
+      //     this.containerLogs = this.containerLogs + "\n" + payload // XXXX
+      //     this.scrollToBottom('containerLogsField') // XXXX
+      //     console.log(payload)
+      //     // // eslint-disable-next-line quotes
+      //     // payload.split("\n").forEach(line => {
+      //     //   this.communicationLogsOutput += `${line}\n`
+      //     // })
+      //   } else {
+      //     // this.communicationLogsOutput += `${JSON.stringify(payload, null, '  ')}\n`
+      //     console.log(`${JSON.stringify(payload, null, '  ')}\n`)
+      //     // eslint-disable-next-line quotes
+      //     this.containerLogs = this.containerLogs + "\n" + payload // XXXX
+      //     this.scrollToBottom('containerLogsField') // XXXX
+      //   }
+      // }
+    },
+    addLineToContainerLog (payload) {
       if (payload !== undefined) {
-        // Dump the string or strings (if multiline) into new line(s) in the console
+        // Dump the string or strings (if multiline) into new line(s)
         if (typeof payload === 'string') {
-          // this.communicationLogsOutput += payload + (payload.endsWith("\n") ? '' : "\n")
           // eslint-disable-next-line quotes
-          console.log(payload)
-          // // eslint-disable-next-line quotes
-          // payload.split("\n").forEach(line => {
-          //   this.communicationLogsOutput += `${line}\n`
-          // })
+          this.containerLogs += payload + (payload.endsWith("\n") ? '' : "\n")
+          // this.scrollToBottom('containerLogsField') // XXXX
         } else {
-          // this.communicationLogsOutput += `${JSON.stringify(payload, null, '  ')}\n`
-          console.log(`${JSON.stringify(payload, null, '  ')}\n`)
+          try {
+            this.containerLogs += `${JSON.stringify(payload, null, '  ')}\n`
+            // this.scrollToBottom('containerLogsField') // XXXX
+          } catch (error) {
+            // Fails silently
+          }
         }
+        this.$nextTick(this.scrollToBottom)
       }
     },
     showNotificationWithActionToLogs (message, type = 'negative') {
