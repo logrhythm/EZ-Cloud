@@ -77,9 +77,10 @@
       >
         <template v-slot:top>
           <div class="full-width row wrap justify-between">
-            <div class="col row justify-center">
+            <div class="col row justify-start">
+                <!-- style="width:300px;" -->
               <q-slider
-                style="width:300px;"
+                class="full-width q-px-xl"
                 v-model="liveStatisticsStage"
                 dense
                 track-size="12px"
