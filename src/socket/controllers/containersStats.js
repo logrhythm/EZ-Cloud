@@ -26,8 +26,9 @@ async function statsInit(socket, payload) {
         statsTails[payload.openCollectorUid] = new SSH(configSsh);
 
         if (socket.connected) {
-          socket.emit('statsTail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🚀 Container Stats Tail starting...' });
-          socket.emit('statsTail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🎯 Attempting to connect to host...' });
+          socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'STDERR', payload: '🚀 Container Stats Tail starting...' });
+          socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'STDERR', payload: '🎯 Attempting to connect to host...' });
+          socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'STAGE', payload: 'Container Stats Tail Started' });
         }
 
         statsTails[payload.openCollectorUid]
@@ -35,7 +36,8 @@ async function statsInit(socket, payload) {
           .exec('pwd', {
             exit() {
               if (socket.connected) {
-                socket.emit('statsTail.log', { tailId: payload.tailId, code: 'STDERR', payload: '📑 Tailing the realtime data...' });
+                socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'STDERR', payload: '📑 Tailing the realtime data...' });
+                socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'STAGE', payload: 'Connected to host' });
               }
               return true;
             }
@@ -59,6 +61,7 @@ async function statsInit(socket, payload) {
             out(stdout) {
               // console.log('STDOUT:::' + stdout);
               if (socket.connected) {
+                socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'STAGE', payload: 'Receiving Real Time Data' });
                 socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'STDOUT', payload: stdout });
               }
             }
@@ -66,7 +69,9 @@ async function statsInit(socket, payload) {
           .on('end', (err) => {
             // console.log('END:::' + err);
             if (socket.connected) {
+              socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'STAGE', payload: 'Container Stats Tail Ended' });
               socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'END', payload: err });
+              socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'STAGE', payload: 'Stopped' });
             }
             // eslint-disable-next-line no-use-before-define
             setTimeout(tailKillShipper, 1000, socket, payload);
@@ -84,6 +89,7 @@ async function statsInit(socket, payload) {
           socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'ERROR', payload: '❌ Container Stats Tail failed to start due to missing OpenCollector host and/or port information for the SSH connection.' });
           socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'EXIT', payload: 1 });
           socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'END', payload: 'Container Stats Tail failed to start.' });
+          socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'STAGE', payload: 'Stopped' });
         }
         logToSystem('Warning', 'statsInit - Container Stats Tail failed to start due to missing OpenCollector host and/or port information for the SSH connection.');
       }
@@ -93,6 +99,7 @@ async function statsInit(socket, payload) {
         socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'ERROR', payload: '❌ Container Stats Tail failed to start due to another Container Stats Tail with the same openCollectorUid already exists.' });
         socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'EXIT', payload: 1 });
         socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'END', payload: 'Container Stats Tail failed to start.' });
+        socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'STAGE', payload: 'Stopped' });
       }
       logToSystem('Warning', 'statsInit - Container Stats Tail failed to start due to another Container Stats Tail with the same openCollectorUid already exists.');
     }
@@ -102,6 +109,7 @@ async function statsInit(socket, payload) {
       socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'ERROR', payload: '❌ Container Stats Tail failed to start due to incomplete Payload in request.' });
       socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'EXIT', payload: 1 });
       socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'END', payload: 'Container Stats Tail failed to start.' });
+      socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'STAGE', payload: 'Stopped' });
     }
     logToSystem('Error', 'statsInit - Container Stats Tail failed to start due to incomplete Payload in request.');
   }
