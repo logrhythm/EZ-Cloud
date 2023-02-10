@@ -13,8 +13,10 @@ async function statsInit(socket, payload) {
     && payload.openCollectorUid
     && payload.openCollectorUid.length > 0
   ) {
+    const socketUid = (socket && socket.id ? socket.id : '');
+
     // Check the openCollectorUid doesn't already exist
-    if (!statsTails[payload.openCollectorUid]) {
+    if (!statsTails[`${socketUid}_${payload.openCollectorUid}`]) {
       const configSsh = await getSshConfigForCollector({ uid: payload.openCollectorUid });
 
       if (
@@ -23,7 +25,7 @@ async function statsInit(socket, payload) {
         && configSsh.host.length
         && configSsh.port > 0
       ) {
-        statsTails[payload.openCollectorUid] = new SSH(configSsh);
+        statsTails[`${socketUid}_${payload.openCollectorUid}`] = new SSH(configSsh);
 
         if (socket.connected) {
           socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'STDERR', payload: '🚀 Container Stats Tail starting...' });
@@ -31,7 +33,7 @@ async function statsInit(socket, payload) {
           socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'STAGE', payload: 'Container Stats Tail Started' });
         }
 
-        statsTails[payload.openCollectorUid]
+        statsTails[`${socketUid}_${payload.openCollectorUid}`]
           // Check we are connected
           .exec('pwd', {
             exit() {
@@ -116,6 +118,7 @@ async function statsInit(socket, payload) {
 } // statsInit
 
 function statsKill(socket, payload) {
+  const socketUid = (socket && socket.id ? socket.id : '');
   // console.log('statsKill 💣');
   if (
     payload
@@ -123,14 +126,15 @@ function statsKill(socket, payload) {
     && payload.openCollectorUid.length > 0
   ) {
     // Check the openCollectorUid exists
-    if (statsTails[payload.openCollectorUid]) {
-      statsTails[payload.openCollectorUid].end();
-      statsTails[payload.openCollectorUid] = null;
+    if (statsTails[`${socketUid}_${payload.openCollectorUid}`]) {
+      statsTails[`${socketUid}_${payload.openCollectorUid}`].end();
+      statsTails[`${socketUid}_${payload.openCollectorUid}`] = null;
     }
   }
 } // statsKill
 
 async function tailKillShipper(socket, payload) {
+  const socketUid = (socket && socket.id ? socket.id : '');
   // console.log('tailKillShipper 💣💣💣');
   try {
     if (
@@ -141,12 +145,12 @@ async function tailKillShipper(socket, payload) {
       && payload.pipelineUid.length > 0
     ) {
       // Check the openCollectorUid doesn't already exist
-      if (!statsTails[payload.openCollectorUid]) {
+      if (!statsTails[`${socketUid}_${payload.openCollectorUid}`]) {
         const configSsh = await getSshConfigForCollector({ uid: payload.openCollectorUid });
 
-        statsTails[payload.openCollectorUid] = new SSH(configSsh);
+        statsTails[`${socketUid}_${payload.openCollectorUid}`] = new SSH(configSsh);
 
-        statsTails[payload.openCollectorUid]
+        statsTails[`${socketUid}_${payload.openCollectorUid}`]
           .exec('ps auxwww | grep "/\\* OC_ADMIN-DockerStats \\*/" | grep -v "grep" -q && exit 42;', {
             exit(code) {
               if (code === 42) {
