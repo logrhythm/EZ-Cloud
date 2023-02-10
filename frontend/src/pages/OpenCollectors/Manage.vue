@@ -15,39 +15,46 @@
       <q-card>
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
-            <q-card-section class="q-gutter-y-sm">
-              <div class="text-overline text-uppercase text-bold">
-                {{ $t('Basic Information') }}
-              </div>
-              <div>
-                <div class="text-bold">
-                  {{ $t('Host Name') }}
+            <q-card-section>
+              <q-expansion-item
+              >
+                <template v-slot:header>
+                  <div class="text-overline text-uppercase text-bold">
+                    {{ $t('Basic Information') }}
+                  </div>
+                </template>
+                <div class="q-gutter-y-sm">
+                  <div>
+                    <div class="text-bold">
+                      {{ $t('Host Name') }}
+                    </div>
+                    <div>
+                      {{ openCollector ? openCollector.hostname : '...' }}
+                    </div>
+                  </div>
+                  <div>
+                    <div class="text-bold">
+                      {{ $t('Host Version') }}
+                    </div>
+                    <div>
+                      {{ $t('Linux - {osVersion}', { osVersion: (openCollector ? openCollector.osVersion : '...')}) }}
+                    </div>
+                    <div>
+                      {{ $t('Docker - {dockerVersion}', { dockerVersion: (openCollector ? openCollector.dockerVersion : '...')}) }}
+                    </div>
+                  </div>
+                  <div>
+                    <div class="text-bold">
+                      {{ $t('OpenCollector Version') }}
+                    </div>
+                    <div>
+                      {{ openCollector ? openCollector.ocVersion : '...' }}
+                    </div>
+                    <div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  {{ openCollector ? openCollector.hostname : '...' }}
-                </div>
-              </div>
-              <div>
-                <div class="text-bold">
-                  {{ $t('Host Version') }}
-                </div>
-                <div>
-                  {{ $t('Linux - {osVersion}', { osVersion: (openCollector ? openCollector.osVersion : '...')}) }}
-                </div>
-                <div>
-                  {{ $t('Docker - {dockerVersion}', { dockerVersion: (openCollector ? openCollector.dockerVersion : '...')}) }}
-                </div>
-              </div>
-              <div>
-                <div class="text-bold">
-                  {{ $t('OpenCollector Version') }}
-                </div>
-                <div>
-                  {{ openCollector ? openCollector.ocVersion : '...' }}
-                </div>
-                <div>
-                </div>
-              </div>
+              </q-expansion-item>
             </q-card-section>
           </q-card-section>
           <!-- <q-card-section class="" style="width: 1000px">
