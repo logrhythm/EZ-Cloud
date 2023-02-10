@@ -141,8 +141,6 @@ async function tailKillShipper(socket, payload) {
       payload
       && payload.openCollectorUid
       && payload.openCollectorUid.length > 0
-      && payload.pipelineUid
-      && payload.pipelineUid.length > 0
     ) {
       // Check the openCollectorUid doesn't already exist
       if (!statsTails[`${socketUid}_${payload.openCollectorUid}`]) {
@@ -157,12 +155,12 @@ async function tailKillShipper(socket, payload) {
                 // If Docker Stats is still running for this OpenCollector,
                 // go ahead and kill it.
                 if (socket.connected) {
-                  socket.emit('statsTail.kill', { openCollectorUid: payload.openCollectorUid, code: 'STDOUT', payload: 'Docker Stats is still running for this OpenCollector. As expected. Now going for the kill.' });
+                  socket.emit('statsTail.kill', { openCollectorUid: payload.openCollectorUid, code: 'STDOUT', payload: 'Docker Stats is still running for this OpenCollector. Going for the kill.' });
                 }
                 return true;
               }
               if (socket.connected) {
-                socket.emit('statsTail.kill', { openCollectorUid: payload.openCollectorUid, code: 'ERROR', payload: 'Docker Stats does\'t seem to be running for this OpenCollector. Doing nothing.' });
+                socket.emit('statsTail.kill', { openCollectorUid: payload.openCollectorUid, code: 'STDOUT', payload: 'Docker Stats does\'t seem to be running for this OpenCollector. Doing nothing.' });
                 socket.emit('statsTail.kill', { openCollectorUid: payload.openCollectorUid, code: 'EXIT', payload: code });
               }
               return false;
