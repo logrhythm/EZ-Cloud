@@ -61,6 +61,21 @@
               ref="containerLogsField"
             />
           </q-card-section> -->
+          <!-- <q-card-section class="" style="width: 1000px">
+            <div class="text-overline">
+              containerLogs (debug) XXXX
+            </div>
+            <div class="text-bold">
+              liveStatisticsStageSliderVisibilityStateClass: {{ liveStatisticsStageSliderVisibilityStateClass }}
+            </div>
+            <q-btn
+              class="absolute-center"
+              color="purple"
+              label="Next morph"
+              no-caps
+              @click="nextMorph"
+            />
+          </q-card-section> -->
         </q-card-section>
       </q-card>
 
@@ -78,10 +93,11 @@
         <template v-slot:top>
           <div class="full-width row wrap justify-between">
             <div class="col row justify-start">
-                <!-- style="width:300px;" -->
               <q-slider
                 class="full-width q-px-xl"
+                :class="liveStatisticsStageSliderVisibilityStateClass"
                 v-model="liveStatisticsStage"
+                ref="liveStatisticsStageSlider"
                 dense
                 track-size="12px"
                 thumb-size="20px"
@@ -254,6 +270,7 @@ import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import BreadCrumbs from 'components/BreadCrumbs.vue'
+// import { morph } from 'quasar'
 
 export default {
   name: 'PageOpenCollectorManage',
@@ -307,7 +324,8 @@ export default {
         1: 'Connecting to host...',
         2: 'Waiting for data...',
         3: 'Receiving Real Time Data'
-      }
+      },
+      liveStatisticsStageSliderVisibilityStateClass: ''
     }
   },
   computed: {
@@ -515,8 +533,9 @@ export default {
         ) {
           if (typeof payload.payload === 'string') {
             // Update the Stage
+            let newLiveStatisticsStage = null
             try {
-              this.liveStatisticsStage = {
+              newLiveStatisticsStage = {
                 Stopped: 0,
                 'Container Stats Tail Ended': 0,
                 'Container Stats Tail Started': 1,
@@ -525,6 +544,26 @@ export default {
               }[payload.payload] || 0
             } catch (error) {
               console.log('STAGE | Unknown Stage. Error:', error)
+            }
+
+            if (newLiveStatisticsStage !== null && this.liveStatisticsStage !== newLiveStatisticsStage) {
+              if (
+                this.liveStatisticsStage < newLiveStatisticsStage &&
+                newLiveStatisticsStage === 3
+              ) {
+                // We are progressing to Receiving from a lower stage
+                // Fade the status slidder away slowly
+                this.liveStatisticsStageSliderVisibilityStateClass = 'fadeOutOnce'
+              } else if (
+                // We are getting to a different stage, but the slidder was hidden
+                // Fade the status slidder back in quickly
+                this.liveStatisticsStage !== newLiveStatisticsStage &&
+                this.liveStatisticsStageSliderVisibilityStateClass === 'fadeOutOnce'
+              ) {
+                this.liveStatisticsStageSliderVisibilityStateClass = 'fadeInOnce'
+              }
+              // Update the liveStatisticsStage
+              this.liveStatisticsStage = newLiveStatisticsStage
             }
 
             if (this.liveStatisticsStage > 0) { // If we are above Stopped/Idle, then surely we are running
@@ -665,6 +704,19 @@ export default {
         //   { label: 'See Logs', color: 'white', handler: this.showCommunicationLogAndScrollToIt }
         // ]
       })
+    },
+    nextMorph () {
+      console.log('nextMorph. liveStatisticsStage / liveStatisticsStageSliderVisibilityStateClass:', this.liveStatisticsStage, this.liveStatisticsStageSliderVisibilityStateClass)
+      // liveStatisticsStageSlider
+      if (this.liveStatisticsStageSliderVisibilityStateClass === '') {
+        this.liveStatisticsStageSliderVisibilityStateClass = 'fadeOutOnce'
+      } else if (this.liveStatisticsStageSliderVisibilityStateClass === 'fadeOutOnce') {
+        this.liveStatisticsStageSliderVisibilityStateClass = 'fadeInOnce'
+      }
+
+      // liveStatisticsStageSliderVisibilityStateClass: ''
+      // fadeOutOnce
+      // fadeInOnce
     }
   },
   mounted () {
@@ -701,5 +753,28 @@ export default {
 </script>
 
 <style>
+.fadeOutOnce {
+  animation-name: fadeOutOnce;
+  animation-duration: 5s;
+  animation-fill-mode: forwards;
+}
 
+@keyframes fadeOutOnce {
+   0% {opacity: 1;}
+   40% {opacity: 1;}
+   90% {opacity: 0;}
+   100% {opacity: 0;}
+}
+
+.fadeInOnce {
+  animation-name: fadeInOnce;
+  animation-duration: 0.5s;
+  animation-fill-mode: forwards;
+}
+
+@keyframes fadeInOnce {
+   0% {opacity: 0;}
+   10% {opacity: 0.5;}
+   100% {opacity: 1;}
+}
 </style>
