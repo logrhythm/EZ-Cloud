@@ -210,7 +210,7 @@
                     <q-item-section>{{ $t('Export Logs to File') }}</q-item-section>
                   </q-item>
                   <q-item clickable v-close-popup
-                    @click="doStartStopContainer(props.row)"
+                    @click="doViewRealTimeContainerLogs(props.row)"
                     :disable="!(props.row && props.row.pid !== 0)"
                   >
                     <q-item-section avatar>
@@ -269,6 +269,60 @@
         </q-card-section>
       </q-card> -->
     </div>
+    <q-dialog
+      v-model="showContainerLog"
+      persistent
+      full-width
+      :maximized="showContainerLogMaximised"
+    >
+      <q-card class="column">
+        <q-card-section class="row justify-between">
+          <div class="text-h6">{{ $t('Container Logs') }}</div>
+          <div class="q-gutter-x-sm">
+            <!-- <q-btn dense flat :icon="(showContainerLogMaximised ? 'fullscreen_exit' : 'fullscreen')" color="grey-5" @click="showContainerLogMaximised = !showContainerLogMaximised" /> -->
+            <q-btn dense flat icon="close" color="grey-5" v-close-popup />
+          </div>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section class="col self-stretch" style="height: 300px">
+          <q-input
+            v-model="containerLogs"
+            ref="containerLogsField"
+            type="textarea"
+            outlined
+            readonly
+            input-class=""
+            class="fixed-font full-height"
+            rows="30"
+          >
+            <!-- :input-style="containerLogsFieldInputStyle" -->
+            <!-- :input-style="{resize: 'none', height: '400px', '-webkit-box-sizing': 'border-box', '-moz-box-sizing': 'border-box', 'box-sizing': 'border-box'}" -->
+            <!-- input-style="height: 100%; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing:border-box;" -->
+            <!-- style="min-height: 10rem; height: 100%; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing:border-box;" -->
+            <!-- rows="21" -->
+            <template v-slot:after>
+              <div class="column full-height">
+                <div class="column q-gutter-y-lg">
+                  <q-btn round dense flat icon="content_copy" @click="copyToClipboard(containerLogs)" :disable="!containerLogs || (containerLogs && containerLogs.length === 0)">
+                    <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                      {{ $t('Copy to Clipboad') }}
+                    </q-tooltip>
+                  </q-btn>
+                  <q-separator />
+                  <q-btn round dense flat icon="clear" @click="containerLogs=''" color="red" :disable="!containerLogs || (containerLogs && containerLogs.length === 0)">
+                    <q-tooltip content-style="font-size: 1rem; min-width: 10rem;" v-if="containerLogs && containerLogs.length">
+                      {{ $t('Clear') }}
+                    </q-tooltip>
+                  </q-btn>
+                </div>
+              </div>
+            </template>
+          </q-input>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -277,7 +331,8 @@ import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import BreadCrumbs from 'components/BreadCrumbs.vue'
-// import { morph } from 'quasar'
+import { dom, copyToClipboard } from 'quasar'
+const { height } = dom
 
 export default {
   name: 'PageOpenCollectorManage',
@@ -332,7 +387,9 @@ export default {
         2: 'Waiting for data...',
         3: 'Receiving Real Time Data'
       },
-      liveStatisticsStageSliderVisibilityStateClass: ''
+      liveStatisticsStageSliderVisibilityStateClass: '',
+      showContainerLog: true, // Toggle the Container Logs modal dialog
+      showContainerLogMaximised: false // Toggle full screen mode of the Container Logs modal dialog
     }
   },
   computed: {
@@ -424,9 +481,30 @@ export default {
         })
       }
       return list
+    },
+    containerLogsFieldInputStyle () {
+      return {
+        height: `${this.containerLogsFieldHeight()}px`,
+        '-webkit-box-sizing': 'border-box',
+        '-moz-box-sizing': 'border-box',
+        'box-sizing': 'border-box'
+      }
     }
   },
   methods: {
+    containerLogsFieldHeight () {
+      console.log('containerLogsFieldHeight')
+      console.log(JSON.stringify(this.$refs))
+      console.log(this.$refs)
+      let result = 0
+      try {
+        console.log(height(this.$refs.containerLogsField.$el))
+        result = height(this.$refs.containerLogsField.$el)
+      } catch (error) {
+        console.log('ERROR - containerLogsFieldHeight - ', error)
+      }
+      return result
+    },
     startLiveStatisitics () {
       if (this.socket && this.socket.connected) {
         this.isLiveStatisticsRunning = true
@@ -475,6 +553,18 @@ export default {
     doStartStopContainer () {
       //
     },
+    doStopContainer () {
+      //
+    },
+    doStartContainer () {
+      //
+    },
+    doRestartContainer () {
+      //
+    },
+    doViewRealTimeContainerLogs () {
+      this.showContainerLog = true
+    },
     initStatsTail () {
       if (this.socket && this.socket.connected) {
         this.socket.emit('statsTail.init', { openCollectorUid: this.openCollectorUid })
@@ -487,6 +577,8 @@ export default {
     },
     scrollToBottom (logFieldName) {
       try {
+        console.log(height(this.$refs[logFieldName || 'containerLogsField'].$el))
+        console.log(this.$refs[logFieldName || 'containerLogsField'])
         const logField = this.$refs[logFieldName || 'containerLogsField'].$refs.input
         logField.scrollTop = logField.scrollHeight
       } catch (error) {
@@ -712,7 +804,7 @@ export default {
         // ]
       })
     },
-    nextMorph () {
+    nextMorph () { // XXXX
       console.log('nextMorph. liveStatisticsStage / liveStatisticsStageSliderVisibilityStateClass:', this.liveStatisticsStage, this.liveStatisticsStageSliderVisibilityStateClass)
       // liveStatisticsStageSlider
       if (this.liveStatisticsStageSliderVisibilityStateClass === '') {
@@ -724,6 +816,9 @@ export default {
       // liveStatisticsStageSliderVisibilityStateClass: ''
       // fadeOutOnce
       // fadeInOnce
+    },
+    copyToClipboard (value) {
+      copyToClipboard(value)
     }
   },
   mounted () {

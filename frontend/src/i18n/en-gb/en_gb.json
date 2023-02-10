@@ -664,5 +664,6 @@
   "Manage": "Manage",
   "No Container to display.": "No Container to display.",
   "Containers per page:": "Containers per page:",
-  "Stopped": "Stopped"
+  "Stopped": "Stopped",
+  "Container Logs": "Container Logs"
 }
