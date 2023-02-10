@@ -755,14 +755,13 @@ export default {
 <style>
 .fadeOutOnce {
   animation-name: fadeOutOnce;
-  animation-duration: 5s;
+  animation-duration: 4s;
   animation-fill-mode: forwards;
 }
 
 @keyframes fadeOutOnce {
    0% {opacity: 1;}
-   40% {opacity: 1;}
-   90% {opacity: 0;}
+   50% {opacity: 1;}
    100% {opacity: 0;}
 }
 
