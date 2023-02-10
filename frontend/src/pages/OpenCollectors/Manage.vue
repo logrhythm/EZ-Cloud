@@ -577,8 +577,8 @@ export default {
     },
     scrollToBottom (logFieldName) {
       try {
-        console.log(height(this.$refs[logFieldName || 'containerLogsField'].$el))
-        console.log(this.$refs[logFieldName || 'containerLogsField'])
+        // console.log(height(this.$refs[logFieldName || 'containerLogsField'].$el))
+        // console.log(this.$refs[logFieldName || 'containerLogsField'])
         const logField = this.$refs[logFieldName || 'containerLogsField'].$refs.input
         logField.scrollTop = logField.scrollHeight
       } catch (error) {
