@@ -388,7 +388,7 @@ export default {
         3: 'Receiving Real Time Data'
       },
       liveStatisticsStageSliderVisibilityStateClass: '',
-      showContainerLog: true, // Toggle the Container Logs modal dialog
+      showContainerLog: false, // Toggle the Container Logs modal dialog
       showContainerLogMaximised: false // Toggle full screen mode of the Container Logs modal dialog
     }
   },
