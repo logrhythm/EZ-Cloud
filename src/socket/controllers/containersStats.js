@@ -149,7 +149,7 @@ async function tailKillShipper(socket, payload) {
         statsTails[`${socketUid}_${payload.openCollectorUid}`] = new SSH(configSsh);
 
         statsTails[`${socketUid}_${payload.openCollectorUid}`]
-          .exec('ps auxwww | grep "/\\* OC_ADMIN-DockerStats \\*/" | grep -v "grep" -q && exit 42;', {
+          .exec('ps xwww -o pid,args | grep "/\\* OC_ADMIN-DockerStats \\*/" | grep -v "grep" -q && exit 42;', {
             exit(code) {
               if (code === 42) {
                 // If Docker Stats is still running for this OpenCollector,
@@ -166,7 +166,7 @@ async function tailKillShipper(socket, payload) {
               return false;
             }
           })
-          .exec('kill $(ps auxwwww | grep "/\\* OC_ADMIN-DockerStats \\*/" | grep -v "grep" | grep -o "^\\s*\\d\\+") && echo -e "Docker Stats process terminated.";', {
+          .exec('kill $(ps xwww -o pid,args | grep "/\\* OC_ADMIN-DockerStats \\*/" | grep -v "grep" | grep -o "^[0-9]\\+") && echo -e "Docker Stats process terminated.";', {
             err(stderr) {
               // console.log('STDERR:::' + stderr);
               if (socket.connected) {
