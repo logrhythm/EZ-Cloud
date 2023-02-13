@@ -91,13 +91,6 @@
                 :max="3"
                 readonly
               />
-              <!--
-                color="purple"
-                label-color="red"
-                label-text-color="orange"
-                track-color="green"
-                readonly
-              -->
             </div>
             <div class="row q-gutter-md">
               <div style="width:300px;">
