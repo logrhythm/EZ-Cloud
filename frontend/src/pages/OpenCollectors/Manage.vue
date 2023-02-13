@@ -789,7 +789,9 @@ export default {
             // Fails silently
           }
         }
-        this.$nextTick(this.scrollToBottom)
+        if (this.showContainerLog) {
+          this.$nextTick(this.scrollToBottom)
+        }
       }
     },
     showNotificationWithActionToLogs (message, type = 'negative') {
