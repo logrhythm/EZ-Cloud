@@ -157,7 +157,7 @@ async function containerLogsKillTail(socket, payload) {
               return false;
             }
           })
-          .exec(`ps xwww -o pid,args | grep -v "grep" | grep "docker logs --follow" | grep "${payload.containerId}" | grep -o "^[0-9]\\+"`, {
+          .exec(`ps xwww -o pid,args | grep -v "grep" | grep "docker logs --follow" | grep "${payload.containerId}" | grep -o "^\\s*[0-9]\\+"`, {
             err(stderr) {
               // console.log('STDERR:::' + stderr);
               socketEmit(socket, { containerId: payload.containerId, openCollectorUid: payload.openCollectorUid, stream: 'containerLogsTail.kill', code: 'STDERR', payload: stderr });
@@ -176,7 +176,7 @@ async function containerLogsKillTail(socket, payload) {
               socketEmit(socket, { containerId: payload.containerId, openCollectorUid: payload.openCollectorUid, stream: 'containerLogsTail.kill', code: 'STDOUT', payload: `Docker Logs' Process ID(s): ${stdout}` });
             }
           })
-          .exec(`kill $(ps xwww -o pid,args | grep -v "grep" | grep "docker logs --follow" | grep "${payload.containerId}" | grep -o "^[0-9]\\+") && echo -e "Docker Logs process terminated.";`, {
+          .exec(`kill $(ps xwww -o pid,args | grep -v "grep" | grep "docker logs --follow" | grep "${payload.containerId}" | grep -o "^\\s*[0-9]\\+") && echo -e "Docker Logs process terminated.";`, {
             err(stderr) {
               // console.log('STDERR:::' + stderr);
               socketEmit(socket, { containerId: payload.containerId, openCollectorUid: payload.openCollectorUid, stream: 'containerLogsTail.kill', code: 'STDERR', payload: stderr });
