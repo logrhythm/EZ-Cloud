@@ -78,7 +78,6 @@
                 class="full-width q-px-xl"
                 :class="liveStatisticsStageSliderVisibilityStateClass"
                 v-model="liveStatisticsStage"
-                ref="liveStatisticsStageSlider"
                 dense
                 track-size="12px"
                 thumb-size="20px"
@@ -214,10 +213,26 @@
     >
       <q-card class="column">
         <q-card-section class="row justify-between">
-          <div class="text-h6">{{ $t('Container Logs') }}</div>
-          <div class="q-gutter-x-sm">
+          <div class="text-h6 col-auto">{{ $t('Container Logs') }}</div>
+          <q-slider
+            class="col q-px-xl"
+            :class="liveContainerLogsStageSliderVisibilityStateClass"
+            v-model="liveContainerLogsStage"
+            dense
+            track-size="12px"
+            thumb-size="20px"
+            marker-labels-class="text-grey"
+            markers
+            :marker-labels="stageMarkerLabels"
+            :label-always="(liveContainerLogsStage > 0) && (liveContainerLogsStage < 3)"
+            :label-value="stageLabels[liveContainerLogsStage]"
+            :min="0"
+            :max="3"
+            readonly
+          />
+          <div class="col-auto q-gutter-x-sm">
             <!-- <q-btn dense flat :icon="(showContainerLogMaximised ? 'fullscreen_exit' : 'fullscreen')" color="grey-5" @click="showContainerLogMaximised = !showContainerLogMaximised" /> -->
-            <q-btn dense flat icon="close" color="grey-5" v-close-popup />
+            <q-btn dense flat icon="close" color="grey-5" @click="closeRealTimeContainerLogs()" />
           </div>
         </q-card-section>
 
@@ -230,9 +245,9 @@
             type="textarea"
             outlined
             readonly
-            input-class=""
+            input-class="fixed-font-console"
             class="fixed-font full-height"
-            rows="30"
+            rows="25"
           >
             <!-- :input-style="containerLogsFieldInputStyle" -->
             <!-- :input-style="{resize: 'none', height: '400px', '-webkit-box-sizing': 'border-box', '-moz-box-sizing': 'border-box', 'box-sizing': 'border-box'}" -->
@@ -248,7 +263,7 @@
                     </q-tooltip>
                   </q-btn>
                   <q-separator />
-                  <q-btn round dense flat icon="clear" @click="containerLogs=''" color="red" :disable="!containerLogs || (containerLogs && containerLogs.length === 0)">
+                  <q-btn round dense flat icon="clear" @click="clearContainerLog()" color="red" :disable="!containerLogs || (containerLogs && containerLogs.length === 0)">
                     <q-tooltip content-style="font-size: 1rem; min-width: 10rem;" v-if="containerLogs && containerLogs.length">
                       {{ $t('Clear') }}
                     </q-tooltip>
@@ -303,9 +318,7 @@ export default {
         descending: false,
         rowsPerPage: 25
       },
-      containerLogs: '', // Real time logs from the container
-      alwaysScrollToBottom: true, // Shall we keep scrolling to the bottom of the Container Logs
-      liveStatisticsStage: 0,
+      liveStatisticsStage: 0, // Stage of the connection to the host
       stageMarkerLabels: {
         0: 'Idle',
         1: 'Started',
@@ -318,9 +331,14 @@ export default {
         2: 'Waiting for data...',
         3: 'Receiving Real Time Data'
       },
-      liveStatisticsStageSliderVisibilityStateClass: '',
+      liveStatisticsStageSliderVisibilityStateClass: '', // Class for the Statistics Stage slider
       showContainerLog: false, // Toggle the Container Logs modal dialog
-      showContainerLogMaximised: false // Toggle full screen mode of the Container Logs modal dialog
+      showContainerLogMaximised: false, // Toggle full screen mode of the Container Logs modal dialog
+      containerLogs: '', // Real time logs from the container
+      activeContainerIdLogs: '', // Docekr ID of the container being logged right now
+      alwaysScrollToBottom: true, // Shall we keep scrolling to the bottom of the Container Logs
+      liveContainerLogsStage: 0, // Stage of the connection to the host
+      liveContainerLogsStageSliderVisibilityStateClass: '' // Class for the Container Logs Stage slider
     }
   },
   computed: {
@@ -493,8 +511,42 @@ export default {
     doRestartContainer () {
       //
     },
-    doViewRealTimeContainerLogs () {
-      this.showContainerLog = true
+    doViewRealTimeContainerLogs (row) {
+      if (this.socket && this.socket.connected) {
+        if (row) {
+          const { containerId } = row
+          if (containerId && containerId.length) {
+            this.activeContainerIdLogs = containerId
+            this.clearContainerLog()
+            this.showContainerLog = true
+            this.initContainerLogsTail(containerId)
+          } else {
+            console.log('ERROR | ViewRealTimeContainerLogs | No Container was selected')
+            this.showNotificationWithActionToLogs('No Container was selected')
+          }
+        }
+      } else { // No Socket. Tell the user.
+        this.showContainerLog = false
+        // Pop this to the screen (via MainLayout)
+        this.$root.$emit('addAndShowErrorToErrorPanel', {
+          data: {
+            errors: [
+              {
+                code: 'NoLiveSocket',
+                message: this.$t('Live (Socket) connection with the EZ Server has been lost or is not currently established.')
+              },
+              {
+                code: 'TailFailedToStart',
+                message: this.$t('Tail could not start due to no live socket available.')
+              }
+            ]
+          }
+        })
+      }
+    },
+    closeRealTimeContainerLogs () {
+      this.showContainerLog = false
+      this.killContainerLogsTail(this.activeContainerIdLogs || '')
     },
     initStatsTail () {
       if (this.socket && this.socket.connected) {
@@ -504,6 +556,16 @@ export default {
     killStatsTail () {
       if (this.socket && this.socket.connected) {
         this.socket.emit('statsTail.kill', { openCollectorUid: this.openCollectorUid })
+      }
+    },
+    initContainerLogsTail (containerId = '') {
+      if (this.socket && this.socket.connected) {
+        this.socket.emit('containerLogsTail.init', { openCollectorUid: this.openCollectorUid, containerId })
+      }
+    },
+    killContainerLogsTail (containerId = '') {
+      if (this.socket && this.socket.connected) {
+        this.socket.emit('containerLogsTail.kill', { openCollectorUid: this.openCollectorUid, containerId })
       }
     },
     scrollToBottom (logFieldName) {
@@ -516,7 +578,7 @@ export default {
         console.log('ERROR - scrollToBottom - ', error)
       }
     },
-    handleSocketOnTailLog (payload) {
+    handleSocketOnStatsTailLog (payload) {
       if (
         payload &&
         payload.openCollectorUid &&
@@ -563,9 +625,9 @@ export default {
         ) {
           if (typeof payload.payload === 'string') {
             // Update the Stage
-            let newLiveStatisticsStage = null
+            let newStage = null
             try {
-              newLiveStatisticsStage = {
+              newStage = {
                 Stopped: 0,
                 'Container Stats Tail Ended': 0,
                 'Container Stats Tail Started': 1,
@@ -576,10 +638,10 @@ export default {
               console.log('STAGE | Unknown Stage. Error:', error)
             }
 
-            if (newLiveStatisticsStage !== null && this.liveStatisticsStage !== newLiveStatisticsStage) {
+            if (newStage !== null && this.liveStatisticsStage !== newStage) {
               if (
-                this.liveStatisticsStage < newLiveStatisticsStage &&
-                newLiveStatisticsStage === 3
+                this.liveStatisticsStage < newStage &&
+                newStage === 3
               ) {
                 // We are progressing to Receiving from a lower stage
                 // Fade the status slidder away slowly
@@ -587,13 +649,13 @@ export default {
               } else if (
                 // We are getting to a different stage, but the slidder was hidden
                 // Fade the status slidder back in quickly
-                this.liveStatisticsStage !== newLiveStatisticsStage &&
+                this.liveStatisticsStage !== newStage &&
                 this.liveStatisticsStageSliderVisibilityStateClass === 'fadeOutOnce'
               ) {
                 this.liveStatisticsStageSliderVisibilityStateClass = 'fadeInOnce'
               }
               // Update the liveStatisticsStage
-              this.liveStatisticsStage = newLiveStatisticsStage
+              this.liveStatisticsStage = newStage
             }
 
             if (this.liveStatisticsStage > 0) { // If we are above Stopped/Idle, then surely we are running
@@ -677,6 +739,106 @@ export default {
         this.addLineToCommunicationLog(`${payload.code} | ${this.$t('Post-Tail killing/cleaning job exited.')} | ${(payload.payload !== undefined ? payload.payload : '🏁')}`)
       }
     },
+    handleSocketOnContainerTailLog (payload) {
+      if (
+        payload &&
+        payload.openCollectorUid &&
+        payload.openCollectorUid === this.openCollectorUid
+      ) {
+        // If we are getting data from the remote job, breack it in multiple lines (if \n is found in it) and push it in the queueIn
+        if (
+          payload.code === 'STDOUT' &&
+          payload.payload
+        ) {
+          // eslint-disable-next-line quotes
+          payload.payload.split("\n").forEach(lr => {
+            this.addLineToContainerLog(payload.payload)
+          })
+        }
+
+        // If we are getting STDERR data from the remote job, breack it in multiple lines (if \n is found in it) and log it
+        if (
+          payload.code === 'STDERR'
+        ) {
+          if (typeof payload.payload === 'string') {
+            // eslint-disable-next-line quotes
+            payload.payload.split("\n").forEach(lr => {
+              this.addLineToContainerLog(payload.payload)
+            })
+          } else {
+            console.log(payload.payload)
+          }
+        }
+
+        // If we are getting STAGE data from the remote job, use it to track the stage progression
+        if (
+          payload.code === 'STAGE'
+        ) {
+          if (typeof payload.payload === 'string') {
+            // Update the Stage
+            let newStage = null
+            try {
+              newStage = {
+                Stopped: 0,
+                'Container Stats Tail Ended': 0,
+                'Container Stats Tail Started': 1,
+                'Connected to host': 2,
+                'Receiving Real Time Data': 3
+              }[payload.payload] || 0
+            } catch (error) {
+              console.log('STAGE | Unknown Stage. Error:', error)
+            }
+
+            if (newStage !== null && this.liveContainerLogsStage !== newStage) {
+              if (
+                this.liveContainerLogsStage < newStage &&
+                newStage === 3
+              ) {
+                // We are progressing to Receiving from a lower stage
+                // Fade the status slidder away slowly
+                this.liveContainerLogsStageSliderVisibilityStateClass = 'fadeOutOnce'
+              } else if (
+                // We are getting to a different stage, but the slidder was hidden
+                // Fade the status slidder back in quickly
+                this.liveContainerLogsStage !== newStage &&
+                this.liveContainerLogsStageSliderVisibilityStateClass === 'fadeOutOnce'
+              ) {
+                this.liveContainerLogsStageSliderVisibilityStateClass = 'fadeInOnce'
+              }
+              // Update the liveContainerLogsStage
+              this.liveContainerLogsStage = newStage
+            }
+          } else {
+            console.log(payload.payload)
+          }
+        }
+
+        // If we are getting ERROR data from the remote job, log it to the console as error
+        if (
+          payload.code === 'ERROR'
+        ) {
+          this.addLineToCommunicationLog(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
+          this.showNotificationWithActionToLogs(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
+        }
+
+        if (
+          payload.code === 'END'
+        ) {
+          this.isLiveStatisticsRunning = false
+          this.addLineToCommunicationLog(`${payload.code} | Closing this Tail. | ${(payload.payload !== undefined ? payload.payload : '🏁')}`)
+          this.showNotificationWithActionToLogs(`${payload.code} | Closing this Tail. (${(payload.payload !== undefined ? payload.payload : '🏁')})`, 'info')
+        }
+
+        // If the remote job died, push it to the Comm Log
+        if (
+          payload.code === 'EXIT'
+        ) {
+          this.isLiveStatisticsRunning = false
+          this.addLineToCommunicationLog(`${payload.code} | Tailjob exited. | ${(payload.payload !== undefined ? payload.payload : '🏁')}`)
+        }
+      }
+    },
+
     addLineToCommunicationLog (payload) {
       // Just dump to the Console logs for now
       console.log(payload)
@@ -698,6 +860,9 @@ export default {
           this.$nextTick(this.scrollToBottom)
         }
       }
+    },
+    clearContainerLog () {
+      this.containerLogs = ''
     },
     showNotificationWithActionToLogs (message, type = 'negative') {
       this.$q.notify({
@@ -724,8 +889,8 @@ export default {
       // Record the page in Recent Items
       this.updateRecentItems()
 
-      // Event when Server sends a new log via Tail
-      this.socket.on('statsTail.log', this.handleSocketOnTailLog)
+      // Event when Server sends a new stats via Tail
+      this.socket.on('statsTail.log', this.handleSocketOnStatsTailLog)
       // Event when Server sends a message while killing a Tail
       this.socket.on('statsTail.kill', this.handleSocketOnTailKill)
 
@@ -733,16 +898,26 @@ export default {
       if (this.openCollectorUid && this.openCollectorUid.length && this.socket && this.isLiveStatisticsRunning === false) {
         this.startLiveStatisitics()
       }
+
+      // Event when Server sends a new container log via Tail
+      this.socket.on('containerLogsTail.log', this.handleSocketOnContainerTailLog)
+      // Event when Server sends a message while killing a Tail
+      this.socket.on('containerLogsTail.kill', this.handleSocketOnTailKill)
     }
   },
   destroyed () {
     // Close any ongoing Tail
     this.killStatsTail()
     if (this.socket) {
-      // Unsubscribe from Socket.io events about new log via Tail
+      // Unsubscribe from Socket.io events about new stats data via Tail
       this.socket.off('statsTail.log')
       // Unsubscribe from Socket.io events about message while killing a Tail
       this.socket.off('statsTail.kill')
+
+      // Unsubscribe from Socket.io events about new container log via Tail
+      this.socket.off('containerLogsTail.log')
+      // Unsubscribe from Socket.io events about message while killing a Tail
+      this.socket.off('containerLogsTail.kill')
     }
   }
 }
