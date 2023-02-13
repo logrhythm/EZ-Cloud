@@ -57,32 +57,6 @@
               </q-expansion-item>
             </q-card-section>
           </q-card-section>
-          <!-- <q-card-section class="" style="width: 1000px">
-            <div class="text-overline">
-              containerLogs (debug) XXXX
-            </div>
-            <q-input
-              v-model="containerLogs"
-              outlined
-              type="textarea"
-              ref="containerLogsField"
-            />
-          </q-card-section> -->
-          <!-- <q-card-section class="" style="width: 1000px">
-            <div class="text-overline">
-              containerLogs (debug) XXXX
-            </div>
-            <div class="text-bold">
-              liveStatisticsStageSliderVisibilityStateClass: {{ liveStatisticsStageSliderVisibilityStateClass }}
-            </div>
-            <q-btn
-              class="absolute-center"
-              color="purple"
-              label="Next morph"
-              no-caps
-              @click="nextMorph"
-            />
-          </q-card-section> -->
         </q-card-section>
       </q-card>
 
@@ -234,40 +208,10 @@
             <q-badge rounded color="green" :label="$t('Running')" v-if="props.value === true" />
             <q-badge rounded color="red" :label="$t('Stopped')" v-else-if="props.value === false" />
             <q-badge rounded color="grey" :label="$t('Unknown')" v-else />
-            <!-- <q-icon name="o_arrow_circle_up" color="green" size="md" v-if="props.value === true" />
-            <q-icon name="o_arrow_circle_down" color="red" size="md" v-else-if ="props.value === false" />
-            <q-icon name="o_help_center" color="grey" size="md" v-else />
-            <q-tooltip content-style="font-size: 1em">
-              <span v-if="props.value === true">{{ $t('Enabled') }}</span>
-              <span v-else-if ="props.value === false">{{ $t('Disabled / Un-deployed') }}</span>
-              <span v-else>{{ props.value }}</span>
-            </q-tooltip> -->
           </q-td>
         </template>
       </q-table>
 
-      <!-- <q-card>
-        <q-card-section horizontal>
-          <q-card-section class="col q-ma-none q-pa-none">
-            <q-card-section>
-              <div class="">
-                <pre>{{ containersListRaw }}</pre>
-              </div>
-            </q-card-section>
-            <q-card-section>
-              <div class="">
-                <pre>{{ tableData }}</pre>
-              </div>
-            </q-card-section>
-            <q-card-section>
-              <div class="text-bold">
-                opened openCollector:
-              </div>
-              <pre>{{ openCollector }}</pre>
-            </q-card-section>
-          </q-card-section>
-        </q-card-section>
-      </q-card> -->
     </div>
     <q-dialog
       v-model="showContainerLog"
@@ -346,13 +290,7 @@ export default {
     return {
       openCollectorUid: '',
       isLiveStatisticsRunning: false,
-      containersListRaw: [ // docker stats -a --no-trunc --format "{{ json . }}"
-        // { BlockIO: '0B / 0B', CPUPerc: '0.00%', Container: 'aceb078bf98a', ID: 'aceb078bf98a', MemPerc: '0.00%', MemUsage: '0B / 0B', Name: 'metric', NetIO: '0B / 0B', PIDs: '0' },
-        // { BlockIO: '0B / 0B', CPUPerc: '0.00%', Container: '56b6cf9ac82a', ID: '56b6cf9ac82a', MemPerc: '0.00%', MemUsage: '0B / 0B', Name: 'openCollector', NetIO: '0B / 0B', PIDs: '0' },
-        // { BlockIO: '0B / 0B', CPUPerc: '0.00%', Container: '5b272e6ac2b9', ID: '5b272e6ac2b9', MemPerc: '0.00%', MemUsage: '0B / 0B', Name: 'gracious_shaw', NetIO: '0B / 0B', PIDs: '0' },
-        // { BlockIO: '0B / 0B', CPUPerc: '0.00%', Container: '6dbe6bc6fd5f', ID: '6dbe6bc6fd5f', MemPerc: '0.00%', MemUsage: '0B / 0B', Name: 'mariadb', NetIO: '0B / 0B', PIDs: '0' },
-        // { BlockIO: '3.62GB / 72.5MB', CPUPerc: '9.36%', Container: '280810e0bf6c', ID: '280810e0bf6c', MemPerc: '231.51%', MemUsage: '4.373GiB / 1.889GiB', Name: 'oc-admin', NetIO: '11MB / 3.35MB', PIDs: '4515' },
-        // { BlockIO: '255MB / 2.49MB', CPUPerc: '0.00%', Container: '0bff8eedd486', ID: '0bff8eedd486', MemPerc: '1.07%', MemUsage: '20.71MiB / 1.889GiB', Name: 'oc-db', NetIO: '551kB / 2.27MB', PIDs: '7' }
+      containersListRaw: [ // Raw array storing the result of: docker stats -a --no-trunc --format "{{ json . }}"
       ],
       searchFilter: '',
       columns: [
@@ -668,11 +606,6 @@ export default {
             if (this.liveStatisticsStage > 0) { // If we are above Stopped/Idle, then surely we are running
               this.isLiveStatisticsRunning = true
             }
-
-            // // eslint-disable-next-line quotes
-            // payload.payload.split("\n").forEach(lr => {
-            //   this.addLineToCommunicationLog(`${payload.code} | ${lr || ''}`)
-            // })
           } else {
             console.log(payload.payload)
           }
@@ -752,27 +685,8 @@ export default {
       }
     },
     addLineToCommunicationLog (payload) {
-      this.addLineToContainerLog(payload)
-      // if (payload !== undefined) {
-      //   // Dump the string or strings (if multiline) into new line(s) in the console
-      //   if (typeof payload === 'string') {
-      //     // this.communicationLogsOutput += payload + (payload.endsWith("\n") ? '' : "\n")
-      //     // eslint-disable-next-line quotes
-      //     this.containerLogs = this.containerLogs + "\n" + payload // XXXX
-      //     this.scrollToBottom('containerLogsField') // XXXX
-      //     console.log(payload)
-      //     // // eslint-disable-next-line quotes
-      //     // payload.split("\n").forEach(line => {
-      //     //   this.communicationLogsOutput += `${line}\n`
-      //     // })
-      //   } else {
-      //     // this.communicationLogsOutput += `${JSON.stringify(payload, null, '  ')}\n`
-      //     console.log(`${JSON.stringify(payload, null, '  ')}\n`)
-      //     // eslint-disable-next-line quotes
-      //     this.containerLogs = this.containerLogs + "\n" + payload // XXXX
-      //     this.scrollToBottom('containerLogsField') // XXXX
-      //   }
-      // }
+      // Just dump to the Console logs for now
+      console.log(payload)
     },
     addLineToContainerLog (payload) {
       if (payload !== undefined) {
@@ -780,11 +694,9 @@ export default {
         if (typeof payload === 'string') {
           // eslint-disable-next-line quotes
           this.containerLogs += payload + (payload.endsWith("\n") ? '' : "\n")
-          // this.scrollToBottom('containerLogsField') // XXXX
         } else {
           try {
             this.containerLogs += `${JSON.stringify(payload, null, '  ')}\n`
-            // this.scrollToBottom('containerLogsField') // XXXX
           } catch (error) {
             // Fails silently
           }
@@ -805,19 +717,6 @@ export default {
         //   { label: 'See Logs', color: 'white', handler: this.showCommunicationLogAndScrollToIt }
         // ]
       })
-    },
-    nextMorph () { // XXXX
-      console.log('nextMorph. liveStatisticsStage / liveStatisticsStageSliderVisibilityStateClass:', this.liveStatisticsStage, this.liveStatisticsStageSliderVisibilityStateClass)
-      // liveStatisticsStageSlider
-      if (this.liveStatisticsStageSliderVisibilityStateClass === '') {
-        this.liveStatisticsStageSliderVisibilityStateClass = 'fadeOutOnce'
-      } else if (this.liveStatisticsStageSliderVisibilityStateClass === 'fadeOutOnce') {
-        this.liveStatisticsStageSliderVisibilityStateClass = 'fadeInOnce'
-      }
-
-      // liveStatisticsStageSliderVisibilityStateClass: ''
-      // fadeOutOnce
-      // fadeInOnce
     },
     copyToClipboard (value) {
       copyToClipboard(value)
