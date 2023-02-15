@@ -212,7 +212,7 @@
       :maximized="showContainerLogMaximised"
     >
       <q-card class="column">
-        <q-card-section class="row justify-between">
+        <q-card-section class="row justify-between q-pb-none">
           <div class="text-h6 col-auto">{{ $t('Container Logs') }}</div>
           <q-slider
             class="col q-px-xl"
@@ -229,6 +229,8 @@
             :min="0"
             :max="3"
             readonly
+            switch-label-side
+            switch-marker-labels-side
           />
           <div class="col-auto q-gutter-x-sm">
             <!-- <q-btn dense flat :icon="(showContainerLogMaximised ? 'fullscreen_exit' : 'fullscreen')" color="grey-5" @click="showContainerLogMaximised = !showContainerLogMaximised" /> -->
@@ -262,6 +264,11 @@
                       {{ $t('Copy to Clipboad') }}
                     </q-tooltip>
                   </q-btn>
+                  <q-btn round dense flat icon="o_download" @click="downloadContainerLogsAsFile(containerLogs)" :disable="!containerLogs || (containerLogs && containerLogs.length === 0)">
+                    <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                      {{ $t('Download to file') }}
+                    </q-tooltip>
+                  </q-btn>
                   <q-separator />
                   <q-btn round dense flat icon="clear" @click="clearContainerLog()" color="red" :disable="!containerLogs || (containerLogs && containerLogs.length === 0)">
                     <q-tooltip content-style="font-size: 1rem; min-width: 10rem;" v-if="containerLogs && containerLogs.length">
@@ -283,7 +290,7 @@ import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import BreadCrumbs from 'components/BreadCrumbs.vue'
-import { dom, copyToClipboard } from 'quasar'
+import { dom, copyToClipboard, exportFile } from 'quasar'
 const { height } = dom
 
 export default {
@@ -335,7 +342,8 @@ export default {
       showContainerLog: false, // Toggle the Container Logs modal dialog
       showContainerLogMaximised: false, // Toggle full screen mode of the Container Logs modal dialog
       containerLogs: '', // Real time logs from the container
-      activeContainerIdLogs: '', // Docekr ID of the container being logged right now
+      activeContainerIdLogs: '', // Docker ID of the container being logged right now
+      activeContainerNameLogs: '', // Docker name of the container being logged right now
       alwaysScrollToBottom: true, // Shall we keep scrolling to the bottom of the Container Logs
       liveContainerLogsStage: 0, // Stage of the connection to the host
       liveContainerLogsStageSliderVisibilityStateClass: '' // Class for the Container Logs Stage slider
@@ -515,8 +523,10 @@ export default {
       if (this.socket && this.socket.connected) {
         if (row) {
           const { containerId } = row
+          const { name } = row
           if (containerId && containerId.length) {
             this.activeContainerIdLogs = containerId
+            this.activeContainerNameLogs = name
             this.clearContainerLog()
             this.showContainerLog = true
             this.initContainerLogsTail(containerId)
@@ -547,6 +557,8 @@ export default {
     closeRealTimeContainerLogs () {
       this.showContainerLog = false
       this.killContainerLogsTail(this.activeContainerIdLogs || '')
+      this.activeContainerIdLogs = ''
+      this.activeContainerNameLogs = ''
     },
     initStatsTail () {
       if (this.socket && this.socket.connected) {
@@ -878,6 +890,39 @@ export default {
     },
     copyToClipboard (value) {
       copyToClipboard(value)
+    },
+    downloadContainerLogsAsFile (value) {
+      const fileExtension = '.log'
+      const fileMimeType = 'text/plain'
+      const fileName = 'container.' + String(this.activeContainerNameLogs || '').replace('?', '') + '_' + this.activeContainerIdLogs + fileExtension
+      const notificationPopupId = this.$q.notify({
+        icon: 'cloud_download',
+        message: this.$t('Downloading Container log as file...'),
+        caption: fileName,
+        type: 'ongoing'
+      })
+
+      // Push file out
+      const status = exportFile(fileName, value || '', fileMimeType)
+
+      if (status === true) {
+        notificationPopupId({
+          type: 'positive',
+          color: 'positive',
+          icon: 'check',
+          message: this.$t('Container log as file downloaded'),
+          caption: fileName
+        })
+      } else {
+        notificationPopupId({
+          type: 'negative',
+          color: 'negative',
+          icon: 'o_report_problem',
+          message: this.$t('Problem while downloading Container logs:'),
+          caption: status
+        })
+        console.log('Error: ' + status)
+      }
     }
   },
   mounted () {

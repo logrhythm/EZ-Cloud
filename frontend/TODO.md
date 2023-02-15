@@ -31,7 +31,7 @@
     - [ ] Import Configuration from LR container from file
     - [ ] View Configuration from LR container
     - [ ] Export Logs from Container to file
-    - [ ] View Logs from Container in real time
+    - [x] View Logs from Container in real time
 - [ ] Landing page
   - [ ] ~~Add a simple Wizard~~ (👈 low value, low priority. Might resurect if users demand)
     - [ ] ~~Ask for name for Log Source~~ (👈 low value, low priority. Might resurect if users demand)
