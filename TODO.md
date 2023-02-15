@@ -4,9 +4,9 @@
 
 ## TO DO
 - [ ] API - Admin - MS SQL - Add MS SQL test
-- [ ] API - Troubleshoot - Start Container
-- [ ] API - Troubleshoot - Stop Container
-- [ ] API - Troubleshoot - Restart Container
+- [x] API - Troubleshoot - Start Container
+- [x] API - Troubleshoot - Stop Container
+- [ ] ~~API - Troubleshoot - Restart Container~~ (👈 Will rely on the UI doing a Stop, then a Start)
 - [ ] API - Troubleshoot - Get Logs from Container
 - [ ] API - Troubleshoot - Export Configuration from LR container
 - [ ] API - Troubleshoot - Import Configuration from LR container

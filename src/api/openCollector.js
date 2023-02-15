@@ -35,6 +35,14 @@ router.get('/', (req, res) => {
   });
 });
 
+const responseTemplate = {
+  stillChecking: false,
+  lastSuccessfulCheckTimeStampUtc: 0,
+  payload: null, // null (unchecked) or object with version
+  errors: [], // array of all the errors
+  outputs: [] // array of all the outputs
+};
+
 // #############################################
 // CheckOCHelperVersion
 // #############################################
@@ -2132,6 +2140,207 @@ router.post('/ImportPipelineForBeat', async (req, res) => {
     }
 
     res.json({ ...pipelineImportForBeatStatusTemplate, errors: errorMessages, requestBody: (process.env.NODE_ENV === 'development' ? req.body : undefined) });
+  }
+});
+
+// // #############################################
+// // StartContainer
+// // #############################################
+
+// router.post('/StartContainer', async (req, res) => {
+//   if (req
+//     && req.query
+//     && req.query.uid
+//     && req.query.uid.length
+//     && getSafeUidFrom(req.query).length
+//   ) {
+//     const uid = getSafeUidFrom(req.query);
+
+//     if (uid && uid.length) {
+//       getSshConfigForCollector({ uid }).then((sshConfig) => {
+//         const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
+//         const responseObject = JSON.parse(JSON.stringify(responseTemplate));
+
+//         ssh
+//           .exec('docker -v 2>1', {
+//             err(stderr) {
+//               responseObject.errors.push(stderr);
+//             },
+//             out(stdout) {
+//               try {
+//                 responseObject.payload = JSON.parse(stdout);
+//               } catch (error) {
+//                 responseObject.payload = null;
+//               }
+
+//               responseObject.outputs.push(stdout);
+//             },
+//             exit(code) {
+//               responseObject.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
+//             }
+//           })
+//           .on('end', (err) => {
+//             res.json(responseObject);
+//           })
+//           .start({
+//             failure() {
+//               res.json(responseObject);
+//             }
+//           });
+//       });
+//     }
+//   } else {
+//     res.json({ ...responseTemplate, errors: ['Missing UID in Query.'] });
+//   }
+// });
+
+// #############################################
+// StartContainer
+// #############################################
+
+router.post('/StartContainer', async (req, res) => {
+  // Check we are ship-shape with the params
+  const missingOpenCollector = !(
+    req
+    && req.body
+    && req.body.openCollector
+    && req.body.openCollector.uid
+    && req.body.openCollector.uid.length
+  );
+  const missingContainer = !(
+    req
+    && req.body
+    && req.body.container
+    && req.body.container.uid
+    && req.body.container.uid.length
+  );
+
+  if (
+    !missingOpenCollector
+    && !missingContainer
+  ) {
+    const { openCollector, container } = req.body;
+
+    getSshConfigForCollector({ uid: openCollector.uid }).then((sshConfig) => {
+      const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
+      const responseObject = { ...JSON.parse(JSON.stringify(responseTemplate)), payload: [] };
+
+      ssh
+        .exec(`docker start "${container.uid}"`, {
+          err(stderr) {
+            responseObject.errors.push(stderr);
+          },
+          out(stdout) {
+            try {
+              responseObject.payload = JSON.parse(stdout);
+            } catch (error) {
+              responseObject.payload = [];
+            }
+
+            responseObject.outputs.push(stdout);
+          },
+          exit(code) {
+            responseObject.exitCode = code;
+            responseObject.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
+          }
+        })
+        .on('end', (err) => {
+          if (err != null) {
+            responseObject.errors.push(err);
+          }
+          res.json(responseObject);
+        })
+        .start({
+          failure() {
+            responseObject.errors.push('Failed to start container');
+            res.json(responseObject);
+          }
+        });
+    });
+  } else {
+    const errors = ['[StartContainer] Missing parameter(s). See following errors.'];
+    if (missingOpenCollector) {
+      errors.push('Missing or malformed "openCollector" object.');
+    }
+    if (missingContainer) {
+      errors.push('Missing or malformed "container" object.');
+    }
+    res.json({ ...responseTemplate, errors });
+  }
+});
+
+// #############################################
+// StopContainer
+// #############################################
+
+router.post('/StopContainer', async (req, res) => {
+  // Check we are ship-shape with the params
+  const missingOpenCollector = !(
+    req
+    && req.body
+    && req.body.openCollector
+    && req.body.openCollector.uid
+    && req.body.openCollector.uid.length
+  );
+  const missingContainer = !(
+    req
+    && req.body
+    && req.body.container
+    && req.body.container.uid
+    && req.body.container.uid.length
+  );
+
+  if (
+    !missingOpenCollector
+    && !missingContainer
+  ) {
+    const { openCollector, container } = req.body;
+
+    getSshConfigForCollector({ uid: openCollector.uid }).then((sshConfig) => {
+      const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
+      const responseObject = { ...JSON.parse(JSON.stringify(responseTemplate)), payload: [] };
+
+      ssh
+        .exec(`docker stop "${container.uid}"`, {
+          err(stderr) {
+            responseObject.errors.push(stderr);
+          },
+          out(stdout) {
+            try {
+              responseObject.payload = JSON.parse(stdout);
+            } catch (error) {
+              responseObject.payload = [];
+            }
+
+            responseObject.outputs.push(stdout);
+          },
+          exit(code) {
+            responseObject.exitCode = code;
+            responseObject.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
+          }
+        })
+        .on('end', (err) => {
+          if (err != null) {
+            responseObject.errors.push(err);
+          }
+          res.json(responseObject);
+        })
+        .start({
+          failure() {
+            responseObject.errors.push('Failed to stop container');
+            res.json(responseObject);
+          }
+        });
+    });
+  } else {
+    const errors = ['[StopContainer] Missing parameter(s). See following errors.'];
+    if (missingOpenCollector) {
+      errors.push('Missing or malformed "openCollector" object.');
+    }
+    if (missingContainer) {
+      errors.push('Missing or malformed "container" object.');
+    }
+    res.json({ ...responseTemplate, errors });
   }
 });
 
