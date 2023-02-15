@@ -24,8 +24,8 @@
   - [x] Import UI/UX work
   - [x] Get Open Collector information (stats, containers, ...)
   - [ ] Implement managing tasks
-    - [ ] Start Container
-    - [ ] Stop Container
+    - [x] Start Container
+    - [x] Stop Container
     - [ ] Restart Container
     - [ ] Export Configuration from LR container to file
     - [ ] Import Configuration from LR container from file

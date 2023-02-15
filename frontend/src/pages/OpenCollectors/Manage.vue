@@ -111,7 +111,7 @@
               <q-menu>
                 <q-list style="min-width: 100px">
                   <q-item clickable v-close-popup
-                    @click="doStartStopContainer(props.row)"
+                    @click="doStartContainer(props.row)"
                     :disable="!(props.row && props.row.pid !== 0)"
                   >
                     <q-item-section avatar>
@@ -120,7 +120,7 @@
                     <q-item-section>{{ $t('Start Container') }}</q-item-section>
                   </q-item>
                   <q-item clickable v-close-popup
-                    @click="doStartStopContainer(props.row)"
+                    @click="doStopContainer(props.row)"
                     :disable="!(props.row && props.row.pid !== 0)"
                   >
                     <q-item-section avatar>
@@ -129,7 +129,7 @@
                     <q-item-section>{{ $t('Stop Container') }}</q-item-section>
                   </q-item>
                   <q-item clickable v-close-popup
-                    @click="doStartStopContainer(props.row)"
+                    @click="doRestartContainer(props.row)"
                     :disable="!(props.row && props.row.pid !== 0)"
                   >
                     <q-item-section avatar>
@@ -139,7 +139,7 @@
                   </q-item>
                   <q-separator />
                   <q-item clickable v-close-popup
-                    @click="doStartStopContainer(props.row)"
+                    @click="doExportContainerConfigurationToFile(props.row)"
                     :disable="!(props.row && props.row.pid !== 0)"
                   >
                     <q-item-section avatar>
@@ -148,7 +148,7 @@
                     <q-item-section>{{ $t('Export Configuration to File') }}</q-item-section>
                   </q-item>
                   <q-item clickable v-close-popup
-                    @click="doStartStopContainer(props.row)"
+                    @click="doImportContainerConfigurationFromFile(props.row)"
                     :disable="!(props.row && props.row.pid !== 0)"
                   >
                     <q-item-section avatar>
@@ -157,7 +157,7 @@
                     <q-item-section>{{ $t('Import Configuration from File') }}</q-item-section>
                   </q-item>
                   <q-item clickable v-close-popup
-                    @click="doStartStopContainer(props.row)"
+                    @click="doViewContainerConfguration(props.row)"
                     :disable="!(props.row && props.row.pid !== 0)"
                   >
                     <q-item-section avatar>
@@ -167,7 +167,7 @@
                   </q-item>
                   <q-separator />
                   <q-item clickable v-close-popup
-                    @click="doStartStopContainer(props.row)"
+                    @click="doExportContainerLogsToFile(props.row)"
                     :disable="!(props.row && props.row.pid !== 0)"
                   >
                     <q-item-section avatar>
@@ -286,6 +286,7 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
@@ -449,6 +450,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions('mainStore', ['startContainerOnOpenCollector', 'stopContainerOnOpenCollector']),
     containerLogsFieldHeight () {
       console.log('containerLogsFieldHeight')
       console.log(JSON.stringify(this.$refs))
@@ -507,16 +509,60 @@ export default {
         })
       }
     },
-    doStartStopContainer () {
+    doStartStopContainer (row) {
+      console.log('doStartStopContainer ▶️⏹️')
+      if (row && row.pids && row.pids.instant !== 0) {
+        // Stop
+        this.doStopContainer(row)
+      } else {
+        // Start
+        this.doStartContainer(row)
+      }
+    },
+    doStopContainer (row) {
+      console.log('doStopContainer ⏹️')
+      if (row) {
+        const { containerId } = row
+        this.stopContainerOnOpenCollector(
+          {
+            caller: this,
+            apiCallParams: {
+              openCollector: { uid: this.openCollectorUid },
+              container: { uid: containerId }
+            }
+          }
+        )
+      }
+    },
+    doStartContainer (row) {
+      console.log('doStartContainer ▶️')
+      if (row) {
+        const { containerId } = row
+        console.log('doStartContainer ++')
+        this.startContainerOnOpenCollector(
+          {
+            caller: this,
+            apiCallParams: {
+              openCollector: { uid: this.openCollectorUid },
+              container: { uid: containerId }
+            }
+          }
+        )
+      }
+    },
+    doRestartContainer (row) {
       //
     },
-    doStopContainer () {
+    doExportContainerConfigurationToFile (row) {
       //
     },
-    doStartContainer () {
+    doImportContainerConfigurationFromFile (row) {
       //
     },
-    doRestartContainer () {
+    doViewContainerConfguration (row) {
+      //
+    },
+    doExportContainerLogsToFile (row) {
       //
     },
     doViewRealTimeContainerLogs (row) {
