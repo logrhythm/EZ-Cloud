@@ -112,7 +112,7 @@
                 <q-list style="min-width: 100px">
                   <q-item clickable v-close-popup
                     @click="doStartContainer(props.row)"
-                    :disable="!(props.row && props.row.pid !== 0)"
+                    :disable="(props.row && props.row.pids && props.row.pids.instant !== 0) || !!props.row.actionInProgress"
                   >
                     <q-item-section avatar>
                       <q-icon name="o_play_arrow" />
@@ -121,7 +121,7 @@
                   </q-item>
                   <q-item clickable v-close-popup
                     @click="doStopContainer(props.row)"
-                    :disable="!(props.row && props.row.pid !== 0)"
+                    :disable="!(props.row && props.row.pids && props.row.pids.instant !== 0) || !!props.row.actionInProgress"
                   >
                     <q-item-section avatar>
                       <q-icon name="o_stop" />
@@ -130,7 +130,7 @@
                   </q-item>
                   <q-item clickable v-close-popup
                     @click="doRestartContainer(props.row)"
-                    :disable="!(props.row && props.row.pid !== 0)"
+                    :disable="!(props.row && props.row.pids && props.row.pids.instant !== 0) || !!props.row.actionInProgress"
                   >
                     <q-item-section avatar>
                       <q-icon name="o_restart_alt" />
@@ -140,7 +140,7 @@
                   <q-separator />
                   <q-item clickable v-close-popup
                     @click="doExportContainerConfigurationToFile(props.row)"
-                    :disable="!(props.row && props.row.pid !== 0)"
+                    :disable="!(props.row && props.row.pids && props.row.pids.instant !== 0)"
                   >
                     <q-item-section avatar>
                       <q-icon name="o_file_download" />
@@ -149,7 +149,7 @@
                   </q-item>
                   <q-item clickable v-close-popup
                     @click="doImportContainerConfigurationFromFile(props.row)"
-                    :disable="!(props.row && props.row.pid !== 0)"
+                    :disable="!(props.row && props.row.pids && props.row.pids.instant !== 0)"
                   >
                     <q-item-section avatar>
                       <q-icon name="o_file_upload" />
@@ -158,7 +158,7 @@
                   </q-item>
                   <q-item clickable v-close-popup
                     @click="doViewContainerConfguration(props.row)"
-                    :disable="!(props.row && props.row.pid !== 0)"
+                    :disable="!(props.row && props.row.pids && props.row.pids.instant !== 0)"
                   >
                     <q-item-section avatar>
                       <q-icon name="o_source" />
@@ -168,7 +168,6 @@
                   <q-separator />
                   <q-item clickable v-close-popup
                     @click="doExportContainerLogsToFile(props.row)"
-                    :disable="!(props.row && props.row.pid !== 0)"
                   >
                     <q-item-section avatar>
                       <q-icon name="o_file_download" />
@@ -177,7 +176,6 @@
                   </q-item>
                   <q-item clickable v-close-popup
                     @click="doViewRealTimeContainerLogs(props.row)"
-                    :disable="!(props.row && props.row.pid !== 0)"
                   >
                     <q-item-section avatar>
                       <q-icon name="o_text_snippet" />
@@ -187,7 +185,13 @@
                 </q-list>
               </q-menu>
             </q-btn>
-            <q-btn flat dense :icon="(props.row && props.row.pids && props.row.pids.instant !== 0 ? 'o_stop' : 'o_play_arrow')" @click="doStartStopContainer(props.row)">
+            <q-btn
+              flat
+              dense
+              :icon="(props.row && props.row.pids && props.row.pids.instant !== 0 ? 'o_stop' : 'o_play_arrow')"
+              @click="doStartStopContainer(props.row)"
+              :loading="!!props.row.actionInProgress"
+            >
               <q-tooltip content-style="font-size: 1em">
                 {{ $t((props.row && props.row.pids && props.row.pids.instant !== 0 ? 'Stop Container' : 'Start Container')) }}
               </q-tooltip>
@@ -347,7 +351,8 @@ export default {
       activeContainerNameLogs: '', // Docker name of the container being logged right now
       alwaysScrollToBottom: true, // Shall we keep scrolling to the bottom of the Container Logs
       liveContainerLogsStage: 0, // Stage of the connection to the host
-      liveContainerLogsStageSliderVisibilityStateClass: '' // Class for the Container Logs Stage slider
+      liveContainerLogsStageSliderVisibilityStateClass: '', // Class for the Container Logs Stage slider
+      actionInProgressOnContainers: [] // Array of Docker IDs that are seeing an action in progress (Start, Stop, etc...)
     }
   },
   computed: {
@@ -433,7 +438,8 @@ export default {
               pids: {
                 instant: Number(container.PIDs),
                 past: []
-              }
+              },
+              actionInProgress: !!this.actionInProgressOnContainers[String(container.Container)]
             }
           )
         })
@@ -510,7 +516,6 @@ export default {
       }
     },
     doStartStopContainer (row) {
-      console.log('doStartStopContainer ▶️⏹️')
       if (row && row.pids && row.pids.instant !== 0) {
         // Stop
         this.doStopContainer(row)
@@ -520,38 +525,55 @@ export default {
       }
     },
     doStopContainer (row) {
-      console.log('doStopContainer ⏹️')
       if (row) {
         const { containerId } = row
+        this.actionInProgressOnContainers[String(containerId)] = true
         this.stopContainerOnOpenCollector(
           {
             caller: this,
             apiCallParams: {
               openCollector: { uid: this.openCollectorUid },
               container: { uid: containerId }
-            }
+            },
+            onSuccessCallBack: this.onContainerActionResponse,
+            onErrorCallBack: this.onContainerActionResponse
           }
         )
       }
     },
     doStartContainer (row) {
-      console.log('doStartContainer ▶️')
       if (row) {
         const { containerId } = row
-        console.log('doStartContainer ++')
+        this.actionInProgressOnContainers[String(containerId)] = true
         this.startContainerOnOpenCollector(
           {
             caller: this,
             apiCallParams: {
               openCollector: { uid: this.openCollectorUid },
               container: { uid: containerId }
-            }
+            },
+            onSuccessCallBack: this.onContainerActionResponse,
+            onErrorCallBack: this.onContainerActionResponse
           }
         )
       }
     },
     doRestartContainer (row) {
-      //
+      if (row) {
+        const { containerId } = row
+        this.actionInProgressOnContainers[String(containerId)] = true
+        this.stopContainerOnOpenCollector(
+          {
+            caller: this,
+            apiCallParams: {
+              openCollector: { uid: this.openCollectorUid },
+              container: { uid: containerId }
+            },
+            onSuccessCallBack: this.onContainerActionStopOfRestartSuccess,
+            onErrorCallBack: this.onContainerActionResponse
+          }
+        )
+      }
     },
     doExportContainerConfigurationToFile (row) {
       //
@@ -605,6 +627,30 @@ export default {
       this.killContainerLogsTail(this.activeContainerIdLogs || '')
       this.activeContainerIdLogs = ''
       this.activeContainerNameLogs = ''
+    },
+    onContainerActionResponse (payload) {
+      if (
+        payload &&
+        payload.params &&
+        payload.params.apiCallParams &&
+        payload.params.apiCallParams.container &&
+        payload.params.apiCallParams.container.uid &&
+        payload.params.apiCallParams.container.uid.length
+      ) {
+        this.actionInProgressOnContainers[String(payload.params.apiCallParams.container.uid)] = false
+      }
+    },
+    onContainerActionStopOfRestartSuccess (payload) {
+      if (
+        payload &&
+        payload.params &&
+        payload.params.apiCallParams &&
+        payload.params.apiCallParams.container &&
+        payload.params.apiCallParams.container.uid &&
+        payload.params.apiCallParams.container.uid.length
+      ) {
+        this.doStartContainer({ containerId: payload.params.apiCallParams.container.uid })
+      }
     },
     initStatsTail () {
       if (this.socket && this.socket.connected) {
