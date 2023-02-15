@@ -611,6 +611,7 @@ export default {
                   .filter((line) => String(line)
                   .includes('{'))
                   .join(',')}]`)
+                .filter(line => line.PIDs !== '--') // Filter out the dead entries that Docker Stats seems to give once the container has died
             } catch (error) {
               console.log('ERROR', error)
             }
