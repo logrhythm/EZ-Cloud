@@ -29,7 +29,8 @@
     - [x] Restart Container
     - [x] Export Configuration from LR container to file
     - [ ] Import Configuration from LR container from file
-    - [ ] View Configuration from LR container
+    - [x] View Configuration from LR container
+      - [x] Save to file from Config Viewer
     - [x] Export Logs from Container to file
     - [x] View Logs from Container in real time
 - [ ] Landing page

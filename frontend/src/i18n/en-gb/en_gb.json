@@ -649,7 +649,7 @@
   "Restart Container": "Restart Container",
   "Export Configuration to File": "Export Configuration to File",
   "Import Configuration from File": "Import Configuration from File",
-  "View Configuration": "View Configuration",
+  "View Short Configuration": "View Short Configuration",
   "Export Logs to File": "Export Logs to File",
   "View Real Time Logs": "View Real Time Logs",
   "CPU": "CPU",
@@ -670,5 +670,6 @@
   "Downloading Container log as file...": "Downloading Container log as file...",
   "Container log as file downloaded": "Container log as file downloaded",
   "Downloading Container configuration...": "Downloading Container configuration...",
-  "Container configuration downloaded": "Container configuration downloaded"
+  "Container configuration downloaded": "Container configuration downloaded",
+  "Container Short Configuration": "Container Short Configuration"
 }

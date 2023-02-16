@@ -166,7 +166,7 @@
                     <q-item-section avatar>
                       <q-icon name="o_source" />
                     </q-item-section>
-                    <q-item-section>{{ $t('View Configuration') }}</q-item-section>
+                    <q-item-section>{{ $t('View Short Configuration') }}</q-item-section>
                   </q-item>
                   <q-separator />
                   <q-item clickable v-close-popup
@@ -212,6 +212,7 @@
       </q-table>
 
     </div>
+
     <q-dialog
       v-model="showContainerLog"
       persistent
@@ -289,6 +290,56 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <q-dialog
+      v-model="showConfigurationViewer"
+      persistent
+      full-width
+    >
+      <q-card class="column">
+        <q-card-section class="row justify-between">
+          <div class="text-h6 col-auto">{{ $t('Container Short Configuration') }}</div>
+          <div class="col-auto q-gutter-x-sm">
+            <q-btn dense flat icon="close" color="grey-5" @click="showConfigurationViewer = false" />
+          </div>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section class="col self-stretch" style="height: 300px">
+          <q-input
+            v-model="configurationToView"
+            type="textarea"
+            outlined
+            readonly
+            input-class="fixed-font-console"
+            class="fixed-font full-height"
+            rows="25"
+            :loading="loadingConfigurationToView"
+          >
+            <template v-slot:after>
+              <div class="column full-height">
+                <div class="column q-gutter-y-lg">
+                  <q-btn round dense flat icon="content_copy" @click="copyToClipboard(configurationToView)" :disable="!configurationToView || (configurationToView && configurationToView.length === 0)">
+                    <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                      {{ $t('Copy to Clipboad') }}
+                    </q-tooltip>
+                  </q-btn>
+                  <q-btn round dense flat icon="o_download" @click="downloadConfigurationToViewAsFileFromViewer(configurationToView)" :disable="!configurationToView || (configurationToView && configurationToView.length === 0)">
+                    <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
+                      {{ $t('Download to file') }}
+                    </q-tooltip>
+                  </q-btn>
+                </div>
+              </div>
+            </template>
+          </q-input>
+        </q-card-section>
+        <!-- <q-inner-loading :showing="loadingConfigurationToView">
+          <q-spinner-gears size="50px" color="primary" />
+        </q-inner-loading> -->
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -355,7 +406,12 @@ export default {
       alwaysScrollToBottom: true, // Shall we keep scrolling to the bottom of the Container Logs
       liveContainerLogsStage: 0, // Stage of the connection to the host
       liveContainerLogsStageSliderVisibilityStateClass: '', // Class for the Container Logs Stage slider
-      actionInProgressOnContainers: [] // Array of Docker IDs that are seeing an action in progress (Start, Stop, etc...)
+      actionInProgressOnContainers: [], // Array of Docker IDs that are seeing an action in progress (Start, Stop, etc...)
+      loadingConfigurationToView: false, // Are we still loading the container's config?
+      configurationToView: '', // Content of the Container configuration
+      showConfigurationViewer: false, // Toggle to show the Configuration viewer Dialog
+      activeContainerIdConfig: '', // Docker ID of the container being shown the config of right now
+      activeContainerNameConfig: '' // Docker name of the container being shown the config of right now
     }
   },
   computed: {
@@ -602,15 +658,23 @@ export default {
     },
     doViewContainerConfguration (row) {
       if (row) {
-        const { containerId } = row
+        this.configurationToView = ''
+        this.showConfigurationViewer = true
+
+        const { containerId, name } = row
+        this.activeContainerIdConfig = containerId
+        this.activeContainerNameConfig = name
+
         this.getContainerConfiguration(
           {
             caller: this,
             apiCallParams: {
               uid: this.openCollectorUid,
               containerId,
-              short: ''
-            }
+              short: '' // We only want the short confiuration (not the full export)
+            },
+            loadingVariableName: 'loadingConfigurationToView',
+            targetObjectName: 'configurationToView'
           }
         )
       }
@@ -1120,8 +1184,8 @@ export default {
         }
       )
     },
-    downloadContainerConfigAsFile ({ container, value }) {
-      const fileExtension = '.configuration.txt'
+    downloadContainerConfigAsFile ({ container, value, short }) {
+      const fileExtension = `.${short === true ? 'short_' : ''}configuration.txt`
       const fileMimeType = 'text/plain'
       const fileName = 'container.' + String(container.name || '').replace(/[^-_a-zA-Z0-9]/g, '') + '_' + String(container.id || '').replace(/[^-_a-zA-Z0-9]/g, '') + fileExtension
       const notificationPopupId = this.$q.notify({
@@ -1152,6 +1216,18 @@ export default {
         })
         console.log('Error: ' + status)
       }
+    },
+    downloadConfigurationToViewAsFileFromViewer (value) {
+      this.downloadContainerConfigAsFile(
+        {
+          container: {
+            id: this.activeContainerIdConfig || '',
+            name: this.activeContainerNameConfig || ''
+          },
+          value,
+          short: true
+        }
+      )
     }
   },
   mounted () {
