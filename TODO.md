@@ -7,9 +7,11 @@
 - [x] API - Troubleshoot - Start Container
 - [x] API - Troubleshoot - Stop Container
 - [ ] ~~API - Troubleshoot - Restart Container~~ (👈 Will rely on the UI doing a Stop, then a Start)
-- [ ] API - Troubleshoot - Get Logs from Container
-- [ ] API - Troubleshoot - Export Configuration from LR container
-- [ ] API - Troubleshoot - Import Configuration from LR container
+- [x] API - Troubleshoot - Get Logs from Container
+- [x] API - Troubleshoot - Export Configuration from LR container
+  - [x] Full export (`lrctl xxx config export`)
+  - [x] Short view (`lrctl xxx config view`)
+- [x] API - Troubleshoot - Import Configuration from LR container
 - [ ] Remove depency to and remove local copy of `collectionConfigToYml()`
 - [x] Docker - Build `config/` at run time to accomodate Docker volumes
 - [x] Docker - Generate new HTTPS self-signed certificates and keys at each build

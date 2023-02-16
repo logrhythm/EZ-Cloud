@@ -2416,6 +2416,115 @@ router.get('/GetContainerLogs', async (req, res) => {
 });
 
 // #############################################
+// GetContainerConfiguration
+// #############################################
+
+router.get('/GetContainerConfiguration', async (req, res) => {
+  // Check we are ship-shape with the params
+  const missingOpenCollector = !(
+    req
+    && req.query
+    && req.query.uid
+    && req.query.uid.length
+    && getSafeUidFrom(req.query).length
+  );
+  const missingContainer = !(
+    req
+    && req.query
+    && req.query.containerId
+    && req.query.containerId.length
+    && getSafeContainerIdFrom(req.query).length
+  );
+
+  if (
+    !missingOpenCollector
+    && !missingContainer
+  ) {
+    const openCollector = { uid: getSafeUidFrom(req.query) };
+    const container = { uid: getSafeContainerIdFrom(req.query) };
+    const shortView = req.query.short !== undefined; // User is requesting a short view
+    const exportCommand = shortView ? 'view' : 'export'; // Short view or Full export
+
+    getSshConfigForCollector({ uid: openCollector.uid }).then((sshConfig) => {
+      const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
+      const responseObject = { ...JSON.parse(JSON.stringify(responseTemplate)), payload: '', exitCodes: [] };
+
+      ssh
+        // docker ps --all --filter "id=8b33e5e7519f" --format "{{ .Names }}"
+        .exec(`docker ps --all --filter "id=${container.uid}" --format "{{ .Names }}"`, {
+          err(stderr) {
+            responseObject.errors.push(stderr);
+          },
+          out(stdout) {
+            responseObject.outputs.push(stdout);
+            container.name = stdout;
+          },
+          exit(code) {
+            responseObject.exitCodes.push(code);
+            responseObject.exitCode = code;
+
+            if (code === 0 && container.name && container.name.length) {
+              let command = '';
+              const fqbn = String(container.name).trim();
+              const fqbnLowerCase = String(fqbn).toLowerCase();
+
+              if (fqbnLowerCase === 'open_collector') {
+                command = `./lrctl open-collector config ${exportCommand}`;
+              } else {
+                // ./lrctl prismacloudbeat config export --fqbn prismacloudbeat_test1
+                try {
+                  const beatType = String(fqbnLowerCase).split('_')[0];
+                  command = `./lrctl ${beatType} config ${exportCommand} --fqbn ${fqbn}`;
+                } catch (error) {
+                  responseObject.errors.push(error);
+                }
+              }
+
+              ssh.exec(command, {
+                err(stderr) {
+                  responseObject.errors.push(stderr);
+                },
+                out(stdout) {
+                  responseObject.payload += stdout;
+                  responseObject.outputs.push(stdout);
+                },
+                exit(code) {
+                  responseObject.exitCodes.push(code);
+                  responseObject.exitCode = code;
+                  responseObject.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
+                }
+              });
+            } else {
+              responseObject.errors.push('Failed to find the container with that ID.');
+            }
+          }
+        })
+        .on('end', (err) => {
+          if (err != null) {
+            responseObject.errors.push(err);
+          }
+          res.json(responseObject);
+        })
+        .start({
+          failure() {
+            responseObject.errors.push('Failed to get the container\'s configuration');
+            res.json(responseObject);
+          }
+        });
+    });
+  } else {
+    const errors = ['[GetContainerLogs] Missing parameter(s). See following errors.'];
+    if (missingOpenCollector) {
+      errors.push('Missing or malformed "openCollector" UID.');
+    }
+    if (missingContainer) {
+      errors.push('Missing or malformed "container" ID.');
+    }
+    res.json({ ...responseTemplate, errors });
+  }
+});
+
+// #############################################
 // ObfuscateSecret
 // #############################################
 
