@@ -26,11 +26,11 @@
   - [ ] Implement managing tasks
     - [x] Start Container
     - [x] Stop Container
-    - [ ] Restart Container
+    - [x] Restart Container
     - [ ] Export Configuration from LR container to file
     - [ ] Import Configuration from LR container from file
     - [ ] View Configuration from LR container
-    - [ ] Export Logs from Container to file
+    - [x] Export Logs from Container to file
     - [x] View Logs from Container in real time
 - [ ] Landing page
   - [ ] ~~Add a simple Wizard~~ (👈 low value, low priority. Might resurect if users demand)

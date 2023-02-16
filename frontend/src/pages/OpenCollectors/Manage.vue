@@ -268,7 +268,7 @@
                       {{ $t('Copy to Clipboad') }}
                     </q-tooltip>
                   </q-btn>
-                  <q-btn round dense flat icon="o_download" @click="downloadContainerLogsAsFile(containerLogs)" :disable="!containerLogs || (containerLogs && containerLogs.length === 0)">
+                  <q-btn round dense flat icon="o_download" @click="downloadContainerLogsAsFileFromLiveLogs(containerLogs)" :disable="!containerLogs || (containerLogs && containerLogs.length === 0)">
                     <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
                       {{ $t('Download to file') }}
                     </q-tooltip>
@@ -456,7 +456,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions('mainStore', ['startContainerOnOpenCollector', 'stopContainerOnOpenCollector']),
+    ...mapActions('mainStore', ['startContainerOnOpenCollector', 'stopContainerOnOpenCollector', 'getContainerLogs']),
     containerLogsFieldHeight () {
       console.log('containerLogsFieldHeight')
       console.log(JSON.stringify(this.$refs))
@@ -585,7 +585,20 @@ export default {
       //
     },
     doExportContainerLogsToFile (row) {
-      //
+      if (row) {
+        const { containerId, name } = row
+        this.getContainerLogs(
+          {
+            caller: this,
+            apiCallParams: {
+              uid: this.openCollectorUid,
+              containerId,
+              containerName: name
+            },
+            onSuccessCallBack: this.onExportContainerLogsToFileSuccess
+          }
+        )
+      }
     },
     doViewRealTimeContainerLogs (row) {
       if (this.socket && this.socket.connected) {
@@ -650,6 +663,29 @@ export default {
         payload.params.apiCallParams.container.uid.length
       ) {
         this.doStartContainer({ containerId: payload.params.apiCallParams.container.uid })
+      }
+    },
+    onExportContainerLogsToFileSuccess (payload) {
+      if (
+        payload &&
+        payload.data &&
+        payload.data.payload &&
+        payload.params &&
+        payload.params.apiCallParams &&
+        payload.params.apiCallParams.containerId && // Docker container ID
+        payload.params.apiCallParams.containerId.length &&
+        payload.params.apiCallParams.containerName && // Docker container Name
+        payload.params.apiCallParams.containerName.length
+      ) {
+        this.downloadContainerLogsAsFile(
+          {
+            container: {
+              id: payload.params.apiCallParams.containerId || '',
+              name: payload.params.apiCallParams.containerName || ''
+            },
+            value: payload.data.payload
+          }
+        )
       }
     },
     initStatsTail () {
@@ -984,10 +1020,10 @@ export default {
     copyToClipboard (value) {
       copyToClipboard(value)
     },
-    downloadContainerLogsAsFile (value) {
+    downloadContainerLogsAsFile ({ container, value }) {
       const fileExtension = '.log'
       const fileMimeType = 'text/plain'
-      const fileName = 'container.' + String(this.activeContainerNameLogs || '').replace('?', '') + '_' + this.activeContainerIdLogs + fileExtension
+      const fileName = 'container.' + String(container.name || '').replace(/[^-_a-zA-Z0-9]/g, '') + '_' + String(container.id || '').replace(/[^-_a-zA-Z0-9]/g, '') + fileExtension
       const notificationPopupId = this.$q.notify({
         icon: 'cloud_download',
         message: this.$t('Downloading Container log as file...'),
@@ -1016,6 +1052,17 @@ export default {
         })
         console.log('Error: ' + status)
       }
+    },
+    downloadContainerLogsAsFileFromLiveLogs (value) {
+      this.downloadContainerLogsAsFile(
+        {
+          container: {
+            id: this.activeContainerIdLogs || '',
+            name: this.activeContainerNameLogs || ''
+          },
+          value
+        }
+      )
     }
   },
   mounted () {
