@@ -22,6 +22,8 @@ import collectionMethodTemplatesKafkabeat from './templates/collectionMethodTemp
 // EventHub
 import collectionMethodTemplatesEventHubbeatDefault from './templates/collectionMethodTemplate.eventhubbeat.default.mapping'
 import collectionMethodTemplatesEventHubbeatCustom from './templates/collectionMethodTemplate.eventhubbeat.custom.mapping'
+// PrismaCloud
+import collectionMethodTemplatesPrismacloudbeat from './templates/collectionMethodTemplate.prismacloudbeat'
 
 export default function () {
   return {
@@ -52,7 +54,8 @@ export default function () {
       collectionMethodTemplatesPubSubbeat, // pubsubbeat
       collectionMethodTemplatesKafkabeat, // kafkabeat
       collectionMethodTemplatesEventHubbeatDefault, // eventhubbeat - With default mapping
-      collectionMethodTemplatesEventHubbeatCustom // eventhubbeat - With custom mapping
+      collectionMethodTemplatesEventHubbeatCustom, // eventhubbeat - With custom mapping
+      collectionMethodTemplatesPrismacloudbeat // prismacloudbeat
     ], // collectionMethodTemplates
     collectionShippersOptions: [
       {
@@ -77,6 +80,12 @@ export default function () {
         value: 'kafkabeat',
         label: 'LogRhythm Kafka Beat',
         icon: 'logrhythm-kafkabeat',
+        outputFormat: 'yaml'
+      },
+      {
+        value: 'prismacloudbeat',
+        label: 'LogRhythm Prisma Cloud Beat',
+        icon: 'logrhythm-prismacloudbeat',
         outputFormat: 'yaml'
       },
       {
@@ -160,6 +169,12 @@ export default function () {
         // icon: 'logrhythm'
       },
       {
+        value: 'prismacloudbeat',
+        label: 'prismacloudbeat',
+        icon: 'logrhythm-prismacloudbeat'
+        // icon: 'logrhythm'
+      },
+      {
         value: 'pubsubbeat',
         label: 'pubsubbeat',
         icon: 'logrhythm-pubsubbeat'
@@ -225,6 +240,12 @@ export default function () {
         shipper: 'kafkabeat',
         value: 'kafkabeat',
         label: 'Kafka',
+        icon: 'o_language'
+      },
+      {
+        shipper: 'prismacloudbeat',
+        value: 'prismacloudbeat',
+        label: 'Prisma Cloud',
         icon: 'o_language'
       },
       {
