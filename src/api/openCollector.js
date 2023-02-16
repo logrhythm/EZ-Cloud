@@ -17,7 +17,7 @@ const { lrObfuscateSecret } = require('../shared/crypto');
 const { logToSystem } = require('../shared/systemLogging');
 
 // Load the Sanitisation function(s)
-const { getSafeUidFrom } = require('../shared/sanitiser');
+const { getSafeUidFrom, getSafeContainerIdFrom } = require('../shared/sanitiser');
 
 function waitMilliseconds(delay = 250) {
   return new Promise((resolve) => {
@@ -2339,6 +2339,77 @@ router.post('/StopContainer', async (req, res) => {
     }
     if (missingContainer) {
       errors.push('Missing or malformed "container" object.');
+    }
+    res.json({ ...responseTemplate, errors });
+  }
+});
+
+// #############################################
+// GetContainerLogs
+// #############################################
+
+router.get('/GetContainerLogs', async (req, res) => {
+  // Check we are ship-shape with the params
+  const missingOpenCollector = !(
+    req
+    && req.query
+    && req.query.uid
+    && req.query.uid.length
+    && getSafeUidFrom(req.query).length
+  );
+  const missingContainer = !(
+    req
+    && req.query
+    && req.query.containerId
+    && req.query.containerId.length
+    && getSafeContainerIdFrom(req.query).length
+  );
+
+  if (
+    !missingOpenCollector
+    && !missingContainer
+  ) {
+    const openCollector = { uid: getSafeUidFrom(req.query) };
+    const container = { uid: getSafeContainerIdFrom(req.query) };
+
+    getSshConfigForCollector({ uid: openCollector.uid }).then((sshConfig) => {
+      const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
+      const responseObject = { ...JSON.parse(JSON.stringify(responseTemplate)), payload: '' };
+
+      ssh
+        .exec(`docker logs "${container.uid}" 2>&1 | cat`, {
+          err(stderr) {
+            responseObject.errors.push(stderr);
+          },
+          out(stdout) {
+            responseObject.payload += stdout;
+            // responseObject.outputs.push(stdout);
+          },
+          exit(code) {
+            responseObject.exitCode = code;
+            responseObject.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
+          }
+        })
+        .on('end', (err) => {
+          if (err != null) {
+            responseObject.errors.push(err);
+          }
+          res.json(responseObject);
+        })
+        .start({
+          failure() {
+            responseObject.errors.push('Failed to container\'s logs');
+            res.json(responseObject);
+          }
+        });
+    });
+  } else {
+    const errors = ['[GetContainerLogs] Missing parameter(s). See following errors.'];
+    if (missingOpenCollector) {
+      errors.push('Missing or malformed "openCollector" UID.');
+    }
+    if (missingContainer) {
+      errors.push('Missing or malformed "container" ID.');
     }
     res.json({ ...responseTemplate, errors });
   }
