@@ -357,6 +357,28 @@ export default function () {
         version: '20220803.01'
       }
     ],
-    latestNews: [] // For the News feed of the Landing Page (Welcome)
+    latestNews: [], // For the News feed of the Landing Page (Welcome)
+    logRhythmContainersWithConfig: [
+      'carbonblackcloudbeat_',
+      'ciscoampbeat_',
+      'duobeat_',
+      'eventhubbeat_',
+      'genericbeat_',
+      'gmtbeat_',
+      'gsbeat_',
+      'kafkabeat_',
+      'metrics_', // Not a Beat
+      'msgraphbeat_',
+      'oktabeat_',
+      'open_collector', // Not a Beat
+      'prismacloudbeat_',
+      'proofpointbeat_',
+      'pubsubbeat_',
+      'qualysfimbeat_',
+      's3beat_',
+      'sophoscentralbeat_',
+      'symantecwssbeat_',
+      'webhookbeat_'
+    ]
   }
 }

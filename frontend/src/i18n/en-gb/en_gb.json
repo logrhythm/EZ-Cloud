@@ -665,5 +665,10 @@
   "No Container to display.": "No Container to display.",
   "Containers per page:": "Containers per page:",
   "Stopped": "Stopped",
-  "Container Logs": "Container Logs"
+  "Container Logs": "Container Logs",
+  "Download to file": "Download to file",
+  "Downloading Container log as file...": "Downloading Container log as file...",
+  "Container log as file downloaded": "Container log as file downloaded",
+  "Downloading Container configuration...": "Downloading Container configuration...",
+  "Container configuration downloaded": "Container configuration downloaded"
 }

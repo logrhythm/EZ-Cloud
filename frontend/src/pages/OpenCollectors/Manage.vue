@@ -121,8 +121,11 @@
                   </q-item>
                   <q-item clickable v-close-popup
                     @click="doStopContainer(props.row)"
-                    :disable="!(props.row && props.row.pids && props.row.pids.instant !== 0) || !!props.row.actionInProgress"
+                    :disable="!!props.row.actionInProgress"
                   >
+                  <!-- Allowing to stop containers that show as Stopped already. -->
+                  <!-- As the "Stopped" status is derived from the number of PIDs, -->
+                  <!-- and that a container that is stuck in "Restarting" mode will have zero, thus wrongly showing as "Stopped". -->
                     <q-item-section avatar>
                       <q-icon name="o_stop" />
                     </q-item-section>
@@ -140,7 +143,7 @@
                   <q-separator />
                   <q-item clickable v-close-popup
                     @click="doExportContainerConfigurationToFile(props.row)"
-                    :disable="!(props.row && props.row.pids && props.row.pids.instant !== 0)"
+                    :disable="!(props.row && props.row.logRhythmContainerWithConfig)"
                   >
                     <q-item-section avatar>
                       <q-icon name="o_file_download" />
@@ -149,7 +152,7 @@
                   </q-item>
                   <q-item clickable v-close-popup
                     @click="doImportContainerConfigurationFromFile(props.row)"
-                    :disable="!(props.row && props.row.pids && props.row.pids.instant !== 0)"
+                    :disable="!(props.row && props.row.logRhythmContainerWithConfig)"
                   >
                     <q-item-section avatar>
                       <q-icon name="o_file_upload" />
@@ -158,7 +161,7 @@
                   </q-item>
                   <q-item clickable v-close-popup
                     @click="doViewContainerConfguration(props.row)"
-                    :disable="!(props.row && props.row.pids && props.row.pids.instant !== 0)"
+                    :disable="!(props.row && props.row.logRhythmContainerWithConfig)"
                   >
                     <q-item-section avatar>
                       <q-icon name="o_source" />
@@ -290,7 +293,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
@@ -356,6 +359,7 @@ export default {
     }
   },
   computed: {
+    ...mapState('mainStore', ['logRhythmContainersWithConfig']),
     breadCrumbs () {
       return [
         {
@@ -439,7 +443,10 @@ export default {
                 instant: Number(container.PIDs),
                 past: []
               },
-              actionInProgress: !!this.actionInProgressOnContainers[String(container.Container)]
+              // Flag if this container is already flagged as being done an action onto
+              actionInProgress: !!this.actionInProgressOnContainers[String(container.Container)],
+              // Flag if this container is a LogRhythm container with a configuration
+              logRhythmContainerWithConfig: !!this.logRhythmContainersWithConfig.filter(lcwc => String(container.Name).trim().startsWith(lcwc)).length
             }
           )
         })
@@ -456,7 +463,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions('mainStore', ['startContainerOnOpenCollector', 'stopContainerOnOpenCollector', 'getContainerLogs']),
+    ...mapActions('mainStore', ['startContainerOnOpenCollector', 'stopContainerOnOpenCollector', 'getContainerLogs', 'getContainerConfiguration']),
     containerLogsFieldHeight () {
       console.log('containerLogsFieldHeight')
       console.log(JSON.stringify(this.$refs))
@@ -576,13 +583,37 @@ export default {
       }
     },
     doExportContainerConfigurationToFile (row) {
-      //
+      if (row) {
+        const { containerId } = row
+        this.getContainerConfiguration(
+          {
+            caller: this,
+            apiCallParams: {
+              uid: this.openCollectorUid,
+              containerId
+            },
+            onSuccessCallBack: this.onExportContainerConfigurationToFileSuccess
+          }
+        )
+      }
     },
     doImportContainerConfigurationFromFile (row) {
       //
     },
     doViewContainerConfguration (row) {
-      //
+      if (row) {
+        const { containerId } = row
+        this.getContainerConfiguration(
+          {
+            caller: this,
+            apiCallParams: {
+              uid: this.openCollectorUid,
+              containerId,
+              short: ''
+            }
+          }
+        )
+      }
     },
     doExportContainerLogsToFile (row) {
       if (row) {
@@ -688,6 +719,30 @@ export default {
         )
       }
     },
+    onExportContainerConfigurationToFileSuccess (payload) {
+      if (
+        payload &&
+        payload.data &&
+        payload.data.payload &&
+        payload.data.outputs &&
+        Array.isArray(payload.data.outputs) &&
+        payload.data.outputs.length && // Needed to get the name of the Container
+        payload.params &&
+        payload.params.apiCallParams &&
+        payload.params.apiCallParams.containerId && // Docker container ID
+        payload.params.apiCallParams.containerId.length
+      ) {
+        this.downloadContainerConfigAsFile(
+          {
+            container: {
+              id: payload.params.apiCallParams.containerId || '',
+              name: payload.data.outputs[0] || ''
+            },
+            value: payload.data.payload
+          }
+        )
+      }
+    },
     initStatsTail () {
       if (this.socket && this.socket.connected) {
         this.socket.emit('statsTail.init', { openCollectorUid: this.openCollectorUid })
@@ -729,7 +784,8 @@ export default {
           payload.code === 'STDOUT' &&
           payload.payload
         ) {
-          const cleanPayload = String(payload.payload).replace('\u001b[2J\u001b[H', '') || ''
+          // const cleanPayload = String(payload.payload).replace('\u001b[2J\u001b[H', '') || ''
+          const cleanPayload = String(payload.payload).replace(/^[^{]*/, '') || ''
           if (cleanPayload.includes('{')) {
             try {
               this.containersListRaw = JSON.parse(`[${
@@ -1063,6 +1119,39 @@ export default {
           value
         }
       )
+    },
+    downloadContainerConfigAsFile ({ container, value }) {
+      const fileExtension = '.configuration.txt'
+      const fileMimeType = 'text/plain'
+      const fileName = 'container.' + String(container.name || '').replace(/[^-_a-zA-Z0-9]/g, '') + '_' + String(container.id || '').replace(/[^-_a-zA-Z0-9]/g, '') + fileExtension
+      const notificationPopupId = this.$q.notify({
+        icon: 'cloud_download',
+        message: this.$t('Downloading Container configuration...'),
+        caption: fileName,
+        type: 'ongoing'
+      })
+
+      // Push file out
+      const status = exportFile(fileName, value || '', fileMimeType)
+
+      if (status === true) {
+        notificationPopupId({
+          type: 'positive',
+          color: 'positive',
+          icon: 'check',
+          message: this.$t('Container configuration downloaded'),
+          caption: fileName
+        })
+      } else {
+        notificationPopupId({
+          type: 'negative',
+          color: 'negative',
+          icon: 'o_report_problem',
+          message: this.$t('Problem while downloading Container configuration:'),
+          caption: status
+        })
+        console.log('Error: ' + status)
+      }
     }
   },
   mounted () {

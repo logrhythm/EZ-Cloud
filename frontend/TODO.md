@@ -27,7 +27,7 @@
     - [x] Start Container
     - [x] Stop Container
     - [x] Restart Container
-    - [ ] Export Configuration from LR container to file
+    - [x] Export Configuration from LR container to file
     - [ ] Import Configuration from LR container from file
     - [ ] View Configuration from LR container
     - [x] Export Logs from Container to file
