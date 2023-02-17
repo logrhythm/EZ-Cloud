@@ -6,7 +6,6 @@ const fs = require('fs');
 const path = require('path');
 
 // Import shared libraries
-const { collectionConfigToYml } = require('../../shared/collectionConfigToYml');
 const { collectionConfigToJson } = require('../../shared/collectionConfigToJson');
 const { getCollectorSshConfigForPipeline } = require('../../shared/collectorSshConfig');
 const { logToSystem } = require('../../shared/systemLogging');
