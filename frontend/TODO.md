@@ -56,7 +56,8 @@
   - [ ] Title for Pipeline Properties
   - [ ] Title for Pipeline Collection Builder
   - [ ] Breadcrumbs
-- [ ] Shippers iconds - Replace old LogRhythm logo with current one
+- [x] Shippers icons - Replace old LogRhythm logo with current one
+- [ ] Fix issue #40 - [FR] Offer to extract the `.log` field the same way the `.message` can be
 ## TO TEST
 
 ### Target: v1.0
