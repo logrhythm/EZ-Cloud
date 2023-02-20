@@ -20,8 +20,8 @@
 - Add support for new LogRhythm Beats via `logrhythmBeat` in `pipeline.options.identificationStyle[]`
   - [x] Tail - Initialise Tail
   - [x] Tail - Kill and clean shipper
-  - [ ] Deploy Pipeline
-  - [ ] Undeploy Pipeline
+  - [x] Deploy Pipeline
+  - [x] Undeploy Pipeline
 
 ## TO FIX
 - [x] Fix #38 - Some clients send SQL port as string

@@ -1110,10 +1110,13 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
           });
         }
 
+        // Get a clean Beat name
+        const beatNameLowerCase = beat.name.trim().toLowerCase();
+
         // ##########
         // Filebeat
         // ##########
-        if (beat.name.toLowerCase() === 'filebeat') {
+        if (beatNameLowerCase === 'filebeat') {
           // Build the list of steps
 
           steps.push(
@@ -1173,7 +1176,7 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
         // ##########
         // jsBeat
         // ##########
-        if (beat.name.toLowerCase() === 'jsbeat') {
+        if (beatNameLowerCase === 'jsbeat') {
           // Build a unique path to use a Symbolic link to the installation folder of jsBeat
           // Most people will deploy it under /opt/jsBeat, but we plan for all the cases
           const cleanTimestamp = new Date().toISOString().replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -1250,15 +1253,19 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
         // LogRhythm Beats (genericbeat, webhookbeat, s3beat, ...)
         // ##########
         if (
-          beat.name.toLowerCase() === 'genericbeat'
-          || beat.name.toLowerCase() === 'webhookbeat'
-          || beat.name.toLowerCase() === 's3beat'
-          || beat.name.toLowerCase() === 'pubsubbeat'
-          || beat.name.toLowerCase() === 'kafkabeat'
-          || beat.name.toLowerCase() === 'eventhubbeat'
+          ( // Is it a standard LogRhythm Beat?
+            stream.options
+            && stream.options.identificationStyle
+            && Array.isArray(stream.options.identificationStyle)
+            && stream.options.identificationStyle.includes('logrhythmBeat')
+          )
+          || beatNameLowerCase === 'genericbeat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
+          || beatNameLowerCase === 'webhookbeat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
+          || beatNameLowerCase === 's3beat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
+          || beatNameLowerCase === 'pubsubbeat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
+          || beatNameLowerCase === 'kafkabeat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
+          || beatNameLowerCase === 'eventhubbeat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
         ) {
-          const beatNameLowerCase = beat.name.toLowerCase();
-
           // logrhythmShipperBaseConfig
           // Build the list of steps
           // Configuration volume name for Beat
@@ -1388,7 +1395,8 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
                   streamUpdateForBeatStatus.errors.push(`Step ${stepCounter} failed with return code (${code}) - Command was: ${step.command}`);
                   streamUpdateForBeatStatus.payload.steps[stepCounter].result.failed = true;
                   continueToNextStep = false;
-                  // Set the whole job as failed, except if we are meant to continueOnFailure for this step
+                  // Set the whole job as failed, except if
+                  // we are meant to continueOnFailure for this step
                   streamUpdateForBeatStatus.payload.success = !!(false | step.continueOnFailure);
                 } // if (code !== 0) {
 
@@ -1594,6 +1602,9 @@ function deleteStreamConfigurationForBeat(
           }`
         );
 
+        // Get a clean Beat name
+        const beatNameLowerCase = beat.name.trim().toLowerCase();
+
         // To avoid any risk of deleting unrelated files, we bail if the configFileNameBase is empty
         if (configFileNameBase.length === 0) {
           throw new Error('configFileNameBase too short (Stream Name and UID must be non-empty)');
@@ -1602,7 +1613,7 @@ function deleteStreamConfigurationForBeat(
         // ##########
         // Filebeat
         // ##########
-        if (beat.name.toLowerCase() === 'filebeat') {
+        if (beatNameLowerCase === 'filebeat') {
           // Build the list of steps
 
           steps.push(
@@ -1629,7 +1640,7 @@ function deleteStreamConfigurationForBeat(
         // ##########
         // jsBeat
         // ##########
-        if (beat.name.toLowerCase() === 'jsbeat') {
+        if (beatNameLowerCase === 'jsbeat') {
           // Build a unique path to use a Symbolic link to the installation folder of jsBeat
           // Most people will deploy it under /opt/jsBeat, but we plan for all the cases
           const cleanTimestamp = new Date().toISOString().replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -1673,12 +1684,16 @@ function deleteStreamConfigurationForBeat(
         // LogRhythm Beats (genericbeat, webhookbeat, s3beat)
         // ##########
         if (
-          beat.name.toLowerCase() === 'genericbeat'
-          || beat.name.toLowerCase() === 'webhookbeat'
-          || beat.name.toLowerCase() === 's3beat'
+          ( // Is it a standard LogRhythm Beat?
+            stream.options
+            && stream.options.identificationStyle
+            && Array.isArray(stream.options.identificationStyle)
+            && stream.options.identificationStyle.includes('logrhythmBeat')
+          )
+          || beatNameLowerCase === 'genericbeat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
+          || beatNameLowerCase === 'webhookbeat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
+          || beatNameLowerCase === 's3beat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
         ) {
-          const beatNameLowerCase = beat.name.toLowerCase();
-
           steps.push(
             {
               action: `Stop ${beat.name} instance (${logRhythmFullyQualifiedBeatName})`,
