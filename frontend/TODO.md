@@ -15,8 +15,11 @@
   - [ ] Action buttons style
   - [x] Marketplace Template listing as Cards
 - [ ] LogRhythm Beats mapping for Collection Configuration
-  - [ ] Prisma Cloud
+  - [x] Prisma Cloud
   - [ ] ...
+- [x] Add support for new LogRhythm Beats via `logrhythmBeat` in `pipeline.options.identificationStyle[]`
+  - [x] In Tail
+  - [x] In Deploy
 - [ ] Error reporting card to deal with many errors
   - [ ] Deduplicate error messages
 - [ ] Admin - MS SQL - Add Test button

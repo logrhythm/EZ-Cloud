@@ -874,7 +874,8 @@ export default {
                     // ? this.buildJqTransformFromParams(caller.pipeline.uid, caller.pipeline.name, caller.beatName, caller.loggedInUser, false /* Hardcoding extractMessageFieldOnly */, (caller.pipeline.fieldsMapping || []))
                     ? this.buildJqTransformFromParams(caller.pipeline.uid, caller.pipeline.name, caller.beatName, caller.loggedInUser, (caller.pipeline.options && caller.pipeline.options.extractMessageFieldOnly === true), (caller.pipeline.fieldsMapping || []))
                     : undefined
-                )
+                ),
+                options: caller.pipeline.options || {}
               }
             }
 
