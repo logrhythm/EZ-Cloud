@@ -388,7 +388,7 @@ export default function () {
       'gmtbeat_',
       'gsbeat_',
       'kafkabeat_',
-      'metrics_', // Not a Beat
+      'metrics', // Not a Beat
       'msgraphbeat_',
       'oktabeat_',
       'open_collector', // Not a Beat
