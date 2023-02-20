@@ -15,6 +15,7 @@
   - [ ] Action buttons style
   - [x] Marketplace Template listing as Cards
 - [ ] LogRhythm Beats mapping for Collection Configuration
+  - [ ] Prisma Cloud
   - [ ] ...
 - [ ] Error reporting card to deal with many errors
   - [ ] Deduplicate error messages
@@ -55,6 +56,7 @@
   - [ ] Title for Pipeline Properties
   - [ ] Title for Pipeline Collection Builder
   - [ ] Breadcrumbs
+- [ ] Shippers iconds - Replace old LogRhythm logo with current one
 ## TO TEST
 
 ### Target: v1.0

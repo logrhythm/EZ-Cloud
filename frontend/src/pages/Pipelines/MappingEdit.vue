@@ -1504,7 +1504,7 @@ export default {
     initTail () {
       if (this.socket && this.socket.connected) {
         const collectionConfigYml = collectionConfigToYml(this.pipeline.collectionConfig)
-        this.socket.emit('tail.init', { pipelineUid: this.pipelineUid, tailId: this.pipelineUid, collectionConfig: this.pipeline.collectionConfig, collectionConfigYml })
+        this.socket.emit('tail.init', { pipelineUid: this.pipelineUid, tailId: this.pipelineUid, collectionConfig: this.pipeline.collectionConfig, collectionConfigYml, options: this.pipeline.options })
       }
     },
 

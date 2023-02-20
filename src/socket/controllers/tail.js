@@ -6,7 +6,6 @@ const fs = require('fs');
 const path = require('path');
 
 // Import shared libraries
-const { collectionConfigToYml } = require('../../shared/collectionConfigToYml');
 const { collectionConfigToJson } = require('../../shared/collectionConfigToJson');
 const { getCollectorSshConfigForPipeline } = require('../../shared/collectorSshConfig');
 const { logToSystem } = require('../../shared/systemLogging');
@@ -196,12 +195,18 @@ async function tailInit(socket, payload) {
               }
             });
         } else if (
-          payload.collectionConfig.collectionShipper === 'genericbeat'
-          || payload.collectionConfig.collectionShipper === 'webhookbeat'
-          || payload.collectionConfig.collectionShipper === 's3beat'
-          || payload.collectionConfig.collectionShipper === 'pubsubbeat'
-          || payload.collectionConfig.collectionShipper === 'kafkabeat'
-          || payload.collectionConfig.collectionShipper === 'eventhubbeat'
+          ( // Is it a standard LogRhythm Beat?
+            payload.options
+            && payload.options.identificationStyle
+            && Array.isArray(payload.options.identificationStyle)
+            && payload.options.identificationStyle.includes('logrhythmBeat')
+          )
+          || payload.collectionConfig.collectionShipper === 'genericbeat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
+          || payload.collectionConfig.collectionShipper === 'webhookbeat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
+          || payload.collectionConfig.collectionShipper === 's3beat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
+          || payload.collectionConfig.collectionShipper === 'pubsubbeat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
+          || payload.collectionConfig.collectionShipper === 'kafkabeat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
+          || payload.collectionConfig.collectionShipper === 'eventhubbeat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
         ) {
           // Get a clean Beat name
           const beatName = payload.collectionConfig.collectionShipper.toLowerCase().trim();
@@ -274,6 +279,9 @@ async function tailInit(socket, payload) {
                 // console.log('STDERR:::' + stderr);
                 if (socket.connected) {
                   socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+                  if (String(stderr).match(/unknown command "[^"]*" for "lrctl"/)) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'ERROR', payload: '❌ Tail failed due to LRCTL too old for this Beat.' });
+                  }
                 }
               },
               exit(code) {
@@ -594,8 +602,24 @@ async function tailInit(socket, payload) {
                 if (socket.connected) {
                   socket.emit('tail.log', { tailId: payload.tailId, code: 'FAILURE' });
                 }
+
+                // Remove the tail entry
+                // eslint-disable-next-line no-use-before-define
+                setTimeout(tailKill, 500, socket, payload);
               }
             });
+        } else {
+          // Doing nothing
+          if (socket.connected) {
+            socket.emit('tail.log', { tailId: payload.tailId, code: 'ERROR', payload: '❌ Tail failed to start due to missing or unrecognised Beat. Go to the Collection configuration editor, hit Save and try to run this Tail again.' });
+            socket.emit('tail.log', { tailId: payload.tailId, code: 'EXIT', payload: 1 });
+            socket.emit('tail.log', { tailId: payload.tailId, code: 'END', payload: 'Tail failed to start.' });
+          }
+          logToSystem('Warning', 'tailInit - Tail failed to start due to missing or unrecognised Beat.');
+
+          // Remove the tail entry
+          // eslint-disable-next-line no-use-before-define
+          setTimeout(tailKill, 500, socket, payload);
         }
       } else {
         if (socket.connected) {
@@ -608,7 +632,7 @@ async function tailInit(socket, payload) {
     } else {
       // The tailId does already exist
       if (socket.connected) {
-        socket.emit('tail.log', { tailId: payload.tailId, code: 'ERROR', payload: '❌ Tail failed to start due to another Tail with the same tailId already exists.' });
+        socket.emit('tail.log', { tailId: payload.tailId, code: 'ERROR', payload: '❌ Tail failed to start due to another Tail with the same tailId already exists. Try again in a few seconds, or close the other Tail for this Pipeline.' });
         socket.emit('tail.log', { tailId: payload.tailId, code: 'EXIT', payload: 1 });
         socket.emit('tail.log', { tailId: payload.tailId, code: 'END', payload: 'Tail failed to start.' });
       }
@@ -634,8 +658,14 @@ function tailKill(socket, payload) {
   ) {
     // Check the tailId exists
     if (tails[payload.tailId]) {
-      tails[payload.tailId].end();
-      tails[payload.tailId] = null;
+      try {
+        tails[payload.tailId].end();
+      } finally {
+        tails[payload.tailId] = null;
+      }
+      if (socket.connected) {
+        socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🧹 Tail record cleaned. Ready to run a Tail for the same Pipeline again.' });
+      }
     }
   }
 } // tailKill
@@ -899,6 +929,8 @@ async function tailKillShipper(socket, payload) {
               if (socket.connected) {
                 socket.emit('tail.kill', { tailId: payload.tailId, code: 'END', payload: err });
               }
+              // Remove the tail entry
+              tails[payload.tailId] = null;
             })
             .start({
               failure() {
@@ -906,6 +938,8 @@ async function tailKillShipper(socket, payload) {
                 if (socket.connected) {
                   socket.emit('tail.kill', { tailId: payload.tailId, code: 'FAILURE' });
                 }
+                // Remove the tail entry
+                tails[payload.tailId] = null;
               }
             });
         }

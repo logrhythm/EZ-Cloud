@@ -267,7 +267,8 @@ export default {
         status: 'New', // New, Dev, Ready
         primaryOpenCollector: '', // UID of the main OC
         fieldsMapping: [],
-        collectionConfig: {}
+        collectionConfig: {},
+        options: {}
       })
     },
     collectionMethodTemplate () {
@@ -360,6 +361,7 @@ export default {
       }
     },
     save () {
+      console.log(this.template)
       this.needsSaving = false
       this.upsertPipeline(
         {
@@ -369,7 +371,8 @@ export default {
           {
             uid: this.pipelineUid,
             status: (this.pipeline && this.pipeline.status && this.pipeline.status === 'Ready' ? this.pipeline.status : 'Dev'),
-            collectionConfig: JSON.parse(JSON.stringify(this.collectionConfig))
+            collectionConfig: JSON.parse(JSON.stringify(this.collectionConfig)),
+            options: { ...(this.pipeline.options || {}), identificationStyle: (this.collectionMethodTemplate && this.collectionMethodTemplate.identificationStyle ? this.collectionMethodTemplate.identificationStyle : []) }
           }
         }
       )
