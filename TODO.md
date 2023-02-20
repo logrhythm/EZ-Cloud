@@ -16,7 +16,12 @@
 - [x] Docker - Build `config/` at run time to accomodate Docker volumes
 - [x] Docker - Generate new HTTPS self-signed certificates and keys at each build
 - [x] Socket - Docker Stats Tail
-- [ ] Socket - Troubleshoot - Docker live Logs from container
+- [x] Socket - Troubleshoot - Docker live Logs from container
+- Add support for new LogRhythm Beats via `logrhythmBeat` in `pipeline.options.identificationStyle[]`
+  - [x] Tail - Initialise Tail
+  - [x] Tail - Kill and clean shipper
+  - [ ] Deploy Pipeline
+  - [ ] Undeploy Pipeline
 
 ## TO FIX
 - [x] Fix #38 - Some clients send SQL port as string
