@@ -2483,8 +2483,8 @@ router.get('/GetContainerConfiguration', async (req, res) => {
               const fqbn = String(container.name).trim();
               const fqbnLowerCase = String(fqbn).toLowerCase();
 
-              if (fqbnLowerCase === 'open_collector') {
-                command = `./lrctl open-collector config ${exportCommand}`;
+              if (fqbnLowerCase === 'open_collector' || fqbnLowerCase === 'metrics') {
+                command = `./lrctl ${fqbnLowerCase === 'open_collector' ? 'open-collector' : fqbnLowerCase} config ${exportCommand}`;
               } else {
                 // ./lrctl prismacloudbeat config export --fqbn prismacloudbeat_test1
                 try {
