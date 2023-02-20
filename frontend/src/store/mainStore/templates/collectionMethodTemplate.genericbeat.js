@@ -23,6 +23,10 @@ export default {
     cursor_header_type: 'custom_header'
   },
   identificationStyle: ['logrhythmBeat'],
+  options: {
+    extractPayloadFieldOnly: false,
+    payloadField: 'response'
+  },
   definition: [
     // Required
     {

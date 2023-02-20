@@ -9,6 +9,10 @@
 export default {
   shipper: 'jsBeat', // https://github.com/TonyMasse/jsBeat
   collectionMethod: 'flatFile',
+  options: {
+    extractPayloadFieldOnly: true,
+    payloadField: 'message'
+  },
   definition: [
     {
       name: 'baseDirectoryPath',

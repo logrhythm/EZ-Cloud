@@ -21,6 +21,10 @@ export default {
     heartbeatinterval: 60
   },
   identificationStyle: ['logrhythmBeat'],
+  options: {
+    extractPayloadFieldOnly: true,
+    payloadField: 'log'
+  },
   definition: [
     // Required
     {
