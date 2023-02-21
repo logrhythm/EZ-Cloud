@@ -1,0 +1,1 @@
+[dir=ltr] .fadeOutOnce,[dir=rtl] .fadeOutOnce{animation-name:fadeOutOnce;animation-duration:4s;animation-fill-mode:forwards}@keyframes fadeOutOnce{0%{opacity:1}50%{opacity:1}to{opacity:0}}[dir=ltr] .fadeInOnce,[dir=rtl] .fadeInOnce{animation-name:fadeInOnce;animation-duration:0.5s;animation-fill-mode:forwards}@keyframes fadeInOnce{0%{opacity:0}10%{opacity:0.5}to{opacity:1}}
