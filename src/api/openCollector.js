@@ -2543,6 +2543,139 @@ router.get('/GetContainerConfiguration', async (req, res) => {
 });
 
 // #############################################
+// UpdateLogRhythmContainerConfiguration
+// #############################################
+
+router.post('/UpdateLogRhythmContainerConfiguration', async (req, res) => {
+  // Check we are ship-shape with the params
+  const missingOpenCollector = !(
+    req
+    && req.body
+    && req.body.openCollector
+    && req.body.openCollector.uid
+    && req.body.openCollector.uid.length
+  );
+  const missingContainer = !(
+    req
+    && req.body
+    && req.body.container
+    && req.body.container.uid
+    && req.body.container.uid.length
+  );
+  const missingFileContent = !(
+    req
+    && req.body
+    && req.body.fileContentBase64
+    && req.body.fileContentBase64.length
+  );
+
+  if (
+    !missingOpenCollector
+    && !missingContainer
+    && !missingFileContent
+  ) {
+    const { openCollector, container, fileContentBase64 } = req.body;
+
+    getSshConfigForCollector({ uid: openCollector.uid }).then((sshConfig) => {
+      const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
+      const responseObject = {
+        ...JSON.parse(JSON.stringify(responseTemplate)),
+        payload: [],
+        exitCodes: []
+      };
+
+      // fileContentBase64 is Base64 encoded.
+      let fileContentBinary = '';
+      try {
+        fileContentBinary = Buffer.from(fileContentBase64, 'base64').toString('latin1');
+      } catch (error) {
+        responseObject.errors.push(`Failed to Base64 decode fileContentBase64. Mode information: ${error.message || ''}`);
+      }
+      console.log(fileContentBinary); // XXXX
+
+      ssh
+      // First get the full name of the container from its ID
+        .exec(`docker ps --all --filter "id=${container.uid}" --format "{{ .Names }}"`, {
+          in: fileContentBinary || '',
+          err(stderr) {
+            responseObject.errors.push(stderr);
+          },
+          out(stdout) {
+            responseObject.outputs.push(stdout);
+            container.name = stdout;
+          },
+          exit(code) {
+            responseObject.exitCodes.push(code);
+            responseObject.exitCode = code;
+
+            if (code === 0 && container.name && container.name.length) {
+              const fqbn = String(container.name).trim();
+              const fqbnLowerCase = String(fqbn).toLowerCase();
+              let command = '';
+              if (fqbnLowerCase === 'open_collector' || fqbnLowerCase === 'metrics') {
+                command = `cat | ./lrctl ${fqbnLowerCase === 'open_collector' ? 'open-collector' : fqbnLowerCase} config import`;
+              } else {
+                // ./lrctl prismacloudbeat config export --fqbn prismacloudbeat_test1
+                try {
+                  const beatType = String(fqbnLowerCase).split('_')[0];
+                  command = `cat | ./lrctl ${beatType} config import --fqbn ${fqbn}`;
+                } catch (error) {
+                  responseObject.errors.push(error);
+                }
+              }
+console.log(command); // XXXX
+              ssh.exec(command, {
+                err(stderr) {
+                  console.log(stderr); // XXXX
+                  responseObject.errors.push(stderr);
+                },
+                out(stdout) {
+                  console.log(stdout); // XXXX
+                  responseObject.payload += stdout;
+                  responseObject.outputs.push(stdout);
+                },
+                exit(inner_code) {
+                  console.log(inner_code); // XXXX
+                  responseObject.exitCodes.push(inner_code);
+                  responseObject.exitCode = inner_code;
+                  responseObject.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
+                }
+              });
+            } else {
+              responseObject.errors.push('Failed to find the container with that ID.');
+            }
+          }
+        })
+        .on('end', (err) => {
+          console.log('END'); // XXX
+          if (err != null) {
+            responseObject.errors.push(err);
+          }
+          res.json(responseObject);
+        })
+        .start({
+          failure() {
+            responseObject.errors.push('Failed to update the container\'s configuration');
+            res.json(responseObject);
+          }
+        });
+    });
+  } else {
+    const errors = ['[UpdateLogRhythmContainerConfiguration] Missing parameter(s). See following errors.'];
+    if (missingOpenCollector) {
+      errors.push('Missing or malformed "openCollector" object.');
+    }
+    if (missingContainer) {
+      errors.push('Missing or malformed "container" object.');
+    }
+    if (missingFileContent) {
+      errors.push('Missing or empty "fileContentBase64" object.');
+    }
+    res.json({ ...responseTemplate, errors });
+  }
+});
+
+// #############################################
 // ObfuscateSecret
 // #############################################
 
