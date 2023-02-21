@@ -23,16 +23,16 @@
 - [ ] Error reporting card to deal with many errors
   - [ ] Deduplicate error messages
 - [ ] Admin - MS SQL - Add Test button
-- [ ] Open Collector - Stats and troubleshooting
+- [x] Open Collector - Stats and troubleshooting
   - [x] Create embryo Manage Open Collector page
   - [x] Import UI/UX work
   - [x] Get Open Collector information (stats, containers, ...)
-  - [ ] Implement managing tasks
+  - [x] Implement managing tasks
     - [x] Start Container
     - [x] Stop Container
     - [x] Restart Container
     - [x] Export Configuration from LR container to file
-    - [ ] Import Configuration from LR container from file
+    - [x] Import Configuration from LR container from file
     - [x] View Configuration from LR container
       - [x] Save to file from Config Viewer
     - [x] Export Logs from Container to file
