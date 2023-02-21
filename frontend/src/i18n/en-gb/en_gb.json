@@ -671,5 +671,7 @@
   "Container log as file downloaded": "Container log as file downloaded",
   "Downloading Container configuration...": "Downloading Container configuration...",
   "Container configuration downloaded": "Container configuration downloaded",
-  "Container Short Configuration": "Container Short Configuration"
+  "Container Short Configuration": "Container Short Configuration",
+  "Click or Drop a configuration (.txt, .yml or .yaml) file here": "Click or Drop a configuration (.txt, .yml or .yaml) file here",
+  "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}.": "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}."
 }

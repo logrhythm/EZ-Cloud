@@ -340,6 +340,38 @@
         </q-inner-loading> -->
       </q-card>
     </q-dialog>
+
+    <q-dialog v-model="showConfigurationFileImportPopup" persistent>
+      <q-card style="min-width: 400px">
+        <q-card-section>
+          <div class="text-h6">{{ $t('Import Configuration') }}</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-file
+            filled
+            bottom-slots
+            v-model="configurationImportFileInput"
+            :label="$t('Click or Drop a configuration (.txt, .yml or .yaml) file here')"
+            input-style="min-width: 35em;min-height: 14em;"
+            accept=".txt, .yml, .yaml"
+            @rejected="onRejectedConfigurationFile"
+          >
+            <template v-slot:append>
+              <q-icon v-if="configurationImportFileInput !== null" name="o_close" @click.stop="configurationImportFileInput = null" class="cursor-pointer" />
+              <q-icon name="o_note_add" @click.stop />
+            </template>
+          </q-file>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right" >
+          <q-btn color="primary" flat :label="$t('Cancel')" v-close-popup />
+          <q-btn color="primary" :label="$t('Import Configuration')" v-close-popup :disabled="configurationImportFileInput === null" @click="importConfigurationFromFile(configurationImportFileInput)" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -411,7 +443,9 @@ export default {
       configurationToView: '', // Content of the Container configuration
       showConfigurationViewer: false, // Toggle to show the Configuration viewer Dialog
       activeContainerIdConfig: '', // Docker ID of the container being shown the config of right now
-      activeContainerNameConfig: '' // Docker name of the container being shown the config of right now
+      activeContainerNameConfig: '', // Docker name of the container being shown the config of right now
+      showConfigurationFileImportPopup: false, // Toggle to show the Configuration file import Dialog
+      configurationImportFileInput: null // File to import configuration from
     }
   },
   computed: {
@@ -519,7 +553,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions('mainStore', ['startContainerOnOpenCollector', 'stopContainerOnOpenCollector', 'getContainerLogs', 'getContainerConfiguration']),
+    ...mapActions('mainStore', ['startContainerOnOpenCollector', 'stopContainerOnOpenCollector', 'getContainerLogs', 'getContainerConfiguration', 'updateLogRhythmContainerConfiguration']),
     containerLogsFieldHeight () {
       console.log('containerLogsFieldHeight')
       console.log(JSON.stringify(this.$refs))
@@ -654,7 +688,15 @@ export default {
       }
     },
     doImportContainerConfigurationFromFile (row) {
-      //
+      if (row) {
+        const { containerId } = row
+        // Flag which container we are talking about
+        this.activeContainerIdConfig = containerId
+        // Clear any previous file
+        this.configurationImportFileInput = null
+        // Show the popup
+        this.showConfigurationFileImportPopup = true
+      }
     },
     doViewContainerConfguration (row) {
       if (row) {
@@ -1226,6 +1268,115 @@ export default {
           },
           value,
           short: true
+        }
+      )
+    },
+    async importConfigurationFromFile (filesInput) {
+      let fileName
+
+      if (filesInput == null) {
+        console.log('[importConfigurationFromFile] - 🟠 - No file selected.')
+      } else {
+        // Deal with multiple or single file(s)
+        if (Array.isArray(filesInput)) {
+          this.$root.$emit('addAndShowErrorToErrorPanel',
+            {
+              code: 'TooManyFiles',
+              messageForLogAndPopup: this.$t('Only one file is accepted. You tried to import multiple files.')
+            }
+          )
+        } else {
+          // Get the file name
+          fileName = (
+            filesInput &&
+            filesInput.name &&
+            filesInput.name.length
+              ? filesInput.name
+              : undefined
+          )
+
+          // const notificationPopupId = this.$q.notify({
+          //   icon: 'cloud_download',
+          //   message: this.$t('Importing Shared Collection Configuration file...'),
+          //   caption: fileName,
+          //   type: 'ongoing'
+          // })
+
+          let thereWasAnError = false
+
+          try {
+            // Read the Import file
+            // const fileContent = await filesInput.text()
+            const fileContentAsArrayBuffer = await filesInput.arrayBuffer()
+
+            // Push it out to the API
+            if (this.activeContainerIdConfig) {
+              const containerId = this.activeContainerIdConfig
+              this.actionInProgressOnContainers[String(containerId)] = true
+              this.updateLogRhythmContainerConfiguration(
+                {
+                  caller: this,
+                  apiCallParams: {
+                    openCollector: { uid: this.openCollectorUid },
+                    container: { uid: containerId },
+                    fileContentBase64: Buffer.from(fileContentAsArrayBuffer).toString('base64'),
+                    fileSizeBytes: filesInput.size
+                  },
+                  onSuccessCallBack: this.onContainerActionResponse,
+                  onErrorCallBack: this.onContainerActionResponse
+                }
+              )
+            } else {
+              thereWasAnError = true
+            }
+          } catch (error) {
+            thereWasAnError = true
+            this.$root.$emit('addAndShowErrorToErrorPanel',
+              {
+                code: 'CantReadFile',
+                messageForLogAndPopup: (
+                  this.$t('Error trying to open the file. Error: {errorMessage}', { errorMessage: error.message })
+                )
+              }
+            )
+          }
+
+          if (thereWasAnError) {
+            // notificationPopupId({
+            //   type: 'negative',
+            //   color: 'negative',
+            //   icon: 'o_report_problem',
+            //   message: this.$t('Problem while importing Shared Collection Configuration file'),
+            //   caption: fileName
+            // })
+            this.$q.notify({
+              type: 'negative',
+              color: 'negative',
+              icon: 'o_report_problem',
+              message: this.$t('Problem while loading file'),
+              caption: fileName
+            })
+            console.log('Error: Problem while loading file')
+          }
+        }
+      }
+    },
+    onRejectedConfigurationFile (rejectedEntries) {
+      const badFileName = (
+        rejectedEntries &&
+        Array.isArray(rejectedEntries) &&
+        rejectedEntries[0] &&
+        rejectedEntries[0].file &&
+        rejectedEntries[0].file.name
+          ? rejectedEntries[0].file.name
+          : ''
+      )
+      this.$root.$emit('addAndShowErrorToErrorPanel',
+        {
+          code: 'BadFileExtentionImportConfiguration',
+          messageForLogAndPopup: (
+            this.$t('Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}.', { badFileName })
+          )
         }
       )
     }
