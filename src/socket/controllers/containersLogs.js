@@ -83,6 +83,10 @@ async function containerLogsInit(socket, payload) {
             failure() {
               // console.log('FAILURE:::' + err);
               socketEmit(socket, { containerId: payload.containerId, openCollectorUid: payload.openCollectorUid, stream: 'containerLogsTail.log', code: 'FAILURE' });
+
+              // Remove the tail entry
+              // eslint-disable-next-line no-use-before-define
+              setTimeout(containerLogsKill, 500, socket, payload);
             }
           });
       } else {
@@ -120,8 +124,11 @@ function containerLogsKill(socket, payload) {
   ) {
     // Check the openCollectorUid exists
     if (containerLogsTails[`${socketUid}_${payload.openCollectorUid}`]) {
-      containerLogsTails[`${socketUid}_${payload.openCollectorUid}`].end();
-      containerLogsTails[`${socketUid}_${payload.openCollectorUid}`] = null;
+      try {
+        containerLogsTails[`${socketUid}_${payload.openCollectorUid}`].end();
+      } finally {
+        containerLogsTails[`${socketUid}_${payload.openCollectorUid}`] = null;
+      }
     }
   }
 } // containerLogsKill
@@ -198,11 +205,15 @@ async function containerLogsKillTail(socket, payload) {
           .on('end', (err) => {
             // console.log('END:::' + err);
             socketEmit(socket, { containerId: payload.containerId, openCollectorUid: payload.openCollectorUid, stream: 'containerLogsTail.kill', code: 'END', payload: err });
+            // Remove the tail entry
+            containerLogsTails[`${socketUid}_${payload.openCollectorUid}`] = null;
           })
           .start({
             failure() {
               // console.log('FAILURE:::' + err);
               socketEmit(socket, { containerId: payload.containerId, openCollectorUid: payload.openCollectorUid, stream: 'containerLogsTail.kill', code: 'FAILURE' });
+              // Remove the tail entry
+              containerLogsTails[`${socketUid}_${payload.openCollectorUid}`] = null;
             }
           });
       }

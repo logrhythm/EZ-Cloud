@@ -84,6 +84,10 @@ async function statsInit(socket, payload) {
               if (socket.connected) {
                 socket.emit('statsTail.log', { openCollectorUid: payload.openCollectorUid, code: 'FAILURE' });
               }
+
+              // Remove the tail entry
+              // eslint-disable-next-line no-use-before-define
+              setTimeout(statsKill, 500, socket, payload);
             }
           });
       } else {
@@ -127,8 +131,11 @@ function statsKill(socket, payload) {
   ) {
     // Check the openCollectorUid exists
     if (statsTails[`${socketUid}_${payload.openCollectorUid}`]) {
-      statsTails[`${socketUid}_${payload.openCollectorUid}`].end();
-      statsTails[`${socketUid}_${payload.openCollectorUid}`] = null;
+      try {
+        statsTails[`${socketUid}_${payload.openCollectorUid}`].end();
+      } finally {
+        statsTails[`${socketUid}_${payload.openCollectorUid}`] = null;
+      }
     }
   }
 } // statsKill
@@ -198,6 +205,8 @@ async function tailKillShipper(socket, payload) {
             if (socket.connected) {
               socket.emit('statsTail.kill', { openCollectorUid: payload.openCollectorUid, code: 'END', payload: err });
             }
+            // Remove the tail entry
+            statsTails[`${socketUid}_${payload.openCollectorUid}`] = null;
           })
           .start({
             failure() {
@@ -205,6 +214,8 @@ async function tailKillShipper(socket, payload) {
               if (socket.connected) {
                 socket.emit('statsTail.kill', { openCollectorUid: payload.openCollectorUid, code: 'FAILURE' });
               }
+              // Remove the tail entry
+              statsTails[`${socketUid}_${payload.openCollectorUid}`] = null;
             }
           });
       }
