@@ -1,4 +1,3 @@
-const { exception } = require('console');
 const express = require('express');
 
 const router = express.Router();
@@ -92,7 +91,7 @@ function checkOSVersion(osVersion, uid) {
           err(stderr) {
             osVersion.errors.push(stderr);
           },
-          exit(code) {
+          exit(/* code */) {
             osVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
           },
           out(stdout) {
@@ -106,7 +105,7 @@ function checkOSVersion(osVersion, uid) {
             osVersion.stillChecking = false;
           }
         })
-        .on('end', (err) => {
+        .on('end', (/* err */) => {
           osVersion.stillChecking = false;
         })
         .start({
@@ -197,7 +196,7 @@ function checkfbVersion(fbVersion, uid) {
           err(stderr) {
             fbVersion.errors.push(stderr);
           },
-          exit(code) {
+          exit(/* code */) {
             fbVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
           },
           out(stdout) {
@@ -211,7 +210,7 @@ function checkfbVersion(fbVersion, uid) {
             fbVersion.stillChecking = false;
           }
         })
-        .on('end', (err) => {
+        .on('end', (/* err */) => {
           fbVersion.stillChecking = false;
         })
         .start({
@@ -302,7 +301,7 @@ function checkOcBeatsVersion(ocAndBeatsVersion, uid) {
           err(stderr) {
             ocAndBeatsVersion.errors.push(stderr);
           },
-          exit(code) {
+          exit(/* code */) {
             ocAndBeatsVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
           },
           out(stdout) {
@@ -316,7 +315,7 @@ function checkOcBeatsVersion(ocAndBeatsVersion, uid) {
             ocAndBeatsVersion.stillChecking = false;
           }
         })
-        .on('end', (err) => {
+        .on('end', (/* err */) => {
           ocAndBeatsVersion.stillChecking = false;
         })
         .start({
@@ -406,7 +405,7 @@ function checkjsBeatVersion(jsBeatVersion, uid) {
           err(stderr) {
             jsBeatVersion.errors.push(stderr);
           },
-          exit(code) {
+          exit(/* code */) {
             jsBeatVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
           },
           out(stdout) {
@@ -425,7 +424,7 @@ function checkjsBeatVersion(jsBeatVersion, uid) {
             jsBeatVersion.outputs.push(stdout);
           }
         })
-        .on('end', (err) => {
+        .on('end', (/* err */) => {
           jsBeatVersion.stillChecking = false;
         })
         .start({
@@ -497,7 +496,7 @@ const dockerPresence = {
   outputs: [] // array of all the outputs
 };
 
-function checkDockerPresence() {
+function checkDockerPresence(uid) {
   getSshConfigForCollector({ uid }).then((sshConfig) => {
     const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
@@ -519,7 +518,7 @@ function checkDockerPresence() {
           dockerPresence.outputs.push(stdout);
         }
       })
-      .on('end', (err) => {
+      .on('end', (/* err */) => {
         dockerPresence.stillChecking = false;
       })
       .start({
@@ -534,19 +533,21 @@ router.get('/CheckDockerPresence', async (req, res) => {
   if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
     // Waiting - Sync
     if (!dockerPresence.stillChecking) {
-      checkDockerPresence();
+      checkDockerPresence(req.query.uid);
     }
     const loopEndTime = Date.now() / 1000 + maxCheckInterval;
 
     while (dockerPresence.stillChecking && (loopEndTime > (Date.now() / 1000))) {
       // Wait for 50 ms
+      // eslint-disable-next-line no-await-in-loop
       await waitMilliseconds(50);
     }
-  } else {
+  } else if (
+    !dockerPresence.stillChecking
+    && (dockerPresence.lastSuccessfulCheckTimeStampUtc + maxCheckInterval) <= (Date.now() / 1000)
+  ) {
     // No waiting - Async
-    if (!dockerPresence.stillChecking && (dockerPresence.lastSuccessfulCheckTimeStampUtc + maxCheckInterval) <= (Date.now() / 1000)) {
-      checkDockerPresence();
-    }
+    checkDockerPresence(req.query.uid);
   }
 
   res.json(dockerPresence);
@@ -582,14 +583,14 @@ function checkDockerVersion(dockerVersion, uid) {
           err(stderr) {
             dockerVersion.errors.push(stderr);
           },
-          exit(code) {
+          exit(/* code */) {
             dockerVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
           },
           out(stdout) {
             dockerVersion.outputs.push(stdout);
           }
         })
-        .on('end', (err) => {
+        .on('end', (/* err */) => {
           dockerVersion.stillChecking = false;
           // Deal with multilines
           if (dockerVersion.payload == null && dockerVersion.outputs) {
@@ -679,7 +680,7 @@ const ocPresence = {
   outputs: [] // array of all the outputs
 };
 
-function checkOCPresence() {
+function checkOCPresence(uid) {
   getSshConfigForCollector({ uid }).then((sshConfig) => {
     const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
     ocPresence.stillChecking = true;
@@ -725,7 +726,7 @@ function checkOCPresence() {
           ocPresence.outputs.push(stdout);
         }
       })
-      .on('end', (err) => {
+      .on('end', (/* err */) => {
         ocPresence.stillChecking = false;
         ocPresence.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
       })
@@ -741,18 +742,20 @@ router.get('/CheckOCPresence', async (req, res) => {
   if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
     // Waiting - Sync
     if (!ocPresence.stillChecking) {
-      checkOCPresence();
+      checkOCPresence(req.query.uid);
     }
     const loopEndTime = Date.now() / 1000 + maxCheckInterval;
     while (ocPresence.stillChecking && (loopEndTime > (Date.now() / 1000))) {
       // Wait for 50 ms
+      // eslint-disable-next-line no-await-in-loop
       await waitMilliseconds(50);
     }
-  } else {
+  } else if (
+    !ocPresence.stillChecking
+    && (ocPresence.lastSuccessfulCheckTimeStampUtc + maxCheckInterval) <= (Date.now() / 1000)
+  ) {
     // No waiting - Async
-    if (!ocPresence.stillChecking && (ocPresence.lastSuccessfulCheckTimeStampUtc + maxCheckInterval) <= (Date.now() / 1000)) {
-      checkOCPresence();
-    }
+    checkOCPresence(req.query.uid);
   }
 
   res.json(ocPresence);
@@ -788,7 +791,7 @@ function checkOCVersion(ocVersion, uid) {
           err(stderr) {
             ocVersion.errors.push(stderr);
           },
-          exit(code) {
+          exit(/* code */) {
             ocVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
           },
           out(stdout) {
@@ -806,7 +809,7 @@ function checkOCVersion(ocVersion, uid) {
             ocVersion.outputs.push(stdout);
           }
         })
-        .on('end', (err) => {
+        .on('end', (/* err */) => {
           ocVersion.stillChecking = false;
         })
         .start({
@@ -878,7 +881,7 @@ const ocHealth = {
   outputs: [] // array of all the outputs
 };
 
-function checkOCHealth() {
+function checkOCHealth(uid) {
   getSshConfigForCollector({ uid }).then((sshConfig) => {
     const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
@@ -892,11 +895,11 @@ function checkOCHealth() {
         err(stderr) {
           ocHealth.errors.push(stderr);
         },
-        exit(code) {
+        exit(/* code */) {
           ocHealth.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
         },
         out(stdout) {
-          health = stdout.match(/open_collector *[0-9]+\.[0-9]+\.[0-9]+ *[0-9]+-[0-9]+-[0-9]+ +[0-9]+:[0-9]+:[0-9]+ +\+[0-9]+ +UTC +(\w*)/);
+          const health = stdout.match(/open_collector *[0-9]+\.[0-9]+\.[0-9]+ *[0-9]+-[0-9]+-[0-9]+ +[0-9]+:[0-9]+:[0-9]+ +\+[0-9]+ +UTC +(\w*)/);
           if (health.length > 0) {
             ocHealth.payload = { health: health[1] };
           } else {
@@ -905,7 +908,7 @@ function checkOCHealth() {
           ocHealth.outputs.push(stdout);
         }
       })
-      .on('end', (err) => {
+      .on('end', (/* err */) => {
         ocHealth.stillChecking = false;
       })
       .start({
@@ -920,19 +923,21 @@ router.get('/CheckOCHealth', async (req, res) => {
   if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
     // Waiting - Sync
     if (!ocHealth.stillChecking) {
-      checkOCHealth();
+      checkOCHealth(req.query.uid);
     }
     const loopEndTime = Date.now() / 1000 + maxCheckInterval;
 
     while (ocHealth.stillChecking && (loopEndTime > (Date.now() / 1000))) {
       // Wait for 50 ms
+      // eslint-disable-next-line no-await-in-loop
       await waitMilliseconds(50);
     }
-  } else {
+  } else if (
+    !ocHealth.stillChecking
+    && (ocHealth.lastSuccessfulCheckTimeStampUtc + maxCheckInterval) <= (Date.now() / 1000)
+  ) {
     // No waiting - Async
-    if (!ocHealth.stillChecking && (ocHealth.lastSuccessfulCheckTimeStampUtc + maxCheckInterval) <= (Date.now() / 1000)) {
-      checkOCHealth();
-    }
+    checkOCHealth(req.query.uid);
   }
 
   res.json(ocHealth);
@@ -950,7 +955,7 @@ const ocConfiguration = {
   outputs: [] // array of all the outputs
 };
 
-function readOcConfiguration() {
+function readOcConfiguration(uid) {
   getSshConfigForCollector({ uid }).then((sshConfig) => {
     const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
 
@@ -964,7 +969,7 @@ function readOcConfiguration() {
         err(stderr) {
           ocConfiguration.errors.push(stderr);
         },
-        exit(code) {
+        exit(/* code */) {
           ocConfiguration.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
         },
         out(stdout) {
@@ -972,7 +977,7 @@ function readOcConfiguration() {
           ocConfiguration.outputs.push(stdout);
         }
       })
-      .on('end', (err) => {
+      .on('end', (/* err */) => {
         ocConfiguration.stillChecking = false;
       })
       .start({
@@ -987,19 +992,21 @@ router.get('/ReadOcConfiguration', async (req, res) => {
   if (req.query.NoWait === undefined || (req.query.NoWait !== undefined && req.query.NoWait.toLowerCase() !== 'true')) {
     // Waiting - Sync
     if (!ocConfiguration.stillChecking) {
-      readOcConfiguration();
+      readOcConfiguration(req.query.uid);
     }
     const loopEndTime = Date.now() / 1000 + maxCheckInterval;
 
     while (ocConfiguration.stillChecking && (loopEndTime > (Date.now() / 1000))) {
       // Wait for 50 ms
+      // eslint-disable-next-line no-await-in-loop
       await waitMilliseconds(50);
     }
-  } else {
+  } else if (
+    !ocConfiguration.stillChecking
+    && (ocConfiguration.lastSuccessfulCheckTimeStampUtc + maxCheckInterval) <= (Date.now() / 1000)
+  ) {
     // No waiting - Async
-    if (!ocConfiguration.stillChecking && (ocConfiguration.lastSuccessfulCheckTimeStampUtc + maxCheckInterval) <= (Date.now() / 1000)) {
-      readOcConfiguration();
-    }
+    readOcConfiguration(req.query.uid);
   }
 
   if (req.query.Raw === undefined || (req.query.Raw !== undefined && req.query.Raw.toLowerCase() === 'false')) {
@@ -1400,6 +1407,7 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
                   continueToNextStep = false;
                   // Set the whole job as failed, except if
                   // we are meant to continueOnFailure for this step
+                  // eslint-disable-next-line no-bitwise
                   streamUpdateForBeatStatus.payload.success = !!(false | step.continueOnFailure);
                 } // if (code !== 0) {
 
@@ -1427,11 +1435,9 @@ function updateStreamConfigurationForBeat(streamUpdateForBeatStatus, openCollect
             logToSystem('Debug', `updateStreamConfigurationForBeat - END: (${err})`);
             if (err) {
               streamUpdateForBeatStatus.error.push(err);
-            } else {
+            } else if (streamUpdateForBeatStatus.payload.success !== false) {
               //  If Success is not already set to False, then set it to true
-              if (streamUpdateForBeatStatus.payload.success !== false) {
-                streamUpdateForBeatStatus.payload.success = true;
-              }
+              streamUpdateForBeatStatus.payload.success = true;
             }
             streamUpdateForBeatStatus.stillUpdating = false;
           })
@@ -1632,7 +1638,7 @@ function deleteStreamConfigurationForBeat(
             },
             {
               action: 'List the Stream files of the config directory',
-              command: 'ls -la "/etc/filebeat/inputs.d/${configFileNameBase}"*',
+              command: `ls -la "/etc/filebeat/inputs.d/${configFileNameBase}"*`,
               continueOnFailure: true
             }
           );
@@ -1740,7 +1746,9 @@ function deleteStreamConfigurationForBeat(
                   streamConfigDeleteForBeatStatus.errors.push(`Step ${stepCounter} failed with return code (${code}) - Command was: ${step.command}`);
                   streamConfigDeleteForBeatStatus.payload.steps[stepCounter].result.failed = true;
                   continueToNextStep = false;
-                  // Set the whole job as failed, except if we are meant to continueOnFailure for this step
+                  // Set the whole job as failed, except if we are meant to
+                  // continueOnFailure for this step
+                  // eslint-disable-next-line max-len, no-bitwise
                   streamConfigDeleteForBeatStatus.payload.success = !!(false | step.continueOnFailure);
                 } // if (code !== 0) {
 
@@ -1753,11 +1761,13 @@ function deleteStreamConfigurationForBeat(
               },
               err(stderr) {
                 logToSystem('Debug', `deleteStreamConfigurationForBeat - STDERR: ${stderr}`);
-                streamConfigDeleteForBeatStatus.payload.steps[stepCounter].result.errors.push(stderr);
+                streamConfigDeleteForBeatStatus.payload.steps[stepCounter]
+                  .result.errors.push(stderr);
               },
               out(stdout) {
                 logToSystem('Debug', `deleteStreamConfigurationForBeat - STDOUT: ${stdout}`);
-                streamConfigDeleteForBeatStatus.payload.steps[stepCounter].result.outputs.push(stdout);
+                streamConfigDeleteForBeatStatus.payload.steps[stepCounter]
+                  .result.outputs.push(stdout);
               }
             });
         });
@@ -1768,11 +1778,9 @@ function deleteStreamConfigurationForBeat(
             logToSystem('Debug', `deleteStreamConfigurationForBeat - END: (${err})`);
             if (err) {
               streamConfigDeleteForBeatStatus.error.push(err);
-            } else {
+            } else if (streamConfigDeleteForBeatStatus.payload.success !== false) {
               //  If Success is not already set to False, then set it to true
-              if (streamConfigDeleteForBeatStatus.payload.success !== false) {
-                streamConfigDeleteForBeatStatus.payload.success = true;
-              }
+              streamConfigDeleteForBeatStatus.payload.success = true;
             }
             streamConfigDeleteForBeatStatus.stillUpdating = false;
           })
@@ -1807,9 +1815,27 @@ function deleteStreamConfigurationForBeat(
 
 router.post('/DeleteStreamConfigurationForBeat', async (req, res) => {
   // Check we are ship-shape with the params
-  const missingOpenCollector = !(req && req.body && req.body.openCollector && req.body.openCollector.uid && req.body.openCollector.uid.length);
-  const missingBeat = !(req && req.body && req.body.beat && req.body.beat.name && req.body.beat.name.length);
-  const missingStream = !(req && req.body && req.body.stream && req.body.stream.uid && req.body.stream.uid.length);
+  const missingOpenCollector = !(
+    req
+    && req.body
+    && req.body.openCollector
+    && req.body.openCollector.uid
+    && req.body.openCollector.uid.length
+  );
+  const missingBeat = !(
+    req
+    && req.body
+    && req.body.beat
+    && req.body.beat.name
+    && req.body.beat.name.length
+  );
+  const missingStream = !(
+    req
+    && req.body
+    && req.body.stream
+    && req.body.stream.uid
+    && req.body.stream.uid.length
+  );
   if (
     !missingOpenCollector
     && !missingBeat
@@ -2028,7 +2054,9 @@ function importPipelineForBeat(pipelineImportForBeatStatus, openCollector, beat,
                   pipelineImportForBeatStatus.errors.push(`Step ${stepCounter} failed with return code (${code}) - Command was: ${step.command}`);
                   pipelineImportForBeatStatus.payload.steps[stepCounter].result.failed = true;
                   continueToNextStep = false;
-                  // Set the whole job as failed, except if we are meant to continueOnFailure for this step
+                  // Set the whole job as failed, except if we are meant
+                  // to continueOnFailure for this step
+                  // eslint-disable-next-line no-bitwise
                   pipelineImportForBeatStatus.payload.success = !!(false | step.continueOnFailure);
                 } // if (code !== 0) {
 
@@ -2058,11 +2086,9 @@ function importPipelineForBeat(pipelineImportForBeatStatus, openCollector, beat,
             logToSystem('Debug', `importPipelineForBeat - END: (${err})`);
             if (err) {
               pipelineImportForBeatStatus.error.push(err);
-            } else {
+            } else if (pipelineImportForBeatStatus.payload.success !== false) {
               //  If Success is not already set to False, then set it to true
-              if (pipelineImportForBeatStatus.payload.success !== false) {
-                pipelineImportForBeatStatus.payload.success = true;
-              }
+              pipelineImportForBeatStatus.payload.success = true;
             }
             pipelineImportForBeatStatus.stillUpdating = false;
           })
@@ -2097,8 +2123,20 @@ function importPipelineForBeat(pipelineImportForBeatStatus, openCollector, beat,
 
 router.post('/ImportPipelineForBeat', async (req, res) => {
   // Check we are ship-shape with the params
-  const missingOpenCollector = !(req && req.body && req.body.openCollector && req.body.openCollector.uid && req.body.openCollector.uid.length);
-  const missingBeat = !(req && req.body && req.body.beat && req.body.beat.name && req.body.beat.name.length);
+  const missingOpenCollector = !(
+    req
+    && req.body
+    && req.body.openCollector
+    && req.body.openCollector.uid
+    && req.body.openCollector.uid.length
+  );
+  const missingBeat = !(
+    req
+    && req.body
+    && req.body.beat
+    && req.body.beat.name
+    && req.body.beat.name.length
+  );
   const missingStream = !(
     req && req.body
     && req.body.stream
@@ -2146,7 +2184,7 @@ router.post('/ImportPipelineForBeat', async (req, res) => {
 
     res.json(pipelineImportForBeatStatusArray[`${openCollector.uid}_${stream.uid}`]);
   } else {
-    const errorMessages = []; // ['Missing parameters in Body (Both `openCollector`, `beat` and `stream` objects are compulsory and must be properly populated).. See following errors.']
+    const errorMessages = [];
     if (missingOpenCollector) {
       errorMessages.push('Missing or malformed compulsory "openCollector" object.');
     }
@@ -2160,57 +2198,6 @@ router.post('/ImportPipelineForBeat', async (req, res) => {
     res.json({ ...pipelineImportForBeatStatusTemplate, errors: errorMessages, requestBody: (process.env.NODE_ENV === 'development' ? req.body : undefined) });
   }
 });
-
-// // #############################################
-// // StartContainer
-// // #############################################
-
-// router.post('/StartContainer', async (req, res) => {
-//   if (req
-//     && req.query
-//     && req.query.uid
-//     && req.query.uid.length
-//     && getSafeUidFrom(req.query).length
-//   ) {
-//     const uid = getSafeUidFrom(req.query);
-
-//     if (uid && uid.length) {
-//       getSshConfigForCollector({ uid }).then((sshConfig) => {
-//         const ssh = new SSH(JSON.parse(JSON.stringify(sshConfig)));
-//         const responseObject = JSON.parse(JSON.stringify(responseTemplate));
-
-//         ssh
-//           .exec('docker -v 2>1', {
-//             err(stderr) {
-//               responseObject.errors.push(stderr);
-//             },
-//             out(stdout) {
-//               try {
-//                 responseObject.payload = JSON.parse(stdout);
-//               } catch (error) {
-//                 responseObject.payload = null;
-//               }
-
-//               responseObject.outputs.push(stdout);
-//             },
-//             exit(code) {
-//               responseObject.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
-//             }
-//           })
-//           .on('end', (err) => {
-//             res.json(responseObject);
-//           })
-//           .start({
-//             failure() {
-//               res.json(responseObject);
-//             }
-//           });
-//       });
-//     }
-//   } else {
-//     res.json({ ...responseTemplate, errors: ['Missing UID in Query.'] });
-//   }
-// });
 
 // #############################################
 // StartContainer
@@ -2506,9 +2493,9 @@ router.get('/GetContainerConfiguration', async (req, res) => {
                   responseObject.payload += stdout;
                   responseObject.outputs.push(stdout);
                 },
-                exit(code) {
-                  responseObject.exitCodes.push(code);
-                  responseObject.exitCode = code;
+                exit(inner_code) {
+                  responseObject.exitCodes.push(inner_code);
+                  responseObject.exitCode = inner_code;
                   responseObject.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
                 }
               });
