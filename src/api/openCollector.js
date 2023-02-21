@@ -586,7 +586,14 @@ function checkDockerVersion(dockerVersion, uid) {
             dockerVersion.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
           },
           out(stdout) {
-            const version = stdout.match(/.*?\s+(([0-9]+)\.([0-9]+)\.([0-9]+))/);
+            dockerVersion.outputs.push(stdout);
+          }
+        })
+        .on('end', (err) => {
+          dockerVersion.stillChecking = false;
+          // Deal with multilines
+          if (dockerVersion.payload == null && dockerVersion.outputs) {
+            const version = dockerVersion.outputs.join(' ').match(/.*?\s+(([0-9]+)\.([0-9]+)\.([0-9]+))/);
             if (version && version.length > 4) {
               dockerVersion.payload = {
                 version: {
@@ -599,11 +606,7 @@ function checkDockerVersion(dockerVersion, uid) {
             } else {
               dockerVersion.payload = null;
             }
-            dockerVersion.outputs.push(stdout);
           }
-        })
-        .on('end', (err) => {
-          dockerVersion.stillChecking = false;
         })
         .start({
           failure() {

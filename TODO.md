@@ -25,6 +25,7 @@
 
 ## TO FIX
 - [x] Fix #38 - Some clients send SQL port as string
+- [x] Fix #41 - Sometime API CheckDockerVersion doesn't return Docker version
 
 ## TO TEST
 
