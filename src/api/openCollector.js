@@ -2591,12 +2591,10 @@ router.post('/UpdateLogRhythmContainerConfiguration', async (req, res) => {
       } catch (error) {
         responseObject.errors.push(`Failed to Base64 decode fileContentBase64. Mode information: ${error.message || ''}`);
       }
-      console.log(fileContentBinary); // XXXX
 
       ssh
       // First get the full name of the container from its ID
         .exec(`docker ps --all --filter "id=${container.uid}" --format "{{ .Names }}"`, {
-          in: fileContentBinary || '',
           err(stderr) {
             responseObject.errors.push(stderr);
           },
@@ -2623,19 +2621,16 @@ router.post('/UpdateLogRhythmContainerConfiguration', async (req, res) => {
                   responseObject.errors.push(error);
                 }
               }
-console.log(command); // XXXX
               ssh.exec(command, {
+                in: fileContentBinary || '',
                 err(stderr) {
-                  console.log(stderr); // XXXX
                   responseObject.errors.push(stderr);
                 },
                 out(stdout) {
-                  console.log(stdout); // XXXX
                   responseObject.payload += stdout;
                   responseObject.outputs.push(stdout);
                 },
                 exit(inner_code) {
-                  console.log(inner_code); // XXXX
                   responseObject.exitCodes.push(inner_code);
                   responseObject.exitCode = inner_code;
                   responseObject.lastSuccessfulCheckTimeStampUtc = Date.now() / 1000;
@@ -2647,7 +2642,6 @@ console.log(command); // XXXX
           }
         })
         .on('end', (err) => {
-          console.log('END'); // XXX
           if (err != null) {
             responseObject.errors.push(err);
           }
