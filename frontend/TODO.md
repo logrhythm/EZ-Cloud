@@ -16,7 +16,7 @@
   - [x] Marketplace Template listing as Cards
 - [ ] LogRhythm Beats mapping for Collection Configuration
   - [x] Prisma Cloud
-  - [ ] Symantec WSS Beat
+  - [X] Symantec WSS Beat
   - [ ] Microsoft Graph API Beat
   - [ ] Carbon Black Cloud Beat
   - [ ] Cisco AMP Beat
