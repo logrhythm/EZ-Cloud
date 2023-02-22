@@ -1,7 +1,8 @@
 <template>
   <q-page class="q-pa-sm">
-    <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
+    <q-header bordered :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
+        <img class="q-mr-md" :src="(darkMode ? 'logrhythm_logo_darkmode_wide.svg' : 'logrhythm_logo_lightmode_wide.svg')" alt="LogRhythm Open Collector">
 <!--
         - Pipeline Builder - move actions to menu / icon bar (including Settings icon/button)
         -- Return (to list / to Properties)
@@ -26,8 +27,6 @@
         --- Max messages in Queue In
         --- Max messages in Processed Logs
  -->
-        <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Properties')" :to="'/Pipelines/' + this.pipelineUid + '/Properties'" />
-        <q-separator vertical />
         <q-btn no-caps flat dense icon="save" :label="$t('Save')" color="primary" :disabled="!needsSaving" @click="save()" />
         <q-btn no-caps flat dense icon="restore" :label="$t('Reverse to last saved')" @click="reverseToLastSaved()" />
         <q-separator vertical />
@@ -48,7 +47,7 @@
         <q-btn no-caps flat dense icon="visibility" :label="$t('Show JQ')" v-if="!showJqOutput" @click="buildJqFilter(); buildJqTransform(); showJqOutput = true" />
         <q-btn no-caps flat dense icon="visibility_off" :label="$t('Hide JQ output')" v-else @click="showJqOutput = false" />
 
-        <q-toolbar-title style="opacity:.4" class="text-center">{{ $tc('Mapping Builder | Mapping Builder: {pipelineName} | Mapping Builder: {pipelineName}', (pipelineName && pipelineName.length ? 1 : 0), { pipelineName }) }}</q-toolbar-title>
+        <q-space />
 
         <q-btn no-caps flat dense icon="pending" :label="$t('Advanced')">
           <!-- <q-menu max-width="450px" content-style="width:450px"> -->
@@ -129,6 +128,10 @@
       </q-toolbar>
     </q-header>
     <div class="">
+      <BreadCrumbs
+        :crumbs="breadCrumbs"
+        :pageTitle="$tc('Mapping Builder | Mapping Builder: {pipelineName} | Mapping Builder: {pipelineName}', (pipelineName && pipelineName.length ? 1 : 0), { pipelineName })"
+      />
       <!-- <div class="q-mt-md">
         <span class="text-bold">needsSaving: </span>{{ needsSaving }}
       </div> -->
@@ -653,6 +656,7 @@ import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedRightToLeft from 'src/mixins/mixin-Shared-RightToLeft'
 import mixinSharedBuildJq from 'src/mixins/mixin-Shared-BuildJq'
+import BreadCrumbs from 'components/BreadCrumbs.vue'
 import Vue2Filters from 'vue2-filters'
 import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml'
 
@@ -666,6 +670,7 @@ export default {
     mixinSharedBuildJq, // Shared JQ Building functions (Filter and Transform)
     Vue2Filters.mixin
   ],
+  components: { BreadCrumbs },
   data () {
     return {
       pipelineUid: '', // UUID of the pipeline, used as the UUID of the tail too. Needed to be able to kill it on the server
@@ -869,7 +874,33 @@ export default {
     }, // queueInWindow
     queueProcessWindow () {
       return JSON.stringify(this.queueProcess)
-    } // queueProcessWindow
+    }, // queueProcessWindow
+    breadCrumbs () {
+      return [
+        {
+          icon: 'o_home',
+          link: '/Welcome'
+        },
+        {
+          title: this.$t('Pipelines'),
+          link: '/Pipelines'
+        },
+        {
+          title: (this.pipeline && this.pipeline.name && this.pipeline.name.length ? this.pipeline.name : '...'),
+          icon: null,
+          link: `/Pipelines/${this.pipelineUid}/Properties`,
+          disabled: !(this.pipelineUid && this.pipelineUid.length)
+        },
+        {
+          title: this.$t('Properties'),
+          link: `/Pipelines/${this.pipelineUid}/Properties`,
+          disabled: !(this.pipelineUid && this.pipelineUid.length)
+        },
+        {
+          title: this.$tc('Mapping Builder | Mapping Builder: {pipelineName} | Mapping Builder: {pipelineName}', 0)
+        }
+      ]
+    }
   },
 
   methods: {
@@ -1473,7 +1504,7 @@ export default {
     initTail () {
       if (this.socket && this.socket.connected) {
         const collectionConfigYml = collectionConfigToYml(this.pipeline.collectionConfig)
-        this.socket.emit('tail.init', { pipelineUid: this.pipelineUid, tailId: this.pipelineUid, collectionConfig: this.pipeline.collectionConfig, collectionConfigYml })
+        this.socket.emit('tail.init', { pipelineUid: this.pipelineUid, tailId: this.pipelineUid, collectionConfig: this.pipeline.collectionConfig, collectionConfigYml, options: this.pipeline.options })
       }
     },
 

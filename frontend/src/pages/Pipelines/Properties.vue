@@ -1,13 +1,11 @@
 <template>
   <q-page class="q-pa-sm">
-    <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
+    <q-header bordered :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
-        <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to List')" :to="'/Pipelines'" />
-
-        <q-toolbar-title style="opacity:.4" class="text-center">Pipeline Properties<span v-if="pipeline && pipeline.name && pipeline.name.length">:  {{ pipeline.name }}</span></q-toolbar-title>
-
+        <img class="q-mr-md" :src="(darkMode ? 'logrhythm_logo_darkmode_wide.svg' : 'logrhythm_logo_lightmode_wide.svg')" alt="LogRhythm Open Collector">
       </q-toolbar>
     </q-header>
+    <BreadCrumbs :crumbs="breadCrumbs" :pageTitle="(pipeline && pipeline.name && pipeline.name.length ? `Pipeline Properties: ${pipeline.name}` : 'Pipeline Properties')"/>
     <div class=" q-gutter-y-sm">
       <q-card>
         <q-card-section horizontal>
@@ -470,7 +468,7 @@
     </q-dialog>
 
     <q-dialog v-model="showMarketplaceImportPopup" persistent>
-      <q-card style="min-width: 900px">
+      <q-card style="min-width: 1050px">
         <q-card-section>
           <div class="text-h6" v-if="marketplaceImportPopupType === 'collection'">{{ $t('Import OC Admin Collection Configuration') }}</div>
           <div class="text-h6" v-else-if="marketplaceImportPopupType === 'mapping'">{{ $t('Import OC Admin Fields Mapping') }}</div>
@@ -489,6 +487,8 @@
             :loading="dataLoading"
             :rows-per-page-label="$t('Pipeline Templates per page:')"
             :pagination.sync="marketplaceImportPopupPagination"
+            grid
+            hide-header
           >
 
             <template v-slot:top>
@@ -513,6 +513,65 @@
                 </div>
               </div>
             </template>
+
+            <template v-slot:item="props">
+              <PipelineTemplate
+                v-bind="props.row"
+                :topIndicator="(
+                  props.row.status !== 'Visible'
+                    ?
+                      {
+                        text: props.row.status,
+                        showBar: true,
+                        icon: 'o_warning',
+                        color: 'deep-orange'
+                      }
+                    : {}
+                )"
+                onClickOpenKebabMenu
+              >
+              <template v-slot:kebabMenuItems>
+                <q-item clickable v-close-popup
+                  :to="'/MarketPlace/PipelineTemplates/' + props.row.uid + '/Properties'"
+                  :disable="!(props.row.status && props.row.status === 'Visible')"
+                >
+                  <q-item-section avatar>
+                    <q-icon name="launch" />
+                  </q-item-section>
+                  <q-item-section>{{ $t('Open Pipeline Template full properties') }}</q-item-section>
+                </q-item>
+
+                <q-item clickable v-close-popup
+                  @click="loadAndImportIntoCurrentPipelineFromTemplate(props.row, { importCollectionConfiguration: true, importFieldsMapping: true })"
+                >
+                  <q-item-section avatar>
+                    <q-icon name="input" :color="(marketplaceImportPopupType === 'collection' || marketplaceImportPopupType === 'mapping' ? '' : 'primary')" />
+                  </q-item-section>
+                  <q-item-section>{{ $t('Import Collection and Fields Mapping') }}</q-item-section>
+                </q-item>
+
+                <q-item clickable v-close-popup
+                  @click="loadAndImportIntoCurrentPipelineFromTemplate(props.row, { importCollectionConfiguration: true, importFieldsMapping: false })"
+                >
+                  <q-item-section avatar>
+                    <q-icon name="mediation" :color="(marketplaceImportPopupType === 'collection' ? 'primary' : '')" />
+                  </q-item-section>
+                  <q-item-section>{{ $t('Import Collection only') }}</q-item-section>
+                </q-item>
+
+                <q-item clickable v-close-popup
+                  @click="loadAndImportIntoCurrentPipelineFromTemplate(props.row, { importCollectionConfiguration: false, importFieldsMapping: true })"
+                >
+                  <q-item-section avatar>
+                    <q-icon name="account_tree" :color="(marketplaceImportPopupType === 'mapping' ? 'primary' : '')" />
+                  </q-item-section>
+                  <q-item-section>{{ $t('Import Fields Mapping only') }}</q-item-section>
+                </q-item>
+              </template>
+              </PipelineTemplate>
+            </template>
+
+            <!--
             <template v-slot:body-cell-actions="props">
               <q-td :props="props">
                 <q-btn
@@ -680,6 +739,7 @@
                 </div>
               </q-td>
             </template>
+             -->
           </q-table>
         </q-card-section>
 
@@ -769,12 +829,14 @@ import mixinSharedRightToLeft from 'src/mixins/mixin-Shared-RightToLeft'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 // import { dump } from 'js-yaml'
 import { exportFile, copyToClipboard } from 'quasar'
+import BreadCrumbs from 'components/BreadCrumbs.vue'
 import MarketPlaceExport from 'components/Pipelines/MarketPlace/Export.vue'
-import Identicon from 'components/Publisher/Identicon.vue'
-import IconPicture from 'components/Pipelines/IconPicture.vue'
+import PipelineTemplate from 'components/Pipelines/MarketPlace/PipelineTemplate.vue'
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en.json'
-TimeAgo.addDefaultLocale(en)
+if (TimeAgo.getDefaultLocale() == null) {
+  TimeAgo.addDefaultLocale(en)
+}
 import ConfirmDialog from 'components/Dialogs/ConfirmDialog.vue'
 
 export default {
@@ -786,7 +848,7 @@ export default {
     mixinSharedRightToLeft, // Shared functions to deal with LTR/RTL languages
     mixinSharedShipperAndCollectionsHelpers // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
   ],
-  components: { MarketPlaceExport, Identicon, IconPicture },
+  components: { BreadCrumbs, MarketPlaceExport, PipelineTemplate },
   data () {
     return {
       // pipelineUid: '7dc7d568-a90e-11eb-bcbc-0242ac130002'
@@ -827,7 +889,7 @@ export default {
       marketplaceImportPopupPagination: {
         sortBy: 'created',
         descending: true, // Most recent on top
-        rowsPerPage: 5
+        rowsPerPage: 6
       },
       marketplaceImportPopupDataLoading: false,
       loadingMarketPublisherDetails: false,
@@ -943,6 +1005,27 @@ export default {
         .find(template => template.collectionMethod === this.collectionMethod) || {})
         .mappingStyle || 'custom'
       return mappingStyle !== 'default'
+    },
+    breadCrumbs () {
+      return [
+        {
+          icon: 'o_home',
+          link: '/Welcome'
+        },
+        {
+          title: 'Pipelines',
+          link: '/Pipelines'
+        },
+        {
+          title: (this.pipeline && this.pipeline.name && this.pipeline.name.length ? this.pipeline.name : '...'),
+          icon: null,
+          link: `/Pipelines/${this.pipelineUid}/Properties`,
+          disabled: true
+        },
+        {
+          title: 'Properties'
+        }
+      ]
     }
   },
   methods: {

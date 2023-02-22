@@ -4,11 +4,28 @@
 
 ## TO DO
 - [ ] API - Admin - MS SQL - Add MS SQL test
+- [x] API - Troubleshoot - Start Container
+- [x] API - Troubleshoot - Stop Container
+- [ ] ~~API - Troubleshoot - Restart Container~~ (👈 Will rely on the UI doing a Stop, then a Start)
+- [x] API - Troubleshoot - Get Logs from Container
+- [x] API - Troubleshoot - Export Configuration from LR container
+  - [x] Full export (`lrctl xxx config export`)
+  - [x] Short view (`lrctl xxx config view`)
+- [x] API - Troubleshoot - Import Configuration from LR container
 - [ ] Remove depency to and remove local copy of `collectionConfigToYml()`
 - [x] Docker - Build `config/` at run time to accomodate Docker volumes
 - [x] Docker - Generate new HTTPS self-signed certificates and keys at each build
+- [x] Socket - Docker Stats Tail
+- [x] Socket - Troubleshoot - Docker live Logs from container
+- Add support for new LogRhythm Beats via `logrhythmBeat` in `pipeline.options.identificationStyle[]`
+  - [x] Tail - Initialise Tail
+  - [x] Tail - Kill and clean shipper
+  - [x] Deploy Pipeline
+  - [x] Undeploy Pipeline
 
 ## TO FIX
+- [x] Fix #38 - Some clients send SQL port as string
+- [x] Fix #41 - Sometime API CheckDockerVersion doesn't return Docker version
 
 ## TO TEST
 

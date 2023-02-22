@@ -99,7 +99,7 @@ const routes = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/OpenCollectors/List.vue') },
-      { path: ':openCollectorUid/View', meta: { title: 'OpenCollector - View' }, component: () => import('pages/OpenCollectors/View.vue') }
+      { path: ':openCollectorUid/Manage', meta: { title: 'OpenCollector - Manage' }, component: () => import('pages/OpenCollectors/Manage.vue') }
     ],
     beforeEnter: isLoggedIn
   },

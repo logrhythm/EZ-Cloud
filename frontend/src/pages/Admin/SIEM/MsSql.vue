@@ -1,13 +1,15 @@
 <template>
   <q-page class="q-pa-sm">
-    <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
+    <q-header bordered :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
-        <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Admin')" :to="'/Admin'" />
-        <q-separator spaced vertical />
+        <img class="q-mr-md" :src="(darkMode ? 'logrhythm_logo_darkmode_wide.svg' : 'logrhythm_logo_lightmode_wide.svg')" alt="LogRhythm Open Collector">
         <q-btn no-caps flat dense icon="update" :label="$t('Update Database')" to="/Admin/SIEM/UpdateEmdb" />
-        <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('Admin : SIEM : Manage MS SQL Connection') }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
+
+    <BreadCrumbs
+      :crumbs="breadCrumbs"
+    />
 
     <q-card class="">
       <q-card-section horizontal>
@@ -144,12 +146,14 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
+import BreadCrumbs from 'components/BreadCrumbs.vue'
 
 export default {
   name: 'PageAdminSiemMsSQL',
   mixins: [
     mixinSharedDarkMode // Shared computed to access and update the DarkMode
   ],
+  components: { BreadCrumbs },
   data () {
     return {
       loadingMsSqlConfig: false,
@@ -178,6 +182,24 @@ export default {
         this.msSqlConfig &&
         this.msSqlConfig.isManagedOnBackend === true
       )
+    },
+    breadCrumbs () {
+      return [
+        {
+          icon: 'o_home',
+          link: '/Welcome'
+        },
+        {
+          title: this.$t('Admin'),
+          link: '/Admin'
+        },
+        {
+          title: 'SIEM'
+        },
+        {
+          title: this.$t('Manage MS SQL Connection')
+        }
+      ]
     }
   },
   methods: {

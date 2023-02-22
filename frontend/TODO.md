@@ -5,33 +5,62 @@
 ## TO DO
 - [ ] Incorporate Axon style UI
   - [ ] Tables
-  - [ ] Headers
-    - [ ] Breadcrumbs
+  - [x] Headers
+    - [x] Header on all pages
+    - [x] Logo in Header
+      - [x] for Dark mode
+      - [x] for Light mode
+    - [x] Breadcrumbs
+    - [x] Remove unecessary "Return" buttons
   - [ ] Action buttons style
+  - [x] Marketplace Template listing as Cards
 - [ ] LogRhythm Beats mapping for Collection Configuration
+  - [x] Prisma Cloud
   - [ ] ...
+- [x] Add support for new LogRhythm Beats via `logrhythmBeat` in `pipeline.options.identificationStyle[]`
+  - [x] In Tail
+  - [x] In Deploy
 - [ ] Error reporting card to deal with many errors
   - [ ] Deduplicate error messages
 - [ ] Admin - MS SQL - Add Test button
+- [x] Open Collector - Stats and troubleshooting
+  - [x] Create embryo Manage Open Collector page
+  - [x] Import UI/UX work
+  - [x] Get Open Collector information (stats, containers, ...)
+  - [x] Implement managing tasks
+    - [x] Start Container
+    - [x] Stop Container
+    - [x] Restart Container
+    - [x] Export Configuration from LR container to file
+    - [x] Import Configuration from LR container from file
+    - [x] View Configuration from LR container
+      - [x] Save to file from Config Viewer
+    - [x] Export Logs from Container to file
+    - [x] View Logs from Container in real time
 - [ ] Landing page
-  - [ ] Add a simple Wizard
-    - [ ] Ask for name for Log Source
-    - [ ] Create collection configuation
-      - [ ] Pick Shipper
-      - [ ] Pick type of collection (Flat File, Syslog, REST, etc...)
-      - [ ] Configure it
-    - [ ] Pick up Open Collector
-      - [ ] Add one if none in the list
-      - [ ] Offer to deploy required Shipper if not already on OC
-    - [ ] Create field mapping
-      - [ ] Run pre-configured Tail
-    - [ ] Recap page
-      - [ ] Ability to rename Log Source
-      - [ ] Ability to assign Log Source to other Open Collectors
-      - [ ] Ability to Enable / Commit the Log Source creation
+  - [ ] ~~Add a simple Wizard~~ (👈 low value, low priority. Might resurect if users demand)
+    - [ ] ~~Ask for name for Log Source~~ (👈 low value, low priority. Might resurect if users demand)
+    - [ ] ~~Create collection configuation~~ (👈 low value, low priority. Might resurect if users demand)
+      - [ ] ~~Pick Shipper~~ (👈 low value, low priority. Might resurect if users demand)
+      - [ ] ~~Pick type of collection (Flat File, Syslog, REST, etc...)~~ (👈 low value, low priority. Might resurect if users demand)
+      - [ ] ~~Configure it~~ (👈 low value, low priority. Might resurect if users demand)
+    - [ ] ~~Pick up Open Collector~~ (👈 low value, low priority. Might resurect if users demand)
+      - [ ] ~~Add one if none in the list~~ (👈 low value, low priority. Might resurect if users demand)
+      - [ ] ~~Offer to deploy required Shipper if not already on OC~~ (👈 low value, low priority. Might resurect if users demand)
+    - [ ] ~~Create field mapping~~ (👈 low value, low priority. Might resurect if users demand)
+      - [ ] ~~Run pre-configured Tail~~ (👈 low value, low priority. Might resurect if users demand)
+    - [ ] ~~Recap page~~ (👈 low value, low priority. Might resurect if users demand)
+      - [ ] ~~Ability to rename Log Source~~ (👈 low value, low priority. Might resurect if users demand)
+      - [ ] ~~Ability to assign Log Source to other Open Collectors~~ (👈 low value, low priority. Might resurect if users demand)
+      - [ ] ~~Ability to Enable / Commit the Log Source creation~~ (👈 low value, low priority. Might resurect if users demand)
 
 ## TO FIX
-
+- Translations
+  - [ ] Title for Pipeline Properties
+  - [ ] Title for Pipeline Collection Builder
+  - [ ] Breadcrumbs
+- [x] Shippers icons - Replace old LogRhythm logo with current one
+- [ ] Fix issue #40 - [FR] Offer to extract the `.log` field the same way the `.message` can be
 ## TO TEST
 
 ### Target: v1.0

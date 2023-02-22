@@ -1,14 +1,16 @@
 <template>
   <q-page class="q-pa-sm">
-    <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
+    <q-header bordered :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
-        <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Market Place')" :to="'/MarketPlace'" />
-        <q-separator spaced vertical />
+        <img class="q-mr-md" :src="(darkMode ? 'logrhythm_logo_darkmode_wide.svg' : 'logrhythm_logo_lightmode_wide.svg')" alt="LogRhythm Open Collector">
         <q-btn no-caps flat dense icon="account_tree" color="primary" :label="$t('View Pipeline Templates')" to="/MarketPlace/PipelineTemplates" />
         <q-btn no-caps flat dense icon='person' :label="$t('View My Profile')" to="/MarketPlace/PublisherProfile" />
-        <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('EZ Market Place : Notifications') }}</q-toolbar-title>
       </q-toolbar>
     </q-header>
+    <BreadCrumbs
+      :crumbs="breadCrumbs"
+    />
+      <!-- :pageTitle="$t('Notifications')" -->
     <q-card class="q-pa-none q-mx-none">
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
@@ -160,7 +162,10 @@ import mixinSharedRightToLeft from 'src/mixins/mixin-Shared-RightToLeft'
 import { toSvg } from 'jdenticon'
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en.json'
-TimeAgo.addDefaultLocale(en)
+import BreadCrumbs from 'components/BreadCrumbs.vue'
+if (TimeAgo.getDefaultLocale() == null) {
+  TimeAgo.addDefaultLocale(en)
+}
 
 export default {
   name: 'PageMarketNotifications',
@@ -168,13 +173,29 @@ export default {
     mixinSharedDarkMode, // Shared computed to access and update the DarkMode
     mixinSharedRightToLeft // Shared functions to deal with LTR/RTL languages
   ],
+  components: { BreadCrumbs },
   data () {
     return {
       dataLoading: false
     }
   },
   computed: {
-    ...mapState('mainStore', ['ezMarketNotification', 'ezMarketNotifications'])
+    ...mapState('mainStore', ['ezMarketNotification', 'ezMarketNotifications']),
+    breadCrumbs () {
+      return [
+        {
+          icon: 'o_home',
+          link: '/Welcome'
+        },
+        {
+          title: this.$t('EZ Market Place'),
+          link: '/MarketPlace'
+        },
+        {
+          title: this.$t('Notifications')
+        }
+      ]
+    }
   }, // computed
   methods: {
     ...mapActions('mainStore', ['updateEzMarketNotificationNumber', 'reloadEzMarketNotifications', 'updateEzMarketNotificationStatusTo', 'deleteEzMarketNotificationById']),

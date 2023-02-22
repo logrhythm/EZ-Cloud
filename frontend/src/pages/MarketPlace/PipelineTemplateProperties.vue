@@ -1,9 +1,8 @@
 <template>
   <q-page class="q-pa-sm">
-    <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
+    <q-header bordered :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
-        <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Market Place Pipeline Templates')" :to="'/MarketPlace/PipelineTemplates'" />
-        <q-separator spaced vertical />
+        <img class="q-mr-md" :src="(darkMode ? 'logrhythm_logo_darkmode_wide.svg' : 'logrhythm_logo_lightmode_wide.svg')" alt="LogRhythm Open Collector">
         <q-btn no-caps flat dense icon="input" color="primary" :label="$t('Import')" >
           <q-menu>
             <q-list style="min-width: 20rem">
@@ -31,9 +30,14 @@
             </q-list>
           </q-menu>
         </q-btn>
-        <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('EZ Market Place : Pipeline Templates : {ezMarketPipelineTemplateName}', { ezMarketPipelineTemplateName: ezMarketPipelineTemplate.name }) }}</q-toolbar-title>
+        <!-- <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('EZ Market Place : Pipeline Templates : {ezMarketPipelineTemplateName}', { ezMarketPipelineTemplateName: ezMarketPipelineTemplate.name }) }}</q-toolbar-title> -->
       </q-toolbar>
     </q-header>
+
+    <BreadCrumbs
+      :crumbs="breadCrumbs"
+      :pageTitle="$t('EZ Market Place : Pipeline Templates : {ezMarketPipelineTemplateName}', { ezMarketPipelineTemplateName: ezMarketPipelineTemplate.name })"
+    />
 
     <q-card class="q-pa-md q-mx-none q-mb-md">
       <q-card-section horizontal>
@@ -398,11 +402,14 @@ import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
+import BreadCrumbs from 'components/BreadCrumbs.vue'
 import Identicon from 'components/Publisher/Identicon.vue'
 import IconPicture from 'components/Pipelines/IconPicture.vue'
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en.json'
-TimeAgo.addDefaultLocale(en)
+if (TimeAgo.getDefaultLocale() == null) {
+  TimeAgo.addDefaultLocale(en)
+}
 import ConfirmDialog from 'components/Dialogs/ConfirmDialog.vue'
 
 export default {
@@ -412,7 +419,7 @@ export default {
     mixinSharedShipperAndCollectionsHelpers, // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
     mixinSharedLoadCollectorsAndPipelines // Shared functions to load the Collectors and Pipelines
   ],
-  components: { Identicon, IconPicture },
+  components: { BreadCrumbs, Identicon, IconPicture },
   data () {
     return {
       pipelineTemplateUid: '',
@@ -537,6 +544,25 @@ export default {
         )
       })
       return options
+    },
+    breadCrumbs () {
+      return [
+        {
+          icon: 'o_home',
+          link: '/Welcome'
+        },
+        {
+          title: this.$t('EZ Market Place'),
+          link: '/MarketPlace'
+        },
+        {
+          title: this.$t('Pipeline Templates'),
+          link: '/MarketPlace/PipelineTemplates'
+        },
+        {
+          title: this.ezMarketPipelineTemplate.name || '...'
+        }
+      ]
     }
   }, // computed
   methods: {

@@ -6,7 +6,6 @@ const fs = require('fs');
 const path = require('path');
 
 // Import shared libraries
-const { collectionConfigToYml } = require('../../shared/collectionConfigToYml');
 const { collectionConfigToJson } = require('../../shared/collectionConfigToJson');
 const { getCollectorSshConfigForPipeline } = require('../../shared/collectorSshConfig');
 const { logToSystem } = require('../../shared/systemLogging');
@@ -196,12 +195,18 @@ async function tailInit(socket, payload) {
               }
             });
         } else if (
-          payload.collectionConfig.collectionShipper === 'genericbeat'
-          || payload.collectionConfig.collectionShipper === 'webhookbeat'
-          || payload.collectionConfig.collectionShipper === 's3beat'
-          || payload.collectionConfig.collectionShipper === 'pubsubbeat'
-          || payload.collectionConfig.collectionShipper === 'kafkabeat'
-          || payload.collectionConfig.collectionShipper === 'eventhubbeat'
+          ( // Is it a standard LogRhythm Beat?
+            payload.options
+            && payload.options.identificationStyle
+            && Array.isArray(payload.options.identificationStyle)
+            && payload.options.identificationStyle.includes('logrhythmBeat')
+          )
+          || payload.collectionConfig.collectionShipper === 'genericbeat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
+          || payload.collectionConfig.collectionShipper === 'webhookbeat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
+          || payload.collectionConfig.collectionShipper === 's3beat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
+          || payload.collectionConfig.collectionShipper === 'pubsubbeat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
+          || payload.collectionConfig.collectionShipper === 'kafkabeat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
+          || payload.collectionConfig.collectionShipper === 'eventhubbeat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
         ) {
           // Get a clean Beat name
           const beatName = payload.collectionConfig.collectionShipper.toLowerCase().trim();
@@ -274,6 +279,9 @@ async function tailInit(socket, payload) {
                 // console.log('STDERR:::' + stderr);
                 if (socket.connected) {
                   socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
+                  if (String(stderr).match(/unknown command "[^"]*" for "lrctl"/)) {
+                    socket.emit('tail.log', { tailId: payload.tailId, code: 'ERROR', payload: '❌ Tail failed due to LRCTL too old for this Beat.' });
+                  }
                 }
               },
               exit(code) {
@@ -594,8 +602,24 @@ async function tailInit(socket, payload) {
                 if (socket.connected) {
                   socket.emit('tail.log', { tailId: payload.tailId, code: 'FAILURE' });
                 }
+
+                // Remove the tail entry
+                // eslint-disable-next-line no-use-before-define
+                setTimeout(tailKill, 500, socket, payload);
               }
             });
+        } else {
+          // Doing nothing
+          if (socket.connected) {
+            socket.emit('tail.log', { tailId: payload.tailId, code: 'ERROR', payload: '❌ Tail failed to start due to missing or unrecognised Beat. Go to the Collection configuration editor, hit Save and try to run this Tail again.' });
+            socket.emit('tail.log', { tailId: payload.tailId, code: 'EXIT', payload: 1 });
+            socket.emit('tail.log', { tailId: payload.tailId, code: 'END', payload: 'Tail failed to start.' });
+          }
+          logToSystem('Warning', 'tailInit - Tail failed to start due to missing or unrecognised Beat.');
+
+          // Remove the tail entry
+          // eslint-disable-next-line no-use-before-define
+          setTimeout(tailKill, 500, socket, payload);
         }
       } else {
         if (socket.connected) {
@@ -608,7 +632,7 @@ async function tailInit(socket, payload) {
     } else {
       // The tailId does already exist
       if (socket.connected) {
-        socket.emit('tail.log', { tailId: payload.tailId, code: 'ERROR', payload: '❌ Tail failed to start due to another Tail with the same tailId already exists.' });
+        socket.emit('tail.log', { tailId: payload.tailId, code: 'ERROR', payload: '❌ Tail failed to start due to another Tail with the same tailId already exists. Try again in a few seconds, or close the other Tail for this Pipeline.' });
         socket.emit('tail.log', { tailId: payload.tailId, code: 'EXIT', payload: 1 });
         socket.emit('tail.log', { tailId: payload.tailId, code: 'END', payload: 'Tail failed to start.' });
       }
@@ -634,8 +658,14 @@ function tailKill(socket, payload) {
   ) {
     // Check the tailId exists
     if (tails[payload.tailId]) {
-      tails[payload.tailId].end();
-      tails[payload.tailId] = null;
+      try {
+        tails[payload.tailId].end();
+      } finally {
+        tails[payload.tailId] = null;
+      }
+      if (socket.connected) {
+        socket.emit('tail.log', { tailId: payload.tailId, code: 'STDERR', payload: '🧹 Tail record cleaned. Ready to run a Tail for the same Pipeline again.' });
+      }
     }
   }
 } // tailKill
@@ -695,7 +725,7 @@ async function tailKillShipper(socket, payload) {
                 // console.log('CODE:::' + code);
                 if (code !== 0) {
                   if (socket.connected) {
-                    socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Something didn\'t go according to plan while trying to terminate Shipper\' Process.' });
+                    socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Something didn\'t go according to plan while trying to terminate Shipper\'s Process.' });
                   }
                   return false;
                 }
@@ -722,7 +752,7 @@ async function tailKillShipper(socket, payload) {
                 // console.log('CODE:::' + code);
                 if (code !== 0) {
                   if (socket.connected) {
-                    socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Something didn\'t go according to plan while trying to clean the temporary Shipper\' directory.' });
+                    socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Something didn\'t go according to plan while trying to clean the temporary Shipper\'s directory.' });
                   }
                   return false;
                 }
@@ -752,17 +782,26 @@ async function tailKillShipper(socket, payload) {
                 }
               }
             });
-        } else if (beatName === 'genericbeat') {
+        } else if (
+          ( // Is it a standard LogRhythm Beat?
+            payload.options
+            && payload.options.identificationStyle
+            && Array.isArray(payload.options.identificationStyle)
+            && payload.options.identificationStyle.includes('logrhythmBeat')
+          )
+          || beatName === 'genericbeat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
+          || beatName === 'webhookbeat' // Backward compatibility (for Pipelines created before options.identificationStyle was a thing)
+        ) {
+          const beatNameLowerCase = beatName.toLowerCase();
           // Create a new Beat ID for the Tail
           const beatId = String(`T_${payload.pipelineUid}`).replace(/[^a-zA-Z0-9]/g, '_').substring(0, 12);
           // Fully Qualified Beat Name
           const logRhythmFullyQualifiedBeatName = String(
-            `${beatName.toLowerCase()
-            }_${beatId}`
+            `${beatNameLowerCase}_${beatId}`
           );
 
           tails[payload.tailId]
-            .exec(`./lrctl genericbeat stop --fqbn ${logRhythmFullyQualifiedBeatName}`, {
+            .exec(`./lrctl ${beatNameLowerCase} stop --fqbn ${logRhythmFullyQualifiedBeatName}`, {
               err(stderr) {
                 // console.log('STDERR:::' + stderr);
                 if (socket.connected) {
@@ -773,7 +812,7 @@ async function tailKillShipper(socket, payload) {
                 // console.log('CODE:::' + code);
                 if (code !== 0) {
                   if (socket.connected) {
-                    socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Something didn\'t go according to plan while trying to terminate Shipper\' Process.' });
+                    socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Something didn\'t go according to plan while trying to terminate Shipper\'s Process.' });
                   }
                   return false;
                 }
@@ -789,7 +828,7 @@ async function tailKillShipper(socket, payload) {
                 }
               }
             })
-            .exec(`./lrctl genericbeat config remove --yes --fqbn ${logRhythmFullyQualifiedBeatName}`, {
+            .exec(`./lrctl ${beatNameLowerCase} config remove --yes --fqbn ${logRhythmFullyQualifiedBeatName}`, {
               err(stderr) {
                 // console.log('STDERR:::' + stderr);
                 if (socket.connected) {
@@ -800,7 +839,7 @@ async function tailKillShipper(socket, payload) {
                 // console.log('CODE:::' + code);
                 if (code !== 0) {
                   if (socket.connected) {
-                    socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Something didn\'t go according to plan while trying to clean the temporary Shipper\' configuration.' });
+                    socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Something didn\'t go according to plan while trying to clean the temporary Shipper\'s configuration.' });
                   }
                   return false;
                 }
@@ -821,6 +860,8 @@ async function tailKillShipper(socket, payload) {
               if (socket.connected) {
                 socket.emit('tail.kill', { tailId: payload.tailId, code: 'END', payload: err });
               }
+              // Remove the tail entry
+              tails[payload.tailId] = null;
             })
             .start({
               failure() {
@@ -828,86 +869,16 @@ async function tailKillShipper(socket, payload) {
                 if (socket.connected) {
                   socket.emit('tail.kill', { tailId: payload.tailId, code: 'FAILURE' });
                 }
+                // Remove the tail entry
+                tails[payload.tailId] = null;
               }
             });
-        } else if (beatName === 'webhookbeat') {
-          // Create a new Beat ID for the Tail
-          const beatId = String(`T_${payload.pipelineUid}`).replace(/[^a-zA-Z0-9]/g, '_').substring(0, 12);
-          // Fully Qualified Beat Name
-          const logRhythmFullyQualifiedBeatName = String(
-            `${beatName.toLowerCase()
-            }_${beatId}`
-          );
-
-          tails[payload.tailId]
-            .exec(`./lrctl webhookbeat stop --fqbn ${logRhythmFullyQualifiedBeatName}`, {
-              err(stderr) {
-                // console.log('STDERR:::' + stderr);
-                if (socket.connected) {
-                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
-                }
-              },
-              exit(code) {
-                // console.log('CODE:::' + code);
-                if (code !== 0) {
-                  if (socket.connected) {
-                    socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Something didn\'t go according to plan while trying to terminate Shipper\' Process.' });
-                  }
-                  return false;
-                }
-                if (socket.connected) {
-                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'EXIT', payload: code });
-                }
-                return true;
-              },
-              out(stdout) {
-                // console.log('STDOUT:::' + stdout);
-                if (socket.connected) {
-                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
-                }
-              }
-            })
-            .exec(`./lrctl webhookbeat config remove --yes --fqbn ${logRhythmFullyQualifiedBeatName}`, {
-              err(stderr) {
-                // console.log('STDERR:::' + stderr);
-                if (socket.connected) {
-                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDERR', payload: stderr });
-                }
-              },
-              exit(code) {
-                // console.log('CODE:::' + code);
-                if (code !== 0) {
-                  if (socket.connected) {
-                    socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: 'Something didn\'t go according to plan while trying to clean the temporary Shipper\' configuration.' });
-                  }
-                  return false;
-                }
-                if (socket.connected) {
-                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'EXIT', payload: code });
-                }
-                return true;
-              },
-              out(stdout) {
-                // console.log('STDOUT:::' + stdout);
-                if (socket.connected) {
-                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'STDOUT', payload: stdout });
-                }
-              }
-            })
-            .on('end', (err) => {
-              // console.log('END:::' + err);
-              if (socket.connected) {
-                socket.emit('tail.kill', { tailId: payload.tailId, code: 'END', payload: err });
-              }
-            })
-            .start({
-              failure() {
-                // console.log('FAILURE:::' + err);
-                if (socket.connected) {
-                  socket.emit('tail.kill', { tailId: payload.tailId, code: 'FAILURE' });
-                }
-              }
-            });
+        } else if (socket.connected) {
+          if (socket.connected) {
+            socket.emit('tail.kill', { tailId: payload.tailId, code: 'ERROR', payload: `Unknown Beat ("${beatName}"). Could not clean the temporary Shipper's configuration.` });
+            socket.emit('tail.kill', { tailId: payload.tailId, code: 'FAILURE' });
+          }
+          logToSystem('Error', `tailKillShipper - Unknown Beat ("${beatName}"). Could not clean the temporary Shipper's configuration.`);
         }
       }
     }

@@ -1,11 +1,14 @@
 <template>
   <q-page class="q-pa-sm">
-    <q-header elevated :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
+    <q-header bordered :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
-        <q-btn no-caps flat dense icon="arrow_back" :label="$t('Return to Admin')" :to="'/Admin'" />
-        <q-toolbar-title style="opacity:.4" class="text-center">{{ $t('Admin : RBAC : Manage User Accounts') }}</q-toolbar-title>
+        <img class="q-mr-md" :src="(darkMode ? 'logrhythm_logo_darkmode_wide.svg' : 'logrhythm_logo_lightmode_wide.svg')" alt="LogRhythm Open Collector">
+        <q-btn no-caps flat dense icon="o_groups" color="primary" :label="$t('Manage User Roles')" to="/Admin/RBAC/Roles" />
       </q-toolbar>
     </q-header>
+    <BreadCrumbs
+      :crumbs="breadCrumbs"
+    />
     <q-card class="">
       <!-- <q-card-section class="col">
         <div class="text-h4">User Accounts</div>
@@ -215,12 +218,14 @@
 import { mapState, mapActions } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import ConfirmDialog from '../../../components/Dialogs/ConfirmDialog.vue'
+import BreadCrumbs from 'components/BreadCrumbs.vue'
 
 export default {
   name: 'PageAdminUsers',
   mixins: [
     mixinSharedDarkMode // Shared computed to access and update the DarkMode
   ],
+  components: { BreadCrumbs },
   data () {
     return {
       searchFilter: '',
@@ -281,6 +286,24 @@ export default {
           return 0
         }
       )
+    },
+    breadCrumbs () {
+      return [
+        {
+          icon: 'o_home',
+          link: '/Welcome'
+        },
+        {
+          title: this.$t('Admin'),
+          link: '/Admin'
+        },
+        {
+          title: 'RBAC'
+        },
+        {
+          title: this.$t('Manage User Accounts')
+        }
+      ]
     }
   },
   methods: {

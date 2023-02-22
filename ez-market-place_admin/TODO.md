@@ -8,6 +8,8 @@
   - [ ] Add graph for
     - [ ] High level Market stats
     - [ ] Pipeline Templates stats
+- Front page
+  - [ ] List of Pipeline Templates
 - Admin Pipelines
   - [ ] Review Pipeline
     - [ ] Collection
@@ -18,6 +20,8 @@
         - [ ] Better UI
       - [ ] Procedural scrubber to remove Shared Values
   - [ ] Sends Message/Notification to Pipeline's Publisher
+- Admin AKA Redirection
+  - [ ] Admin page for Documentation redirection 
 
 ## TO FIX
 - Multi Factor Authentication

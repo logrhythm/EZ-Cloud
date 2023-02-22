@@ -1,5 +1,13 @@
 <template>
-  <q-page class="q-pa-md">
+  <q-page class="q-pa-sm">
+    <q-header bordered :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
+      <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
+        <img class="q-mr-md" :src="(darkMode ? 'logrhythm_logo_darkmode_wide.svg' : 'logrhythm_logo_lightmode_wide.svg')" alt="LogRhythm Open Collector">
+      </q-toolbar>
+    </q-header>
+    <BreadCrumbs
+      :crumbs="breadCrumbs"
+    />
       <q-table
         :title="$t('OpenCollectors')"
         :data="tableData"
@@ -46,11 +54,11 @@
         </template>
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
-            <!-- <q-btn flat dense icon="launch" @click="openOpenCollector(props.row)" >
+            <q-btn flat dense icon="troubleshoot" @click="openOpenCollector(props.row)" >
               <q-tooltip content-style="font-size: 1em">
-                {{ $t('Open this OpenCollector') }}
+                {{ $t('Manage this OpenCollector') }}
               </q-tooltip>
-            </q-btn> -->
+            </q-btn>
             <q-btn flat dense icon="refresh" @click="refreshOpenCollector(props.row.uid)">
               <q-tooltip content-style="font-size: 1em">
                 {{ $t('Refresh stats for this OpenCollector') }}
@@ -450,21 +458,25 @@
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
+import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
 import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import mixinSharedShipperAndCollectionsHelpers from 'src/mixins/mixin-Shared-ShipperAndCollectionsHelpers'
 import { uid } from 'quasar'
 import ConfirmDialog from 'components/Dialogs/ConfirmDialog.vue'
+import BreadCrumbs from 'components/BreadCrumbs.vue'
 
 // import shippersFallbackUrls from 'src/pages/OpenCollectors/shippers_fallback_urls.json'
 
 export default {
   name: 'PageOpenCollectorsList',
   mixins: [
+    mixinSharedDarkMode, // Shared computed to access and update the DarkMode
     mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
     mixinSharedSocket, // Shared function and state to access the Socket.io
     mixinSharedShipperAndCollectionsHelpers // Shared funtion to provide info (icon, names, etc...) for Shippers and Collections methods
   ],
+  components: { BreadCrumbs },
   data () {
     return {
       searchFilter: '',
@@ -539,6 +551,17 @@ export default {
     },
     tableLoading () {
       return this.dataLoading // Coming from the Mixin: mixinSharedLoadCollectorsAndPipelines
+    },
+    breadCrumbs () {
+      return [
+        {
+          icon: 'o_home',
+          link: '/Welcome'
+        },
+        {
+          title: this.$t('OpenCollectors')
+        }
+      ]
     }
     // shippersUrls: {
     //   get () {
@@ -555,7 +578,7 @@ export default {
     ...mapActions('mainStore', ['upsertOpenCollector', 'deleteOpenCollector', 'loadShippersUrls']),
     ...mapActions('mainStore', ['getOpenCollectorsOsVersion', 'getOpenCollectorsDockerVersion', 'getOpenCollectorsOcVersion', 'getOpenCollectorsFilebeatVersion', 'getOpenCollectorsOcAndActiveBeatsVersion', 'getOpenCollectorsjsBeatVersion']),
     openOpenCollector (row) {
-      this.$router.push({ path: '/OpenCollectors/' + row.uid + '/View' })
+      this.$router.push({ path: '/OpenCollectors/' + row.uid + '/Manage' })
     }, // openOpenCollector
     refreshOpenCollector (uid) {
       if (uid && uid.length) {
