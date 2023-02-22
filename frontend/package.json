@@ -1,6 +1,6 @@
 {
   "name": "ez-cloud-client",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "User Interface for EZ-Cloud for Legacy SIEM",
   "productName": "OC Admin Client",
   "author": "Tony Massé <tony.masse@logrhythm.com>",
@@ -43,6 +43,7 @@
     "eslint-webpack-plugin": "^2.4.0"
   },
   "overrides": {
+    "http-cache-semantics": ">=4.1.1",
     "markdown-it": ">=12.3.2",
     "node-forge": ">=1.2.1",
     "express": ">=4.17.2",

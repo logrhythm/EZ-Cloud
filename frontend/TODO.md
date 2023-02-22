@@ -16,7 +16,17 @@
   - [x] Marketplace Template listing as Cards
 - [ ] LogRhythm Beats mapping for Collection Configuration
   - [x] Prisma Cloud
-  - [ ] ...
+  - [ ] Symantec WSS Beat
+  - [ ] Microsoft Graph API Beat
+  - [ ] Carbon Black Cloud Beat
+  - [ ] Cisco AMP Beat
+  - [ ] Duo Authentication Security Beat
+  - [ ] Proofpoint Beat
+  - [ ] Gmail Message Tracking Beat
+  - [ ] GSuite Beat
+  - [ ] Okta Beat
+  - [ ] Qualys FIM Beat
+  - [ ] Sophos Central Beat
 - [x] Add support for new LogRhythm Beats via `logrhythmBeat` in `pipeline.options.identificationStyle[]`
   - [x] In Tail
   - [x] In Deploy
