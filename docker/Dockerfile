@@ -4,11 +4,12 @@
 # Modified on: 2022-10-13 - To `chmod +x` the Linux binary of `encryptionTool`
 # Modified on: 2022-12-13 - To add JWT token generation
 # Modified on: 2023-01-15 - To build config/ at run first time
+# Modified on: 2023-02-23 - To use `node:18-alpine` as base image
 # Description: Describes container `oc-admin`, based on NodeJS
 #              This container is designed to run the OC Admin (formerly EZ Cloud) Backend
 # =============================================
 
-FROM node:16-alpine
+FROM node:18-alpine
 
 RUN apk update
 RUN apk add uuidgen
