@@ -3,6 +3,8 @@
 # =============================================
 # Author:      Tony Massé
 # Create date: 2023-01-04
+# Modified on: 2023-02-23 - Switch to `main` branch and pull latest from Repo
+# Modified on: 2023-02-23 - Run `buildDockerFullAndPublishImage`
 # Description: Builds the content of the `oc-admin` container. 
 #              Run, build Frontend and Backend, then quit.
 # Parameters:
@@ -30,5 +32,11 @@ echo "### Run \`Init\` entry point..."
 echo "### Jump into \`/app/EZ-Cloud\` directory..."
 cd /app/EZ-Cloud
 
-echo "### Run \`npm run buildDockerFull\`..."
-npm run buildDockerFull
+echo "### SWITCHING TO THE main BRANCH..."
+git checkout main
+
+echo "### GETTING THE LATEST CHANGES FROM REPO..."
+git pull
+
+echo "### Run \`npm run buildDockerFullAndPublishImage\`..."
+npm run buildDockerFullAndPublishImage

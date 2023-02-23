@@ -24,6 +24,8 @@ import collectionMethodTemplatesEventHubbeatDefault from './templates/collection
 import collectionMethodTemplatesEventHubbeatCustom from './templates/collectionMethodTemplate.eventhubbeat.custom.mapping'
 // PrismaCloud
 import collectionMethodTemplatesPrismacloudbeat from './templates/collectionMethodTemplate.prismacloudbeat'
+// PrismaCloud
+import collectionMethodTemplatesSymantecwssbeat from './templates/collectionMethodTemplate.symantecwssbeat'
 
 export default function () {
   return {
@@ -55,7 +57,8 @@ export default function () {
       collectionMethodTemplatesKafkabeat, // kafkabeat
       collectionMethodTemplatesEventHubbeatDefault, // eventhubbeat - With default mapping
       collectionMethodTemplatesEventHubbeatCustom, // eventhubbeat - With custom mapping
-      collectionMethodTemplatesPrismacloudbeat // prismacloudbeat
+      collectionMethodTemplatesPrismacloudbeat, // prismacloudbeat
+      collectionMethodTemplatesSymantecwssbeat // symantecwssbeat
     ], // collectionMethodTemplates
     collectionShippersOptions: [
       {
@@ -98,6 +101,12 @@ export default function () {
         value: 's3beat',
         label: 'LogRhythm S3 Beat',
         icon: 'logrhythm-s3beat',
+        outputFormat: 'yaml'
+      },
+      {
+        value: 'symantecwssbeat',
+        label: 'LogRhythm Symantec WSS Beat',
+        icon: 'logrhythm-symantecwssbeat',
         outputFormat: 'yaml'
       },
       {
@@ -193,6 +202,12 @@ export default function () {
         // icon: 'logrhythm'
       },
       {
+        value: 'symantecwssbeat',
+        label: 'symantecwssbeat',
+        icon: 'logrhythm-symantecwssbeat'
+        // icon: 'logrhythm'
+      },
+      {
         value: 'sophoscentralbeat',
         label: 'sophoscentralbeat',
         icon: 'logrhythm-sophoscentralbeat'
@@ -258,6 +273,12 @@ export default function () {
         shipper: 's3beat',
         value: 's3beat',
         label: 'S3',
+        icon: 'o_language'
+      },
+      {
+        shipper: 'symantecwssbeat',
+        value: 'symantecwssbeat',
+        label: 'Symantec WSS',
         icon: 'o_language'
       },
       {

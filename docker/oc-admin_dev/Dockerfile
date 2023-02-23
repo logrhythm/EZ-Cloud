@@ -8,13 +8,15 @@
 # Modified on: 2023-01-04 - Break down Init, Run and Build into different entrypoint scripts
 # Modified on: 2023-01-11 - Add Docker to container, as a fundation to build and publish Docker images from container itself
 # Modified on: 2023-01-15 - Add OpenSSL to container, as a fundation to create sample HTTPS keys and certs at build time
+# Modified on: 2023-02-23 - To use `node:18-alpine` as base image
+# Modified on: 2023-02-23 - Add Curl to container
 # Description: Describe container `oc-admin_dev`, based on NodeJS
 #              This container is designed to develop, as opposed
 #              to run, the OC Admin (formerly EZ Cloud) Backend,
 #              Frontend and Market's Back and Front ends.
 # =============================================
 
-FROM node:16-alpine
+FROM node:18-alpine
 
 RUN apk update
 RUN apk add git
@@ -22,6 +24,7 @@ RUN apk add uuidgen
 RUN apk add zip
 RUN apk add docker
 RUN apk add openssl
+RUN apk add curl
 
 WORKDIR /app
 

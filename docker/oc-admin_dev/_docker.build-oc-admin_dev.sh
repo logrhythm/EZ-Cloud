@@ -4,6 +4,7 @@
 # Author:      Tony Massé
 # Create date: 2022-07-11
 # Modified on: 2023-01-04 - Up container build version to v1.1
+# Modified on: 2023-02-23 - Up container build version to v1.2 (Using NodeJS `18-alpine`)
 # Description: Build the Dev version of the OC-Admin container `oc-admin_dev`.
 # Parameters:
 #  --help         Shows Help message
