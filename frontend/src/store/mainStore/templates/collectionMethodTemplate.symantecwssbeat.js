@@ -93,11 +93,13 @@ export default {
     },
     {
       name: 'numbackhoursData',
-      label: 'Number of Back Days',
+      label: 'Number of Back Hours',
       type: {
         name: 'number'
       },
-      description: 'Number of past days data need to be fetched when fetching data for very first time.',
+      description: `Number of past hours data need to be fetched when fetching data for very first time.
+> NOTE
+> The Symantec WSS Beat supports up to 180 hours of backlog data.`,
       default: '2',
       min: 1,
       max: 180,
@@ -110,7 +112,7 @@ export default {
       type: {
         name: 'number'
       },
-      description: 'Must be between 2 and 120 minutes.',
+      description: 'Defines the gap between two request calls. Must be between 2 and 120 minutes.',
       default: '30',
       min: 2,
       max: 120,
