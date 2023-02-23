@@ -17,7 +17,7 @@
 - [ ] LogRhythm Beats mapping for Collection Configuration
   - [x] Prisma Cloud
   - [X] Symantec WSS Beat
-  - [ ] Microsoft Graph API Beat
+  - [x] Microsoft Graph API Beat
   - [ ] Carbon Black Cloud Beat
   - [ ] Cisco AMP Beat
   - [ ] Duo Authentication Security Beat

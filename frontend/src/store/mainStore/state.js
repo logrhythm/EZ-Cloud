@@ -24,8 +24,10 @@ import collectionMethodTemplatesEventHubbeatDefault from './templates/collection
 import collectionMethodTemplatesEventHubbeatCustom from './templates/collectionMethodTemplate.eventhubbeat.custom.mapping'
 // PrismaCloud
 import collectionMethodTemplatesPrismacloudbeat from './templates/collectionMethodTemplate.prismacloudbeat'
-// PrismaCloud
+// Symantec WSS
 import collectionMethodTemplatesSymantecwssbeat from './templates/collectionMethodTemplate.symantecwssbeat'
+// Microsoft Graph API
+import collectionMethodTemplatesMsGraphbeatbeat from './templates/collectionMethodTemplate.msgraphbeat'
 
 export default function () {
   return {
@@ -58,7 +60,8 @@ export default function () {
       collectionMethodTemplatesEventHubbeatDefault, // eventhubbeat - With default mapping
       collectionMethodTemplatesEventHubbeatCustom, // eventhubbeat - With custom mapping
       collectionMethodTemplatesPrismacloudbeat, // prismacloudbeat
-      collectionMethodTemplatesSymantecwssbeat // symantecwssbeat
+      collectionMethodTemplatesSymantecwssbeat, // symantecwssbeat
+      collectionMethodTemplatesMsGraphbeatbeat // msgraphbeat
     ], // collectionMethodTemplates
     collectionShippersOptions: [
       {
@@ -83,6 +86,12 @@ export default function () {
         value: 'kafkabeat',
         label: 'LogRhythm Kafka Beat',
         icon: 'logrhythm-kafkabeat',
+        outputFormat: 'yaml'
+      },
+      {
+        value: 'msgraphbeat',
+        label: 'LogRhythm Beat for Microsoft Graph API',
+        icon: 'logrhythm-msgraphbeat',
         outputFormat: 'yaml'
       },
       {
@@ -255,6 +264,12 @@ export default function () {
         shipper: 'kafkabeat',
         value: 'kafkabeat',
         label: 'Kafka',
+        icon: 'o_language'
+      },
+      {
+        shipper: 'msgraphbeat',
+        value: 'msgraphbeat',
+        label: 'Microsoft Graph API',
         icon: 'o_language'
       },
       {
