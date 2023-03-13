@@ -28,6 +28,8 @@ import collectionMethodTemplatesPrismacloudbeat from './templates/collectionMeth
 import collectionMethodTemplatesSymantecwssbeat from './templates/collectionMethodTemplate.symantecwssbeat'
 // Microsoft Graph API
 import collectionMethodTemplatesMsGraphbeatbeat from './templates/collectionMethodTemplate.msgraphbeat'
+// Carbon Black Cloud
+import collectionMethodTemplatesCarbonBlackbeat from './templates/collectionMethodTemplate.carbonblackcloudbeat'
 
 export default function () {
   return {
@@ -61,7 +63,8 @@ export default function () {
       collectionMethodTemplatesEventHubbeatCustom, // eventhubbeat - With custom mapping
       collectionMethodTemplatesPrismacloudbeat, // prismacloudbeat
       collectionMethodTemplatesSymantecwssbeat, // symantecwssbeat
-      collectionMethodTemplatesMsGraphbeatbeat // msgraphbeat
+      collectionMethodTemplatesMsGraphbeatbeat, // msgraphbeat
+      collectionMethodTemplatesCarbonBlackbeat // carbonblackcloud
     ], // collectionMethodTemplates
     collectionShippersOptions: [
       {
@@ -69,6 +72,12 @@ export default function () {
         label: 'jsBeat',
         icon: 'jsBeat',
         outputFormat: 'json'
+      },
+      {
+        value: 'carbonblackcloudbeat',
+        label: 'LogRhythm Carbon Black Cloud Beat',
+        icon: 'logrhythm-carbonblackcloudbeat',
+        outputFormat: 'yaml'
       },
       {
         value: 'eventhubbeat',
@@ -230,6 +239,12 @@ export default function () {
       }
     ], // openCollectorBeats
     collectionMethodsOptions: [
+      {
+        shipper: 'carbonblackcloudbeat',
+        value: 'carbonblackcloudbeat',
+        label: 'Carbon Black Cloud',
+        icon: 'o_language'
+      },
       {
         shipper: 'jsBeat',
         value: 'flatFile',
