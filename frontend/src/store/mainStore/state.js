@@ -30,6 +30,8 @@ import collectionMethodTemplatesSymantecwssbeat from './templates/collectionMeth
 import collectionMethodTemplatesMsGraphbeatbeat from './templates/collectionMethodTemplate.msgraphbeat'
 // Carbon Black Cloud
 import collectionMethodTemplatesCarbonBlackbeat from './templates/collectionMethodTemplate.carbonblackcloudbeat'
+// Cisco AMP
+import collectionMethodTemplatesCiscoAmpbeat from './templates/collectionMethodTemplate.ciscoampbeat'
 
 export default function () {
   return {
@@ -64,7 +66,8 @@ export default function () {
       collectionMethodTemplatesPrismacloudbeat, // prismacloudbeat
       collectionMethodTemplatesSymantecwssbeat, // symantecwssbeat
       collectionMethodTemplatesMsGraphbeatbeat, // msgraphbeat
-      collectionMethodTemplatesCarbonBlackbeat // carbonblackcloud
+      collectionMethodTemplatesCarbonBlackbeat, // carbonblackcloud
+      collectionMethodTemplatesCiscoAmpbeat // ciscoampbeat
     ], // collectionMethodTemplates
     collectionShippersOptions: [
       {
@@ -77,6 +80,12 @@ export default function () {
         value: 'carbonblackcloudbeat',
         label: 'LogRhythm Carbon Black Cloud Beat',
         icon: 'logrhythm-carbonblackcloudbeat',
+        outputFormat: 'yaml'
+      },
+      {
+        value: 'ciscoampbeat',
+        label: 'LogRhythm Cisco AMP Beat',
+        icon: 'logrhythm-ciscoampbeat',
         outputFormat: 'yaml'
       },
       {
@@ -243,6 +252,12 @@ export default function () {
         shipper: 'carbonblackcloudbeat',
         value: 'carbonblackcloudbeat',
         label: 'Carbon Black Cloud',
+        icon: 'o_language'
+      },
+      {
+        shipper: 'ciscoampbeat',
+        value: 'ciscoampbeat',
+        label: 'Cisco AMP',
         icon: 'o_language'
       },
       {
