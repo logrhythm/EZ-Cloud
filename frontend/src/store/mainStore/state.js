@@ -32,6 +32,8 @@ import collectionMethodTemplatesMsGraphbeatbeat from './templates/collectionMeth
 import collectionMethodTemplatesCarbonBlackbeat from './templates/collectionMethodTemplate.carbonblackcloudbeat'
 // Cisco AMP
 import collectionMethodTemplatesCiscoAmpbeat from './templates/collectionMethodTemplate.ciscoampbeat'
+// DUO
+import collectionMethodTemplatesDuobeat from './templates/collectionMethodTemplate.duobeat'
 
 export default function () {
   return {
@@ -67,7 +69,8 @@ export default function () {
       collectionMethodTemplatesSymantecwssbeat, // symantecwssbeat
       collectionMethodTemplatesMsGraphbeatbeat, // msgraphbeat
       collectionMethodTemplatesCarbonBlackbeat, // carbonblackcloud
-      collectionMethodTemplatesCiscoAmpbeat // ciscoampbeat
+      collectionMethodTemplatesCiscoAmpbeat, // ciscoampbeat
+      collectionMethodTemplatesDuobeat // duobeat
     ], // collectionMethodTemplates
     collectionShippersOptions: [
       {
@@ -86,6 +89,12 @@ export default function () {
         value: 'ciscoampbeat',
         label: 'LogRhythm Cisco AMP Beat',
         icon: 'logrhythm-ciscoampbeat',
+        outputFormat: 'yaml'
+      },
+      {
+        value: 'duobeat',
+        label: 'LogRhythm Duo Beat',
+        icon: 'logrhythm-duobeat',
         outputFormat: 'yaml'
       },
       {
@@ -259,6 +268,12 @@ export default function () {
         value: 'ciscoampbeat',
         label: 'Cisco AMP',
         icon: 'o_language'
+      },
+      {
+        shipper: 'duobeat',
+        value: 'duobeat',
+        label: 'Duo',
+        icon: 'o_badge'
       },
       {
         shipper: 'jsBeat',
