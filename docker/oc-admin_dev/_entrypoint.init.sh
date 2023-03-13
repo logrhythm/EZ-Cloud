@@ -53,3 +53,6 @@ npm install
 
 echo "### DOWNLOADING AND INSTALLING GLOBALLY QUASAR NPM PACKAGE..."
 npm install --location=global @quasar/cli
+
+echo "### SETTING NODE OPTIONS FOR OPENSSL..."
+export NODE_OPTIONS=--openssl-legacy-provider
