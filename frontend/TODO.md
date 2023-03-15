@@ -71,6 +71,7 @@
   - [ ] Breadcrumbs
 - [x] Shippers icons - Replace old LogRhythm logo with current one
 - [ ] Fix issue #40 - [FR] Offer to extract the `.log` field the same way the `.message` can be
+- [ ] Fix the height of Field editor in Mapping Builder (the breadcrumbs are taking more space than the old header)
 ## TO TEST
 
 ### Target: v1.0
