@@ -34,6 +34,8 @@ import collectionMethodTemplatesCarbonBlackbeat from './templates/collectionMeth
 import collectionMethodTemplatesCiscoAmpbeat from './templates/collectionMethodTemplate.ciscoampbeat'
 // DUO
 import collectionMethodTemplatesDuobeat from './templates/collectionMethodTemplate.duobeat'
+// Proofpoint
+import collectionMethodTemplatesProofpointbeat from './templates/collectionMethodTemplate.proofpointbeat'
 
 export default function () {
   return {
@@ -70,7 +72,8 @@ export default function () {
       collectionMethodTemplatesMsGraphbeatbeat, // msgraphbeat
       collectionMethodTemplatesCarbonBlackbeat, // carbonblackcloud
       collectionMethodTemplatesCiscoAmpbeat, // ciscoampbeat
-      collectionMethodTemplatesDuobeat // duobeat
+      collectionMethodTemplatesDuobeat, // duobeat
+      collectionMethodTemplatesProofpointbeat // proofpointbeat
     ], // collectionMethodTemplates
     collectionShippersOptions: [
       {
@@ -125,6 +128,12 @@ export default function () {
         value: 'prismacloudbeat',
         label: 'LogRhythm Prisma Cloud Beat',
         icon: 'logrhythm-prismacloudbeat',
+        outputFormat: 'yaml'
+      },
+      {
+        value: 'proofpointbeat',
+        label: 'LogRhythm Proofpoint Beat',
+        icon: 'logrhythm-proofpointbeat',
         outputFormat: 'yaml'
       },
       {
@@ -217,6 +226,12 @@ export default function () {
         value: 'prismacloudbeat',
         label: 'prismacloudbeat',
         icon: 'logrhythm-prismacloudbeat'
+        // icon: 'logrhythm'
+      },
+      {
+        value: 'proofpointbeat',
+        label: 'proofpointbeat',
+        icon: 'logrhythm-proofpointbeat'
         // icon: 'logrhythm'
       },
       {
@@ -322,6 +337,12 @@ export default function () {
         value: 'prismacloudbeat',
         label: 'Prisma Cloud',
         icon: 'o_language'
+      },
+      {
+        shipper: 'proofpointbeat',
+        value: 'proofpointbeat',
+        label: 'Proofpoint - Default Mapping',
+        icon: 'o_email'
       },
       {
         shipper: 'pubsubbeat',
