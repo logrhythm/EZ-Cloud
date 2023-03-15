@@ -84,7 +84,7 @@ export default {
       type: {
         name: 'number'
       },
-      description: 'Time period, in seconds, to wait before making another API call if the previous request failed, to avoid throtlling.',
+      description: 'Time period, in seconds, to wait before making another API call if the previous request failed, to avoid throttling.',
       default: '60',
       min: 0,
       max: 3600,
