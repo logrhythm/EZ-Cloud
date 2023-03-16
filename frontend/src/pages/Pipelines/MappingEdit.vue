@@ -411,7 +411,7 @@
         <!-- DATA -->
           <!-- style="height: calc(100vh - (50px + 10px + 10px + 30px));" -->
         <q-virtual-scroll
-          style="height: calc(100vh - (150px)); min-height: 10rem;"
+          style="height: calc(100vh - (15rem)); min-height: 10rem;"
           :items="orderBy(jsonPathes, 'name')"
           virtual-scroll-item-size="48"
           :class="(darkMode ? 'dark' : '')"

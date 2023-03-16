@@ -18,10 +18,10 @@
   - [x] Prisma Cloud
   - [X] Symantec WSS Beat
   - [x] Microsoft Graph API Beat
-  - [ ] Carbon Black Cloud Beat
-  - [ ] Cisco AMP Beat
-  - [ ] Duo Authentication Security Beat
-  - [ ] Proofpoint Beat
+  - [x] Carbon Black Cloud Beat
+  - [x] Cisco AMP Beat
+  - [x] Duo Authentication Security Beat
+  - [x] Proofpoint Beat
   - [ ] Gmail Message Tracking Beat
   - [ ] GSuite Beat
   - [ ] Okta Beat
@@ -71,7 +71,7 @@
   - [ ] Breadcrumbs
 - [x] Shippers icons - Replace old LogRhythm logo with current one
 - [ ] Fix issue #40 - [FR] Offer to extract the `.log` field the same way the `.message` can be
-- [ ] Fix the height of Field editor in Mapping Builder (the breadcrumbs are taking more space than the old header)
+- [x] Fix the height of Field editor in Mapping Builder (the breadcrumbs are taking more space than the old header)
 ## TO TEST
 
 ### Target: v1.0
