@@ -305,6 +305,22 @@ function collectionConfigToYml (collectionConfig) {
       }
     })
 
+    //   ######  ##     ##  ######  ########  #######  ##     ##             ##       ########  ######## ########    ###    ##     ## ##       ########
+    //  ##    ## ##     ## ##    ##    ##    ##     ## ###   ###            ##        ##     ## ##       ##         ## ##   ##     ## ##          ##
+    //  ##       ##     ## ##          ##    ##     ## #### ####           ##         ##     ## ##       ##        ##   ##  ##     ## ##          ##
+    //  ##       ##     ##  ######     ##    ##     ## ## ### ##          ##          ##     ## ######   ######   ##     ## ##     ## ##          ##
+    //  ##       ##     ##       ##    ##    ##     ## ##     ##         ##           ##     ## ##       ##       ######### ##     ## ##          ##
+    //  ##    ## ##     ## ##    ##    ##    ##     ## ##     ##        ##            ##     ## ##       ##       ##     ## ##     ## ##          ##
+    //   ######   #######   ######     ##     #######  ##     ##       ##             ########  ######## ##       ##     ##  #######  ########    ##
+
+    // Some collectionMethod can have "-default" or "-custom", to allow for using hte built in OC parser, or the user defined one
+    if (
+      collectionMethod === `${jsonConfig.collectionShipper}-default` ||
+      collectionMethod === `${jsonConfig.collectionShipper}-custom`
+    ) {
+      collectionMethod = jsonConfig.collectionShipper
+    }
+
     //  ######## ##     ## ######## ##    ## ######## ##     ## ##     ## ########
     //  ##       ##     ## ##       ###   ##    ##    ##     ## ##     ## ##     ##
     //  ##       ##     ## ##       ####  ##    ##    ##     ## ##     ## ##     ##
@@ -314,13 +330,6 @@ function collectionConfigToYml (collectionConfig) {
     //  ########    ###    ######## ##    ##    ##    ##     ##  #######  ########
 
     if (jsonConfig.collectionShipper === 'eventhubbeat') {
-      if (collectionMethod === 'eventhubbeat-default') {
-        collectionMethod = 'eventhubbeat'
-      }
-      if (collectionMethod === 'eventhubbeat-custom') {
-        collectionMethod = 'eventhubbeat'
-      }
-
       if (
         jsonConfig.connectionstring &&
         typeof jsonConfig.connectionstring === 'object' &&

@@ -22,12 +22,13 @@ import collectionMethodTemplatesKafkabeat from './templates/collectionMethodTemp
 // EventHub
 import collectionMethodTemplatesEventHubbeatDefault from './templates/collectionMethodTemplate.eventhubbeat.default.mapping'
 import collectionMethodTemplatesEventHubbeatCustom from './templates/collectionMethodTemplate.eventhubbeat.custom.mapping'
-// PrismaCloud
+// Prisma Cloud
 import collectionMethodTemplatesPrismacloudbeat from './templates/collectionMethodTemplate.prismacloudbeat'
 // Symantec WSS
 import collectionMethodTemplatesSymantecwssbeat from './templates/collectionMethodTemplate.symantecwssbeat'
 // Microsoft Graph API
-import collectionMethodTemplatesMsGraphbeatbeat from './templates/collectionMethodTemplate.msgraphbeat'
+import collectionMethodTemplatesMsGraphbeatbeatDefault from './templates/collectionMethodTemplate.msgraphbeat.default.mapping'
+import collectionMethodTemplatesMsGraphbeatbeatCustom from './templates/collectionMethodTemplate.msgraphbeat.custom.mapping'
 // Carbon Black Cloud
 import collectionMethodTemplatesCarbonBlackbeat from './templates/collectionMethodTemplate.carbonblackcloudbeat'
 // Cisco AMP
@@ -69,7 +70,8 @@ export default function () {
       collectionMethodTemplatesEventHubbeatCustom, // eventhubbeat - With custom mapping
       collectionMethodTemplatesPrismacloudbeat, // prismacloudbeat
       collectionMethodTemplatesSymantecwssbeat, // symantecwssbeat
-      collectionMethodTemplatesMsGraphbeatbeat, // msgraphbeat
+      collectionMethodTemplatesMsGraphbeatbeatDefault, // msgraphbeat - With default mapping
+      collectionMethodTemplatesMsGraphbeatbeatCustom, // msgraphbeat - With custom mapping
       collectionMethodTemplatesCarbonBlackbeat, // carbonblackcloud
       collectionMethodTemplatesCiscoAmpbeat, // ciscoampbeat
       collectionMethodTemplatesDuobeat, // duobeat
@@ -217,6 +219,12 @@ export default function () {
         // icon: 'logrhythm'
       },
       {
+        value: 'msgraphbeat',
+        label: 'msgraphbeat',
+        icon: 'logrhythm-msgraphbeat'
+        // icon: 'logrhythm'
+      },
+      {
         value: 'oktabeat',
         label: 'oktabeat',
         icon: 'logrhythm-oktabeat'
@@ -328,8 +336,14 @@ export default function () {
       },
       {
         shipper: 'msgraphbeat',
-        value: 'msgraphbeat',
-        label: 'Microsoft Graph API',
+        value: 'msgraphbeat-default',
+        label: 'Microsoft Graph API - Default Mapping',
+        icon: 'o_language'
+      },
+      {
+        shipper: 'msgraphbeat',
+        value: 'msgraphbeat-custom',
+        label: 'Microsoft Graph API - With custom Mapping',
         icon: 'o_language'
       },
       {
