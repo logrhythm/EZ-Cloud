@@ -28,6 +28,20 @@ export default {
     heartbeatinterval: 60
   },
   identificationStyle: ['logrhythmBeat'],
+  mappingStyle: 'default', // `custom`: will offer the Field Mapping option, or `default`: will NOT offer to do Field Mappings. If not provided, falls back to 'custom'
+  skipDeploymentSteps: [
+    // 'e745e0e6-60f6-4857-8afa-f8ea0663b6c3', // Deploy: Create and drop Beat's configuration in right location
+    'd004f165-a028-4183-8e6d-f64534357c5d', // Deploy: Import JQ Pipeline into OpenCollector
+    'b632b998-cd67-4571-a384-31faf0053d1a', // Deploy: Create Log Source Type
+    '7e739d98-d427-4fac-9f63-392e8ccb4c94', // Deploy: Create MPE Rule
+    '04ff4e8c-de73-419a-a48b-944b01bca836', // Deploy: Create MPE Sub-Rule(s)
+    '6fba3b49-580b-4ceb-b8be-374fc848fe63', // Deploy: Create Processing Policy
+    'dd1fae83-10af-40ea-bfe9-20ff668d5141', // Deploy: Create Log Source (LS) Virtualisation
+    '857787cd-4ec5-4c06-b044-7aaf37de326f', // Deploy: Create new LS Virtualisation Item and associate it to LS Virtualisation
+    '1246443c-2f50-48af-bd7e-8072ed214e2e', // Deploy: Search related OpenCollector LS
+    '5c0a3a9c-6d01-40e6-acb8-b0763a52bba3' // Deploy: Add LS Virtualisation to OpenCollector Log Source
+    // '8276950b-c01b-423e-8ce0-1ed23af6efe4' // Un-deploy: Delete Beat configuration for Stream
+  ],
   options: {
     extractPayloadFieldOnly: false,
     payloadField: 'response'
