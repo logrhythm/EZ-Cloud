@@ -1,5 +1,26 @@
 # TODO - Frontend
 
+### Target: v1.2
+
+## TO DO
+- [ ] LogRhythm Beats mapping for Collection Configuration
+  - [ ] Gmail Message Tracking Beat
+  - [ ] GSuite Beat
+  - [ ] Okta Beat
+  - [ ] Qualys FIM Beat
+  - [ ] Sophos Central Beat
+- [ ] Error reporting card to deal with many errors
+  - [ ] Deduplicate error messages
+- [ ] Admin - MS SQL - Add Test button
+
+## TO FIX
+- Translations
+  - [ ] Title for Pipeline Properties
+  - [ ] Title for Pipeline Collection Builder
+  - [ ] Breadcrumbs
+- [ ] Fix issue #40 - [FR] Offer to extract the `.log` field the same way the `.message` can be
+## TO TEST
+
 ### Target: v1.1
 
 ## TO DO
