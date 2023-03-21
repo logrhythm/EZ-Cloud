@@ -1,5 +1,26 @@
 # TODO - Frontend
 
+### Target: v1.2
+
+## TO DO
+- [ ] LogRhythm Beats mapping for Collection Configuration
+  - [ ] Gmail Message Tracking Beat
+  - [ ] GSuite Beat
+  - [ ] Okta Beat
+  - [ ] Qualys FIM Beat
+  - [ ] Sophos Central Beat
+- [ ] Error reporting card to deal with many errors
+  - [ ] Deduplicate error messages
+- [ ] Admin - MS SQL - Add Test button
+
+## TO FIX
+- Translations
+  - [ ] Title for Pipeline Properties
+  - [ ] Title for Pipeline Collection Builder
+  - [ ] Breadcrumbs
+- [ ] Fix issue #40 - [FR] Offer to extract the `.log` field the same way the `.message` can be
+## TO TEST
+
 ### Target: v1.1
 
 ## TO DO
@@ -16,7 +37,17 @@
   - [x] Marketplace Template listing as Cards
 - [ ] LogRhythm Beats mapping for Collection Configuration
   - [x] Prisma Cloud
-  - [ ] ...
+  - [X] Symantec WSS Beat
+  - [x] Microsoft Graph API Beat
+  - [x] Carbon Black Cloud Beat
+  - [x] Cisco AMP Beat
+  - [x] Duo Authentication Security Beat
+  - [x] Proofpoint Beat
+  - [ ] Gmail Message Tracking Beat
+  - [ ] GSuite Beat
+  - [ ] Okta Beat
+  - [ ] Qualys FIM Beat
+  - [ ] Sophos Central Beat
 - [x] Add support for new LogRhythm Beats via `logrhythmBeat` in `pipeline.options.identificationStyle[]`
   - [x] In Tail
   - [x] In Deploy
@@ -61,6 +92,7 @@
   - [ ] Breadcrumbs
 - [x] Shippers icons - Replace old LogRhythm logo with current one
 - [ ] Fix issue #40 - [FR] Offer to extract the `.log` field the same way the `.message` can be
+- [x] Fix the height of Field editor in Mapping Builder (the breadcrumbs are taking more space than the old header)
 ## TO TEST
 
 ### Target: v1.0

@@ -8,7 +8,7 @@
    version="1.1"
    id="svg1992"
    inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
-   sodipodi:docname="logrhythm-duobeat.svg"
+   sodipodi:docname="logrhythm-msgraphbeat.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -29,14 +29,16 @@
      fit-margin-right="0"
      fit-margin-bottom="0"
      inkscape:zoom="1.5554293"
-     inkscape:cx="138.86841"
-     inkscape:cy="72.327299"
+     inkscape:cx="260.37828"
+     inkscape:cy="143.04732"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="1072"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer1" />
+     inkscape:current-layer="layer1"
+     showguides="true"
+     inkscape:guide-bbox="true" />
   <defs
      id="defs1989">
     <path
@@ -184,6 +186,32 @@
          offset="1"
          id="stop1337" />
     </linearGradient>
+    <style
+       id="style889">
+      .cls-1 {
+        fill: #0078d4;
+      }
+
+      .cls-2 {
+        fill: #28a8ea;
+      }
+
+      .cls-3 {
+        fill: #14447d;
+      }
+
+      .cls-4 {
+        fill: #50d9ff;
+      }
+
+      .cls-5 {
+        fill: #0364b8;
+      }
+
+      .cls-6 {
+        fill: #0f335e;
+      }
+    </style>
   </defs>
   <g
      inkscape:label="Layer 1"
@@ -259,6 +287,73 @@
        style="fill:#cbcbcb;stroke:#cbcbcb;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none;fill-opacity:1"
        d="M 17.693813,31.047285 31.047285,17.693813"
        id="path2730" />
+    <symbol
+       id="A-1"
+       overflow="visible"
+       transform="matrix(0.26458333,0,0,0.26458333,30.506123,29.620135)"
+       style="fill:#ffffff;fill-rule:evenodd;stroke:#000000;stroke-linecap:round;stroke-linejoin:round">
+      <g
+         stroke="none"
+         id="g46539">
+        <circle
+           cx="11.537"
+           cy="11.537"
+           fill="#aecbfa"
+           r="11.537"
+           transform="rotate(-120.00001,32.587855,18.998472)"
+           id="circle46519" />
+        <g
+           fill="#669df6"
+           id="g46525">
+          <circle
+             cx="7.1900001"
+             cy="7.1900001"
+             r="7.1900001"
+             transform="rotate(-120.00001,40.952989,-0.51006138)"
+             id="circle46521" />
+          <circle
+             cx="7.1900001"
+             cy="7.1900001"
+             r="7.1900001"
+             transform="rotate(120.00001,2.8880404,16.499675)"
+             id="circle46523" />
+        </g>
+        <circle
+           cx="36.651001"
+           cy="8.8000002"
+           fill="#aecbfa"
+           r="8.8000002"
+           id="circle46527" />
+        <circle
+           cx="36.651001"
+           cy="73.120003"
+           fill="#669df6"
+           r="6.8800001"
+           id="circle46529" />
+        <circle
+           cx="9.1960001"
+           cy="9.1960001"
+           fill="#aecbfa"
+           r="9.1960001"
+           transform="rotate(-120.00001,22.809383,33.232345)"
+           id="circle46531" />
+        <path
+           fill="#4285f4"
+           d="m 23.029,45.13 -8.724,5.037 a 8.82,8.82 0 0 1 2.116,2.474 8.82,8.82 0 0 1 1.084,3.069 l 8.724,-5.037 c -0.717,-0.773 -1.36,-1.639 -1.91,-2.592 -0.55,-0.953 -0.979,-1.943 -1.29,-2.95 z"
+           id="path46533" />
+        <circle
+           cx="9.1960001"
+           cy="9.1960001"
+           fill="#aecbfa"
+           r="9.1960001"
+           transform="rotate(120.00001,23.038046,49.083686)"
+           id="circle46535" />
+        <path
+           d="m 47.076,50.673 c 1.497,-1.6 2.58,-3.502 3.204,-5.54 l 8.718,5.033 c -0.829,0.666 -1.551,1.495 -2.116,2.474 a 8.82,8.82 0 0 0 -1.084,3.069 z M 39.851,27.071 a 14.17,14.17 0 0 0 -6.4,0.005 V 17.004 a 8.82,8.82 0 0 0 6.4,0 z"
+           fill="#4285f4"
+           id="path46537" />
+      </g>
+    </symbol>
     <g
        id="g1319-3"
        transform="matrix(0.64941553,0,0,-0.64941553,-394.0725,303.1297)">
@@ -277,50 +372,66 @@
       </g>
     </g>
     <g
-       id="g5359"
-       transform="translate(-56.620851,55.35492)">
-      <circle
-         style="opacity:1;fill:#64b243;fill-opacity:1;stroke-width:0.191947px;stroke-linecap:square;stroke-miterlimit:2;-inkscape-stroke:none;stop-color:#000000"
-         id="path2581"
-         cx="96.956619"
-         cy="-15.019157"
-         r="20" />
-      <g
-         id="g954"
-         transform="matrix(0.68181114,0,0,-0.68662455,-489.94139,489.39796)"
-         style="opacity:1;fill:#ffffff">
-        <g
-           id="g944"
-           style="fill:#ffffff" />
-        <g
-           id="g952"
-           style="fill:#ffffff">
-          <g
-             clip-path="url(#clipPath33912)"
-             opacity="0.850006"
-             id="g950"
-             style="fill:#ffffff">
-            <g
-               transform="translate(879.1162,732.356)"
-               id="g948"
-               style="fill:#ffffff">
-              <path
-                 d="m 0,0 h -32.267 v -14.564 h 16.148 C -7.514,-14.564 -0.483,-8.122 0,0"
-                 style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none"
-                 id="path946" />
-            </g>
-          </g>
-        </g>
-      </g>
-      <g
-         id="g958"
-         transform="matrix(0.68181114,0,0,-0.68662455,98.459637,-26.582662)"
-         style="opacity:1;fill:#ffffff">
-        <path
-           d="M 0,0 H -16.147 V -14.564 H 16.119 C 15.636,-6.444 8.605,0 0,0"
-           style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none"
-           id="path956" />
-      </g>
+       id="g917"
+       transform="matrix(0.10669769,0,0,0.10669769,20.338563,22.730642)">
+      <path
+         class="cls-2"
+         d="M 1144.74,530 1061,385 a 19.87,19.87 0 0 0 -6,-6.5 l 6.77,161.17 85.63,0.27 a 20,20 0 0 0 -2.66,-9.94 z"
+         transform="translate(-772.57,-375)"
+         id="path895" />
+      <path
+         class="cls-3"
+         d="M 775.26,550 859,695 a 20.09,20.09 0 0 0 5.43,6.08 l 36.39,-58.56 -126.67,-94.74 a 20.26,20.26 0 0 0 1.11,2.22 z"
+         transform="translate(-772.57,-375)"
+         id="path897" />
+      <path
+         class="cls-1"
+         d="m 859,385 -83.74,145 a 19.18,19.18 0 0 0 -1.46,3.12 L 894.46,437.29 864.11,379.16 A 19.89,19.89 0 0 0 859,385 Z"
+         transform="translate(-772.57,-375)"
+         id="path899" />
+      <path
+         class="cls-2"
+         d="M 1043.7,375 H 876.3 a 20,20 0 0 0 -12.19,4.14 l 30.35,58.13 153.91,-61.71 A 20.16,20.16 0 0 0 1043.7,375 Z"
+         transform="translate(-772.57,-375)"
+         id="path901" />
+      <polygon
+         class="cls-2"
+         points="128.19,267.5 289.22,164.69 121.89,62.27 "
+         id="polygon903" />
+      <path
+         class="cls-4"
+         d="M 1048.37,375.56 894.46,437.27 1061.79,539.69 1055,378.52 a 20,20 0 0 0 -6.63,-2.96 z"
+         transform="translate(-772.57,-375)"
+         id="path905" />
+      <path
+         class="cls-5"
+         d="m 773.8,533.1 a 20.07,20.07 0 0 0 0.35,14.68 l 126.62,94.72 -6.31,-205.23 z"
+         transform="translate(-772.57,-375)"
+         id="path907" />
+      <polygon
+         class="cls-1"
+         points=""
+         id="polygon909" />
+      <path
+         class="cls-6"
+         d="M 864.38,701.06 A 20.07,20.07 0 0 0 876.3,705 h 167.4 a 20,20 0 0 0 3.8,-0.38 L 900.77,642.5 Z"
+         transform="translate(-772.57,-375)"
+         id="path911" />
+      <path
+         class="cls-5"
+         d="m 900.77,642.5 146.73,62.12 a 20,20 0 0 0 7.54,-3.15 l 6.75,-161.78 z"
+         transform="translate(-772.57,-375)"
+         id="path913" />
+      <path
+         class="cls-1"
+         d="M 1061.79,539.69 1055,701.47 a 19.88,19.88 0 0 0 6,-6.49 l 83.7,-145 a 20,20 0 0 0 2.68,-10.06 z"
+         transform="translate(-772.57,-375)"
+         id="path915" />
     </g>
   </g>
+  <style
+     type="text/css"
+     id="style46080">
+	.st0{fill:#00297A;}
+</style>
 </svg>

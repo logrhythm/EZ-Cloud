@@ -3,6 +3,7 @@
 # =============================================
 # Author:      Tony Massé
 # Create date: 2023-01-04
+# Modified on: 2023-02-23 - Stop switching to `main` branch on start
 # Description: Initialise the container.
 # Parameters:
 #  --help         Shows Help message
@@ -26,8 +27,8 @@ fi
 echo "### Jump into \`/app/EZ-Cloud\` directory..."
 cd /app/EZ-Cloud
 
-echo "### SWITCHING TO THE CURRENT BRANCH..."
-git checkout main
+# echo "### SWITCHING TO THE CURRENT BRANCH..."
+# git checkout main
 
 echo "### GETTING THE LATEST CHANGES FROM REPO..."
 git pull
@@ -52,3 +53,6 @@ npm install
 
 echo "### DOWNLOADING AND INSTALLING GLOBALLY QUASAR NPM PACKAGE..."
 npm install --location=global @quasar/cli
+
+# echo "### SETTING NODE OPTIONS FOR OPENSSL..."
+# export NODE_OPTIONS=--openssl-legacy-provider

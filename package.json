@@ -1,6 +1,6 @@
 {
     "name": "ez-cloud-server",
-    "version": "1.1.1",
+    "version": "1.1.3",
     "description": "Server backend for EZ-Cloud for Legacy SIEM",
     "main": "index.js",
     "scripts": {
@@ -17,7 +17,7 @@
         "buildDockerGenerateHttpsKeyAndCert": "echo \"🚀 Generate HTTPS Key and Cert (🎯 Docker)...\" && rm -f config.sample/https.keytmp.pem config.sample/https.cert.pem && openssl req -nodes -x509 -newkey rsa:2048 -keyout config.sample/https.keytmp.pem -out config.sample/https.cert.pem -days 365 -subj \"/C=UK/ST=Berkshire/L=Maidenhead/O=LogRhythm Ltd/CN=Tony Masse/emailAddress=tony.masse@logrhythm.com\" && openssl rsa -in config.sample/https.keytmp.pem -out config.sample/https.key.pem && rm -f config.sample/https.keytmp.pem",
         "buildDockerWebPack": "echo \"🚀 Run Webpack (🎯 Docker)...\" && webpack --config webpack.config.docker.js",
         "buildDocker": "echo \"🚀 Build (🎯 Docker)...\" && npm run buildVersion && npm run buildDockerGenerateHttpsKeyAndCert && npm run buildDockerWebPack",
-        "buildDockerFrontendAndImport": "echo \"🚀 Build Frontend and Import (🎯 Docker)...\" && cd frontend && npm install && quasar build && rm -rf ../public_web_root/css/* && rm -rf ../public_web_root/js/* && cp -af dist/spa/* ../public_web_root/ && cd ..",
+        "buildDockerFrontendAndImport": "echo \"🚀 Build Frontend and Import (🎯 Docker)...\" && cd frontend && npm install && export NODE_OPTIONS=--openssl-legacy-provider && quasar build && export NODE_OPTIONS= && rm -rf ../public_web_root/css/* && rm -rf ../public_web_root/js/* && cp -af dist/spa/* ../public_web_root/ && cd ..",
         "buildDockerWithFrontend": "echo \"🚀 Build With Frontend (🎯 Docker)...\" && npm run buildDockerFrontendAndImport && npm run buildDocker",
         "buildDockerFull": "echo \"🚀 Build Full (🎯 Docker)...\" && npm run buildDockerWithFrontend",
         "buildDockerCreateImage": "echo \"🚀 Create Image (🎯 Docker)...\" && cd dist && chmod +x _docker.build-oc-admin.sh && ./_docker.build-oc-admin.sh && cd ..",

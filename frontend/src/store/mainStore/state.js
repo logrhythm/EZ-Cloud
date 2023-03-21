@@ -22,8 +22,21 @@ import collectionMethodTemplatesKafkabeat from './templates/collectionMethodTemp
 // EventHub
 import collectionMethodTemplatesEventHubbeatDefault from './templates/collectionMethodTemplate.eventhubbeat.default.mapping'
 import collectionMethodTemplatesEventHubbeatCustom from './templates/collectionMethodTemplate.eventhubbeat.custom.mapping'
-// PrismaCloud
+// Prisma Cloud
 import collectionMethodTemplatesPrismacloudbeat from './templates/collectionMethodTemplate.prismacloudbeat'
+// Symantec WSS
+import collectionMethodTemplatesSymantecwssbeat from './templates/collectionMethodTemplate.symantecwssbeat'
+// Microsoft Graph API
+import collectionMethodTemplatesMsGraphbeatbeatDefault from './templates/collectionMethodTemplate.msgraphbeat.default.mapping'
+import collectionMethodTemplatesMsGraphbeatbeatCustom from './templates/collectionMethodTemplate.msgraphbeat.custom.mapping'
+// Carbon Black Cloud
+import collectionMethodTemplatesCarbonBlackbeat from './templates/collectionMethodTemplate.carbonblackcloudbeat'
+// Cisco AMP
+import collectionMethodTemplatesCiscoAmpbeat from './templates/collectionMethodTemplate.ciscoampbeat'
+// DUO
+import collectionMethodTemplatesDuobeat from './templates/collectionMethodTemplate.duobeat'
+// Proofpoint
+import collectionMethodTemplatesProofpointbeat from './templates/collectionMethodTemplate.proofpointbeat'
 
 export default function () {
   return {
@@ -55,7 +68,14 @@ export default function () {
       collectionMethodTemplatesKafkabeat, // kafkabeat
       collectionMethodTemplatesEventHubbeatDefault, // eventhubbeat - With default mapping
       collectionMethodTemplatesEventHubbeatCustom, // eventhubbeat - With custom mapping
-      collectionMethodTemplatesPrismacloudbeat // prismacloudbeat
+      collectionMethodTemplatesPrismacloudbeat, // prismacloudbeat
+      collectionMethodTemplatesSymantecwssbeat, // symantecwssbeat
+      collectionMethodTemplatesMsGraphbeatbeatDefault, // msgraphbeat - With default mapping
+      collectionMethodTemplatesMsGraphbeatbeatCustom, // msgraphbeat - With custom mapping
+      collectionMethodTemplatesCarbonBlackbeat, // carbonblackcloud
+      collectionMethodTemplatesCiscoAmpbeat, // ciscoampbeat
+      collectionMethodTemplatesDuobeat, // duobeat
+      collectionMethodTemplatesProofpointbeat // proofpointbeat
     ], // collectionMethodTemplates
     collectionShippersOptions: [
       {
@@ -63,6 +83,24 @@ export default function () {
         label: 'jsBeat',
         icon: 'jsBeat',
         outputFormat: 'json'
+      },
+      {
+        value: 'carbonblackcloudbeat',
+        label: 'LogRhythm Carbon Black Cloud Beat',
+        icon: 'logrhythm-carbonblackcloudbeat',
+        outputFormat: 'yaml'
+      },
+      {
+        value: 'ciscoampbeat',
+        label: 'LogRhythm Cisco AMP Beat',
+        icon: 'logrhythm-ciscoampbeat',
+        outputFormat: 'yaml'
+      },
+      {
+        value: 'duobeat',
+        label: 'LogRhythm Duo Beat',
+        icon: 'logrhythm-duobeat',
+        outputFormat: 'yaml'
       },
       {
         value: 'eventhubbeat',
@@ -83,9 +121,21 @@ export default function () {
         outputFormat: 'yaml'
       },
       {
+        value: 'msgraphbeat',
+        label: 'LogRhythm Beat for Microsoft Graph API',
+        icon: 'logrhythm-msgraphbeat',
+        outputFormat: 'yaml'
+      },
+      {
         value: 'prismacloudbeat',
         label: 'LogRhythm Prisma Cloud Beat',
         icon: 'logrhythm-prismacloudbeat',
+        outputFormat: 'yaml'
+      },
+      {
+        value: 'proofpointbeat',
+        label: 'LogRhythm Proofpoint Beat',
+        icon: 'logrhythm-proofpointbeat',
         outputFormat: 'yaml'
       },
       {
@@ -98,6 +148,12 @@ export default function () {
         value: 's3beat',
         label: 'LogRhythm S3 Beat',
         icon: 'logrhythm-s3beat',
+        outputFormat: 'yaml'
+      },
+      {
+        value: 'symantecwssbeat',
+        label: 'LogRhythm Symantec WSS Beat',
+        icon: 'logrhythm-symantecwssbeat',
         outputFormat: 'yaml'
       },
       {
@@ -163,6 +219,12 @@ export default function () {
         // icon: 'logrhythm'
       },
       {
+        value: 'msgraphbeat',
+        label: 'msgraphbeat',
+        icon: 'logrhythm-msgraphbeat'
+        // icon: 'logrhythm'
+      },
+      {
         value: 'oktabeat',
         label: 'oktabeat',
         icon: 'logrhythm-oktabeat'
@@ -172,6 +234,12 @@ export default function () {
         value: 'prismacloudbeat',
         label: 'prismacloudbeat',
         icon: 'logrhythm-prismacloudbeat'
+        // icon: 'logrhythm'
+      },
+      {
+        value: 'proofpointbeat',
+        label: 'proofpointbeat',
+        icon: 'logrhythm-proofpointbeat'
         // icon: 'logrhythm'
       },
       {
@@ -193,6 +261,12 @@ export default function () {
         // icon: 'logrhythm'
       },
       {
+        value: 'symantecwssbeat',
+        label: 'symantecwssbeat',
+        icon: 'logrhythm-symantecwssbeat'
+        // icon: 'logrhythm'
+      },
+      {
         value: 'sophoscentralbeat',
         label: 'sophoscentralbeat',
         icon: 'logrhythm-sophoscentralbeat'
@@ -206,6 +280,24 @@ export default function () {
       }
     ], // openCollectorBeats
     collectionMethodsOptions: [
+      {
+        shipper: 'carbonblackcloudbeat',
+        value: 'carbonblackcloudbeat',
+        label: 'Carbon Black Cloud',
+        icon: 'o_language'
+      },
+      {
+        shipper: 'ciscoampbeat',
+        value: 'ciscoampbeat',
+        label: 'Cisco AMP',
+        icon: 'o_language'
+      },
+      {
+        shipper: 'duobeat',
+        value: 'duobeat',
+        label: 'Duo',
+        icon: 'o_badge'
+      },
       {
         shipper: 'jsBeat',
         value: 'flatFile',
@@ -243,10 +335,28 @@ export default function () {
         icon: 'o_language'
       },
       {
+        shipper: 'msgraphbeat',
+        value: 'msgraphbeat-default',
+        label: 'Microsoft Graph API - Default Mapping',
+        icon: 'o_language'
+      },
+      {
+        shipper: 'msgraphbeat',
+        value: 'msgraphbeat-custom',
+        label: 'Microsoft Graph API - With custom Mapping',
+        icon: 'o_language'
+      },
+      {
         shipper: 'prismacloudbeat',
         value: 'prismacloudbeat',
         label: 'Prisma Cloud',
         icon: 'o_language'
+      },
+      {
+        shipper: 'proofpointbeat',
+        value: 'proofpointbeat',
+        label: 'Proofpoint - Default Mapping',
+        icon: 'o_email'
       },
       {
         shipper: 'pubsubbeat',
@@ -258,6 +368,12 @@ export default function () {
         shipper: 's3beat',
         value: 's3beat',
         label: 'S3',
+        icon: 'o_language'
+      },
+      {
+        shipper: 'symantecwssbeat',
+        value: 'symantecwssbeat',
+        label: 'Symantec WSS',
         icon: 'o_language'
       },
       {

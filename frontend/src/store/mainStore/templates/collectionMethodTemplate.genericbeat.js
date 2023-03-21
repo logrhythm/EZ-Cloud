@@ -851,7 +851,11 @@ Once the right Date Range Filter has been selected, do configure its related sec
         { value: 'Mon, 02 Jan 2006 15:04:05 MST', label: 'Mon, 02 Jan 2006 15:04:05 MST' },
         { value: 'Monday, 02-Jan-06 15:04:05 MST', label: 'Monday, 02-Jan-06 15:04:05 MST' },
         { value: 'UNIX_MILLISECONDS_TIMESTAMP', label: 'UNIX_MILLISECONDS_TIMESTAMP' },
-        { value: 'UNIX_SECONDS_TIMESTAMP', label: 'UNIX_SECONDS_TIMESTAMP' }
+        { value: 'UNIX_SECONDS_TIMESTAMP', label: 'UNIX_SECONDS_TIMESTAMP' },
+        { value: 'EPOCH_UNIX', label: 'EPOCH_UNIX' },
+        { value: 'EPOCH_UNIX_MICRO', label: 'EPOCH_UNIX_MICRO' },
+        { value: 'EPOCH_UNIX_MILI', label: 'EPOCH_UNIX_MILI' },
+        { value: 'EPOCH_UNIX_NANO', label: 'EPOCH_UNIX_NANO' }
       ],
       default: '2006-01-02T15:04:05Z07:00',
       description: `This refers to the date-time format that the API supports, i.e. RFC3339 or ISO8601.
