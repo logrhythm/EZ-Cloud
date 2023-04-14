@@ -12,7 +12,8 @@
   "private": true,
   "scripts": {
     "lint": "eslint --ext .js,.vue ./",
-    "test": "echo \"No test specified\" && exit 0"
+    "test": "echo \"No test specified\" && exit 0",
+    "dev": "export NODE_OPTIONS=--openssl-legacy-provider && quasar dev"
   },
   "dependencies": {
     "@quasar/cli": "^1.2.2",
