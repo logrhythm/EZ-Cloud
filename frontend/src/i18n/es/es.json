@@ -404,6 +404,8 @@
   "Paste the PNG picture here": "Pega la imagen PNG aquí",
   "The *FIRST* picture is not in a PNG.": "La *PRIMERA* imagen no es un PNG.",
   "Extract Beat's '.message' only": "Extrae solo el '.message' de Beat",
+  "Extract Beat's payload field only:": "Extrae solo el campo de datos de Beat:",
+  "Beat's payload field path": "Ruta del campo de datos de Beat",
   "No Fields to display.": "No hay campos para mostrar.",
   "Fields per page:": "Campos por página:",
   "Please confirm": "Favor de confirmar",
@@ -673,5 +675,6 @@
   "Container configuration downloaded": "Configuración del contenedor descargada",
   "Container Short Configuration": "Configuración corta de contenedor",
   "Click or Drop a configuration (.txt, .yml or .yaml) file here": "Haga clic o suelte un archivo de configuración (.txt, .yml o .yaml) aquí",
-  "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}.": "Solo se aceptan archivos .txt, .yml y .yaml. Intentaste importar: {badFileName}."
+  "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}.": "Solo se aceptan archivos .txt, .yml y .yaml. Intentaste importar: {badFileName}.",
+  "Reset to field path from Beat's template": "Restablecer a la ruta del campo desde la plantilla de Beat"
 }

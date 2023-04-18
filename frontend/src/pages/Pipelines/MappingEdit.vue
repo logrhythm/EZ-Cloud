@@ -76,8 +76,34 @@
                 <q-item class="q-pl-none" >
                 <q-toggle v-model="wrapSingleStringLog" :label="$t('Accept and Wrap non-JSON logs')" />
                 </q-item>
-                <q-item class="q-pl-none" >
-                  <q-toggle v-model="extractMessageFieldOnly" :label="$t('Extract Beat\'s \'.message\' only')" />
+                <q-item style="width: 35rem;" class="q-pl-none column" >
+                  <q-toggle
+                    v-model="extractMessageFieldOnly"
+                    class="col"
+                  >
+                    {{ $t('Extract Beat\'s payload field only:') }}
+                    <q-input
+                      outlined
+                      v-model="messageFieldPath"
+                      type="text"
+                      style="width: 30rem;"
+                      :label="$t('Beat\'s payload field path')"
+                      :rules="[ val => String(val).startsWith('.') || $t('Please use the dotted path notation')]"
+                      @click.stop=""
+                    >
+                      <template v-slot:append>
+                        <q-icon
+                          name="o_restart_alt"
+                          class="cursor-pointer"
+                          @click.stop="messageFieldPath = messageFieldPathFromTemplate || '.message'"
+                        >
+                          <q-tooltip style="font-size: 1rem">
+                            {{ $t('Reset to field path from Beat\'s template') }}
+                          </q-tooltip>
+                        </q-icon>
+                      </template>
+                    </q-input>
+                  </q-toggle>
                 </q-item>
                 <q-item  style="width: 35rem;">
                   <q-item-section avatar>
@@ -138,6 +164,27 @@
       <!-- <div class="q-mt-md">
         <span class="text-bold">tailId: </span>{{ pipelineUid }}
       </div> -->
+      <!-- <div class="q-mt-md">
+        <span class="text-bold">pipeline.collectionConfig: </span>{{ (pipeline ? pipeline.collectionConfig : '') }}
+      </div> -->
+      <!-- <div class="q-mt-md">
+        <span class="text-bold">pipeline.collectionConfig.collectionShipper: </span>{{ (pipeline ? pipeline.collectionConfig.collectionShipper : '') }}
+      </div> -->
+      <!-- <div class="q-mt-md">
+        <span class="text-bold">pipeline.collectionConfig.collectionMethod: </span>{{ (pipeline ? pipeline.collectionConfig.collectionMethod : '') }}
+      </div> -->
+      <!-- <div class="q-mt-md">
+        <span class="text-bold">collectionMethodTemplate.options: </span>{{ collectionMethodTemplate.options }}
+      </div> -->
+      <!-- <div class="q-mt-md">
+        <span class="text-bold">collectionMethodTemplate: </span>{{ collectionMethodTemplate }}
+      </div> -->
+      <div class="q-mt-md">
+        <span class="text-bold">messageFieldPath: </span>{{ messageFieldPath }}
+      </div>
+      <div class="q-mt-md">
+        <span class="text-bold">messageFieldPathFromTemplate: </span>{{ messageFieldPathFromTemplate }}
+      </div>
       <div class="">
           <q-tooltip content-style="font-size: 1rem;">
             <!-- <span class="text-bold">Queues / Stacks sizes: </span>{{ incomingLogCount }} / {{ queueIn.length }} / {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ processedLogs.length }} -->
@@ -814,6 +861,8 @@ export default {
       processedLogsMaxSize: 200, // Maximum number of log messages in processedLogs
       bufferStdOut: '', // Buffer to concatenate incoming STDOUT data until we find a carriage return
       extractMessageFieldOnly: false, // Only extract the content of the .message field
+      messageFieldPath: '.message', // Path of the .message / payload field for the given Beat
+      messageFieldPathFromTemplate: '.message', // Default path to the .message / payload field, as per the Beat's template
       showJqOutput: false, // Collapse / Hide the JQ panel
       jqFilterOutput: '', // The automacically built JQ Filter output
       jqTransformOutput: '', // The automacically built JQ Transform output
@@ -839,7 +888,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('mainStore', ['loggedInUser', 'jqFilterTemplate', 'jqTransformTemplate', 'helpWikiUrlBase']),
+    ...mapState('mainStore', ['loggedInUser', 'jqFilterTemplate', 'jqTransformTemplate', 'helpWikiUrlBase', 'collectionMethodTemplates']),
     ...mapGetters('mainStore', ['pipelines']),
     pipeline () {
       return this.pipelines.find(p => p.uid === this.pipelineUid)
@@ -1578,8 +1627,41 @@ export default {
         const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
         this.jsonPathes = (pipeline && pipeline.fieldsMapping && pipeline.fieldsMapping.length ? JSON.parse(JSON.stringify(pipeline.fieldsMapping)) : [])
 
+        // Find the Collection Template for the Method of this Pipeline
+        const collectionMethodTemplate = (
+          pipeline && pipeline.collectionConfig
+            ? this.collectionMethodTemplates.find(template => template.collectionMethod === pipeline.collectionConfig.collectionMethod)
+            : {}
+        )
+        // Find the default options for this template
+        const collectionMethodTemplateOptions = (
+          collectionMethodTemplate && collectionMethodTemplate.options
+            ? collectionMethodTemplate.options
+            : {
+                extractPayloadFieldOnly: false,
+                payloadField: 'message'
+              }
+        )
+
+        // Bring the default path from the Template
+        this.messageFieldPathFromTemplate = String(`.${collectionMethodTemplateOptions.payloadField}`).replace(/^\.+/, '.') // Make sure the field starts with a single dot
+
         // Bring back the `extractMessageFieldOnly` options
-        this.extractMessageFieldOnly = (pipeline && pipeline.options ? pipeline.options.extractMessageFieldOnly === true : false)
+        this.extractMessageFieldOnly = (
+          pipeline &&
+          pipeline.options
+            ? pipeline.options.extractMessageFieldOnly === true
+            : collectionMethodTemplateOptions.extractPayloadFieldOnly
+        )
+        // And bring the field path too
+        this.messageFieldPath = (
+          pipeline &&
+          pipeline.options &&
+          pipeline.options.messageFieldPath &&
+          pipeline.options.messageFieldPath.length
+            ? pipeline.options.messageFieldPath
+            : this.messageFieldPathFromTemplate
+        )
 
         // Try to resurect the processedLogsCount (failing to 0 if no logSample)
         this.processedLogsCount = (this.logSample ? this.logSample.length : 0)

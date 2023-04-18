@@ -404,6 +404,8 @@
   "Paste the PNG picture here": "여기에 PNG 그림을 붙여넣으세요.",
   "The *FIRST* picture is not in a PNG.": "*FIRST* 사진은 PNG에 없습니다.",
   "Extract Beat's '.message' only": "Beat의 '.message'만 추출",
+  "Extract Beat's payload field only:": "Beat의 데이터 필드만 추출:",
+  "Beat's payload field path": "Beat의 데이터 필드 경로",
   "No Fields to display.": "표시할 필드가 없습니다.",
   "Fields per page:": "페이지당 필드:",
   "Please confirm": "확인 해주세요",
@@ -673,5 +675,6 @@
   "Container configuration downloaded": "컨테이너 구성 다운로드됨",
   "Container Short Configuration": "컨테이너 짧은 구성",
   "Click or Drop a configuration (.txt, .yml or .yaml) file here": "여기에서 구성(.txt, .yml 또는 .yaml) 파일을 클릭하거나 드롭합니다.",
-  "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}.": ".txt, .yml 및 .yaml 파일만 허용됩니다. 가져오기를 시도했습니다: {badFileName}."
+  "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}.": ".txt, .yml 및 .yaml 파일만 허용됩니다. 가져오기를 시도했습니다: {badFileName}.",
+  "Reset to field path from Beat's template": "Beat의 템플릿에서 필드 경로로 재설정"
 }

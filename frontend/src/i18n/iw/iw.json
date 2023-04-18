@@ -404,6 +404,8 @@
   "Paste the PNG picture here": "הדבק את תמונת ה-PNG כאן",
   "The *FIRST* picture is not in a PNG.": "התמונה *ראשונה* אינה ב-PNG.",
   "Extract Beat's '.message' only": "חלץ את '.message' של Beat בלבד",
+  "Extract Beat's payload field only:": "חלץ את שדה הנתונים של Beat בלבד:",
+  "Beat's payload field path": "נתיב שדה הנתונים של Beat",
   "No Fields to display.": "אין שדות להצגה.",
   "Fields per page:": "שדות לכל עמוד:",
   "Please confirm": "אנא אשר",
@@ -673,5 +675,6 @@
   "Container configuration downloaded": "הורד תצורת מיכל",
   "Container Short Configuration": "תצורה קצרה של מיכל",
   "Click or Drop a configuration (.txt, .yml or .yaml) file here": "לחץ או שחרר כאן קובץ תצורה (.txt, .yml או .yaml).",
-  "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}.": "רק קבצי .txt, .yml ו-.yaml מתקבלים. ניסית לייבא: {badFileName}."
+  "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}.": "רק קבצי .txt, .yml ו-.yaml מתקבלים. ניסית לייבא: {badFileName}.",
+  "Reset to field path from Beat's template": "אפס לנתיב השדה מהתבנית של Beat"
 }
