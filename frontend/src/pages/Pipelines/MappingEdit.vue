@@ -1346,19 +1346,21 @@ export default {
       // `manualEntry` is designed to override standard flood protection
       // and allow for a user to enter logs manually, if set to TRUE
       if ((this.tailEnabled && (this.queueIn.length < this.queueInMaxSize)) | manualEntry) {
-        if (this.extractMessageFieldOnly) {
-          if (!value.message) {
-            console.log('No .message found in log object')
+        if (this.extractMessageFieldOnly && this.messageFieldPath && this.messageFieldPath.length && this.messageFieldPath.startsWith('.')) {
+          // Remove the starting dot
+          const messageFieldPathLeaf = this.messageFieldPath.replace(/^\./, '')
+          if (!value[messageFieldPathLeaf]) {
+            console.log(`No ${this.messageFieldPath} found in log object`)
           }
           try {
-            this.queueIn.push(JSON.parse(value.message))
+            this.queueIn.push(JSON.parse(value[messageFieldPathLeaf]))
             // Kick off the Background processing
             if (this.processInBackground !== true) {
               this.processInBackground = true
             }
           } catch {
             // Not proper JSON
-            console.log('Field .message does not contain proper JSON')
+            console.log(`Field ${this.messageFieldPath} does not contain proper JSON`)
           }
         } else {
           this.queueIn.push(value)
