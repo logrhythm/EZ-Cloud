@@ -64,7 +64,7 @@ export default {
       return jqFilter
     },
 
-    buildJqTransformFromParams (pipelineUid, pipelineName, beatName, loggedInUser, extractMessageFieldOnly, jsonPathes) {
+    buildJqTransformFromParams ({ pipelineUid, pipelineName, beatName, loggedInUser, extractMessageFieldOnly, messageFieldPath, jsonPathes }) {
       let jqTransform = ''
 
       // First pass to change the headers and static fields
@@ -79,9 +79,10 @@ export default {
       // What do we use for original_message?
       let originalMessagePlaceholder = '. | tojson'
       let messagePlaceholder = '.input'
+      const messageRootNonDottedPlaceholder = 'message'
       if (extractMessageFieldOnly) {
-        originalMessagePlaceholder = '.message'
-        messagePlaceholder = '.message'
+        originalMessagePlaceholder = messageFieldPath
+        messagePlaceholder = `.${messageRootNonDottedPlaceholder}`
       }
 
       // Fanning out the log
@@ -90,6 +91,13 @@ export default {
       const flattenArrayPlaceholderTemplate = '        "{{EZ_flatten_array_id}}": flatten_array({{EZ_message_root}}{{EZ_flatten_array_field_path}}),'
       const flattenArrayAddFieldPlaceholderTemplate = '    add_field(.{{EZ_flatten_array_name_placeholder}}{{EZ_flatten_array_field_doted_path_placeholder}}; .output.{{EZ_mdi_field_placeholder}}) |'
       const flattenArrayAddFieldPlaceholder = [] // multiple strings
+
+      // Extracting the Beat's message
+      const beatOriginalMessageTemplate = (
+        extractMessageFieldOnly
+          ? '        "{{EZ_message_root_non_dotted_placeholder}}": if {{EZ_message_field_path}} != null then ({{EZ_message_field_path}} | fromjson) else {} end,'
+          : ''
+      )
 
       // Mapping of the Timestamp field(s)
       // const timestampAddFieldPlaceholderTemplate = '    add_field(({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}{{EZ_date_parser_placeholder}}); .output.normal_msg_date) |'
@@ -107,7 +115,7 @@ export default {
 
       let messageRoot = ''
       if (extractMessageFieldOnly) {
-        messageRoot = '.message | fromjson | '
+        messageRoot = messageFieldPath + ' | fromjson | '
       }
 
       // Fanning out the log and Sub Rules
@@ -302,6 +310,9 @@ export default {
 
       // Put this all together
       jqTransform = jqTransform
+        .replace(/{{EZ_beat_message_extraction_placeholder}}/g, beatOriginalMessageTemplate)
+        .replace(/{{EZ_message_field_path}}/g, messageFieldPath)
+        .replace(/{{EZ_message_root_non_dotted_placeholder}}/g, messageRootNonDottedPlaceholder)
         .replace(/{{EZ_flatten_array_placeholder}}/g, flattenArrayPlaceholder.join('\n'))
         .replace(/{{EZ_original_message_placeholder}}/g, originalMessagePlaceholder)
         .replace(/{{EZ_timestamp__add_field_placeholder}}/g, timestampAddFieldPlaceholder.join('\n'))

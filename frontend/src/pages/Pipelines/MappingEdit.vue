@@ -1593,14 +1593,15 @@ export default {
 
     buildJqTransform () {
       // Use buildJqTransformFromParams() from mixin-Shared-BuildJq
-      this.jqTransformOutput = this.buildJqTransformFromParams(
-        this.pipelineUid,
-        this.pipelineName,
-        this.beatName,
-        this.loggedInUser,
-        this.extractMessageFieldOnly,
-        this.jsonPathes
-      )
+      this.jqTransformOutput = this.buildJqTransformFromParams({
+        pipelineUid: this.pipelineUid,
+        pipelineName: this.pipelineName,
+        beatName: this.beatName,
+        loggedInUser: this.loggedInUser,
+        extractMessageFieldOnly: this.extractMessageFieldOnly,
+        messageFieldPath: this.messageFieldPath,
+        jsonPathes: this.jsonPathes
+      })
     },
 
     //      ######     ###    ##     ## ########

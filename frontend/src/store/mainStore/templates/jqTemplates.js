@@ -103,7 +103,7 @@ def add_field($input_field; output_field):
 def get_io_format:
     {
         "input": .,
-        "message": if .message != null then (.message | fromjson) else {} end,
+{{EZ_beat_message_extraction_placeholder}}
 {{EZ_flatten_array_placeholder}}
         "output": {
             "original_message": {{EZ_original_message_placeholder}}
