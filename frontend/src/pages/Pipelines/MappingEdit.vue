@@ -1623,7 +1623,11 @@ export default {
             status: (this.pipeline && this.pipeline.status && this.pipeline.status === 'Ready' ? this.pipeline.status : 'Dev'),
             fieldsMapping: this.jsonPathes,
             // Update / Add extractMessageFieldOnly to the Options
-            options: { ...(this.pipeline && this.pipeline.options ? this.pipeline.options : {}), extractMessageFieldOnly: this.extractMessageFieldOnly }
+            options: {
+              ...(this.pipeline && this.pipeline.options ? this.pipeline.options : {}),
+              extractMessageFieldOnly: this.extractMessageFieldOnly,
+              messageFieldPath: this.messageFieldPath
+            }
           }
         }
       )

@@ -623,7 +623,8 @@ export default {
         // Add the relevant Options
         sanitisedFieldsMappingWithOptions = {
           options: {
-            extractMessageFieldOnly: (this.pipelineToExport && this.pipelineToExport.options ? this.pipelineToExport.options.extractMessageFieldOnly : undefined)
+            extractMessageFieldOnly: (this.pipelineToExport && this.pipelineToExport.options ? this.pipelineToExport.options.extractMessageFieldOnly : undefined),
+            messageFieldPath: (this.pipelineToExport && this.pipelineToExport.options ? this.pipelineToExport.options.messageFieldPath : undefined)
           },
           fieldsMapping: sanitisedFieldsMapping
         }
