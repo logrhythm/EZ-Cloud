@@ -1662,9 +1662,14 @@ export default {
         this.messageFieldPathFromTemplate = String(`.${collectionMethodTemplateOptions.payloadField}`).replace(/^\.+/, '.') // Make sure the field starts with a single dot
 
         // Bring back the `extractMessageFieldOnly` options
+        // If it was set previously, to False or True, use that value, otherwise use the default
         this.extractMessageFieldOnly = (
           pipeline &&
-          pipeline.options
+          pipeline.options &&
+          (
+            pipeline.options.extractMessageFieldOnly === true |
+            pipeline.options.extractMessageFieldOnly === false
+          )
             ? pipeline.options.extractMessageFieldOnly === true
             : collectionMethodTemplateOptions.extractPayloadFieldOnly
         )
