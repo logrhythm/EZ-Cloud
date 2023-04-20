@@ -179,12 +179,15 @@
       <!-- <div class="q-mt-md">
         <span class="text-bold">collectionMethodTemplate: </span>{{ collectionMethodTemplate }}
       </div> -->
-      <div class="q-mt-md">
+      <!-- <div class="q-mt-md">
+        <span class="text-bold">extractMessageFieldOnly: </span>{{ extractMessageFieldOnly }}
+      </div> -->
+      <!-- <div class="q-mt-md">
         <span class="text-bold">messageFieldPath: </span>{{ messageFieldPath }}
-      </div>
-      <div class="q-mt-md">
+      </div> -->
+      <!-- <div class="q-mt-md">
         <span class="text-bold">messageFieldPathFromTemplate: </span>{{ messageFieldPathFromTemplate }}
-      </div>
+      </div> -->
       <div class="">
           <q-tooltip content-style="font-size: 1rem;">
             <!-- <span class="text-bold">Queues / Stacks sizes: </span>{{ incomingLogCount }} / {{ queueIn.length }} / {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ processedLogs.length }} -->
