@@ -18,7 +18,7 @@
   - [ ] Title for Pipeline Properties
   - [ ] Title for Pipeline Collection Builder
   - [ ] Breadcrumbs
-- [ ] Fix issue #40 - [FR] Offer to extract the `.log` field the same way the `.message` can be
+- [x] Fix issue #40 - [FR] Offer to extract the `.log` field the same way the `.message` can be
 ## TO TEST
 
 ### Target: v1.1
