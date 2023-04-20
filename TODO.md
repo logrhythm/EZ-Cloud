@@ -5,7 +5,7 @@
 ## TO DO
 - [ ] API - Admin - MS SQL - Add MS SQL test
 - [ ] Remove depency to and remove local copy of `collectionConfigToYml()`
-- [ ] API - Troubleshoot - Limit Logs from Container to X minutes
+- [x] API - Troubleshoot - Limit Logs from Container to X lines of log
 
 ## TO FIX
 
