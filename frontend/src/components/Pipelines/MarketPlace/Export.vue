@@ -357,8 +357,19 @@
             <q-card-section class="" >
               <q-toggle
                 :value="!!optionsToBeSaved.extractMessageFieldOnly"
-                :label="$t('Extract Beat\'s \'.message\' only')"
-              />
+                class="col"
+              >
+                {{ $t('Extract Beat\'s payload field only:') }}
+                <q-input
+                  outlined
+                  :value="optionsToBeSaved.messageFieldPath"
+                  type="text"
+                  readonly
+                  style="width: 30rem;"
+                  :label="$t('Beat\'s payload field path')"
+                  @click.stop=""
+                />
+              </q-toggle>
             </q-card-section>
           </q-card-section>
 
