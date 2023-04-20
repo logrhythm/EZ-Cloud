@@ -833,6 +833,24 @@ export default {
             // Do the work for this step
             step.status = 'On-going'
 
+            // Find the Collection Template for the Method of this Pipeline
+            const collectionMethodTemplate = (
+              caller && caller.pipeline && caller.pipeline.collectionConfig
+                ? this.collectionMethodTemplates.find(template => template.collectionMethod === caller.pipeline.collectionConfig.collectionMethod)
+                : {}
+            )
+            // Find the default options for this template
+            const collectionMethodTemplateOptions = (
+              collectionMethodTemplate && collectionMethodTemplate.options
+                ? collectionMethodTemplate.options
+                : {
+                    extractPayloadFieldOnly: false,
+                    payloadField: 'message'
+                  }
+            )
+            // Bring the default path from the Template
+            const messageFieldPathFromTemplate = String(`.${collectionMethodTemplateOptions.payloadField}`).replace(/^\.+/, '.') // Make sure the field starts with a single dot
+
             // Prepare the parameters
             const apiUrl = (step.apiEndpoint && step.apiEndpoint.length ? step.apiEndpoint : '/test/doesNotExist/andShouldReturnAnError')
             const apiCallParamsSource = {
@@ -878,7 +896,14 @@ export default {
                       beatName: caller.beatName,
                       loggedInUser: caller.loggedInUser,
                       extractMessageFieldOnly: (caller.pipeline.options && caller.pipeline.options.extractMessageFieldOnly === true),
-                      messageFieldPath: '',
+                      messageFieldPath: (
+                        caller.pipeline &&
+                        caller.pipeline.options &&
+                        caller.pipeline.options.messageFieldPath &&
+                        caller.pipeline.options.messageFieldPath.length
+                          ? caller.pipeline.options.messageFieldPath
+                          : messageFieldPathFromTemplate
+                      ),
                       jsonPathes: (caller.pipeline.fieldsMapping || [])
                     })
                     : undefined
