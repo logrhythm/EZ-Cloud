@@ -19,7 +19,7 @@
   - [ ] Title for Pipeline Collection Builder
   - [ ] Breadcrumbs
 - [x] Fix issue #40 - [FR] Offer to extract the `.log` field the same way the `.message` can be
-- [ ] Fix issue #45 - JSON key names including dots and empty JSON key names are not quoted in JQ as they should
+- [x] Fix issue #45 - JSON key names including dots and empty JSON key names are not quoted in JQ as they should
 
 ## TO TEST
 

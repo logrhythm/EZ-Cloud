@@ -1462,7 +1462,25 @@ export default {
           if (typeof leaf === 'object') {
             const isParentAnArray = Array.isArray(leaf)
             Object.keys(leaf).forEach(key => {
-              thisKeyPath = (isParentAnArray ? parentPath + '[' + key + ']' : parentPath + '.' + key)
+              // Escape and quote the key, to deal with funny edge cases
+
+              // Escape any double quotes, as we will need them later
+              const escappedKey = String(key).replaceAll('"', '\\"')
+              // // Then quote stuff up, if need be
+              // const quotedKey = (
+              //   String(key).includes('.') ||
+              //   String(key).includes('[') ||
+              //   String(key).includes(']') ||
+              //   String(key).includes('@') ||
+              //   String(key).includes('"') ||
+              //   key === '' // Yep, we've seen logs with empty JSON keys...
+              //     ? `"${escappedKey}"`
+              //     : escappedKey
+              // )
+
+              // Then quote stuff up, all the time
+              const quotedKey = `"${escappedKey}"`
+              thisKeyPath = (isParentAnArray ? parentPath + '[' + key + ']' : parentPath + '.' + quotedKey)
 
               // Upsert it first
               this.upsertToJsonPaths({ thisKeyPath: thisKeyPath, depth: depth, key: key, value: leaf[key] })

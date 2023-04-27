@@ -9,31 +9,34 @@ export default {
 
   methods: {
     sanitisePathName (pathName) {
-      // Sanitise the Path Name
-      let safePathName = pathName
-      if (
-        pathName &&
-        String(pathName).includes('@')
-      ) {
-        // Break the path into component
-        const pathComponents = String(pathName).split('.')
-        const safePathComponents = []
-        // Suround each component with quotes that contains the '@' sign
-        pathComponents.forEach((pc) => {
-          safePathComponents.push(
-            (
-              String(pc).includes('@')
-                ? `"${pc}"`
-                : pc
-            )
-          )
-          // if (String(pc).includes('@')) {
-          //   pc = `"${pc}"`
-          // }
-        })
-        safePathName = safePathComponents.join('.')
-      }
-      return safePathName
+      // This is now superceeded by the sanitisation done in `MappingEdit.vue` / `processLogKey`.
+      return pathName
+
+      // // Sanitise the Path Name
+      // let safePathName = pathName
+      // if (
+      //   pathName &&
+      //   String(pathName).includes('@')
+      // ) {
+      //   // Break the path into component
+      //   const pathComponents = String(pathName).split('.')
+      //   const safePathComponents = []
+      //   // Suround each component with quotes that contains the '@' sign
+      //   pathComponents.forEach((pc) => {
+      //     safePathComponents.push(
+      //       (
+      //         String(pc).includes('@')
+      //           ? `"${pc}"`
+      //           : pc
+      //       )
+      //     )
+      //     // if (String(pc).includes('@')) {
+      //     //   pc = `"${pc}"`
+      //     // }
+      //   })
+      //   safePathName = safePathComponents.join('.')
+      // }
+      // return safePathName
     },
     buildJqFilterFromParams (pipelineUid, pipelineName, beatName, loggedInUser) {
       let jqFilter = ''
