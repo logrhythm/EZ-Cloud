@@ -898,7 +898,7 @@ processStartOC_DB(){
           echo "oc-db container started"
         else
           echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
-          docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach --restart unless-stopped ${ocdb_repo}/oc-db:${ocdb_version}
+          docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach --restart always ${ocdb_repo}/oc-db:${ocdb_version}
           sleep 10
           echo "oc-db container started"
         fi
@@ -1032,7 +1032,7 @@ processStartOC_ADMIN(){
           createOcAdminConfigVolume
           # Kick off OC Admin
           echo "### RUN \`oc-admin\` CONTAINER..."
-          docker run --detach --restart unless-stopped --publish 8400:8400/tcp --network logrhythm --volume oc-admin_config:/app/config --name oc-admin ${ocadmin_repo}/oc-admin:${ocadmin_version}
+          docker run --detach --restart always --publish 8400:8400/tcp --network logrhythm --volume oc-admin_config:/app/config --name oc-admin ${ocadmin_repo}/oc-admin:${ocadmin_version}
         fi
       fi
       sleep 10
