@@ -10,7 +10,7 @@ const filterTemplate = `# -------------------------------------------
 
 # is_matching checks if the data matches the {{EZ_stream_name_placeholder}} criteria
 def is_matching:
-    (."@metadata".beat | ascii_downcase == ("{{EZ_beat_name_placeholder}}" | ascii_downcase))
+    ((if (."@metadata".beats != null) then ."@metadata".beats | ascii_downcase else "" end) == ("{{EZ_beat_name_placeholder}}" | ascii_downcase))
     and
     (.heartbeat == null)
     and

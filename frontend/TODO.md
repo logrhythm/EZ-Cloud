@@ -20,6 +20,7 @@
   - [ ] Breadcrumbs
 - [x] Fix issue #40 - [FR] Offer to extract the `.log` field the same way the `.message` can be
 - [x] Fix issue #45 - JSON key names including dots and empty JSON key names are not quoted in JQ as they should
+- [x] Fix issue #48 - [ERROR] [failed to process log: input must be a string Filter: ascii_downcase/0 (RequiredOpCount:0)
 
 ## TO TEST
 
