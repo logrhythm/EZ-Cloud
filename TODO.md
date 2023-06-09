@@ -9,6 +9,7 @@
 
 ## TO FIX
 - [x] Fix #44 - When running a Tail, user gets prompted for password for sudo
+- [x] Fix #49 - Deployments disappear from pipeline property window
 
 ## TO TEST
 
