@@ -10,7 +10,7 @@ export default {
   shipper: 'webhookbeat',
   collectionMethod: 'webhookbeat',
   initialDefaultValues: {
-    hostname: '',
+    hostname: 'localhost',
     portnumber: 8080,
     sslflag: false,
     heartbeatdisabled: false,

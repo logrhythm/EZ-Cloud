@@ -6,6 +6,7 @@
 # Modified on: 2022-08-05 - To add Help and `--latest` parameter
 # Modified on: 2023-01-13 - To use `ash` instead of `bash`, so it can be run from inside the `oc-admin_dev` container
 # Modified on: 2023-01-13 - To add Grype verification command
+# Modified on: 2023-07-27 - To pull the latest Node:18-alpine image
 # Description: Build `oc-admin` Docker container image
 # =============================================
 
@@ -25,6 +26,9 @@ LATEST_TAG=latest-dev
 if [[ "$*" == *--latest* ]]; then
   LATEST_TAG=latest
 fi
+
+echo "### PULL LATEST NODE:18-ALPINE IMAGE..."
+docker pull node:18-alpine
 
 echo "### BUILD DOCKER IMAGE..."
 #_DOCKER_COMMAND_GOES_HERE

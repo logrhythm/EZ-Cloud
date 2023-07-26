@@ -3,6 +3,7 @@
 -- Create date: 2022-06-13
 -- Modified on: 2022-07-08 - To rename `ez-backend` to `oc-admin-backend`
 -- Modified on: 2022-09-20 - To add `dockerVersion` column
+-- Modified on: 2023-06-09 - To fix issue #49 (not storing pipelines in `openCollectorsPipelines`)
 -- =============================================
 
 DROP PROCEDURE IF EXISTS public."upsert_openCollector";
@@ -103,11 +104,11 @@ BEGIN
             SELECT 
                 "@uid" AS "openCollectorUid",
                 "uid" AS "pipelineUid",
-                "enabled" AS "state"
+                CASE WHEN "enabled" = 'true' THEN 1 ELSE 0 END AS "state"
             FROM json_to_recordset(pipelines_json)
-            AS x(
+            AS (
                 "uid" text,
-                "enabled" smallint
+                "enabled" text
                 );
         GET DIAGNOSTICS affected_rows = ROW_COUNT;
         RAISE NOTICE 'Inserted openCollectorsPipelines %', affected_rows;

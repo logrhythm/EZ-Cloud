@@ -404,6 +404,8 @@
   "Paste the PNG picture here": "Paste the PNG picture here",
   "The *FIRST* picture is not in a PNG.": "The *FIRST* picture is not in a PNG.",
   "Extract Beat's '.message' only": "Extract Beat's '.message' only",
+  "Extract Beat's payload field only:": "Extract Beat's payload field only:",
+  "Beat's payload field path": "Beat's payload field path",
   "No Fields to display.": "No Fields to display.",
   "Fields per page:": "Fields per page:",
   "Please confirm": "Please confirm",
@@ -673,5 +675,6 @@
   "Container configuration downloaded": "Container configuration downloaded",
   "Container Short Configuration": "Container Short Configuration",
   "Click or Drop a configuration (.txt, .yml or .yaml) file here": "Click or Drop a configuration (.txt, .yml or .yaml) file here",
-  "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}.": "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}."
+  "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}.": "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}.",
+  "Reset to field path from Beat's template": "Reset to field path from Beat's template"
 }

@@ -5,8 +5,11 @@
 ## TO DO
 - [ ] API - Admin - MS SQL - Add MS SQL test
 - [ ] Remove depency to and remove local copy of `collectionConfigToYml()`
+- [x] API - Troubleshoot - Limit Logs from Container to X lines of log
 
 ## TO FIX
+- [x] Fix #44 - When running a Tail, user gets prompted for password for sudo
+- [x] Fix #49 - Deployments disappear from pipeline property window
 
 ## TO TEST
 

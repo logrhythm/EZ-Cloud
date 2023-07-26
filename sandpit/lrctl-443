@@ -49,7 +49,7 @@ prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/mas
 container_registry_url="https://gcr.io"
 
 # prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/EZCloud/lrctl"
-prod_script_file_url="https://github.com/logrhythm/EZ-Cloud/raw/v1.2/sandpit/lrctl"
+prod_script_file_url="https://github.com/logrhythm/EZ-Cloud/raw/v1.2/sandpit/lrctl-443"
 
 # Track the files that should be cleaned up. We add one file just to avoid the
 # array being empty.
@@ -1032,7 +1032,7 @@ processStartOC_ADMIN(){
           createOcAdminConfigVolume
           # Kick off OC Admin
           echo "### RUN \`oc-admin\` CONTAINER..."
-          docker run --detach --restart always --publish 8400:8400/tcp --network logrhythm --volume oc-admin_config:/app/config --name oc-admin ${ocadmin_repo}/oc-admin:${ocadmin_version}
+          docker run --detach --restart always --publish 443:8400/tcp --network logrhythm --volume oc-admin_config:/app/config --name oc-admin ${ocadmin_repo}/oc-admin:${ocadmin_version}
         fi
       fi
       sleep 10

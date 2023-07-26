@@ -1619,7 +1619,8 @@ export default {
       // Add the relevant Options
       const sanitisedFieldsMappingWithOptions = {
         options: {
-          extractMessageFieldOnly: (this.pipeline && this.pipeline.options ? this.pipeline.options.extractMessageFieldOnly : undefined)
+          extractMessageFieldOnly: (this.pipeline && this.pipeline.options ? this.pipeline.options.extractMessageFieldOnly : undefined),
+          messageFieldPath: (this.pipeline && this.pipeline.options ? this.pipeline.options.messageFieldPath : undefined)
         },
         fieldsMapping: sanitisedFieldsMapping
       }

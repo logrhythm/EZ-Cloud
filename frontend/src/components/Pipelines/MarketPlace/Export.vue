@@ -357,8 +357,19 @@
             <q-card-section class="" >
               <q-toggle
                 :value="!!optionsToBeSaved.extractMessageFieldOnly"
-                :label="$t('Extract Beat\'s \'.message\' only')"
-              />
+                class="col"
+              >
+                {{ $t('Extract Beat\'s payload field only:') }}
+                <q-input
+                  outlined
+                  :value="optionsToBeSaved.messageFieldPath"
+                  type="text"
+                  readonly
+                  style="width: 30rem;"
+                  :label="$t('Beat\'s payload field path')"
+                  @click.stop=""
+                />
+              </q-toggle>
             </q-card-section>
           </q-card-section>
 
@@ -623,7 +634,8 @@ export default {
         // Add the relevant Options
         sanitisedFieldsMappingWithOptions = {
           options: {
-            extractMessageFieldOnly: (this.pipelineToExport && this.pipelineToExport.options ? this.pipelineToExport.options.extractMessageFieldOnly : undefined)
+            extractMessageFieldOnly: (this.pipelineToExport && this.pipelineToExport.options ? this.pipelineToExport.options.extractMessageFieldOnly : undefined),
+            messageFieldPath: (this.pipelineToExport && this.pipelineToExport.options ? this.pipelineToExport.options.messageFieldPath : undefined)
           },
           fieldsMapping: sanitisedFieldsMapping
         }

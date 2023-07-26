@@ -1410,7 +1410,8 @@ export default {
       // Add the relevant Options
       const sanitisedFieldsMappingWithOptions = {
         options: {
-          extractMessageFieldOnly: (this.optionsToBeSaved ? this.optionsToBeSaved.extractMessageFieldOnly : undefined)
+          extractMessageFieldOnly: (this.optionsToBeSaved ? this.optionsToBeSaved.extractMessageFieldOnly : undefined),
+          messageFieldPath: (this.optionsToBeSaved ? this.optionsToBeSaved.messageFieldPath : undefined)
         },
         fieldsMapping: sanitisedFieldsMapping
       }

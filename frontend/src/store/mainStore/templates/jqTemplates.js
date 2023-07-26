@@ -10,7 +10,7 @@ const filterTemplate = `# -------------------------------------------
 
 # is_matching checks if the data matches the {{EZ_stream_name_placeholder}} criteria
 def is_matching:
-    (."@metadata".beat | ascii_downcase == ("{{EZ_beat_name_placeholder}}" | ascii_downcase))
+    ((if (."@metadata".beats != null) then ."@metadata".beats | ascii_downcase else "" end) == ("{{EZ_beat_name_placeholder}}" | ascii_downcase))
     and
     (.heartbeat == null)
     and
@@ -103,7 +103,7 @@ def add_field($input_field; output_field):
 def get_io_format:
     {
         "input": .,
-        "message": if .message != null then (.message | fromjson) else {} end,
+{{EZ_beat_message_extraction_placeholder}}
 {{EZ_flatten_array_placeholder}}
         "output": {
             "original_message": {{EZ_original_message_placeholder}}

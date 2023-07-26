@@ -404,6 +404,8 @@
   "Paste the PNG picture here": "在此处粘贴PNG图片",
   "The *FIRST* picture is not in a PNG.": "*FIRST* 图片不在 PNG 格式中。",
   "Extract Beat's '.message' only": "仅提取 Beat 的“.message”",
+  "Extract Beat's payload field only:": "仅提取 Beat 的数据字段：",
+  "Beat's payload field path": "Beat的数据字段路径",
   "No Fields to display.": "没有要显示的字段。",
   "Fields per page:": "每页字段：",
   "Please confirm": "请确认",
@@ -672,6 +674,7 @@
   "Downloading Container configuration...": "正在下载容器配置...",
   "Container configuration downloaded": "容器配置已下载",
   "Container Short Configuration": "容器短配置",
-  "Click or Drop a configuration (.txt, .yml or .yaml) file here": "在此处单击或拖放配置文件（.txt、.yml 或 .yaml）",
-  "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}.": "仅接受 .txt、.yml 和 .yaml 文件。 您尝试导入：{badFileName}。"
+  "Click or Drop a configuration (.txt, .yml or .yaml) file here": "在此处单击或拖放配置文件（.txt、.yml 或 .yaml)",
+  "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}.": "仅接受 .txt、.yml 和 .yaml 文件。 您尝试导入：{badFileName}。",
+  "Reset to field path from Beat's template": "从 Beat 的模板重置为字段路径"
 }

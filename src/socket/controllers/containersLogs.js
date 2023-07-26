@@ -41,6 +41,8 @@ async function containerLogsInit(socket, payload) {
       ) {
         containerLogsTails[`${socketUid}_${payload.openCollectorUid}`] = new SSH(configSsh);
 
+        const maxLogLinesNumber = payload.maxLogLinesNumber || 100;
+
         socketEmit(socket, { containerId: payload.containerId, openCollectorUid: payload.openCollectorUid, stream: 'containerLogsTail.log', code: 'STDERR', payload: '🚀 OC ADMIN | Container Logs Tail starting...' });
         socketEmit(socket, { containerId: payload.containerId, openCollectorUid: payload.openCollectorUid, stream: 'containerLogsTail.log', code: 'STDERR', payload: '🎯 OC ADMIN | Attempting to connect to host...' });
         socketEmit(socket, { containerId: payload.containerId, openCollectorUid: payload.openCollectorUid, stream: 'containerLogsTail.log', code: 'STAGE', payload: 'Container Stats Tail Started' });
@@ -49,12 +51,12 @@ async function containerLogsInit(socket, payload) {
           // Check we are connected
           .exec('pwd', {
             exit() {
-              socketEmit(socket, { containerId: payload.containerId, openCollectorUid: payload.openCollectorUid, stream: 'containerLogsTail.log', code: 'STDERR', payload: '📑 OC ADMIN | Tailing the realtime data...' });
+              socketEmit(socket, { containerId: payload.containerId, openCollectorUid: payload.openCollectorUid, stream: 'containerLogsTail.log', code: 'STDERR', payload: `📑 OC ADMIN | Tailing the realtime data (limiting to ${maxLogLinesNumber} lines)...` });
               socketEmit(socket, { containerId: payload.containerId, openCollectorUid: payload.openCollectorUid, stream: 'containerLogsTail.log', code: 'STAGE', payload: 'Connected to host' });
               return true;
             }
           })
-          .exec(`docker logs --follow "${payload.containerId}"`, {
+          .exec(`docker logs --follow --tail ${maxLogLinesNumber} "${payload.containerId}"`, {
             err(stderr) {
               // console.log('STDERR:::' + stderr);
               socketEmit(socket, { containerId: payload.containerId, openCollectorUid: payload.openCollectorUid, stream: 'containerLogsTail.log', code: 'STDERR', payload: stderr });

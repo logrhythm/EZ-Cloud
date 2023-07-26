@@ -404,6 +404,8 @@
   "Paste the PNG picture here": "ここにPNG画像を貼り付けます",
   "The *FIRST* picture is not in a PNG.": "*最初の*画像はPNGにありません。",
   "Extract Beat's '.message' only": "Beatの「.message」のみを抽出する",
+  "Extract Beat's payload field only:": "Beat のデータ フィールドのみを抽出します。",
+  "Beat's payload field path": "Beat のデータ フィールド パス",
   "No Fields to display.": "表示するフィールドはありません。",
   "Fields per page:": "1ページあたりのフィールド数：",
   "Please confirm": "確認してください",
@@ -673,5 +675,6 @@
   "Container configuration downloaded": "コンテナー構成のダウンロード",
   "Container Short Configuration": "コンテナの短い構成",
   "Click or Drop a configuration (.txt, .yml or .yaml) file here": "ここに構成 (.txt、.yml、または .yaml) ファイルをクリックまたはドロップします",
-  "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}.": ".txt、.yml、および .yaml ファイルのみが受け入れられます。 インポートしようとしました: {badFileName}。"
+  "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}.": ".txt、.yml、および .yaml ファイルのみが受け入れられます。 インポートしようとしました: {badFileName}。",
+  "Reset to field path from Beat's template": "Beat のテンプレートからフィールド パスにリセット"
 }

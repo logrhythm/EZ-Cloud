@@ -404,6 +404,8 @@
   "Paste the PNG picture here": "الصق صورة PNG هنا",
   "The *FIRST* picture is not in a PNG.": "الصورة * FIRST * ليست بتنسيق PNG.",
   "Extract Beat's '.message' only": "استخراج  '.message' فقط من ال Beat",
+  "Extract Beat's payload field only:": "استخراج حقل بيانات Beat فقط:",
+  "Beat's payload field path": "مسار حقل بيانات Beat",
   "No Fields to display.": "لا توجد حقول لعرضها.",
   "Fields per page:": "الحقول لكل صفحة:",
   "Please confirm": "يرجى تأكيد",
@@ -673,5 +675,6 @@
   "Container configuration downloaded": "تم تنزيل تكوين الحاوية",
   "Container Short Configuration": "التكوين القصير للحاوية",
   "Click or Drop a configuration (.txt, .yml or .yaml) file here": "انقر أو أسقط ملف تهيئة (.txt أو .yml أو .yaml) هنا",
-  "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}.": "يتم قبول ملفات .txt و .yml و .yaml فقط. لقد حاولت استيراد: {badFileName}."
+  "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}.": "يتم قبول ملفات .txt و .yml و .yaml فقط. لقد حاولت استيراد: {badFileName}.",
+  "Reset to field path from Beat's template": "إعادة التعيين إلى مسار الحقل من قالب Beat"
 }
