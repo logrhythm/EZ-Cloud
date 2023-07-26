@@ -26,6 +26,9 @@ if [[ "$*" == *--latest* ]]; then
   LATEST_TAG=latest
 fi
 
+echo "### PULL LATEST NODE:18-ALPINE IMAGE..."
+docker pull node:18-alpine
+
 echo "### BUILD DOCKER IMAGE..."
 #_DOCKER_COMMAND_GOES_HERE
 

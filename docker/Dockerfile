@@ -6,6 +6,7 @@
 # Modified on: 2023-01-15 - To build config/ at run first time
 # Modified on: 2023-02-23 - To use `node:18-alpine` as base image
 # Modified on: 2023-04-28 - To use upgrade all installed packages
+# Modified on: 2023-07-27 - To use upgrade all installed global NPM packages
 # Description: Describes container `oc-admin`, based on NodeJS
 #              This container is designed to run the OC Admin (formerly EZ Cloud) Backend
 # =============================================
@@ -15,6 +16,7 @@ FROM node:18-alpine
 RUN apk update
 RUN apk upgrade
 RUN apk add uuidgen
+RUN npm update -g
 
 WORKDIR /app
 
