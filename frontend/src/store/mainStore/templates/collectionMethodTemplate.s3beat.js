@@ -11,6 +11,7 @@ export default {
   collectionMethod: 's3beat',
   initialDefaultValues: {
     awsFlag: false,
+    accessKeyID: 'CHANGE_THIS',
     period: '10s',
     assumeRoleFlag: false,
     stsCredsExpirationTime: '1h',
