@@ -15,7 +15,7 @@ lrctl_docker_membership_return_code=255
 ocdb_repo="gcr.io/lrcollection"
 ocdb_version="6.0.2"
 ocadmin_repo="tonymasse"
-ocadmin_version="v1.2.2"
+ocadmin_version="v1.2.3"
 
 lrctl_volume_mounts=()
 # Expose the hosts Docker socket to the container.
