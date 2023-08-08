@@ -82,6 +82,9 @@ export default {
       description: '', // TODO:
       default: '',
       required: true,
+      displayIf: {
+        azureFlag: true
+      },
       group: 'Running in Azure'
     },
     {
@@ -93,6 +96,9 @@ export default {
       description: '', // TODO:
       default: '',
       required: true,
+      displayIf: {
+        azureFlag: true
+      },
       group: 'Running in Azure'
     },
     {
@@ -104,6 +110,9 @@ export default {
       description: 'This Azure Storage is used by the Event Hub Beat to store the references of the last messages collected, so each collection cycle can start where the previous one left off.',
       default: '',
       required: true,
+      displayIf: {
+        azureFlag: true
+      },
       group: 'Running in Azure'
     },
     {
@@ -125,6 +134,9 @@ export default {
 > The format is: \`<EventHub Namespace Name>,<EventHub Instance Name>,<Storagecontainername>\`. Using a coma and no space to separate the three values`,
       default: '',
       required: true,
+      displayIf: {
+        azureFlag: true
+      },
       group: 'Running in Azure'
     },
 
@@ -144,6 +156,9 @@ export default {
       description: 'Select the cloud service instance type',
       default: 'Public Cloud',
       required: true,
+      displayIf: {
+        azureFlag: false
+      },
       group: 'Running on-premise (not in Azure)'
     },
     {
@@ -160,6 +175,9 @@ export default {
       description: 'This Azure Storage is used by the Event Hub Beat to store the references of the last messages collected, so each collection cycle can start where the previous one left off.',
       default: '',
       required: true,
+      displayIf: {
+        azureFlag: false
+      },
       group: 'Running on-premise (not in Azure)'
     },
     {
@@ -183,6 +201,9 @@ export default {
       },
       description: 'Provide the names of all the Azure EventHub Storages you want to collect from, and for each, their respective Connection String',
       required: true,
+      displayIf: {
+        azureFlag: false
+      },
       group: 'Running on-premise (not in Azure)'
     },
 
