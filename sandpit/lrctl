@@ -8,7 +8,7 @@ script_name=$(basename "${BASH_SOURCE[0]}")
 # === LRCTL VARIABLES ===
 
 lrctl_debug=0
-lrctl_version="6.5.12"
+lrctl_version="6.5.13"
 lrctl_image=""
 lrctl_new_shell_after_group_membership=1
 lrctl_docker_membership_return_code=255
@@ -44,7 +44,6 @@ local_versions_realpath=""
 local_versions_mount_path="/lrctl/versions/versions.yml"
 
 # URLs to check
-# prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/EZCloud/latest.yml"
 prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/master/latest.yml"
 container_registry_url="https://gcr.io"
 
