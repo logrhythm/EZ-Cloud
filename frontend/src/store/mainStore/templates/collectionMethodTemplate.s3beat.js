@@ -11,6 +11,7 @@ export default {
   collectionMethod: 's3beat',
   initialDefaultValues: {
     awsFlag: false,
+    accessKeyID: 'CHANGE_THIS',
     period: '10s',
     assumeRoleFlag: false,
     stsCredsExpirationTime: '1h',
@@ -92,6 +93,9 @@ If set to "**Running on-premise (not in AWS)**", all fields of the **Authenticat
 `,
       default: '',
       required: true,
+      displayIf: {
+        awsFlag: false
+      },
       group: 'Authentication for non-AWS deployment'
     },
     {
@@ -114,6 +118,9 @@ If set to "**Running on-premise (not in AWS)**", all fields of the **Authenticat
 > The secret access key and access keys are saved in encrypted format.`,
       default: '',
       required: true,
+      displayIf: {
+        awsFlag: false
+      },
       group: 'Authentication for non-AWS deployment'
     },
 
