@@ -11,7 +11,7 @@ export default {
   collectionMethod: 's3beat',
   initialDefaultValues: {
     awsFlag: false,
-    accessKeyID: 'CHANGE_THIS',
+    // accessKeyID: 'CHANGE_THIS', // Removed as of 2023-10-27 as the Beat is now not needing it
     period: '10s',
     assumeRoleFlag: false,
     stsCredsExpirationTime: '1h',
