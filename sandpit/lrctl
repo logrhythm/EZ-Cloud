@@ -8,7 +8,7 @@ script_name=$(basename "${BASH_SOURCE[0]}")
 # === LRCTL VARIABLES ===
 
 lrctl_debug=0
-lrctl_version="6.5.13"
+lrctl_version="6.5.14"
 lrctl_image=""
 lrctl_new_shell_after_group_membership=1
 lrctl_docker_membership_return_code=255
@@ -16,6 +16,8 @@ ocdb_repo="gcr.io/lrcollection"
 ocdb_version="6.0.2"
 ocadmin_repo="tonymasse"
 ocadmin_version="v1.3.0"
+hostnameSvc="$(hostname --all-fqdns | cut -f1 -d' ')"
+isLongRunningDetached="false"
 
 lrctl_volume_mounts=()
 # Expose the hosts Docker socket to the container.
@@ -48,7 +50,7 @@ prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/mas
 container_registry_url="https://gcr.io"
 
 # prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/EZCloud/lrctl"
-prod_script_file_url="https://github.com/logrhythm/EZ-Cloud/raw/v1.2/sandpit/lrctl"
+prod_script_file_url="https://github.com/logrhythm/EZ-Cloud/raw/v1.3/sandpit/lrctl"
 
 # Track the files that should be cleaned up. We add one file just to avoid the
 # array being empty.
@@ -582,6 +584,103 @@ runLrctl() {
   fi
 
   docker run "${docker_args[@]}"
+}
+
+# Run the LRCTL Long Running container
+runLrctlSVC() {
+    isLrctlRunondetacheMode "${args[@]}"
+    if [[ "$isLongRunningDetached" == "true" ]]; then
+        if [[ ("${args[@]}" == *"restart"* )  ]]; then
+          isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
+          if [[ -n "$isLongRunningContainer"  ]]; then
+             docker rm -f lrctl_svc 1> /dev/null
+        else
+             echo "no lrctl container started"
+             isLongRunningDetached="false"
+             return
+          fi
+        fi 
+      docker_args=(-d --name lrctl_svc --env hostName=${hostnameSvc} --env script_version=${lrctl_version} --env ipv=$(hostname -I | cut -f1 -d' ') --restart unless-stopped -v lrctl_logs_svc:/app/cmd/beats/lrctl/logs)
+    else
+      docker_args=(-i --rm --name lrctl --env script_version=${lrctl_version})
+    fi
+
+    for vol_mount in "${lrctl_volume_mounts[@]}"; do
+      docker_args+=(-v "${vol_mount}")
+    done
+
+    if [[ "$isLongRunningDetached" != "true" ]]; then
+      if [[ -n "${local_versions_realpath}" ]]; then
+        local mount_dir=$(dirname "${local_versions_mount_path}")
+        docker_args+=(-v "${local_versions_volume}:${mount_dir}")
+      fi
+    fi
+
+    if [[ -t 0 ]]; then
+      docker_args+=(-t)
+    fi
+
+    # Add the image and the args that were passed to this function
+    docker_args+=("${lrctl_image}" "$@")
+    if [[ "$http_proxy" != "" ]]; then
+      echo "Using proxy setting: http_proxy=${http_proxy}"
+      docker_args+=("--env" "http_proxy=${http_proxy}")
+    fi
+    if [[ "$https_proxy" != "" ]]; then
+      echo "Using proxy setting: https_proxy=${https_proxy}"
+      docker_args+=("--env" "https_proxy=${https_proxy}")
+    fi
+
+    setupLocalMount
+
+    if [[ "${lrctl_debug}" -gt 0 ]]; then
+      echo >&2 "Docker Run Args: ${docker_args[@]}"
+    fi
+    
+    if [[ "$isLongRunningDetached" == "true" ]]; then    
+      docker run "${docker_args[@]}" 1> /dev/null
+      printMsg "${args[@]}"
+    else
+      docker run "${docker_args[@]}" 
+    fi
+    
+    isLrctlRunondetacheMode "${args[@]}"
+    if [[ "$isLongRunningDetached" == "true" ]]; then
+        isLongRunningContainer=$( docker ps -a -q -f name='lrctl_svc' )
+        if [[ -z "$isLongRunningContainer" ]]; then
+           runLrctlSVC "${args[@]}"
+        fi      
+    fi
+  #printMsg "${args[@]}"
+}
+
+printMsg(){
+  
+  if [[ ("${args[@]}" == *"lrctl"* )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[@]}" == *"start"* || "${args[@]}" == *"restart"* ) ]]; then
+    if [[ ("${args[@]}" == *"restart"*) ]];
+    then
+        echo "lrctl service restarted"
+        return
+    else
+	      echo "lrctl service started"
+    fi
+  fi
+  
+}
+
+isLrctlRunondetacheMode(){
+
+  if [[ ${#args[@]} == 4 ]]; then
+      if [[ ("${args[0]}" == "lrctl" || "${args[2]}" == "lrctl" )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start" || "${args[3]}" == "start" || "${args[1]}" == "restart" || "${args[3]}" == "restart" ) ]]; then
+        isLongRunningDetached="true"
+      fi
+  else
+      if [[ ("${args[0]}" == "lrctl" )  && $(dockerVolumeExists "lrctl_config_svc") == "TRUE" && ("${args[1]}" == "start" || "${args[1]}" == "restart" ) ]]; then
+          isLongRunningDetached="true"
+        #isLongRunningDetached="true"
+      fi
+  fi
+
 }
 
 processVersionsInfo() {
@@ -1248,7 +1347,11 @@ case "${first_non_flag_arg:-}" in
             esac
         fi 
       else
-        runLrctl "${args[@]}" 
+        if [[ "${args[@]}" == *"lrctl"* ]]; then
+            runLrctlSVC "${args[@]}" 
+        else
+            runLrctl "${args[@]}" 
+        fi 
     fi
     ;;
 esac
