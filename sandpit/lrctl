@@ -15,7 +15,7 @@ lrctl_docker_membership_return_code=255
 ocdb_repo="gcr.io/lrcollection"
 ocdb_version="6.0.2"
 ocadmin_repo="tonymasse"
-ocadmin_version="v1.3.1"
+ocadmin_version="v1.3.2"
 hostnameSvc="$(hostname --all-fqdns | cut -f1 -d' ')"
 isLongRunningDetached="false"
 
