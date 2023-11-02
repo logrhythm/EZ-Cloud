@@ -105,6 +105,7 @@ export default {
       // Mapping of the Timestamp field(s)
       // const timestampAddFieldPlaceholderTemplate = '    add_field(({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}{{EZ_date_parser_placeholder}}); .output.normal_msg_date) |'
       const timestampAddFieldPlaceholderTemplate = '    add_field((if {{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}} != null then ({{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}{{EZ_date_parser_placeholder}}) else null end); .output.normal_msg_date) |'
+      const flattenArrayTimestampAddFieldPlaceholderTemplate = '    add_field((if .{{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}} != null then (.{{EZ_message_placeholder}}{{EZ_field_doted_path_placeholder}}{{EZ_date_parser_placeholder}}) else null end); .output.normal_msg_date) |'
       const dateParserIso8601Template = ' | fromdate' // Used for Timestamp - ISO8601 format
       const timestampAddFieldPlaceholder = [] // multiple strings
 
@@ -242,7 +243,7 @@ export default {
               if (isSubFannedOutBranch) {
                 // Field is a Sub of a Fanned out branch
                 timestampAddFieldPlaceholder.push(
-                  timestampAddFieldPlaceholderTemplate
+                  flattenArrayTimestampAddFieldPlaceholderTemplate
                     .replace(
                       /{{EZ_message_placeholder}}/g,
                       'flatten_array_' + flattenArrayPathName.replace(/[^a-zA-Z0-9]/g, '_') // rebuild the flatten array ID
