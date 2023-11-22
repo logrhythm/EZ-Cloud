@@ -24,13 +24,18 @@ if [[ "$*" == *--help* ]]; then
   exit 0
 fi
 
+VERSION_TAG=v1.2
+
 LATEST_TAG=latest-dev
 if [[ "$*" == *--latest* ]]; then
   LATEST_TAG=latest
 fi
 
+echo "### PULL LATEST POSTGRES:14-ALPINE IMAGE..."
+docker pull postgres:14-alpine
+
 echo "### BUILD DOCKER IMAGE (FLAG: $LATEST_TAG)..."
-docker build -t tonymasse/oc-db:v1.0 -t tonymasse/oc-db:$LATEST_TAG ./
+docker build -t tonymasse/oc-db:$VERSION_TAG -t tonymasse/oc-db:$LATEST_TAG ./
 
 echo "### Done."
 
@@ -41,7 +46,12 @@ if [[ "$*" == *--nopublish* ]]; then
   echo "docker push --all-tags tonymasse/oc-db"
 else
   echo "### PUBLISHING \`oc-db\` CONTAINER IMAGE..."
-  docker push --all-tags tonymasse/oc-db
+  # docker push --all-tags tonymasse/oc-db
+  docker push tonymasse/oc-db:$VERSION_TAG
+  docker push tonymasse/oc-db:$LATEST_TAG
 
   echo "### 🟢🏁 PUBLISH PROCESS COMPLETE."
 fi
+
+echo "### RUN GRYPE ON DOCKER IMAGE (tonymasse/oc-db:$VERSION_TAG)..."
+docker run --rm --volume /var/run/docker.sock:/var/run/docker.sock anchore/grype:latest "tonymasse/oc-db:$VERSION_TAG" --add-cpes-if-none
