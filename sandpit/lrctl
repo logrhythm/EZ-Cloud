@@ -8,14 +8,14 @@ script_name=$(basename "${BASH_SOURCE[0]}")
 # === LRCTL VARIABLES ===
 
 lrctl_debug=0
-lrctl_version="6.5.14"
+lrctl_version="6.5.16"
 lrctl_image=""
 lrctl_new_shell_after_group_membership=1
 lrctl_docker_membership_return_code=255
 ocdb_repo="gcr.io/lrcollection"
-ocdb_version="6.0.2"
+ocdb_version="6.0.3"
 ocadmin_repo="tonymasse"
-ocadmin_version="v1.3.2"
+ocadmin_version="v1.3.3"
 hostnameSvc="$(hostname --all-fqdns | cut -f1 -d' ')"
 isLongRunningDetached="false"
 
@@ -49,8 +49,8 @@ local_versions_mount_path="/lrctl/versions/versions.yml"
 prod_versions_file_url="https://raw.githubusercontent.com/logrhythm/versions/master/latest.yml"
 container_registry_url="https://gcr.io"
 
-# prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/EZCloud/lrctl"
-prod_script_file_url="https://github.com/logrhythm/EZ-Cloud/raw/v1.3/sandpit/lrctl"
+prod_script_file_url="https://raw.githubusercontent.com/logrhythm/versions/master/lrctl"
+
 
 # Track the files that should be cleaned up. We add one file just to avoid the
 # array being empty.
@@ -709,7 +709,7 @@ processVersionsInfo() {
 
 ocdbContainerStart(){
   echo "### Create/Start OC-DB (\`oc-db\`) container for PostgreSQL using \`oc-db\` Volume..."
-  docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
+  docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach --restart always ${ocdb_repo}/oc-db:${ocdb_version} 
   
   sleep 5
   echo "done"
@@ -1010,12 +1010,12 @@ processStartOC_DB(){
           echo "oc-db container started"
         fi
       fi
-		fi
+    fi
   else
     echo "### Create \`oc-db\` Volume..."
     docker volume create oc-db
     echo "### DOWNLOAD AND RUN \`oc-db\` START-UP SCRIPT..."
-		docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach ${ocdb_repo}/oc-db:${ocdb_version}
+    docker run --network logrhythm --env POSTGRES_PASSWORD=`date --rfc-3339=ns | md5sum | cut -c-32` --name oc-db --volume oc-db:/var/lib/postgresql/data --detach --restart always ${ocdb_repo}/oc-db:${ocdb_version}
     sleep 10
     echo "oc-db container started"
   fi
@@ -1040,11 +1040,17 @@ processRestartOC_DB(){
   if [[ -n "$isOcAdmincontainer" ]]; 
   then
       echo "oc-db container restart starting..."
-      #docker stop oc-db
-      docker restart oc-db
-      #cleanOcDbContainer
-      #cleanOcDbImages
-      #processStartOC_DB
+      ocDbImage="${ocdb_repo}/oc-db:${ocdb_version}"
+      if [[ -n "$(checkForImage ${ocDbImage})" ]];
+      then
+        docker restart oc-db
+      else
+        docker stop oc-db
+        #docker restart oc-db
+        cleanOcDbContainer
+        cleanOcDbImages
+        processStartOC_DB
+      fi
       echo "oc-db container restarted"
   else
       echo "no oc-db container started"
