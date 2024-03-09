@@ -1465,6 +1465,76 @@ export function loadLatestNews ({ state, commit }) {
 }
 
 // ######################################################################
+// Admin / Log Level
+// ######################################################################
+
+export function setTemporaryLoggingLevel ({ state, commit }, payload) {
+  commit('getTemporaryLoggingLevel', [payload])
+}
+
+export function getTemporaryLoggingLevel ({ state, commit }, payload) {
+  getDataFromSite({
+    apiUrl: '/admin/GetTemporaryLoggingLevel',
+    dataLabel: 'Logging Level',
+    countDataLabel: false,
+    apiHeaders: {
+      authorization: 'Bearer ' + state.jwtToken
+    },
+    commit: commit,
+    targetCommitName: 'getTemporaryLoggingLevel',
+    loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+    targetObjectName: (payload && payload.targetObjectName ? payload.targetObjectName : ''),
+    silent: false,
+    caller: (payload && payload.caller ? payload.caller : this._vm),
+    onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+    onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+    debug: false
+  })
+}
+
+export function updateTemporaryLoggingLevel ({ state }, payload) {
+  if (payload && payload.newLoggingLevel) {
+    postDataToSite({
+      apiUrl: '/admin/UpdateTemporaryLoggingLevel',
+      dataLabel: 'Logging Level',
+      apiCallParams: {
+        newLoggingLevel: payload.newLoggingLevel
+      },
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      targetObjectName: (payload && payload.targetObjectName ? payload.targetObjectName : ''),
+      silent: false,
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: false
+    })
+  }
+}
+
+export function revertTemporaryLoggingLevel ({ state }, payload) {
+  if (payload) {
+    postDataToSite({
+      apiUrl: '/admin/RevertTemporaryLoggingLevel',
+      dataLabel: 'Logging Level',
+      apiCallParams: {},
+      apiHeaders: {
+        authorization: 'Bearer ' + state.jwtToken
+      },
+      loadingVariableName: (payload && payload.loadingVariableName ? payload.loadingVariableName : ''),
+      targetObjectName: (payload && payload.targetObjectName ? payload.targetObjectName : ''),
+      silent: false,
+      caller: (payload && payload.caller ? payload.caller : this._vm),
+      onSuccessCallBack: (payload && payload.onSuccessCallBack ? payload.onSuccessCallBack : null),
+      onErrorCallBack: (payload && payload.onErrorCallBack ? payload.onErrorCallBack : null),
+      debug: false
+    })
+  }
+}
+
+// ######################################################################
 // HELPERS
 // ######################################################################
 

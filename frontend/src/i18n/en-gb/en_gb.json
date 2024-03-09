@@ -676,5 +676,21 @@
   "Container Short Configuration": "Container Short Configuration",
   "Click or Drop a configuration (.txt, .yml or .yaml) file here": "Click or Drop a configuration (.txt, .yml or .yaml) file here",
   "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}.": "Only .txt, .yml and .yaml files are accepted. You tried to import: {badFileName}.",
-  "Reset to field path from Beat's template": "Reset to field path from Beat's template"
+  "Reset to field path from Beat's template": "Reset to field path from Beat's template",
+  "Logging": "Logging",
+  "Manage Log Level": "Manage Log Level",
+  "OC Admin Log Level": "OC Admin Log Level",
+  "The Log Level will be set temporarily, that is until the next restart of the OC Admin container or reset it from here.": "The Log Level will be set temporarily, that is until the next restart of the OC Admin container or reset it from here.",
+  "This will only affect the Log Level on the OC Admin container / Backend.": "This will only affect the Log Level on the OC Admin container / Backend.",
+  "Revert to configuration file value": "Revert to configuration file value",
+  "Get current Log Level": "Get current Log Level",
+  "Less logs": "Less logs",
+  "More logs": "More logs",
+  "Debug": "Debug",
+  "Verbose": "Verbose",
+  "Information": "Information",
+  "Warning": "Warning",
+  "Error": "Error",
+  "Critical": "Critical",
+  "Silent": "Silent"
 }

@@ -57,6 +57,21 @@
 
           </q-card-section>
       </q-card>
+
+      <q-card class="q-pa-md q-mx-none">
+          <q-card-section horizontal>
+            <q-card-section class="col q-ma-none q-pa-none">
+              <q-card-section class="text-h4">
+                  {{ $t('Logging') }}
+              </q-card-section>
+              <q-card-section class="q-gutter-lg">
+                <q-btn no-caps color="primary" :label="$t('Manage Log Level')" to="/Admin/LogLevel/">
+                </q-btn>
+              </q-card-section>
+            </q-card-section>
+
+          </q-card-section>
+      </q-card>
     </div>
   </q-page>
 </template>

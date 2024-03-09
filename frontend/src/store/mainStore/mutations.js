@@ -359,3 +359,14 @@ export function updateLatestNews (state, payload) {
     }
   }
 }
+
+// Admin - Log Level management
+
+export function getTemporaryLoggingLevel (state, payload) {
+  if (payload && Array.isArray(payload) && payload.length === 1) {
+    state.temporaryLogLevel = {
+      logLevel: parseInt(payload[0].logLevel || 0, 10),
+      logLevelName: payload[0].logLevelName || ''
+    }
+  }
+}

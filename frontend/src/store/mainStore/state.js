@@ -516,6 +516,7 @@ export default function () {
       'sophoscentralbeat_',
       'symantecwssbeat_',
       'webhookbeat_'
-    ]
+    ],
+    temporaryLogLevel: [{}] // Temporary log level of the OC Admin backend
   }
 }
