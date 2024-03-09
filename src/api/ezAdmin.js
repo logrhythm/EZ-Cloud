@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Load the System Logging functions
-const { logToSystem } = require('../shared/systemLogging');
+const { getLevelToInt, getIntToLevel, logToSystem } = require('../shared/systemLogging');
 
 // Get the crypto tools to work with password and keys
 const { aesEncrypt, aesDecrypt } = require('../shared/crypto');
@@ -49,6 +49,11 @@ const {
 // GetRolesList
 // UpdateRole
 // DeleteRole
+// UpdateEmdb
+// UpdateMsSqlConfig
+// GetMsSqlConfig
+// GetTemporaryLoggingLevel
+// UpdateTemporaryLoggingLevel
 
 // ##########################################################################################
 // GetUsersList
@@ -763,6 +768,69 @@ router.post('/UpdateEmdb', async (req, res) => {
   }
 
   res.json(updatedMsSqlEmdb);
+});
+
+function getCurrentLogLevel() {
+  return {
+    stillChecking: false,
+    errors: [],
+    outputs: [],
+    payload: [
+      {
+        logLevel: process.env.logLevel,
+        logLevelName: getIntToLevel(process.env.logLevel)
+      }
+    ]
+  };
+}
+
+// ##########################################################################################
+// GetTemporaryLoggingLevel
+// ##########################################################################################
+
+router.get('/GetTemporaryLoggingLevel', async (req, res) => {
+  const loggingLevel = getCurrentLogLevel();
+
+  res.json(loggingLevel);
+});
+
+// ##########################################################################################
+// UpdateTemporaryLoggingLevel
+// ##########################################################################################
+
+router.post('/UpdateTemporaryLoggingLevel', async (req, res) => {
+  // User provides the log level by its integer ID
+  const newLoggingLevel = req.body.newLoggingLevel || process.env.logLevel;
+
+  logToSystem('Verbose', `Admin | Updating LogLevel temporarily | From: ${process.env.logLevel} ("${getIntToLevel(process.env.logLevel)}") | To: ${newLoggingLevel} ("${getIntToLevel(newLoggingLevel)}") | user: ${(req.user.username ? req.user.username : '-')}`);
+
+  try {
+    process.env.logLevel = newLoggingLevel;
+  } catch (error) {
+    logToSystem('Warning', `Admin | Failure during update of LogLevel | user: ${(req.user.username ? req.user.username : '-')} | Details: ${JSON.stringify(error.message)}`);
+  }
+
+  const updatedLoggingLevel = getCurrentLogLevel();
+
+  res.json(updatedLoggingLevel);
+});
+
+// ##########################################################################################
+// RevertTemporaryLoggingLevel
+// ##########################################################################################
+
+router.post('/RevertTemporaryLoggingLevel', async (req, res) => {
+  try {
+    const newLoggingLevel = getLevelToInt(process.env.LOGLEVEL || 'Information');
+    logToSystem('Verbose', `Admin | Reverting LogLevel to its value per the configuration file | From: ${req.body.userLogin} | To: ${newLoggingLevel} ("${getIntToLevel(newLoggingLevel)}") | user: ${(req.user.username ? req.user.username : '-')}`);
+    process.env.logLevel = getLevelToInt(process.env.LOGLEVEL || 'Information');
+  } catch (error) {
+    logToSystem('Warning', `Admin | Failure during update of LogLevel | user: ${(req.user.username ? req.user.username : '-')} | Details: ${JSON.stringify(error.message)}`);
+  }
+
+  const updatedLoggingLevel = getCurrentLogLevel();
+
+  res.json(updatedLoggingLevel);
 });
 
 //        ######## ##     ## ########   #######  ########  ########  ######
