@@ -31,42 +31,11 @@
       </div>
       <q-list class="col-auto">
 
-        <!-- <q-item v-if="needToConfigureMsSql">
-          <q-tooltip content-style="font-size: 1rem;">
-            <span class="text-orange text-bold">{{ $t('SIEM Not Connected') }}</span><br>
-            {{ $t('The connection details to the SQL server on the SIEM are missing.') }}<br>
-            {{ $t('A lot of things will not work until this is configred.') }}
-          </q-tooltip>
-          <q-item-section
-          >
-            <q-avatar size="24px" class="q-pa-none" square>
-              <q-icon name="o_link_off" size="sm" color="orange" />
-            </q-avatar>
-          </q-item-section>
-        </q-item>
-        <q-separator class="q-my-xs" v-if="needToConfigureMsSql"/> -->
-
-        <!-- <q-item v-if="!socket.connected">
-          <q-tooltip content-style="font-size: 1rem;">
-            <span class="text-orange text-bold">{{ $t('Disconnected') }}</span><br>
-            {{ $t('Live connection with server has been lost.') }}<br>
-            {{ $t('Some features might not work anymore.') }}
-          </q-tooltip>
-          <q-item-section
-          >
-            <q-avatar size="24px" class="q-pa-none" square>
-              <q-icon name="o_cloud_off" size="sm" color="orange" />
-            </q-avatar>
-          </q-item-section>
-        </q-item>
-        <q-separator class="q-my-xs" v-if="!socket.connected"/> -->
-
         <EssentialLink
           v-for="(link, index) in lowLinks"
           :key="index"
           v-bind="link"
           />
-          <!-- v-show="!link.needsPriviledge || (link.needsPriviledge && loggedInUserIsPrivileged)" -->
       </q-list>
       <div class="text-center">
         <span style="opacity:.4; font-size:.75em">v{{version}}</span>
@@ -126,7 +95,6 @@
 import { mapState } from 'vuex'
 import EssentialLink from 'components/EssentialLink.vue'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
-// import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import { version } from '../../package.json'
 import { date } from 'quasar'
 
@@ -135,7 +103,6 @@ export default {
   components: { EssentialLink },
   mixins: [
     mixinSharedDarkMode // Shared computed to access and update the DarkMode
-    // mixinSharedSocket // Shared function and state to access the Socket.io
   ],
   data () {
     return {
@@ -146,101 +113,23 @@ export default {
     }
   },
   computed: {
-    // ...mapState('mainStore', ['loggedInUser', 'loggedInUserIsPrivileged', 'errorWikiUrlBase', 'ezMarketNotification', 'deployment', 'extraInformation', 'currentPersistenceLayerAvailability']),
     ...mapState('mainStore', ['errorWikiUrlBase']),
-    // serverVersion () {
-    //   return (this.deployment && this.deployment.version ? this.deployment.version : '?.?.?')
-    // },
-    // needToConfigureMsSql () {
-    //   return (
-    //     this.extraInformation &&
-    //     this.extraInformation.msSqlConnectionConfigMissing &&
-    //     this.currentPersistenceLayerAvailability &&
-    //     this.currentPersistenceLayerAvailability.msSqlAvailable !== true
-    //   )
-    // },
     mainLinks () {
       return [
         {
           title: '',
           icon: 'o_home',
           link: '#/'
-        // },
-        // {
-        //   title: '',
-        //   tooltip: this.$t('OpenCollectors'),
-        //   icon: 'o_mediation',
-        //   link: '#/OpenCollectors'
-        // },
-        // {
-        //   title: '',
-        //   tooltip: this.$t('Pipelines'),
-        //   icon: 'o_account_tree',
-        //   link: '#/Pipelines'
         }
       ]
     },
     lowLinks () {
       return [
-        // {
-        //   title: '',
-        //   tooltip: this.$t('EZ Market Place'),
-        //   icon: 'o_storefront',
-        //   link: '#/MarketPlace',
-        //   id: 'ezMarketPlace',
-        //   notification: null,
-        //   notificationColor: 'green',
-        //   notificationTextColor: 'white',
-        //   subMenus: [
-        //     {
-        //       title: this.$t('Notifications'),
-        //       icon: 'o_mail_outline',
-        //       id: 'ezMarketPlaceNotifications',
-        //       notification: null,
-        //       notificationColor: 'green',
-        //       notificationTextColor: 'white',
-        //       link: '#/MarketPlace/Notifications'
-        //     },
-        //     {
-        //       title: this.$t('Pipeline Templates'),
-        //       icon: 'o_account_tree',
-        //       link: '#/MarketPlace/PipelineTemplates'
-        //     },
-        //     {
-        //       title: this.$t('My Profile'),
-        //       icon: 'o_person',
-        //       link: '#/MarketPlace/PublisherProfile'
-        //     }
-        //   ]
-        // },
-        // {
-        //   separator: true
-        // },
-        // {
-        //   title: '',
-        //   tooltip: this.$t('Admin'),
-        //   icon: 'o_admin_panel_settings',
-        //   link: '#/Admin',
-        //   needsPriviledge: true,
-        //   id: 'admin',
-        //   notification: null,
-        //   notificationColor: 'negative',
-        //   notificationTextColor: 'white'
-        // },
         {
           title: '',
           tooltip: this.$t('Settings'),
           icon: 'o_settings',
           link: '#/Settings'
-        // },
-        // {
-        //   separator: true
-        // },
-        // {
-        //   title: '',
-        //   tooltip: this.$t('Log Out'),
-        //   icon: 'o_logout',
-        //   link: '#/Logout'
         }
       ]
     }
@@ -381,42 +270,7 @@ export default {
         console.log('📜 [LOG] |', error.timestampIso, '| Code:', error.code, '| Message:', error.message, '| WikiLink:', error.wikiLink)
       })
     }
-    // ,
-    // updateEzMarketNotificationNumber (payload) {
-    //   // Update the MarketPlace main menu
-    //   const ezMarketPlaceLink = this.lowLinks.find((link) => link.id === 'ezMarketPlace')
-    //   if (ezMarketPlaceLink) {
-    //     ezMarketPlaceLink.notification = payload
-
-    //     // Update the Notification sub menu
-    //     const ezMarketPlaceSubLink = ezMarketPlaceLink.subMenus.find((link) => link.id === 'ezMarketPlaceNotifications')
-    //     if (ezMarketPlaceSubLink) {
-    //       ezMarketPlaceSubLink.notification = payload
-    //     }
-    //   }
-    // },
-    // updateAdminNotificationNumber (payload) {
-    //   const adminLink = this.lowLinks.find((link) => link.id === 'admin')
-    //   if (adminLink) {
-    //     adminLink.notification = payload
-    //   }
-    // }
   },
-  // watch: {
-  //   // ezMarketNotification: {
-  //   //   handler (newValue) {
-  //   //     this.updateEzMarketNotificationNumber(newValue)
-  //   //   },
-  //   //   immediate: true
-  //   // },
-  //   // extraInformation: {
-  //   //   handler (newValue) {
-  //   //     this.updateAdminNotificationNumber(this.extraInformation && this.extraInformation.msSqlConnectionConfigMissing === true ? 1 : null)
-  //   //   },
-  //   //   deep: true,
-  //   //   immediate: true
-  //   // }
-  // },
   mounted () {
     this.$root.$on('addAndShowErrorToErrorPanel', this.prepareAndShowErrorPanel)
   },
