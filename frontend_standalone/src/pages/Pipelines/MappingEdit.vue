@@ -14,9 +14,10 @@
           </q-tooltip>
         </q-btn>
         <q-separator vertical />
+        <q-btn no-caps flat dense icon="file_download" :label="$t('Export SMA Policy')" />
         <!-- <q-btn no-caps flat dense icon="file_download" :label="$t('Export JQ')" disable /> -->
-        <q-btn no-caps flat dense icon="visibility" :label="$t('Show JQ')" v-if="!showJqOutput" @click="buildJqFilter(); buildJqTransform(); showJqOutput = true" />
-        <q-btn no-caps flat dense icon="visibility_off" :label="$t('Hide JQ output')" v-else @click="showJqOutput = false" />
+        <!-- <q-btn no-caps flat dense icon="visibility" :label="$t('Show JQ')" v-if="!showJqOutput" @click="buildJqFilter(); buildJqTransform(); showJqOutput = true" />
+        <q-btn no-caps flat dense icon="visibility_off" :label="$t('Hide JQ output')" v-else @click="showJqOutput = false" /> -->
 
         <q-space />
 
@@ -461,64 +462,6 @@
           </template>
         </q-virtual-scroll>
       </q-card>
-      <q-card class="q-mt-md" v-show="showJqOutput">
-        <q-card-section class="text-h4" style="opacity:.4">
-          {{ $t('OpenCollector JQ') }}
-        </q-card-section>
-        <q-separator />
-        <q-card-section class="text-h6" style="opacity:.6">
-          {{ $t('JQ Filter') }}
-        </q-card-section>
-        <q-card-section>
-            <!-- autogrow -->
-          <q-input
-            v-model="jqFilterOutput"
-            type="textarea"
-            filled
-            readonly
-            :label="'is_' + pipelineNameSafe + '.jq'"
-            style="min-height: 10rem;"
-            rows="21"
-            class="fixed-font"
-          >
-            <template v-slot:after>
-              <q-btn round dense flat icon="content_copy" @click="copyToClipboard(jqFilterOutput)" :disable="!jqFilterOutput || (jqFilterOutput && jqFilterOutput.length === 0)">
-                <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
-                  {{ $t('Copy to Clipboad') }}
-                </q-tooltip>
-              </q-btn>
-            </template>
-          </q-input>
-        </q-card-section>
-
-        <q-separator />
-
-        <q-card-section class="text-h6" style="opacity:.6">
-          {{ $t('Transform JQ') }}
-        </q-card-section>
-        <q-card-section>
-            <!-- autogrow -->
-          <q-input
-            v-model="jqTransformOutput"
-            type="textarea"
-            filled
-            readonly
-            :label="pipelineNameSafe + '.jq'"
-            style="min-height: 20rem;"
-            rows="32"
-            class="fixed-font"
-          >
-            <template v-slot:after>
-              <q-btn round dense flat icon="content_copy" @click="copyToClipboard(jqTransformOutput)" :disable="!jqTransformOutput || (jqTransformOutput && jqTransformOutput.length === 0)">
-                <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
-                  {{ $t('Copy to Clipboad') }}
-                </q-tooltip>
-              </q-btn>
-            </template>
-          </q-input>
-        </q-card-section>
-
-      </q-card>
     </div>
   </q-page>
 </template>
@@ -533,7 +476,7 @@
 //        ######   ######  ##     ## #### ##           ##
 
 import { copyToClipboard } from 'quasar'
-import { mapState, mapGetters, mapActions } from 'vuex'
+import { mapState } from 'vuex'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedRightToLeft from 'src/mixins/mixin-Shared-RightToLeft'
 import mixinSharedBuildJq from 'src/mixins/mixin-Shared-BuildJq'
@@ -713,27 +656,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('mainStore', ['loggedInUser', 'jqFilterTemplate', 'jqTransformTemplate', 'helpWikiUrlBase', 'collectionMethodTemplates']),
-    ...mapGetters('mainStore', ['pipelines']),
-    pipeline () {
-      return this.pipelines.find(p => p.uid === this.pipelineUid)
-    },
-    pipelineName () {
-      const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
-      return (pipeline && pipeline.name && pipeline.name.length ? pipeline.name : '')
-    },
-    beatName () {
-      // // Beat Name will be PipleineName in lower case and without space no double quote
-      // return this.pipelineName
-      //   .replace(/[ "]/g, '_')
-      //   .toLowerCase()
-      return (this.pipeline && this.pipeline.collectionConfig && this.pipeline.collectionConfig.collectionShipper ? this.pipeline.collectionConfig.collectionShipper : '')
-    },
-    pipelineNameSafe () {
-      return this.pipelineName
-        .replace(/[^a-zA-Z0-9_]/g, '_')
-        .toLowerCase()
-    },
+    ...mapState('mainStore', ['helpWikiUrlBase']),
     maxSeenInLog () {
       let max = 0
       this.jsonPathes.forEach(jp => {
@@ -752,7 +675,7 @@ export default {
   },
 
   methods: {
-    ...mapActions('mainStore', ['upsertPipeline']),
+    // ...mapActions('mainStore', ['upsertPipeline']),
     resetData () {
       setTimeout(() => {
         this.incomingLogCount = 0
@@ -774,22 +697,6 @@ export default {
         })
       }
     }, // filterMdiTagsOptions
-
-    addLineToCommunicationLog (payload) {
-      if (payload !== undefined) {
-        // Dump the string or strings (if multiline) into new line(s) in the console
-        if (typeof payload === 'string') {
-          // eslint-disable-next-line quotes
-          this.communicationLogsOutput += payload + (payload.endsWith("\n") ? '' : "\n")
-          // // eslint-disable-next-line quotes
-          // payload.split("\n").forEach(line => {
-          //   this.communicationLogsOutput += `${line}\n`
-          // })
-        } else {
-          this.communicationLogsOutput += `${JSON.stringify(payload, null, '  ')}\n`
-        }
-      }
-    },
 
     //     ##     ##    ###    ##    ## ##     ##    ###    ##             #### ##     ## ########   #######  ########  ########
     //     ###   ###   ## ##   ###   ## ##     ##   ## ##   ##              ##  ###   ### ##     ## ##     ## ##     ##    ##
@@ -859,6 +766,10 @@ export default {
       } else {
         console.log('[processFileInput] - 🟠 - No file selected.')
       }
+    },
+
+    copyToClipboard (value) {
+      copyToClipboard(value)
     },
 
     //         #######  ##     ## ######## ##     ## ########
@@ -1136,41 +1047,6 @@ export default {
       }
     }, // processLogSampleInBackground
 
-    //              ##  #######
-    //              ## ##     ##
-    //              ## ##     ##
-    //              ## ##     ##
-    //        ##    ## ##  ## ##
-    //        ##    ## ##    ##
-    //         ######   ##### ##
-
-    copyToClipboard (value) {
-      copyToClipboard(value)
-    },
-
-    buildJqFilter () {
-      // Use buildJqFilterFromParams() from mixin-Shared-BuildJq
-      this.jqFilterOutput = this.buildJqFilterFromParams(
-        this.pipelineUid,
-        this.pipelineName,
-        this.beatName,
-        this.loggedInUser
-      )
-    },
-
-    buildJqTransform () {
-      // Use buildJqTransformFromParams() from mixin-Shared-BuildJq
-      this.jqTransformOutput = this.buildJqTransformFromParams({
-        pipelineUid: this.pipelineUid,
-        pipelineName: this.pipelineName,
-        beatName: this.beatName,
-        loggedInUser: this.loggedInUser,
-        extractMessageFieldOnly: this.extractMessageFieldOnly,
-        messageFieldPath: this.messageFieldPath,
-        jsonPathes: this.jsonPathes
-      })
-    },
-
     //     ##      ## #### ##    ## ####
     //     ##  ##  ##  ##  ##   ##   ##
     //     ##  ##  ##  ##  ##  ##    ##
@@ -1223,9 +1099,9 @@ export default {
     jsonPathes: {
       handler () {
         this.needsSaving = true
-        if (this.showJqOutput) {
-          this.buildJqTransform()
-        }
+        // if (this.showJqOutput) {
+        //   this.buildJqTransform()
+        // }
       },
       deep: true
     }
