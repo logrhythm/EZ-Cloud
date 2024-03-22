@@ -3,13 +3,6 @@
     <q-header bordered :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
       <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
         <img class="q-mr-md" :src="(darkMode ? 'logrhythm_logo_darkmode_wide.svg' : 'logrhythm_logo_lightmode_wide.svg')" alt="LogRhythm Open Collector">
-        <!-- <q-btn no-caps flat dense icon="save" :label="$t('Save')" color="primary" :disabled="!needsSaving" @click="save()" /> -->
-<!--
-        <q-btn no-caps flat dense icon="restore" :label="$t('Reverse to last saved')" @click="reverseToLastSaved()" />
-        <q-separator vertical />
-        <q-btn no-caps flat dense icon="play_circle_outline" :label="$t('Start Live Tail')" color="secondary" @click="tailEnabled = true" v-if="!tailEnabled" />
-        <q-btn no-caps flat dense icon="stop" :label="$t('Stop Live Tail')" @click="tailEnabled = false" v-else />
- -->
         <q-btn no-caps flat dense icon="playlist_add" :label="$t('Manual Import')" @click="showManualImport = true" v-if="!showManualImport" >
           <q-tooltip content-style="font-size: 1rem;">
             {{ $t('Import log messages manually') }}
@@ -27,18 +20,6 @@
 
         <q-space />
 
-        <!-- <q-btn no-caps flat dense icon="pending" :label="$t('Advanced')">
-          <q-menu max-width="650px" content-style="min-width:350px">
-            <div class="row no-wrap q-pa-md">
-              <div class="column">
-                <div class="text-h6 q-mb-md">{{ $t('Advanced') }}</div>
-                <q-toggle v-model="showExtraDetails" :label="$t('Show extra details')" />
-                <q-toggle v-model="showQueues" :label="$t('Show Queues')" />
-                <q-toggle v-model="showCommunicationLog" :label="$t('Show Communication &amp; Shipper\'s Logs')" />
-              </div>
-            </div>
-          </q-menu>
-        </q-btn> -->
         <q-btn no-caps flat dense icon="settings" :label="$t('Settings')">
           <q-menu>
             <div class="row no-wrap q-pa-md">
@@ -131,13 +112,8 @@
       </q-toolbar>
     </q-header>
     <div class="">
-      <!-- <BreadCrumbs
-        :crumbs="breadCrumbs"
-        :pageTitle="$tc('Mapping Builder | Mapping Builder: {pipelineName} | Mapping Builder: {pipelineName}', (pipelineName && pipelineName.length ? 1 : 0), { pipelineName })"
-      /> -->
       <div class="">
           <q-tooltip content-style="font-size: 1rem;">
-            <!-- <span class="text-bold">Queues / Stacks sizes: </span>{{ incomingLogCount }} / {{ queueIn.length }} / {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ processedLogs.length }} -->
             <div class="row content-center items-center q-gutter-x-sm">
               <q-linear-progress :value=".75" color="indigo" size="lg" stripe style="width: 5rem;" track-color="grey-10"/>
                 {{ $t('Inbound Queue: {queueInOverQueueInMaxSize}% ({queueIn} / {queueInMaxSize}).', { queueInOverQueueInMaxSize: (queueInMaxSize != 0 ? Math.round(queueIn.length / queueInMaxSize * 100) : '_'), queueIn: queueIn.length, queueInMaxSize}) }}
@@ -155,11 +131,7 @@
         <q-linear-progress :value="queueIn.length / queueInMaxSize" color="indigo" size="lg" stripe track-color="grey-10" />
         <q-linear-progress :value="processedLogsCount / processedLogsMaxSize" color="teal" size="lg" track-color="grey-10" />
       </div>
-      <!-- <div class="q-mt-md">
-        <span class="text-bold">Queues / Stacks sizes: </span>{{ incomingLogCount }} / {{ queueIn.length }} / {{ maxSeenInLog }} / {{ processedLogsCount }} / {{ processedLogs.length }}
-      </div> -->
       <q-card class="q-mt-md" v-show="showManualImport">
-      <!-- <q-card class="q-mt-md"> -->
         <q-card-section class="text-h4" style="opacity:.4">
           {{ $t('Manual import') }}
         </q-card-section>
@@ -326,49 +298,6 @@
           </q-tab-panels>
         </q-card-section>
       </q-card>
-      <!-- <q-card class="q-mt-md" v-show="showQueues">
-        <q-card-section class="text-h4" style="opacity:.4">
-          {{ $t('Queues') }}
-        </q-card-section>
-        <q-separator />
-        <q-card-section>
-          <div class="text-caption">
-            {{ $t('Input Queue') }}
-          </div>
-          <q-input
-            v-model="queueInWindow"
-            filled
-            autogrow
-            input-style="min-height: 10em;"
-            readonly
-            :label="$t('Read Only')"
-          >
-            <template v-slot:after>
-              <div class="column">
-                <q-btn round dense flat icon="input" @click="queueProcessAdd({ fromArray: queueIn })" :disable="Object.keys(queueProcess).length > 0" />
-                <q-btn round dense flat icon="clear" @click="queueIn=[]" :disable="queueIn.length == 0" color="red" />
-              </div>
-            </template>
-          </q-input>
-        </q-card-section>
-        <q-card-section>
-          <div class="text-caption">
-            {{ $t('Process Queue') }}
-          </div>
-          <q-input
-            v-model="queueProcessWindow"
-            filled
-            autogrow
-            input-style="min-height: 10em;"
-            readonly
-            :label="$t('Read Only')"
-          >
-            <template v-slot:after>
-              <q-btn round dense flat icon="send" @click="processLogSample({ options: { cleanQueueProcessAfterProcess: true } })" :disable="Object.keys(queueProcess).length === 0"/>
-            </template>
-          </q-input>
-        </q-card-section>
-      </q-card> -->
 
       <q-card class="q-mt-md fit column">
         <div
@@ -474,9 +403,6 @@
                 >
                   {{ orderBy(item.values, 'count', -1)[0].value }}
                 </div>
-                <!-- <span
-                  v-if="item.values && item.values.length && item.values[0].type && showExtraDetails"
-                  style="font-style: italic; opacity: 50%;"> ({{ item.values[0].type }}:{{ item.values[0].count }}/{{ item.seenInLogCount }})</span> -->
                 <q-chip v-if="showTypesInMainList" dense size="sm" class="q-ml-sm" :class="(item.values && item.values.length && item.values[0].type ? 'json-bg-type-' + item.values[0].type.toLowerCase() : '')">{{ (item.values && item.values.length && item.values[0].type ? item.values[0].type : '') }}</q-chip>
               </div>
               <q-select
@@ -593,45 +519,6 @@
         </q-card-section>
 
       </q-card>
-      <!-- <q-card
-        id="communicationLogsTextField"
-        ref="communicationLogsTextField"
-        class="q-mt-md"
-        v-show="showCommunicationLog"
-      >
-        <q-card-section class="text-h6" style="opacity:.6">
-          {{ $t('Communication & Shipper Logs') }}
-        </q-card-section>
-        <q-card-section>
-          <q-input
-            v-model="communicationLogsOutput"
-            type="textarea"
-            filled
-            readonly
-            style="min-height: 10rem;"
-            rows="21"
-            class="fixed-font"
-          >
-            <template v-slot:after>
-              <div class="column full-height">
-                <div class="column q-gutter-y-lg">
-                  <q-btn round dense flat icon="content_copy" @click="copyToClipboard(communicationLogsOutput)" :disable="!communicationLogsOutput || (communicationLogsOutput && communicationLogsOutput.length === 0)">
-                    <q-tooltip content-style="font-size: 1rem; min-width: 10rem;">
-                      {{ $t('Copy to Clipboad') }}
-                    </q-tooltip>
-                  </q-btn>
-                  <q-separator />
-                  <q-btn round dense flat icon="clear" @click="communicationLogsOutput=''" color="red" :disable="!communicationLogsOutput || (communicationLogsOutput && communicationLogsOutput.length === 0)">
-                    <q-tooltip content-style="font-size: 1rem; min-width: 10rem;" v-if="communicationLogsOutput && communicationLogsOutput.length">
-                      {{ $t('Clear') }}
-                    </q-tooltip>
-                  </q-btn>
-                </div>
-              </div>
-            </template>
-          </q-input>
-        </q-card-section>
-      </q-card> -->
     </div>
   </q-page>
 </template>
@@ -647,20 +534,14 @@
 
 import { copyToClipboard } from 'quasar'
 import { mapState, mapGetters, mapActions } from 'vuex'
-// import mixinSharedLoadCollectorsAndPipelines from 'src/mixins/mixin-Shared-LoadCollectorsAndPipelines'
-// import mixinSharedSocket from 'src/mixins/mixin-Shared-Socket'
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedRightToLeft from 'src/mixins/mixin-Shared-RightToLeft'
 import mixinSharedBuildJq from 'src/mixins/mixin-Shared-BuildJq'
-// import BreadCrumbs from 'components/BreadCrumbs.vue'
 import Vue2Filters from 'vue2-filters'
-// import { collectionConfigToYml } from 'src/pages/Pipelines/collectionConfigToYml'
 
 export default {
   name: 'PagePipelineBuilder',
   mixins: [
-    // mixinSharedLoadCollectorsAndPipelines, // Shared functions to load the Collectors and Pipelines
-    // mixinSharedSocket, // Shared function and state to access the Socket.io
     mixinSharedDarkMode, // Shared computed to access and update the DarkMode
     mixinSharedRightToLeft, // Shared functions to deal with LTR/RTL languages
     mixinSharedBuildJq, // Shared JQ Building functions (Filter and Transform)
@@ -673,7 +554,6 @@ export default {
       search: '',
       showTypesInMainList: false,
       showTypesInPopup: true,
-      // showExtraDetails: false,
       mdiTags: [ // Built using tooling/20210420.MDI Tags and fields.xlsx // Fixed manually as per Issue #11
         { label: 'Application Tab', disable: true, description: '', separator: true },
         { label: 'Object', value: 'object', description: 'The resource (i.e., file) referenced or impacted by activity reported in the log.' },
@@ -794,7 +674,6 @@ export default {
         { label: 'NAT TCP/UDP Port (Impacted)', value: 'dnatport', description: 'The Network Address Translated (NAT) port to which activity was targeted (i.e., server, target port).' }
       ],
       mdiTagsOptions: [], // Used in the Select field
-      // showQueues: false, // Collapse / Hide the Queues panel if false (default)
       wrapSingleStringLog: false,
       incomingLogCount: 0, // Number of lines of logs sent over the socket
       queueIn: [], // To feed from the Server Tail, or the queueInDataEntrySingleLog field
@@ -802,8 +681,6 @@ export default {
       processedLogs: [], // The logs, once processed
       processedLogsCount: 0, // The count of processed logs
       jsonPathes: [], // The extracted keys and values from the processedLogSample. Used for display and mapping. Saved.
-      // tailEnabled: false, // Are we running a tail against the sample/capture file?
-      // tailId: '', // UUID of the tail. Needed to be able to kill it on the server
       processInBackground: false,
       processInBackgroundMaxRate: 3, // How many queue items to process per second
       queueInMaxSize: 200, // Maximum number of log messages in queueIn
@@ -817,7 +694,6 @@ export default {
       jqTransformOutput: '', // The automacically built JQ Transform output
       needsSaving: false, // Are there any un-saved changes
       saving: false, // Saving is still ongoing
-      // showCommunicationLog: false, // Collapse / Hide the logs about the Socket communication with the server
       communicationLogsOutput: '', // The logs about the Socket communication, as text
       showManualImport: false, // Collapse / Hide Manual Import panel
       manualImportMethod: 'single_log', // How is the user going to manually import Logs
@@ -914,220 +790,6 @@ export default {
         }
       }
     },
-
-    // showCommunicationLogAndScrollToIt () {
-    //   // Display the logs area
-    //   this.showCommunicationLog = true
-    //   // And jump to it
-    //   this.$nextTick(function () {
-    //     this.scrollTo('communicationLogsTextField')
-    //   })
-    // }, // showCommunicationLogAndScrollToIt
-
-    // scrollTo (elementName) {
-    //   const communicationAndShipperLogsElement = this.$refs[elementName].$el
-    //   setTimeout(() => {
-    //     // window.scrollTo(0, offset)
-    //     window.scrollTo({
-    //       top: communicationAndShipperLogsElement.offsetTop,
-    //       left: 0,
-    //       behavior: 'smooth'
-    //     })
-    //   }, 250)
-    // }, // showCommunicationLogAndScrollToIt
-
-    // showNotificationWithActionToLogs (message, type = 'negative') {
-    //   this.$q.notify({
-    //     message: message,
-    //     type,
-    //     progress: true,
-    //     timeout: (type === 'negative' ? 10000 : 2500),
-    //     actions: [
-    //       { label: 'See Logs', color: 'white', handler: this.showCommunicationLogAndScrollToIt }
-    //     ]
-    //   })
-    // },
-
-    //        ##     ##    ###    ##    ## ########  ##       ########  ######   #######   ######  ##    ## ######## ########  #######  ##    ## ########    ###    #### ##       ##        #######   ######
-    //        ##     ##   ## ##   ###   ## ##     ## ##       ##       ##    ## ##     ## ##    ## ##   ##  ##          ##    ##     ## ###   ##    ##      ## ##    ##  ##       ##       ##     ## ##    ##
-    //        ##     ##  ##   ##  ####  ## ##     ## ##       ##       ##       ##     ## ##       ##  ##   ##          ##    ##     ## ####  ##    ##     ##   ##   ##  ##       ##       ##     ## ##
-    //        ######### ##     ## ## ## ## ##     ## ##       ######    ######  ##     ## ##       #####    ######      ##    ##     ## ## ## ##    ##    ##     ##  ##  ##       ##       ##     ## ##   ####
-    //        ##     ## ######### ##  #### ##     ## ##       ##             ## ##     ## ##       ##  ##   ##          ##    ##     ## ##  ####    ##    #########  ##  ##       ##       ##     ## ##    ##
-    //        ##     ## ##     ## ##   ### ##     ## ##       ##       ##    ## ##     ## ##    ## ##   ##  ##          ##    ##     ## ##   ###    ##    ##     ##  ##  ##       ##       ##     ## ##    ##
-    //        ##     ## ##     ## ##    ## ########  ######## ########  ######   #######   ######  ##    ## ########    ##     #######  ##    ##    ##    ##     ## #### ######## ########  #######   ######
-
-    // handleSocketOnTailLog (payload) {
-    //   // this.addLineToCommunicationLog('handleSocketOnTailLog')
-    //   // this.addLineToCommunicationLog(payload)
-    //   // console.log(payload)
-    //   // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "STDOUT", payload: "Apr 26 14:44:21 oc-ez containerd: time="2021-04-26… systemd-logind: New session 44703 of user root.↵"}
-    //   // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "END"}
-    //   // // {tailId: "de720065-d50e-499e-aa1f-ad4fd783ab8a", code: "EXIT", payload: null}
-
-    //   // If we are getting data from the remote job, breack it in multiple lines (if \n is found in it) and push it in the queueIn
-    //   if (
-    //     payload.code &&
-    //     payload.code === 'STDOUT' &&
-    //     payload.payload &&
-    //     payload.tailId &&
-    //     payload.tailId === this.pipelineUid
-    //   ) {
-    //     if (typeof payload.payload === 'string') {
-    //       // Add new data to end of buffer
-    //       this.bufferStdOut += payload.payload
-
-    //       // eslint-disable-next-line quotes
-    //       if (this.bufferStdOut.indexOf("\n") > -1) {
-    //         const newPayload = []
-    //         // eslint-disable-next-line quotes
-    //         this.bufferStdOut.split("\n").forEach(lr => {
-    //           if (this.wrapSingleStringLog && typeof lr === 'string') {
-    //             newPayload.push({ singleStringLog: lr })
-    //           } else {
-    //             newPayload.push(lr)
-    //           }
-    //         })
-
-    //         // Empty the buffer
-    //         this.bufferStdOut = ''
-
-    //         // Check if the last element of the array is not empty (denoting a string not terminated with a carriage return)
-    //         // If found, put it back in the bufferStdOut, as it's most likely the beginning of a truncated line
-    //         if (newPayload.length > 0) {
-    //           if (newPayload[newPayload.length - 1].length !== 0) {
-    //             this.bufferStdOut = newPayload.pop()
-    //           }
-    //         }
-
-    //         this.queueInAdd({ values: newPayload })
-    //       }
-    //     } else {
-    //       this.queueInAdd({ values: payload.payload })
-    //     }
-    //   }
-
-    //   // If we are getting STDERR data from the remote job, breack it in multiple lines (if \n is found in it) and log it to the console
-    //   if (
-    //     payload.code &&
-    //     payload.code === 'STDERR' &&
-    //     payload.payload &&
-    //     payload.tailId &&
-    //     payload.tailId === this.pipelineUid
-    //   ) {
-    //     // this.addLineToCommunicationLog(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
-    //     this.addLineToCommunicationLog(payload.payload)
-    //     // if (typeof payload.payload === 'string') {
-    //     //   console.log(payload.payload)
-    //     //   // const newPayload = []
-    //     //   // // eslint-disable-next-line quotes
-    //     //   // payload.payload.split("\n").forEach(lr => {
-    //     //   //   console.log(lr)
-    //     //   // })
-    //     //   // this.queueInAdd({ values: newPayload })
-    //     // } else {
-    //     //   console.log(payload.payload)
-    //     //   // this.queueInAdd({ values: payload.payload })
-    //     // }
-    //   }
-
-    //   // If we are getting ERROR data from the remote job, log it to the console as error
-    //   if (
-    //     payload.code &&
-    //     payload.code === 'ERROR' &&
-    //     payload.payload &&
-    //     payload.tailId &&
-    //     payload.tailId === this.pipelineUid
-    //   ) {
-    //     this.addLineToCommunicationLog(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
-    //     // this.showNotificationWithActionToLogs(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
-    //   }
-
-    //   // // If the remote job died, turn the Tail off here too
-    //   // if (
-    //   //   payload.code &&
-    //   //   (
-    //   //     payload.code === 'END' ||
-    //   //     payload.code === 'EXIT'
-    //   //   ) &&
-    //   //   payload.tailId &&
-    //   //   payload.tailId === this.pipelineUid
-    //   // ) {
-    //   //   this.tailEnabled = false
-    //   //   this.addLineToCommunicationLog(`${payload.code} | Closing this Tail. | ${(payload.payload !== undefined ? payload.payload : '')}`)
-    //   //   this.showNotificationWithActionToLogs(`${payload.code} | Closing this Tail. (${(payload.payload !== undefined ? payload.payload : '')})`, 'info')
-    //   // }
-    //   // // If the remote job died, push it to the Comm Log
-    //   if (
-    //     payload.code === 'END' &&
-    //     payload.tailId &&
-    //     payload.tailId === this.pipelineUid
-    //   ) {
-    //     this.tailEnabled = false
-    //     this.addLineToCommunicationLog(`${payload.code} | Closing this Tail. | ${(payload.payload !== undefined ? payload.payload : '🏁')}`)
-    //     // this.showNotificationWithActionToLogs(`${payload.code} | Closing this Tail. (${(payload.payload !== undefined ? payload.payload : '🏁')})`, 'info')
-    //   }
-
-    //   // If the remote job died, push it to the Comm Log
-    //   if (
-    //     payload.code === 'EXIT' &&
-    //     payload.tailId &&
-    //     payload.tailId === this.pipelineUid
-    //   ) {
-    //     this.tailEnabled = false
-    //     this.addLineToCommunicationLog(`${payload.code} | Tailjob exited. | ${(payload.payload !== undefined ? payload.payload : '🏁')}`)
-    //   }
-    // },
-
-    // handleSocketOnTailKill (payload) {
-    //   // this.addLineToCommunicationLog('handleSocketOnTailKill')
-    //   // this.addLineToCommunicationLog(payload)
-
-    //   // If we are getting STDOUT or STDERR data from the remote job push it to the Comm Log
-    //   if (
-    //     payload.code &&
-    //     (
-    //       payload.code === 'STDOUT' ||
-    //       payload.code === 'STDERR'
-    //     ) &&
-    //     payload.payload &&
-    //     payload.tailId &&
-    //     payload.tailId === this.pipelineUid
-    //   ) {
-    //     this.addLineToCommunicationLog(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
-    //   }
-
-    //   // If we are getting ERROR data from the remote job, push it to the Comm Log
-    //   if (
-    //     payload.code &&
-    //     payload.code === 'ERROR' &&
-    //     payload.payload &&
-    //     payload.tailId &&
-    //     payload.tailId === this.pipelineUid
-    //   ) {
-    //     this.addLineToCommunicationLog(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`)
-    //     console.error(payload.payload)
-    //     // this.showNotificationWithActionToLogs(`${payload.code} | ${(payload.payload !== undefined ? payload.payload : '')}`, 'info')
-    //   }
-
-    //   // If the remote job died, push it to the Comm Log
-    //   if (
-    //     payload.code === 'END' &&
-    //     payload.tailId &&
-    //     payload.tailId === this.pipelineUid
-    //   ) {
-    //     this.addLineToCommunicationLog(`${payload.code} | ${this.$t('Post-Tail killing/cleaning job finished.')} | ${(payload.payload !== undefined ? payload.payload : '🏁')}`)
-    //     // this.showNotificationWithActionToLogs(`${payload.code} | ${this.$t('Post-Tail killing/cleaning job finished.')} (${(payload.payload !== undefined ? payload.payload : '🏁')})`, 'info')
-    //   }
-
-    //   // If the remote job died, push it to the Comm Log
-    //   if (
-    //     payload.code === 'EXIT' &&
-    //     payload.tailId &&
-    //     payload.tailId === this.pipelineUid
-    //   ) {
-    //     this.addLineToCommunicationLog(`${payload.code} | ${this.$t('Post-Tail killing/cleaning job exited.')} | ${(payload.payload !== undefined ? payload.payload : '🏁')}`)
-    //   }
-    // },
 
     //     ##     ##    ###    ##    ## ##     ##    ###    ##             #### ##     ## ########   #######  ########  ########
     //     ###   ###   ## ##   ###   ## ##     ##   ## ##   ##              ##  ###   ### ##     ## ##     ## ##     ##    ##
@@ -1474,33 +1136,6 @@ export default {
       }
     }, // processLogSampleInBackground
 
-    // //        ########    ###    #### ##
-    // //           ##      ## ##    ##  ##
-    // //           ##     ##   ##   ##  ##
-    // //           ##    ##     ##  ##  ##
-    // //           ##    #########  ##  ##
-    // //           ##    ##     ##  ##  ##
-    // //           ##    ##     ## #### ########
-
-    // initTail () {
-    //   if (this.socket && this.socket.connected) {
-    //     const collectionConfigYml = collectionConfigToYml(this.pipeline.collectionConfig)
-    //     this.socket.emit('tail.init', { pipelineUid: this.pipelineUid, tailId: this.pipelineUid, collectionConfig: this.pipeline.collectionConfig, collectionConfigYml, options: this.pipeline.options })
-    //   }
-    // },
-
-    // killTail () {
-    //   if (this.socket && this.socket.connected) {
-    //     this.socket.emit('tail.kill', { pipelineUid: this.pipelineUid, tailId: this.pipelineUid })
-    //   }
-    // },
-
-    // listTails () {
-    //   if (this.socket && this.socket.connected) {
-    //     this.socket.emit('tail.showtaillist')
-    //   }
-    // },
-
     //              ##  #######
     //              ## ##     ##
     //              ## ##     ##
@@ -1535,93 +1170,6 @@ export default {
         jsonPathes: this.jsonPathes
       })
     },
-
-    //      ######     ###    ##     ## ########
-    //     ##    ##   ## ##   ##     ## ##
-    //     ##        ##   ##  ##     ## ##
-    //      ######  ##     ## ##     ## ######
-    //           ## #########  ##   ##  ##
-    //     ##    ## ##     ##   ## ##   ##
-    //      ######  ##     ##    ###    ########
-
-    // save () {
-    //   this.needsSaving = false
-    //   this.upsertPipeline(
-    //     {
-    //       caller: this,
-    //       pushToApi: true,
-    //       pipeline:
-    //       {
-    //         uid: this.pipelineUid,
-    //         status: (this.pipeline && this.pipeline.status && this.pipeline.status === 'Ready' ? this.pipeline.status : 'Dev'),
-    //         fieldsMapping: this.jsonPathes,
-    //         // Update / Add extractMessageFieldOnly to the Options
-    //         options: {
-    //           ...(this.pipeline && this.pipeline.options ? this.pipeline.options : {}),
-    //           extractMessageFieldOnly: this.extractMessageFieldOnly,
-    //           messageFieldPath: this.messageFieldPath
-    //         }
-    //       }
-    //     }
-    //   )
-    // },
-
-    // reverseToLastSaved () {
-    //   try {
-    //     // Bring back mapping from the store
-    //     const pipeline = this.pipelines.find(p => p.uid === this.pipelineUid)
-    //     this.jsonPathes = (pipeline && pipeline.fieldsMapping && pipeline.fieldsMapping.length ? JSON.parse(JSON.stringify(pipeline.fieldsMapping)) : [])
-
-    //     // Find the Collection Template for the Method of this Pipeline
-    //     const collectionMethodTemplate = (
-    //       pipeline && pipeline.collectionConfig
-    //         ? this.collectionMethodTemplates.find(template => template.collectionMethod === pipeline.collectionConfig.collectionMethod)
-    //         : {}
-    //     )
-    //     // Find the default options for this template
-    //     const collectionMethodTemplateOptions = (
-    //       collectionMethodTemplate && collectionMethodTemplate.options
-    //         ? collectionMethodTemplate.options
-    //         : {
-    //             extractPayloadFieldOnly: false,
-    //             payloadField: 'message'
-    //           }
-    //     )
-
-    //     // Bring the default path from the Template
-    //     this.messageFieldPathFromTemplate = String(`.${collectionMethodTemplateOptions.payloadField}`).replace(/^\.+/, '.') // Make sure the field starts with a single dot
-
-    //     // Bring back the `extractMessageFieldOnly` options
-    //     // If it was set previously, to False or True, use that value, otherwise use the default
-    //     this.extractMessageFieldOnly = (
-    //       pipeline &&
-    //       pipeline.options &&
-    //       (
-    //         pipeline.options.extractMessageFieldOnly === true |
-    //         pipeline.options.extractMessageFieldOnly === false
-    //       )
-    //         ? pipeline.options.extractMessageFieldOnly === true
-    //         : collectionMethodTemplateOptions.extractPayloadFieldOnly
-    //     )
-    //     // And bring the field path too
-    //     this.messageFieldPath = (
-    //       pipeline &&
-    //       pipeline.options &&
-    //       pipeline.options.messageFieldPath &&
-    //       pipeline.options.messageFieldPath.length
-    //         ? pipeline.options.messageFieldPath
-    //         : this.messageFieldPathFromTemplate
-    //     )
-
-    //     // Try to resurect the processedLogsCount (failing to 0 if no logSample)
-    //     this.processedLogsCount = (this.logSample ? this.logSample.length : 0)
-
-    //     // Flag down the need to Save as data is fresh from last save now
-    //     this.needsSaving = false
-    //   } catch {
-    //     console.log('Error while trying to reverse to last saved version')
-    //   }
-    // },
 
     //     ##      ## #### ##    ## ####
     //     ##  ##  ##  ##  ##   ##   ##
@@ -1658,80 +1206,20 @@ export default {
   },
 
   mounted () {
-    // if (this.$route.params.pipelineUid && this.$route.params.pipelineUid.length) {
-    //   if (this.pipelineUid !== this.$route.params.pipelineUid) {
-    //     this.pipelineUid = this.$route.params.pipelineUid
-    //   }
-    // }
-
-    // this.tailId = uid()
     this.mdiTagsOptions = this.mdiTags
-
-    // // Load the Mapping, if any
-    // this.reverseToLastSaved()
-
-    // // Event when Server sends a new log via Tail
-    // this.socket.on('tail.log', this.handleSocketOnTailLog)
-    // // Event when Server sends a message while killing a Tail
-    // this.socket.on('tail.kill', this.handleSocketOnTailKill)
   },
 
   watch: {
     processInBackground: {
       handler () {
         if (this.processInBackground) {
-          // this.backgroundProcessInterval = setInterval(() => {
-          //   if (this.processInBackground) {
-          //     this.processLogSampleInBackground({})
-          //   }
-          // }, 1000 / this.processInBackgroundMaxRate)
           this.scheduleNextBackgroundProcess()
         } else {
-          // clearInterval(this.backgroundProcessInterval)
           this.unscheduleNextBackgroundProcess()
         }
       },
       deep: false
     }, // processInBackground
-    queueIn: {
-      handler () {
-        // If we have received enough log messages, stop the capture
-        if ((this.queueIn.length + this.processedLogsCount) >= this.queueInMaxSize) {
-          // this.tailEnabled = false
-        }
-      },
-      deep: false
-    }, // queueIn
-    // tailEnabled: {
-    //   handler () {
-    //     if (this.socket.connected) {
-    //       if (this.tailEnabled) {
-    //         // Kick off the Tail
-    //         this.initTail()
-    //       // } else {
-    //       //   this.killTail()
-    //       }
-    //     } else { // No Socket. Tell the user.
-    //       this.tailEnabled = false
-    //       // Pop this to the screen (via MainLayout)
-    //       this.$root.$emit('addAndShowErrorToErrorPanel', {
-    //         data: {
-    //           errors: [
-    //             {
-    //               code: 'NoLiveSocket',
-    //               message: this.$t('Live (Socket) connection with the EZ Server has been lost or is not currently established.')
-    //             },
-    //             {
-    //               code: 'TailFailedToStart',
-    //               message: this.$t('Tail could not start due to no live socket available.')
-    //             }
-    //           ]
-    //         }
-    //       })
-    //     }
-    //   },
-    //   deep: false
-    // }, // tailEnabled
     jsonPathes: {
       handler () {
         this.needsSaving = true
@@ -1743,21 +1231,8 @@ export default {
     }
   },
 
-  created () {
-    //
-  },
-
   beforeDestroy () {
     clearInterval(this.backgroundProcessInterval)
-  },
-
-  destroyed () {
-    // // Close any ongoing Tail
-    // this.killTail()
-    // // Unsubscribe from Socket.io events about new log via Tail
-    // this.socket.off('tail.log')
-    // // Unsubscribe from Socket.io events about message while killing a Tail
-    // this.socket.off('tail.kill')
   }
 }
 </script>
