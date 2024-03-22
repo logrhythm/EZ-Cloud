@@ -22,9 +22,9 @@ module.exports = function (/* ctx */) {
     boot: [
 
       'i18n',
-      'axios',
+      // 'axios',
       'global-constants', // Global Constants - TM 2021-04-23
-      'socket-io.js', // Socket.IO - TM 2021-04-23
+      // 'socket-io.js', // Socket.IO - TM 2021-04-23
       'notify-defaults' // Default values for Notify - TM 2021-05-10
     ],
 
