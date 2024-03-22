@@ -5,46 +5,7 @@
         <img class="q-mr-md" :src="(darkMode ? 'logrhythm_logo_darkmode_wide.svg' : 'logrhythm_logo_lightmode_wide.svg')" alt="LogRhythm Open Collector">
       </q-toolbar>
     </q-header>
-    <!-- <BreadCrumbs
-      :crumbs="breadCrumbs"
-    /> -->
     <div class="q-gutter-y-sm">
-      <q-card class="" v-if="devMode">
-        <q-card-section horizontal>
-          <q-card-section class="col q-ma-none q-pa-none">
-            <q-card-section class="text-h4 q-gutter-x-md">
-              <q-icon name="o_api" />
-              <span>{{ $t('EZ Backend Base URLs') }}</span>
-            </q-card-section>
-            <q-card-section>
-              <q-input v-model="ezBackendBaseUrlWeb" outlined :label="$t('Website')" autofocus />
-            </q-card-section>
-            <q-card-section>
-              <q-input v-model="ezBackendBaseUrlApi" outlined :label="$t('API')"  />
-            </q-card-section>
-            <q-card-section>
-              <q-input v-model="ezBackendBaseUrlSocket" outlined :label="$t('Socket')"  />
-            </q-card-section>
-          </q-card-section>
-
-          <q-separator vertical />
-
-          <!-- <q-card-actions vertical class="justify-around q-px-md">
-              <q-btn icon="edit" color="primary" :to="'/Pipelines/' + this.pipelineUid + '/Collection/Edit'" >
-                <q-tooltip content-style="font-size: 1rem;">
-                  {{ $t('Edit Collection') }}
-                </q-tooltip>
-              </q-btn> -->
-
-          <q-card-actions vertical class="justify-around q-px-md">
-            <q-btn color="primary" icon="save" @click="saveSettings()" :loading="savingAction" >
-              <q-tooltip content-style="font-size: 1em">
-                {{ $t('Save settings to local web browser.') }}
-              </q-tooltip>
-            </q-btn>
-          </q-card-actions>
-        </q-card-section>
-      </q-card>
 
       <q-card class="q-pa-md q-mx-none">
         <q-card-section class="col">
@@ -105,28 +66,20 @@
 <script>
 import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import { languageOptions, switchLanguageTo } from 'src/i18n/shared'
-// import BreadCrumbs from 'components/BreadCrumbs.vue'
 
 export default {
   name: 'PageSettings',
   mixins: [
     mixinSharedDarkMode // Shared computed to access and update the DarkMode
   ],
-  // components: { BreadCrumbs },
   data () {
     return {
       savingAction: false,
-      ezBackendBaseUrlWeb: '',
-      ezBackendBaseUrlApi: '',
-      ezBackendBaseUrlSocket: '',
       selectedLanguage: this.$i18n.locale
       // langOptions: languageOptions // List of languages coming from `src/i18n/shared`
     }
   }, // data
   computed: {
-    devMode () {
-      return !!(process.env.DEV)
-    },
     langOptions () {
       return (
         languageOptions && Array.isArray(languageOptions)
@@ -146,44 +99,11 @@ export default {
           )
           : languageOptions
       )
-    // },
-    // breadCrumbs () {
-    //   return [
-    //     {
-    //       icon: 'o_home',
-    //       link: '/Welcome'
-    //     },
-    //     {
-    //       title: this.$t('Settings')
-    //     }
-    //   ]
     }
   },
   methods: {
-    saveSettings () {
-      this.globalConstants.baseUrl.website = this.ezBackendBaseUrlWeb
-      localStorage.setItem('settings.ezBackend.url.website', this.ezBackendBaseUrlWeb)
-      this.globalConstants.baseUrl.api = this.ezBackendBaseUrlApi
-      localStorage.setItem('settings.ezBackend.url.api', this.ezBackendBaseUrlApi)
-      this.globalConstants.baseUrl.socket = this.ezBackendBaseUrlSocket
-      localStorage.setItem('settings.ezBackend.url.socket', this.ezBackendBaseUrlSocket)
-    },
     saveLanguageSettings () {
       switchLanguageTo(this, this.selectedLanguage)
-    }
-  },
-  mounted () {
-    this.ezBackendBaseUrlWeb = localStorage.getItem('settings.ezBackend.url.website')
-    if ((this.ezBackendBaseUrlWeb === null) || (this.ezBackendBaseUrlWeb === '')) {
-      this.ezBackendBaseUrlWeb = this.globalConstants.baseUrl.website
-    }
-    this.ezBackendBaseUrlApi = localStorage.getItem('settings.ezBackend.url.api')
-    if ((this.ezBackendBaseUrlApi === null) || (this.ezBackendBaseUrlApi === '')) {
-      this.ezBackendBaseUrlApi = this.globalConstants.baseUrl.api
-    }
-    this.ezBackendBaseUrlSocket = localStorage.getItem('settings.ezBackend.url.socket')
-    if ((this.ezBackendBaseUrlSocket === null) || (this.ezBackendBaseUrlSocket === '')) {
-      this.ezBackendBaseUrlSocket = this.globalConstants.baseUrl.socket
     }
   }
 }
