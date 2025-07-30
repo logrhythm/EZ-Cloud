@@ -249,8 +249,7 @@ export default {
             type: 'String',
             default: null,
             alternativefields: [],
-            format: null,
-            path // TODO: Remove this - XXXX
+            format: null
           })
         }
 
