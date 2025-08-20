@@ -1,0 +1,108 @@
+calendarHeight = 250px
+
+[ng-model="selectedDateRange.fromto"]
+  clearfix()
+  position relative
+
+.range-picker-container
+  overflow hidden
+  position relative
+  height calendarHeight
+  margin auto
+
+
+
+range-picker
+  display block
+
+.range-picker
+  clearfix()
+  position absolute
+  z-index 40
+  top 10px
+
+  .kdatePicker .kalendae
+    width 495px
+
+  .kdatePicker .k-separator
+    left 50%
+    position absolute
+    background transparent
+
+  .kdatePicker .k-first-month
+    position relative
+    left 0
+
+  .kdatePicker .k-last-month
+    position relative
+    left 95px
+
+  .k-btn-previous-year,
+  .k-btn-next-year
+    display none
+
+  .k-btn-next-month
+    right 0
+
+  .k-btn-previous-month
+    left 0
+
+  .date-container
+    position absolute
+    top 6px
+    margin-left 180px
+
+  .date-container.end.startShown
+    left 250px
+
+  .time-picker
+    display inline-block
+    max-height 150px
+    width 65px
+    position relative
+    overflow-y auto
+    overflow-x hidden
+    list-style none
+    padding 0
+    z-index 100
+
+  .time-picker li
+    padding 5px 20px 5px 10px
+
+    &:hover
+      cursor pointer
+
+  .simple-tooltip-up
+    position absolute
+    bottom -36px
+
+  input
+    border 1px solid transparent
+    box-shadow 0 0 gutter transparent
+
+.Night
+  .range-picker input.ng-invalid
+    border-color #c00
+    box-shadow 0 0 gutter #c00
+
+  .time-picker li
+    border-top 1px solid #262626
+    background #323232
+    color #ccc
+    text-shadow 0 1px 1px #000
+
+    &:hover
+      background #575a5c
+
+.Day
+  .range-picker input.ng-invalid
+    border-color #c00
+    box-shadow 0 0 gutter #c00
+
+  .time-picker li
+    border-top 1px solid #b2b2b2
+    background #d9d9d9
+    text-shadow 0 1px 1px #fff
+
+    &:hover
+      background #c3c3c3

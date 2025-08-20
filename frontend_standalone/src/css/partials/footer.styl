@@ -1,0 +1,108 @@
+tasksH = 44px
+
+#Footer
+  min-width pageWidth + 40px
+  width 100%
+  position absolute
+  bottom 0
+  border-left 0px solid transparent
+  box-sizing border-box
+
+.footerBorder
+  height 3px
+  margin-top (@height) * -1
+  position absolute
+  top 0
+  width 100%
+  border-top-style solid
+  border-top-width 1px
+  &.noBorder
+    height 1px
+    margin-top -1px
+
+#footerToggle
+  right 0
+
+#TasksSideScrollWrapper
+  overflow hidden
+
+#TasksSideScroll
+  height tasksH
+  position relative
+
+#TasksSideScollInner
+  height tasksH
+  min-width 100%
+  box-sizing border-box
+  position absolute
+  white-space nowrap
+
+.taskWrap
+  display inline-block
+
+#notaskmsg
+  width 100%
+  text-align center
+  font-size 16px
+  height @font-size
+  line-height @font-size
+  margin 14px 0
+
+//TODO: this is also a constant in analyze.styl - should pull to common location?
+SPINE_WIDTH   = 27px
+
+#TasksTools
+  display inline-block
+  position absolute
+  z-index 6001
+  right 0
+  height 100%
+
+.toolWrapper
+  font-size  12px
+  float right
+  display inline-block
+  width SPINE_WIDTH
+  text-align center
+  padding 14px 0
+  cursor pointer
+
+footerColor(baseColor)
+  footerBorder = darken(baseColor, 5)
+  borderTopColor = darken(baseColor, 15)
+  darkGradientColor = darken(baseColor, 6)
+  scrollWrapperBackgroundColor1 = darken(baseColor, 15)
+
+  if dark(baseColor)
+    scrollWrapperBackgroundColor2 = darken(baseColor, 20)
+    footerPanelTrigger = lighten(baseColor, 30)
+    textShadow = 0 1px 1px darken(baseColor, 30)
+    noTask = lighten(baseColor, 20)
+    noTaskShadowColor = darken(baseColor, 30)
+    insetShadow = 5px 0 gutter 0 rgba(0, 0, 0, 0.2) inset
+
+  else
+    scrollWrapperBackgroundColor2 = scrollWrapperBackgroundColor1
+    scrollWrapperBackgroundColor1 = darken(baseColor, 10)
+    footerPanelTrigger = darken(baseColor, 50)
+    textShadow = 0 1px 0 rgba(lighten(baseColor, 25), 0.5)
+    noTask = darken(baseColor, 50)
+    noTaskShadowColor = rgba(lighten(baseColor, 25),0.5)
+    insetShadow = 2px 0px 15px 0 rgba(0,0,0,0.2) inset
+
+  .footerBorder
+    background footerBorder
+    border-top-color borderTopColor
+
+  #TasksSideScrollWrapper
+    background linear-gradient(scrollWrapperBackgroundColor1, scrollWrapperBackgroundColor2)
+
+  #notaskmsg
+    color noTask
+    text-shadow 0 1px 0 noTaskShadowColor
+
+  #TasksTools, #MegaTools
+    iconColors(baseColor, darkGradientColor)
+    background linear-gradient(baseColor, darkGradientColor)
+    text-shadow textShadow
+    box-shadow insetShadow

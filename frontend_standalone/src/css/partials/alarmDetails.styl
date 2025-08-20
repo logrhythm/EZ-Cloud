@@ -1,0 +1,226 @@
+// The 23px is arrived at by taking the offset of the action label at 32px and
+// subtracting out the padding on the container (ie the framing) of 9px, which
+// equates to 23px from the left edge.
+alarmAction(framing = 23px)
+  position relative
+  [class*='icon-']
+    position absolute
+    top 0px
+    left 0px
+
+  .label
+    font-style normal
+    margin-left (framing)
+    display inline-block
+
+SMALLTEXT = 11px
+
+.alarm-data-panel
+  height 50%
+
+.action-status
+  &.failed
+    color red-80
+
+  &.succeeded
+    color green-sap-60
+
+.Night
+  .alarms-details,
+  .alarm-toolbox
+    .odd
+      background-color #1B1B1B
+
+  .alarms-details
+    .alarm-teaser
+      background nAlarmsModalTeaserBgColor
+    .additional-actions [class*='icon-']
+      color nAlarmsAddActionColor
+    .additional-actions
+      .label
+        color nAlarmsAddActionLabelColor
+      .label:hover
+        color nAlarmsAddActionLabelHoverColor
+        text-shadow 0px 0px 0px nAlarmsAddActionLabelHoverColor
+    .properties-table
+      li
+        border-color #333
+      .odd li
+        border-color #282828
+
+    .smart-response
+      background linear-gradient(nAlarmsModalSmartResBgGradStop1, nAlarmsModalSmartResBgGradStop2)
+      border-bottom: 1px solid nAlarmsModalSmartResBorderBottomColor
+      .section-title
+        color nAlarmsModalSmartResTitleColor
+
+      .response-name
+        color nAlarmsModalSmartResNameColor
+
+      .response
+        color nAlarmsModalSmartResColor
+      .more [class*='icon-']
+        color nAlarmsModalSmartResMoreIconColor
+      .more
+        .label
+          color nAlarmsModalSmartResMoreLabelColor
+          text-shadow 0px 0px 1px nAlarmsModalSmartResMoreLabelTextShadow
+        .label:hover
+          color nAlarmsModalSmartResMoreLabelHoverColor
+          text-shadow 0px 0px 0px nAlarmsModalSmartResMoreLabelHoverTextShadow
+
+    .comment-text
+      word-break break-word
+
+  .known-host-info-container
+    &.simple-tooltip-up
+      color gray-very-light-80
+
+.Day
+  .alarms-details,
+  .alarm-toolbox
+    .odd
+      background-color dAlarmsModalScrollableEvenBgColor
+
+  .alarms-details
+    .alarm-teaser
+      background dAlarmsModalTeaserBgColor
+    .additional-actions [class*='icon-']
+      color dAlarmsAddActionColor
+    .additional-actions
+      .label
+        color dAlarmsAddActionLabelColor
+      .label:hover
+        color dAlarmsAddActionLabelHoverColor
+        text-shadow 0px 0px 0px dAlarmsAddActionLabelHoverTextShadow
+    .properties-table
+      li
+        border-color #CCC
+      .odd li
+        border-color #C9C9C9
+
+    .smart-response
+      background linear-gradient(dAlarmsModalSmartResBgGradStop1, dAlarmsModalSmartResBgGradStop2)
+      border-bottom: 1px solid dAlarmsModalSmartResBorderBottomColor
+      .section-title
+        color dAlarmsModalSmartResTitleColor
+
+      .response-name
+        color dAlarmsModalSmartResNameColor
+
+      .response
+        color dAlarmsModalSmartResColor
+      .more[class*='icon-']
+         color dAlarmsModalSmartResMoreIconColor
+      .more
+        .label
+          color dAlarmsModalSmartResMoreLabelColor
+          text-shadow 0px 0px 1px rgba(dAlarmsModalSmartResMoreLabelTextShadow,0.5)
+        .label:hover
+          color dAlarmsModalSmartResMoreLabelHoverColor
+          text-shadow 0px 0px 0px rgba(dAlarmsModalSmartResMoreLabelHoverTextShadow,0.5)
+
+  .known-host-info-container
+    &.simple-tooltip-up
+      color gray-nero-13
+  .view-details-button-info-container
+    &.simple-tooltip-up
+      color gray-nero-13
+
+.alarms-details
+
+  grabBarFraming = 9px
+  borderRadius = 3px
+  text-align left
+  height 100%
+
+  .properties-table
+    width 100%
+
+    td, th
+      padding 5px 7px
+
+    .values
+      .active-element
+        &:hover
+          color blue-celestial-88
+      .more-info
+        margin-left 5px
+      [class*='icon-']
+        font-size 12px
+
+  a
+    color inherit
+
+.alarm-response-panel
+
+  .action-approval
+    font-size .8em
+
+  .approval-buttons
+    text-align right
+
+    .button
+      text-align center
+
+.alarm-actions-panel
+  .heading
+    font-weight bold
+    margin 20px 0 5px 0
+  .ui.button
+    vertical-align top
+    margin-left 0px
+  ui-dropdown, ui-dropdown-filtered
+    max-width 165px
+    margin-right 5px
+    .options
+      max-width 300px
+  .sub-status
+    margin-top 6px
+
+.alarm-case-details
+  td.name
+    width 30%
+    vertical-align middle
+  ul
+    padding 0
+    margin 0
+    li
+      list-style none
+      margin-bottom 10px
+      display flex
+      align-items center
+      flex-wrap wrap
+    .case-name, .case-action
+      display inline-block
+      flex 0 0 auto
+    .case-name
+      width 50%
+      padding-right 10px
+      flex-grow 2
+
+.Day
+  .alarms-details
+    .scrollable
+      .properties-container
+        color dAlarmsModalDataPropertiesHeaderColor
+
+.known-host-info-container
+  max-width 310px
+  margin-right 42px
+  .row
+    margin 10px 0
+  .label
+    font-weight bold
+    padding-right 4px
+  .host-info
+    max-height 400px
+    overflow-y auto
+    .additional-information, .brief-description
+      word-wrap break-word
+      white-space pre-line
+
+.view-details-button-info-container
+  max-width 610px
+  margin-right 12px
+

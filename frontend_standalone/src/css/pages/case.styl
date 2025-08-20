@@ -1,0 +1,120 @@
+.progress-bar
+  height 25px
+  background linear-gradient(#4C9BC7, #00649c)
+  border-radius 2px
+  overflow hidden
+
+.upload-file-text
+  top -19px
+
+.progress-bar-background
+  position: relative;
+  overflow: visible;
+  height: 25px;
+  .Day & {
+      background: #dcdcdc
+      box-shadow: #b0b0b0 -1px 2px 3px
+    }
+
+  .Night & {
+    background: #363739;
+  }
+
+.Night
+  .case-selector
+    .mini-icon
+      color #999
+
+.Day
+  .case-selector
+    .mini-icon
+      color #4d4d4d
+
+.Night p
+  color nTitle
+
+#CasePanel
+
+  .toggle-panel
+    cursor pointer
+
+  .header
+    border none
+
+  .row
+    max-width 384px
+    margin 0
+
+  [class^="col-"]
+    &:first-child
+      padding-left 0
+    &:last-child
+      padding-right 0
+
+  .case-selector
+    margin-bottom 6px
+
+  .footer
+
+    .flex-container
+      height auto
+
+    button i
+      position relative
+      top 1px
+
+  .col-6:first-child
+    padding-right (seem / 2)
+
+  .col-6:last-child
+    padding-left (seem / 2)
+
+  p
+    margin-top 0
+
+#CaseDetails
+  box-sizing border-box
+  padding seem 0
+  width pageWidth
+  container()
+
+.case-buttons-wrapper
+  margin-top 15px
+  min-height 28px
+
+.plain-menu
+  box-sizing border-box
+  height 100%
+  list-style none
+  overflow auto
+  margin 0
+  padding 15px
+
+.case-history-scroller
+  box-sizing border-box
+  &.single-column
+    .card-content
+      width 270px
+
+.alarm-tooltip
+  .alarm-card
+    width alarmCardWidth
+
+.comma-separated-list
+  .list-item
+    &:after
+      margin-left -2px
+      content ', '
+    &:last-child
+      &:after
+        content ''
+
+.tag-select-add-button
+  position absolute
+  right 0.4rem
+  bottom 0.4rem
+  line-height 1
+  transition opacity fast ease
+
+.case-prior-to-selected-date-lbl
+  vertical-align top

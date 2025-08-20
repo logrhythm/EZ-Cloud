@@ -1,0 +1,1071 @@
+titleFont()
+  font-family 'OpenSans', Verdana, sans-serif
+
+input[type=number] {-moz-appearance: textfield;}
+
+makeSelection()
+  background blue-celestial-88
+  color white-100
+  text-shadow none
+::selection
+  makeSelection()
+::-moz-selection
+  makeSelection()
+
+.moz h2
+  letter-spacing -1px
+h2
+  font-size 21px
+
+dl.text
+  width 100%
+  margin 0
+
+  dt
+    display block
+    margin-right 10px
+    margin-bottom 2px
+
+  dd
+    margin 0
+    display block
+    padding-bottom 15px
+
+    &.blocktext
+      white-space pre-wrap
+
+ul.text
+  padding 0
+  margin 6px 0 10px 0
+  font-size 95%
+
+  li
+    list-style-type none
+    margin-bottom 4px
+
+  ul
+    margin-left 20px
+
+[class*='icon-']
+  transition opacity (fast / 2) ease, color (fast / 2) ease
+
+.icon-container
+  display flex
+  align-items center
+  padding 5px
+
+iconsHitArea = 4px
+.device
+  [class*='icon-']:before
+    margin - iconsHitArea
+    padding iconsHitArea
+
+[disabled], &.disabled
+  opacity 0.32
+  cursor default !important
+
+.higher-opacity-disabled
+  opacity 0.5 !important
+
+.prevent-click
+  pointer-events none
+
+.default-cursor
+  cursor default !important
+
+#ui-blocker
+  opacity 0
+  background red-100
+  position fixed
+  z-index 9999
+  top 0
+  left 0
+  right 0
+  bottom 0
+  width 100%
+  height 100%
+  display none
+
+.right
+  float right
+.left
+  float left
+
+// fill-height-add needed for firefox bug where ng-animate isn't removing the -add suffix
+.fill-height,
+.fill-height-add
+  height 100%
+.abs-fill
+  position absolute
+  top 0
+  right 0
+  bottom 0
+  left 0
+
+.margin-bottom
+  margin-bottom 10px
+
+.margin-top
+  margin-top 10px
+
+input, input:focus, button
+  outline none !important
+
+.well
+  box-shadow indent !important
+
+bootstrapBorder()
+  border-color: white-gainsboro-90-2 white-gainsboro-90-2 gray-silver-75;
+  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+
+.seemer
+  margin-top seem
+  width 100%
+
+.device
+  input[type="text"], input[type="password"], input[type="search"]
+    -webkit-appearance none !important
+
+// Night theme (dark mode)
+.Night
+  color #cccccc
+.Night, .Night body
+  background #0f0f10
+  background radial-gradient(ellipse at center, #161616 0%, #0f0f10 100%)
+
+// Day theme (light mode)
+.Day
+  color #4d4d4d
+.Day, .Day body
+  background dBodyBg
+
+html, body
+  height 100%
+  overflow hidden
+
+html.device > body
+  position fixed
+  width 100%
+
+@media (orientation:landscape)
+  html.device > body
+    bottom 0
+
+html
+  overflow-y hidden
+
+// Theme borders
+.Night #MainWrap
+  border-bottom 3px solid nMainWrapBorderBottomColor
+
+.Day #MainWrap
+  border-bottom 3px solid dMainWrapBorderBottomColor
+
+// CodeMirror theme adjustments
+.Day .CodeMirror-cursor
+  border-left:1px solid black
+
+.Night .CodeMirror-cursor
+  border-left:1px solid #ccc
+
+#Body
+  height calc(100% - 51px)
+  width 100%
+  box-sizing border-box
+  display flex
+  flex-direction row
+  align-items stretch
+  justify-content space-between
+  background-color inherit
+
+  #PaletteLeft, #PaletteRight
+    position relative
+    height 100%
+    z-index 3
+
+    .CodeMirror
+      height: 5em
+
+  #Main
+    height 100%
+    max-width 100%
+    flex 1
+    display flex
+    flex-direction column
+    overflow-y auto
+    background-color inherit
+
+    #Content
+      position relative
+      height 100%
+      flex 1
+      overflow auto
+      padding 0 20px 20px
+      -webkit-backface-visibility hidden
+
+    #SubHead
+      padding 0 20px
+
+      &.inspector-opened
+        padding-right 0px
+      &.cases-opened
+        padding-left 0px
+
+.device
+  #Body
+    #Main
+      #Content
+        &.blockScrolling
+          overflow hidden
+
+touchWrapSetup()
+  position relative
+  overflow hidden
+  /* Prevent native touch events on Windows */
+  -ms-touch-action: none;
+
+  /* Prevent the callout on tap-hold and text selection */
+  preventUserSelection()
+
+  /* Prevent text resize on orientation change, useful for web-apps */
+  -webkit-text-size-adjust: none;
+  -moz-text-size-adjust: none;
+  -ms-text-size-adjust: none;
+  -o-text-size-adjust: none;
+  text-size-adjust: none;
+
+touchInnerSetup()
+  position: relative;
+
+  /* Prevent elements to be highlighted on tap */
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+
+preventUserSelection()
+  -webkit-touch-callout none
+  -webkit-user-select none
+  -moz-user-select none
+  -ms-user-select none
+  user-select none
+
+allowUserSelection()
+  user-select initial
+  -webkit-touch-callout initial
+  -webkit-user-select initial
+  -moz-user-select text
+  -ms-user-select text
+
+.device #MainWrap
+  touchWrapSetup()
+
+.device #MainWrapInner
+  touchInnerSetup()
+
+.container
+  width pageWidth
+  margin 0 auto
+  padding 0
+  box-sizing border-box
+
+input
+  border none
+  outline none
+  &::-ms-clear
+    display none
+.large-input
+  height 28px
+  border-radius rounded
+  padding 0 8px
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button
+  -webkit-appearance none
+  margin 0
+
+button
+  display inline-block
+  background transparent
+  border none
+  padding 0
+
+.Night button
+  text-shadow nTextShadow
+.Day button
+  text-shadow dTextShadow
+
+.outer-wrap
+  height 100%
+
+// Alertify customizations
+.alertify-log
+  margin-top seem
+
+.alertify-logs
+  titleFont()
+  bottom gutter
+  right @bottom
+  word-wrap break-word
+
+.alertify-log, .alertify-dialog
+  border-radius rounded
+  padding gutter
+
+.alertify-dialog
+  width 400px
+  margin-left (@width / -2)
+  box-sizing border-box
+
+.alertify-dialog-inner
+  padding 0
+
+.alertify-message
+  margin-top 5px
+  margin-bottom gutter
+  titleFont()
+  line-height 30px
+  font-size 18px
+
+// Night theme alertify styling
+.Night
+  alertifyLogOpacity = 0.96
+  .alertify-log, .alertify-dialog
+    text-shadow nTextShadow
+    color nAlertifyLogColor
+  .alertify-log-info
+    background linear-gradient(rgba( nAlertifyLogInfoGradColorStop1,  alertifyLogOpacity), rgba( nAlertifyLogInfoGradColorStop2, alertifyLogOpacity))
+  .alertify-log-error
+    background linear-gradient(rgba(nAlertifyLogErrorGradColorStop1, alertifyLogOpacity), rgba( nAlertifyLogErrorGradColorStop2, alertifyLogOpacity))
+  .alertify-log-success
+    background linear-gradient(rgba(nAlertifyLogSuccessGradColorStop1,  alertifyLogOpacity), rgba( nAlertifyLogSuccessGradColorStop2,  alertifyLogOpacity))
+  .alertify-dialog
+    border none
+    background-clip none
+    background linear-gradient(nAlertifyDialogueGradColorStop1, nAlertifyDialogueGradColorStop2)
+
+// Day theme alertify styling
+.Day
+  alertifyLogOpacity = 0.96
+  .alertify-log, .alertify-dialog
+    text-shadow dTextShadowWhite
+    color dAlertifyLogColor
+  .alertify-log-info
+    background linear-gradient(dAlertifyLogInfoGradColorStop1, dAlertifyLogInfoGradColorStop2)
+  .alertify-log-error
+    background linear-gradient(rgba(dAlertifyLogErrorGradColorStop1, alertifyLogOpacity), rgba(darken(dAlertifyLogErrorGradColorStop2, 20%), alertifyLogOpacity))
+    color dAlertifyLogErrorColor
+  .alertify-log-success
+    background linear-gradient(rgba(dAlertifyLogSuccessGradColorStop1,  alertifyLogOpacity), rgba(darken(dAlertifyLogSuccessGradColorStop2, 20%),  alertifyLogOpacity))
+  .alertify-dialog
+    border none
+    background-clip none
+    background linear-gradient(dAlertifyDialogueGradColorStop1, dAlertifyDialogueGradColorStop2)
+
+// Utility classes
+clearfix()
+  &:before, &:after
+    content ' '
+    display table
+  &:after
+    clear both
+
+.clearfix
+  clearfix()
+
+// Grid system
+NUMCOLUMNS = 12
+PERCENT_GUTTER=2%
+for num in (1..NUMCOLUMNS)
+  .col-{num}
+    box-sizing border-box
+    display block
+    float left
+    width (num / NUMCOLUMNS)*100%
+    padding 0 PERCENT_GUTTER
+
+.row
+  clearfix()
+  margin 0 -1 * PERCENT_GUTTER
+  width 100%
+.col-row
+  padding: 20px 0
+  &,
+  &:before,
+  &:after
+    content " "
+    display: table
+    width: 100%
+
+.ellipsis
+  overflow hidden
+  text-overflow ellipsis
+  white-space nowrap
+
+// Reveal effect
+.reveal
+  -webkit-transform: translateZ(0);
+  opacity 0
+  transition opacity fast linear .2s
+.device .reveal
+  opacity 1
+
+.reveal-trigger:hover .reveal
+  opacity 1
+
+.full-height-row
+  display -ms-flexbox
+  display flex
+  height 100%
+  width: 100%
+  flex-pack justify
+  justify-content space-between
+  align-items stretch
+
+// Interactive elements
+[ng-click], [panel-trigger], .clickable
+  cursor pointer
+
+.ui.dropdown[disabled]
+  opacity 1
+
+.ui.dropdown.small .throbber-wrapper
+  position absolute
+  width 16px
+  height 16px
+  right 4px
+  top 2px
+
+.ui.button.small
+  min-width 64px
+
+.ui.tabset.no-tabset-padding
+  .content
+    padding 0px
+
+// Table styling
+tableColor(baseColor)
+  ui-table
+    iconColors(baseColor)
+
+// Icon customizations
+.icon-panelcontrol-square
+  display inline-block
+
+.icon-collapse-left
+  transform rotate(180deg)
+
+.icon-collapse-down, .icon-expand-down, .icon-collapse-right
+  transform rotate(90deg)
+
+.icon-expand-up, .icon-collapse-up, .icon-expand-right , .icon-expand-left
+  transform rotate(-90deg)
+
+.pre-wrap
+  white-space pre-wrap
+
+.icon-up, .icon-down
+  font-size 5px
+
+// Count styling
+.count
+  .Night &
+    color $nightSelected
+  .Day &
+    color $daySelected
+
+// Text alignment
+.text-align-center
+  text-align center
+
+.text-align-left
+  text-align left
+
+// Scrollbar customization for modern look
+::-webkit-scrollbar
+  width 12px
+  height 12px
+
+::-webkit-scrollbar-track
+  .Day &
+    background white-gainsboro-90
+    -webkit-box-shadow inset transparent
+    border 1px solid transparent
+  .Night &
+    -webkit-box-shadow inset 0 1px 6px rgba(0,0,0,0.2)
+    background linear-gradient(#252525, #1a1a1a)
+    border 1px solid #252525
+
+::-webkit-scrollbar-thumb
+  border-radius rounded
+
+  .Day &
+    background gray-silver-chalice-68
+    border 1px solid gray-star-dust-61
+  .Night &
+    -webkit-box-shadow nTextShadow
+    background linear-gradient(#484a4c, #3a3c3d)
+    border 1px solid transparent
+    border-top 1px solid rgba(#cccccc, 0.1)
+
+::-webkit-scrollbar-corner
+  .Day &
+    background white-gainsboro-85
+    border-top 1px solid rgba(gray-very-light-80, 0.1)
+    border-left @border-top
+    border-bottom 1px solid rgba(black-100, 0.1)
+    border-right @border-bottom
+  .Night &
+    background linear-gradient(gray-nero-15, mix(gray-nero-15, grey-nero-10, 50%))
+    border-top 1px solid rgba(gray-very-light-80, 0.1)
+    border-left @border-top
+    border-bottom 1px solid rgba(black-100, 0.1)
+    border-right @border-bottom
+
+  &.msie
+    .Day &
+      scrollbar-face-color gray-silver-chalice-68
+      scrollbar-shadow-color gray-silver-chalice-68
+      scrollbar-track-color white-gainsboro-90
+      scrollbar-arrow-color gray-silver-chalice-68
+    .Night &
+      scrollbar-face-color grey-montana-24
+      scrollbar-shadow-color grey-montana-24
+      scrollbar-track-color grey-nero-10
+      scrollbar-arrow-color grey-montana-24
+
+// Separator
+hr.vertical-separator
+  height 30px
+  width 1px
+  margin 0 (seem - 4)
+  border none
+
+  .Day &
+    border-right 1px solid darken(#cfcfcf, 20)
+  .Night &
+    border-right 1px solid darken(#575a5c, 20)
+
+// Spacing utilities
+.separate-children-horizontal > *:not(:last-child)
+  margin-right 5px
+
+.separate-children-vertical > *:not(:last-child)
+  margin-bottom 5px
+
+.required-asterisk:after
+  content '*'
+  display inline-block
+
+// Font face
+@font-face {
+  font-family: 'lr-web';
+  src:url(/js/fonts/lr-web.eot);
+  src:url(/js/fonts/lr-web.eot?#iefix-wgkmhf) format('embedded-opentype'),
+      url(/js/fonts/lr-web.woff) format('woff'),
+      url(/js/fonts/lr-web.ttf) format('truetype'),
+      url(/js/fonts/lr-web.svg#icomoon) format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+// Distribution container
+.analyze-page-distributionContainer {
+  position: relative;
+}
+
+.analyze-page-logoWrapper {
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+// Inspector styles
+.inspectrorFileWrapper {
+    max-width: 120px;
+    overflow: hidden;
+    position: relative;
+}
+
+.inspectrorFileButton{
+    display: none;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    left: 0;
+    height: 100%;
+}
+
+.beatsInspector {
+  .row {
+    display: flex;
+    align-items: start;
+  }
+}
+
+// Slinky beat group
+.slinky-beat-group {
+  .beats-slinky-header-wrapper {
+     position: relative;
+    .icon-chevron-right {
+      position: absolute;
+      right: 0px;
+      top: 50%;
+      transform-origin: center center;
+      &.header-icon-down {
+        transform: translateY(-50%) rotate(90deg);
+      }
+      &.header-icon-up {
+        transform: translateY(-50%) rotate(270deg);
+      }
+    }
+  }
+  .section-panel {
+    color: red;
+    transition: height 0.2s ease-in-out;
+    &.hide {
+      height: 0;
+    }
+    &.show{
+      height: auto;
+    }
+  }
+}
+
+// Button icons
+.back-button-icon{
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-top: 6px;
+}
+
+.next-button-icon{
+  padding-left: 11px;
+  padding-right: 8px;
+  padding-top: 5.5px;
+}
+
+.align-back-icon {
+    margin-right: 5px;
+    top: 2px;
+    position: relative;
+}
+
+.align-next-icon {
+    margin-right: 5px;
+    top: 2px;
+    position: relative;
+}
+
+.logSource-config-action {
+  .align-back-icon, .align-next-icon {
+    top: 1px;
+  }
+}
+
+// Theme-specific icon colors
+.Night {
+  .align-back-icon, .align-next-icon{
+    svg {
+      fill: #ccc
+    }
+  }
+}
+
+.Day {
+  .align-back-icon {
+    svg {
+      fill: #4c4c4c
+    }
+  }
+  .align-next-icon{
+    svg {
+      fill: #e6e6e6
+    }
+  }
+}
+
+// Margin utilities
+.mr-b-1{
+  margin-bottom: 1px
+}
+
+.mr-b-2{
+  margin-bottom: 2px
+}
+
+// Theme-specific panel backgrounds
+.Night {
+  .opencollector {
+    [palette-content] {
+      .palette-main {
+        background: #2c2c2c !important;
+      }
+    }
+  }
+
+  .beats {
+    [palette-content] {
+      .palette-main {
+        background: #2c2c2c !important;
+      }
+    }
+  }
+}
+
+.Day {
+  .opencollector {
+    [palette-content] {
+      .palette-main {
+        background: #f0f0f0 !important;
+      }
+    }
+  }
+  .beats {
+    [palette-content] {
+      .palette-main {
+        background: #f0f0f0 !important;
+      }
+    }
+  }
+}
+
+.opencollector {
+  .palette-content {
+      padding: 0px;
+  }
+  .palette-main {
+      border: none !important;
+      padding-right: 8px;
+  }
+} 
+
+.beats {
+  .palette-content {
+      padding: 0px;
+  }
+  .palette-main {
+      border: none !important;
+      padding-right: 8px;
+  }
+} 
+
+.disable-lebel{
+  opacity: 0.3
+}
+
+// Inspector loader styles
+.oc-screen {
+  .inspectorLoader{
+    height: 100%;
+    position: absolute;
+    z-index: 9999;
+    background: #333333;
+    width: 100%;
+  }
+}
+
+.inspectorLoader{
+  height: 100%;
+  .inspectorLoaderWrapper{
+    top: 45%;
+    position: relative;
+    transform: translateY(-50%);
+    max-width: 200px;
+    margin: 0 auto;
+    left: 15%;
+  }
+}
+
+// Spinner animation
+.spinner-loader {
+  position: fixed;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border: 4px solid #82cee9;
+  border-top: 4px solid #02b7fe; 
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Dashboard popup styles
+.dashboard-popup .modal-header{
+  display: none;
+}
+
+.dashboard-popup{
+  .dx-pop-up-header{
+    display: flex;
+    align-items: center;
+    p{
+      font-size: 18px;
+      text-align: center;
+      padding-top: 2rem; 
+      padding-bottom: 1rem; 
+      width: 100%;
+    }
+    .dx-close-icon{
+      font-size: 25px; 
+      font-weight: 800; 
+      margin-right: 1rem;
+      margin-bottom: 3rem; 
+      cursor: pointer;
+    }
+  }
+  .pop-up-body{
+    display: flex; 
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    text-align: center; 
+    margin: 20px;
+    .event-body{
+      width: 28rem;
+      margin-right: 1rem; 
+      height: 26rem; 
+      border: 1px solid;
+      border-radius: 10px; 
+      padding: 3.5rem;
+      .event-body-text{
+        height: 16rem
+      }
+    }
+    .dx-body{
+      width: 28rem; 
+      height: 26rem; 
+      border: solid 1px; 
+      border-radius: 10px;
+      padding: 3.5rem;
+      .dx-body-text{
+        height: 16rem
+      }
+    }
+  }
+}
+
+// Button styles based on reference images
+.ui.button {
+  border-radius: 3px;
+  font-weight: 500;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.Night {
+  .ui.button.primary {
+    background-color: #02b7fe;
+    color: #000000;
+    border: none;
+    &:hover {
+      background-color: lighten(#02b7fe, 10%);
+      box-shadow: 0 0 5px rgba(2, 183, 254, 0.5);
+    }
+  }
+  
+  .ui.button.secondary {
+    background-color: #3a3c3d;
+    color: #cccccc;
+    border: 1px solid #494b4d;
+    &:hover {
+      background-color: #494b4d;
+    }
+  }
+}
+
+.Day {
+  .ui.button.primary {
+    background-color: #007bc2;
+    color: #ffffff;
+    border: none;
+    &:hover {
+      background-color: darken(#007bc2, 5%);
+    }
+  }
+  
+  .ui.button.secondary {
+    background-color: #e0e0e0;
+    color: #333333;
+    border: 1px solid #cccccc;
+    &:hover {
+      background-color: #f0f0f0;
+    }
+  }
+}
+
+// Input styling
+.Night {
+  input[type="text"], input[type="password"], input[type="search"], textarea, select {
+    background: #262626;
+    border: 1px solid #3d3d3d;
+    color: #cccccc;
+    &:focus {
+      border-color: #02b7fe;
+      box-shadow: 0 0 5px rgba(2, 183, 254, 0.3);
+    }
+  }
+}
+
+.Day {
+  input[type="text"], input[type="password"], input[type="search"], textarea, select {
+    background: #ffffff;
+    border: 1px solid #cccccc;
+    color: #333333;
+    &:focus {
+      border-color: #007bc2;
+      box-shadow: 0 0 5px rgba(0, 123, 194, 0.3);
+    }
+  }
+}
+
+// Inspector panel styling based on the reference images
+.inspector-pane {
+  border-radius: 3px;
+  overflow: hidden;
+  
+  .inspector-header {
+    padding: 10px;
+    font-weight: bold;
+    font-size: 16px;
+  }
+  
+  .tab-content {
+    padding: 15px;
+  }
+}
+
+.Night {
+  .inspector-pane {
+    background: #2c2c2c;
+    border: 1px solid #3d3d3d;
+    
+    .inspector-header {
+      background: #3d3d3d;
+      color: #cccccc;
+    }
+  }
+}
+
+.Day {
+  .inspector-pane {
+    background: #f5f5f5;
+    border: 1px solid #d8d8d8;
+    
+    .inspector-header {
+      background: #e6e6e6;
+      color: #333333;
+    }
+  }
+}
+
+// Tab styling
+.ui.tabset {
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid;
+    
+    .tab {
+      padding: 10px 15px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      border-bottom: 2px solid transparent;
+      
+      &.active {
+        border-bottom: 2px solid;
+      }
+    }
+  }
+}
+
+.Night {
+  .ui.tabset {
+    .tabs {
+      border-bottom-color: #3d3d3d;
+      
+      .tab {
+        color: #a0a0a0;
+        
+        &:hover {
+          background-color: #3a3c3d;
+        }
+        
+        &.active {
+          color: #02b7fe;
+          border-bottom-color: #02b7fe;
+        }
+      }
+    }
+  }
+}
+
+.Day {
+  .ui.tabset {
+    .tabs {
+      border-bottom-color: #d8d8d8;
+      
+      .tab {
+        color: #666666;
+        
+        &:hover {
+          background-color: #f0f0f0;
+        }
+        
+        &.active {
+          color: #007bc2;
+          border-bottom-color: #007bc2;
+        }
+      }
+    }
+  }
+}
+
+// Search controls based on reference images
+.search-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  
+  .search-field {
+    flex-grow: 1;
+    position: relative;
+    
+    input {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 3px;
+    }
+  }
+  
+  .search-button {
+    min-width: 80px;
+    text-align: center;
+    font-weight: bold;
+  }
+}
+
+.Night {
+  .search-button {
+    background: #02b7fe;
+    color: #000000;
+    &:hover {
+      background: lighten(#02b7fe, 10%);
+    }
+  }
+}
+
+.Day {
+  .search-button {
+    background: #007bc2;
+    color: #ffffff;
+    &:hover {
+      background: darken(#007bc2, 5%);
+    }
+  }
+}

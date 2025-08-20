@@ -1,0 +1,15 @@
+blend(c1, c2, amount)
+  r1 = red(c1)
+  g1 = green(c1)
+  b1 = blue(c1)
+
+  r2 = red(c2)
+  g2 = green(c2)
+  b2 = blue(c2)
+
+  r = (r1 * (1 - amount)) + (r2 * amount)
+  g = (g1 * (1 - amount)) + (g2 * amount)
+  b = (b1 * (1 - amount)) + (b2 * amount)
+
+  return rgb(r, g, b)
+

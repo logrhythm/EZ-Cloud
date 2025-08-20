@@ -1,0 +1,65 @@
+.timeline-subhead-title {
+  position: absolute;
+  padding: 8px;
+  & > a, span, i {
+    margin: 0 5px;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  .Night & > a {
+    color: #42a6e0;
+    color: #007dc3;
+  }
+  .Day & > a {
+    color: #007dc3;
+  }
+  & > a:hover {
+    text-decoration: underline;
+  }
+  & > i {
+    font-size: 0.5em;
+  }
+}
+
+.timeline-wrap {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  bottom: 0;
+  left: 20px;
+}
+
+.timeline-content {
+  max-width: 730px;
+  height: 100%;
+  margin: 0 auto;
+  .logrhythm-timeline-layout {
+    height: 100%;
+    .logrhythm-timeline-content {
+      margin-right: 5px;
+    }
+    .logrhythm-timeline-body {
+      width: 630px;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+  }
+}
+
+.logrhythm-cards-event, .logrhythm-cards-identity {
+  font-size: 12px;
+  .flex-column, .flex-row {
+    position: static;
+  }
+}
+
+.logrhythm-timeline-subject .case-card {
+  width: 315px;
+}
+
+.identity-card-clickable {
+  cursor: pointer;
+  &:hover header .flex-grow {
+    text-decoration: underline;
+  }
+}

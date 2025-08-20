@@ -3,30 +3,16 @@
  * This mixin provides backward compatibility for components that use the old dark mode mixin
  */
 
-import { themeService, THEME } from '../boot/theme-service'
+import { themeService } from '../boot/theme-service'
 
 export default {
   data () {
     return {
-      darkMode: themeService.isDarkMode() // Use the theme service for initial state
+      darkMode: true // Always dark mode
     }
   },
   created () {
-    // Update local state to match theme service
-    this.darkMode = themeService.isDarkMode()
-
-    // Subscribe to theme changes
-    this._themeServiceListener = (isDarkMode) => {
-      this.darkMode = isDarkMode
-    }
-    themeService.subscribe(this._themeServiceListener)
-  },
-  watch: {
-    darkMode (val) {
-      // When darkMode changes locally, update the theme service
-      // This creates two-way binding between the mixin and the service
-      themeService.setTheme(val ? THEME.DARK : THEME.LIGHT, this.$q)
-    }
+    // No need to subscribe to theme changes since we're always in dark mode
   },
   methods: {
     // Legacy method maintained for backward compatibility
@@ -48,7 +34,7 @@ export default {
     if (this.$el && typeof this.$el.removeEventListener === 'function') {
       this.$el.removeEventListener('keydown', this.switchModeOnKeyDownEvent)
     }
-    
+
     // Defer to centralized theme service for keyboard shortcuts
     themeService.setKeyboardShortcutEnabled(true)
   },

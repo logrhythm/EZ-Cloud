@@ -1,0 +1,291 @@
+.inspector-tabs
+  display flex
+  flex-direction column
+  height 100%
+  width 100%
+  
+  .inspector-header
+    padding 10px
+    display flex
+    align-items center
+    border-bottom 1px solid
+    
+    h3
+      margin 0
+      font-size 16px
+      font-weight 500
+      
+    .close-button
+      margin-left auto
+      cursor pointer
+      
+  .inspector-tab-navigation
+    background-color transparent
+    border-bottom 1px solid
+    display flex
+    
+    .tab-item
+      padding 10px 15px
+      cursor pointer
+      font-size 14px
+      border-bottom 2px solid transparent
+      transition border-color 0.3s ease
+      
+      &.active
+        border-bottom-width 2px
+        
+  .inspector-content
+    flex 1
+    overflow auto
+    padding 15px
+    
+    .tab-pane
+      display none
+      
+      &.active
+        display block
+    
+    .event-data
+      .event-row
+        display flex
+        margin-bottom 8px
+        
+        .event-label
+          flex 0 0 150px
+          font-weight 500
+          
+        .event-value
+          flex 1
+          word-break break-word
+    
+    .summary-section
+      margin-bottom 20px
+      
+      h4
+        margin-top 0
+        margin-bottom 10px
+        font-size 14px
+        font-weight 500
+      
+      .rule-block
+        background-color rgba(0, 0, 0, 0.1)
+        border-radius 4px
+        padding 10px
+        margin-bottom 15px
+        
+        .rule-block-header
+          font-weight 500
+          margin-bottom 8px
+        
+        table
+          width 100%
+          border-collapse collapse
+          
+          td
+            padding 4px 0
+            
+          td:first-child
+            font-weight 500
+            width 150px
+            
+    .actions-section
+      .action-button
+        margin-right 10px
+        margin-bottom 10px
+        
+    .comments-section
+      .comment-item
+        margin-bottom 15px
+        padding-bottom 15px
+        border-bottom 1px solid rgba(0, 0, 0, 0.1)
+        
+        .comment-header
+          display flex
+          margin-bottom 8px
+          
+          .author
+            font-weight 500
+          
+          .timestamp
+            margin-left auto
+            font-size 12px
+            color rgba(255, 255, 255, 0.5)
+            
+        .comment-text
+          line-height 1.5
+      
+      .comment-form
+        margin-top 20px
+        
+        textarea
+          width 100%
+          padding 10px
+          border-radius 4px
+          min-height 100px
+          margin-bottom 10px
+
+// Night mode styles
+.Night
+  .inspector-tabs
+    background-color #262626
+    color #CCCCCC
+    
+    .inspector-header
+      background linear-gradient(#484a4b, #3a3c3d)
+      border-bottom-color #242424
+      
+    .inspector-tab-navigation
+      border-bottom-color #242424
+      
+      .tab-item
+        color #808080
+        
+        &:hover
+          color #CCCCCC
+        
+        &.active
+          color #02b7fe
+          border-bottom-color #02b7fe
+    
+    .inspector-content
+      background-color #323232
+      
+      .event-row
+        .event-label
+          color #808080
+          
+        .event-value
+          color #CCCCCC
+          
+      .rule-block
+        background-color rgba(0, 0, 0, 0.2)
+        border-left 3px solid #02b7fe
+        
+      .comments-section
+        .comment-item
+          border-bottom-color rgba(255, 255, 255, 0.1)
+          
+        textarea
+          background-color #252525
+          border 1px solid #323232
+          color #CCCCCC
+          
+          &:focus
+            border-color #02b7fe
+            outline none
+            
+      .view-details-button
+        display inline-block
+        background-color rgba(2, 183, 254, 0.1)
+        color #02b7fe
+        border 1px solid #02b7fe
+        border-radius 4px
+        padding 5px 10px
+        font-size 12px
+        margin-top 5px
+        cursor pointer
+        
+        &:hover
+          background-color rgba(2, 183, 254, 0.2)
+          
+      .action-button
+        background #3a3c3d
+        color #CCCCCC
+        border 1px solid #484a4b
+        padding 8px 15px
+        border-radius 4px
+        cursor pointer
+        
+        &:hover
+          background #484a4b
+        
+        &.primary
+          background #02b7fe
+          color #000000
+          border-color #02b7fe
+          
+          &:hover
+            opacity 0.9
+            
+// Day mode styles
+.Day
+  .inspector-tabs
+    background-color #ffffff
+    color #4d4d4d
+    
+    .inspector-header
+      background linear-gradient(#e5e5e5, #d9d9d9)
+      border-bottom-color #c3c3c3
+      
+    .inspector-tab-navigation
+      border-bottom-color #c3c3c3
+      
+      .tab-item
+        color #999999
+        
+        &:hover
+          color #4d4d4d
+        
+        &.active
+          color #007bc2
+          border-bottom-color #007bc2
+    
+    .inspector-content
+      background-color #f2f2f2
+      
+      .event-row
+        .event-label
+          color #999999
+          
+        .event-value
+          color #4d4d4d
+          
+      .rule-block
+        background-color rgba(0, 0, 0, 0.05)
+        border-left 3px solid #007bc2
+        
+      .comments-section
+        .comment-item
+          border-bottom-color rgba(0, 0, 0, 0.1)
+          
+        textarea
+          background-color #ffffff
+          border 1px solid #d9d9d9
+          color #4d4d4d
+          
+          &:focus
+            border-color #007bc2
+            outline none
+            
+      .view-details-button
+        display inline-block
+        background-color rgba(0, 123, 194, 0.1)
+        color #007bc2
+        border 1px solid #007bc2
+        border-radius 4px
+        padding 5px 10px
+        font-size 12px
+        margin-top 5px
+        cursor pointer
+        
+        &:hover
+          background-color rgba(0, 123, 194, 0.2)
+          
+      .action-button
+        background #e5e5e5
+        color #4d4d4d
+        border 1px solid #d9d9d9
+        padding 8px 15px
+        border-radius 4px
+        cursor pointer
+        
+        &:hover
+          background #d9d9d9
+        
+        &.primary
+          background #007bc2
+          color #ffffff
+          border-color #007bc2
+          
+          &:hover
+            opacity 0.9

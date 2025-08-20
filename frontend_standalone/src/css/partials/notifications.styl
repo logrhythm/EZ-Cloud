@@ -1,0 +1,37 @@
+scrollW         = 320px
+
+#notificationCenter
+    position relative
+    z-index 6600
+
+.Night #PanelNotification:before
+    NightTopCarrot()
+.Day #PanelNotification:before
+   DayTopCarrot()
+
+#PanelNotification
+    right gutter * 2
+    top 46px
+    padding framePadding
+    padding-bottom framePadding * 3
+    z-index 6500
+    overflow visible
+    input[type="checkbox"]
+        float right
+        margin-top 4px
+    label
+        margin 0
+        font-size inherit
+    &:before
+        z-index 9999
+        top -7px
+        right 37px
+
+#NotificationsWrap
+    max-height 600px
+    width scrollW
+
+#totalNot
+    display inline-block
+    vertical-align top
+    min-width 16px

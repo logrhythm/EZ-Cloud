@@ -1,0 +1,57 @@
+.Night .panel
+    box-shadow 0 1px 6px rgba(0, 0, 0, 0.2)
+    background #575A5C
+    color #CCCCCC
+    text-shadow 0 1px 1px black
+.Day .panel
+  box-shadow dPanelBs
+  background dPanelBg
+  color dPanelColor
+  text-shadow dPanelTextShadow
+.panel
+    position absolute
+    padding seem gutter
+    border-radius rounded
+    text-align left
+    overflow hidden
+    z-index 100
+    
+    .panel-header
+      padding 10px
+      border-bottom 1px solid
+      
+    .panel-content
+      padding 15px
+      
+.Night .panel
+    .panel-header
+      background linear-gradient(#484a4b, #3a3c3d)
+      border-bottom-color #242424
+    .panel-content
+      background #323232
+      
+.Day .panel
+    .panel-header
+      background linear-gradient(#e5e5e5, #d9d9d9)
+      border-bottom-color #c3c3c3
+    .panel-content
+      background #f2f2f2
+
+.openTriggerTop
+    border-bottom 0
+    border-bottom-left-radius 0
+    border-bottom-right-radius 0
+    box-shadow none
+
+.openTriggerBottom
+    border-top 0
+    border-top-left-radius 0
+    border-top-right-radius 0
+
+.Night
+  .openTriggerTop
+    nGlow()
+
+.Day
+  .openTriggerTop
+    dGlow()

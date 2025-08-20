@@ -1,0 +1,63 @@
+.advanced-case-search
+
+  .ui.dropdown.case-search-tags-dropdown
+    z-index 600
+    width 100%
+
+.button-group
+  width 100%
+  display flex
+  align-items stretch
+  align-content stretch
+
+  .dropdown,
+  .btn,
+  input[type="text"]
+    border-radius 0
+    box-shadow none
+    flex 1
+
+  input[type="text"]
+    border none
+
+  .dropdown .btn
+    border-right none
+
+  .button-group__button
+
+    display block
+    position relative
+    flex 0 0 29px
+
+    .btn
+      padding 0
+      width 100%
+      absolute-fill-height()
+
+    i
+      line-height: 1.2
+
+
+.case-search-advanced-button
+  position relative
+  .icon-search
+    vertical-align middle
+  .ui.badge.floated
+    right -5px
+
+#case-search-owner-dropdown
+  z-index 601
+
+.case-search-result-table
+  margin 10px 0
+
+.case-search-result-table-cell.selected
+  border none
+  outline none
+  box-shadow none
+  background-color rgba(68, 168, 224, 0.45)
+
+// HACK: need to fix layout ordering in components repo
+.modal-backdrop, .modal
+  &.in
+    z-index 1000

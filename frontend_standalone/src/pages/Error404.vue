@@ -1,9 +1,9 @@
 <template>
-  <q-page class="flex flex-center">
-      <div class="text-h2" style="opacity:.4">
-        Oops. Nothing here...
-      </div>
-  </q-page>
+<q-page class="flex flex-center" style="background: var(--q-color-dark); color: var(--q-color-text, #fff);">
+    <div class="text-h2" style="opacity:.4">
+      Oops. Nothing here...
+    </div>
+</q-page>
 </template>
 
 <script>

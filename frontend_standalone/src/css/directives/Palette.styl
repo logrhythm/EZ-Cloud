@@ -1,0 +1,257 @@
+[palette]
+  position relative
+  z-index 0
+
+  .palette-location-left &, .palette-location-right &
+    height 100%
+
+  .palette-location-bottom &
+    width 100%
+
+
+.palette-content 
+  padding 8px
+
+[palette-content]
+  position relative
+  .palette-location-left &, .palette-location-right &
+    height 100%
+    width 413px
+  .palette-location-bottom &
+    width 100%
+
+  .header
+    min-height 24px
+    padding-top 8px
+    margin-bottom seem
+    border-bottom 1px solid
+    box-sizing border-box
+
+  .title
+    text-align center
+    margin 0
+
+  .palette-section
+    box-sizing border-box
+    height 100%
+    .footer
+      margin-top 8px
+      
+  .sub-header
+    text-align center
+
+[palette-tab]
+  tabHeight = 20px
+  tabWidth = 120px
+
+  position absolute
+  text-transform uppercase
+
+  font-size 12px
+  cursor pointer
+  line-height 22px
+  text-align center
+  box-sizing content-box
+
+  .palette-tab-text
+    position relative
+    width tabWidth
+    transform-origin left top
+
+  .palette-trigger-icon
+    position relative
+    top 4px
+    font-size 14px
+    margin 0 12px 0 8px
+    &.icon-expand-left
+      margin-right 4px
+      right 6px
+
+    .palette-location-left &
+      margin 0 8px 0 12px
+
+  .palette-location-bottom &
+    top 0px
+    right 0px
+    height tabHeight
+    width tabWidth
+    padding 0 10px
+    border-top-style solid
+    border-top-width 1px
+    border-right-style solid
+    border-right-width 1px
+    .palette-trigger-icon
+      float right
+
+  .palette-location-left &
+    top 0px
+    right 0px
+    width tabHeight
+    height tabWidth
+    padding 10px 0
+    border-right-style solid
+    border-right-width 1px
+    border-top-style solid
+    border-top-width 1px
+    .palette-trigger-icon
+      float left
+    .palette-tab-text
+      left tabHeight
+      transform rotate(90deg)
+
+  .palette-location-right &
+    top 0px
+    left 0px
+    width tabHeight
+    height tabWidth
+    padding 10px 0
+    border-left-style solid
+    border-left-width 1px
+    border-top-style solid
+    border-top-width 1px
+    .palette-trigger-icon
+      float right
+    .palette-tab-text
+      right 0
+      top tabWidth
+      transform rotate(-90deg)
+
+  .angle
+    pseudoInit()
+
+    .palette-location-bottom &
+      transform skew(-30deg)
+      border-top-style solid
+      border-top-width 1px
+      border-left-style solid
+      border-left-width 1px
+      left -6px
+      top -1px
+      height tabHeight
+      width seem
+
+    .palette-location-left &
+      transform skew(0,-30deg)
+      border-right-style solid
+      border-right-width 1px
+      border-bottom-style solid
+      border-bottom-width 1px
+      bottom -6px
+      right -1px
+      width tabHeight
+      height seem
+
+    .palette-location-right &
+      transform skew(0,30deg)
+      border-left-style solid
+      border-left-width 1px
+      border-bottom-style solid
+      border-bottom-width 1px
+      bottom -6px
+      right 0px
+      width tabHeight
+      height seem
+
+[palette-trigger]
+  cursor pointer
+
+paletteColor(tabColor, contentColor)
+  tabBorderColor = darken(tabColor, 15)
+  tabGradientDark = darken(tabColor, 7)
+
+  if dark(tabColor)
+    footerPanelTrigger = lighten(tabColor, 30)
+    textShadow = 0 1px 1px darken(tabColor, 30)
+    textShadow270deg = -1px 0px 1px darken(tabColor, 30)
+    textShadow90deg = 1px 0px 1px darken(tabColor, 30)
+    textShadow180deg = 0px -1px 1px darken(tabColor, 30)
+    noTask = lighten(tabColor, 20)
+    noTaskShadowColor = darken(tabColor, 30)
+
+    contentBorderTop = darken(contentColor, 5)
+    contentBorderSide = darken(contentColor, 9)
+
+    headerBorderLight = lighten(contentColor, 20)
+
+    mainGradientTop = lighten(contentColor, 9)
+    mainGradientBottom = lighten(contentColor, 5)
+    mainBorderTop = darken(contentColor, 9)
+    mainBorderBottom = lighten(contentColor, 18)
+
+  else
+    footerPanelTrigger = darken(tabColor, 50)
+    textShadow = 0 1px 0 rgba(lighten(tabColor, 25), 0.5)
+    textShadow270deg = -1px 0px 0px rgba(lighten(tabColor, 25), 0.5)
+    textShadow90deg = 1px 0px 0px rgba(lighten(tabColor, 25), 0.5)
+    textShadow180deg = 0px -1px 0px rgba(lighten(tabColor, 25), 0.5)
+    noTask = darken(tabColor, 50)
+    noTaskShadowColor = rgba(lighten(tabColor, 25),0.5)
+
+    contentBorderTop = lighten(contentColor, 5)
+    contentBorderSide = lighten(contentColor, 9)
+
+    headerBorderLight = darken(contentColor, 20)
+
+    mainGradientTop = lighten(contentColor, 9)
+    mainGradientBottom = lighten(contentColor, 5)
+    mainBorderTop = darken(contentColor, 9)
+    mainBorderBottom = lighten(contentColor, 18)
+
+  [palette-tab], .angle
+    iconColors(tabColor, tabGradientDark)
+    border-color tabBorderColor
+    text-shadow textShadow
+  [palette-tab], [palette-content]
+    button i, i
+      &.icon-collapse-down, &.icon-expand-down, &.icon-collapse-right
+        text-shadow textShadow90deg //Need to change text shadow as axis are changed after rotation
+      &.icon-expand-up, &.icon-collapse-up
+        text-shadow textShadow270deg
+      &.icon-expand-left, &.icon-collapse-left
+        text-shadow textShadow180deg
+  .palette-location-bottom [palette-tab], .palette-location-bottom .angle
+    background linear-gradient(tabColor, tabGradientDark) no-repeat
+  .palette-location-left [palette-tab], .palette-location-left .angle
+    background linear-gradient(-90deg, tabColor, tabGradientDark) no-repeat
+  .palette-location-right [palette-tab], .palette-location-right .angle
+    background linear-gradient(90deg, tabColor, tabGradientDark) no-repeat
+    
+  [palette-content]
+    background contentColor
+    box-sizing border-box
+
+    .header
+      padding 8px 0 6px 0
+      border-color headerBorderLight
+      .col-1
+        iconColors(contentColor)
+
+    .palette-main
+      background linear-gradient(mainGradientTop, mainGradientBottom)
+      border-top 1px solid mainBorderTop
+      border-bottom 1px solid mainBorderBottom
+      border-left 1px solid mainGradientTop
+      border-right 1px solid mainGradientTop
+      height 100%
+      overflow hidden
+
+   .oc-screen {
+      height 100%
+      overflow hidden
+   }
+  .palette-location-left [palette-content]
+    border-top 1px solid contentBorderTop
+    border-right 1px solid contentBorderSide
+
+  .palette-location-right [palette-content]
+    border-top 1px solid contentBorderTop
+    border-left 1px solid contentBorderSide
+
+.inspector
+  .resizable
+    padding-left 0px
+    left 8px
+
+.palette-section
+  ui-resizable-handle.horizontal::after
+    margin-top 6px

@@ -1,0 +1,62 @@
+.modal
+  display flex
+  justify-content center
+  align-items center
+
+  .modal-dialog
+    min-width 400px
+    max-width 84%;
+    margin: 0 auto;
+
+// TODO: possibly move this to lr-style?
+@media (min-width: 544px)
+  .modal-dialog
+    margin 30px 10px
+
+.modal-header
+  titleFont()
+  font-size 16px
+
+  .Night &
+    iconColors(nModalHeaderBgColor)
+  .Day &
+    iconColors(dModalHeaderBgGradStop1)
+
+  .icon-x
+    cursor pointer
+    font-size 10px
+    margin-left auto
+
+.modal-body
+  .section-header
+    border-bottom 1px solid rgba(51,51,51,.4)
+    margin-bottom 10px
+    padding-bottom 4px
+    padding-left 7px
+
+.alertify-cover, #Overlay,
+[overlay]
+  background rgba(0,0,0,0.7)
+
+[overlay]
+  display block !important
+
+.Overlay
+  display none
+  position fixed
+  top 0
+  bottom 0
+  left 0
+  right 0
+  opacity 0
+  width 100%
+  height 100%
+  z-index 1000
+
+.device
+  .Overlay
+    overflow-y auto
+    &:before
+      content ' '
+      display block
+      height 101%

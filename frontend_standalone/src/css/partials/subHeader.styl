@@ -1,0 +1,273 @@
+SubHeaderHeight = 32px
+.subHead
+  position relative
+  box-sizing border-box
+  border-bottom-width 1px
+  border-bottom-style solid
+  z-index 2
+  .sub-header-container
+    preventUserSelection()
+    .sub-header-icons-row
+      z-index 100
+    #layout-sub-header-icons
+      display inline-block
+      .sub-header-icon-container
+        display inline-block
+      .current-layout-label
+        font-size 1.8rem
+      .time-range-filter
+        .time-range-filter-label
+          display inline-block
+          max-width 100px
+        .time-range-filter-label, .time-range-filter-label:hover
+          text-shadow none
+      .time-range-panel
+      .layout-panel
+        .dropdown-menu
+          position static
+    .sub-header-title
+      font-size 1.8rem
+      margin-right auto
+      padding-left 5px
+    hr
+      height SubHeaderHeight
+      width 0
+      margin 0 (seem - 1)
+      border none
+      border-right-width 1px
+      border-right-style solid
+      vertical-align top
+      display inline-block
+    #sub-header-icons
+      min-height SubHeaderHeight
+      float right
+      position relative
+      z-index 2
+    .sub-header-icon
+      font-size 15px
+      line-height SubHeaderHeight
+      height SubHeaderHeight
+      box-sizing border-box
+      padding 0px seem
+      cursor pointer
+      vertical-align baseline
+      display inline-block
+    .sub-header-icon-text
+      display inline-block
+      font-size 13px
+      max-width 150px
+      text-overflow ellipsis
+      overflow hidden
+      white-space nowrap
+    #layouts, .time-range-filter
+      white-space nowrap
+      display inline-block
+      .sub-header-icon
+        padding-right 7px
+      &.openTriggerTop
+        text-shadow: none
+    #layouts
+      min-width 165px
+    .page-title
+      font-size 16px
+      vertical-align baseline
+      line-height 33px
+    #sub-header-extended
+      #page-title-wrap
+        padding 6px 0 5px
+        white-space nowrap
+        overflow hidden
+        line-height 20px
+        text-overflow ellipsis
+        .page-title
+          allowUserSelection()
+          line-height 20px
+    #indexSearchDisplay
+      height 22px
+      p
+       line-height 16px
+      .searchLabel
+        float left
+        // counteract different letter arrangement of bold font vs regular font
+        padding-top 1px
+      .searchValue
+        allowUserSelection()
+        text-overflow ellipsis
+        white-space nowrap
+        overflow hidden
+        float left
+        max-width 85%
+        margin 0 0 0 5px
+      .clear-lucene
+        .sub-header-icon
+          line-height 1rem
+          padding 0 0 0 2px
+    .custom-time-range-container
+      .modal-body
+        overflow visible
+      input[type="text"]
+        display inline-block
+        width 60px
+      .time-range-error
+        .simple-tooltip-arrow
+          left 58px
+    #subHeaderNavBar
+        position relative
+        z-index 0
+    &.squeezed
+      #sub-header-icons
+        float none
+
+  .alarms-update
+    background #dcdcdc
+
+  .squeezed
+    #layouts .sub-header-icon-text
+      max-width 90px
+
+.time-range-panel
+  .dropdown-item
+    &.time-range-error
+      font-style italic
+
+.custom-time-range-panel
+  .time-range-error
+    font-style italic
+
+.Night
+  .custom-time-range-panel
+    .panel-header
+      background linear-gradient(nModalBodyBgGradStop1, nModalBodyBgGradStop2)
+      border-bottom-color nModalHeaderBorderBottomColor
+    .time-range-error
+      text-shadow none
+  .time-range-panel
+    .dropdown-item
+      &.time-range-option
+        &.time-range-error, &.selected
+          text-shadow none
+        &.time-range-error
+          color nTimeScaleColorError
+        &:hover
+          background-color nDropdownOptionHoverColor
+        &.selected
+          background-color nDropdownOptionSelectedBGColor
+          color nDropdownOptionSelectedColor
+
+  .layout-panel
+    .dropdown-item
+      &:hover
+        background-color nDropdownOptionHoverColor
+  .alarms-update
+    background #363739
+    text-shadow 0 1px 1px #000
+    color #ccc
+
+.Day
+  .custom-time-range-panel
+    .panel-header
+      background linear-gradient(dModalHeaderBgGradStop1, dModalHeaderBgGradStop2)
+      border-bottom-color dModalHeaderBorderBottomColor
+  .time-range-panel
+    .dropdown-item
+      &.time-range-option
+        &.time-range-error, &.selected
+          text-shadow none
+        &.time-range-error
+          color dTimeScaleColorError
+        &:hover
+          background-color dDropdownOptionHoverColor
+        &.selected
+          background-color dDropdownOptionSelectedBGColor
+          color dDropdownOptionSelectedColor
+
+  .layout-panel
+    .dropdown-item
+      &:hover
+        background-color dDropdownOptionHoverColor
+
+subHeaderColor(baseColor)
+  subHeaderBorderBottomColor = darken(baseColor, 16)
+  subHeaderBackgroundColor1 = darken(baseColor, 15)
+  if dark(baseColor)
+    subHeaderBackgroundColor2 = darken(baseColor, 20)
+    subHeadPageTitleWrapTextShadow = 0 1px 1px darken(baseColor, 25)
+    subHeadTextColor = #ccc
+  else
+    subHeaderBackgroundColor2 = subHeaderBackgroundColor1
+    subHeaderBackgroundColor1 = darken(baseColor, 10)
+    subHeadPageTitleWrapTextShadow = 0 1px 0px rgba(lighten(baseColor, 25),0.5)
+    subHeadTextColor = #4D4D4D
+  .subHead
+    border-bottom-color subHeaderBorderBottomColor
+    #page-title-wrap
+      text-shadow subHeadPageTitleWrapTextShadow
+    hr
+      border-right-color @border-bottom-color
+    .sub-header-container
+      iconColors(subHeaderBackgroundColor1, subHeaderBackgroundColor2)
+      .openTriggerTop, .openTriggerTop:hover, .openTriggerTop .sub-header-icon, .active .sub-header-icon
+        if dark(baseColor)
+          nGlow()
+        else
+          dGlow()
+        .time-range-filter-label, .time-range-filter-label:hover
+          if dark(baseColor)
+            color $nightSelected
+          else
+            color $daySelected
+      .active
+        &.time-range-error
+          .sub-header-icon, .time-range-filter-label, .time-range-filter-label:hover
+            font-style italic
+            color inherit // using inherit to avoid getting colored by `selected` styles
+        .time-range-filter-label, .time-range-filter-label:hover
+          if dark(baseColor)
+            color $nightSelected
+          else
+            color $daySelected
+      .sub-header-icon-text, .sub-header-icon-text:hover, .sub-header-icon-text.hover
+        color subHeadTextColor
+      .custom-time-range-panel
+        .icon-x
+          if dark(baseColor)
+            color dModalCloseIconColor
+          else
+            color nModalCloseIconColor
+          &:hover
+            if dark(baseColor)
+              color dModalCloseIconColor
+            else
+              color nModalCloseIconColor
+
+// TODO: refrence color variables once they are defined in lr-style:
+.Day
+  .subHead
+    background: #c7c7c7
+    .sub-header-container
+      .sub-header-icon, .sub-header-icon-text
+        text-shadow 0 1px 0px rgba(255,255,255,0.5)
+
+// TODO: refrence color variables once they are defined in lr-style:
+.Night
+  .subHead
+    background: #1f2121
+    .sub-header-container
+      .sub-header-icon, .sub-header-icon-text
+        text-shadow 0 1px 1px #000
+
+[disabled]
+  .sub-header-icon
+    cursor default
+
+.widget-filter .dashboard-filter-label
+  float left
+  
+.widget-filter .dashboard-filter-value
+  text-overflow ellipsis
+  white-space nowrap
+  overflow hidden
+  float left
+  max-width 85%
+  margin 0 0 0 5px
+

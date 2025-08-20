@@ -13,7 +13,8 @@
   "scripts": {
     "lint": "eslint --ext .js,.vue ./",
     "test": "echo \"No test specified\" && exit 0",
-    "dev": "export NODE_OPTIONS=--openssl-legacy-provider && quasar dev",
+    "dev": "quasar dev",
+    "build": "quasar build",
     "dev_win_prep": "$env:NODE_OPTIONS=--openssl-legacy-provider",
     "dev_win": "$env:NODE_OPTIONS='--openssl-legacy-provider' ; quasar dev",
     "dev_win_cmd": "set NODE_OPTIONS=--openssl-legacy-provider ; quasar dev"
@@ -35,6 +36,8 @@
     "vue2-filters": "^0.14.0"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-optional-chaining": "^7.21.0",
+    "@babel/plugin-transform-optional-chaining": "^7.27.1",
     "@quasar/app": "^2.2.10",
     "@quasar/quasar-app-extension-qmarkdown": "^1.4.3",
     "babel-eslint": "^10.0.1",
@@ -68,7 +71,7 @@
     "last 5 Opera versions"
   ],
   "engines": {
-    "node": ">= 10.18.1",
+    "node": ">= 10.18.1 < 25.0.0",
     "npm": ">= 6.13.4",
     "yarn": ">= 1.21.1"
   }

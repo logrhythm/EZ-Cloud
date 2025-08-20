@@ -1,0 +1,156 @@
+plain-menu()
+  list-style none
+  margin 0
+  padding 0
+
+.ui.tags
+    border 1px solid
+    .Night &
+      border-color #3a3c3d
+    .Day &
+      border-color #888888
+
+.case-evidence-content,
+.case-history-content
+  padding 5px
+
+.collaborators
+  .Night &
+    background linear-gradient(#222, #191919)
+  .Day &
+    background linear-gradient(#eee, #fefefe)
+
+.collaborators-list
+  plain-menu()
+  max-height 250px
+  overflow-y auto
+  padding 7px
+
+  .collaborator-list--item
+    height 30px
+
+  .owner
+    height 30px
+
+    .owner-text
+      // This prevents the text from moving a lot when transitioning from text to the radio button
+      width 65px
+
+  .inactive
+    font-style italic
+    .Night &
+      color darken(#ccc, 30)
+    .Day &
+      color lighten(#222, 30)
+
+.case-collaborators-wrapper
+  flex 0 1 auto
+  footer
+    .ui.dropdown
+      display block
+      margin 0
+    .ui.button
+      margin 0
+      padding 0 10px
+
+.create-case-user-events-identity-container {
+  display flex
+  flex-direction row
+  justify-content space-between
+}
+
+.create-case-user-events-event-count {
+  color #42a6e0
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 2px solid #FFFF;
+  gap: 6px
+}
+.Day .tab-link {
+  padding: 10px 24px;
+  text-decoration: none;
+  border: none;
+  background: none;
+  font-size: 14px;
+  position: relative;
+  transition: color 0.2s;
+  width: 12rem;
+  font-family: Ubuntu, Tahoma, sans-serif;
+  text-shadow: 0 1px 1px #fafafa;
+  color: #4c4c4c;
+  font-size: 14px;
+}
+.Night .tab-link {
+  padding: 10px 24px;
+  text-decoration: none;
+  border: none;
+  background: none;
+  font-size: 14px;
+  position: relative;
+  transition: color 0.2s;
+  width: 12rem;
+  font-family: Ubuntu, Tahoma, sans-serif;
+  font-size: 14px;
+  color: #ccc;
+  text-shadow: 0 1px 1px #000;
+}
+.tab-link.active {
+  color: #1da1f2; /* blue for active tab */
+}
+
+.Night .tab-link.active::after {
+  content: "";
+  display: block;
+  height: 2px;
+  background: #1da1f2;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+}
+.Day .tab-link.active::after {
+  content: "";
+  display: block;
+  height: 2px;
+  background: #1da1f2;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+}
+.Night .tab-link::after {
+  content: "";
+  display: block;
+  height: 2px;
+  background: #CCCCCC;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+}
+.Day .tab-link::after {
+  content: "";
+  display: block;
+  height: 2px;
+  background: #7a7777;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+}
+.Night .tab-link:not(.active):hover {
+  color: #ccc;
+  
+}
+.Day .tab-link:not(.active):hover {
+  color: #4c4c4c;
+  
+}
+.a-tab-link:hover {
+  text-decoration: none; /* Ensures no underline on hover */
+}
+.a-tab-link {
+  text-decoration: none; /* Ensures no underline on hover */
+}

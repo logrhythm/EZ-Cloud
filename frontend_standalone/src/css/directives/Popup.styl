@@ -1,0 +1,147 @@
+POPUP_MARGIN = 10.5px
+
+.Popup
+  position absolute
+  z-index 11111111
+
+  a[close-popup]
+    float right
+    position relative
+    top 5px
+    right -2px
+
+  .btn
+    margin 3px 0
+
+.Night .simple-popup
+  background nSimplePopupBg
+  box-shadow dropShadow, dropShadow, dropShadow 
+  color nSimpleTooltipColor
+  &.error
+    color #fff
+    background linear-gradient(rgb(nAlertifyLogErrorGradColorStop1), rgb( nAlertifyLogErrorGradColorStop2))
+
+.Day .simple-popup
+  background dSimpleTooltipBg
+  box-shadow dropShadow, dropShadow, dropShadow
+  color dSimpleTooltipColor
+  text-shadow dTextShadowWhite
+  &.error
+    color #fff
+    background linear-gradient(rgb(dAlertifyLogErrorGradColorStop1), rgb( dAlertifyLogErrorGradColorStop2))
+
+.simple-popup
+  border-radius rounded
+  padding (seem / 3) (seem / 1.5)
+  position relative
+
+.simple-popup-arrow
+  content ''
+  display block
+  position absolute
+  width  0
+  height 0
+
+.Night .simple-popup-up
+  .simple-popup-arrow 
+    border-top-color nSttuSttaBorderTopPopupColor
+
+  &.error
+    .simple-popup-arrow
+      border-top-color rgb(nAlertifyLogErrorGradColorStop2)
+
+.Day .simple-popup-up .simple-popup-arrow
+  border-top-color dSttuSttaBorderTopColor
+
+  &.error
+    .simple-popup-arrow
+      border-top-color rgb(dAlertifyLogErrorGradColorStop2)
+
+.simple-popup-up
+  margin-bottom POPUP_MARGIN
+  .simple-popup-arrow
+    border-left  @margin-bottom solid transparent
+    border-right @margin-bottom solid transparent 
+    border-top-width @margin-bottom
+    border-top-style solid
+    bottom @margin-bottom * -1 + 1px
+    left 50%
+    margin-left @bottom
+
+.Night .simple-popup-down
+  .simple-popup-arrow
+    border-bottom-color nSttdSttaBorderBottomColor
+
+  &.error
+    .simple-popup-arrow
+      border-bottom-color rgb(nAlertifyLogErrorGradColorStop1)
+
+.Day .simple-popup-down
+  .simple-popup-arrow
+    border-bottom-color dSttdSttaBorderBottomColor
+
+  &.error
+    .simple-popup-arrow
+      border-bottom-color rgb(dAlertifyLogErrorGradColorStop1)
+
+.simple-popup-down
+  margin-top POPUP_MARGIN
+  .simple-popup-arrow
+    border-left  @margin-top solid transparent
+    border-right @margin-top solid transparent 
+    border-bottom-width @margin-top
+    border-bottom-style solid
+    top @margin-top * -1 + 1px
+    left 50%
+    margin-left @top
+
+.Night .simple-popup-left
+  .simple-popup-arrow
+    border-left-color nSttdSttaBorderBottomColor
+
+  &.error
+    .simple-popup-left
+      border-left-color rgb(nAlertifyLogErrorGradColorStop1)
+
+.Day .simple-popup-left
+  .simple-popup-arrow
+    border-left-color dSttdSttaBorderBottomColor
+
+  &.error
+    .simple-popup-arrow
+      border-left-color rgb(dAlertifyLogErrorGradColorStop1)
+
+.simple-popup-left
+  margin-right POPUP_MARGIN
+  .simple-popup-arrow
+    border-top  @margin-right solid transparent
+    border-bottom @margin-right solid transparent 
+    border-left-width @margin-right
+    border-left-style solid
+    left 100%
+    top (POPUP_MARGIN / 2)
+
+.Night .simple-popup-right
+  .simple-popup-arrow
+    border-right-color nSttdSttaBorderBottomColor
+
+  &.error
+    .simple-popup-right
+      border-right-color rgb(nAlertifyLogErrorGradColorStop1)
+
+.Day .simple-popup-right
+  .simple-popup-arrow
+    border-right-color dSttdSttaBorderBottomColor
+
+  &.error
+    .simple-popup-arrow
+      border-right-color rgb(dAlertifyLogErrorGradColorStop1)
+
+.simple-popup-right
+  .simple-popup-arrow
+    border-top  POPUP_MARGIN solid transparent
+    border-bottom POPUP_MARGIN solid transparent 
+    border-right-width POPUP_MARGIN
+    border-right-style solid
+    right 100%
+    top (POPUP_MARGIN / 2)

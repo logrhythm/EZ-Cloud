@@ -1,5 +1,7 @@
 // app global css in SCSS form
 
+// Component specific styles imports removed - dark mode only
+
 /* ===== Theme Transition System ===== */
 :root {
   --theme-transition-duration: 0.25s; /* Slightly faster transitions for better UX */
@@ -12,29 +14,13 @@
 
 /* 
   Apply default state immediately before DOM content loads
-  This helps to prevent flash of wrong theme or unstyled content
+  This helps to prevent flash of unstyled content
 */
 html {
   transition: none !important;
-  /* Default dark theme colors - prevents white flash */
+  /* Dark theme colors */
   background-color: #1a1a1a;
   color: var(--text-color-dark, #ffffff);
-}
-
-/* System dark mode default - helps ensure proper initial rendering */
-@media (prefers-color-scheme: dark) {
-  html:not([data-theme="light"]) {
-    background-color: #1a1a1a;
-    color: var(--text-color-dark, #ffffff);
-  }
-}
-
-/* System light mode default - but only if explicitly set */
-@media (prefers-color-scheme: light) {
-  html[data-theme="light"] {
-    background-color: #f5f5f5;
-    color: var(--text-color-light, #121212);
-  }
 }
 
 /* Apply transitions only after initial render */
@@ -126,16 +112,11 @@ html.theme-transition-disabled * {
 }
 
 /* ===== Theme-Specific Styles ===== */
-// Apply dark mode styles immediately - helps prevent flash of light mode
+// Apply dark mode styles immediately
 html {
   &.Night {
     background-color: #1a1a1a;
     color: var(--text-color-dark);
-  }
-  
-  &.Day {
-    background-color: #f5f5f5;
-    color: var(--text-color-light);
   }
 }
 
@@ -143,10 +124,6 @@ html {
 .q-btn.bg-primary,
 .q-badge.bg-primary {
   color: var(--text-on-primary-dark) !important;
-  
-  .body--light & {
-    color: var(--text-on-primary-light) !important;
-  }
 }
 
 // Dark Mode Text and Control Styling
@@ -230,49 +207,7 @@ html {
   }
 }
 
-/* ===== Light Mode Overrides ===== */
-.body--light {
-  color: var(--text-color-light);
-  
-  // Form controls
-  .q-field__native, 
-  .q-field__input,
-  .q-field__prefix,
-  .q-field__suffix {
-    color: var(--text-color-light);
-  }
-  
-  // Inputs
-  input, textarea, select {
-    color: var(--text-color-light);
-    background: var(--input-bg-light);
-    border-color: var(--input-border-light);
-    
-    &:focus {
-      outline: var(--focus-outline-light);
-    }
-  }
-  
-  // Labels
-  label, .q-field__label {
-    color: var(--text-secondary-light);
-  }
-  
-  // Tabs
-  .q-tab {
-    color: var(--text-secondary-light);
-    
-    &--active {
-      color: var(--primary-light);
-    }
-  }
-  
-  // Focus styles
-  .q-focus-helper {
-    background: var(--primary-light) !important;
-    opacity: 0.2;
-  }
-}
+
 
 /* ===== Accessibility Improvements ===== */
 /* Better focus indicators - WCAG 2.1 AA compliant */
@@ -280,12 +215,23 @@ html {
   outline: auto 3px Highlight !important;
   outline: auto 3px -webkit-focus-ring-color !important;
   box-shadow: 0 0 0 3px rgba(2, 183, 254, 0.5) !important; /* Blue halo with transparency */
+  
+  .body--dark & {
+    outline-color: var(--primary-dark) !important;
+    box-shadow: 0 0 0 3px rgba(2, 183, 254, 0.8) !important; /* Brighter blue halo for dark mode */
+  }
+  
 }
 
 /* Keyboard focus indicators - especially important for keyboard navigation */
 *:focus {
   outline-style: solid;
   outline-width: 2px;
+  
+  .body--dark & {
+    outline-color: var(--primary-dark);
+  }
+  
 }
 
 /* Skip links for keyboard navigation - revealed on focus */
@@ -337,9 +283,6 @@ a {
 
 /* High contrast text for important UI elements */
 .q-btn, .q-tab, h1, h2, h3, h4, h5, h6, label, .q-field__label {
-  .body--light & {
-    color: var(--text-color-light);
-  }
   
   .body--dark & {
     color: var(--text-color-dark);
@@ -353,10 +296,6 @@ a {
     color: var(--text-secondary-dark);
   }
   
-  .body--light & {
-    opacity: 0.65;
-    color: var(--text-secondary-light);
-  }
 }
 
 /* ===== System Preference Media Queries ===== */
@@ -366,14 +305,37 @@ a {
       background-color: #1a1a1a;
       color: var(--text-color-dark);
     }
+    
+    /* Force immediate nested component theme application */
+    * {
+      color-scheme: dark;
+    }
   }
 }
 
-@media (prefers-color-scheme: light) {
-  html.system-preference {
-    &, body {
-      background-color: #f5f5f5;
-      color: var(--text-color-light);
+/* Light mode system preference removed */
+
+/* Mobile optimization for theme toggle and interactive elements */
+@media (max-width: 600px) {
+  /* Larger touch targets for mobile */
+  .theme-toggle-btn,
+  .q-btn,
+  button,
+  a.clickable,
+  [role="button"] {
+    min-height: 48px !important; /* WCAG touch target size */
+    min-width: 48px !important;
+    line-height: 48px;
+    padding: 0 16px;
+  }
+  
+  /* Specifically target theme toggle button */
+  .theme-toggle-btn {
+    padding: 12px !important;
+    margin: 0 !important;
+    
+    .q-icon {
+      font-size: 24px !important;
     }
   }
 }

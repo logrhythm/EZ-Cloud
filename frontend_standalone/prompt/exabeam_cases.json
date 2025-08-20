@@ -1,0 +1,237 @@
+﻿{
+
+  "name": "exabeam cases",
+  "filter": "@.@metadata.beat == 'exabeambeat' && @.device_type =~ /(?i)search//cases/",
+  "schemaRule": {
+    "childfanouts": [
+      {
+        "field": "$.response.rules[*]",
+        "parentpath": null
+
+      },
+      {
+        "field": "$.response.mitres[*]",
+        "parentpath": null
+
+      },
+      {
+        "field": "$.response.user[*]",
+        "parentpath": null
+
+      },
+      {
+        "field": "$.response.srcIp[*]",
+        "parentpath": null
+
+      },
+      {
+        "field": "$.response.destIp[*]",
+        "parentpath": null
+
+      },
+      {
+        "field": "$.response.srcHost[*]",
+        "parentpath": null
+
+      },
+      {
+        "field": "$.response.destHost[*]",
+        "parentpath": null
+
+      }
+    ],
+    "datafanout": null,
+    "convertoJson": null
+  },
+  "transforms": [
+    {
+
+      "inputRule": "$.@metadata.beat",
+      "LRSchemaField": "beatname",
+      "type": "String",
+      "default": null,
+      "alternativeFields": [],
+      "format": null
+    },
+    {
+      "inputRule": "cases",
+      "LRSchemaField": "device_type",
+      "type": "String",
+      "default": null,
+      "alternativeFields": [],
+      "format": null
+    },
+    {
+      "inputRule": "$.fullyqualifiedbeatname",
+      "LRSchemaField": "fullyqualifiedbeatname",
+      "type": "String",
+      "default": null,
+      "alternativeFields": [ "$.@metadata.beat" ],
+      "format": null
+    },
+    {
+      "inputRule": "$.response.priority",
+      "LRSchemaField": "severity",
+      "type": "String",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "EPOCHMICROTODATETIME($.response.caseCreationTimestamp)",
+      "LRSchemaField": "normal_msg_date",
+      "type": "Datetime",
+      "default": null,
+      "alternativeFields": [ "$.@timestamp" ],
+      "format": "yyyy-MM-ddTHH:mm:ss.fffK"
+    },
+    {
+      "inputRule": "$.response.caseId",
+      "LRSchemaField": "vmid",
+      "type": "String",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.response.alertId",
+      "LRSchemaField": "threatid",
+      "type": "String",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.response.riskScore",
+      "LRSchemaField": "amount",
+      "type": "number",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.response.name",
+      "LRSchemaField": "threatname",
+      "type": "String",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.ruleType",
+      "LRSchemaField": "objecttype",
+      "type": "String",
+      "default": null,
+      "FanoutParentElement": "$.response.rules[*]",
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.ruleReason",
+      "LRSchemaField": "reason",
+      "type": "String",
+      "default": null,
+      "FanoutParentElement": "$.response.rules[*]",
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.ruleName",
+      "LRSchemaField": "objectname",
+      "type": "String",
+      "default": null,
+      "FanoutParentElement": "$.response.rules[*]",
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.ruleId",
+      "LRSchemaField": "object",
+      "type": "String",
+      "default": null,
+      "FanoutParentElement": "$.response.rules[*]",
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "CONCATARRAY($.response.useCases[*],',')",
+      "LRSchemaField": "session",
+      "type": "String",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.technique",
+      "LRSchemaField": "parentprocessname",
+      "type": "String",
+      "default": null,
+      "FanoutParentElement": "$.response.mitres[*]",
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.techniqueKey",
+      "LRSchemaField": "parentprocessid",
+      "type": "String",
+      "default": null,
+      "FanoutParentElement": "$.response.mitres[*]",
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.response.vendor[0]",
+      "LRSchemaField": "vendorinfo",
+      "type": "String",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$",
+      "LRSchemaField": "account",
+      "type": "string",
+      "default": null,
+      "FanoutParentElement": "$.response.user[*]",
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$",
+      "LRSchemaField": "sip",
+      "type": "string",
+      "default": null,
+      "FanoutParentElement": "$.response.srcIp[*]",
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$",
+      "LRSchemaField": "dip",
+      "type": "string",
+      "default": null,
+      "FanoutParentElement": "$.response.destIp[*]",
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$",
+      "LRSchemaField": "sname",
+      "type": "string",
+      "default": null,
+      "FanoutParentElement": "$.response.srcHost[*]",
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$",
+      "LRSchemaField": "dname",
+      "type": "string",
+      "default": null,
+      "FanoutParentElement": "$.response.destHost[*]",
+      "alternativeFields": null,
+      "format": null
+    }
+
+  ]
+}

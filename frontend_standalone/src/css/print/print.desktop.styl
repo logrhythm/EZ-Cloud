@@ -1,0 +1,13 @@
+@media print
+	#Footer, .alertify-logs
+		display none !important
+	html, body, #NavBar, .widget
+		background white !important
+	#NavBar
+		box-shadow none
+		border-top 1px solid hsl(0,0%,90%)
+		border-bottom @border-top
+	#navRight
+		display none
+	a[href]:after
+		content none !important

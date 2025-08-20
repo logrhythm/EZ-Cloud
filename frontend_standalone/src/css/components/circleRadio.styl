@@ -1,0 +1,44 @@
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 transparent }
+  50%  { box-shadow: 0 0 5px 12px rgba(0, 125, 195, 0.4) }
+  100% { box-shadow: 0 0 0 12px transparent }
+}
+
+.circle-radio
+  position: relative
+  width: 1.5rem
+  height: 1.5rem
+  cursor: pointer
+
+  input[type="radio"]
+    opacity: 0.01
+    position: absolute
+    cursor: pointer
+
+    &:checked + .circle-outer
+      border-color: #007dc3
+
+      & .circle-inner
+        background: #007dc3
+        animation: pulse 0.5s
+
+  .circle-outer
+    position: absolute
+    background: transparent
+    pointer-events: none
+    border-radius: 50%
+    width: 100%
+    height: 100%
+    padding: 5px
+
+    .Day &
+      border: 2px solid #767676
+    .Night &
+      border: 2px solid #cccccc
+
+    .circle-inner
+      background: transparent
+      width: 100%
+      height 100%
+      border: 0px solid transparent
+      border-radius: 50%

@@ -1,0 +1,52 @@
+.casetrend-settings
+  .radio-label
+    display inline-block
+
+  .kdatePicker
+    position relative
+    left 38px
+
+.case-trend-tooltip
+  display flex
+  min-width 120px
+  .indicator
+    height 8px
+    width 8px
+    margin-right 2px
+    display inline-block
+    &.Incident
+      background #e9292a
+    &.Non-Incident
+      background #8A8D8F
+    &.Open
+      background #3d8dba
+    &.Closed
+      background #255a82
+
+    priorityBase = #3d8dba
+
+    &.P1
+      background priorityBase
+    &.P2
+      background darken(priorityBase, 20%)
+    &.P3
+      background darken(priorityBase, 30%)
+    &.P4
+      background darken(priorityBase, 40%)
+    &.P5
+      background darken(priorityBase, 50%)
+
+  .stack:first-child
+    font-size 13px
+    font-weight bold
+    margin-bottom 2px
+
+.Night
+  .case-trend-tooltip
+    .indicator
+      border 1px solid gray-bright-36
+
+.Day
+  .case-trend-tooltip
+    .indicator
+      border 1px solid rgba(grey-night-rider-20, 0.4)

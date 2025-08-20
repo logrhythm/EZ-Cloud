@@ -43,9 +43,9 @@
     </div>
   </q-drawer> -->
 
-    <q-page-container>
-      <router-view />
-    </q-page-container>
+<q-page-container style="background: var(--q-color-dark); color: var(--q-color-text, #fff);">
+  <router-view />
+</q-page-container>
 
     <!-- Error messages display. Responds to "addAndShowErrorToErrorPanel" events -->
 

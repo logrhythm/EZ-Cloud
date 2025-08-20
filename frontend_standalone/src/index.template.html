@@ -25,7 +25,14 @@
           
           // Check if we have stored preferences (prioritize unified theme storage)
           if (storedTheme) {
-            isDark = storedTheme === 'dark';
+            if (storedTheme === 'dark') {
+              isDark = true;
+            } else if (storedTheme === 'light') {
+              isDark = false;
+            } else if (storedTheme === 'system') {
+              // Use system preference
+              isDark = prefersDark;
+            }
           } else if (legacyDarkMode === 'true' || legacyWizardTheme === 'dark') {
             isDark = true;
           } else if (legacyDarkMode === 'false' || legacyWizardTheme === 'light') {
@@ -34,7 +41,20 @@
           
           // Apply appropriate theme class and background color
           document.documentElement.classList.add(isDark ? 'Night' : 'Day');
+          
+          // Add body--dark class for Quasar compatibility
+          if (isDark) {
+            document.documentElement.classList.add('body--dark');
+          }
+          
+          // Set data-theme attribute for more flexible CSS targeting
+          document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+          
+          // Set background and text colors immediately to prevent flash
           document.documentElement.style.backgroundColor = isDark ? '#1a1a1a' : '#f5f5f5';
+          document.documentElement.style.color = isDark ? '#ffffff' : '#202020';
+          
+          // Disable transitions initially
           document.documentElement.classList.add('theme-transition-disabled'); // Prevent transitions on load
           
           // Expose theme info for potential use by app

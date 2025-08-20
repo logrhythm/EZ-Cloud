@@ -1,0 +1,49 @@
+.dashboard-dropdown
+  width 250px
+  .layouts-icon
+    .Day &
+      text-shadow dTextShadowWhite
+    .Night &
+      text-shadow nTextShadow
+    font-size 15px
+    padding-right 7px
+
+.advanced-search-dropdown
+  width 190px
+
+.Day, .Night
+  .btn.btn-secondary.dashboard-dropdown-btn
+    &, &:active, &:hover, &:focus
+      box-shadow none
+      &:enabled:not(.disabled)
+        background transparent
+    border none
+    &:after
+      color transparent
+
+.dropdown-menu
+  .new-dashboard-label
+    padding 7px 11px
+    cursor pointer
+    [class^="icon-"]:before, [class*=" icon-"]:before
+      vertical-align middle
+  .layouts-list
+    [class^="icon-"]:before, [class*=" icon-"]:before
+      vertical-align middle
+    .access-type-icon, .edit-icon
+      min-width 21px
+      text-align center
+    &.active
+      .icon-user, .icon-team
+        color #42a6e0
+    .layout-name
+      min-width 10rem
+      width 100%
+      max-width 30rem
+      padding-left 1rem
+      padding-right 1rem
+
+    // TODO: This style should be removed once we upgrade to 5.0 version of lr-charts
+    &.disabled
+      .Night &
+        color inherit

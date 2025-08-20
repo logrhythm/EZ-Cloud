@@ -1,0 +1,226 @@
+TopHeaderHeight = 36px
+HeaderSubHeaderSpace = TopHeaderHeight + SubHeaderHeight + 100px //100px is margin to avoid hiding widght-selector at bottom
+
+.layout-panel
+  max-height 325px
+  overflow auto
+  &.save-dropdown
+    width 100px
+    .dropdown
+      min-width 100px
+
+  &.layout-list
+    .dropdown
+      width 270px
+    .dropdown-item
+      padding 0
+    layout-label
+      [class*='icon-']
+        .Night &
+          color #ccc
+        .Day &
+          color #4c4c4c
+      .icon-edit
+        text-shadow none
+        &:hover
+          .Night &, .Day & // Specifying themes to override existing styles from Global.styl
+            color #42a6e0
+            text-shadow nBlueGlowTextShadow
+      .row.active
+        background inherit
+        .icon-user, .icon-team
+          color #42a6e0
+    .create-new-dashboard
+      padding 0
+      border-bottom 1px solid
+      .Night &
+        background-color #252525
+        border-bottom-color #333333
+      .Day &
+        background-color #e6e6e6
+        border-bottom-color #d3d3d3
+      .new-dashboard-label
+        margin 0
+        padding 7px 11px
+        border none
+        box-shadow none
+        .icon-add
+          text-shadow none
+
+#WidgetSelectorPopunder
+  margin-top -1px
+  padding 3px
+  .dashboard-list
+    padding 6px
+    overflow auto
+    max-height "calc(100vh - %s)" % HeaderSubHeaderSpace //Total view port height - header and sub header height
+    min-width 180px
+
+[widget-adder]
+  cursor: move
+  font-size: 12px
+  margin-bottom: 6px
+  position: relative
+  overflow hidden
+
+  svg *
+    pointer-events: none
+
+  .widgetBody
+    height: 140px
+    padding: 35px 10px 15px 10px
+    width: 170px
+
+  .widgetHeader
+    z-index 999
+
+  .sneezeguard
+    position absolute
+    top 0
+    left 0
+    width 100%
+    height 100%
+    z-index 1000
+
+[widget-adder="DataProcessingTrend"] .widgetBody
+  padding: 30px 13px 10px 7px
+
+[widget-adder="TopX"] .widgetBody
+  padding: 36px 10px 10px 10px
+
+//Uncomment these lines for alternate stylesheets
+//  .save-pulse
+//    animation bluePulse 2s infinite
+
+.save-pulse.openTriggerTop
+  animation none
+
+.widgetBody
+  .SimpleSelectUL
+    &.bottom-align
+      bottom 28px
+
+dashboardColors(baseColor)
+  if dark(baseColor)
+    popUnder = lighten(baseColor, 29)
+    popUnderBoxShadow = 0 1px 20px 11px hsla(0, 0%, 0%, 0.2)
+
+    dashboardGradient1 = lighten(baseColor, 18)
+    dashboardGradient2 = lighten(baseColor, 15)
+    dashboardListBoxShadow = 0 2px 4px rgba(0,0,0,0.5), inset 0 1.5px 0px rgba(lighten(baseColor, 75), 0.2)
+
+    layoutChecked = lighten(baseColor, 29)
+    editLayout = lighten(baseColor, 9)
+    editLayoutBoxShadow = inset 0 2px 5px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.1)
+    layoutName = lighten(baseColor, 74)
+    layoutNameIconEditTextShadow = 0 1px 1px hsl(0, 0%, 0%)
+    iconEdit = lighten(baseColor, 74)
+    iconEditDisabledHover = lighten(baseColor, 44)
+
+    deleteLayoutModal = lighten(baseColor, 74)
+
+    widgetAdderGradient1 = lighten(baseColor, 3)
+    widgetAdderGradient2 = baseColor
+    widgetAdderBoxShadow = inset 0 1px 1px hsl(0, 0%, 0%)
+  else
+    popUnder = darken(baseColor, 20)
+    popUnderBoxShadow = 0 1px 20px 11px hsla(0, 0%, 0%, 0.1)
+
+    dashboardGradient1 = darken(baseColor, 10)
+    dashboardGradient2 = darken(baseColor, 7)
+    dashboardListBoxShadow = 0 2px 7px rgba(0,0,0,0.5), inset 0 1.5px 0px darken(baseColor, 7)
+
+    layoutChecked = darken(baseColor, 20)
+    editLayout = darken(baseColor, 16)
+    editLayoutBoxShadow = inset 0 2px 7px rgba(0,0,0,0.2), 0 -1px 0 rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.58)
+    layoutName = darken(baseColor, 68)
+    layoutNameIconEditTextShadow = inherit
+    iconEdit = darken(baseColor, 68)
+    iconEditDisabledHover = darken(baseColor, 44)
+
+    deleteLayoutModal = darken(baseColor, 74)
+
+    widgetAdderGradient1 = darken(baseColor, 3)
+    widgetAdderGradient2 = baseColor
+    widgetAdderBoxShadow = 0 1px 1px hsla(0, 0%, 0%, 0.2)
+
+  #WidgetSelectorPopunder
+    background popUnder
+    box-shadow popUnderBoxShadow
+    .dashboard-list
+      background linear-gradient(dashboardGradient1, dashboardGradient2)
+      box-shadow dashboardListBoxShadow
+
+  .layout-panel
+    iconColors(layoutChecked)
+    .edit-layout
+      background editLayout
+      box-shadow editLayoutBoxShadow
+    .layout-name
+      color layoutName
+      text-shadow layoutNameIconEditTextShadow
+
+  [widget-adder]
+    background radial-gradient(ellipse at center, widgetAdderGradient1 0%, widgetAdderGradient2 100%)
+    box-shadow widgetAdderBoxShadow
+
+.max-risk-widget {
+ width: 100%;
+  height: 100%;
+  background: transparent; /* Remove black background */
+  box-shadow: none;        /* Remove any shadow if present */
+  border-radius: 0;        /* Remove border radius if not needed */
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+}
+.max-risk-widget .widget-header {
+  font-size: 1em;
+  color: #fff;
+  margin-bottom: 10px;
+}
+.max-risk-widget .widget-period {
+  color: #00f0ff;
+  font-size: 0.9em;
+  margin-left: 8px;
+}
+.max-risk-widget .widget-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  cursor: pointer;
+  color: #888;
+}
+.max-risk-widget .risk-score {
+  text-align: center;
+  font-size: 6em;
+  color: red;
+}
+
+.max-risk-widget .risk-label {
+  text-align: center;
+  font-size: 14px;
+  width: 100%;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;      /* Number of lines to show before ellipsis */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+  padding-left: 22px;
+  padding-right: 22px;
+  white-space: normal;
+  word-break: break-word;
+  max-height: 5.6em;          /* 4 lines × line-height (default ~1.4em) */
+  line-height: 1.4em;
+}
+
+.max-risk-widget .widget-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+

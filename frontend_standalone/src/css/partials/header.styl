@@ -1,0 +1,80 @@
+.navbar
+  .nav
+    flex 0 0 auto
+
+  .header-icon
+    padding 5px 4px
+    white-space nowrap
+    .icon-user, .icon-administration
+      font-size 21px
+    .icon-down
+      vertical-align text-top
+
+  .icon-question
+    font-size 21px
+
+  .alternate-header
+    height 100%
+    border-left-width 2px
+    border-left-style solid
+    transform skew(-30deg)
+
+    .alternate-header-text
+      titleFont()
+      font-weight 200
+      font-size 24px
+      transform skew(30deg)
+
+.logo {
+  &.night-only {
+    .Day & {
+      display: none;
+    }
+
+  }
+  &.day-only {
+    .Night & {
+      display: none;  
+    }
+  }
+}
+
+.announcements-icon {
+  &.night-only {
+    .Day & {
+      display: none;
+    }
+
+  }
+  &.day-only {
+    .Night & {
+      display: none;  
+    }
+  }
+}
+
+headerColor(baseColor)
+  headerBackgroundColor2 = darken(baseColor, 7)
+  borderColor = #007bc2
+
+  if dark(baseColor)
+    alternateHeaderBackgroundColor = linear-gradient(to right,#1e1f20 0,#1e1f20 25%,#252728 35%,rgba(37,39,40,0) 100%)
+    textShadow = nTextShadow
+    logoLogFill = #b3b3b3
+    logoRhythmFill = logoLogFill
+  else
+    alternateHeaderBackgroundColor = linear-gradient(to right, #cdcdcd 0%, #cdcdcd 25%, #d9d9d9 35%, rgba(217,217,217,0) 100%)
+    textShadow = dTextShadowWhite;
+    logoLogFill = #002D57
+    logoRhythmFill = #007BC2
+
+  .alternate-header
+    background alternateHeaderBackgroundColor
+    border-left-color borderColor
+    .alternate-header-text
+      color borderColor
+      text-shadow textShadow
+
+  .header-icon:not(.openTriggerTop)
+    iconColors(baseColor, headerBackgroundColor2)
+    text-shadow textShadow

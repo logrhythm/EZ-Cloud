@@ -1,0 +1,71 @@
+.context-settings-modal
+  width 500px
+  input.context-number
+    margin 0px 16px 0px 16px
+    width 75px
+    display inline-block
+    &.ng-invalid
+      border-color #cc0000
+      box-shadow 0 0 gutter #cc0000
+  .icon-info
+    vertical-align middle
+  .simple-tooltip-down
+    width 150px
+    .simple-tooltip-arrow
+      left 33%
+
+.contextualize
+  .contextualize-container
+    border 2px solid transparent
+    margin 2px 0px 2px 0px
+    padding 2px
+    position relative
+
+  input.context-string
+    width 200px
+    display inline-block
+
+  button.contextualize
+    padding 5px
+    margin 4px 0px 4px 0px
+    float right
+
+  textarea.contextualize-response
+    resize vertical
+    overflow-x scroll
+    height 200px
+    text-shadow none
+    margin 4px 0px 4px 0px
+    font-family monospace
+    display block
+    white-space pre
+    border none
+    &.text-readonly
+      opacity 1
+      &, &:active, &:focus
+        color #999
+.contextualize-card {
+  padding: .5em
+  background #ccc
+  margin: 1em 0;
+  .Night & {
+    background #333
+  }
+}
+.Night
+  .contextualize-container
+    background #333
+
+  textarea.contextualize-response
+    background #262626
+    color #ccc
+    &.text-readonly
+      &:active, &:focus
+        background #262626
+.Day
+  .contextualize-container
+    background #ccc
+
+  textarea.contextualize-response
+    background white
+    color #333

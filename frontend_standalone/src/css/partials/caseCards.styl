@@ -1,0 +1,170 @@
+.case-card
+  border-radius 3px
+  position relative
+  width 100%
+  -webkit-font-smoothing antialiased
+
+  &.case-card-large
+    max-height 240px
+    margin 0
+
+  .treeWalker
+    opacity 1
+
+.case-card-left
+  padding 7px
+  margin-left 4px
+  width 38%
+  box-sizing border-box
+
+.case-card-left, .case-card-right
+  position relative
+  max-height inherit
+
+.case-card-right
+  padding 7px
+  font-size 11px
+  overflow auto
+  width 62%
+  box-sizing border-box
+
+.case-card-priority-value
+  titleFont()
+  font-weight 200
+  font-size 44px
+  line-height 46px
+  text-align center
+
+  .case-card-large &
+    font-size 65px
+    line-height 67px
+
+.case-card-scroll-mask
+  bottom 0
+  left 39%
+  right 15px
+  height 10px
+  position absolute
+
+.case-card-details-header
+  display inline-block
+  max-width 100%
+  margin 0px
+  font-size 14px
+  line-height 20px
+  vertical-align top // HACK: used to help ensure tooltip positions to the top of text
+
+.case-card-date-details
+  margin 10px 0px
+
+  &.limit-height
+    margin-bottom 0px
+
+/**
+ * This mirrors the limit-height in
+ * ".case-card-details-header.limit-height"
+ * where it cuts off the text if it exceeds
+ * 45px.  The downside of this approach is
+ * that if both the case title and the tags
+ * overflow, then this will still cause the
+ * tags to be shown bleeding past the bottom
+ * of the card
+ */
+.case-card-details-tags.limit-height
+  max-height 27px
+  overflow hidden
+
+caseCardColor(baseColor)
+  caseCardBackgroundColor1 = lighten(baseColor, 7)
+  caseCardBackgroundColor2 = baseColor
+  colorPriorityLoop(#007DC3, baseColor)
+  caseStatusOpen = #0099FF
+  caseStatusIncident = #CC0000
+  caseStatusMitigated = #DD6B0F
+  caseStatusResolved = #164664
+  caseStatusCompleted = #666666
+  casePastDue = #c00
+  caseDueSoon = #e5a117
+
+
+  if dark(baseColor)
+    colorPriorityGlowLoop(#007DC3, baseColor)
+    cardTextColor = rgb(255,255,255)
+    caseInactiveOwner = darken(cardTextColor, 30)
+    cardLeftBackgroundColor = rgba(0, 0, 0, 0.3)
+    textShadow = nTextShadow
+    priorityTextColor = lighten(baseColor, 30)
+    caseStatusBoxShadow = 0 0 7px
+    caseStatusOpenBoxShadow = caseStatusBoxShadow caseStatusOpen
+    caseStatusCompletedBoxShadow = caseStatusBoxShadow caseStatusCompleted
+    caseStatusIncidentBoxShadow = caseStatusBoxShadow caseStatusIncident
+    caseStatusMitigatedBoxShadow = caseStatusBoxShadow caseStatusMitigated
+    caseStatusResolvedBoxShadow = caseStatusBoxShadow caseStatusResolved
+
+  else
+    cardTextColor = rgb(53, 52, 50)
+    caseInactiveOwner = lighten(cardTextColor, 30)
+    cardLeftBackgroundColor = rgba(255, 255, 255, 0.2)
+    textShadow = dTextShadowWhite
+    priorityTextColor = darken(baseColor, 30)
+    caseStatusOpenBoxShadow = none
+    caseStatusCompletedBoxShadow = none
+    caseStatusIncidentBoxShadow = none
+    caseStatusMitigatedBoxShadow = none
+    caseStatusResolvedBoxShadow = none
+    //Temporary Colors
+    caseCardBackgroundColor1 = #DCF0FC
+    caseCardBackgroundColor2 = #DCF0FC
+    cardLeftBackgroundColor = #76CDFF
+
+  .case-card
+    background linear-gradient(caseCardBackgroundColor1, caseCardBackgroundColor2)
+    color cardTextColor
+    text-shadow textShadow
+
+    &.status-1
+      .case-card-glow
+        background caseStatusOpen
+        box-shadow caseStatusOpenBoxShadow
+    &.status-2
+      .case-card-glow
+        background caseStatusCompleted
+        box-shadow caseStatusCompletedBoxShadow
+    &.status-3
+      .case-card-glow
+        background caseStatusIncident
+        box-shadow caseStatusIncidentBoxShadow
+    &.status-4
+      .case-card-glow
+        background caseStatusMitigated
+        box-shadow caseStatusMitigatedBoxShadow
+    &.status-5
+      .case-card-glow
+        background caseStatusResolved
+        box-shadow caseStatusResolvedBoxShadow
+
+    .case-card-glow
+      transition background 0.5s
+
+    .case-card-priority-value
+      color priorityTextColor
+
+    .case-card-left
+      box-shadow inset 1px 0 4px cardLeftBackgroundColor
+      background cardLeftBackgroundColor
+
+    .case-card-scroll-mask
+      background linear-gradient(top, transparent, 8px caseCardBackgroundColor2)
+
+    .case-inactive-owner
+      color caseInactiveOwner
+      font-style italic
+
+    .casePastDue
+      color casePastDue
+
+    .caseDueSoon
+      color caseDueSoon
+
+    .case-restricted
+      color caseInactiveOwner

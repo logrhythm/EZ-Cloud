@@ -1,0 +1,283 @@
+widgetHeight = 265px
+widgetHeaderHeight = 26px
+
+#WidgetsLayout
+  clear both
+  margin seem auto 0 auto
+  user-select none
+  width pageWidth
+  position relative
+
+.device .widget
+  transition box-shadow 300ms
+
+.ui-tile-dragging
+  z-index 9999
+
+.Night .widget
+  background nWidgetBgColor
+  box-shadow 0 0 0 nWidgetBoxShadow
+  &.ui-tile-dragging
+    background nWidgetDragHelperBgColor
+
+.Day .widget
+  background dWidgetBgColor
+  box-shadow 0 0 0 dWidgetBoxShadow
+  &.ui-tile-dragging
+    background dWidgetDragHelperBgColor
+
+.widget
+  widgetWidth1 = (pageWidth - (gutter * 2)) / 3
+  padding-top widgetHeaderHeight
+  transition background 0.3s
+  border-radius rounded
+  box-sizing border-box
+  // margin 0 (gutter / 2) 14px
+  position absolute
+  z-index 50
+  &.col1
+    width widgetWidth1
+  &.col2
+    width (widgetWidth1 * 2) + gutter
+  &.col3
+    width (widgetWidth1 * 3) + (gutter * 2)
+  &.ui-tile-dragging
+    opacity 0.8
+  &.settingsOpen
+    z-index 9999
+  &.ng-animate
+    transition none
+  &.selectable-selected
+    [ui-selectable-trigger]
+      color #007bc2
+  .btn-group
+    position absolute
+    z-index 1000
+    bottom 1px
+    left 1px
+  .throbber-wrapper
+    position absolute
+    width 60px
+    height @width
+    margin (-@height / 2) 0 0(-@width / 2)
+    top 50%
+    left 50%
+
+.Night .widgetHeader
+  border-bottom 1px solid nWidgetHeaderBorderBottomColor
+
+.Day .widgetHeader
+  border-bottom 1px solid #bfbfbf
+
+.Night .widgetTitle
+  color nWidgetTitleColor
+
+.Day .widgetTitle
+  color #4c4c4c
+
+.Night .miniIconsOpen
+  color nMiniIconsOpenColor
+
+.Day .miniIconsOpen
+  color dMiniIconsOpenColor
+
+widgetToolbarTop = 0px
+toolHeight = 15px
+toolWidth = 15px
+gearPadding = 20px
+filterIconWidth = 15px
+
+.widgetToolbar
+  position absolute
+  right 5px
+  top widgetToolbarTop
+  width toolWidth
+  pointer-events none
+
+  [class*="icon-"]
+    font-size toolHeight - 2px
+    width 100%
+    cursor pointer
+    pointer-events auto
+    padding 6px
+    box-sizing border-box
+
+.nixy, .moz, .device
+  .widgetToolbar
+    // For some reason the tool bar is 1px higher on nixy machines, mozilla & iPad.
+    top widgetToolbarTop + 1px
+
+.moz, .device
+  .widgetToolbar
+    right 7px
+
+.widgetResizeHandle
+  position absolute
+  right 0
+  bottom 0
+  height 20px
+  width 20px
+  cursor nwse-resize !important
+  border-radius 4px
+
+.Night .widgetResizeHandle path
+  stroke nWidgetResizeHandlePathStroke
+
+.Day .widgetResizeHandle path
+  stroke dWidgetResizeHandlePathStroke
+
+.widgetHeader
+  cursor move
+  height widgetHeaderHeight
+  position absolute
+  top 0
+  left 0
+  width 100%
+  .icon-filter
+    color blue-half-baked-60
+  .icon-info
+    font-size 10px
+
+.widgetBody
+  position relative
+  height 100%
+  & > [ng-include]
+    height 100%
+
+.widgetTitle
+  gearSpace = toolWidth + gearPadding + filterIconWidth
+  font-weight bold
+  display inline-block
+  vertical-align middle
+  line-height widgetHeaderHeight
+  padding 0 seem+70 0 seem
+  white-space nowrap
+  box-sizing border-box
+  width "calc(100% - %s)" % gearSpace
+
+.widgetTitleNoPadding
+  padding 0 0 0 seem
+
+.widgetTitleInput
+  cursor text
+  transition none !important //Without this transition set to none the change from input to span shows both for a short period of time because there is a transition on the box shadow
+
+.widgetTitleName
+  display inline-block
+  text-overflow ellipsis
+  overflow hidden
+  white-space nowrap
+  max-width 100%
+
+.widgetTitleDate
+  margin-left 5px
+.widgetTitleName
+  float left
+
+.settingsOpen
+  .widgetHeader
+    cursor default
+    background transparent
+    border-bottom none
+  .widgetToolbar
+    display none
+
+.Night .ui-tile-placeholder
+  border 3px dashed nPlaceholderBorderColor
+  background nPlaceholderBgColor
+
+.Day .ui-tile-placeholder
+  border 3px dashed dPlaceholderBorderColor
+  background dPlaceholderBgColor
+
+.ui-tile-placeholder
+  border-radius 8px
+  position absolute
+  box-sizing border-box
+
+[ng-include="widget.type"]
+  height 100%
+
+.Night .widget-settings
+  background linear-gradient(nWidgetSettingsBgGradStop1, nWidgetSettingsBgGradStop2)
+  box-shadow nDropShadow
+  .tab-stage
+    background linear-gradient(nWidgetSettingsTabStageBgGradStop1, nWidgetSettingsTabStageBgGradStop2)
+
+.Day .widget-settings
+  background dWidgetSettingsBgColor
+  box-shadow nDropShadow
+
+.widget-settings
+  position absolute
+  top -1 * (seem + widgetHeaderHeight)
+  left -1 * seem
+  width 100%
+  // padding-top should be 290px, but I'm not messing
+  // that hard right now.
+  padding 305px seem (seem * 2)
+  border-radius rounded
+  z-index -1
+
+.Night .widgetTitleInput
+  background nWidgetTitleInputBgColor
+  color nWidgetTitleInputColor
+
+.Day .widgetTitleInput
+  background dWidgetTitleInputBgColor
+  color dWidgetTitleInputColor
+
+.widgetTitleInput
+  border-radius rounded
+  width 85%
+  padding 3px seem
+
+.timeScale
+  &.time-range-error
+    cursor default
+    font-style italic
+
+.Night
+  .timeScale
+    color nTimeScaleColor
+    &.time-range-error
+      color nTimeScaleColorError
+
+.Day
+  .timeScale
+    color dWidgetTimeScaleColor2
+    text-shadow dTextShadowWhite
+    &.time-range-error
+      color dTimeScaleColorError
+
+// background black
+.timeScale
+  font-size 10px
+
+[widget-chart]
+  height 100%
+
+.widget-scroller
+  height 100%
+  width 100%
+  overflow-y auto
+  overflow-x hidden
+
+  .extra-margin
+    margin-right 2px
+
+.current-processing-rate-chart
+  padding 10px 20px
+
+.widget-error
+  color nTimeScaleRedTimeScaleColor
+  left 0
+  position absolute
+  right 0
+  text-align center
+  top 50%
+  transform translateY(-50%)
+
+.simple-tooltip
+  &.widget-filter
+    width 250px

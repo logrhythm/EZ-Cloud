@@ -1,0 +1,72 @@
+/* variables */
+defaultLineHeight   = 18px
+
+.properties-table
+  width 100%
+  text-align left
+
+  th
+    font-size 14px
+    font-weight 700
+
+  td, th
+    padding 3px 7px
+    vertical-align top
+
+  .name
+    font-weight bold
+    width 103px
+    line-height defaultLineHeight
+
+  .values
+    line-height defaultLineHeight
+
+  .items
+    margin 0
+    padding 0
+    word-break break-word
+
+    li
+      list-style none
+      margin-bottom 2px
+      border-bottom-width 1px
+      border-bottom-style solid
+
+      &:last-child
+        margin-bottom 0
+        border-bottom-width 0
+        border-bottom-style none
+
+.Night
+  .properties-table
+    th
+      border-bottom 1px solid #666
+    li
+      border-color #333
+    td
+      text-shadow nTextShadow
+    .odd li
+      border-color #282828
+    .odd
+      background-color #1B1B1B
+
+  .ui.tabset .properties-table
+    .odd
+      background-color #2B2B2B
+
+.Day
+  .properties-table
+    th
+      border-bottom 1px solid #c5c5c5
+    li
+      border-color #CCC
+    td
+      text-shadow dTextShadowWhite
+    .odd li
+      border-color #C9C9C9
+    .odd
+      background-color dAlarmsModalScrollableEvenBgColor
+
+  .ui.tabset .properties-table
+    .odd
+      background-color #C4C4C4

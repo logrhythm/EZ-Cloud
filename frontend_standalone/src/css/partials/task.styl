@@ -1,0 +1,193 @@
+taskWidth = 300px
+taskPad   = 9px
+tasksH    = 44px
+throbPad  = 3px
+taskTooltipBorderWidth = 2px
+taskTooltipWidth = 291px
+
+.taskWrap
+  vertical-align top
+
+.group-operator
+  font-weight bold
+
+.criteria-group, .status-heading
+  margin-bottom 20px
+
+.task-error
+  margin-bottom 10px
+
+.tasks-cleanup-panel
+  width 165px
+  position relative
+  right 150px
+  bottom 96px
+  .task-cleanup-option
+    padding 5px 6px
+    text-align left
+
+.Night
+  .tasks-cleanup-panel
+    color nFilteredSelectOptionColor
+    background-color nFilteredSelectOptionBg
+    .task-cleanup-option
+      border-bottom 1px solid grey-charcoal-56
+      &:hover:not([disabled])
+        background-color grey-charcoal-56
+
+  .group-operator
+    color #42a6e0
+
+.Day
+  .tasks-cleanup-panel
+    color dFilteredSelectOptionColor
+    background-color dFilteredSelectOptionBg /* #e6e6e6? */
+    .task-cleanup-option
+      border-bottom 1px solid gray-very-light-82
+      &:hover:not([disabled])
+        background-color gray-very-light-82
+
+  .group-operator
+    color #007bc2
+
+.Day, .Night
+  .tasks-cleanup-panel
+    .task-cleanup-option
+      &:last-child
+        border-bottom none
+
+.Night .task
+  background linear-gradient(nTaskBgGradStop1, nTaskBgGradStop2)
+  border-right 1px solid nTaskBorderRightColor
+  text-shadow nTextShadow
+  box-shadow 5px 2px 25px -5px nTaskBoxShadow
+.Day .task
+  background linear-gradient(#e6e6e6, #d4d4d4)
+  border-right 1px solid dTaskBorderRightColor
+  text-shadow dTextShadowTasks
+
+.task-wrapper, .task
+  height tasksH
+  width taskWidth
+
+.task
+  padding taskPad (taskPad - 1)
+  box-sizing border-box
+
+.task-title, .task-status
+  margin 0
+  .icon-info, .icon-x-circle
+    cursor pointer
+  .icon-x-circle
+    margin -5px
+    padding 5px
+    right 0
+    position absolute
+  .icon-info
+    right 10px
+    margin -5px -7px
+    padding 5px 7px
+
+.Night .task-title
+  color nTaskTitleColor
+.Day
+  .task-title
+    color dTaskTitleColor
+    .longResults
+      color dTaskTitleLongResultsColor
+      text-shadow dTextShadowWhite
+.task-title
+  font-size 12px
+  height @font-size
+  white-space nowrap
+  margin-bottom 6px
+  position relative
+
+  .extraLongResult.longResults
+    max-width taskWidth - 100
+
+  .longResults
+    max-width taskWidth - 60
+    display inline-block
+    .device &
+      max-width taskWidth - 80
+
+  i:after
+    content " "
+
+.task-transport
+  width 300px
+
+.Night
+  .task-status
+    text-shadow 0 1px 0 nDivTaskStatusTextShadow
+    &.linky
+      color nATaskStatusColor
+      text-decoration none
+      cursor pointer
+  .tasks-tools
+    .toolWrapper
+      .openTriggerTop
+        nGlow()
+        &:hover
+          color $nightSelected
+.Day
+  .task-status
+    text-shadow dDivTaskStatusTextShadow
+    &.linky
+      color dATaskStatusColor
+      text-decoration none
+      cursor pointer
+      text-shadow 0px 1px 0px rgba(255,255,255,0.5)
+  .tasks-tools
+    .toolWrapper
+      .openTriggerTop
+        dGlow()
+        &:hover
+          color $daySelected
+
+.task-status-alertify, .task-status
+  display block
+  height @font-size
+  line-height @font-size
+
+.task-status
+  text-transform uppercase
+  font-size 11px
+
+.taskThrobber
+  float left
+  margin-top throbPad
+  margin-right taskPad
+  height (tasksH - (taskPad * 2))
+
+  .throbber-wrapper
+    width 30px
+    height @width
+
+.Night
+  .searchOptionContainer
+    min-width taskTooltipWidth - taskTooltipBorderWidth
+    .taskText
+      color nSearchOptionContainerTaskNameColor
+      text-shadow nTextShadow
+.Day
+  .searchOptionContainer
+    min-width taskTooltipWidth - taskTooltipBorderWidth
+    .taskText, .searchOptionSettings i
+      color dSearchOptionContainerTaskNameColor
+      text-shadow dTextShadowWhite
+.searchOptionContainer
+
+  .searchOptionSettings
+    float right
+    i
+      cursor pointer
+      margin-left 5px
+
+  .taskText
+    font-size 12px
+    margin 0 0 5px 0
+    word-wrap break-word
+.d-inline
+  display: inline

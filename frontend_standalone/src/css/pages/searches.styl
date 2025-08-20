@@ -1,0 +1,176 @@
+
+.page-searches
+
+  .ui.tab .content
+    padding 0
+
+  #MainWrapInner
+    min-width: 0
+
+  .subHead .subHeadContainer
+    padding 15px 0
+
+  #tabsSearches
+    border-top 1px solid
+    position relative
+    z-index 2
+    border-collapse collapse
+
+  .tab-label
+    border-top 0
+    font-size 12px
+    padding 10px 20px
+    &:last-child, .active:last-child
+      border-right-style solid  //added this border as tabs in search page are not spreaded till end, need to remove with increasing no of tabs.
+
+  .throbber-wrapper-container
+    width 100%
+    position absolute
+    top 0
+    bottom 0
+    left 0
+    right 0
+    z-index 1
+
+  .throbber-wrapper
+    margin: 150px auto
+
+  .tab-inputlabel
+    padding: 10px 13px
+
+  .search-input-wrapper
+    position absolute
+    z-index 3
+    padding-top 5px
+    margin-left 650px
+
+    input[type="text"]
+      width 325px
+      float right
+  .full-page-table
+    th, td
+      font-size 14px
+    .col-description
+      max-width 350px
+
+.search-table
+  .column
+    vertical-align top
+
+  .col-actions
+    width 100px
+    text-align center
+    white-space nowrap
+    [class*="icon-"]
+      padding 6px 5px
+
+  .col-name
+    width 35%
+
+  .col-favorites-action
+    text-align center
+
+  .col-description
+    width 60%
+
+.recent-searches
+  .search-table
+    .col-name
+      max-width 300px
+    .col-description
+      max-width 235px
+
+.table-no-results
+  text-align center
+  padding 10px
+  border 1px solid
+
+// Full Page Table (to become "Midi Grid")
+.full-page-table
+  width 100%
+
+  tr
+    border-bottom 1px solid
+
+  thead tr
+    border-bottom 2px solid
+
+  th,
+  td
+    border 3px
+    border-right 1px solid
+    padding-top 7px
+    padding-right 4px
+    padding-bottom 5px
+    padding-left 6px
+    font-size 13px
+
+  td:last-child,
+  th:last-child
+    border-right none
+
+.Night
+
+  .full-page-table
+    iconColors(gray-nero-15)
+    background gray-nero-15
+
+    th, td
+      border-color gray-06
+      color grey-nobel-60
+
+    th
+      color gray-very-light-80
+
+    tr:nth-child(odd) td
+      background rgba(0,0,0,0.3)
+
+    tr
+      border-color black-06
+
+  #tabsSearches
+    background gray-baltic-sea-24
+    border-color gray-06
+
+  .table-no-results
+    border-color gray-06
+    color grey-nobel-60
+
+.Day
+
+  input[type="text"].input-light
+    background white-100
+    color black-06
+
+  .full-page-table
+    iconColors(white-gainsboro-90)
+    background white-gainsboro-90
+
+    th, td
+      border-color gray-pumice-77
+      color gray-dim-40
+
+    th
+      color gray-tuna-29
+
+    tr:nth-child(odd) td
+      background rgb(250,250,250)
+
+    tr
+      border-color white-gainsboro-84
+
+  #tabsSearches
+    background gray-very-light-72
+    border-color gray-dark-69
+
+  .table-no-results
+    border-color gray-pumice-77
+    color gray-dim-40
+
+.Night 
+  .secondLook-search [disabled]
+    pointer-events: none !important
+
+.Day
+  .secondLook-search [disabled]
+    pointer-events: none !important

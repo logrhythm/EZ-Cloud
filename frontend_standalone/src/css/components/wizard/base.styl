@@ -1,0 +1,260 @@
+// Base styles for the wizard components
+
+// Typography
+.title-large
+  font-size 24px
+  font-weight 500
+  margin-bottom 20px
+  
+.title-medium
+  font-size 18px
+  font-weight 500
+  margin-bottom 15px
+  
+.title-small
+  font-size 16px
+  font-weight 500
+  margin-bottom 10px
+
+// Night mode typography
+.Night
+  .title-large,
+  .title-medium,
+  .title-small
+    color #CCCCCC
+    text-shadow 0 1px 1px rgba(0, 0, 0, 0.8)
+  
+// Day mode typography
+.Day
+  .title-large,
+  .title-medium,
+  .title-small
+    color #4d4d4d
+    text-shadow 0 1px 1px rgba(255, 255, 255, 0.8)
+
+// Cards
+.card
+  border-radius 4px
+  margin-bottom 20px
+  overflow hidden
+  
+  .card-header
+    padding 15px
+    border-bottom 1px solid
+  
+  .card-content
+    padding 15px
+    
+  .card-footer
+    padding 15px
+    border-top 1px solid
+    
+// Night mode card
+.Night
+  .card
+    background #323232
+    border 1px solid #242424
+    
+    .card-header
+      background linear-gradient(#484a4b, #3a3c3d)
+      border-bottom-color #242424
+      
+    .card-footer
+      background linear-gradient(#3a3c3d, #484a4b)
+      border-top-color #242424
+      
+// Day mode card
+.Day
+  .card
+    background #ffffff
+    border 1px solid #d9d9d9
+    
+    .card-header
+      background linear-gradient(#e5e5e5, #d9d9d9)
+      border-bottom-color #d9d9d9
+      
+    .card-footer
+      background linear-gradient(#d9d9d9, #e5e5e5)
+      border-top-color #d9d9d9
+
+// Tables
+.table
+  width 100%
+  border-collapse collapse
+  margin-bottom 20px
+  
+  th, td
+    padding 10px
+    text-align left
+    
+  th
+    font-weight 500
+    
+  tr
+    border-bottom 1px solid
+    
+// Night mode table
+.Night
+  .table
+    th
+      background-color #3a3c3d
+      color #CCCCCC
+      
+    tr
+      border-bottom-color #242424
+      
+    tr:nth-child(even)
+      background-color #2c2c2d
+      
+    tr:hover
+      background-color #333333
+      
+// Day mode table
+.Day
+  .table
+    th
+      background-color #e5e5e5
+      color #4d4d4d
+      
+    tr
+      border-bottom-color #d9d9d9
+      
+    tr:nth-child(even)
+      background-color #f9f9f9
+      
+    tr:hover
+      background-color #f2f2f2
+      
+// Alerts
+.alert
+  padding 15px
+  border-radius 4px
+  margin-bottom 20px
+  border-left 5px solid
+  
+  &.alert-info
+    background-color rgba(49, 204, 236, 0.1)
+    border-left-color #31CCEC
+    
+  &.alert-success
+    background-color rgba(33, 186, 69, 0.1)
+    border-left-color #21BA45
+    
+  &.alert-warning
+    background-color rgba(242, 192, 55, 0.1)
+    border-left-color #F2C037
+    
+  &.alert-danger
+    background-color rgba(193, 0, 21, 0.1)
+    border-left-color #C10015
+    
+// Night mode alerts
+.Night
+  .alert
+    color #CCCCCC
+    
+// Day mode alerts
+.Day
+  .alert
+    color #4d4d4d
+
+// Badges
+.badge
+  display inline-block
+  padding 3px 8px
+  border-radius 12px
+  font-size 12px
+  font-weight 500
+  
+  &.badge-primary
+    background-color #1976D2
+    color #ffffff
+    
+  &.badge-success
+    background-color #21BA45
+    color #ffffff
+    
+  &.badge-warning
+    background-color #F2C037
+    color #ffffff
+    
+  &.badge-danger
+    background-color #C10015
+    color #ffffff
+    
+// Night mode badges
+.Night
+  .badge-primary
+    background-color #02b7fe
+    
+// Day mode badges
+.Day
+  .badge-primary
+    background-color #007bc2
+
+// Toggle switches
+.toggle-switch
+  position relative
+  display inline-block
+  width 50px
+  height 24px
+  
+  input
+    opacity 0
+    width 0
+    height 0
+    
+  .slider
+    position absolute
+    cursor pointer
+    top 0
+    left 0
+    right 0
+    bottom 0
+    background-color #ccc
+    transition .4s
+    border-radius 24px
+    
+    &:before
+      position absolute
+      content ""
+      height 16px
+      width 16px
+      left 4px
+      bottom 4px
+      background-color white
+      transition .4s
+      border-radius 50%
+      
+  input:checked + .slider
+    background-color #2196F3
+    
+  input:focus + .slider
+    box-shadow 0 0 1px #2196F3
+    
+  input:checked + .slider:before
+    transform translateX(26px)
+    
+// Night mode toggle
+.Night
+  .toggle-switch
+    .slider
+      background-color #444444
+      
+    input:checked + .slider
+      background-color #02b7fe
+      
+    input:focus + .slider
+      box-shadow 0 0 1px #02b7fe
+      
+// Day mode toggle
+.Day
+  .toggle-switch
+    .slider
+      background-color #d9d9d9
+      
+    input:checked + .slider
+      background-color #007bc2
+      
+    input:focus + .slider
+      box-shadow 0 0 1px #007bc2

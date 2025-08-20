@@ -1,0 +1,78 @@
+mttdBorderColor = #80D0FF
+mttrBorderColor = #007DC3
+
+caseMetricRowHeight = 34px
+defaultPadding = 8px
+
+.case-computed-metric
+  .title
+    padding 7px 0
+
+.case-metrics
+  .full-page-table
+    th, td
+      height caseMetricRowHeight
+      font-size 14px
+      &.computed-metric
+        min-width 228px
+        vertical-align top
+      &.date
+        max-width 190px
+        overflow visible
+        .btn-round
+          margin 0
+        input.form-control
+          padding 4px
+    .icon-info
+      vertical-align text-top
+
+.case-metric-container
+  overflow hidden
+  width 100%
+  padding-right 5px
+  .metric-content
+    border 1px solid
+    height ((caseMetricRowHeight * 2) - defaultPadding)
+    width 81%
+
+  .metric-line.vertical
+    width 2%
+  .metric-line.horizontal
+    height 2px
+    width 15%
+    margin-top caseMetricRowHeight
+
+  &.ttd, &.ttq
+    .metric-content
+      border-color mttdBorderColor
+
+    .metric-line
+      background-color mttdBorderColor
+      &.vertical
+        height caseMetricRowHeight * 2
+
+  &.ttq
+    margin-top auto
+
+  &.ttr, &.tti
+    margin-left 4%
+    margin-top -(caseMetricRowHeight - defaultPadding)
+
+    .metric-content
+      margin-top caseMetricRowHeight
+      border-color mttrBorderColor
+    .metric-line
+      background-color mttrBorderColor
+      &.vertical
+        margin-top 2px
+        height ((caseMetricRowHeight * 3) - defaultPadding)
+      &.horizontal
+        margin-top caseMetricRowHeight * 2
+
+  &.tti
+    .metric-content
+      margin-top caseMetricRowHeight - defaultPadding
+    .metric-line
+      &.vertical
+        height caseMetricRowHeight * 2
+        margin-top 10px

@@ -1,0 +1,223 @@
+grid-pivot
+  display block
+
+.pivot-content
+  .error
+    margin 10px 0
+
+  .start-time, .end-time
+    padding-top 5px
+    padding-bottom 5px
+
+    input
+      padding 5px
+
+  .start-time
+    padding-right 5px
+
+  .end-time
+    border-left 2px solid
+    padding-left 5px
+
+
+.pivot-field
+  .fake-selected
+    white-space nowrap
+    overflow-x auto
+    line-height 21px
+    font-size 13px
+    background rgba(68,168,224,0.35)
+    .Day &
+      color #707070
+    .Night &
+      color #d8d8d8
+  .grid-item-to-add
+    padding 0px 7px
+  .value-to-add
+    border-right-width 1px
+    border-right-style solid
+    .Day &
+      border-right-color #c5c5c5
+    .Night &
+      border-right-color #0d0d0d
+
+.Pivot
+  line-height 2.5em
+
+  .popup-trigger
+    display none
+    font-size 1em
+    line-height 1em
+    padding 5px
+
+.Night
+  .Pivot
+    .popup-trigger
+      color black
+      text-shadow 0 0 12px #007dc3
+
+.Day
+  .Pivot
+    .popup-trigger
+      color white
+      text-shadow 0 0 12px #007dc3
+
+.pivot-checkbox
+  margin 0px
+
+.not-applicable
+  text-decoration line-through
+
+// TIMELINE STYLES (TEMP- TODO: cleanup)
+accentColor = hsla(203, 91.7051%, 57.4510%, 1.0000)
+
+.field-inspector
+
+  .item-name
+    margin 5px 0 0 2px
+    padding-bottom 1px
+    overflow-y auto
+    word-wrap break-word
+    max-height 115px
+    width  350px
+    margin auto
+
+  .SimpleSelect
+    margin-top 5px
+
+.timeline-picker
+  width 175px
+  margin 10px auto 0
+
+.current-date-container
+  border 2px solid transparent
+  border-radius 2px
+  padding 2px
+  position relative
+
+  &::after
+    content ''
+    display block
+    border-left 5px solid transparent !important
+    border-right 5px solid transparent !important
+    border-top 5px solid transparent
+    position absolute
+    top 25px
+    right 47%
+
+  input[type="text"]
+    width 152px
+    font-size 11px
+    padding 5px
+    height 20px
+
+.timeline-container
+  position relative
+  left 3px
+  top -5px
+
+  span
+    margin 0
+    padding 0
+
+  .arrow-left
+    border-right 5px solid accentColor
+    border-top 5px solid transparent
+    border-bottom 5px solid transparent
+    width 0
+    height 0
+    display inline-block
+
+  .arrow-right
+    border-left 5px solid accentColor
+    border-top 5px solid transparent
+    border-bottom 5px solid transparent
+    width 0
+    height 0
+    display inline-block
+
+  .timeline
+    background accentColor
+    line-height 0px
+    height 2px
+    overflow visible
+    display inline-block
+    vertical-align middle
+    width 60%
+    top -1px
+    position relative
+
+  .dotted-line
+    border-top 2px dotted accentColor
+    width 13%
+    display inline-block
+    height 6px
+
+  .timeline-point
+    width  8px
+    height 8px
+    background accentColor
+    border-radius 8px
+    display inline-block
+    position relative
+    top -3px
+
+    &:first-child
+      float left
+
+    &:last-child
+      float right
+
+  .timeline-middle-point
+    width 9px
+    height 9px
+    border 2px solid transparent
+    border-radius 10px
+    display inline-block
+    position relative
+    top -5px
+    left 36%
+
+.current-date
+  color black
+
+.tac-search
+  p
+    margin 20px 0px 10px
+
+.Day
+  .end-time
+    border-color #888
+
+  .timeline-container .timeline-middle-point
+    background white
+    border-color #999
+
+  .current-date-container::after
+    border-color #9C9C9C
+
+  .current-date-container
+    background #9C9C9C
+    text-shadow none
+    color #333
+
+.Night
+  .field-inspector .item-name
+    color  #ccc
+
+  .end-time
+    border-color #888
+
+  .timeline-container .timeline-middle-point
+    background #575a5c
+    border-color #999
+
+  .current-date-container::after
+    border-color #888888
+
+  .current-date-container
+    background #888888
+
+.view-details-button-info-container
+  max-width 610px
+  margin-right 12px

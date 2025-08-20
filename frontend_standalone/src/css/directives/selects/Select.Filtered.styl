@@ -1,0 +1,68 @@
+.msie
+  #MegaGridGridAndDetails
+    .FilteredSelect
+      .menu
+        position relative
+
+.dropdown-item em
+    display inline-block
+    border-radius rounded
+    font-style normal
+    padding 0 framePadding
+    margin 0 framePadding
+.dropdown-item.intent em
+    background none
+    color inherit
+    font-weight bold
+ 
+
+.Night
+  .dropdown-item em
+      background nFilteredSelectOptionEmBg
+      box-shadow nIndent
+      color nFilteredSelectOptionEmColor
+  .dropdown-item.intent em
+        box-shadow nTextShadow
+        background mix(nFilteredSelectOptionIntentEmBgMix1, nFilteredSelectOptionIntentEmBgMix2, 50%)
+.Day
+  
+  .dropdown-item em
+      background dFilteredSelectOptionEmBg
+      box-shadow dFilteredSelectOptionEmBs
+      color dFilteredSelectOptionEmColor
+  .dropdown-item.intent em
+        box-shadow dFilteredSelectOptionIntentEmBs
+        background mix(dFilteredSelectOptionIntentEmBgMix1, dFilteredSelectOptionIntentEmBgMix2, 50%)
+
+.alarm-filters
+  .dropdown-item
+    .ui.badge
+      margin-top -1px
+
+.dropdown-menu
+  .dropdown-item
+    .text
+      padding-right 30px
+
+    .badge
+      margin-top 0px
+
+.filter-emphasis {
+  font-style: normal;
+  padding: 0 1px;
+  margin: 0 1px;
+  border-radius: 2px;
+}
+
+.Night .filter-emphasis {
+  background: #262626;
+  box-shadow: inset 0 1.5px 2.3px rgba(0, 0, 0, 0.2);
+  color: #44A8E0;
+}
+
+.Day .filter-emphasis {
+  background: #007CC3;
+  box-shadow: inset 0 1.5px 2.3px rgba(0, 0, 0, 0.2);
+  color: #ffffff;
+  text-shadow: none;
+}

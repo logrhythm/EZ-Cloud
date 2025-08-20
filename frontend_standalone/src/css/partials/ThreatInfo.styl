@@ -1,0 +1,35 @@
+commonLeftPadding = 7px
+throbberSize = 50px
+additionalThreatInfoPanelSize = 400px
+
+.threat-info
+  .threat-info-field
+    line-height 30px
+    padding-left commonLeftPadding
+    .Day &
+      background-color dThreatInfoBgColor
+    .Night &
+      background-color nThreatInfoBgColor
+  .threat-info-throbber
+    .throbber-wrapper
+      width throbberSize
+      height throbberSize
+      margin-left -(@width / 2)
+      margin-top -(@height / 2)
+
+  .threat-info-button-container
+    margin-top 10px
+    .threat-info-error
+      padding-left commonLeftPadding
+      flex-grow 1
+      .Day &
+        color dThreatInfoErrorColor
+      .Night &
+        color nThreatInfoErrorColor
+    .separated:not(:last-child)
+      margin-right 0
+    .separated:last-child
+      margin-left 10px
+
+  .btn-additional-threat-info
+    margin-top 2px

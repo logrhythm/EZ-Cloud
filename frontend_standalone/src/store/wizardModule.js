@@ -143,7 +143,6 @@ const getInitialState = () => ({
     showHelp: false,
     helpContext: '',
     sidebarCollapsed: false,
-    darkMode: true,
     autoSave: true,
     lastSaved: null
   },
@@ -368,12 +367,6 @@ const mutations = {
     state.ui.sidebarCollapsed = !state.ui.sidebarCollapsed
   },
 
-  // Updated to simply store the theme state without affecting DOM
-  // Theme service now handles all DOM manipulation
-  SET_DARK_MODE (state, darkMode) {
-    state.ui.darkMode = darkMode
-  },
-
   UPDATE_LAST_SAVED (state) {
     state.ui.lastSaved = new Date().toISOString()
   },
@@ -406,8 +399,6 @@ const mutations = {
 
   RESTORE_STATE (state, savedState) {
     Object.assign(state, savedState)
-    // Note: Theme state is now managed by the theme-service
-    // No need to directly manipulate DOM here
   }
 }
 

@@ -1,0 +1,21 @@
+// Follows convention of `text-decoration-{attribute}`
+// ex. text-decoration-underline, etc.
+
+// TODO: consider td-none, td-underline for short?
+
+.text-decoration-none
+  &, &:hover, &:focus, &:active
+    text-decoration none
+
+.link-reset 
+  color: inherit;
+  text-decoration: none;
+  &:hover, &:focus, &:active {
+    color: inherit;
+    text-decoration: none;
+  }
+
+.preserve-white-space {
+  white-space: pre-wrap
+  word-wrap break-word
+}

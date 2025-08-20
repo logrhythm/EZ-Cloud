@@ -1,0 +1,101 @@
+#SocketStatus
+  float right
+  padding 8px seem
+  font-size 13px
+  height 35px
+  line-height @font-size + 4px
+  border-radius rounded
+  vertical-align middle
+  text-transform capitalize
+
+.ClusterStatus
+  padding 8px seem
+  font-size 13px
+  line-height @font-size + 4px
+  border-radius rounded
+  vertical-align middle
+  text-transform capitalize
+  .statusHealth
+    margin-left 18px
+  .clusterIcon
+    font-size 12px
+    margin-left 3px
+
+makeStatusGlow(baseColor,glowColor)
+  background baseColor
+  box-shadow 0 1px 11px rgba(gray-very-light-80, 0.16), inset 0 2px 4px rgba(white,0.37), inset 0 0 3px rgba(white,0.3), 0 0 7px 2.5px rgba(glowColor,0.75)
+
+makeStatusGlowDay(baseColor,glowColor)
+  background baseColor
+  box-shadow 0px 0px 0px 1px rgba(gray-50,0.5), 0px 1px 0px 1px rgba(white-100,0.4), inset 0px 1px 5px rgba(white-100,.5),0px 0px 8px 3px rgba(glowColor,0.5)
+
+.Night #SocketStatus
+  color nSocketStatusColor
+  text-shadow nTextShadow
+  &.socketBlue
+      #statusLight
+          makeStatusGlow(nSocketStatusSocketBlueGlowColor1, nSocketStatusSocketBlueGlowColor2)
+  &.socketYellow
+      #statusLight
+          makeStatusGlow(nSocketStatusSocketYellowGlowColor, lighten(nSocketStatusSocketYellowGlowColor,20%))
+  &.socketRed
+      color nSocketStatusSocketRedColor
+      #statusLight
+          makeStatusGlow(nSocketStatusSocketRedGlowColor, lighten(nSocketStatusSocketRedGlowColor,20%))
+.Day #SocketStatus
+  color dSocketStatusColor
+  text-shadow dTextShadowWhite
+  &.socketBlue
+      #statusLight
+          makeStatusGlowDay(dSocketStatusSocketBlueGlowColor1, dSocketStatusSocketBlueGlowColor2)
+  &.socketYellow
+      #statusLight
+          makeStatusGlowDay(dSocketStatusSocketYellowGlowColor, lighten(dSocketStatusSocketYellowGlowColor,20%))
+  &.socketRed
+      color lighten(dSocketStatusSocketRedColor , 20%)
+      #statusLight
+          makeStatusGlowDay(dSocketStatusSocketRedGlowColor, lighten(dSocketStatusSocketRedGlowColor,20%))
+
+#statusLight
+  border-radius 20px
+  display inline-block
+  height 11px
+  width @height
+  margin-right 3px
+  box-sizing border-box
+  vertical-align middle
+  transform translateY(-1px)
+
+#SocketStatusCtrl
+  hr
+    float right
+  .socket-status-icon
+    font-size 18px
+    line-height 18px
+    height SubHeaderHeight
+    box-sizing border-box
+    padding ((SubHeaderHeight - 18px) / 2) seem
+    cursor pointer
+    vertical-align top
+    display inline-block
+    &:hover
+      text-decoration none
+    &.disabled
+      opacity 0.5
+
+.squeezed
+  #SocketStatusCtrl
+    hr
+      display none
+
+.squeezed, .narrow
+  #SocketStatus
+    float none
+    max-width 75px
+    overflow hidden
+    text-overflow ellipsis
+    white-space nowrap
+
+.narrow
+  #SocketStatus
+    max-width auto

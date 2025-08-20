@@ -1,0 +1,43 @@
+  .case-playbook--header-icon {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .case-playbook--header {
+    cursor: pointer;
+  }
+  .case-playbook--header-icon
+  .case-playbook--procedure-icon {
+    height: 17px;
+    width: 17px;
+  }
+
+  .case-playbook--progressbar {
+    border-radius: 5px;
+    height: 10px;
+    position: relative;
+    overflow: hidden;
+    height: 15px;
+
+    .Day & {
+      background: #dcdcdc
+      box-shadow: #b0b0b0 -1px 2px 3px
+    }
+
+    .Night & {
+      background: #363739;
+    }
+  }
+
+  .case-playbook--progressbar__complete {
+    background: #44aee0;
+    height: 100%;
+    transition: width 500ms;
+  }
+
+  .case-playbook--progressbar__skipped  {
+    background-image: repeating-linear-gradient(-45deg, #0000, #0000 4px, #44aee0 0, #44aee0 7px);
+    height: 100%;
+    transition: width 500ms, left 500ms;
+  }
+

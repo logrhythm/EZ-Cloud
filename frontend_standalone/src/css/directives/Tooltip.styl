@@ -1,0 +1,60 @@
+tooltip-arrow-color(color)
+  for direction in 'top' 'bottom' 'left' 'right'
+    &.tooltip-{direction} .tooltip-arrow
+      border-{direction}-color color
+
+.tooltip
+  opacity: 1;
+
+// TODO: add to component or lr-style
+// helps prevent tooltip arrow from overlapping content
+.tooltip
+  &.tooltip-top
+    margin-top -8px
+
+.tooltip-inline
+    position relative
+    z-index inherit
+
+.Night
+  .tooltip
+    &.tooltip-error
+      tooltip-arrow-color(nAlertifyLogErrorGradColorStop1)
+      .tooltip-inner
+        color #fff
+        text-shadow 0 1px 1px #000
+        background linear-gradient(rgb(nAlertifyLogErrorGradColorStop1), rgb( nAlertifyLogErrorGradColorStop2))
+    &.tooltip-success
+      tooltip-arrow-color(#52982e)
+      .tooltip-inner
+        color #fafafa
+        text-shadow 0 1px 1px #000
+        background linear-gradient(#52982e, #468328)
+
+.Day
+  .tooltip
+    &.tooltip-error
+      tooltip-arrow-color(dAlertifyLogErrorGradColorStop1)
+      .tooltip-inner
+        color #fff
+        text-shadow 0 1px 1px #000
+        background linear-gradient(rgb(dAlertifyLogErrorGradColorStop1), rgb( dAlertifyLogErrorGradColorStop2))
+    &.tooltip-success
+      tooltip-arrow-color(#52982e)
+      .tooltip-inner
+        color #ccc
+        text-shadow 0 1px 1px #000
+        background linear-gradient(#52982e, #468328)
+
+.time-range-info
+  cursor pointer
+.time-range-tooltip
+  .content
+    padding 10px
+    width 240px
+.metric-label-tooltip
+  .content
+    padding 10px
+    min-width 150px
+    max-width 300px
+    text-align center

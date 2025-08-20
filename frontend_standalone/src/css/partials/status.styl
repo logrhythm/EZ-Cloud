@@ -1,0 +1,29 @@
+.status
+  &::before
+    border-radius 20px
+    box-sizing border-box
+    content ""
+    display inline-block
+    height 11px
+    margin-right 5px
+    transform translateY(-2px)
+    vertical-align middle
+    width @height
+
+.status-ok::before
+  makeStatusGlow(nSocketStatusSocketBlueGlowColor1, nSocketStatusSocketBlueGlowColor2)
+
+  .Day &
+    makeStatusGlowDay(dSocketStatusSocketBlueGlowColor1, dSocketStatusSocketBlueGlowColor2)
+
+.status-warn::before
+  makeStatusGlow(nSocketStatusSocketYellowGlowColor, lighten(nSocketStatusSocketYellowGlowColor,20%))
+
+  .Day &
+    makeStatusGlowDay(dSocketStatusSocketYellowGlowColor, lighten(dSocketStatusSocketYellowGlowColor,20%))
+
+.status-error::before
+  makeStatusGlow(nSocketStatusSocketRedGlowColor, lighten(nSocketStatusSocketRedGlowColor,20%))
+
+  .Day &
+    makeStatusGlowDay(dSocketStatusSocketRedGlowColor, lighten(dSocketStatusSocketRedGlowColor,20%))

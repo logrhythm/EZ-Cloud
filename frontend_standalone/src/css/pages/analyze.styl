@@ -1,0 +1,962 @@
+CellPadding = 7px
+popUnderBoxShadow = 0 1px 20px 11px hsla(0, 0%, 0%, 0.1)
+
+@media screen
+  .page-analyze,
+  .page-user-details,
+  .page-host-details,
+  #Footer
+    preventUserSelection()
+
+  // All MegaGrid all the time
+  #MegaGrid
+    text-shadow none
+    .table-no-results
+      .Night &
+        background: linear-gradient(nMegaTopHeadGradColorStop1, nMegaTopHeadGradColorStop2)
+      .Day &
+        background: linear-gradient(dMegaTopHeadGradColorStop1, dMegaTopHeadGradColorStop2)
+    .logs-table
+      .icon-star
+        position absolute
+        right 25px
+        top 3px
+        color #999999
+        &.favorite
+          color inherit
+
+    .clear
+      background linear-gradient(right, rgba(white-smoke-94,1), rgba(white-smoke-94, 0))
+
+    .ui.dropdown
+      box-shadow none
+
+    .logs-panel-actions
+      z-index 100
+      .dropdown-item
+        padding 0
+    .logs-panel-actions__dropdown-item-button
+      width 100%
+      text-align left
+      padding 3px 20px
+
+    .mega-tools-wrapper
+      margin-left .5rem
+      padding-top 3px
+
+    .dropdown-panel
+      box-shadow popUnderBoxShadow
+
+      .Night &
+        background-color nFilteredSelectOptionBg
+
+      .Day &
+        background-color dFilteredSelectOptionBg
+
+      button
+        font-size 12px
+        text-align left
+        padding 5px 20px
+        &:last-child
+          border-bottom none
+
+        .Night &
+          color nFilteredSelectOptionColor
+          border-bottom 1px solid grey-charcoal-56
+          &:hover
+            background-color grey-charcoal-56
+        .Day &
+          color dFilteredSelectOptionColor
+          border-bottom 1px solid gray-very-light-82
+          &:hover
+            background-color gray-very-light-82
+
+  #MegaGridTable
+    height 100%
+    width 100%
+    box-sizing border-box
+    white-space nowrap
+    background white-smoke-94
+
+    .columnHeader
+      width: 100%
+
+  .Night #allColumnsPinned
+    background gray-very-light-80
+  .Day #allColumnsPinned
+    background dAllColumnsPinnedBg
+  #allColumnsPinned
+    position relative
+
+  .Night #allColumnsPinnedMessage
+    color darken(nAllColumnsPinnedMessageColor, 14%)
+    text-shadow 0 1px 0 nAllColumnsPinnedMessageTs
+  .Day #allColumnsPinnedMessage
+    color darken(dAllColumnsPinnedMessageColor, 14%)
+    text-shadow 0 1px 0 dAllColumnsPinnedMessageTs
+  #allColumnsPinnedMessage
+    text-align center
+    font-size 35px
+    line-height @font-size + 10
+    height 90px
+    margin-top (@height / -2)
+    margin-bottom 0
+    width 100%
+    position absolute
+    titleFont()
+    font-weight 200
+    top 50%
+
+  makeIconBase()
+    color grey-nobel-60
+    text-shadow 1px 0 0 white-100
+    cursor pointer
+
+  headerHeight = 39px
+
+  .Night .MegaHead
+    background nMegaHeadBg
+    border-bottom 1px solid nMegaHeadBorderBottom
+    .icon-pin
+    &.pinned
+      .icon-pin
+        color nMegaGeadIconPinColor
+  .Day .MegaHead
+    background mix(dMegaHeadBgMix1, dMegaHeadBgMix2)
+    border-bottom 1px solid dMegaHeadBorderBottom
+    .icon-pin
+    &.pinned
+      .icon-pin
+        color dMegaHeadPinnedIconPinColor
+
+  SortIconWidth  = 8px
+  .MegaLabel
+    position absolute
+    bottom -11px
+    padding 0 (CellPadding + SortIconWidth + CellPadding) 0 CellPadding
+    width 100%
+    line-height 14px
+    box-sizing border-box
+    white-space pre-line
+
+  .Night .MegaSortIcon
+    &.icon-sort-asc, &.icon-sort-desc
+      color nMegaSortIconIsaIsdColor
+  .Day .MegaSortIcon
+    &.icon-sort-asc, &.icon-sort-desc
+      color dMegaSortIconIsaIsdColor
+  .MegaSortIcon
+    float right
+    makeIconBase()
+    margin-right (SortIconWidth + CellPadding + 2) * -1
+    margin-top -15px
+
+  .Night
+    i.MegaActive
+      color nMegaActiveColor
+
+    .MegaCell
+      background nMegaCellBg
+      &:nth-child(odd)
+        background nMegacellNthChildBg
+      &.selected
+        background linear-gradient(nMegaCellSelGradColorStop1, darken(nMegaCellSelGradColorStop2, 15%))
+        color nMegaCellSelColor
+
+  .Day
+    i.MegaActive
+      color dMegaActiveColor
+
+    .MegaCell
+      background dMegaCellBg
+      &:nth-child(odd)
+        background dMegacellNthChildBg
+      &.selected
+        background linear-gradient(dMegaCellSelGradColorStop1, darken(dMegaCellSelGradColorStop2, 15%))
+        color dMegaCellSelColor
+
+  .MegaCell
+    allowUserSelection()
+
+  .Night .MegaColumn
+    border-left 1px solid nMegaColumnBorderLeft
+  .Day .MegaColumn
+    border-left 1px solid dMegaColumnBorderLeft
+  .MegaColumn
+    position relative
+    display inline-block
+    vertical-align top
+    box-sizing border-box
+    line-height 10px
+    min-width 140px // SUPER SUBJECTIVE
+    .ui.button
+      padding 1px 5px
+      overflow hidden
+      border none
+      border-radius 0
+      text-overflow ellipsis
+
+    .ui.input
+      background dFilteredSelectIpBg
+      border-radius 0
+      text-shadow none
+
+      &:focus
+        color dFilteredSelectIpColorFocus
+      padding-left CellPadding
+
+    .ui.dropdown
+      .ui.input
+        border none
+
+      &.ng-invalid.closed
+        .ui.input
+          border 1px solid #cc6600 !important // ugh. Global rules are fun
+          box-shadow 0 0 5px #cc6600 !important
+  .moz
+    .MegaColumn
+      .ui.button
+        margin-bottom 0.5px
+  .msie
+    .MegaColumn
+      .ui.button
+        line-height 0
+        padding-top 13px
+  .MegaCell
+    padding 0 CellPadding
+    height 22px
+    font-size 13px
+    line-height 20px
+    overflow hidden
+    white-space nowrap
+    text-overflow ellipsis
+
+    .pivotable &.selected,
+    .pivotable &:hover
+      padding-right 20px
+      .icon-gear
+        display block
+
+    .icon-gear
+      display none
+      position absolute
+      right 5px
+      cursor pointer
+      line-height 20px
+
+  #MegaTopHead
+    height 27px
+    line-height 27px
+    font-size 12px
+    position relative
+    z-index 5500
+
+  .Night #PinnedRegion
+    background nPinnedRegionBg
+    border-right 1px solid nPinnedRegionBorderRight
+    box-shadow 0 0 20px nPinnedRegionBs
+  .Day #PinnedRegion
+    background dPinnedRegionBg
+    border-right 1px solid dPinnedRegionBorderRight
+    box-shadow 0 0 20px rgba(dPinnedRegionBs, 0.14)
+  #PinnedRegion
+    position absolute
+    left 0
+    overflow-x scroll
+    z-index 5000
+
+  .Night #MegaGridBody
+    border-color nMegaGridBodyBorderColor
+  .Day #MegaGridBody
+    border-color dMegaGridBodyBorderColor
+  #MegaGridBody
+    overflow-x scroll
+    overflow-y hidden
+    white-space nowrap
+    min-width 50%
+    width 100%
+    height 100%
+    box-sizing border-box
+    border-left-style solid
+    border-right-style @border-left-style
+    border-width 0
+    float right
+    transition box-shadow 0.3s
+
+  .with-case-open #MegaLabel .hiddable
+    display none
+
+  .Night
+    #MegaLabel, #MegaGridTable .table-no-results
+      color nMegaLabelColor
+  .Day
+    #MegaLabel, #MegaGridTable .table-no-results
+      color dMegaLabelColor
+      text-shadow dMegaLabelTextShadow
+  #MegaLabel
+    font-size 12px
+    margin 0
+    padding-left 9px
+    display inline-block
+
+  #MegaTabs, #MegaTools
+    float right
+    height 27px
+    @extend .vertical-align-row
+
+  SPINE_WIDTH   = 27px
+
+  #MegaTools
+    font-size 14px
+    height 100%
+    .MegaToolsWrapper
+      padding-top 1px
+      display inline-block
+      width SPINE_WIDTH
+      text-align center
+      cursor pointer
+      float right
+
+  .MegaTabLabel, .MegaTabLabelLabel
+    height 27px
+    display inline-block
+    padding 0 12px
+
+  .moz .MegaTabLabel
+    font-weight normal
+  .MegaTabLabel
+    cursor pointer
+    font-weight bold
+    &.active
+      cursor default
+
+  .MegaTabSelect
+    margin 3px 6px
+
+  .Night .MegaTabSelect .SimpleSelectValue
+    darkerStop1 = darken(nSsvGradColorStop1, 20%)
+    darkerStop2 = darken(nSsvGradColorStop2, 20%)
+    background linear-gradient(darkerStop1, darkerStop2)
+    border-top-color darkerStop1
+    border-bottom-color darkerStop2
+
+  .Night .megaDetailsDrag
+    background nMegaDetailsDragBg
+  .Day
+    .megaDetailsDrag
+      background dMegaDetailsDragBg
+  .megaDetailsDrag
+    bottom -5px
+    cursor col-resize
+    display none
+    left 0
+    opacity 0
+    position absolute
+    right 15px
+    top -4px
+    z-index 10
+
+  .megaDetailsExpand
+    display inline-block
+
+  .panelOpen .megaDetailsDrag
+    display block
+
+  .ellipsis
+    text-overflow ellipsis
+    white-space nowrap
+    overflow hidden
+
+  .megaDrag
+    width 6px
+    height 100%
+    opacity 0
+    position absolute
+    top 0
+    right -1px
+    z-index 200
+    cursor col-resize
+
+
+  // END MEGAGRID
+
+  #VolumeChartContainer
+    margin 0 -20px
+    padding 5px 20px 0
+    width 100%
+
+  [ng-app='HostDetails']
+
+    #VolumeChartContainer
+      margin: inherit
+
+  .Night #VolumeChart
+    for shade, i in nVolumeChartShade // unnecessary for just one series, but might have more complex chart later so just leave this here
+      path.AnalyzerTrendSeries{i}, circle.AnalyzerTrendSeries{i}
+        stroke shade
+        &.desaturate
+          stroke desaturate(shade, 90%)
+      text.AnalyzerTrendSeries{i}, circle.AnalyzerTrendSeries{i}
+        fill shade
+        &.desaturate
+          fill desaturate(shade, 90%)
+  .Day #VolumeChart
+    for shade, i in dVolumeChartShade // unnecessary for just one series, but might have more complex chart later so just leave this here
+      path.AnalyzerTrendSeries{i}, circle.AnalyzerTrendSeries{i}
+        stroke shade
+        &.desaturate
+          stroke desaturate(shade, 90%)
+      text.AnalyzerTrendSeries{i}, circle.AnalyzerTrendSeries{i}
+        fill shade
+        &.desaturate
+          fill desaturate(shade, 90%)
+  #VolumeChart
+    margin 0 auto
+    height 80px // To be discussed to be handled by JS
+    width 960px
+    position relative
+
+  .Night .analyzeBreadcrumbRemoveButton
+    background-color nAnalyzeBreadcrumbRemoveButtonBgColor
+  .Day .analyzeBreadcrumbRemoveButton
+    background-color dAnalyzeBreadcrumbRemoveButtonBgColor
+  .analyzeBreadcrumbRemoveButton
+    height           20px
+    display          inline-block !important
+    min-width        10px
+    padding          7px 5px
+    line-height      2px
+
+// TBD: move all hostDetails page css to a new styl file
+  #HostHeaderDetailsContainer
+    padding 5px 20px 0
+    width 100%
+    max-height 162px
+
+  #HostCloudAIDetailsContainer
+    padding 5px 20px 0
+    width 100%
+
+  #HostHeaderDetails fieldset
+    border 1px solid #3a3c3d
+    line-height 1.3em
+    border-radius: 5px
+
+  #HostHeaderDetails fieldset.activeHeader
+    border 1px solid #44a8e0
+    box-shadow 0px 0px 2px #44a8e0
+
+  #HostHeaderCloudAIDetails fieldset
+    border 1px solid #3a3c3d
+    line-height 1.6em
+    border-radius: 5px
+
+  #HostHeaderCloudAIDetails fieldset.activeHeader
+    border 1px solid #44a8e0
+    box-shadow 0px 0px 2px #44a8e0
+
+  #HostHeaderDetails h2
+    margin 15px 0
+
+  #HostHeaderCloudAIDetails
+    margin 0px auto
+    width 960px
+    position relative
+    padding-bottom 20px
+
+    .host-cloudai-details
+      div
+        float left
+        margin-left 2px
+
+      .cloudAiLabelsContainer
+        max-width 95%
+
+      .labelsContainer
+        width 5%
+
+    .icon-info
+      vertical-align baseline
+      font-size 17px
+
+    .more-info
+        margin-left 5px
+      [class*='icon-']
+        font-size 12px
+
+    .cloudai-label
+      border 1.5px solid #44a8e0
+      border-radius 25px
+      padding 0px 8px 0px 8px
+      margin 0px 2px 0px 2px
+
+    .remaining-cloidai-labels
+      border-radius 25px
+      background #383b3b
+      padding 0px 6px 0px 6px
+      margin 0px 2px 0px 2px
+
+    .host-cloudai-detail-row
+      margin auto
+      height 26px
+
+    .host-cloudai-detail-column
+      height inherit
+      margin-right 2%
+      width inherit
+      overflow hidden
+
+  #HostHeaderDetails
+    margin 0px auto
+    width 960px
+    position relative
+    padding-bottom 20px
+
+    .host-detail-row
+      margin auto
+      height 60px
+
+    .host-icon
+      display block
+      margin auto
+      height 46px
+
+    .host-detail-column
+      float left
+      height inherit
+      margin-right 2%
+
+      .hostIdentifiers
+        overflow hidden
+        text-overflow ellipsis
+        white-space nowrap
+
+      .hostHeaderLabel
+        padding-right 1%
+
+    .column-left
+      width 5%
+      margin-top 5px
+      height 46px
+
+    .column-right
+      width 44%
+
+    .column-middle
+      width 45%
+
+  legend.fieldset-legend
+    width auto
+    border-bottom none
+    color #44a8e0
+    font-size 14px
+    margin-left 5px
+    text-transform uppercase
+
+  .backToTop.hidden
+    opacity 0
+    visibility hidden
+
+  .backToTop
+    position absolute
+    right 20px
+    bottom 35px
+    z-index 1
+    opacity .98
+    transition opacity .2s ease-in-out;
+
+  .backToTop:hover
+    opacity 1
+
+  #breadcrumbs.disabled
+    display none
+
+  .Day
+    #indexSearchDisplay
+      .searchLabel
+        color dSearchQueryLabelColor
+
+  .Night #indexSearch
+    background nIndexSearchBg
+    .powerLuceneToggleButton .icon-search
+      background nIndexSearchPltbIsBg
+    .powerLuceneSearchButton .icon-chevron-right
+      color nIndexSearchPlsbIcrColor
+  .Day #indexSearch
+    background dIndexSearchBg
+    .powerLuceneToggleButton .icon-search
+      background dIndexSearchPltbIsBg
+    .powerLuceneSearchButton .icon-chevron-right
+      color dIndexSearchPlsbIcrColor
+  #indexSearch
+    display none
+    box-sizing border-box
+    width 100%
+    position absolute
+    z-index 1
+    margin 0 -20px
+    padding 20px 40px 40px
+    border-left 0px solid transparent
+
+    form
+      display: inline-block
+
+    .powerLuceneToggleButton
+      padding 0 20px 0 0
+
+      .icon-search
+        border-radius 0 0 2px 2px
+        cursor pointer
+        padding 15px
+        position relative
+        top 15px
+
+        &.searchOn
+          top -10px
+
+    form
+      width 100%
+
+    .powerLuceneSearchContainer
+      position relative
+
+    .powerLuceneSearchButton
+      position absolute
+      width 18px
+      top 4px
+      right 5px
+      padding 3px 6px 1px
+      border-radius 2px
+      cursor pointer
+      z-index: 5
+
+      .icon-chevron-right
+        font-size 10px
+
+    lucene-search + .powerLuceneSearchButton
+      right 18px
+
+    .powerLuceneDashboardFilterButton
+      width 118px
+      top 80px
+      left 0px
+
+    .CodeMirror
+      height: 5em
+  .msie #indexSearch, .moz #indexSearch
+    .powerLuceneSearchButton
+      padding 2px 6px 2px
+
+  .Night
+    .subHeadBorderNull
+      border-bottom 1px solid nSubHeadBorderNullBorderBottom
+
+    #HostHeaderDetails
+      .known-host-icon
+        background #B4B4B4
+        border-radius 2px
+
+        .icon
+          fill #000000
+
+      .unknown-host-icon
+        border 2px solid #B4B4B4
+        border-radius 2px
+
+        .icon
+          fill #B4B4B4
+
+    #HostHeaderDetailsContainer,#HostCloudAIDetailsContainer
+      legend.fieldset-legend
+        background-color #1a1a1a
+
+    #MegaGridTable
+      color nMegaGridColor
+
+    #MegaTopHead
+      background linear-gradient(nMegaTopHeadGradColorStop1, nMegaTopHeadGradColorStop2)
+      border-top 1px solid nMegaTopHeadBorder
+      box-shadow 0 3px 20px 2px rgba(black, 0.14)
+    #MegaTools
+      color nMegaToolsColor
+      text-shadow nTextShadow
+      background linear-gradient(nMegaToolsGradColorStop1, nMegaToolsGradColorStop2)
+      box-shadow nInsetShadow
+
+    .MegaTabLabel, .MegaTabLabelLabel
+      color nMtlMtllColor
+      text-shadow nTextShadow
+    .MegaTabLabel:first-of-type
+      border-left 1px solid nMegaTabLableBorder
+    .MegaTabLabel
+      border-right 1px solid nMegaTabLableBorder
+      &.active
+        color nMegaTabLableActiveColor
+    .powerLuceneSearchContainer
+      .cm-s-default
+        color: #ccc;
+        background-color: #1f2121;
+        border-color: #333;
+        text-shadow: 0 1px 1px #000;
+      .cm-fieldname-field, .cm-fieldname-data
+        color: #ccc;
+        text-shadow: 0 1px 1px #000;
+      .CodeMirror-selected 
+        background: #44a8e0 !important;
+
+  .Day
+    .subHeadBorderNull
+      border-bottom 1px solid dSubHeadBorderNullBorderBottom
+
+    #HostHeaderCloudAIDetails
+      .remaining-cloidai-labels
+        border-radius 25px
+        padding 0px 6px 0px 6px
+        margin 0px 2px 0px 2px
+        color #ccc
+        background-color #505050
+        text-shadow 0 0px 0 rgba(255,255,255,0.5)
+
+    #HostHeaderDetails
+      .known-host-icon
+        background: #444444
+        border-radius: 2px
+
+        .icon
+          fill #FFFFFF
+
+      .unknown-host-icon
+        border 2px solid #444444
+        border-radius 2px
+
+        .icon
+          fill #444444
+
+    #HostHeaderDetails fieldset
+      border 1px solid #888
+
+    #HostHeaderDetails fieldset.activeHeader
+        border 1px solid #44a8e0
+        box-shadow 0px 0px 2px #44a8e0
+
+    #HostHeaderCloudAIDetails fieldset
+      border 1px solid #888
+
+    #HostHeaderCloudAIDetails fieldset.activeHeader
+        border 1px solid #44a8e0
+        box-shadow 0px 0px 2px #44a8e0
+
+    #HostHeaderDetailsContainer, #HostCloudAIDetailsContainer
+      legend.fieldset-legend
+        background-color #f9f9f9
+
+    #HostHeaderDetails h2
+      margin 15px 0
+
+    #MegaGridTable
+      color dMegaGridColor
+
+    #MegaTopHead
+      background linear-gradient(dMegaTopHeadGradColorStop1, dMegaTopHeadGradColorStop2)
+      border-top 1px solid #bfbfbf
+      box-shadow 0 3px 20px 2px rgba(black, 0.07)
+
+    #MegaTools
+      color dMegaToolsColor
+      text-shadow dTextShadowWhite
+      box-shadow dInsetShadow
+
+    .MegaTabLabel, .MegaTabLabelLabel
+      color dMtlMtllColor
+      text-shadow dMegaLabelTextShadow
+    .MegaTabLabel:first-of-type
+      border-left 1px solid dMegaTabLableBorder
+    .MegaTabLabel
+      border-right 1px solid dMegaTabLableBorder
+      &.active
+        color dMegaTabActiveLabel
+
+  .empty-dashboard-help
+    position: relative
+    top 150px
+
+  .ui.table
+    .header-label
+      white-space pre-line
+      line-height 1.2
+      overflow: hidden
+      width: 100%
+      display: inline-block
+      padding-top: 5px
+
+.Night, .Day
+  .ui.table__header
+    .icon-pin
+      right 2px
+    .ui.sort
+      right 0px
+
+// start print styles
+@media print
+  @page
+    margin-top 1.5cm
+    margin-bottom 1.75cm
+
+  body
+    color #000
+    background #fff
+    height auto
+    overflow visible
+
+  #Header
+    border-bottom none
+
+  #SubHead
+    .sub-header-icon
+    hr
+      display none !important
+
+  #layouts
+    margin-top 2mm
+
+  #breadcrumbs
+    position absolute
+    margin-top 50px
+
+  #VolumeChartContainer
+    height 260px
+
+    svg
+      margin-top 95px
+
+  #HostHeaderDetailsContainer
+    padding 5px 20px 0
+    max-height 162px
+
+  #HostCloudAIDetailsContainer
+    padding 5px 20px 0
+
+  #HostHeaderCloudAIDetails
+    margin 0px auto
+    width 960px
+    position relative
+    padding-bottom: 20px
+
+    .host-cloudai-details
+      div
+        float left
+        margin-left 2px
+
+      .cloudAiLabelsContainer
+        max-width 95%
+
+      .labelsContainer
+        width 5%
+
+    .icon-info
+      vertical-align baseline
+      font-size 17px
+
+    .more-info
+        margin-left 5px
+      [class*='icon-']
+        font-size 12px
+
+    .cloudai-label
+      border 1.5px solid #44a8e0
+      border-radius 25px
+      padding 0px 8px 0px 8px
+      margin 0px 2px 0px 2px
+
+    .remaining-cloidai-labels
+      border-radius 25px
+      background #383b3b
+      padding 0px 6px 0px 6px
+      margin 0px 2px 0px 2px
+
+    .active-element
+        &:hover
+          color blue-celestial-88
+
+    .host-cloudai-detail-row
+      margin auto
+      height 26px
+
+    .host-cloudai-detail-column
+      height inherit
+      margin-right 2%
+      width inherit
+      overflow hidden
+
+
+  #HostHeaderCloudAIDetails fieldset
+    border 1px solid #3a3c3d
+    line-height 1.6em
+    border-radius: 5px
+
+  #HostHeaderCloudAIDetails fieldset.activeHeader
+    border 1px solid #44a8e0
+    box-shadow 0px 0px 2px #44a8e0
+
+  #HostHeaderDetails
+    margin 0px auto
+    position relative
+    padding-bottom: 20px
+
+    .host-detail-row
+      margin: auto
+      height: 60px
+
+    .host-detail-column
+      float: left
+      height: inherit
+      margin-right: 2%
+
+      .hostIdentifiers
+        overflow: hidden
+        text-overflow: ellipsis
+        white-space: nowrap
+
+      .hostHeaderLabel
+        padding-right: 1%
+
+    .column-left
+      width: 5%
+
+    .column-right
+      width: 44%
+
+    .column-middle
+      width: 43%
+
+  #HostHeaderDetails fieldset
+    border 1px solid #3a3c3d
+    line-height 1.3em
+    border-radius: 5px
+
+  #HostHeaderDetails fieldset.activeHeader
+    border 1px solid #44a8e0
+    box-shadow 0px 0px 2px #44a8e0
+
+  #HostHeaderDetails h2
+    margin: 15px 0
+
+  legend.fieldset-legend
+    width:auto
+    border-bottom: none
+
+  .nav
+  .alternate-header
+  .navbar-right
+  .navbar-gradient
+  #SocketStatusCtrl
+  #PaletteBottom
+  #PaletteRight
+  #PaletteLeft
+    display none !important
+
+.host-cloudai-header-info-container
+  max-width 310px
+  margin-right 12px
+
+// end print styles

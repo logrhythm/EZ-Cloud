@@ -41,6 +41,15 @@ const routes = [
     ]
   },
 
+  {
+    path: '/Wizard',
+    meta: { title: 'JSON Policy Builder Wizard' },
+    component: () => import('layouts/PlainLayout.vue'),
+    children: [
+      { path: '', component: () => import('components/wizard/WizardContainer.vue') }
+    ]
+  },
+
   // Always leave this as last one,
   // but you can also remove it
   {

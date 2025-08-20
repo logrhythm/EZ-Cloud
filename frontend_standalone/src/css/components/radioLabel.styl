@@ -1,0 +1,20 @@
+radio-label-wrapper
+  display block
+  .radio-label-input
+    display block !important
+    opacity 0
+    width 0
+    height 0
+
+  .radio-label-input:checked + .radio-label {
+    background #f9f9f9
+    color #007bc2
+    box-shadow inset 0 1px 2px rgba(black,0.5)
+  }
+
+  .radio-label-input:focus + .radio-label, 
+  .radio-label-input:focus:checked + .radio-label {
+    box-shadow 0 0 15px #007dc3
+    text-shadow 0 1px 1px #fafafa
+    color #4c4c4c
+  }

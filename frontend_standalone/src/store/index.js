@@ -2,12 +2,14 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 
 import mainStore from './mainStore'
+import wizardModule from './wizardModule'
 
 Vue.use(Vuex)
 
 const Store = new Vuex.Store({
   modules: {
-    mainStore
+    mainStore,
+    wizard: wizardModule
   },
 
   // enable strict mode (adds overhead!)

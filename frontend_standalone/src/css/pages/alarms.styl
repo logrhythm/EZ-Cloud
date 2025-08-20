@@ -1,0 +1,354 @@
+[ng-app='Alarms'] #Content
+  padding 0px !important //This is a temporary solution to fix the extra white space on the edges of the alarms page
+
+.Night
+  .applied
+    .ui.button, .btn
+      nGlow(nBlueGlowColor, nTextShadow)
+
+  .alarms-chart
+
+    for shade, i in nAlarmsScrollContainterAcTcShade1 nAlarmsScrollContainterAcTcShade2 nAlarmsScrollContainterAcTcShade3
+      path.AlarmsTrendSeries{i}, circle.AlarmsTrendSeries{i}
+        stroke shade
+        &.desaturate
+          stroke desaturate(shade, 90%)
+    text.AlarmsTrendSeries{i}, circle.AlarmsTrendSeries{i}
+      fill shade
+      &.desaturate
+        fill desaturate(shade, 90%)
+
+    .chartLabel
+      color nAlarmsScrollContainterAcClColor
+
+      &.label-new
+        background nAlarmsScrollContainterAcClLabelNewBg
+      &.label-open
+        background nAlarmsScrollContainterAcClLabelOpenBg
+      &.label-closed
+        background nAlarmsScrollContainterAcClLabelClosedBg
+
+  .alarm-content-container
+    background-color: nAlarmsSelectBarBgColor
+
+  .alarmsSelectBarContainer
+    background-color nAlarmsSelectBarBgColor
+    border-bottom 1px solid nAlarmsSelectBarBorderBottom
+
+    .selection-control
+      iconColors(nAlarmsSelectBarBgColor)
+
+  .alarms-scroll-container
+    .no-data-available
+      color nAlarmsScrollContainterNdaColor
+
+  .status-select-container
+    background linear-gradient(nAlarmsSelectBarSscBgGradStop1, nAlarmsSelectBarSscBgGradStop2)
+
+    .status-count
+      color nAsbContainerSscStatusCountColor
+    .icons
+      iconColors(nAlarmsSelectBarSscBgGradStop1, nAlarmsSelectBarSscBgGradStop2)
+
+
+.Day
+  .applied
+    .ui.button, .btn
+      dGlow(dBlueGlowColor, dTextShadowWhite)
+
+  .chartLabel
+    color dAlarmsScrollContainterAcClColor
+
+    &.label-new
+      background dAlarmsScrollContainterAcClLabelNewBg
+    &.label-open
+      background dAlarmsScrollContainterAcClLabelOpenBg
+    &.label-closed
+      background dAlarmsScrollContainterAcClLabelClosedBg
+
+  .alarms-chart
+
+    for shade, i in dAlarmsScrollContainterAcTcShade1 dAlarmsScrollContainterAcTcShade2 dAlarmsScrollContainterAcTcShade3
+      path.AlarmsTrendSeries{i}, circle.AlarmsTrendSeries{i}
+        stroke shade
+        &.desaturate
+          stroke desaturate(shade, 90%)
+    text.AlarmsTrendSeries{i}, circle.AlarmsTrendSeries{i}
+      fill shade
+      &.desaturate
+        fill desaturate(shade, 90%)
+
+  .alarm-content-container
+    background-color: dAlarmsSelectBarBgColor
+  .alarmSelectBarWrapper
+    box-shadow dAlarmsSelectBarShadow
+    border-bottom 1px solid dAlarmsSelectBarBorderBottom
+
+  .alarmsSelectBarContainer
+    background-color dAlarmsSelectBarBgColor
+    .selection-control
+      iconColors(dAlarmsSelectBarBgColor)
+
+  .alarms-scroll-container
+    .no-data-available
+      color dAlarmsScrollContainterNdaColor
+
+  .status-select-container
+    background linear-gradient(dAlarmsSelectBarBorderTop1, dAlarmsSelectBarBorderTop2)
+
+    .status-count
+      color dAsbContainerSscStatusCountColor
+
+    .icons
+      iconColors(dAlarmsSelectBarBorderTop1, dAlarmsSelectBarBorderTop2)
+
+.alarm-grid-container
+  height 100%
+  overflow auto
+
+.sticky-subhead-fixed
+  margin 0 -20px
+  .alarmsSelectBar
+    padding-right 12px
+    border-bottom none
+
+.alarm-toggle-buttons
+  float right
+  line-height 32px
+
+.reset-button-grid
+    right 0
+    position relative
+    margin-right 6rem
+    margin-top 4px
+    color black !important
+    text-shadow none !important
+    background #80d0ff !important
+
+.alarmsSelectBar
+  max-width 1000px
+  margin-left 3rem
+  z-index 2
+  align-items baseline
+
+  .reset-button
+    right 0
+    position relative
+    margin-right 6rem
+    margin-top 4px
+    color black !important
+    text-shadow none !important
+    background #80d0ff
+  
+  .label
+    margin 0px
+    padding 0px
+    display inline
+
+  .sort-controls
+    line-height 32px
+    .label
+      margin-right 5px
+
+  .container
+    position relative
+
+    .selection-control
+      position absolute
+      top 8px
+      left 25px
+
+      .icon-check, .icon-check-empty, .label, .icon-question
+        float left
+        cursor pointer
+
+      .icon-check, .icon-check-empty
+        min-width 20px
+        text-align left
+        font-size 16px
+
+      .label
+        margin-top 2px
+
+      .icon-question
+        margin-top 1px
+        margin-left 12px
+
+    .deselection-control
+      position absolute
+      top 6px
+      left 130px
+
+    .sort-controls
+      position absolute
+      top 0px
+      right 25px
+
+      .SimpleSelect
+        min-width 138px
+        margin 6px 0px
+
+        .SimpleSelectUL
+          min-height 230px
+
+    .throbber-container
+      position absolute
+      right 0
+      top 8px
+      height 18px
+      width 18px
+
+  .ui.dropdown.alarm-status
+    min-width 70px
+    max-width 70px
+
+
+.status-select-container
+  max-width 500px
+  min-width 350px
+  margin 0 auto
+  position relative
+  height 32px
+
+  .label
+    margin 0px
+    padding 0px
+    display inline
+
+  .icons
+    width 70px
+    // The cases get disabled, then the width should be smaller because the elements went from 3 -> 2 elements
+    &.cases-disabled
+      width 40px
+
+    [class*="icon-"]
+      font-size 14px
+
+    .status-select, .response-buttons
+      display inline-block
+
+    .response-buttons
+      float right
+
+    .status-select .btn
+      margin-left 2px
+
+  .batch-actions-warning
+    color #cc6600
+
+//Is completely the wrong way to do this, but allows me to work on the
+//scrolling code.
+
+//Need to figure out a way to manage the height of the view-port to react
+//to the taskbar footer opening and closing.
+.alarms-scroll-container
+  .no-data-available
+    margin 0 auto
+    text-align center
+    font-size 32px
+    line-height 200px
+  // TODO:
+  //as per Isaac: use open-sans light for no-data-available.
+  //Not used at the moment for the SF demo because we at first glance
+  //this hasn't been consistent across the site.  For instance, we
+  //the trendchart on the alarms page doesn't appear to use that yet.
+
+  //This may or may not be the consistent/preferred way of adding
+  //in the open-sans-light font.
+
+
+.abs-header
+  width 100%
+
+.fixed-header
+  width calc(100% - 12px)
+  position absolute
+  z-index 2
+
+
+.alarms-chart
+
+  .alarm-trend-chart
+    width 970px
+
+  .trend-line
+    opacity 1 // probably temporary, but for now it will stand out better
+
+  .chartLegend
+    width 45px
+    list-style none
+
+  .chartLabel
+    padding 2px
+    text-align center
+    font-size 11px
+    border-radius 2px
+    margin 2px 0
+
+    &.label-new
+      box-shadow 0px 0px 5px 1px rgba(128, 208, 255, .5)
+
+.properties
+  position relative
+
+.properties-throbber
+  position absolute
+  left 50%
+  margin-left -54px
+  top 80px
+
+.alarmThrobber
+  position relative
+  display inline-block
+  top 6px
+  left -5px
+  height 18px
+  width @height
+  .throbber
+    position absolute
+
+.invalid-alarms
+  font-size 15px
+  line-height 18px
+  padding 5px 0
+
+.alarm-filters
+  padding-bottom 4px
+  .reset
+    margin-left 15px
+
+.new-case-advanced-button
+  vertical-align middle
+  .icon-add-case
+    margin-right 2px
+
+.container .col-actions
+  overflow visible
+  .panel-add-to-case
+    left -60px
+    &:before
+      left 55px
+  .vertical-align-row .drilldown-action
+    text-align right
+
+alarm-grid ui-table-header [class*='icon-check']
+  vertical-align top
+  width 15px
+
+.alarms-trend-undo
+  position relative
+  left -40px
+  top 7px
+  width 0
+
+  button
+    padding 1px 3px
+    line-height .6em
+
+    .icon-revert
+      transform: scale(.8)
+
+.alarm-grid
+  .col-actions
+    overflow: visible
+

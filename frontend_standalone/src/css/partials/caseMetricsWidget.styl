@@ -1,0 +1,41 @@
+mttdDayColor = #004b7b
+mttdNightColor = #27678b
+
+mttrDayColor = #3399ff
+mttrNightColor = #3399ff
+
+desaturateColor = #ccc
+
+.case-metrics-widget__legend-text
+  &.desaturate
+    fill desaturateColor
+    .case-metrics-widget__legend-tspan
+      fill desaturateColor
+
+.case-metrics-widget__legend-tspan
+  font-weight normal
+  .Day &
+    fill #4d4d4d
+  .Night &
+    fill desaturateColor
+
+
+colorMetricsChart($metric, $themeBasedMetricColor)
+  $trendSeries = '.trend-series-' + $metric
+
+  path{$trendSeries}
+    stroke $themeBasedMetricColor
+    &.desaturate
+      stroke desaturateColor
+  text{$trendSeries}, circle{$trendSeries}
+    fill $themeBasedMetricColor
+    &.desaturate
+      fill desaturateColor
+
+.Day
+  colorMetricsChart('mttd', mttdDayColor)
+  colorMetricsChart('mttr', mttrDayColor)
+.Night
+  colorMetricsChart('mttd', mttdNightColor)
+  colorMetricsChart('mttr', mttrNightColor)
+

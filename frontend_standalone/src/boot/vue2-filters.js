@@ -7,7 +7,7 @@ Vue.use(Vue2Filters)
 
 // ***************************************************
 // To use one of the predefined methods (such as limitBy,
-// filterBy, find, or orderBy) in your component, you also 
+// filterBy, find, or orderBy) in your component, you also
 // need to add Vue2Filters.mixin to mixin list:
 
 // // import Vue2Filters from 'vue2-filters'
@@ -196,20 +196,20 @@ Vue.use(Vue2Filters)
 // {Boolean} [includeNumber] - default: false
 // Example:
 
-// {{ count }} {{ count | pluralize('item') }} 
+// {{ count }} {{ count | pluralize('item') }}
 
 // // 1 => '1 item'
 // // 2 => '2 items'
 // Use an array of words:
 
-// {{ count }} {{ count | pluralize(['fry', 'fries']) }} 
+// {{ count }} {{ count | pluralize(['fry', 'fries']) }}
 
 // // 1 => '1 fry'
 // // 2 => '2 fries'
 // // 3 => '3 fries'
 // Include number to output:
 
-// {{ count | pluralize('test', { includeNumber: true }) }} 
+// {{ count | pluralize('test', { includeNumber: true }) }}
 
 // // 1 => '1 test'
 // // 2 => '2 tests'
@@ -222,7 +222,7 @@ Vue.use(Vue2Filters)
 // {Boolean} [includeNumber] - default: false
 // Example:
 
-// {{ date | ordinal }} 
+// {{ date | ordinal }}
 
 // // 1 => 'st'
 // // 2 => 'nd'
@@ -231,7 +231,7 @@ Vue.use(Vue2Filters)
 // // 5 => 'th'
 // Include number to output:
 
-// {{ date | ordinal({ includeNumber: true }) }} 
+// {{ date | ordinal({ includeNumber: true }) }}
 
 // // 1 => '1st'
 // // 2 => '2nd'

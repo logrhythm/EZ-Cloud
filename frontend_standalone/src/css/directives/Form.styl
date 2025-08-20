@@ -1,0 +1,79 @@
+label
+  .Night &
+    color nLabelColor
+    text-shadow nLabelTs
+  .Day &
+    color dLabelColor
+    text-shadow dLabelTs
+
+makePlaceholder(tColor, tShadow)
+  // placeholder selectors are not combinable
+  input::-webkit-input-placeholder
+    color tColor
+    text-shadow tShadow
+  input::-moz-placeholder
+    color tColor
+    text-shadow tShadow
+  input::-ms-input-placeholder
+    color tColor
+    text-shadow tShadow
+  input::placeholder
+    color tColor
+    text-shadow tShadow
+
+input, select, textarea
+  .Night &
+    makePlaceholder(nMakePlaceHolderColor, nTextShadow)
+  .Day &
+    makePlaceholder(dInputMakePlaceHolderColor, none)
+
+/* TODO:
+* This needs to change so that we have two form classes transactional and instant
+* All form which needs autosave or needs to popup validations immediately will use instant
+* Other forms will use transactional and will popup validation on submit
+* For now moving dashboard inspector to transactional and using form:not(.transactional) so other forms remain unaffected
+*/
+button.ng-invalid.ng-touched,
+input.ng-invalid.ng-touched,
+select.ng-invalid.ng-touched,
+textarea.ng-invalid.ng-touched,
+.SimpleSelect.ng-invalid.ng-touched .SimpleSelectValue
+  .Night &
+    border 1px solid nTaMakePlaceHolderNgDirtyInvalidBorder
+    box-shadow 0 0 gutter nTaMakePlaceHolderNgDirtyInvalidBs
+  .Day &
+    border 1px solid dTaMakePlaceHolderNgDirtyInvalidBorder
+    box-shadow 0 0 gutter dTaMakePlaceHolderNgDirtyInvalidBs
+  form.transactional &
+    border initial
+    box-shadow initial
+input.ng-invalid.ng-touched
+  .Night &
+    box-shadow 0 0 gutter nTaMakePlaceHolderNgDirtyInvalidBs, 0 0 0 gutter nTextAreaMakePlaceHolderWafWbs inset
+  .Day &
+    box-shadow 0 0 gutter dTaMakePlaceHolderNgDirtyInvalidBs, 0 0 0 gutter dTextAreaMakePlaceHolderWafWbs inset
+  form.transactional &
+    border initial
+    box-shadow initial
+
+/*Using classes independent of ng so that it can work with react as well
+* This can be moved to common place after similar implementation across app
+*/
+.invalid
+  .Night &
+    border 1px solid nTaMakePlaceHolderNgDirtyInvalidBorder !important
+    box-shadow 0 0 gutter nTaMakePlaceHolderNgDirtyInvalidBs !important
+  .Day &
+    border 1px solid dTaMakePlaceHolderNgDirtyInvalidBorder !important
+    box-shadow 0 0 gutter dTaMakePlaceHolderNgDirtyInvalidBs !important
+  &input
+    .Night &
+      box-shadow 0 0 gutter nTaMakePlaceHolderNgDirtyInvalidBs, 0 0 0 gutter nTextAreaMakePlaceHolderWafWbs inset !important
+    .Day &
+      box-shadow 0 0 gutter dTaMakePlaceHolderNgDirtyInvalidBs, 0 0 0 gutter dTextAreaMakePlaceHolderWafWbs inset !important
+
+.clear-filter
+  position absolute
+  padding 5px
+  top 1px
+  right 1px

@@ -1,0 +1,57 @@
+.btn-disabled, .btn[disabled]
+  cursor default !important
+
+.btn .throbber-wrapper
+  position absolute
+  left calc(50% - 10px)
+  top 3px
+  width 20px
+  height @width
+
+.btn-fill
+  width 100%
+
+.btn-nomargin
+  margin 0
+
+.btn-small
+  font-size 11px
+  padding 3px 8px 4px 8px
+  height 20px
+  margin 0px
+  min-width 64px
+
+.btn-round
+  border-radius 100px
+  padding 5px
+  width 25px
+  height @width
+  min-width @width
+
+.btn.arrow-right
+  &:before
+    height 13.5px
+    top 3px
+    width: 13.5px
+    content ""
+    display block
+    position absolute
+    right -7px
+    transform rotate(45deg)
+    // reference hard coded values until there's a way to reuse lr-style vars
+    .Day &
+      background linear-gradient(135deg, #dcdcdc, #b0b0b0)
+    .Night &
+      background linear-gradient(135deg, #494c4e, #363739)
+
+  &:hover:before
+    .Day &
+      background linear-gradient(135deg, #eeeeee, #cfcfcf)
+    .Night &
+      background linear-gradient(135deg, #606366, #424446)
+
+  &:active:before
+    .Day &
+      background linear-gradient(135deg, #c2c2c2, #cfcfcf)
+    .Night &
+      background linear-gradient(135deg, #363739, #424446)

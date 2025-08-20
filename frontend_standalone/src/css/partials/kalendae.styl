@@ -1,0 +1,59 @@
+.kdatePicker,
+.ui-datepicker-calendar
+  .k-separator
+    width 1px
+  .k-days span
+    border none
+    height 14px
+    width 20px
+    text-align center
+
+kalendaeColor(baseColor)
+
+  selectedOutOfRange = transparent
+  selectedTextColor = #fff
+  selectedBackgroundColor = chart-colors-blues[6]
+  selectedRangeBackgroundColor = chart-colors-blues[3]
+
+
+  if dark(baseColor)
+    kalendaeBackground = darken(baseColor, 15)
+    textColor = nTextColor
+    hoverColor = lighten(textColor, 13)
+    outOfRangeColor = darken(textColor, 40)
+    inRangeBackgroundColor = darken(baseColor, 10)
+
+  else
+    kalendaeBackground = baseColor
+    textColor = dTextColor
+    hoverColor = darken(textColor, 18)
+    outOfRangeColor = lighten(textColor, 20)
+    inRangeBackgroundColor = darken(baseColor, 14)
+
+  .kdatePicker,
+  .ui-datepicker-calendar
+    .kalendae
+      background kalendaeBackground
+    .k-btn-next-year, .k-btn-next-month, .k-btn-previous-year, .k-btn-previous-month, .k-caption
+      color textColor
+    .k-btn-next-year:hover, .k-btn-next-month:hover, .k-btn-previous-year:hover, .k-btn-previous-month:hover
+      color hoverColor
+    .k-title
+      color textColor
+    .k-header, .k-days, .k-out-of-month
+      color textColor
+    .k-days span
+      color textColor
+      &.k-out-of-month
+        color outOfRangeColor
+        &.k-selected
+          background selectedOutOfRange
+      &.k-in-month.k-active
+        background inRangeBackgroundColor
+        color textColor
+        &.k-selected
+          color selectedTextColor
+          background selectedBackgroundColor
+        &.k-range
+          background selectedRangeBackgroundColor
+          color selectedTextColor

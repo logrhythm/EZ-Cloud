@@ -1,0 +1,56 @@
+.procedure-header {
+  display: flex;
+  align-items: center;
+  border: 1px solid;
+  padding: 0.375rem 1rem;
+  border-radius: 2px;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  
+  .Night & {
+    border-color: #262729;
+    border-top-color: #444848;
+    background: linear-gradient(#383b3b, #2b2e2e);
+  }
+
+  .Day & {
+    border-color: darkgray;
+    border-top-color: #eeeeee;
+    background: linear-gradient(#e1e1e1, #cfcfcf);
+  }
+}
+
+.procedure-header__open {
+  border-radius: 2px 2px 0 0;
+}
+
+.procedure-header-icon {
+  flex: 0 1 auto;
+  font-size: 80%;
+}
+
+.procedure-header -content {
+  flex: 1 0 100%;
+  padding-left: 1rem;
+}
+
+.procedure-body {
+  padding: 0.375rem 1rem;
+  border-radius: 0 0 2px 2px;
+}
+
+.Night .procedure-body {
+  background: #313535;
+}
+
+.Day .procedure-body {
+  border-color: darkgray;
+  border-top-color: #eeeeee;
+  background: #cfcfcf;
+}
+
+// This can go away when icons do not have a default line-height
+.procedure-reorder--arrow i, .procedure-actions i {
+  line-height: inherit;
+}

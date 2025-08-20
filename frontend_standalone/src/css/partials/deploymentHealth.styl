@@ -1,0 +1,42 @@
+.deployment-health-widget
+  .ui.cell
+    .componentStatus
+      border-radius 20px
+      float left
+      height 11px
+      width 11px
+      margin-right 7px
+      margin-top 5px
+    [class*='icon-']
+      font-size 11px
+      width 12px
+
+.Night
+  .deployment-health-widget
+    .warning, .notice
+      background #59431d
+      color #ffffff
+    .critical
+      background #840404  
+      color #ffffff    
+    .icon-check-circle, .icon-check-circle:hover
+        color #007dc3
+    .icon-flag, .icon-flag:hover
+        color #d5901a
+    .icon-warn-triangle, .icon-warn-triangle:hover
+        color #a81313
+.Day
+  .deployment-health-widget
+    .warning, .notice
+      background #dca358
+      color #222222
+    .critical
+      background #a81313
+      color #ffffff
+    .icon-check-circle, .icon-check-circle:hover
+        color #007dc3
+    .icon-flag, .icon-flag:hover
+        color #dca358
+    .icon-warn-triangle, .icon-warn-triangle:hover
+        color #a81313
+

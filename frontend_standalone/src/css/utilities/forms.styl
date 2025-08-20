@@ -1,0 +1,56 @@
+.textarea-sm
+  height 56px
+
+.textarea-md
+  height 112px
+
+.textarea-lg
+  height 224px
+
+
+.multiline-input
+  display flex
+  flex-direction column
+  align-items flex-start
+  margin 5px 0px
+
+  label
+    margin-bottom 5px
+
+
+.inline-input
+  align-items center
+  display flex
+  flex-direction row
+  flex-wrap nowrap
+  width 100%
+
+  label
+    flex 0 0 auto
+    max-width 75%
+    margin-right 10px
+
+  input, ui-dropdown-typeahead
+    flex 1 1 auto
+
+  &.input-sm, &.input-md, &.input-lg
+    label
+      text-overflow ellipsis
+      white-space nowrap
+      overflow hidden
+      flex 0 1 auto
+
+    input, ui-dropdown-typeahead
+      margin-left auto
+
+  &.input-sm
+    input, ui-dropdown-typeahead
+      flex 0 0 40px
+
+  &.input-md
+    input, ui-dropdown-typeahead
+      flex 0 0 100px
+
+  &.input-lg
+    input, ui-dropdown-typeahead
+      flex 0 0 150px

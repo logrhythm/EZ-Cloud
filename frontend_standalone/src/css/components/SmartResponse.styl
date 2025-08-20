@@ -1,0 +1,43 @@
+smart-response
+  ui-dropdown-typeahead
+    width 100%
+
+  .smart-response-command
+    margin-top 20px
+
+  .smart-response-execute-target
+    border-top-width 1px
+    border-top-style solid
+    .Day &
+      border-top-color #a6a8aa
+
+    .Night &
+      border-top-color #261326
+
+.smart-response-content
+  min-width 70%
+  margin 40px
+
+smart-response-results
+  display block
+  .modal-content
+    width 100%
+
+.smartResponseResults
+  .results-val
+    font-size 13px
+    margin-top 1px
+
+  margin-top 15vh
+  z-index 1
+
+  textarea
+    resize both
+    .Day &, .Night &
+      &.text-readonly
+        opacity 1
+        &, &:active, &:focus
+          color #999
+          &.error
+            color #ae0000
+

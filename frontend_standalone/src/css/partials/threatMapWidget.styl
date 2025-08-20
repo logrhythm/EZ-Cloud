@@ -1,0 +1,144 @@
+.leaflet-container
+  background transparent
+
+.threat-map-widget,threatmap,.leaflet-threatmap
+  width inherit
+  height inherit
+
+.threat-map-widget .throbber-wrapper-container
+  z-index 10002
+  position: absolute
+  width 100%
+  height inherit
+  top 0
+
+.leaflet-marker-icon
+  transition transform .25s ease-in-out
+  background-color transparent
+  border none
+  pointer-events none
+
+  .tooltip-group
+    pointer-events auto
+
+.threatmap-pie
+  opacity 0.6
+
+  &:hover
+    opacity 1
+
+  .path-origin
+    .Day &
+      fill #44a8e0
+    .Night &
+      fill #336699
+
+  .path-impacted
+    .Day &
+      fill #e5a117
+    .Night &
+      fill #cc9900
+
+  circle
+    .Day &
+      fill #666666
+    .Night &
+      fill #f8f8f8
+
+.threatmap-tooltip
+  display flex
+  width 150px
+
+  div.column
+    width 50%
+  div.column:first-child
+    margin-right 10px
+    div
+      margin 4px 0
+  div.column:nth-child(2)
+    margin-top 2px
+  .ui.badge
+    margin-top 3px
+    position relative
+    display block
+    clear right
+    float right
+
+.leaflet-bar a, .leaflet-bar a:hover
+  background-color transparent
+  .Day &
+    background linear-gradient(#d5d5d5, #c0c0c0)
+    color #666666
+    border-bottom darken(#666666, 20%)
+  .Night &
+    background linear-gradient(#333333, #292929)
+    color #808080
+    border-bottom darken(#808080, 20%)
+
+.leaflet-bar a.leaflet-disabled
+  .Day &
+    color lighten(#666666, 30)
+  .Night &
+    color darken(#808080, 30)
+
+.leaflet-bottom.leaflet-right
+  .leaflet-control-attribution
+    display none
+
+.leaflet-top.leaflet-right
+  .leaflet-control-layers
+    display none
+
+.threatmap-legend
+  position absolute
+  right 10px
+  top 10px
+  z-index 1001
+  .info-label,.outline
+    display none
+
+  .checkbox-label
+    display block
+    cursor default
+    color white
+    text-align center
+    padding 4px 21px
+    text-align center
+    .icon-check
+      vertical-align middle
+  .origin
+    .Day &
+      background #44a8e0
+    .Night &
+      background #336699
+  .impacted
+    .Day &
+      background #e5a117
+    .Night &
+      background #cc9900
+
+.searchAnimationTransport .leaflet-marker-icon
+  display none
+
+.threatmap-thumb
+  width inherit
+  height inherit
+  .Day &
+    image '/img/ThreatMapThumb_Day.png' cover
+  .Night &
+    image '/img/ThreatMapThumb_Night.png' cover
+
+.threatmap-throttled
+  bottom 10px
+  padding-left 10px
+  position absolute
+  z-index 1
+
+#threatMapForm
+  .threat-map-error
+    width 160px
+
+.icon-info.threat-map-settings-tooltip
+  margin-right 5px
+  margin-top 2px
+  font-size 12px

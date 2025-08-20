@@ -1,0 +1,327 @@
+// placeholder selectors for extensions
+$parentList
+  list-style none
+  float left
+
+$listItem
+  float left
+  cursor pointer
+  margin 0 8px 0 0
+
+$tagText
+  border-radius 2px
+  float left
+  overflow hidden
+  max-width 300px
+  white-space nowrap
+  text-overflow ellipsis
+
+  &:focus
+    border-radius 2px
+    outline none
+
+$closeBoxTagText
+  border-radius 2px 0 0 2px
+  float left
+  position relative
+  z-index 10
+
+$caretAfter
+  content ''
+  display block
+  position relative
+  right -11px
+  transform rotate(33deg) skew(-1deg, 20deg)
+  z-index 0
+
+//Overriding lr-style
+.ui.tag, [tag].tag
+  padding 0px
+  font-size 100%
+  line-height 16px
+
+// only the text boxes
+.tag-filled-low
+  @extend $parentList
+
+  .tag-container
+    height 22px
+
+    .tag-text
+      @extend $tagText
+      font-size 11px
+      padding 3px 8px
+      &:focus
+        padding 2px 7px
+
+    @extend $listItem
+
+    &:focus
+      outline none
+
+.tag-filled-high
+  @extend $parentList
+
+  .tag-container
+    height 30px
+
+    .tag-text
+      @extend $tagText
+      font-size 13px
+      padding 7px 8px
+      &:focus
+        padding 6px 7px
+
+    @extend $listItem
+
+    &:focus
+      outline none
+
+// only tag close boxes
+.tag-uncareted-low
+  .tag-container
+    cursor pointer
+    float left
+    margin 0 8px 0 0
+
+    .tag-text
+      @extend $closeBoxTagText
+
+    .tag-remove-wrap
+      float left
+      margin 0 0 0 1px
+
+      .tag-remove
+        border-radius 0 2px 2px 0
+        font-size 25px
+        padding 3px
+
+.tag-uncareted-high
+  .tag-container
+    cursor pointer
+    float left
+    margin 0 8px 0 0
+
+    .tag-text
+      @extend $closeBoxTagText
+
+    .tag-remove-wrap
+      float left
+      margin 0 0 0 1px
+
+      .tag-remove
+        border-radius 0 2px 2px 0
+        font-size 30px
+        padding 7px 5px
+
+// pointy style close boxes
+.tag-careted-low
+  .tag-container
+    cursor pointer
+    float left
+    margin 0 8px 0 0
+
+    .tag-text
+      @extend $closeBoxTagText
+
+    .tag-remove-wrap
+      float left
+      margin 0 5px 0 1px
+
+      .tag-remove
+        border-radius 0 2px 2xp 0
+        font-size 25px
+        padding 3px 0 3px 3px
+        position relative
+        z-index 5
+
+      &:after
+        @extend $caretAfter
+        height 13.5px
+        top -17px
+        width 12px
+
+    &:last-child > .tag
+      .tag-remove-wrap
+        margin 0 0 0 1px
+
+      .tag-remove-wrap:after
+        display none
+
+      .tag-remove
+        border-radius 0 2px 2px 0
+        padding 3px
+
+.tag-careted-high
+  .tag-container
+    cursor pointer
+    float left
+    margin 0 8px 0 0
+
+    .tag-text
+      @extend $closeBoxTagText
+
+    .tag-remove-wrap
+      float left
+      margin 0 8px 0 1px
+
+      .tag-remove
+        border-radius 0 2px 2xp 0
+        font-size 30px
+        padding 7px 0 7px 3px
+        position relative
+        z-index 5
+
+      &:after
+        @extend $caretAfter
+        height 18px
+        top -23px
+        width 16px
+
+    &:last-child > .tag
+      .tag-remove-wrap
+        margin 0 0 0 1px
+
+      .tag-remove-wrap:after
+        display none
+
+      .tag-remove-wrap
+        .tag-remove
+          border-radius 0 2px 2px 0
+          padding 7px 5px
+
+// firefox bug where ng-animate classes are not removed
+// !important needed to overwrite the !important used in
+// ng-animate, ng-hide selectors.
+#Content .tagedit.ng-hide-animate
+  display none !important
+
+// unround corners on transcluded elements
+.tag-nofill
+  // new transcluded item classes should be added here as necessary
+  .SimpleSelectValue
+    border-radius 2px 0 0 2px
+    padding 7px 5px 7px 10px
+
+//Night Theme
+.Night
+  .tag-filled-low,
+  .tag-filled-high
+    .tag-text
+      background linear-gradient(to bottom, nTagFilledTextBgGradStop1, nTagFilledTextBgGradStop2)
+      box-shadow 1px 1px 1px nTagFilledTextBoxShadow
+      color nTagFilledTextColor
+      text-shadow 1px 1px 1px nTagFilledTextTextShadow
+
+      &:focus
+        border 1px solid nTagFilledTextFocusBorderColor
+        box-shadow 0 0 gutter nTagFilledTextFocusBoxShadow
+
+      &:hover
+        background linear-gradient(to bottom, nTagFilledTextHoverBgGradStop1, nTagFilledTextHoverBgGradStop2)
+
+      &:active
+        background linear-gradient(to bottom, nTagFilledTextActiveBgGradStop1, nTagFilledTextActiveBgGradStop2)
+
+      &.disabled
+        background linear-gradient(to bottom, nTagFilledTextDisabledBgGradStop1, nTagFilledTextDisabledBgGradStop2)
+
+  .tag-uncareted-low,
+  .tag-uncareted-high,
+  .tag-careted-low,
+  .tag-careted-high
+    .tag-remove-wrap
+      color nTagRemoveWrapColor
+
+    .tag-remove
+      background linear-gradient(to bottom, nTagRemoveBgGradStop1, nTagRemoveBgGradStop2)
+      text-shadow 0 1px 0px nTagRemoveTextShadow
+
+  .tag-uncareted-low,
+  .tag-uncareted-high
+    .tag-remove
+      box-shadow 1px 1px 1px nTagUncaretedTagRemoveBoxShadow
+
+  .tag-careted-low,
+  .tag-careted-high
+    .tag-remove
+      box-shadow -1px 1px 0 nTagCaretedTagRemoveBoxShadow
+      text-shadow nTagCaretedTagRemoveTextShadow
+
+    .tag-remove-wrap:after
+      background linear-gradient(to bottom right, nTagCaretedTagRemoveWrapAfterBgGradStop1, nTagCaretedTagRemoveWrapAfterBgGradStop2)
+      box-shadow 1px -1px 1px nTagCaretedTagRemoveWrapAfterBoxShadow
+
+    .tag-container:last-child > .tag
+      .tag-remove-wrap
+        .tag-remove
+          box-shadow 1px 1px 1px nTagCaretedTagRemoveLastBoxShadow
+          text-shadow nTagCaretedTagRemoveTextShadow
+
+  .tag-nofill
+    .SimpleSelectValue
+      border none
+      box-shadow 1px 1px 1px nTagNoFillSimpleSelectValueBoxShadow
+.Day
+  .tag-filled-low,
+  .tag-filled-high
+    .tag-text
+      background linear-gradient(to bottom, dTagFilledTextBgGradStop1,dTagFilledTextBgGradStop2)
+      box-shadow 1px 1px 1px dTagFilledTextBoxShadow
+      color dTagFilledTextColor
+      text-shadow 1px 1px 1px dTagFilledTextTextShadow
+
+      &:focus
+        border 1px solid dTagFilledTextFocusBorderColor
+        box-shadow 0 0 gutter dTagFilledTextFocusBoxShadow
+
+      &:hover
+        color dTagFilledTextHoverColor
+        text-shadow dTextShadow
+        background linear-gradient(to bottom, dTagFilledTextHoverBgGradStop1, dTagFilledTextHoverBgGradStop2)
+
+      &:active
+        color dTagFilledTextActiveColor
+        text-shadow dTextShadow
+        background linear-gradient(to bottom, dTagFilledTextActiveBgGradStop1, dTagFilledTextActiveBgGradStop2)
+
+      &.disabled
+        background linear-gradient(to bottom, dTagFilledTextDisabledBgGradStop1, dTagFilledTextDisabledBgGradStop2)
+
+  .tag-uncareted-low,
+  .tag-uncareted-high,
+  .tag-careted-low,
+  .tag-careted-high
+    .tag-remove-wrap
+      box-shadow 1px 1px 1px dTagFilledTextBoxShadow
+      color dTagRemoveWrapColor
+      height 20px
+
+
+    .tag-remove
+      background linear-gradient(to bottom, dTagRemoveBgGradStop1, dTagRemoveBgGradStop2)
+      text-shadow 0 1px 0px dTagRemoveTextShadow
+  .tag-uncareted-low,
+  .tag-uncareted-high
+    .tag-remove
+      box-shadow 1px 1px 1px dTagUncaretedTagRemoveBoxShadow
+
+  .tag-careted-low,
+  .tag-careted-high
+    .tag-remove
+      box-shadow -1px 1px 0 dTagCaretedTagRemoveBoxShadow
+
+
+    .tag-remove-wrap:after
+      background linear-gradient(to bottom right, dTagCaretedTagRemoveWrapAfterBgGradStop1, dTagCaretedTagRemoveWrapAfterBgGradStop2)
+      box-shadow 2px -1px 1px dTagFilledTextBoxShadow
+
+    .tag-container:last-child > .tag
+      .tag-remove-wrap
+        .tag-remove
+          box-shadow 1px 1px 1px dTagCaretedTagRemoveLastBoxShadow
+
+  .tag-nofill
+    .SimpleSelectValue
+      border none
+      box-shadow 1px 1px 1px dTagNoFillSimpleSelectValueBoxShadow

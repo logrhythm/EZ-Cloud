@@ -1,0 +1,17 @@
+uiTabsetColors(baseColor)
+
+  if dark(baseColor)
+    activeGradientColor1 = darken(baseColor, 15)
+    activeGradientColor2 = darken(baseColor, 10)
+  else
+    activeGradientColor1 = darken(baseColor, 4)
+    activeGradientColor2 = darken(baseColor, 11)
+
+  ui-tabset
+    .ui.tab
+      &.header
+        .header.active
+          background linear-gradient(activeGradientColor1, activeGradientColor2)
+          border-bottom-color activeGradientColor2
+      .content
+        background activeGradientColor2

@@ -1,0 +1,396 @@
+CellPadding = 7px
+popUnderBoxShadow = 0 1px 20px 11px hsla(0, 0%, 0%, 0.1)
+
+@media screen
+    .page-user-details
+
+    #Footer
+      preventUserSelection()
+
+    [ng-app='UserDetails']
+
+      #VolumeChartContainer
+        margin inherit
+
+    #UserHeaderDetailsContainer
+      padding 5px 20px 0
+      width 100%
+      max-height 190px
+      position relative
+
+    #UserHeaderDetails fieldset
+      border 1px solid #3a3c3d
+      border-radius 5px
+      padding-bottom 20px
+
+    #UserHeaderDetails fieldset.activeHeader
+      border 1px solid #44a8e0
+      box-shadow 0px 0px 2px #44a8e0
+
+    #UserHeaderDetails h2
+      margin 15px 0
+
+    #UnknownUserHeaderDetails
+      margin 0px auto
+      width 960px
+      position relative
+      padding-bottom 20px
+
+      .content
+        border 1px solid #3a3c3d
+        line-height 1.3em
+        border-radius 5px
+        text-align center
+        padding 10px
+
+      .activeHeader
+        border 1px solid #44a8e0
+        box-shadow 0px 0px 2px #44a8e0
+
+    #UnknownUserHeaderDetails h2
+      margin 15px 0
+
+    #UserHeaderDetails
+      margin 0px auto
+      width 960px
+      position relative
+      padding-bottom 20px
+
+      .icon-info
+        vertical-align baseline
+        font-size 17px
+
+      .more-info
+          margin-left 5px
+        [class*='icon-']
+          font-size 12px
+
+      .user-detail-row
+        margin auto
+        height 80px
+
+      .identity-profile-pic
+        min-width 40px
+        min-height 40px
+        width 50px
+        height 50px
+        background-color #b4b4b4
+        color #000
+        border-radius 50%
+
+      .identity-profile-pic img
+        height 100%
+        border-radius 50%
+
+      .identity-profile-pic img + span
+        display none
+
+      .identity-profile-pic
+        img.broken-link + span
+          display block
+          height 100%
+          text-align center
+          font-size 20px
+          padding 15px 0
+          text-transform uppercase
+
+      .user-detail-column
+        float left
+        height inherit
+        margin-right 2%
+
+        .user-header-label
+          padding-right 1%
+
+      .column-left
+        width 5%
+        margin-top 10px
+        height 50px
+
+      .column-right
+        width 44%
+
+      .column-middle
+        width 45%
+
+    legend.fieldset-legend
+      widthauto
+      border-bottom none
+      color #44a8e0
+      font-size 14px
+      margin-left 5px
+      text-transform uppercase
+
+    .backToTop.hidden
+      opacity 0
+      visibility hidden
+
+    .backToTop
+      position absolute
+      right 20px
+      bottom 35px
+      z-index 1
+      opacity .98
+      transition opacity .2s ease-in-out
+
+    .backToTophover
+
+    #UserCloudAIDetailsContainer
+      width 100%
+      padding 0px 20px 0
+
+    #UserHeaderCloudAIDetails fieldset
+      border 1px solid #3a3c3d
+      line-height 1.6em
+      border-radius 5px
+
+    #UserHeaderCloudAIDetails fieldset.activeHeader
+      border 1px solid #44a8e0
+      box-shadow 0px 0px 2px #44a8e0
+
+    #UserHeaderCloudAIDetails
+      margin 0px auto
+      width 960px
+      position relative
+      padding 12px 0px 20px 0px
+
+      .cloudai-label
+        border 1.4px solid #44a8e0
+        border-radius 25px
+        padding 0px 8px 0px 8px
+        margin 0px 2px 0px 2px
+
+      .remaining-cloidai-labels
+        border-radius 25px
+        background #383b3b
+        padding 0px 6px 0px 6px
+        margin 0px 2px 0px 2px
+
+      .user-cloudai-detail-row
+        margin auto
+        height 26px
+
+      .user-cloudai-detail-column
+        height inherit
+        width inherit
+
+        .user-cloudai-details
+          div
+            float left
+            .score
+              color rgb(221, 49, 0)
+              font-weight bold
+            .events
+              color #42a6e0
+
+          .threatEventsContainer, .anomalyScoreContainer
+            margin-right 10px
+
+          .cloudAiLabelsContainer
+            max-width 65%
+
+
+      .icon-info
+        vertical-align baseline
+        font-size 17px
+
+      .more-info
+          margin-left 5px
+        [class*='icon-']
+          font-size 12px
+
+    .Night
+      #UserHeaderDetails
+        .more-info
+          margin-left 5px
+        [class*='icon-']
+          font-size 12px
+
+      #UserHeaderDetailsContainer, #UserCloudAIDetailsContainer
+        legend.fieldset-legend
+          background-color #1a1a1a
+
+    .Day
+      #UserHeaderDetails
+        .identity-profile-pic
+          background-color #444
+          color #fff
+
+        .more-info
+          margin-left 5px
+        [class*='icon-']
+          font-size 12px
+
+      #UserHeaderDetails fieldset
+        border 1px solid #888
+
+      #UserHeaderDetails fieldset.activeHeader
+        border 1px solid #44a8e0
+        box-shadow 0px 0px 2px #44a8e0
+
+      #UserHeaderDetails h2
+        margin 15px 0
+
+      #UnknownUserHeaderDetails
+        .content
+          border 1px solid #888
+
+        .activeHeader
+          border 1px solid #44a8e0
+          box-shadow 0px 0px 2px #44a8e0
+
+      #UserCloudAIDetailsContainer
+        color #333
+
+        .remaining-cloidai-labels
+          border-radius 25px
+          padding 0px 6px 0px 6px
+          margin 0px 2px 0px 2px
+          color #ccc
+          background-color #505050
+          text-shadow 0 0px 0 rgba(255,255,255,0.5)
+
+      #UserCloudAIDetailsContainer fieldset
+        border 1px solid #888
+
+      #UserCloudAIDetailsContainer fieldset.activeHeader
+        border 1px solid #44a8e0
+        box-shadow 0px 0px 2px #44a8e0
+
+      #UserHeaderDetailsContainer, #UserCloudAIDetailsContainer
+        legend.fieldset-legend
+          background-color #f9f9f9
+
+
+// start print styles
+@media print
+
+  .user-cloudai-header-info-container
+    max-width 310px
+    margin-right 12px
+
+  #UserHeaderDetailsContainer
+    padding 5px 20px 0
+
+  #UserHeaderDetails
+    margin 0px auto
+    position relative
+    padding-bottom 20px
+
+    .identity-profile-pic
+      min-width 40px
+      min-height 40px
+      width 50px
+      height 50px
+      background-color #b4b4b4
+      color #000
+      border-radius 50%
+
+    .identity-profile-pic img
+      height 100%
+      border-radius 50%
+
+    .identity-profile-pic img + span
+      display none
+
+    .identity-profile-pic
+      img.broken-link + span
+        display block
+        height 100%
+        text-align center
+        font-size 20px
+        padding 15px 0
+        text-transform uppercase
+
+    .user-detail-row
+      margin auto
+      height 80px
+
+    .user-detail-column
+      float left
+      height inherit
+      margin-right 2%
+
+      .user-header-label
+        padding-right 1%
+
+    .column-left
+      width 7%
+
+    .column-right
+      width 43%
+
+    .column-middle
+      width 42%
+
+  #UserHeaderDetails fieldset
+    border 1px solid #3a3c3d
+    line-height 1.3em
+    border-radius 5px 
+
+  #UserHeaderDetails h2
+    margin 15px 0
+
+  legend.fieldset-legend
+    widthauto
+    border-bottom none
+
+  #UnknownUserHeaderDetails
+    margin 0px auto
+    position relative
+    padding-bottom 20px
+    .content
+      border 1px solid #3a3c3d
+      line-height 1.3em
+      border-radius 5px
+      text-align center
+      padding 10px
+
+  #UnknownUserHeaderDetails h2
+    margin 15px 0s
+
+  #UserHeaderCloudAIDetails
+    margin 0px auto
+    width 960px
+    position relative
+    padding 12px 0px 20px 0px
+
+    .cloudai-label
+      border 1.4px solid #44a8e0
+      border-radius 25px
+      padding 0px 8px 0px 8px
+      margin 0px 2px 0px 2px
+
+    .remaining-cloidai-labels
+      border-radius 25px
+      background #383b3b
+      padding 0px 6px 0px 6px
+      margin 0px 2px 0px 2px
+
+    .active-element
+        &hover
+          color blue-celestial-88
+
+    .user-cloudai-detail-row
+      margin auto
+      height 26x
+
+    .user-cloudai-detail-column
+      height inherit
+      width inherit
+
+      .user-cloudai-details
+        div
+          float left
+          .score
+            color rgb(221, 49, 0)
+            font-weight bold
+          .events
+            color #42a6e0
+
+        .threatEventsContainer, .anomalyScoreContainer
+          margin-right 10px
+
+        .cloudAiLabelsContainer
+          max-width 65%
+

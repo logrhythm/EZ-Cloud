@@ -12,12 +12,11 @@
 // to match your app's branding.
 // Tip: Use the "Theme Builder" on Quasar's documentation website.
 
-// Base primary colors
+// Base primary color
 $primary-dark : #02b7fe;
-$primary-light: #007bc2;
 
 // Using standardized brand colors
-$primary   : $primary-dark;
+$primary   : $primary-dark; // Dark mode primary
 $secondary : #3a3c3d;
 $accent    : #9C27B0;
 $dark      : #0f0f10;
@@ -28,62 +27,44 @@ $negative  : #C10015;
 $info      : #31CCEC;
 $warning   : #F2C037;
 
-// Secondary colors
+// Secondary color
 $secondaryForDarkMode: #3a3c3d; // Dark gray for dark mode
-$secondaryForLightMode: #e0e0e0; // Light gray for light mode
 
 // Theme variables with standardized naming conventions
 :root {
   /* ===== Brand Colors ===== */
-  /* Primary colors - improved for AA accessibility */
+  --primary: #02b7fe; /* High contrast blue for dark theme */
   --primary-dark: #02b7fe; /* Higher contrast blue for dark theme */
-  --primary-light: #0066a3; /* Darker blue for light theme (AA contrast) */
-  
-  /* Aliases for backward compatibility */
   --primaryForDarkMode: var(--primary-dark);
-  --primaryForLightMode: var(--primary-light);
-  
-  /* Button text colors with proper contrast ratios */
+  --text-on-primary: #000000; /* Black text on blue button */
   --text-on-primary-dark: #000000; /* Black text on blue button */
-  --text-on-primary-light: #ffffff; /* White text on blue button */
-  
-  /* Aliases for backward compatibility */
   --textForPrimaryButtonForDarkMode: var(--text-on-primary-dark);
-  --textForPrimaryButtonForLightMode: var(--text-on-primary-light);
-  --q-color-textForPrimaryButton: var(--text-on-primary-light);
-  
-  /* Secondary colors with proper contrast */
+  --q-color-textForPrimaryButton: var(--text-on-primary-dark);
   --secondary-dark: #484a4c; /* Lighter gray for dark mode (better contrast) */
-  --secondary-light: #d0d0d0; /* Darker gray for light mode (better contrast) */
-  
   /* ===== Text Colors ===== */
-  /* Improved for accessibility: 4.5:1 minimum contrast ratio */
+  --text-color: #ffffff; /* White text on dark backgrounds */
   --text-color-dark: #ffffff; /* White text on dark backgrounds */
+  --text-secondary: #c9c9c9; /* Light gray text */
   --text-secondary-dark: #c9c9c9; /* Light gray text on dark backgrounds - improved contrast */
-  --text-color-light: #121212; /* Deep black text on light backgrounds */
-  --text-secondary-light: #444444; /* Darker gray text on light backgrounds - improved contrast */
-  
   /* ===== Form Control Colors ===== */
+  --input-bg: #303030; /* Slightly lighter than background for visibility */
   --input-bg-dark: #303030; /* Slightly lighter than background for visibility */
+  --input-border: #606060; /* Higher contrast border */
   --input-border-dark: #606060; /* Higher contrast border */
-  --input-bg-light: #ffffff; /* White input backgrounds */
-  --input-border-light: #999999; /* Darker border for improved contrast and visibility */
-  
   /* ===== Card and Panel Colors ===== */
+  --card-bg: #2c2c2c;
   --card-bg-dark: #2c2c2c;
-  --card-bg-light: #ffffff;
+  --panel-bg: #363636; /* Higher contrast from background */
   --panel-bg-dark: #363636; /* Higher contrast from background */
-  --panel-bg-light: #f8f8f8;
-  
   /* ===== Border Colors ===== */
+  --border: #505050; /* Higher contrast borders */
   --border-dark: #505050; /* Higher contrast borders */
-  --border-light: #cccccc;
-  
   /* ===== Focus Indicators ===== */
+  --focus-outline: #02b7fe 0 0 0 3px; /* Enhanced blue focus ring - thicker for visibility */
   --focus-outline-dark: #02b7fe 0 0 0 3px; /* Enhanced blue focus ring - thicker for visibility */
-  --focus-outline-light: #0066a3 0 0 0 3px; /* Enhanced blue focus ring - darker color and thicker */
-  
-  /* ===== Quasar Specific Colors (for backward compatibility) ===== */
+  --focus-ring-width-desktop: 3px;
+  --focus-ring-width-mobile: 4px; /* Larger for touch devices */
+  --focus-ring-style: solid;
+  --focus-ring-offset: 2px;
   --q-color-primaryForDarkMode: var(--primary-dark);
-  --q-color-primaryForLightMode: var(--primary-light);
 }

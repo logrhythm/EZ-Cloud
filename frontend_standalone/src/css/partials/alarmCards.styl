@@ -1,0 +1,350 @@
+// TODO: need to take all the colors and put them under Night
+
+/* Helper vars and functions to dynamically create risk colors */
+totalItems = 100
+totalGradientItems = 40
+getAlarmColor(num)
+  GREY_END          = 50
+  ORANGE_MID        = 70
+  RED_START         = 90
+  greyToOrangeTotal = ORANGE_MID - GREY_END
+  orangeToRedTotal  = RED_START - ORANGE_MID
+  greyToRedTotal    = RED_START - 1
+
+  if num >= 0 && num <= GREY_END
+    alarmColor = risk1
+  else if num >= RED_START
+    alarmColor = risk5
+  else if num > GREY_END && num < ORANGE_MID
+    alarmColor = calculateAlarmColor(risk1, risk3, calculatePct(ORANGE_MID, greyToOrangeTotal, num))
+  else if num == ORANGE_MID
+    alarmColor = risk3
+  else if num > ORANGE_MID < RED_START
+    alarmColor = calculateAlarmColor(risk3, risk5, calculatePct(greyToRedTotal, orangeToRedTotal, num))
+
+/*
+  The code for the alarm teaser is used both on the card and on the modal. it
+  is factored here to be re-used between both areas.  It should be noted that
+  the colors for the risk levels is must be shared between this function and
+  all other functions to help re-use, but also to provide a representation on
+  the asset pages.
+*/
+hoverColor(value)
+  background lighten(value, 5%)
+  border-color lighten(value, 5%)
+
+dropdownOption(value)
+  background value
+  &:hover
+    hoverColor(value)
+
+stateButtonIconColors(value)
+  .btn
+    background value !important
+    &:hover
+      background lighten(value, 5%) !important
+
+  .comments, .cases
+    color value
+    [class*="icon-"]
+      color @color
+      &:hover
+        color lighten(@color, 15%)
+
+alarmTeaser(alarmTeaserHeight, riskLevelWidth, r5=risk5, r4=risk4, r3=risk3, r2=risk2, r1=risk1)
+  .hide
+    visibility hidden
+
+  .teaser-name
+    font-size 13px
+    line-height 17px
+    height 2 * @line-height
+    overflow hidden
+    display block
+
+  .teaser-term
+    min-height 32px
+    &.notModal
+      height @min-height
+
+  .teaser-info
+    font-size 12px
+
+  .teaser-description
+    font-size 13px
+    cursor pointer
+
+  .risk-value
+    titleFont()
+    font-weight 200
+    font-size 44px
+    line-height 46px
+
+  .risk-label
+    font-size 12px
+    text-transform uppercase
+
+alarmCards(cols = 3)
+
+  // Placing these variables at this scope to prevent them from
+  // (I think) from contaminating the global namespace and possible
+  // interferring or getting overriden by other variables in other
+  // Stylus files.
+  borderSep         = 1px
+  headerBarHeight   = 30px
+  alarmTeaserHeight = 84px
+  buttonBarHeight   = 28px
+  alarmCardHeight   = headerBarHeight + alarmTeaserHeight + buttonBarHeight + (2 * borderSep)
+
+  glowEdgeWidth     = 1px
+  glowWidth         = 4px
+  cardLeftMargin    = 17px
+  cardTopMargin     = 20px
+  cardGridWidth     = (cols * alarmCardWidth) + (cols * cardLeftMargin)
+
+  framePadding      = 10px
+  menuWidth         = 60px - 18px
+  riskLevelWidth    = 74px
+
+  .trans-glow
+    transition all 0.3s
+
+  // ---------------------------------------------------------------------
+  // Here begins the styling for all the 'alarm-cards'
+  // ---------------------------------------------------------------------
+
+  .alarm-cards
+    margin-left auto
+    margin-right auto
+    margin-bottom 85px
+
+  .alarm-card-transport
+    width alarmCardWidth
+
+  .menu-status, .card
+    list-style none
+
+  alarmTeaser(alarmTeaserHeight, riskLevelWidth)
+
+  .tools
+    flex 1 0 auto
+    .tool
+      height 100%
+      padding-left 6px
+      display flex
+      align-items center
+      &.separator
+        margin-left 10px
+        border-right none
+      [class*='icon-']
+        cursor pointer
+        vertical-align middle
+        line-height inherit
+      [disabled]
+        [class*='icon-']
+          cursor default
+
+  .separator
+    border-left-width 1px
+    border-left-style solid
+
+  .priority-indicator
+    z-index 1
+    border-radius glowWidth 0px 0px glowWidth
+    padding-left glowWidth
+    width glowEdgeWidth
+    position absolute
+    left 0px
+    top 0px
+    bottom 0px
+
+  .sr-throbber
+    width @height
+    height 17px
+    display inline-block
+    margin-top -2px
+    canvas
+      position absolute
+
+  .status-tag
+    color blue-half-baked-60
+
+  // default to red if risk goes over 100
+  .alarm-card
+    .priority-indicator
+      glow(risk5)
+    .risk-value, .risk-label
+      color risk5
+
+
+  for num in (0..totalItems)
+    
+    alarmColor = getAlarmColor(num)
+    .risk-{num}
+      .priority-indicator
+          glow(alarmColor)
+          .Day &
+            box-shadow none
+      &.risk-highlighter
+        border-left solid 7px alarmColor
+      .msie.Night &
+        .priority-indicator
+          glowIE(alarmColor)
+      .risk-value, .risk-label
+        color alarmColor
+
+    // NOTE: interpolation workaround w/ quotations
+    riskSelector = '"' + num + '"'
+    // attribute selector to help w/ performance on unique selectors
+    // ng-class tries to "cleanup" references, but if scrolling too fast
+    // AND a new risk color is used, doesn't always cleanup fast enough
+    [data-risk-highlight={riskSelector}]
+      border-left solid 7px alarmColor
+
+alarmMenus()
+
+  .alarms-menu
+
+    .dropdown-menu
+      text-shadow none
+      border-radius 0 0 2px 2px
+
+      &.bottom-align
+        bottom auto
+
+      .dropdown-item
+        min-width 100%
+        text-shadow none
+        color nAlarmsScrollContainterAcClColor
+        padding 0px
+        [class*='status-']
+          line-height 19px
+          padding 3px 20px 3px 10px
+
+      .dropdown-item+.dropdown-item
+        .Day &
+          border-top-color #808080
+        .Night &
+          border-top-color #666666
+
+    &.dropdown
+      box-shadow none
+      min-width 65px !important
+      max-width 125px
+
+    &.dropdown
+      .btn
+        color gray-nero-15
+        text-shadow none
+        box-shadow none
+
+        &:hover, &:focus
+          // override button hover and focus states
+          color gray-nero-15 !important
+          text-shadow none !important
+
+        &:after
+          color gray-nero-15
+          font-size 12px
+
+/*
+  The idea of using alarmCards() in this fashion is that we keenBacking for the alarm cards re-useable/modular.
+
+  Another page can pull in the styles for a single card via the function
+  alarmCards(), and wrap those styles inside a container of that page's
+  choosing.  By default alarmCards calculates dimensions based on a 3 column
+  layout, but this could be any number as desired.
+ */
+alarmCards()
+
+.AlarmLayout
+  padding-bottom gutter
+  >ul
+    list-style-type none
+
+
+alarmMenus()
+
+.card-status
+  .alarms-menu
+    .dropdown-menu
+      top 22.5px !important
+      bottom auto !important
+
+.alarms-case-panel
+  z-index 100;
+  width 200px;
+
+.alarm-status-future, .alarm-status-past
+  border none
+  .status-initials
+    display none
+.alarm-status-future
+  background-color #808080
+.alarm-status-current
+  background-color #337ec6
+  color #fff
+  border none
+.alarm-status-past
+  background-color hsl(202, 100%, 75%)
+.alarm-status-future:hover, .alarm-status-past:hover
+  background-color #337ec6
+
+alarmCardColor(baseColor, openAlarmColor, closedAlarmColor)
+  variousBorders = darken(baseColor, 2)
+  riskLevelClosedValueLabel = hsl(0, 0%, 40%)
+  newAlarmColor = hsl(202, 100%, 75%)
+  closedAlarmCommentIcon = hsl(0, 0%, 50%)
+
+  if dark(baseColor)
+    alarmTeaserBackgroundColor1 = darken(baseColor, 7)
+    alarmTeaserBackgroundColor2 = darken(baseColor, 16)
+    teaserDetailsTextColor = hsl(0, 0%, 90%)
+    cardContentBackground = darken(baseColor, 8)
+    engraveTextColor = hsl(0, 0%, 6%)
+    engraveTextShadowColor = rgba(lighten(baseColor, 5), 0.75)
+  else
+    alarmTeaserBackgroundColor1 = lighten(baseColor, 5)
+    alarmTeaserBackgroundColor2 = darken(baseColor, 3)
+    teaserDetailsTextColor = hsl(0, 0%, 20%)
+    cardContentBackground = lighten(baseColor, 5)
+    engraveTextColor = hsla(0,0%,50%,0.66)
+    engraveTextShadowColor = rgb(lighten(baseColor, 10))
+
+  .alarm-card
+
+    .teaser-details
+      color teaserDetailsTextColor
+
+    .risk-level.closed
+      .risk-value, .risk-label
+        color riskLevelClosedValueLabel
+
+    .closed-glow
+      box-shadow inset -1px 0 5px rgba(0,0,0,0.3) !important
+      background linear-gradient(alarmTeaserBackgroundColor1, alarmTeaserBackgroundColor2)
+
+    .engrave
+      color engraveTextColor
+      text-shadow 0px 1px 0px engraveTextShadowColor
+
+    .select-box, .separator
+      border-left-color variousBorders
+    .tools
+      iconColors(cardContentBackground)
+
+  .alarm-card, .alarm-status-updater
+    .dropdown-menu
+      .status-open
+        dropdownOption(openAlarmColor)
+      .status-closed
+        dropdownOption(closedAlarmColor)
+      .status-new
+        dropdownOption(newAlarmColor)
+
+    .status-new
+      stateButtonIconColors(newAlarmColor)
+    .status-open
+      stateButtonIconColors(openAlarmColor)
+    .status-closed
+      stateButtonIconColors(closedAlarmColor)

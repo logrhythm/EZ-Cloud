@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm install:*)",
+      "WebFetch(domain:v1.quasar.dev)",
+      "Bash(git add:*)",
+      "Bash(export NODE_OPTIONS=--openssl-legacy-provider)",
+      "Bash(mkdir:*)",
+      "Bash(curl:*)",
+      "Bash(grep:*)",
+      "Bash(ss:*)",
+      "Bash(npm run build:*)"
+    ],
+    "deny": []
+  }
+}

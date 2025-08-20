@@ -1,34 +1,23 @@
 <template>
   <q-page class="q-pa-sm">
-    <q-header bordered :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
-      <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
-        <img class="q-mr-md" :src="(darkMode ? 'logrhythm_logo_darkmode_wide.svg' : 'logrhythm_logo_lightmode_wide.svg')" alt="LogRhythm Open Collector">
+    <q-header bordered style="background: var(--q-color-dark);">
+      <q-toolbar class="q-gutter-x-sm">
+        <img class="q-mr-md" src="logrhythm_logo_darkmode_wide.svg" alt="LogRhythm Open Collector">
       </q-toolbar>
     </q-header>
     <div class="q-gutter-y-sm">
 
-      <q-card class="q-pa-md q-mx-none">
+      <q-card class="q-pa-md q-mx-none bg-grey-8">
         <q-card-section class="col">
           <div class="text-h4 q-gutter-x-md">
             <q-icon name="o_brightness_medium" />
             <span>{{ $t('Theme') }}</span>
           </div>
-          <q-toggle
-            v-model="darkMode"
-            checked-icon="dark_mode"
-            unchecked-icon="light_mode"
-            color="grey"
-            size="4rem"
-            keep-color
-          >
-            <q-tooltip content-style="font-size: 1em">
-              {{ $t('Switch between Light and Dark mode') }}
-            </q-tooltip>
-          </q-toggle>
+          <!-- Theme toggle removed: only dark mode supported -->
         </q-card-section>
       </q-card>
 
-      <q-card>
+      <q-card class="bg-grey-8">
         <q-card-section horizontal>
           <q-card-section class="col q-ma-none q-pa-none">
             <q-card-section class="text-h4 q-gutter-x-md">
@@ -64,14 +53,10 @@
 </template>
 
 <script>
-import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import { languageOptions, switchLanguageTo } from 'src/i18n/shared'
 
 export default {
   name: 'PageSettings',
-  mixins: [
-    mixinSharedDarkMode // Shared computed to access and update the DarkMode
-  ],
   data () {
     return {
       savingAction: false,

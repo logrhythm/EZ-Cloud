@@ -1,0 +1,53 @@
+.tab
+  display none
+  &.active
+    display block
+
+.ui.tab
+  display block // override the terribly generic .tab class
+
+.tab-labels
+  display table
+  border-collapse collapse
+  width 100%
+  box-sizing border-box
+  text-align center
+
+.tab-stage
+  padding seem
+
+.tab-label
+  border 1px solid
+  display table-cell
+  font-size 12px
+  padding 7px
+  cursor pointer
+  &:first-child
+    border-left-style none
+  &:last-child
+    border-right-style none
+  &:not(.active)
+    border-left-color transparent
+  &.active
+    cursor default
+.Night
+  tab-colors(nTabColor1, nTabColor2, nTabColor3, nTabColor4)
+
+.Day
+  .tab-stage
+    background dTabStageBackground
+  .tab-label
+    color dAlarmsTabTextColor
+    text-shadow dTextShadowWhite
+    border-color dTabPanelInactiveBorderColor dTabPanelInactiveBorderColor dTabPanelInactiveBorderColor transparent
+    background linear-gradient(dTabInactiveGrad1, dTabInactiveGrad2)
+    &.active
+      background linear-gradient(dTabActiveGrad1, dTabActiveGrad2)
+      border-top-color dTabPanelActiveBorderColor
+      border-right-color  dTabPanelInactiveBorderColor
+      border-bottom-color dTabStageBackground
+      border-left-color dTabPanelActiveBorderColor
+      &:first-child
+        border-left-color dTabActiveFirstChildBorder
+      &:last-child
+        border-right-color dTabActiveLastChildBorder

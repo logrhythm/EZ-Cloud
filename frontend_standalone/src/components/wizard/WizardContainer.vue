@@ -4,7 +4,7 @@
     <div class="wizard-header">
       <div class="header-content">
         <div class="wizard-title">
-          <img :src="darkMode ? require('../../logo/night.svg') : require('../../logo/day.svg')" class="q-mr-md" style="height: 36px; width: auto;" alt="LogRhythm Logo" />
+          <img src="../../logo/night.svg" class="q-mr-md" style="height: 36px; width: auto;" alt="LogRhythm Logo" />
           <div>
             <h1 class="text-h4 q-mb-none">JSON Policy Builder Wizard</h1>
             <p class="text-subtitle2 text-grey-6 q-mb-none">
@@ -25,19 +25,6 @@
             class="q-mr-sm"
           >
             <q-tooltip>Show Help</q-tooltip>
-          </q-btn>
-
-          <!-- Theme Toggle -->
-          <q-btn
-            flat
-            dense
-            round
-            :icon="darkMode ? 'light_mode' : 'dark_mode'"
-            color="grey-7"
-            @click="toggleTheme"
-            class="q-mr-sm"
-          >
-            <q-tooltip>Toggle Theme</q-tooltip>
           </q-btn>
 
           <!-- Exit Wizard -->
@@ -379,28 +366,16 @@ export default {
 
     // Setup auto-save
     this.setupAutoSave()
-
-    // Sync store with current dark mode state from theme service
-    this.$store.commit('wizard/SET_DARK_MODE', themeService.isDarkMode())
   },
 
   mounted () {
-    // Subscribe to theme changes
-    this.themeChangeListener = themeService.subscribe((isDarkMode) => {
-      // Update store with new theme state
-      this.$store.commit('wizard/SET_DARK_MODE', isDarkMode)
-    })
+    // No theme change listeners needed - always dark mode
   },
 
   beforeDestroy () {
     // Cleanup
     if (this.autoSaveTimer) {
       clearTimeout(this.autoSaveTimer)
-    }
-
-    // Clean up theme listener
-    if (this.themeChangeListener) {
-      themeService.unsubscribe(this.themeChangeListener)
     }
   },
 
@@ -485,30 +460,6 @@ export default {
     // UI methods
     toggleHelp () {
       this.$store.commit('wizard/TOGGLE_HELP')
-    },
-
-    toggleTheme () {
-      // Use theme service to toggle theme - it will handle all necessary updates
-      const isDark = themeService.toggleTheme(this.$q)
-      
-      // Store is updated via theme change listener, but force sync here
-      // to ensure UI updates immediately
-      this.$store.commit('wizard/SET_DARK_MODE', isDark)
-      
-      // Force a repaint to ensure UI updates correctly
-      this.$nextTick(() => {
-        // Use requestAnimationFrame to ensure the browser has time to apply the theme
-        window.requestAnimationFrame(() => {
-          // Force a refresh of Quasar components that don't auto-update
-          if (this.$q && this.$q.dark) {
-            const currentMode = this.$q.dark.isActive
-            this.$q.dark.set(!currentMode)
-            this.$q.dark.set(currentMode)
-          }
-        })
-      })
-      
-      return isDark
     },
 
     async exitWizard () {

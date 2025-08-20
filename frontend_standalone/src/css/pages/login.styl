@@ -1,0 +1,68 @@
+#Login
+    margin 0 auto
+    box-sizing border-box
+    width 268px
+    border-radius rounded
+    border-top-width 1px
+    border-top-style solid
+
+    .date
+      margin-top: 20px
+
+.loginQrCode
+  margin: 0 0 20px 0
+
+  svg
+    width 204px
+    background-color #fff
+    padding 11px
+
+.loginWarningBannerContainer
+    min-height 80px
+
+    .loginWarningBanner
+        margin 40px auto
+        box-sizing border-box
+        border-radius rounded
+        width 750px
+        padding 20px
+
+#login-throbber
+    width 20px
+    height @width
+    position absolute
+    right 26px
+    padding-top 10px
+
+
+.Night
+    #Login
+        background nLoginBg
+        box-shadow nDropShadow
+        border-top-color nLoginBorderTop
+
+        .date
+          color: #191919
+
+    .loginWarningBanner
+        background-color nLoginBg
+        box-shadow nDropShadow
+        text-shadow nTextShadow
+
+
+.Day
+    #Login
+        background dLoginBg
+        box-shadow dLoginDropShadow
+        border-top-color rgba(dLoginBorderTop, 0.2)
+
+        .date
+          color: #5d5d5d
+
+        h2
+            text-shadow dTextShadowWhite
+
+    .loginWarningBanner
+        background-color dLoginBg
+        box-shadow dLoginDropShadow
+        text-shadow dTextShadowWhite

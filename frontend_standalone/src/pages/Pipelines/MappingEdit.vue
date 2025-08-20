@@ -1,8 +1,8 @@
 <template>
   <q-page class="q-pa-sm">
-    <q-header bordered :style="(darkMode ? 'background: var(--q-color-dark);' : '')" :class="(darkMode ? '' : 'bg-grey-1')">
-      <q-toolbar class="q-gutter-x-sm" :class="(darkMode ? '' : 'text-black')">
-        <img class="q-mr-md" :src="(darkMode ? 'logrhythm_logo_darkmode_wide.svg' : 'logrhythm_logo_lightmode_wide.svg')" alt="LogRhythm Open Collector">
+<q-header bordered style="background: var(--q-color-dark);">
+  <q-toolbar class="q-gutter-x-sm">
+    <img class="q-mr-md" src="logrhythm_logo_darkmode_wide.svg" alt="LogRhythm Open Collector">
         <!-- <q-btn no-caps flat dense icon="playlist_add" :label="$t('Manual Import')" @click="showManualImport = true" v-if="!showManualImport" >
           <q-tooltip content-style="font-size: 1rem;">
             {{ $t('Import log messages manually') }}
@@ -75,14 +75,14 @@
       <!-- <div class="text-h4 q-my-md" style="opacity:.6">
         {{ $t('Import JSON') }}
       </div> -->
-      <q-expansion-item
-        group="group"
-        default-opened
-        class="shadow-1 overflow-hidden q-mb-md"
-        style="border-radius: 7px"
-        :header-class="darkMode ? 'bg-grey-7 text-grey-4' : 'bg-grey-5 text-grey-9'"
-        :expand-icon-class="darkMode ? 'text-grey-3' : 'text-grey-10'"
-      >
+<q-expansion-item
+  group="group"
+  default-opened
+  class="shadow-1 overflow-hidden q-mb-md"
+  style="border-radius: 7px"
+  header-class="bg-grey-7 text-grey-4"
+  expand-icon-class="text-grey-3"
+>
         <template v-slot:header>
           <q-item-section>
             <span style="opacity:.8" class="text-bold">{{ $t('Sample Messages') }}</span>
@@ -106,12 +106,12 @@
                 <q-icon name="o_info" color="blue-10" size="sm" class="q-mr-sm" /><span>{{ $t('Total Messages sent by the backend: {incomingLogCount}', { incomingLogCount }) }}</span><br>
                 <span>{{ $t('This includes the messages already in transit when the Live Tail got stopped.') }}</span> -->
               </q-tooltip>
-              <q-linear-progress :value="queueIn.length / queueInMaxSize" color="indigo" size="lg" stripe :track-color="darkMode ? 'grey-9' : 'grey-7'" />
-              <q-linear-progress :value="processedLogsCount / processedLogsMaxSize" color="teal" size="lg" :track-color="darkMode ? 'grey-9' : 'grey-7'" />
+              <q-linear-progress :value="queueIn.length / queueInMaxSize" color="indigo" size="lg" stripe track-color="grey-9" />
+              <q-linear-progress :value="processedLogsCount / processedLogsMaxSize" color="teal" size="lg" track-color="grey-9" />
             </div>
           </q-item-section>
         </template>
-        <q-card :class="darkMode ? 'bg-grey-8' : 'bg-grey-2'">
+<q-card class="bg-grey-8">
           <q-card-section class="text-bold">
             {{ $t('Import and process JSON messages to add to the JSON mapping area below.') }}
           </q-card-section>
@@ -815,7 +815,6 @@
 
 import { exportFile, copyToClipboard, uid } from 'quasar'
 import { mapState } from 'vuex'
-import mixinSharedDarkMode from 'src/mixins/mixin-Shared-DarkMode'
 import mixinSharedRightToLeft from 'src/mixins/mixin-Shared-RightToLeft'
 import mixinSharedBuildSmaPolicy from 'src/mixins/mixin-Shared-BuildSmaPolicy'
 import Vue2Filters from 'vue2-filters'
@@ -826,7 +825,6 @@ import ConfirmDialog from 'components/Dialogs/ConfirmDialog.vue'
 export default {
   name: 'PagePipelineBuilder',
   mixins: [
-    mixinSharedDarkMode, // Shared computed to access and update the DarkMode
     mixinSharedRightToLeft, // Shared functions to deal with LTR/RTL languages
     mixinSharedBuildSmaPolicy, // Shared JQ Building functions (Filter and Transform)
     Vue2Filters.mixin
@@ -834,6 +832,7 @@ export default {
   components: { lrWebConsoleToggle },
   data () {
     return {
+      darkMode: true, // Always using dark mode
       pipelineUid: uid(), // UUID of the pipeline, used as the UUID of the tail too. Needed to be able to kill it on the server
       search: '',
       showTypesInMainList: false,

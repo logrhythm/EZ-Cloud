@@ -1,0 +1,191 @@
+/* define column and gutter widths */
+COLUMN_NUM   = 12
+COLUMN_WIDTH = 7%
+GUTTER_WIDTH = 1.45454545%
+
+/* Helper mixin for troubleshooting grid layouts
+ * This is only for rough approximation, webkit sub-pixel rounding
+ * (especially on backgrounds) makes this less than ideal at fluid
+ * widths. It also generates a ton of css, don't leave it in past
+ * debugging.
+ *
+ * usage:
+ * .my-selector
+ *   grid-background(12, 7%, 1.454545%)
+ */
+
+grid-background(total = COLUMN_NUM, column_w = COLUMN_WIDTH, gutter_w = GUTTER_WIDTH)
+  columns = 0..total - 1
+  grid    = 90deg
+  start   = 0
+  gutter_unit = unit(gutter_w)
+
+  for column in columns
+    if column > 0
+      start = unit(column_w + unit(gutter_w, ''), '') * column
+
+    gutter_start = start + unit(column_w, '')
+    gutter_end   = unit(gutter_start, '') + unit(gutter_w, '')
+
+    if unit(gutter_w) == '%' && column == total - 1
+      gutter_end = 100%
+
+    partial = #990000 unit(start, gutter_unit), #990000 unit(gutter_start, gutter_unit), #000000 unit(gutter_start, gutter_unit), #000000 unit(gutter_end, gutter_unit)
+    push( grid, join(',', partial) )
+
+  background: unquote( 'linear-gradient(' + join(',', grid) + ')' )
+
+/* Gets the width of gutters depending on context
+ * If you have static grid. eg: columns 100px, gutter 10px this
+ * function always returns the GUTTER_WIDTH constant. However,
+ * Fluid grids need to recalculate the gutter depending on the
+ * parent context e.g., four columns, inside eight columns inside
+ * twelve columns all require a different % to line up.
+ */
+
+gutter-width(style, context = COLUMN_NUM)
+  if style == 'static'
+    GUTTER_WIDTH
+  else
+    GUTTER_WIDTH * (COLUMN_NUM/context)
+
+/* Gets the width of a span of columns based on context
+ * Adds the width of columns and the internal gutters
+ */
+
+columns-width(columns, context = COLUMN_NUM)
+  internal_gutters = columns >= 1 ? columns - 1 : 0
+  gutters_width    = internal_gutters * GUTTER_WIDTH
+
+  columns * COLUMN_WIDTH + unit(gutters_width,'')
+
+relative-columns-width(columns, context = COLUMN_NUM)
+  columns-width(columns) / columns-width(context) * 100
+
+/* Generates the css for column layouts
+ * This mixin can generate both float and flex-based columns
+ * by passing the appropriate key into the options hash. Allows
+ * for nesting of grids and maintining the width of columns even
+ * for fluid/percentage layouts
+ *
+ * usage:
+ * .my-column
+ *   span-columns(8) // out of COLUMN_NUM
+ *
+ *   .my-inner-column
+ *     span-columns(4, {context: 8}) // All flex-box by default
+ *
+ * .my-float-based-column
+ *   span-columns(8, {type: 'float'})
+ *
+ *   .my-inner-column
+ *     span-columns(4, {context: 8})
+ *
+ *   .my-last-inner-column
+ *     // floated columns must know if they are the last child or
+ *     // they will wrap to the next line
+ *     span-columns(4, {context: 8, last: true})
+ */
+span-columns(columns, options = {})
+  defaults = {
+    context: COLUMN_NUM,
+    type: 'flex',
+    style: 'fluid',
+    positioned: true,
+    last: false
+  }
+
+  options = merge(defaults, options)
+  if options['type'] == 'float'
+    if options['last'] 
+      float right
+    else
+      float left
+      margin-right: gutter-width(options['style'], options['context'])
+  else
+    if options['positioned']
+      /* A common use case when using flex-based layouts
+       * is to make the content stretch 100% height. You can't
+       * just set the child to 100% however, because the browser
+       * doesn't understand 100% of a flex-streched container. Instead
+       * set the child to absolute position and set top, right, bottom,
+       * left all to 0
+       */
+      position relative
+
+  if options['style'] == 'fluid'
+    width: relative-columns-width(columns, options['context'])
+  else
+    width: columns-width(columns, options['context'])
+
+/* Generate a new container for your grid
+ * Defaults to a stretched flexbox layout, but can also
+ * be a container for a floated grid
+ *
+ * usage:
+ *   .my-selector
+ *     container('flex', {stretch: false})
+ *
+ *   .my-selector
+ *     container('float')
+ *
+ *   .my-selector
+ *     container()
+ */
+
+container(type = 'flex', options = {})
+  defaults = {
+    stretch: true
+  }
+
+  options = merge(defaults, options)
+
+  if type = 'flex'
+    display flex
+    flex-pack justify
+    justify-content space-between
+
+    if options['stretch']
+      height 100%
+      align-items stretch
+  else
+    width 100%
+    clearfix()
+
+  margin-left auto
+  margin-right auto
+
+/* Shortcut for filling a container using absolute positioning
+ * Especially useful when filling a flex column, as 100% widths
+ * and heights won't be understood by the browser
+ */
+
+absolute-fill-height()
+  bottom 0
+  left 0
+  position absolute
+  right 0
+  top 0
+
+
+/* Generating reusable outer flex grid
+ * You'll have to make your own inner grids
+ */
+
+for num in (1..COLUMN_NUM)
+  .flex-columns-{num}
+    span-columns(num)
+
+.flex-container
+  container()
+
+  &.center
+    justify-content center
+
+/*
+.flex-columns-inside-6
+  span-columns(6, {type: 'float', context: 8})
+
+.flex-columns-inside-2
+  span-columns(2, {type: 'float', context: 8, last: true})
+*/

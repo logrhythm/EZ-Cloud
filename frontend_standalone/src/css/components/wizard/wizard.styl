@@ -1,0 +1,234 @@
+.wizard-container
+  display flex
+  flex-direction column
+  height 100%
+  width 100%
+
+  .wizard-header
+    padding 15px 20px
+    border-bottom 1px solid
+    
+    h2
+      margin 0
+      font-size 18px
+      font-weight 500
+      
+  .wizard-content
+    flex 1
+    padding 20px
+    overflow-y auto
+    
+  .wizard-footer
+    padding 15px 20px
+    border-top 1px solid
+    display flex
+    justify-content space-between
+    
+    button
+      padding 8px 16px
+      border-radius 4px
+      font-size 14px
+      cursor pointer
+
+.Night
+  .wizard-container
+    background #262626
+    color #CCCCCC
+    
+    .wizard-header
+      background linear-gradient(#484a4b, #3a3c3d)
+      border-bottom-color #242424
+      
+    .wizard-footer
+      background linear-gradient(#3a3c3d, #484a4b)
+      border-top-color #242424
+    
+    .wizard-content
+      background #323232
+      
+    button.primary
+      background #02b7fe
+      color #000000
+      border none
+      
+    button.secondary
+      background transparent
+      color #CCCCCC
+      border 1px solid #CCCCCC
+      
+    button:hover
+      opacity 0.8
+      
+.Day
+  .wizard-container
+    background #ffffff
+    color #4d4d4d
+    
+    .wizard-header
+      background linear-gradient(#e5e5e5, #d9d9d9)
+      border-bottom-color #c3c3c3
+      
+    .wizard-footer
+      background linear-gradient(#d9d9d9, #e5e5e5)
+      border-top-color #c3c3c3
+    
+    .wizard-content
+      background #f2f2f2
+      
+    button.primary
+      background #007bc2
+      color #ffffff
+      border none
+      
+    button.secondary
+      background transparent
+      color #4d4d4d
+      border 1px solid #999999
+      
+    button:hover
+      opacity 0.8
+
+// Form elements for wizard
+.wizard-form-group
+  margin-bottom 20px
+  
+  label
+    display block
+    margin-bottom 8px
+    font-weight 500
+    
+  input[type="text"],
+  input[type="number"],
+  input[type="password"],
+  textarea,
+  select
+    width 100%
+    padding 8px 12px
+    border-radius 4px
+    font-size 14px
+    
+.Night
+  .wizard-form-group
+    input[type="text"],
+    input[type="number"],
+    input[type="password"],
+    textarea,
+    select
+      background #252525
+      border 1px solid #323232
+      color #CCCCCC
+      
+      &:focus
+        border-color #02b7fe
+        outline none
+        box-shadow 0 0 3px rgba(2, 183, 254, 0.3)
+        
+.Day
+  .wizard-form-group
+    input[type="text"],
+    input[type="number"],
+    input[type="password"],
+    textarea,
+    select
+      background #ffffff
+      border 1px solid #d9d9d9
+      color #4d4d4d
+      
+      &:focus
+        border-color #007bc2
+        outline none
+        box-shadow 0 0 3px rgba(0, 123, 194, 0.3)
+
+// Step indicator
+.wizard-steps
+  display flex
+  margin-bottom 30px
+  
+  .step
+    flex 1
+    text-align center
+    position relative
+    
+    &:after
+      content ''
+      position absolute
+      height 2px
+      width 100%
+      top 12px
+      left 50%
+      z-index 1
+      
+    &:last-child:after
+      display none
+      
+    .step-number
+      width 24px
+      height 24px
+      border-radius 50%
+      display inline-flex
+      align-items center
+      justify-content center
+      position relative
+      z-index 2
+      
+    .step-title
+      margin-top 10px
+      font-size 13px
+      
+.Night
+  .wizard-steps
+    .step
+      color #808080
+      
+      &:after
+        background #444444
+        
+      .step-number
+        background #444444
+        color #808080
+        
+      &.active
+        color #CCCCCC
+        
+        .step-number
+          background #02b7fe
+          color #000000
+          
+      &.completed
+        color #CCCCCC
+        
+        .step-number
+          background #007CC3
+          color #ffffff
+          
+        &:after
+          background #007CC3
+          
+.Day
+  .wizard-steps
+    .step
+      color #999999
+      
+      &:after
+        background #d9d9d9
+        
+      .step-number
+        background #d9d9d9
+        color #999999
+        
+      &.active
+        color #4d4d4d
+        
+        .step-number
+          background #007bc2
+          color #ffffff
+          
+      &.completed
+        color #4d4d4d
+        
+        .step-number
+          background #21BA45
+          color #ffffff
+          
+        &:after
+          background #21BA45

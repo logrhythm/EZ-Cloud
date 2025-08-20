@@ -1,0 +1,42 @@
+/*
+ * Resizable style mixins for theming
+ */
+
+ui-resizable-handle-drag-style(color, textShadowColor)
+  color color
+  text-shadow 1px 1px 0 textShadowColor
+
+/*
+ * End mixins
+ */
+
+.ui-resizable-handle--drag
+  box-sizing border-box
+  display block
+
+  .Night &
+    ui-resizable-handle-drag-style(
+      color: #0f0f0f,
+      textShadowColor: rgba(104,104,104,0.5)
+    )
+
+  .Day &
+    ui-resizable-handle-drag-style(
+      color: #999,
+      textShadowColor: rgba(255,255,255,0.5)
+    )
+
+.ui-resizable-handle--click
+  cursor pointer
+  .ui-resizable-handle__icon
+    margin-right 2px
+    font-size 10px
+
+
+.ui-resizable-handle__icon
+  display inline-block
+  transform rotate(0deg)
+  transition transform 300ms
+
+  .ui-resizable-handle--expanded &
+    transform rotate(-90deg)

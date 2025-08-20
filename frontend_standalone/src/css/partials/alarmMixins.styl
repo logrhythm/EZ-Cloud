@@ -1,0 +1,152 @@
+.alarm-layout-container
+  margin 20px
+
+shadowyText()
+  text-shadow: 0 2px 1px rgba(0,0,0,0.8);
+shadowyTextDay50()
+  text-shadow: 0 1px 1px rgba(255,255,255,0.5);
+
+risk5 = red-80
+risk4 = brown-chocolate-86
+risk3 = yellow-gamboge-87
+risk2 = yellow-gold-tips
+risk1 = gray-suva-57
+
+/*
+100-90:
+  text #cc0079
+  glow #d01818
+
+89-80
+  text #dd6b0f
+  glow #df7722
+
+70-79
+  text #272727
+  glow #e28e24
+
+60-69
+  text #e28e24
+  glow #e6a727
+
+50-59
+  text #929292
+  glow #a0a0a0
+*/
+
+calculatePct(totalItems, totalGradientItems, num)
+  difference = totalItems - totalGradientItems
+  num = num - difference
+  num/totalGradientItems
+
+calculateHue(startHue, endHue, pct)
+  range = endHue - startHue
+  (range * pct)
+
+calculateAlarmColor(startColor, endColor, pct)
+  startRed = red(startColor)
+  startGreen = green(startColor)
+  startBlue = blue(startColor)
+
+  endRed = red(endColor)
+  endGreen = green(endColor)
+  endBlue = blue(endColor)
+
+  newRed = calculateHue(startRed, endRed, pct)
+  newGreen = calculateHue(startGreen, endGreen, pct)
+  newBlue = calculateHue(startBlue, endBlue, pct)
+
+  rgb(startRed + newRed, startGreen + newGreen, startBlue + newBlue)
+
+glow(c, lightening = 30%, saturation = 60%)
+  color c
+  background-color c
+  box-shadow 0 0 7px saturate(c, saturation), inset 0 0 3px rgba(white, 0.66)
+
+glowIE(c, lightening = 30%, saturation = 60%)
+  box-shadow 0 0 15px saturate(c, saturation), inset 0 0 3px rgba(white, 0.66)
+
+.Night .colors
+  .ls30-60
+    .risk-90-100
+      glow(nColorsLsRisk90100Glow)
+    .risk-80-89
+      glow(nColorsLsRisk8089Glow)
+    .risk-70-79
+      glow(nColorsLsRisk7079Glow)
+    .risk-60-69
+      glow(nColorsLsRisk6069Glow)
+    .risk-50-59
+      glow(nColorsLsRisk5059Glow)
+
+  .ls60-60
+    .risk-90-100
+      glow(nColorsLsRisk90100Glow, 60%)
+    .risk-80-89
+      glow(nColorsLsRisk8089Glow, 60%)
+    .risk-70-79
+      glow(nColorsLsRisk7079Glow, 60%)
+    .risk-60-69
+      glow(nColorsLsRisk6069Glow, 60%)
+    .risk-50-59
+      glow(nColorsLsRisk5059Glow, 60%)
+
+  .ls90-60
+    .risk-90-100
+      glow(nColorsLsRisk90100Glow, 90%)
+    .risk-80-89
+      glow(nColorsLsRisk8089Glow, 90%)
+    .risk-70-79
+      glow(nColorsLsRisk7079Glow, 90%)
+    .risk-60-69
+      glow(nColorsLsRisk6069Glow, 90%)
+    .risk-50-59
+      glow(nColorsLsRisk5059Glow, 90%)
+
+.Day .colors
+  .ls30-60
+    .risk-90-100
+      glow(dColorsLsRisk90100Glow )
+    .risk-80-89
+      glow(dColorsLsRisk8089Glow)
+    .risk-70-79
+      glow(dColorsLsRisk7079Glow)
+    .risk-60-69
+      glow(dColorsLsRisk6069Glow )
+    .risk-50-59
+      glow(dColorsLsRisk5059Glow)
+
+  .ls60-60
+    .risk-90-100
+      glow(dColorsLsRisk90100Glow, 60%)
+    .risk-80-89
+      glow(dColorsLsRisk8089Glow, 60%)
+    .risk-70-79
+      glow(dColorsLsRisk7079Glow, 60%)
+    .risk-60-69
+      glow(dColorsLsRisk6069Glow, 60%)
+    .risk-50-59
+      glow(dColorsLsRisk5059Glow, 60%)
+
+  .ls90-60
+    .risk-90-100
+      glow(dColorsLsRisk90100Glow, 90%)
+    .risk-80-89
+      glow(dColorsLsRisk8089Glow, 90%)
+    .risk-70-79
+      glow(dColorsLsRisk7079Glow, 90%)
+    .risk-60-69
+      glow(dColorsLsRisk6069Glow, 90%)
+    .risk-50-59
+      glow(dColorsLsRisk5059Glow, 90%)
+
+
+.colors
+
+  [class*="risk-"]
+    width 20px
+    height 20px
+    float left
+    display inline-block
+    list-style none
+    margin 20px

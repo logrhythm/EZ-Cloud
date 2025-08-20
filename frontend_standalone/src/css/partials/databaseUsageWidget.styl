@@ -1,0 +1,29 @@
+.database-usage
+  .hbarchart
+    rect, text
+      cursor default
+
+.Night, .Day
+  [palette-content]
+    .indicator-value
+      label
+        border none
+        line-height 26px
+        margin 0
+        padding 0
+      input
+        width 50px
+        text-align right
+        margin-right 5px
+        padding-right 5px
+        &.ng-invalid
+          border-color #c00
+          box-shadow 0 0 gutter #c00
+      .indicator-error
+        position absolute
+        top 30px
+        width 125px
+        z-index 99
+        right 0
+        .tooltip-arrow
+          left 70%

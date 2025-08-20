@@ -1,0 +1,102 @@
+alignCheckbox()
+  .icon-check, .icon-check-empty
+    display inline
+    vertical-align baseline
+    &:before
+      vertical-align middle
+
+.list-subheader
+  margin-right 5px
+  margin-top 2px
+
+.lists-page
+
+  ui-table
+    preventUserSelection()
+
+    .column
+      .inactive-list
+        .Night &
+          color rgb(112, 112, 112)
+        .Day &
+          color rgb(166, 166, 166)
+
+      .cell
+        preventUserSelection()
+        cursor default
+
+    .ui.selectable-selected, .ui.selectable-anchor
+      border none
+      outline none
+      box-shadow none
+      background-color rgba(68, 168, 224, 0.45)
+
+.list-page-content
+  margin-right 25px
+
+#ListConfigurationTabs
+  alignCheckbox()
+  .ui.tab.header
+    margin-top 1px
+    width 100%
+  .content
+    padding 0px
+  .tab-content
+    padding 11px
+  .restricted-read
+    margin-top 10px
+
+
+#ListInspectorStage
+  alignCheckbox()
+  .checkbox-label
+    margin-top 0px
+  .remove-lists
+    margin-bottom 8px
+    height 20px
+  ui-table
+    .sticky-right
+      min-width 38px
+    &.has-sticky-right .main
+      margin-right 0px
+  .list-content-section
+    margin-bottom 10px
+    .button
+      margin-top 5px
+
+  .icon-list
+    font-size 12px
+    line-height 20px
+    position absolute
+    right 50px
+  .row-with-badge
+    max-width calc(100% - 14px)
+
+#Inspector
+  .lists.section-content
+    background transparent
+    .list-padding
+      padding-right 70px
+    .simple-tooltip
+      &.success
+        max-width 52px
+      &.error
+        max-width 195px
+    .blocker
+      top 45px
+      background rgba(0, 0, 0, 0.4)
+      z-index 10
+    .throbber-wrapper
+      top 35%
+      left 38%
+
+listColor(baseColor)
+
+  if dark(baseColor)
+    uiTableBorderColor = darken(baseColor, 25)
+  else
+    uiTableBorderColor = darken(baseColor, 13)
+
+  #ListInspectorStage
+    ui-table
+      border 1px solid uiTableBorderColor

@@ -1,0 +1,373 @@
+DETAILS_WIDTH = 320px // the width of a single width widget
+SPINE_WIDTH   = 27px
+
+#MegaGrid
+  .table-and-details
+    display flex
+    align-content space-between
+    overflow hidden
+
+  .logs-table
+    overflow hidden
+    flex 1 1 auto
+
+  #NoRowSelectedMessage
+    text-align center
+
+  #MegaGridGridAndDetails
+    position relative
+
+  #MegaGridDetails
+    position absolute
+    width DETAILS_WIDTH
+    top 0
+    bottom 0
+    right 0
+    overflow hidden
+
+  #MegaGridDetails2
+    width SPINE_WIDTH
+    display flex
+    align-items stretch
+    flex 0 0 auto
+    overflow hidden
+
+  #MegaGridDetailsLabel
+    position absolute
+    cursor pointer
+    top 0
+    left 0
+    bottom 0
+    width SPINE_WIDTH
+    z-index 50
+    i
+      padding-left SPINE_WIDTH*.25
+      position relative
+      z-index 20
+      &.icon-expand-left //after rotation axis has change
+        padding-left 0
+        padding-right SPINE_WIDTH*.25
+      &.icon-panelcontrol-square
+        text-shadow none
+
+  #MegaGridDetailsLabel2
+    display flex
+    flex-direction column
+    align-items flex-end
+    cursor pointer
+    flex 0 0 auto
+    width SPINE_WIDTH
+    z-index 50
+    i
+      padding-left SPINE_WIDTH*.25
+      position relative
+      z-index 20
+      &.icon-expand-left //after rotation axis has change
+        padding-left 0
+        padding-right SPINE_WIDTH*.25
+      &.icon-panelcontrol-square
+        text-shadow none
+
+  #MegaGridDetailsLabelInner
+    text-transform uppercase
+    position absolute
+    right (SPINE_WIDTH*.5)-(14*.5)
+    top (SPINE_WIDTH*.25)-(14)
+    transform-origin right bottom
+    transform rotate(-90deg)
+    text-align right
+    width 500px
+    z-index 200
+
+  #MegaGridDetailsLabelInner2
+    text-transform uppercase
+    transform rotate(-90deg)
+    transform-origin right top
+    padding-top 5px
+    margin-right SPINE_WIDTH
+    padding-right 10px
+    flex 0 0  auto
+    text-align right
+
+  #MegaDetailsPanelInner
+    min-width DETAILS_WIDTH - SPINE_WIDTH
+    padding-left SPINE_WIDTH
+    height 100%
+    .tab-stage
+      font-size 12px
+      height calc(100% - 17px)
+      position relative
+
+      .throbber-wrapper
+        position absolute
+        width 100px
+        height @width
+        top 50%
+        left 50%
+        margin (-@height/2) 0 0 (-@width/2)
+
+  #MegaDetailsPanelInner2
+    min-width DETAILS_WIDTH - SPINE_WIDTH
+    height 100%
+    .tab-stage
+      font-size 12px
+      overflow auto
+      white-space normal
+
+      .throbber-wrapper
+        position absolute
+        width 100px
+        height @width
+        top 50%
+        left 50%
+        margin (-@height/2) 0 0 (-@width/2)
+
+  .details-background
+    position relative
+    height 100%
+
+  .megaGridEventsAndActionsTab
+    height 100%
+
+  .details-table
+    thead, td:first-child
+      font-weight bold
+    td, th
+      padding 5px
+    &.details-table-fixed
+      table-layout fixed
+    .label-td
+      width 15%
+    .details-table-divider
+      border-bottom-width 1px
+      border-bottom-style solid
+  .footer
+    border-bottom 60px solid transparent
+
+  .detailsActionsContainer
+    height 100%
+    box-sizing border-box
+
+  .detailsActionsScroll
+    allowUserSelection()
+    word-wrap break-word
+    box-sizing border-box
+    text-align left
+    display block
+    overflow-y auto
+    margin-right -11px
+    margin-left -5px
+    padding-right 5px
+    height 100%
+    .value-td
+      word-break break-word
+
+  .detailsActionsScroll2
+    allowUserSelection()
+    word-wrap break-word
+    box-sizing border-box
+    text-align left
+    .value-td
+      word-break break-word
+
+  .detailsActionsFooter
+    margin-left -11px
+    margin-right -11px
+    box-sizing border-box
+    position absolute
+    bottom 0
+    right 0
+    left 0
+    padding-bottom 32px
+
+  .detailsActionsFooter2
+    box-sizing border-box
+    position absolute
+    bottom 0
+    right 0
+    left 0
+
+  .detailsActionsBtnFooter
+    padding 6px 0 25px 12px
+
+    button
+      height 28px
+
+  .icon-widget
+    font-size 13px
+
+  .details-log-message-tab
+    height 100%
+  .details-log-message
+    padding-bottom 23px
+    white-space pre-wrap
+    height 100%
+
+  .ii-body
+    padding-right 7px
+    .checkbox-label
+      clearfix()
+      width 90%
+    .header
+      margin-top 5px
+      font-weight bold
+    .section-header
+      font-weight bold
+    section
+      margin-bottom 10px
+      &:last-child
+        margin-bottom 2px
+
+  .ii-search-title
+    font-weight bold
+
+  .ii-search-timebox
+    width 46%
+    display inline-block
+    box-sizing border-box
+    padding 5px 0
+    .timebox-input
+      display inline-block
+      width 45% !important
+      padding-right 15px
+
+  .ii-search-label
+    display inline-block
+    left -1.5em
+    position relative
+    width 0px
+
+  .ii-throbber
+    position absolute
+    left 50%
+    top 50%
+
+  .ii-search-btn
+    float right
+    margin 5px
+    &.invisible
+      visibility hidden
+
+  .ii-outer
+    border-bottom 135px solid transparent
+  .ii-search
+    padding 5px 17px 35px
+  .ii-tab
+    height 100%
+
+
+  .tac-search
+    display flex
+    justify-content center
+
+    .ui.button
+      margin 0 0 1em
+
+  .Night &
+    .detailsActionsFooter, .detailsActionsFooter2
+      background nIiSearchBg
+      box-shadow 5px 0 gutter 0 nIiSearchBs
+    .ii-body
+      .row
+        color nIiBodyRowColor
+      .section-header
+        color nIiBodySectionHeaderColor
+    #MegaGridDetails
+      background linear-gradient(nMegaGridDetailsGradColorStop1, nMegaGridDetailsGradColorStop2)
+    #MegaGridDetails2
+      background linear-gradient(nMegaGridDetailsGradColorStop1, nMegaGridDetailsGradColorStop2)
+    #MegaGridDetailsLabel
+      background nMegaGridDetailsLabelBg
+      box-shadow 0 0 gutter nMegaGridDetailsLabelBs
+    #MegaGridDetailsLabelInner
+      color nMegaGridDetailsLabelInnerColor
+    #MegaGridDetailsLabel2
+      background nMegaGridDetailsLabelBg
+      box-shadow 0 0 gutter nMegaGridDetailsLabelBs
+    #MegaGridDetailsLabelInner2
+      color nMegaGridDetailsLabelInnerColor
+    #MegaDetailsPanelInner
+      color nMegaDetailsPanelInnerColor
+      tab-colors(nMegaDetailsPanelInnerTabColors1, nMegaDetailsPanelInnerTabColors2, nMegaDetailsPanelInnerTabColors3, nMegaDetailsPanelInnerTabColors4)
+    #MegaDetailsPanelInner2
+      color nMegaDetailsPanelInnerColor
+      tab-colors(nMegaDetailsPanelInnerTabColors1, nMegaDetailsPanelInnerTabColors2, nMegaDetailsPanelInnerTabColors3, nMegaDetailsPanelInnerTabColors4)
+    .details-background
+      background nDetailsBackgroundBg
+    .details-table
+      thead, td:first-child
+        color nDetailsTableTheadTdColor
+      tbody tr:nth-child(odd)
+        background nDetailsTableTBodyTrNthChildBg
+      .details-table-divider
+        background transparent !important
+        border-bottom-color nDetailsTableDeviderBorderBottom
+  .Day &
+    #NoRowSelectedMessage
+      color dNoRowSelectedMessageColor
+    .detailsActionsFooter, .detailsActionsFooter2
+      background dLiSearchBg
+      box-shadow 5px 0 gutter 0 dLiSearchBs
+    .ii-body
+      .row
+        color dLiBodyRowColor !important
+      .section-header
+        color dLiBodySectionHeaderColor
+    #MegaGridDetails
+      background linear-gradient(dMegaGridDetailsGradColorStop1, dMegaGridDetailsGradColorStop2)
+    #MegaGridDetails
+      background linear-gradient(dMegaGridDetailsGradColorStop1, dMegaGridDetailsGradColorStop2)
+    #MegaGridDetailsLabel
+      background dMegaGridDetailsLabelBg
+      color dMegaGridDetailsLabelColor
+      text-shadow dTextShadowWhite
+      box-shadow 0 0 gutter rgba(dMegaGridDetailsLabelBs, 0.7)
+    #MegaGridDetailsLabelInner
+      color dMegaGridDetailsLabelInnerColor
+    #MegaGridDetailsLabel2
+      background dMegaGridDetailsLabelBg
+      color dMegaGridDetailsLabelColor
+      text-shadow dTextShadowWhite
+      box-shadow 0 0 gutter rgba(dMegaGridDetailsLabelBs, 0.7)
+    #MegaGridDetailsLabelInner2
+      color dMegaGridDetailsLabelInnerColor
+    #MegaDetailsPanelInner
+      tab-colors(dMegaDetailsPanelInnerTabColors1, dMegaDetailsPanelInnerTabColors2, dMegaDetailsPanelInnerTabColors3, dMegaDetailsPanelInnerTabColors4)
+    #MegaDetailsPanelInner2
+      tab-colors(dMegaDetailsPanelInnerTabColors1, dMegaDetailsPanelInnerTabColors2, dMegaDetailsPanelInnerTabColors3, dMegaDetailsPanelInnerTabColors4)
+    .details-background
+      background dDetailsBackgroundBg
+    .details-table
+      thead, td:first-child
+        color dDetailsTableTheadTdColor
+      tbody tr:nth-child(odd)
+        background dDetailsTableTbodyBg
+      .details-table-divider
+        background transparent !important
+        border-bottom-color dDetailsTableDeviderBorderBottom
+    .ii-search-title
+      text-shadow 0 1px 0 rgba(255,255,255, 0.5)
+
+
+getConfidenceColor(num)
+  GREY_END   = 50
+  GLOW_START = 90
+  glowToGrey = GLOW_START - GREY_END
+
+  if num >= 0 && num <= GREY_END
+    return gray-50
+  else if num > GREY_END && num <= GLOW_START
+    return calculateAlarmColor(gray-50, blue-navy-76, calculatePct(GLOW_START, glowToGrey, num))
+  else if num > GLOW_START
+    return blue-navy-76 (0 0 5px blue-navy-76)
+
+
+for num in (0..100)
+  .Night #MegaGrid .confidence-{num}
+    confidence = getConfidenceColor(num)
+    color confidence[0]
+    text-shadow confidence[1]
+  .Day #MegaGrid .confidence-{num}
+    confidence = getConfidenceColor(num)
+    color confidence[0]
+    text-shadow confidence[1]

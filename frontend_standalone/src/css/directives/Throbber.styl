@@ -1,0 +1,188 @@
+/* variables */
+dotSize       = 25%
+defaultSize   = 24px
+offset        = 150%
+enterDuration = 300ms
+duration      = 1.5s
+enterFn       = cubic-bezier(0.540, 1.650, 0.595, 1.000)
+exitFn        = enterFn
+rotateFn      = ease-in-out
+
+/* functions */
+keyframeDots(number, x, y)
+  .dot-{number}
+    transform: translate(x, y)
+
+  @keyframes dot{number}enter
+    0%, {round(((number - 1)/14) * 100%)}
+      transform translate(0, 0)
+    100%, {round(((number + 7)/14) * 100%)}
+      transform translate(x, y)
+  @keyframes dot{number}exit
+    0%, {round(((number - 1)/14) * 100%)}
+      transform translate(x, y)
+    100%, {round(((number + 7)/14) * 100%)}
+      transform translate(0, 0)
+
+  @keyframes dot{number}
+    0%, 40%, 100%
+      background-color gray-50
+      transform translate(x, y)
+    20%
+      background-color gray-nero-15
+      transform translate(x, y) scale(1.2, 1.2)
+
+
+  @keyframes dayDot{number}
+    0%, 40%, 100%
+      background-color dThrobberDotBgColor
+      transform translate(x, y)
+    20%
+      background-color dThrobberDotDot7BgColor
+      transform translate(x, y) scale(1.2, 1.2)
+
+/* default width */
+.throbber-wrapper
+  width defaultSize
+  height defaultSize
+  .throbber-centered &
+    position absolute
+    left 50%
+    top 50%
+    z-index 2
+
+/* styles */
+.Night .throbber
+  .dot
+    background-color nThrobberDotBgColor
+    &.dot-7
+      background-color nThrobberDotDot7BgColor
+.Day .throbber
+  .dot
+    background-color dThrobberDotBgColor
+    &.dot-7
+      background-color dThrobberDotDot7BgColor
+.throbber
+  width dotSize
+  height dotSize
+  position relative
+  left 1.5 * dotSize
+  top @left
+  opacity 0
+  transition opacity enterDuration ease
+
+  .dot
+    width 100%
+    height 100%
+    border-radius 50%
+    position absolute
+
+  &.throb
+    opacity 1
+
+    .dot-1
+      animation dot1 duration rotateFn 400ms infinite
+    .dot-2
+      animation dot2 duration rotateFn 500ms infinite
+    .dot-3
+      animation dot3 duration rotateFn 600ms infinite
+    .dot-4
+      animation dot4 duration rotateFn 700ms infinite
+    .dot-5
+      animation dot5 duration rotateFn 800ms infinite
+    .dot-6
+      animation dot6 duration rotateFn 900ms infinite
+
+  &.enter
+    opacity 1
+
+    .dot-1
+      animation dot1enter enterDuration enterFn
+    .dot-2
+      animation dot2enter enterDuration enterFn
+    .dot-3
+      animation dot3enter enterDuration enterFn
+    .dot-4
+      animation dot4enter enterDuration enterFn
+    .dot-5
+      animation dot5enter enterDuration enterFn
+    .dot-6
+      animation dot6enter enterDuration enterFn
+
+  &.exit
+    opacity 0
+
+    .dot
+      transform translate(0, 0)
+
+    .dot-1
+      animation dot1exit enterDuration exitFn
+    .dot-2
+      animation dot2exit enterDuration exitFn
+    .dot-3
+      animation dot3exit enterDuration exitFn
+    .dot-4
+      animation dot4exit enterDuration exitFn
+    .dot-5
+      animation dot5exit enterDuration exitFn
+    .dot-6
+      animation dot6exit enterDuration exitFn
+    .dot-7
+      animation dot7exit enterDuration exitFn
+
+
+.Day
+  .throbber
+    &.throb
+      .dot-1
+        animation dayDot1 duration rotateFn 400ms infinite
+      .dot-2
+        animation dayDot2 duration rotateFn 500ms infinite
+      .dot-3
+        animation dayDot3 duration rotateFn 600ms infinite
+      .dot-4
+        animation dayDot4 duration rotateFn 700ms infinite
+      .dot-5
+        animation dayDot5 duration rotateFn 800ms infinite
+      .dot-6
+        animation dayDot6 duration rotateFn 900ms infinite
+
+/* keyframes */
+
+keyframeDots(1,        0, - offset)
+keyframeDots(2,   offset, - offset)
+keyframeDots(3,   offset,    0.01%) // IE10 bug when animating translate % - http://stackoverflow.com/questions/16234269/css-keyframed-animation-jumpy-in-ie10
+keyframeDots(4,        0,   offset)
+keyframeDots(5, - offset,   offset)
+keyframeDots(6, - offset,    0.01%) // IE10 bug
+keyframeDots(7,        0,        0)
+
+.grid-throbber-xlg .throbbers
+  width: 200px !important;
+
+.grid-widget-lg .throbbers
+  width: 100px !important;
+
+.task-grid-throbber .throbbers
+  position: relative !important;
+  float: left;
+
+.grid-widget-sm .throbbers
+  width: 30px !important;
+
+.grid-widget-md .throbbers
+  width: 50px !important;
+
+.grid-widget-xsm .throbbers
+  width: 20px !important;
+
+.smartresponse-grid-loader
+  width: 20px; 
+  position: relative; 
+  float: right;
+
+.cloud-log-souces-throbber
+  position: absolute; 
+  top: 50%; 
+  left: 50%; 
+  transform: translate(-50%,-50%);

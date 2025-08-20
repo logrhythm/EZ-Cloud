@@ -1,0 +1,80 @@
+.help-trigger
+  cursor help
+  text-transform uppercase
+
+.help-circle
+  box-sizing border-box
+  background transparent
+  border 1px solid
+  position absolute
+  top 0
+  left 0
+  z-index 7000
+  pointer-events none
+
+.help-card
+  border 1px solid
+  padding seem
+  position relative
+  line-height 1.3em
+  max-width 653px
+  margin seem auto auto
+  .help-contents
+    padding-left 36px
+  .icon-info
+    font-size 25px
+    line-height 25px
+  ul
+    padding-left 20px
+
+  .warning
+    color #cc6600
+
+.help-details-link.icon-show:before
+  content '▶'
+  display inline-block
+
+.help-details-link.icon-hide:before
+  content '▼'
+  display inline-block
+
+// COLORS below
+help-warning-card()
+  border-color orange-dark-tangerine-99
+  box-shadow inset 0 1px 0 rgba(rgb(darken(orange-tenne-80, 50%)), 0.3)
+  background linear-gradient(yellow-gamboge-85 2%, yellow-gamboge-87 50%)
+
+.Night
+  .help-card
+    background linear-gradient(#222, #191919)
+    color #e5e5e5
+    border-color #3a3c3d
+    box-shadow inset 0 1px 0 rgb(0, 0, 0, 0.3)
+
+  .help-circle
+    border-color blue-celestial-88
+    box-shadow 0px 0px seem blue-celestial-88
+
+  .help-trigger
+    color blue-celestial-88
+
+  .help-warning .help-card
+      help-warning-card()
+
+.Day
+  .help-card
+    background linear-gradient(#eee, #fefefe)
+    color #444
+    border-color #888
+    box-shadow inset 0 1px 0 #ccc
+
+  .help-circle
+    border-color blue-celestial-88
+    box-shadow 0px 0px seem blue-celestial-88
+
+  .help-trigger
+    color blue-celestial-88
+
+  .help-warning .help-card
+      color #e5e5e5
+      help-warning-card()

@@ -1,0 +1,100 @@
+case-filter
+  .content
+    margin 10px
+
+  .icon-check-empty,
+  .icon-check
+    font-size 12px
+    display inline-block
+
+.case-status-filter .label
+  display inline
+  font-size 12px
+
+.tree-map
+  list-style none
+  padding 0 10px 10px
+
+  .label
+    vertical-align middle
+    border-bottom none
+
+  .checkbox
+    margin: 0 -1px
+
+  ul
+    list-style none
+    padding 0px 5px
+
+  li
+    padding 13px 0 0 20px
+    border-left 1px solid transparent
+    position relative
+    margin-top -1px
+
+    > span:before
+      height 1px
+      width 12px
+      content '•'
+      display inline-block
+      position absolute
+      top 10px
+      left -4px
+      font-size 19px
+
+    &:before
+      height 1px
+      width 18px
+      content ''
+      display inline-block
+      position absolute
+      top 22px
+      left 0
+
+    &:last-child:after
+      position absolute
+      content ''
+      display inline-block
+      bottom 0
+      top 25px
+      width 1px
+      left -1px
+
+  > li
+    border-left none
+    padding-left 0
+
+    &:before,
+    &:last-child:after,
+    > span:before
+      display none
+
+.Night .tree-map
+  background #1a1a1a
+
+  li
+    border-color #ccc
+
+    &:before
+      background-color #ccc
+
+    &:last-child:after
+      background #1a1a1a
+
+    .icon-check
+      nGlow()
+
+.Day .tree-map
+  background #f9f9f9
+
+  li
+    border-color #4d4d4d
+
+    &:before
+      background-color #4d4d4d
+
+    &:last-child:after
+      background-color #f9f9f9
+
+    .icon-check
+      dGlow()

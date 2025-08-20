@@ -1,0 +1,58 @@
+.reports-inspector
+  a.btn, .ui.button
+    text-align center
+
+[palette-content]
+  .palette-section
+    .reports-inspector
+      .footer
+        flex 0 0 25px
+
+.completed-scheduled-reports-widget
+  ui-table
+    .sticky-right
+      max-width 35px
+      min-width 35px
+    .column
+      &.icon-column
+        width 35px
+        text-align center
+        ui-table-cell
+          overflow visible !important
+          a
+            text-decoration none
+            .Night &
+              color #ccc
+            .Day &
+              color #4d4d4d
+
+
+    .cell
+      ui-table-cell
+      preventUserSelection()
+      cursor default
+      .tree-table-child-name
+        text-overflow ellipsis
+        overflow hidden
+      .tree-table-name-wrapper
+        .tree-table-parent-name
+          display inline-block
+          text-overflow ellipsis
+          overflow hidden
+          margin-right 6px
+          max-width calc(100% - 32px)
+
+  .completed-report-action-buttons
+    position absolute
+    right 48px
+    top -25px
+
+  .one-col
+    .column:last-child
+      width 100%
+      .cell
+        text-overflow ellipsis
+        overflow hidden
+
+.report-page-content
+  margin-left 20px

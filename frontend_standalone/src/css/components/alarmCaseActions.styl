@@ -1,0 +1,57 @@
+.panel.panel-add-to-case
+  overflow visible
+  left -65px
+  top 30px
+  padding 0
+  min-width 130px
+  line-height 1.2
+  font-size 12px
+  &:before
+    top -7px
+    left 45%
+    border-width 0 11px 8px 11px
+    .Night &
+      NightTopCarrot()
+      border-color transparent transparent nFilteredSelectOptionBg transparent
+    .Day &
+      DayTopCarrot()
+      border-color transparent transparent dFilteredSelectOptionBg transparent
+
+  .rotate-upward &
+    top -60px
+    &:before
+      top 53px
+      transform rotate(180deg)
+
+  .case-action-list
+    list-style-type none
+    padding 0
+    margin 0
+    .Night &
+      background-color nFilteredSelectOptionBg
+    .Day &
+      background-color dFilteredSelectOptionBg
+
+    .case-action
+      border-bottom-width 1px
+      border-bottom-style solid
+      &:last-child
+        border-bottom none
+      .case-action-text
+        padding 6px 3px
+      .Night &
+        border-bottom-color grey-charcoal-56
+        &:hover
+          background-color grey-charcoal-56
+      .Day &
+        border-bottom-color gray-very-light-82
+        &:hover
+          background-color gray-very-light-82
+
+.case-actions-container
+  position relative
+  .disabled
+    .Day &
+      color grey-charcoal-30
+    .Night &
+      color grey-nobel-60

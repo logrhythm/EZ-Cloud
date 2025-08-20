@@ -1,0 +1,305 @@
+totalWidth = 1037
+sidePadding = 10px
+
+.active .Modal .DoublePane.modal-body
+  padding 0
+
+// TODO!!!  Should move out stuff that's log source filter specific when that's all sorted out
+
+// Double Pane Styling
+.msie
+  .DoublePane
+    .add-item, .remove-item
+      &:after
+        height 13px
+      &:before
+        padding 9px
+        top 1px
+
+.DoublePane
+
+  h4
+    margin 10px 0
+
+  // buttons
+  .add-item,
+  .remove-item
+    font-size 12px
+    padding 3px 8px
+    border-radius 2px
+    position relative
+    z-index 0
+
+  .add-item
+    margin 0 10px 0 0
+
+    &:after
+      content ''
+      display block
+      position absolute
+      width 14px
+      height 14px
+      transform rotate(45deg)
+      z-index -15
+      top 3px
+      right -6px
+
+    &:before
+      content ''
+      border-radius 2px
+      padding 10px
+      display inline-block
+      position absolute
+      z-index -5
+      top 0
+      right 0
+
+  .add-all
+    float right
+    margin-right 20px
+
+  .remove-item
+    margin 0 0 0 10px
+
+    &:after
+      content ''
+      display block
+      position absolute
+      width 14px
+      height 14px
+      transform rotate(45deg)
+      z-index -15
+      top 3px
+      left -6px
+
+    &:before
+      content ''
+      border-radius 2px
+      padding 10px
+      display inline-block
+      position absolute
+      z-index -5
+      top 0
+      left 0
+
+  .remove-all
+    margin-left 10px
+
+
+  .pane-left,
+  .pane-right
+    width (totalWidth / 2) px
+    padding 4px 13px
+    text-align left
+    position relative
+
+  .pane-left
+
+    &.arrow:before
+      content ''
+      display block
+      position absolute
+      border 10px solid transparent
+      right -20px
+      top 85px
+
+    h4
+      padding 0 sidePadding
+
+  .option-container
+    padding 10px 0px
+
+    .dropdown
+      width 109px
+      min-width @width
+      margin-right 7px
+      margin-bottom 10px
+
+      &.last
+        margin-right 0
+
+  .btn-reset
+    position absolute
+    top 8px
+    right 10px
+
+  .counts
+    font-size 11px
+    margin 10px 10px 0
+
+
+  .options
+    padding 0
+    margin 0 0 10px
+
+  input[type="text"].main-search
+    width 100%
+    z-index 40
+
+    .menu
+      position inherit
+
+  .log-source-column-choice-panel
+    preventUserSelection()
+    white-space nowrap
+    padding 3px
+    left 425px
+    top 165px
+
+  .checkbox
+    padding-bottom 3px
+
+  .settingLabel
+    padding 5px
+
+  .log-source-filter-table
+    width 100%
+
+  .search-results,
+  .selected-sources
+    width 100%
+    padding 0
+    list-style none
+    overflow-y scroll
+    overflow-x hidden
+    display block
+    margin 10px 0
+
+    tr
+      height 35px
+
+    td
+      overflow hidden
+      white-space normal
+      word-wrap break-word
+      word-break break-all
+      vertical-align middle
+      padding 5px
+
+    .remove-log-source, .add-log-source
+      width 40px
+
+  .search-results th,
+  .selected-sources th
+    min-width 96px
+    padding-left 4px
+    text-align inherit
+
+  .search-results th:last-child,
+  .selected-sources th:first-child
+    min-width 0
+    width 40px
+
+  // TODO: toggle as needed via code
+  .notification
+    display none
+
+  .selected-sources
+    flex-grow 1
+
+  .interaction-buttons
+    position absolute
+    bottom 15px
+    right 15px
+
+// Night Theme
+.Night .DoublePane
+
+  .add-item
+    background linear-gradient(to bottom, grey-tuna-30, gray-baltic-sea-24)
+    color gray-very-light-80
+    text-shadow 1px 1px 1px grey-night-rider-20
+    box-shadow 1px 1px 1px black-100
+
+    &:after
+      background linear-gradient(to bottom right, grey-tuna-30, gray-baltic-sea-24)
+      box-shadow 1px 1px 1px black-100
+    &:before
+      background linear-gradient(to bottom, grey-tuna-30, gray-baltic-sea-24)
+
+  .pane-left
+    background gray-nero-11
+    box-shadow 13px 0px 21px -6px hsla(0, 0, 0, 0.3)
+
+    &:before
+      border-left-color gray-nero-11
+
+  .option-container
+    border-top 1px solid grey-night-rider-20
+    background linear-gradient(gray-nero-13 0%, gray-nero-11 50%)
+
+  .log-source-filter-columns-choices
+    background grey-night-rider-20
+
+  .search-results tr:nth-child(odd)
+    background gray-nero-13
+
+  .selected-sources tr:nth-child(even)
+    background grey-night-rider-20
+
+  .remove-item
+    background linear-gradient(to bottom, grey-tuna-30, gray-baltic-sea-24)
+    color gray-very-light-80
+    text-shadow 1px 1px 1px grey-night-rider-20
+    box-shadow 1px 1px 1px black-100
+
+    &:after
+      background linear-gradient(to bottom right, grey-tuna-30, gray-baltic-sea-24)
+      box-shadow 1px 1px 1px black-100
+    &:before
+      background linear-gradient(to bottom, grey-tuna-30, gray-baltic-sea-24)
+
+  .filter-host .SimpleSelectValue:before
+    display none
+
+// Day Theme
+.Day .DoublePane
+
+  h4
+    color gray-50
+    text-shadow dTextShadowWhite
+
+  .add-item
+    background linear-gradient(to bottom, dBtnStanSmallGradColorStop1, dBtnStanSmallGradColorStop2)
+    color dBtnColor
+    text-shadow dTextShadowWhite
+    box-shadow 1px 1px 1px dBtnBs1
+
+    &:after
+      background linear-gradient(to bottom right, dBtnStanSmallGradColorStop1, dBtnStanSmallGradColorStop2)
+      box-shadow 1px 1px 1px dBtnBs1
+    &:before
+      background linear-gradient(to bottom, dBtnStanSmallGradColorStop1, dBtnStanSmallGradColorStop2)
+
+  .remove-item
+    background linear-gradient(to bottom, dBtnStanSmallGradColorStop1, dBtnStanSmallGradColorStop2)
+    color dBtnColor
+    text-shadow dTextShadowWhite
+    box-shadow 1px 1px 1px dBtnBs1
+
+    &:after
+      background linear-gradient(to bottom right, dBtnStanSmallGradColorStop1, dBtnStanSmallGradColorStop2)
+      box-shadow 1px 1px 1px dBtnBs1
+    &:before
+      background linear-gradient(to bottom, dBtnStanSmallGradColorStop1, dBtnStanSmallGradColorStop2)
+
+  .pane-left
+    background white-gainsboro-93
+    box-shadow 13px 0px 21px -6px hsla(0, 0, 0, 0.2)
+
+    &:before
+      border-left-color white-gainsboro-93
+
+  .option-container
+    border-top 1px solid white-silver-chliace-69
+    background linear-gradient(white-gainsboro-85 0%, white-gainsboro-93 50%)
+
+  .log-source-filter-columns-choices
+    background white-gainsboro-85
+
+  .search-results tr:nth-child(odd),
+  .selected-sources tr:nth-child(even)
+    background white-gainsboro-85
+
+  .filter-host .SimpleSelectValue:before
+    display none
