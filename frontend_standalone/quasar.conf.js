@@ -20,7 +20,7 @@ module.exports = function (/* ctx */) {
     // --> boot files are part of "main.js"
     // https://v1.quasar.dev/quasar-cli/boot-files
     boot: [
-
+      'theme-service', // Initialize theme service before components are mounted
       'i18n',
       // 'axios',
       'global-constants', // Global Constants - TM 2021-04-23
@@ -91,8 +91,8 @@ module.exports = function (/* ctx */) {
     // Full list of options: https://v1.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-devServer
     devServer: {
       https: false,
-      port: 8080,
-      open: true // opens browser window automatically
+      port: 8081,
+      open: false // don't open browser window automatically
 
       // To get the proxying of the Server:8400
       // 👉 doesn't work, so commenting out... 😡
@@ -111,7 +111,9 @@ module.exports = function (/* ctx */) {
     framework: {
       iconSet: 'material-icons', // Quasar icon set
       lang: 'en-us', // Quasar language pack
-      config: {},
+      config: {
+        dark: 'auto' // Let the theme service handle this based on user preferences
+      },
 
       // Possible values for "importStrategy":
       // * 'auto' - (DEFAULT) Auto-import needed Quasar components & directives

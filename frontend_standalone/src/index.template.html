@@ -1,6 +1,57 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <!-- Theme preloader - Prevents flash of wrong theme -->
+    <script>
+      (function() {
+        try {
+          // Helper to get stored preference with fallback
+          function getStoredPreference(key, fallback) {
+            try { return localStorage.getItem(key) || fallback; }
+            catch (e) { return fallback; }
+          }
+          
+          // Get current preference (unified or legacy keys)
+          const storedTheme = getStoredPreference('app-theme-preference', null); 
+          const legacyDarkMode = getStoredPreference('settings.darkMode', null);
+          const legacyWizardTheme = getStoredPreference('wizard-theme', null);
+          
+          // Check if user prefers dark color scheme
+          const prefersDark = window.matchMedia && 
+                             window.matchMedia('(prefers-color-scheme: dark)').matches;
+          
+          // Determine if dark mode should be enabled
+          let isDark = prefersDark; // Default to system preference
+          
+          // Check if we have stored preferences (prioritize unified theme storage)
+          if (storedTheme) {
+            isDark = storedTheme === 'dark';
+          } else if (legacyDarkMode === 'true' || legacyWizardTheme === 'dark') {
+            isDark = true;
+          } else if (legacyDarkMode === 'false' || legacyWizardTheme === 'light') {
+            isDark = false;
+          }
+          
+          // Apply appropriate theme class and background color
+          document.documentElement.classList.add(isDark ? 'Night' : 'Day');
+          document.documentElement.style.backgroundColor = isDark ? '#1a1a1a' : '#f5f5f5';
+          document.documentElement.classList.add('theme-transition-disabled'); // Prevent transitions on load
+          
+          // Expose theme info for potential use by app
+          window.initialThemeInfo = { 
+            isDark, 
+            prefersDark, 
+            storedTheme, 
+            legacyDarkMode,
+            legacyWizardTheme 
+          };
+        } catch (e) {
+          // Silently fail to avoid blocking page load
+          console.error('Error in theme preloader:', e);
+        }
+      })();
+    </script>
+    
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-1FE13FG8WE"></script>
     <script>

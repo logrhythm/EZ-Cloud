@@ -1,5 +1,122 @@
 // app global css in SCSS form
 
+/* ===== Theme Transition System ===== */
+:root {
+  --theme-transition-duration: 0.25s; /* Slightly faster transitions for better UX */
+  --theme-transition-timing: cubic-bezier(0.4, 0.0, 0.2, 1); /* Material Design standard easing */
+  --theme-transition: all var(--theme-transition-duration) var(--theme-transition-timing);
+  --theme-transition-bg: background-color var(--theme-transition-duration) var(--theme-transition-timing);
+  --theme-transition-color: color var(--theme-transition-duration) var(--theme-transition-timing);
+  --theme-transition-border: border-color var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* 
+  Apply default state immediately before DOM content loads
+  This helps to prevent flash of wrong theme or unstyled content
+*/
+html {
+  transition: none !important;
+  /* Default dark theme colors - prevents white flash */
+  background-color: #1a1a1a;
+  color: var(--text-color-dark, #ffffff);
+}
+
+/* System dark mode default - helps ensure proper initial rendering */
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) {
+    background-color: #1a1a1a;
+    color: var(--text-color-dark, #ffffff);
+  }
+}
+
+/* System light mode default - but only if explicitly set */
+@media (prefers-color-scheme: light) {
+  html[data-theme="light"] {
+    background-color: #f5f5f5;
+    color: var(--text-color-light, #121212);
+  }
+}
+
+/* Apply transitions only after initial render */
+html.theme-transitions-enabled {
+  /* Base transition for html and body elements */
+  transition: var(--theme-transition-bg),
+              var(--theme-transition-color) !important;
+  
+  body {
+    transition: var(--theme-transition-bg),
+                var(--theme-transition-color) !important;
+  }
+  
+  /* Apply transitions to elements that change with theme - in priority order */
+  
+  /* High priority UI containers - important for main layout areas */
+  .q-layout, 
+  .wizard-container, 
+  .wizard-sidebar,
+  .wizard-content, 
+  .wizard-header,
+  .q-page, 
+  .q-drawer {
+    transition: var(--theme-transition-bg),
+                var(--theme-transition-color),
+                var(--theme-transition-border);
+  }
+  
+  /* Medium priority UI elements - components users directly interact with */
+  .q-card, 
+  .q-table, 
+  .q-dialog__inner, 
+  .q-item, 
+  .q-btn, 
+  .q-tab,
+  .wizard-controls, 
+  .wizard-help,
+  .step-container {
+    transition: var(--theme-transition-bg),
+                var(--theme-transition-color),
+                var(--theme-transition-border);
+  }
+  
+  /* Form elements - need special attention for accessibility */
+  input, 
+  textarea, 
+  select, 
+  .q-field__native, 
+  .q-field__input,
+  .q-field__control, 
+  .q-field__label {
+    transition: var(--theme-transition-bg),
+                var(--theme-transition-color),
+                var(--theme-transition-border);
+  }
+  
+  /* Lower priority elements - subtle UI changes */
+  .q-separator,
+  .q-badge,
+  .q-chip {
+    transition: var(--theme-transition-bg),
+                var(--theme-transition-color),
+                var(--theme-transition-border);
+  }
+}
+
+/* Focus elements should have immediate visual feedback */
+input:focus, 
+button:focus, 
+a:focus, 
+.q-focus-helper,
+*:focus-visible {
+  transition: box-shadow 0.1s ease-out !important;
+  outline: auto; /* Ensure focus outlines are visible */
+}
+
+/* Disable transitions temporarily when switching themes */
+html.theme-transition-disabled * {
+  transition: none !important;
+}
+
+/* ===== Utility Classes ===== */
 // For Install Logs and other Console messages
 .fixed-font-console {
   display: block;
@@ -8,23 +125,256 @@
   white-space: pre;
 }
 
-// Axon style / To force the buttons and badges to use the right foreground colour (it varies between Dark and Light mode)
-.q-btn.bg-primary,
-.q-badge.bg-primary
-{
-  color: var(--q-color-textForPrimaryButton) !important;
+/* ===== Theme-Specific Styles ===== */
+// Apply dark mode styles immediately - helps prevent flash of light mode
+html {
+  &.Night {
+    background-color: #1a1a1a;
+    color: var(--text-color-dark);
+  }
+  
+  &.Day {
+    background-color: #f5f5f5;
+    color: var(--text-color-light);
+  }
 }
 
-// // Axon style / To force the bar under the name of tabs to be coloured with the gradient
-// .q-tab__indicator.text-primary {
-//   color: transparent !important;
-//   background: rgb(2,0,36) !important;
-//   background: linear-gradient(90deg, #50B7F8 0%, #B74F92 100%) !important;
-// }
+// Primary button color forcing
+.q-btn.bg-primary,
+.q-badge.bg-primary {
+  color: var(--text-on-primary-dark) !important;
+  
+  .body--light & {
+    color: var(--text-on-primary-light) !important;
+  }
+}
 
-// Axon style / To force the background of popup dialogs in Dark mode
-.q-dialog .q-card--dark,
-.q-dialog .q-card--dark .q-tab-panel {
-  background: rgb(62, 66, 73);
+// Dark Mode Text and Control Styling
+.body--dark {
+  // General text
+  color: var(--text-color-dark);
+  
+  // Form controls
+  .q-field__native, 
+  .q-field__input,
+  .q-field__prefix,
+  .q-field__suffix {
+    color: var(--text-color-dark);
+  }
+  
+  // Inputs
+  input, textarea, select {
+    color: var(--text-color-dark);
+    background: var(--input-bg-dark);
+    border-color: var(--input-border-dark);
+    
+    &:focus {
+      outline: var(--focus-outline-dark);
+    }
+  }
+  
+  // Labels
+  label, .q-field__label {
+    color: var(--text-secondary-dark);
+  }
+  
+  // Tables
+  .q-table th, .q-table td {
+    color: var(--text-color-dark);
+  }
+  
+  // Cards
+  .q-card {
+    color: var(--text-color-dark);
+    background: var(--card-bg-dark);
+  }
+  
+  // Dialogs
+  .q-dialog__inner {
+    color: var(--text-color-dark);
+  }
+  
+  .q-dialog .q-card--dark,
+  .q-dialog .q-card--dark .q-tab-panel {
+    background: var(--panel-bg-dark);
+  }
+  
+  // Panels
+  .q-panel, .q-item {
+    color: var(--text-color-dark);
+  }
+  
+  // Lists
+  .q-item, .q-item__label {
+    color: var(--text-color-dark);
+  }
+  
+  // Tabs
+  .q-tab {
+    color: var(--text-secondary-dark);
+    
+    &--active {
+      color: var(--primary-dark);
+    }
+  }
+  
+  // Buttons (non-primary)
+  .q-btn:not(.bg-primary) {
+    color: var(--text-color-dark);
+  }
+  
+  // Focus styles
+  .q-focus-helper {
+    background: var(--primary-dark) !important;
+    opacity: 0.2;
+  }
+}
+
+/* ===== Light Mode Overrides ===== */
+.body--light {
+  color: var(--text-color-light);
+  
+  // Form controls
+  .q-field__native, 
+  .q-field__input,
+  .q-field__prefix,
+  .q-field__suffix {
+    color: var(--text-color-light);
+  }
+  
+  // Inputs
+  input, textarea, select {
+    color: var(--text-color-light);
+    background: var(--input-bg-light);
+    border-color: var(--input-border-light);
+    
+    &:focus {
+      outline: var(--focus-outline-light);
+    }
+  }
+  
+  // Labels
+  label, .q-field__label {
+    color: var(--text-secondary-light);
+  }
+  
+  // Tabs
+  .q-tab {
+    color: var(--text-secondary-light);
+    
+    &--active {
+      color: var(--primary-light);
+    }
+  }
+  
+  // Focus styles
+  .q-focus-helper {
+    background: var(--primary-light) !important;
+    opacity: 0.2;
+  }
+}
+
+/* ===== Accessibility Improvements ===== */
+/* Better focus indicators - WCAG 2.1 AA compliant */
+:focus-visible {
+  outline: auto 3px Highlight !important;
+  outline: auto 3px -webkit-focus-ring-color !important;
+  box-shadow: 0 0 0 3px rgba(2, 183, 254, 0.5) !important; /* Blue halo with transparency */
+}
+
+/* Keyboard focus indicators - especially important for keyboard navigation */
+*:focus {
+  outline-style: solid;
+  outline-width: 2px;
+}
+
+/* Skip links for keyboard navigation - revealed on focus */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  padding: 8px;
+  z-index: 100;
+  background: var(--primary-dark);
+  color: white;
+  transition: top 0.2s ease;
+  
+  &:focus {
+    top: 0;
+  }
+}
+
+/* Improved color contrast for links - meeting WCAG 2.1 AA contrast requirements */
+a {
+  text-decoration: underline; /* Always underline links for better visibility */
+  
+  .body--dark & {
+    color: var(--primary-dark);
+    
+    &:hover {
+      color: lighten(#02b7fe, 15%);
+      text-decoration: underline;
+    }
+    
+    &:focus {
+      outline-color: var(--primary-dark);
+    }
+  }
+  
+  .body--light & {
+    color: var(--primary-light);
+    
+    &:hover {
+      color: darken(#0066a3, 10%);
+      text-decoration: underline;
+    }
+    
+    &:focus {
+      outline-color: var(--primary-light);
+    }
+  }
+}
+
+/* High contrast text for important UI elements */
+.q-btn, .q-tab, h1, h2, h3, h4, h5, h6, label, .q-field__label {
+  .body--light & {
+    color: var(--text-color-light);
+  }
+  
+  .body--dark & {
+    color: var(--text-color-dark);
+  }
+}
+
+/* Improved contrast for disabled elements */
+.q-btn--disabled, [disabled], .disabled {
+  .body--dark & {
+    opacity: 0.7; /* Higher opacity for better visibility in dark mode */
+    color: var(--text-secondary-dark);
+  }
+  
+  .body--light & {
+    opacity: 0.65;
+    color: var(--text-secondary-light);
+  }
+}
+
+/* ===== System Preference Media Queries ===== */
+@media (prefers-color-scheme: dark) {
+  html.system-preference {
+    &, body {
+      background-color: #1a1a1a;
+      color: var(--text-color-dark);
+    }
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  html.system-preference {
+    &, body {
+      background-color: #f5f5f5;
+      color: var(--text-color-light);
+    }
+  }
 }
 

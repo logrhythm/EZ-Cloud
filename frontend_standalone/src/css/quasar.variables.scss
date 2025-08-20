@@ -12,41 +12,78 @@
 // to match your app's branding.
 // Tip: Use the "Theme Builder" on Quasar's documentation website.
 
-$primary   : #1976D2; // Quasar default
-// $primary   : rgb(25, 118, 210); // Quasar default
-// $primary   : hsl(210, 79%, 46%); // Quasar default
+// Base primary colors
+$primary-dark : #02b7fe;
+$primary-light: #007bc2;
 
-$secondary : #26A69A;
+// Using standardized brand colors
+$primary   : $primary-dark;
+$secondary : #3a3c3d;
 $accent    : #9C27B0;
+$dark      : #0f0f10;
 
-$dark      : #1D1D1D;
-
+// Semantic colors
 $positive  : #21BA45;
 $negative  : #C10015;
 $info      : #31CCEC;
 $warning   : #F2C037;
 
-// LogRhyhthm Axon colour scheme:
+// Secondary colors
+$secondaryForDarkMode: #3a3c3d; // Dark gray for dark mode
+$secondaryForLightMode: #e0e0e0; // Light gray for light mode
 
-$primaryForDarkModeVar   : #02b7fe; // For Dark Mode
-// $primary   : #02b7fe; // For Dark Mode
-// $primary   : rgb(2, 183, 254); // For Dark Mode
-// $primary   : hsl(197, 99%, 50%); // For Dark Mode
-
-// $primary   : rgb(0, 80, 145); // In between mode
-// $primary   : hsl(207, 100%, 28%); // In between mode
-
-$primaryForLightModeVar   : #007bc2; // For Light Mode
-// $primary   : rgb(0, 123, 194); // For Light Mode
-// $primary   : hsl(202, 100%, 38%); // For Light Mode
-
+// Theme variables with standardized naming conventions
 :root {
-  --primaryForDarkMode: #02b7fe;
-  --primaryForLightMode: #007bc2;
-  --textForPrimaryButtonForDarkMode: #000000;
-  --textForPrimaryButtonForLightMode: #ffffff;
-
-  --q-color-primaryForDarkMode: #02b7fe;
-  --q-color-primaryForLightMode: #007bc2;
-  --q-color-textForPrimaryButton: #ffffff;
+  /* ===== Brand Colors ===== */
+  /* Primary colors - improved for AA accessibility */
+  --primary-dark: #02b7fe; /* Higher contrast blue for dark theme */
+  --primary-light: #0066a3; /* Darker blue for light theme (AA contrast) */
+  
+  /* Aliases for backward compatibility */
+  --primaryForDarkMode: var(--primary-dark);
+  --primaryForLightMode: var(--primary-light);
+  
+  /* Button text colors with proper contrast ratios */
+  --text-on-primary-dark: #000000; /* Black text on blue button */
+  --text-on-primary-light: #ffffff; /* White text on blue button */
+  
+  /* Aliases for backward compatibility */
+  --textForPrimaryButtonForDarkMode: var(--text-on-primary-dark);
+  --textForPrimaryButtonForLightMode: var(--text-on-primary-light);
+  --q-color-textForPrimaryButton: var(--text-on-primary-light);
+  
+  /* Secondary colors with proper contrast */
+  --secondary-dark: #484a4c; /* Lighter gray for dark mode (better contrast) */
+  --secondary-light: #d0d0d0; /* Darker gray for light mode (better contrast) */
+  
+  /* ===== Text Colors ===== */
+  /* Improved for accessibility: 4.5:1 minimum contrast ratio */
+  --text-color-dark: #ffffff; /* White text on dark backgrounds */
+  --text-secondary-dark: #c9c9c9; /* Light gray text on dark backgrounds - improved contrast */
+  --text-color-light: #121212; /* Deep black text on light backgrounds */
+  --text-secondary-light: #444444; /* Darker gray text on light backgrounds - improved contrast */
+  
+  /* ===== Form Control Colors ===== */
+  --input-bg-dark: #303030; /* Slightly lighter than background for visibility */
+  --input-border-dark: #606060; /* Higher contrast border */
+  --input-bg-light: #ffffff; /* White input backgrounds */
+  --input-border-light: #999999; /* Darker border for improved contrast and visibility */
+  
+  /* ===== Card and Panel Colors ===== */
+  --card-bg-dark: #2c2c2c;
+  --card-bg-light: #ffffff;
+  --panel-bg-dark: #363636; /* Higher contrast from background */
+  --panel-bg-light: #f8f8f8;
+  
+  /* ===== Border Colors ===== */
+  --border-dark: #505050; /* Higher contrast borders */
+  --border-light: #cccccc;
+  
+  /* ===== Focus Indicators ===== */
+  --focus-outline-dark: #02b7fe 0 0 0 3px; /* Enhanced blue focus ring - thicker for visibility */
+  --focus-outline-light: #0066a3 0 0 0 3px; /* Enhanced blue focus ring - darker color and thicker */
+  
+  /* ===== Quasar Specific Colors (for backward compatibility) ===== */
+  --q-color-primaryForDarkMode: var(--primary-dark);
+  --q-color-primaryForLightMode: var(--primary-light);
 }
