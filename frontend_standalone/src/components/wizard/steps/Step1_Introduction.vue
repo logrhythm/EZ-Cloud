@@ -53,7 +53,7 @@
               maxlength="100"
             >
               <template v-slot:prepend>
-                <q-icon name="label" />
+                <q-icon name="label" class="q-mr-sm" style="color: var(--lr-bright-border);" />
               </template>
             </q-input>
           </div>
@@ -71,8 +71,7 @@
                   <q-icon
                     :name="selectedModeInfo.icon"
                     size="24px"
-                    :class="`text-${selectedModeInfo.color}`"
-                    class="q-mr-sm"
+                    :class="selectedModeInfo.icon === 'edit' ? 'text-primary q-mr-sm' : `text-${selectedModeInfo.color} q-mr-sm`"
                   />
                   <div>
                     <div class="text-h6 q-mb-xs">{{ selectedModeInfo.title }}</div>
@@ -122,7 +121,7 @@
                 class="wizard-file-input q-mt-md"
               >
                 <template v-slot:prepend>
-                  <q-icon name="attach_file" />
+                  <q-icon name="attach_file" class="q-mr-sm" style="color: var(--lr-bright-border);" />
                 </template>
               </q-file>
 
@@ -251,7 +250,7 @@ export default {
           label: 'Update Existing Policy',
           value: 'update',
           icon: 'edit',
-          color: 'secondary'
+          color: 'primary' /* changed from 'secondary' to 'primary' so edit icon renders blue */
         }
       ]
     }
@@ -279,7 +278,7 @@ export default {
           title: 'Update Existing Policy',
           description: 'Import and modify an existing policy configuration with enhanced editing tools.',
           icon: 'edit',
-          color: 'secondary',
+          color: 'primary', /* changed from 'secondary' to 'primary' */
           features: [
             'Import existing configuration',
             'Visual diff comparison',
@@ -303,12 +302,6 @@ export default {
   mounted () {
     // Validate on mount if fields have values
     this.validateAllFields()
-
-    // Set focus to first input
-    this.$nextTick(() => {
-      const firstInput = this.$el.querySelector('input[type="text"]')
-      if (firstInput) firstInput.focus()
-    })
   },
 
   methods: {
@@ -527,7 +520,7 @@ export default {
 
 .step-subtitle {
   font-size: 1.125rem;
-  color: var(--q-color-grey-7);
+  color: #ffffff; /* changed from var(--q-color-grey-7) */
   margin: 0;
   line-height: 1.5;
 
@@ -795,7 +788,241 @@ export default {
   }
 }
 
-// Animations
+/* Strong override: ensure Quasar outlined pseudo-elements render a visible border for the policy name input */
+.policy-name-input ::v-deep .q-field__control {
+  position: relative !important;
+  border: 2px solid var(--q-primary) !important;
+  background-clip: padding-box !important;
+  box-shadow: none !important;
+}
+
+/* Force visibility and sizing for Quasar's pseudo-elements used by outlined fields */
+.policy-name-input ::v-deep .q-field__control::before,
+.policy-name-input ::v-deep .q-field__control::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  border-radius: 8px !important;
+  border: 2px solid var(--q-primary) !important;
+  box-sizing: border-box !important;
+  pointer-events: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* Focused state - stronger outline */
+.policy-name-input ::v-deep .q-field--focused .q-field__control::before {
+  border-color: var(--q-primary) !important;
+  box-shadow: 0 0 0 6px rgba(25, 118, 210, 0.12) !important;
+}
+
+/* Error state should override with red */
+.policy-name-input ::v-deep .q-field--error .q-field__control,
+.policy-name-input ::v-deep .q-field--error .q-field__control::before,
+.policy-name-input ::v-deep .q-field--error .q-field__control::after {
+  border-color: #ff6b6b !important;
+  box-shadow: none !important;
+}
+
+/* Prevent the input native background from masking the outline */
+.policy-name-input ::v-deep .q-field__native {
+  background: transparent !important;
+}
+
+/* Focused state - stronger outline */
+.policy-name-input .wizard-input.q-field--focused .q-field__control,
+.policy-name-input .wizard-input.q-field--focused .q-field__control::before {
+  border-color: var(--q-primary);
+  box-shadow: 0 0 0 6px rgba(25, 118, 210, 0.12);
+}
+
+/* Ensure Quasar internal bottom/hint/error text within the policy name input doesn't override custom styles */
+.policy-name-input ::v-deep .q-field__bottom {
+  color: #ffffff !important; /* match subtitle text color */
+}
+
+.policy-name-input ::v-deep .q-field__hint,
+.policy-name-input ::v-deep .q-field__message {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Preserve error visibility: when field has error, show red error text */
+.policy-name-input ::v-deep .q-field--error .q-field__bottom {
+  color: #ff6b6b !important; /* soft red for errors */
+}
+
+/* Ensure control border/color stays themed */
+.policy-name-input ::v-deep .q-field__control {
+  border-color: var(--q-primary) !important;
+  box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.06) !important;
+}
+
+/* Global control border overrides for this page - ensure controls show theme blue border and override defaults */
+.step-introduction ::v-deep .q-field__control,
+.step-introduction ::v-deep .q-file__control,
+.step-introduction ::v-deep .q-select__control,
+.step-introduction ::v-deep .q-radio,
+.step-introduction ::v-deep .q-btn,
+.step-introduction ::v-deep .q-chip {
+  border: 1px solid var(--q-primary) !important;
+  border-radius: 8px !important;
+}
+
+/* Brighter border theme for this page */
+.step-introduction {
+  --lr-bright-border: #42a5f5; /* brighter blue */
+  --lr-bright-border-rgba: 66,165,245; /* RGB for glow */
+}
+
+/* Apply brighter border color to all controls and outlined pseudo-elements (high specificity) */
+.step-introduction ::v-deep .q-field__control,
+.step-introduction ::v-deep .q-field__control::before,
+.step-introduction ::v-deep .q-field__control::after,
+.step-introduction ::v-deep .q-file__control,
+.step-introduction ::v-deep .q-file__control::before,
+.step-introduction ::v-deep .q-file__control::after,
+.step-introduction ::v-deep .q-select__control,
+.step-introduction ::v-deep .q-select__control::before,
+.step-introduction ::v-deep .q-select__control::after,
+.step-introduction ::v-deep .q-radio,
+.step-introduction ::v-deep .q-btn,
+.step-introduction ::v-deep .q-chip {
+  border-color: var(--lr-bright-border) !important;
+  border: 1px solid var(--lr-bright-border) !important;
+}
+
+/* Policy name specific stronger border width */
+.policy-name-input ::v-deep .q-field__control,
+.policy-name-input ::v-deep .q-field__control::before,
+.policy-name-input ::v-deep .q-field__control::after {
+  border-color: var(--lr-bright-border) !important;
+  border: 2px solid var(--lr-bright-border) !important;
+}
+
+/* Focus/active glow using the brighter RGB */
+.step-introduction ::v-deep .q-field--focused .q-field__control::before,
+.step-introduction ::v-deep .q-file--focused .q-file__control::before,
+.step-introduction ::v-deep .q-btn:focus,
+.step-introduction ::v-deep .q-radio.q-radio--checked {
+  border-color: var(--lr-bright-border) !important;
+  box-shadow: 0 0 0 6px rgba(var(--lr-bright-border-rgba), 0.12) !important;
+  outline: none !important;
+}
+
+/* Ensure error still overrides with red */
+.step-introduction ::v-deep .q-field--error .q-field__control,
+.step-introduction ::v-deep .q-field--error .q-field__control::before,
+.step-introduction ::v-deep .q-field--error .q-field__control::after,
+.step-introduction ::v-deep .q-file--error .q-file__control {
+  border-color: #ff6b6b !important;
+  box-shadow: none !important;
+}
+
+/* Enforce 1px border for policy name input (override previous 2px rules) */
+.policy-name-input ::v-deep .q-field__control,
+.policy-name-input ::v-deep .q-field__control::before,
+.policy-name-input ::v-deep .q-field__control::after,
+.policy-name-input ::v-deep .wizard-input .q-field__control::before {
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: var(--lr-bright-border, var(--q-primary)) !important;
+  box-shadow: none !important;
+}
+
+/* Mode option radios: unselected should show subtle bright-blue border instead of gray/none */
+.mode-selection ::v-deep .q-radio {
+  border: 1px solid var(--lr-bright-border) !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transition: all 150ms ease !important;
+}
+
+/* Hover state for clearer affordance */
+.mode-selection ::v-deep .q-radio:hover {
+  border-color: var(--lr-bright-border) !important;
+  background: rgba(var(--lr-bright-border-rgba, 66,165,245), 0.04) !important;
+}
+
+/* Checked state keeps stronger background/glow */
+.mode-selection ::v-deep .q-radio.q-radio--checked {
+  border: 1px solid var(--lr-bright-border) !important;
+  background: rgba(var(--lr-bright-border-rgba, 66,165,245), 0.08) !important;
+  box-shadow: 0 0 0 4px rgba(var(--lr-bright-border-rgba, 66,165,245), 0.06) inset !important;
+}
+
+/* Ensure option wrappers rendered by q-option-group using aria-checked also get the blue border */
+.mode-selection ::v-deep [aria-checked="true"],
+.mode-selection ::v-deep [role="option"][aria-checked="true"] {
+  border: 1px solid var(--lr-bright-border) !important;
+  border-radius: 8px !important;
+}
+
+/* Fix: force radio inner color and svg fill for both q-radio--checked and aria-checked wrappers
+   This ensures the radio dot fills with the bright blue in all rendering modes (q-radio or q-option). */
+.step-introduction ::v-deep .mode-selection .q-radio.q-radio--checked .q-radio__inner,
+.step-introduction ::v-deep .mode-selection [aria-checked="true"] .q-radio__inner,
+.step-introduction ::v-deep .mode-selection [role="option"][aria-checked="true"] .q-radio__inner {
+  color: var(--lr-bright-border) !important;
+}
+
+/* Explicitly set SVG path/circle fill where currentColor may not propagate */
+.step-introduction ::v-deep .mode-selection .q-radio.q-radio--checked .q-radio__bg path,
+.step-introduction ::v-deep .mode-selection [aria-checked="true"] .q-radio__bg path,
+.step-introduction ::v-deep .mode-selection [role="option"][aria-checked="true"] .q-radio__bg path,
+.step-introduction ::v-deep .mode-selection .q-radio.q-radio--checked .q-radio__bg circle,
+.step-introduction ::v-deep .mode-selection [aria-checked="true"] .q-radio__bg circle {
+  fill: var(--lr-bright-border) !important;
+  color: var(--lr-bright-border) !important;
+}
+
+/* Also ensure .q-radio__inner--truthy uses our bright color when inside mode-selection */
+.step-introduction ::v-deep .mode-selection .q-radio__inner--truthy {
+  color: var(--lr-bright-border) !important;
+}
+
+/* Final override: remove visual border from the whole option tile containers for mode-selection
+   Keep the small internal radio dot and the policy-name input borders intact. */
+.mode-selection ::v-deep .q-item,
+.mode-selection ::v-deep .q-option,
+.mode-selection ::v-deep [role="option"],
+.mode-selection ::v-deep .q-item__section,
+.mode-selection ::v-deep .q-item__label {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Also remove border on the q-radio wrapper when it's inside an option tile (so tiles look borderless) */
+.mode-selection ::v-deep .q-radio {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Preserve policy name input border explicitly to avoid accidental removal */
+.policy-name-input ::v-deep .q-field__control,
+.policy-name-input ::v-deep .q-field__control::before,
+.policy-name-input ::v-deep .q-field__control::after {
+  border: 1px solid var(--lr-bright-border, var(--q-primary)) !important;
+}
+
+/* Ensure the update-mode file input hint/error text is white for readability */
+.update-section ::v-deep .wizard-file-input ::v-deep .q-field__hint,
+.update-section ::v-deep .wizard-file-input ::v-deep .q-field__message,
+.update-section ::v-deep .wizard-file-input ::v-deep .q-field__bottom {
+  color: #ffffff !important;
+}
+
+/* Ensure all q-field bottom (hint / message / error) text is white within this step */
+.step-introduction ::v-deep .q-field__bottom {
+  color: #ffffff !important;
+}
+
+/* Animations */
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-4px); }
@@ -827,7 +1054,7 @@ export default {
   opacity: 0;
 }
 
-// Responsive design
+/* Responsive design */
 @media (max-width: 768px) {
   .step-header {
     flex-direction: column;
@@ -855,5 +1082,13 @@ export default {
   .mode-selection .q-radio {
     padding: 0.75rem;
   }
+}
+
+/* Make the inner of unselected radios use a neutral gray for better contrast */
+.step-introduction ::v-deep .mode-selection .q-radio:not(.q-radio--checked) .q-radio__inner,
+.step-introduction ::v-deep .mode-selection [role="option"][aria-checked="false"] .q-radio__inner,
+.step-introduction ::v-deep .mode-selection [aria-checked="false"] .q-radio__inner {
+  color: #9e9e9e !important; /* neutral gray */
+  fill: #9e9e9e !important;
 }
 </style>
