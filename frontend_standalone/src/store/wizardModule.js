@@ -1,6 +1,10 @@
 // JSON Policy Builder Wizard - Vuex Store Module
 // Manages state for the wizard steps, form data, and navigation
 
+import step1Actions from './modules/wizard/step1Actions'
+import { storage } from '../services/wizard/utilityService'
+import { Step1Validator } from '../services/wizard/validationService'
+
 const STORAGE_KEY = 'json-policy-wizard-state'
 
 // Step definitions with metadata
@@ -161,7 +165,7 @@ const state = getInitialState()
 // Getters
 const getters = {
   // Navigation getters
-  getCurrentStep: (state) => state.steps[state.currentStep],
+  getCurrentStep: (state) => state.steps[state.currentStep] || null,
   getStepById: (state) => (stepId) => state.steps.find(step => step.id === stepId),
   getStepByIndex: (state) => (index) => state.steps[index],
   getProgressPercentage: (state) => {
@@ -210,41 +214,91 @@ const getters = {
 const mutations = {
   // Navigation mutations
   SET_CURRENT_STEP (state, stepIndex) {
-    if (stepIndex >= 0 && stepIndex < state.steps.length) {
-      state.currentStep = stepIndex
+    if (typeof stepIndex !== 'number' || isNaN(stepIndex)) {
+      console.warn('SET_CURRENT_STEP called with invalid stepIndex:', stepIndex)
+      return
+    }
+
+    if (stepIndex < 0 || stepIndex >= state.steps.length) {
+      console.warn('SET_CURRENT_STEP: stepIndex out of range, resetting to 0:', stepIndex)
+      stepIndex = 0
+    }
+
+    state.currentStep = stepIndex
+
+    // Ensure step object exists
+    if (!state.steps[stepIndex]) {
+      state.steps[stepIndex] = { status: 'in_progress', isValid: false, validationErrors: [] }
+    } else {
       state.steps[stepIndex].status = 'in_progress'
     }
   },
 
   COMPLETE_STEP (state, stepIndex) {
+    if (typeof stepIndex !== 'number' || isNaN(stepIndex)) {
+      console.warn('COMPLETE_STEP called with invalid stepIndex:', stepIndex)
+      return
+    }
+
     if (stepIndex >= 0 && stepIndex < state.steps.length) {
       if (!state.completedSteps.includes(stepIndex)) {
         state.completedSteps.push(stepIndex)
       }
-      state.steps[stepIndex].status = 'completed'
-      state.steps[stepIndex].isValid = true
-      state.steps[stepIndex].validationErrors = []
+
+      // Ensure step object exists
+      if (!state.steps[stepIndex]) {
+        state.steps[stepIndex] = { status: 'completed', isValid: true, validationErrors: [] }
+      } else {
+        state.steps[stepIndex].status = 'completed'
+        state.steps[stepIndex].isValid = true
+        state.steps[stepIndex].validationErrors = []
+      }
+    } else {
+      console.warn('COMPLETE_STEP: stepIndex out of range, ignoring:', stepIndex)
     }
   },
 
   MARK_STEP_ERROR (state, { stepIndex, errors = [] }) {
+    if (typeof stepIndex !== 'number' || isNaN(stepIndex)) {
+      console.warn('MARK_STEP_ERROR called with invalid stepIndex:', stepIndex)
+      return
+    }
+
     if (stepIndex >= 0 && stepIndex < state.steps.length) {
-      state.steps[stepIndex].status = 'error'
-      state.steps[stepIndex].isValid = false
-      state.steps[stepIndex].validationErrors = Array.isArray(errors) ? errors : [errors]
+      if (!state.steps[stepIndex]) {
+        state.steps[stepIndex] = { status: 'error', isValid: false, validationErrors: Array.isArray(errors) ? errors : [errors] }
+      } else {
+        state.steps[stepIndex].status = 'error'
+        state.steps[stepIndex].isValid = false
+        state.steps[stepIndex].validationErrors = Array.isArray(errors) ? errors : [errors]
+      }
+    } else {
+      console.warn('MARK_STEP_ERROR: stepIndex out of range, ignoring:', stepIndex)
     }
   },
 
   RESET_STEP_STATUS (state, stepIndex) {
+    if (typeof stepIndex !== 'number' || isNaN(stepIndex)) {
+      console.warn('RESET_STEP_STATUS called with invalid stepIndex:', stepIndex)
+      return
+    }
+
     if (stepIndex >= 0 && stepIndex < state.steps.length) {
-      state.steps[stepIndex].status = 'pending'
-      state.steps[stepIndex].isValid = false
-      state.steps[stepIndex].validationErrors = []
+      if (!state.steps[stepIndex]) {
+        state.steps[stepIndex] = { status: 'pending', isValid: false, validationErrors: [] }
+      } else {
+        state.steps[stepIndex].status = 'pending'
+        state.steps[stepIndex].isValid = false
+        state.steps[stepIndex].validationErrors = []
+      }
+
       // Remove from completed steps
       const completedIndex = state.completedSteps.indexOf(stepIndex)
       if (completedIndex > -1) {
         state.completedSteps.splice(completedIndex, 1)
       }
+    } else {
+      console.warn('RESET_STEP_STATUS: stepIndex out of range, ignoring:', stepIndex)
     }
   },
 
@@ -392,18 +446,30 @@ const mutations = {
 
   // State management
   RESET_WIZARD (state) {
-    Object.assign(state, getInitialState())
+    // Preserve Vue reactivity by copying properties instead of replacing the object
+    const newState = getInitialState()
+    Object.keys(newState).forEach(key => { state[key] = newState[key] })
     // Note: Theme state is now managed by the theme-service
     // No need to directly manipulate DOM here
   },
 
   RESTORE_STATE (state, savedState) {
-    Object.assign(state, savedState)
+    // Apply only if savedState looks valid (basic shape check)
+    if (savedState && Array.isArray(savedState.steps)) {
+      // Merge with defaults to ensure missing keys are present
+      const sanitized = { ...getInitialState(), ...savedState }
+      Object.keys(sanitized).forEach(key => { state[key] = sanitized[key] })
+    } else {
+      console.warn('RESTORE_STATE called with invalid saved state')
+    }
   }
 }
 
 // Actions
 const actions = {
+  // Import Step 1 actions
+  ...step1Actions,
+
   // Navigation actions
   async navigateToStep ({ commit, getters, state }, stepIndex) {
     try {
@@ -450,14 +516,27 @@ const actions = {
   // Step validation actions
   async validateCurrentStep ({ commit, state, getters }) {
     const currentStep = getters.getCurrentStep
+    if (!currentStep) {
+      commit('ADD_GLOBAL_ERROR', new Error('Invalid current step'))
+      return { isValid: false, errors: ['Invalid current step'] }
+    }
+
     let isValid = true
     let errors = []
 
     try {
       switch (currentStep.id) {
         case 'introduction':
-          isValid = Boolean(state.projectConfig.name && state.projectConfig.description)
-          if (!isValid) errors.push('Project name and description are required')
+          // Use central Step1 validators to determine validity
+          if (state.projectConfig.mode === 'create') {
+            const validation = Step1Validator.validateCreateMode(state.projectConfig)
+            isValid = validation.isValid
+            if (!isValid) errors = validation.errors.map(e => e.message)
+          } else {
+            const validation = Step1Validator.validateUpdateMode(state.projectConfig, state.projectConfig.existingPolicy)
+            isValid = validation.isValid
+            if (!isValid) errors = validation.errors.map(e => e.message)
+          }
           break
 
         case 'dataupload':
@@ -496,11 +575,14 @@ const actions = {
       const validationResult = { isValid: false, errors: [], warnings: [] }
       const dataStats = { recordCount: 0, fieldCount: 0, nestedLevels: 0 }
 
+      // Normalize rawData to string to avoid crashes when non-string provided
+      rawData = (typeof rawData === 'string') ? rawData : String(rawData || '')
+
       // Parse JSON data
       try {
         if (inputMethod === 'multiple') {
           // Handle multiple JSON objects (one per line)
-          const lines = rawData.trim().split('\n').filter(line => line.trim())
+          const lines = rawData.trim().split('\n').filter(line => line && line.trim())
           parsedData = lines.map(line => JSON.parse(line))
           dataStats.recordCount = parsedData.length
         } else {
@@ -543,8 +625,7 @@ const actions = {
           lastSaved: new Date().toISOString()
         }
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave))
-      return true
+      return storage.set(STORAGE_KEY, stateToSave)
     } catch (error) {
       console.error('Failed to save wizard state:', error)
       return false
@@ -553,9 +634,8 @@ const actions = {
 
   async loadState ({ commit }) {
     try {
-      const savedState = localStorage.getItem(STORAGE_KEY)
-      if (savedState) {
-        const parsedState = JSON.parse(savedState)
+      const parsedState = storage.get(STORAGE_KEY, null)
+      if (parsedState) {
         commit('RESTORE_STATE', parsedState)
         return true
       }
@@ -568,7 +648,7 @@ const actions = {
 
   async clearState ({ commit }) {
     try {
-      localStorage.removeItem(STORAGE_KEY)
+      storage.remove(STORAGE_KEY)
       commit('RESET_WIZARD')
       return true
     } catch (error) {

@@ -226,6 +226,7 @@
 
 <script>
 import { mapState, mapMutations } from 'vuex'
+import { Step1Validator } from '../../../../tooling/validationService.cjs.js'
 
 export default {
   name: 'Step1_Introduction',
@@ -317,44 +318,58 @@ export default {
       })
 
       // Emit validation status
-      this.$emit('step-valid', this.isStepValid)
+      this.$emit('step-valid')
     },
 
     validateField (fieldName) {
-      const value = this.projectConfig[fieldName]?.trim()
-      const errors = []
+      // Delegate validation to centralized service
+      let validationResult
 
       switch (fieldName) {
         case 'name':
-          if (!value) {
-            errors.push('Policy name is required')
-          } else if (value.length < 3) {
-            errors.push('Policy name must be at least 3 characters')
-          } else if (!/^[a-zA-Z0-9\s\-_]+$/.test(value)) {
-            errors.push('Policy name can only contain letters, numbers, spaces, hyphens, and underscores')
-          }
+          validationResult = Step1Validator.validateProjectName(this.projectConfig[fieldName])
           break
+        case 'description':
+          validationResult = Step1Validator.validateProjectDescription(this.projectConfig[fieldName])
+          break
+        default:
+          return true
       }
 
-      this.errors[fieldName] = errors
-      return errors.length === 0
+      // Extract error messages from validation result
+      this.errors[fieldName] = validationResult.errors.map(error => error.message)
+
+      return validationResult.isValid
     },
 
     validateAllFields () {
-      let isValid = true
+      let validationResult
 
       if (this.projectConfig.mode === 'create') {
-        if (!this.validateField('name')) {
-          isValid = false
-        }
+        // Use centralized validation for create mode
+        validationResult = Step1Validator.validateCreateMode(this.projectConfig)
+
+        // Map validation errors to component error state
+        this.errors.name = validationResult.getErrorsByField('name').map(e => e.message)
+        this.errors.description = validationResult.getErrorsByField('description').map(e => e.message)
       } else if (this.projectConfig.mode === 'update') {
-        if (this.existingPolicyFile === null) {
+        // Use centralized validation for update mode
+        validationResult = Step1Validator.validateUpdateMode(
+          this.projectConfig,
+          this.projectConfig.existingPolicy
+        )
+
+        // Map validation errors to component error state
+        this.errors.existingPolicy = validationResult.getErrorsByField('existingPolicy').map(e => e.message)
+
+        // Also check if file is selected
+        if (!this.existingPolicyFile) {
           this.errors.existingPolicy = ['Please select a policy file']
-          isValid = false
+          return false
         }
       }
 
-      return isValid
+      return validationResult ? validationResult.isValid : false
     },
 
     onModeChange () {
@@ -370,7 +385,7 @@ export default {
       })
 
       // Emit validation status
-      this.$emit('step-valid', this.isStepValid)
+      this.$emit('step-valid')
     },
 
     async onFileUpload (file) {
@@ -382,50 +397,77 @@ export default {
       }
 
       try {
-        // Validate file type
-        if (!file.name.toLowerCase().endsWith('.json')) {
-          throw new Error('Please select a JSON file')
+        // Use centralized file validation
+        const fileValidationResult = Step1Validator.validateFile(file)
+
+        if (!fileValidationResult.isValid) {
+          this.errors.existingPolicy = fileValidationResult.errors.map(e => e.message)
+          this.existingPolicyFile = null
+          this.existingPolicyPreview = null
+          return
         }
 
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-          throw new Error('File size must be less than 5MB')
-        }
-
-        // Read and parse file
+        // Read file content
         const fileContent = await this.readFileAsText(file)
 
+        // Use centralized JSON content validation
+        const contentValidationResult = Step1Validator.validateJsonContent(fileContent)
+
+        if (!contentValidationResult.isValid) {
+          this.errors.existingPolicy = contentValidationResult.errors.map(e => e.message)
+          this.existingPolicyFile = null
+          this.existingPolicyPreview = null
+          return
+        }
+
+        // Parse the JSON content
+        let parsedPolicy = null
         try {
-          const parsedPolicy = JSON.parse(fileContent)
-
-          // Basic policy structure validation
-          if (!this.isValidPolicyStructure(parsedPolicy)) {
-            throw new Error('Invalid policy structure. Please select a valid LogRhythm policy file.')
+          if (Step1Validator.sanitizeAndExtractJson && typeof Step1Validator.sanitizeAndExtractJson === 'function') {
+            const jsonText = Step1Validator.sanitizeAndExtractJson(fileContent)
+            parsedPolicy = JSON.parse(jsonText)
+          } else if (Step1Validator.stripCommentsPreserveStrings && typeof Step1Validator.stripCommentsPreserveStrings === 'function') {
+            const withoutComments = Step1Validator.stripCommentsPreserveStrings(fileContent)
+            const cleaned = withoutComments.replace(/,\s*(\}|\])/g, '$1')
+            const extracted = (Step1Validator.extractJsonFromText && typeof Step1Validator.extractJsonFromText === 'function') ? Step1Validator.extractJsonFromText(cleaned) : cleaned
+            parsedPolicy = JSON.parse(extracted)
+          } else {
+            parsedPolicy = JSON.parse(fileContent)
           }
+        } catch (parseErr) {
+          throw new Error(`Failed to parse JSON policy: ${parseErr.message}`)
+        }
 
-          // Store parsed policy
-          this.UPDATE_PROJECT_CONFIG({
-            existingPolicy: parsedPolicy
-          })
+        // Use centralized policy structure validation
+        const policyValidationResult = Step1Validator.validatePolicyStructure(parsedPolicy)
 
-          // Create preview
-          this.existingPolicyPreview = JSON.stringify(parsedPolicy, null, 2).substring(0, 500) + '...'
+        if (!policyValidationResult.isValid) {
+          this.errors.existingPolicy = policyValidationResult.errors.map(e => e.message)
+          this.existingPolicyFile = null
+          this.existingPolicyPreview = null
+          return
+        }
 
-          // Auto-populate fields from policy if empty
-          if (!this.projectConfig.name && parsedPolicy.name) {
-            this.UPDATE_PROJECT_CONFIG({ name: parsedPolicy.name })
-          }
-        } catch (parseError) {
-          throw new Error('Invalid JSON format. Please check the file and try again.')
+        // Store parsed policy
+        this.UPDATE_PROJECT_CONFIG({
+          existingPolicy: parsedPolicy
+        })
+
+        // Create preview
+        this.existingPolicyPreview = JSON.stringify(parsedPolicy, null, 2).substring(0, 500) + '...'
+
+        // Auto-populate fields from policy if empty
+        if (!this.projectConfig.name && parsedPolicy.name) {
+          this.UPDATE_PROJECT_CONFIG({ name: parsedPolicy.name })
         }
       } catch (error) {
-        this.errors.existingPolicy = [error.message]
+        this.errors.existingPolicy = [error.message || 'An error occurred while processing the file']
         this.existingPolicyFile = null
         this.existingPolicyPreview = null
       }
 
       // Emit validation status
-      this.$emit('step-valid', this.isStepValid)
+      this.$emit('step-valid')
     },
 
     readFileAsText (file) {
@@ -449,17 +491,8 @@ export default {
       })
     },
 
-    isValidPolicyStructure (policy) {
-      // Basic validation of policy structure
-      return (
-        typeof policy === 'object' &&
-        policy !== null &&
-        (policy.transforms || policy.schemarule || policy.filter !== undefined)
-      )
-    },
-
     async proceedToNext () {
-      // Final validation
+      // Final validation using centralized service
       if (!this.validateAllFields()) {
         this.$emit('step-invalid', 'Please fix validation errors before continuing')
         return

@@ -1,0 +1,31 @@
+{
+  //Done - But few implementaion remaining
+  "name": "aws cloud trail",
+  "filter": "@.@metadata.beat == 's3beat'...",
+  "description": "AWS CloudTrail policy with comments",
+  //todo : implement IPV4 verify
+  "transforms": [
+    {
+      "inputRule": "IsIP($.sourceIPAddress,true)",
+      "LRSchemaField": "sourceIP",
+      "modifier": "trim"
+    },
+    /* This is a multi-line comment
+       explaining the next transform */
+    {
+      "inputRule": "$.eventName",
+      "LRSchemaField": "command"
+    }
+  ],
+  // Schema rules section
+  "schemarule": {
+    "ConvertoJson": [
+      {
+        "field": "requestParameters" // Convert to JSON
+      }
+    ],
+    /* Fanout configuration
+       for nested events */
+    "childfanouts": []
+  }
+}
