@@ -244,6 +244,7 @@ import { mapState, mapGetters, mapActions } from 'vuex'
 import { themeService } from '../../boot/theme-service'
 import WizardNavigation from './WizardNavigation.vue'
 import WizardHelp from './WizardHelp.vue'
+import debounce from 'lodash/debounce'
 
 // Step Components (lazy loaded)
 const Step1Introduction = () => import('./steps/Step1_Introduction.vue')
@@ -268,7 +269,9 @@ export default {
       sidebarCollapsed: false,
       autoSaveTimer: null,
       stepTransitioning: false,
-      themeChangeListener: null
+      themeChangeListener: null,
+      // ensure debouncedSave always exists to avoid "not a function" errors
+      debouncedSave: null
     }
   },
 
@@ -342,7 +345,7 @@ export default {
     // Watch for changes to save state
     '$store.state.wizard': {
       handler () {
-        if (this.ui.autoSave) {
+        if (this.ui.autoSave && typeof this.debouncedSave === 'function') {
           this.debouncedSave()
         }
       },
@@ -376,6 +379,10 @@ export default {
     // Cleanup
     if (this.autoSaveTimer) {
       clearTimeout(this.autoSaveTimer)
+    }
+    // Cancel debounced save if present
+    if (this.debouncedSave && typeof this.debouncedSave.cancel === 'function') {
+      this.debouncedSave.cancel()
     }
   },
 
@@ -416,9 +423,15 @@ export default {
     },
 
     setupAutoSave () {
-      // Debounced save function
-      this.debouncedSave = this.$_.debounce(() => {
-        this.saveState()
+      // Use lodash debounce directly to avoid relying on injected helpers
+      this.debouncedSave = debounce(() => {
+        try {
+          // call action to save state; ensure we don't mutate store here
+          this.saveState()
+        } catch (e) {
+          // swallow to avoid unhandled errors during rapid updates
+          console.error('Auto-save failed:', e)
+        }
       }, 2000)
     },
 

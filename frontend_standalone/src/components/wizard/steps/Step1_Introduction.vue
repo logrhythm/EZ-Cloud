@@ -30,7 +30,7 @@
 
         <q-card-section class="card-content">
           <q-option-group
-            v-model="projectConfig.mode"
+            v-model="projectMode"
             :options="modeOptions"
             color="primary"
             @input="onModeChange"
@@ -40,7 +40,7 @@
           <!-- Policy Name Input (shown when creating a new policy) -->
           <div v-if="projectConfig.mode === 'create'" class="policy-name-input q-mt-md">
             <q-input
-              v-model="projectConfig.name"
+              v-model="projectName"
               label="Policy Name *"
               hint="Enter a name for your new policy"
               outlined
@@ -259,6 +259,26 @@ export default {
 
   computed: {
     ...mapState('wizard', ['projectConfig']),
+
+    // Computed getter/setter wrappers to avoid direct mutation of Vuex state by v-model
+    projectMode: {
+      get () {
+        return this.projectConfig?.mode || 'create'
+      },
+      set (val) {
+        // Use mutation to update mode safely
+        this.UPDATE_PROJECT_CONFIG({ mode: val })
+      }
+    },
+
+    projectName: {
+      get () {
+        return this.projectConfig?.name || ''
+      },
+      set (val) {
+        this.UPDATE_PROJECT_CONFIG({ name: val })
+      }
+    },
 
     selectedModeInfo () {
       const modeData = {
