@@ -11,6 +11,16 @@ import { ValidationResult } from './validationService'
  */
 export class DataProcessor {
   /**
+   * Log types enum
+   * Used to distinguish between different log file types
+   */
+  static LogTypes = {
+    SINGLE: 'single', // Single log entry
+    MULTILINE: 'multiline', // Multiple log entries
+    UNKNOWN: 'unknown' // Cannot determine or invalid
+  }
+
+  /**
    * Process raw JSON data input
    * @param {string} rawData - Raw JSON string input
    * @param {string} inputMethod - Input method (manual, file, multiple)
@@ -25,22 +35,36 @@ export class DataProcessor {
         recordCount: 0,
         fieldCount: 0,
         nestedLevels: 0
-      }
+      },
+      logType: this.LogTypes.UNKNOWN // Track detected log type
     }
 
     if (!rawData || typeof rawData !== 'string' || rawData.trim() === '') {
-      result.validationResult.addError('data', 'No data provided')
+      result.validationResult.addError('data', 'The file is empty or contains only whitespace')
       return result
     }
 
     try {
-      // Parse JSON based on input method
-      if (inputMethod === 'multiple') {
-        // Handle multiple JSON objects (one per line)
+      // Detect the log type for file uploads (automatic detection)
+      if (inputMethod === 'file') {
+        result.logType = this.detectLogType(rawData)
+      } else if (inputMethod === 'multiple') {
+        // For multiple input mode, explicitly set to multiline
+        result.logType = this.LogTypes.MULTILINE
         await this._processMultipleJson(rawData, result)
       } else {
-        // Handle single JSON object or array
+        // For manual input, try to autodetect if not specified
+        result.logType = this.detectLogType(rawData)
         await this._processSingleJson(rawData, result)
+      }
+
+      // Process based on detected or specified log type
+      if (inputMethod === 'file') {
+        if (result.logType === this.LogTypes.MULTILINE) {
+          await this._processMultipleJson(rawData, result)
+        } else {
+          await this._processSingleJson(rawData, result)
+        }
       }
 
       // If parsing was successful, analyze the structure
@@ -54,6 +78,13 @@ export class DataProcessor {
 
         // Add warnings for complex structures if needed
         this._addComplexityWarnings(result)
+
+        // Run specific validations based on log type
+        if (result.logType === this.LogTypes.MULTILINE) {
+          this._validateMultilineLog(result)
+        } else if (result.logType === this.LogTypes.SINGLE) {
+          this._validateSingleLog(result)
+        }
       }
 
       return result
@@ -66,11 +97,121 @@ export class DataProcessor {
   }
 
   /**
+   * Detect whether the provided JSON data is a single log entry or multiple log entries
+   * @param {string} rawData - Raw JSON string input
+   * @returns {string} Log type (SINGLE, MULTILINE, or UNKNOWN)
+   */
+  static detectLogType (rawData) {
+    if (!rawData || typeof rawData !== 'string') {
+      return this.LogTypes.UNKNOWN
+    }
+
+    // Trim the data and do basic checks
+    const trimmedData = rawData.trim()
+    if (!trimmedData) {
+      return this.LogTypes.UNKNOWN
+    }
+
+    try {
+      // Check for newline-separated JSON objects (multiline)
+      const lines = trimmedData.split(/\r?\n/).filter(line => line.trim())
+
+      // If we have multiple non-empty lines
+      if (lines.length > 1) {
+        // Try to parse each line as JSON
+        let validJsonCount = 0
+        for (let i = 0; i < Math.min(lines.length, 5); i++) { // Check up to 5 lines
+          try {
+            JSON.parse(lines[i].trim())
+            validJsonCount++
+          } catch (e) {
+            // Not a valid JSON line
+          }
+        }
+
+        // If at least 2 lines parsed as valid JSON, it's likely a multiline log
+        if (validJsonCount >= 2) {
+          return this.LogTypes.MULTILINE
+        }
+      }
+
+      // Try parsing as a single JSON object
+      const parsed = JSON.parse(trimmedData)
+
+      // If it's an array with multiple entries, it might be a collection of logs
+      if (Array.isArray(parsed) && parsed.length > 1) {
+        // Check if array entries have similar structure (likely logs)
+        if (this._hasSimilarStructure(parsed)) {
+          return this.LogTypes.MULTILINE
+        }
+      }
+
+      // Default to single log if we got here
+      return this.LogTypes.SINGLE
+    } catch (error) {
+      // If parsing failed, we can't determine the type
+      return this.LogTypes.UNKNOWN
+    }
+  }
+
+  /**
+   * Check if an array of objects has similar structure (for log detection)
+   * @param {Array} array - Array of objects to check
+   * @returns {boolean} True if objects have similar structure
+   * @private
+   */
+  static _hasSimilarStructure (array) {
+    if (!Array.isArray(array) || array.length < 2) {
+      return false
+    }
+
+    // Take first 3 items as samples
+    const sampleSize = Math.min(array.length, 3)
+    const samples = array.slice(0, sampleSize)
+
+    // Check if all samples are objects
+    if (!samples.every(item => item !== null && typeof item === 'object' && !Array.isArray(item))) {
+      return false
+    }
+
+    // Get keys from the first sample
+    const firstKeys = Object.keys(samples[0])
+    if (firstKeys.length === 0) {
+      return false
+    }
+
+    // Check if at least 50% of keys are shared across samples
+    let commonKeyCount = 0
+    for (const key of firstKeys) {
+      let keyExists = true
+      for (let i = 1; i < samples.length; i++) {
+        if (!(key in samples[i])) {
+          keyExists = false
+          break
+        }
+      }
+      if (keyExists) {
+        commonKeyCount++
+      }
+    }
+
+    // Calculate similarity as percentage of common keys
+    const similarityRatio = commonKeyCount / firstKeys.length
+    return similarityRatio >= 0.5 // At least 50% similar
+  }
+
+  /**
    * Process a single JSON object or array
    * @private
    */
   static async _processSingleJson (rawData, result) {
     try {
+      // Check if the file is empty or contains only whitespace
+      if (!rawData || typeof rawData !== 'string' || rawData.trim() === '') {
+        result.validationResult.addError('data', 'The file is empty or contains only whitespace')
+        return
+      }
+
       // Attempt to parse the JSON
       result.parsedData = JSON.parse(rawData)
 
@@ -79,10 +220,60 @@ export class DataProcessor {
 
       // Validate basic structure
       this._validateJsonStructure(result.parsedData, result.validationResult)
+
+      // Set the log type if not already set
+      if (result.logType === this.LogTypes.UNKNOWN) {
+        result.logType = this.LogTypes.SINGLE
+      }
     } catch (parseError) {
       // Try to provide helpful error message for parsing failures
       const errorLocation = this._getJsonErrorLocation(rawData, parseError)
       result.validationResult.addError('data', `Invalid JSON format: ${parseError.message}${errorLocation}`)
+    }
+  }
+
+  /**
+   * Validate a single log entry with specific rules
+   * @param {Object} result - Processing result object
+   * @private
+   */
+  static _validateSingleLog (result) {
+    if (!result.parsedData) return
+
+    // Basic structure checks
+    if (Array.isArray(result.parsedData)) {
+      // For arrays, check if it should be treated as a collection or a single entry with array data
+      if (result.parsedData.length > 1) {
+        // If array has multiple items but was processed as single log, warn user
+        result.validationResult.addWarning(
+          'data',
+          'Multiple objects detected in array. Consider using multiline mode if these are separate log entries.'
+        )
+      }
+    } else if (typeof result.parsedData === 'object') {
+      // For single object entries, look for key fields expected in logs
+      const keys = Object.keys(result.parsedData)
+
+      // Check for common log fields
+      const commonLogFields = ['timestamp', 'time', 'date', 'datetime', 'message', 'msg', 'event']
+      const hasCommonFields = commonLogFields.some(field =>
+        keys.some(key => key.toLowerCase().includes(field.toLowerCase()))
+      )
+
+      if (!hasCommonFields) {
+        result.validationResult.addWarning(
+          'data',
+          'No common log fields detected (timestamp, message, event). Verify this is a valid log format.'
+        )
+      }
+
+      // Check for minimum information required
+      if (keys.length < 3) {
+        result.validationResult.addWarning(
+          'data',
+          'Log entry has very few fields. Log parsing may be limited with this data.'
+        )
+      }
     }
   }
 
@@ -92,14 +283,20 @@ export class DataProcessor {
    */
   static async _processMultipleJson (rawData, result) {
     try {
-      const lines = rawData.trim().split('\n').filter(line => line && line.trim())
+      // Check if the file is empty or contains only whitespace
+      if (!rawData || typeof rawData !== 'string' || rawData.trim() === '') {
+        result.validationResult.addError('data', 'The file is empty or contains only whitespace')
+        return
+      }
+
+      const lines = rawData.trim().split(/\r?\n/).filter(line => line && line.trim())
       const parsedObjects = []
       const parseErrors = []
 
       // Try to parse each line
       lines.forEach((line, index) => {
         try {
-          const parsedLine = JSON.parse(line)
+          const parsedLine = JSON.parse(line.trim())
           parsedObjects.push(parsedLine)
         } catch (lineError) {
           parseErrors.push(`Line ${index + 1}: ${lineError.message}`)
@@ -136,8 +333,108 @@ export class DataProcessor {
       if (parsedObjects.length > 0) {
         this._validateJsonStructure(parsedObjects[0], result.validationResult)
       }
+
+      // Set the log type to multiline if not already set
+      if (result.logType === this.LogTypes.UNKNOWN) {
+        result.logType = this.LogTypes.MULTILINE
+      }
     } catch (error) {
       result.validationResult.addError('data', `Error processing multi-line JSON: ${error.message}`)
+    }
+  }
+
+  /**
+   * Validate multiline logs with specific rules
+   * @param {Object} result - Processing result object
+   * @private
+   */
+  static _validateMultilineLog (result) {
+    if (!result.parsedData || !Array.isArray(result.parsedData) || result.parsedData.length === 0) {
+      return
+    }
+
+    const logs = result.parsedData
+
+    // Check 1: Validate we have enough logs for analysis
+    if (logs.length < 2) {
+      result.validationResult.addWarning(
+        'data',
+        'Only one log entry detected. Multiline mode works best with multiple log entries.'
+      )
+      return
+    }
+
+    // Check 2: Validate logs have consistent structure
+    // First, check that all entries are objects
+    if (!logs.every(log => log !== null && typeof log === 'object' && !Array.isArray(log))) {
+      result.validationResult.addWarning(
+        'data',
+        'Some log entries are not JSON objects. All entries should be objects for consistent processing.'
+      )
+    }
+
+    // Check 3: Analyze consistency of fields across logs
+    const allFields = new Set()
+    const fieldCounts = {}
+
+    // Collect all unique fields and count occurrences
+    logs.forEach(log => {
+      if (log && typeof log === 'object' && !Array.isArray(log)) {
+        Object.keys(log).forEach(key => {
+          allFields.add(key)
+          fieldCounts[key] = (fieldCounts[key] || 0) + 1
+        })
+      }
+    })
+
+    // Check for inconsistent fields (present in less than 50% of logs)
+    const inconsistentFields = []
+    const threshold = logs.length * 0.5
+
+    allFields.forEach(field => {
+      if (fieldCounts[field] < threshold) {
+        inconsistentFields.push({ field, count: fieldCounts[field] })
+      }
+    })
+
+    // Add warning if there are inconsistent fields
+    if (inconsistentFields.length > 0) {
+      const fieldsToShow = inconsistentFields
+        .slice(0, 3)
+        .map(f => `"${f.field}" (${f.count}/${logs.length})`)
+        .join(', ')
+
+      const more = inconsistentFields.length > 3 ? ` and ${inconsistentFields.length - 3} more` : ''
+
+      result.validationResult.addWarning(
+        'data',
+        `Inconsistent fields detected: ${fieldsToShow}${more}. These fields appear in less than 50% of logs.`
+      )
+    }
+
+    // Check 4: Verify timestamp consistency if timestamps are present
+    const timestampFields = ['timestamp', 'time', 'date', '@timestamp', 'eventTime']
+    const timestampField = timestampFields.find(field =>
+      logs.some(log => log && typeof log === 'object' && field in log)
+    )
+
+    if (timestampField) {
+      // Count logs with and without the timestamp field
+      const withTimestamp = logs.filter(log =>
+        log && typeof log === 'object' && timestampField in log
+      ).length
+
+      if (withTimestamp < logs.length) {
+        result.validationResult.addWarning(
+          'data',
+          `Timestamp field "${timestampField}" is present in only ${withTimestamp} of ${logs.length} logs.`
+        )
+      }
+    } else {
+      result.validationResult.addWarning(
+        'data',
+        'No common timestamp field found. Time-based analysis may be limited.'
+      )
     }
   }
 

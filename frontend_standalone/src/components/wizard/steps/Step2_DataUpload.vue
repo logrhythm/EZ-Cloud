@@ -261,6 +261,22 @@
                   </q-card-section>
                 </q-card>
               </div>
+
+              <!-- Log Type Detection Banner -->
+              <q-banner
+                v-if="sampleData.logType"
+                class="q-mt-md log-type-banner"
+                :class="logTypeBannerClass"
+                rounded
+              >
+                <template v-slot:avatar>
+                  <q-icon :name="logTypeIcon" />
+                </template>
+                <div>
+                  <div class="log-type-title">{{ logTypeTitle }}</div>
+                  <div class="log-type-description">{{ logTypeDescription }}</div>
+                </div>
+              </q-banner>
             </div>
 
             <!-- Raw Data Preview -->
@@ -473,6 +489,15 @@ export default {
     dataInsights () {
       const insights = []
 
+      // Show log type detection information
+      if (this.sampleData.logType) {
+        insights.push({
+          icon: this.logTypeIcon,
+          color: this.logType === 'single' ? 'info' : 'amber',
+          message: `Log type detected: ${this.logTypeTitle}. ${this.logTypeDescription}`
+        })
+      }
+
       if (this.detectedArrays.length > 0) {
         insights.push({
           icon: 'data_array',
@@ -511,6 +536,55 @@ export default {
       }
 
       return insights
+    },
+
+    // Log type display properties
+    logType () {
+      return this.sampleData.logType || 'unknown'
+    },
+
+    logTypeTitle () {
+      switch (this.logType) {
+        case 'single':
+          return 'Single Log Entry'
+        case 'multiline':
+          return 'Multiple Log Entries'
+        default:
+          return 'Unknown Log Type'
+      }
+    },
+
+    logTypeDescription () {
+      switch (this.logType) {
+        case 'single':
+          return 'This appears to be a single JSON log entry or document.'
+        case 'multiline':
+          return 'This appears to be a file with multiple JSON log entries.'
+        default:
+          return 'Unable to determine the log format.'
+      }
+    },
+
+    logTypeIcon () {
+      switch (this.logType) {
+        case 'single':
+          return 'description'
+        case 'multiline':
+          return 'format_list_bulleted'
+        default:
+          return 'help_outline'
+      }
+    },
+
+    logTypeBannerClass () {
+      switch (this.logType) {
+        case 'single':
+          return 'bg-info-1'
+        case 'multiline':
+          return 'bg-amber-1'
+        default:
+          return 'bg-grey-4'
+      }
     }
   },
 
@@ -551,10 +625,16 @@ export default {
     async validateJsonData () {
       if (!this.sampleData.rawData?.trim()) {
         this.SET_SAMPLE_DATA({
-          validationResult: { isValid: false, errors: [], warnings: [] },
+          validationResult: {
+            isValid: false,
+            errors: ['The file is empty or contains only whitespace'],
+            warnings: []
+          },
           parsedData: null,
           dataStructure: null
         })
+        this.validationErrorMessage = 'The input is empty or contains only whitespace'
+        this.$emit('step-invalid')
         return
       }
 
@@ -656,6 +736,26 @@ export default {
 
         // Read file content
         const fileContent = await this.readFileAsText(file)
+
+        // Check if file content is empty or contains only whitespace
+        if (!fileContent || fileContent.trim() === '') {
+          // Instead of throwing an error immediately, let's set the file content and let
+          // the validation system handle it to display in the validation results section
+          this.SET_SAMPLE_DATA({
+            rawData: fileContent,
+            inputMethod: 'file',
+            validationResult: {
+              isValid: false,
+              errors: ['The file is empty or contains only whitespace'],
+              warnings: []
+            }
+          })
+
+          // Also show an immediate error on the file upload field
+          this.fileErrorMessage = 'The uploaded file is empty or contains only whitespace'
+          this.$emit('step-invalid')
+          return
+        }
 
         this.SET_SAMPLE_DATA({
           rawData: fileContent,
@@ -1062,6 +1162,52 @@ export default {
   .dark-theme & {
     color: var(--q-color-grey-3);
   }
+}
+
+.log-type-banner {
+  border-radius: 8px;
+  border: 1px solid;
+  transition: all 0.2s ease-in-out;
+
+  &.bg-info-1 {
+    border-color: rgba(var(--q-info-rgb), 0.2);
+  }
+
+  &.bg-amber-1 {
+    border-color: rgba(var(--q-amber-rgb), 0.2);
+  }
+
+  &.bg-grey-4 {
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .dark-theme & {
+    &.bg-info-1 {
+      background: rgba(var(--q-info-rgb), 0.1);
+      border-color: rgba(var(--q-info-rgb), 0.3);
+    }
+
+    &.bg-amber-1 {
+      background: rgba(var(--q-amber-rgb), 0.1);
+      border-color: rgba(var(--q-amber-rgb), 0.3);
+    }
+
+    &.bg-grey-4 {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
+
+.log-type-title {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.log-type-description {
+  font-size: 0.875rem;
+  opacity: 0.8;
 }
 
 .insights-section {
