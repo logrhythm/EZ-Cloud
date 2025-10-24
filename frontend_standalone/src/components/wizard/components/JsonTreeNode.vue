@@ -1,101 +1,114 @@
 <template>
-  <div class="json-tree-node">
-    <!-- Object node -->
-    <div v-if="isObject" class="tree-node" :class="getIndentClass(depth)">
-      <div class="node-header" @click="toggleExpand">
-        <q-icon
-          :name="isExpanded ? 'expand_more' : 'chevron_right'"
-          size="16px"
-          class="expand-icon"
-          v-if="hasChildren"
-        />
-        <span class="node-key">{{ nodeName }}</span>
-        <span class="node-bracket">{</span>
-        <span class="node-type">object</span>
-        <span class="node-count" v-if="objectSize > 0">({{ objectSize }})</span>
+  <div
+    class="json-tree-node"
+    :class="{
+      'is-expandable': isExpandable,
+      'is-expanded': isExpanded,
+      'is-array': isArray,
+      'is-object': isObject,
+      'is-primitive': !isExpandable,
+      'has-children': hasChildren,
+      'is-selectable': selectable,
+      'is-selected': isSelected
+    }"
+  >
+    <!-- Node toggle for expandable items -->
+    <div
+      v-if="isExpandable"
+      class="node-toggle"
+      @click="toggleExpanded"
+    >
+      <q-icon :name="isExpanded ? 'keyboard_arrow_down' : 'keyboard_arrow_right'" size="1rem" />
+    </div>
+    <div v-else class="node-toggle-placeholder"></div>
+
+    <!-- Key for object properties -->
+    <div v-if="data.key !== undefined" class="node-key">
+      {{ data.key }}:
+    </div>
+
+    <!-- Node content -->
+    <div class="node-content">
+      <!-- Array/object summary -->
+      <div
+        v-if="isExpandable"
+        class="node-summary"
+        @click="toggleExpanded"
+      >
+        <span class="node-type">
+          {{ isArray ? '[' : '{' }}
+        </span>
+
+        <span class="node-value">{{ data.value }}</span>
+
+        <!-- Selection checkbox for arrays (when selectable) -->
+        <template v-if="selectable && isArray">
+          <q-checkbox
+            v-model="nodeSelected"
+            dense
+            class="array-checkbox"
+            @click.stop
+          >
+            <q-tooltip>Select this array for fanout processing</q-tooltip>
+          </q-checkbox>
+        </template>
+
+        <span class="node-type">
+          {{ isArray ? ']' : '}' }}
+        </span>
       </div>
 
-      <!-- Object children -->
-      <div v-if="isExpanded && hasChildren">
-        <JsonTreeNode
-          v-for="(childValue, childKey) in data"
-          :key="childKey"
-          :name="childKey"
-          :data="childValue"
-          :path="`${path}.${childKey}`"
-          :depth="depth + 1"
-          :selectedArrays="selectedArrays"
-          @array-selected="handleArraySelection"
-        />
-        <div class="tree-node" :class="getIndentClass(depth)">
-          <span class="node-bracket">}</span>
-        </div>
+      <!-- Primitive value display -->
+      <div v-else class="node-value" :class="`value-${data.type}`">
+        <template v-if="data.type === 'string'">
+          <span class="string-quote">"</span>
+          <span class="string-value">{{ truncatedValue }}</span>
+          <span class="string-quote">"</span>
+
+          <!-- String actions for likely JSON strings -->
+          <div v-if="isLikelyJson && selectable" class="string-actions">
+            <q-checkbox
+              v-model="nodeSelected"
+              label="JSON"
+              dense
+              class="json-checkbox"
+            >
+              <q-tooltip>This string looks like JSON. Select to parse it during processing.</q-tooltip>
+            </q-checkbox>
+          </div>
+        </template>
+
+        <template v-else-if="data.type === 'null'">
+          <span class="null-value">null</span>
+        </template>
+
+        <template v-else>
+          {{ data.value }}
+        </template>
       </div>
-      <div v-else-if="isExpanded && !hasChildren">
-        <div class="tree-node" :class="getIndentClass(depth + 1)">
-          <span class="empty-object">empty object</span>
-        </div>
-        <div class="tree-node" :class="getIndentClass(depth)">
-          <span class="node-bracket">}</span>
-        </div>
+
+      <!-- Path label (optional) -->
+      <div v-if="showPath" class="node-path">
+        {{ data.path }}
       </div>
     </div>
 
-    <!-- Array node -->
-    <div v-else-if="isArray" class="tree-node" :class="getIndentClass(depth)">
-      <div class="node-header">
-        <q-icon
-          :name="isExpanded ? 'expand_more' : 'chevron_right'"
-          size="16px"
-          class="expand-icon"
-          v-if="data.length > 0"
-          @click="toggleExpand"
-        />
-        <span class="node-key" @click="toggleExpand">{{ nodeName }}</span>
-        <q-checkbox
-          v-model="isSelected"
-          class="inline-checkbox"
-          @update:model-value="toggleSelection"
-        />
-        <span class="node-bracket">[</span>
-        <span class="node-type">array</span>
-        <span class="node-count">({{ data.length }})</span>
-      </div>
-
-      <!-- Array children -->
-      <div v-if="isExpanded && data.length > 0">
-        <JsonTreeNode
-          v-for="(item, index) in data.slice(0, 5)"
-          :key="index"
-          :name="index.toString()"
-          :data="item"
-          :path="`${path}[${index}]`"
-          :depth="depth + 1"
-          :selectedArrays="selectedArrays"
-          @array-selected="handleArraySelection"
-        />
-        <div v-if="data.length > 5" class="tree-node" :class="getIndentClass(depth + 1)">
-          <span class="ellipsis">... {{ data.length - 5 }} more items</span>
-        </div>
-        <div class="tree-node" :class="getIndentClass(depth)">
-          <span class="node-bracket">]</span>
-        </div>
-      </div>
-      <div v-else-if="isExpanded && data.length === 0">
-        <div class="tree-node" :class="getIndentClass(depth + 1)">
-          <span class="empty-array">empty array</span>
-        </div>
-        <div class="tree-node" :class="getIndentClass(depth)">
-          <span class="node-bracket">]</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Primitive value node -->
-    <div v-else class="tree-node" :class="getIndentClass(depth)">
-      <span class="node-key">{{ nodeName }}</span>
-      <span class="node-value" :class="`value-${typeof data}`">{{ formattedValue }}</span>
-      <span class="node-type">{{ typeof data }}</span>
+    <!-- Child nodes -->
+    <div
+      v-if="isExpandable && isExpanded"
+      class="node-children"
+    >
+      <json-tree-node
+        v-for="(child, index) in data.children"
+        :key="`${data.path}_${index}`"
+        :data="child"
+        :expanded-nodes="expandedNodes"
+        :selectable-types="selectableTypes"
+        :selected-fields="selectedFields"
+        :show-path="showPath"
+        @toggle="onToggle"
+        @select="onSelect"
+      />
     </div>
   </div>
 </template>
@@ -105,110 +118,113 @@ export default {
   name: 'JsonTreeNode',
 
   props: {
-    name: {
-      type: String,
-      required: true
-    },
     data: {
+      type: Object,
       required: true
     },
-    path: {
-      type: String,
-      required: true
+    expandedNodes: {
+      type: Set,
+      default: () => new Set()
     },
-    depth: {
-      type: Number,
-      default: 0
-    },
-    selectedArrays: {
+    selectableTypes: {
       type: Array,
-      default: () => []
-    }
-  },
-
-  data () {
-    return {
-      isExpanded: this.depth < 2 // Auto-expand first two levels
+      default: () => ['array', 'string']
+    },
+    selectedFields: {
+      type: Set,
+      default: () => new Set()
+    },
+    showPath: {
+      type: Boolean,
+      default: false
     }
   },
 
   computed: {
-    nodeName () {
-      return this.name
-    },
-
     isObject () {
-      return this.data !== null && typeof this.data === 'object' && !Array.isArray(this.data)
+      return this.data.type === 'object'
     },
 
     isArray () {
-      return Array.isArray(this.data)
+      return this.data.type === 'array'
+    },
+
+    isExpandable () {
+      return (this.isObject || this.isArray) && this.hasChildren
+    },
+
+    isExpanded () {
+      return this.expandedNodes.has(this.data.path)
     },
 
     hasChildren () {
-      if (this.isObject) {
-        return Object.keys(this.data).length > 0
-      }
-      if (this.isArray) {
-        return this.data.length > 0
-      }
-      return false
+      return this.data.children && this.data.children.length > 0
     },
 
-    objectSize () {
-      if (this.isObject) {
-        return Object.keys(this.data).length
-      }
-      return 0
-    },
-
-    formattedValue () {
-      if (this.data === null) return 'null'
-      if (this.data === undefined) return 'undefined'
-      if (typeof this.data === 'string') {
-        // Truncate long strings
-        if (this.data.length > 50) {
-          return `"${this.data.substring(0, 47)}..."`
-        }
-        return `"${this.data}"`
-      }
-      return String(this.data)
+    selectable () {
+      return this.selectableTypes.includes(this.data.type)
     },
 
     isSelected: {
       get () {
-        return this.isArray && this.selectedArrays.includes(this.path)
+        return this.selectedFields.has(this.data.path)
       },
       set (value) {
-        // Handled in toggleSelection method
+        if (value) {
+          this.selectedFields.add(this.data.path)
+        } else {
+          this.selectedFields.delete(this.data.path)
+        }
       }
+    },
+
+    nodeSelected: {
+      get () {
+        return this.isSelected
+      },
+      set (value) {
+        this.isSelected = value
+        this.$emit('select', {
+          path: this.data.path,
+          selected: value,
+          type: this.data.type
+        })
+      }
+    },
+
+    // Check if string might be stringified JSON
+    isLikelyJson () {
+      if (this.data.type !== 'string' || !this.data.value) return false
+
+      const value = String(this.data.value).trim()
+      return (value.startsWith('{') && value.endsWith('}')) ||
+             (value.startsWith('[') && value.endsWith(']'))
+    },
+
+    // Truncate long string values
+    truncatedValue () {
+      if (this.data.type !== 'string') return this.data.value
+
+      const value = String(this.data.value)
+      const maxLength = 50
+
+      if (value.length <= maxLength) return value
+
+      return value.substring(0, maxLength) + '...'
     }
   },
 
   methods: {
-    getIndentClass (depth) {
-      switch (depth) {
-        case 0: return ''
-        case 1: return 'indented'
-        case 2: return 'double-indented'
-        case 3: return 'triple-indented'
-        default: return 'quadruple-indented'
-      }
+    toggleExpanded () {
+      this.$emit('toggle', this.data.path)
     },
 
-    toggleExpand () {
-      this.isExpanded = !this.isExpanded
+    onToggle (path) {
+      this.$emit('toggle', path)
     },
 
-    toggleSelection (value) {
-      this.$emit('array-selected', {
-        path: this.path,
-        selected: value
-      })
-    },
-
-    handleArraySelection (event) {
-      this.$emit('array-selected', event)
+    onSelect (data) {
+      this.$emit('select', data)
     }
   }
 }
@@ -216,102 +232,192 @@ export default {
 
 <style lang="scss" scoped>
 .json-tree-node {
-  font-family: 'Monaco', 'Menlo', monospace;
-  font-size: 14px;
+  position: relative;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 0.9rem;
   line-height: 1.5;
-}
-
-.tree-node {
-  white-space: nowrap;
-  margin: 2px 0;
-}
-
-.node-header {
+  padding-left: 0.5rem;
+  margin: 0.25rem 0;
   display: flex;
-  align-items: center;
-  cursor: pointer;
-  border-radius: 4px;
-  padding: 2px 0;
+  align-items: flex-start;
 
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+  &.has-children {
+    flex-wrap: wrap;
+  }
+
+  &.is-primitive {
+    cursor: default;
+  }
+
+  &.is-selected {
+    background-color: rgba(var(--q-primary-rgb), 0.1);
   }
 }
 
-.indented {
-  padding-left: 20px;
+.node-toggle,
+.node-toggle-placeholder {
+  flex: 0 0 1.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-top: 0.125rem;
 }
 
-.double-indented {
-  padding-left: 40px;
-}
-
-.triple-indented {
-  padding-left: 60px;
-}
-
-.quadruple-indented {
-  padding-left: 80px;
-}
-
-.expand-icon {
-  margin-right: 4px;
-  color: var(--q-color-grey-6);
+.node-toggle-placeholder {
+  visibility: hidden;
 }
 
 .node-key {
-  color: #0b7285;
-  font-weight: bold;
-  margin-right: 5px;
+  font-weight: 500;
+  margin-right: 0.5rem;
+  color: var(--q-secondary);
+
+  .dark-theme & {
+    color: #ff9800;
+  }
 }
 
-.node-bracket {
-  color: #868e96;
-  font-weight: normal;
+.node-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.node-summary {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.25rem;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: rgba(var(--q-primary-rgb), 0.06);
+  }
 }
 
 .node-type {
-  color: #868e96;
-  font-style: italic;
-  margin-left: 5px;
-  font-size: 12px;
-}
+  color: var(--q-primary);
 
-.node-count {
-  color: #868e96;
-  font-size: 12px;
+  .dark-theme & {
+    color: #64b5f6;
+  }
 }
 
 .node-value {
-  margin: 0 5px;
+  &.value-string {
+    color: #388e3c;
+
+    .dark-theme & {
+      color: #81c784;
+    }
+  }
+
+  &.value-number {
+    color: #0277bd;
+
+    .dark-theme & {
+      color: #29b6f6;
+    }
+  }
+
+  &.value-boolean {
+    color: #6a1b9a;
+
+    .dark-theme & {
+      color: #ba68c8;
+    }
+  }
+
+  &.value-null {
+    color: #757575;
+    font-style: italic;
+
+    .dark-theme & {
+      color: #9e9e9e;
+    }
+  }
 }
 
-.inline-checkbox {
+.string-quote {
+  opacity: 0.6;
+}
+
+.null-value {
+  font-style: italic;
+}
+
+.node-path {
+  font-size: 0.7rem;
+  opacity: 0.7;
+  margin-left: 1rem;
+  color: var(--q-grey-7);
+
+  .dark-theme & {
+    color: var(--q-grey-5);
+  }
+}
+
+.node-children {
+  flex: 0 0 100%;
+  margin-left: 1rem;
+  border-left: 1px dashed var(--q-grey-4);
+
+  .dark-theme & {
+    border-color: var(--q-grey-7);
+  }
+}
+
+.array-checkbox,
+.json-checkbox {
+  margin-left: 0.5rem;
+}
+
+.string-actions {
   display: inline-flex;
-  margin: 0 4px;
+  align-items: center;
+  margin-left: 0.5rem;
 }
 
-.value-string {
-  color: #37b24d;
+// Type-specific styling
+.is-array {
+  > .node-content > .node-summary {
+    color: var(--q-primary);
+
+    .dark-theme & {
+      color: #29b6f6;
+    }
+  }
 }
 
-.value-number {
-  color: #339af0;
+.is-object {
+  > .node-content > .node-summary {
+    color: var(--q-secondary);
+
+    .dark-theme & {
+      color: #ff9800;
+    }
+  }
 }
 
-.value-boolean {
-  color: #f03e3e;
+// Selectable items highlight
+.is-selectable {
+  &:hover {
+    background-color: rgba(var(--q-primary-rgb), 0.03);
+  }
 }
 
-.ellipsis {
-  color: #868e96;
-  font-style: italic;
-  font-size: 12px;
-}
+@media (max-width: 600px) {
+  .json-tree-node {
+    font-size: 0.8rem;
+  }
 
-.empty-object, .empty-array {
-  color: #adb5bd;
-  font-style: italic;
-  font-size: 12px;
+  .node-path {
+    display: none;
+  }
 }
 </style>

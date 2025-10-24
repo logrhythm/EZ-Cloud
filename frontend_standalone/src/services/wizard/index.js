@@ -62,15 +62,20 @@ export {
   storage
 } from './utilityService'
 
+// Data Processing Service
+export { DataProcessor } from './dataProcessingService'
+
 // Default export with all services (use ES imports to keep module syntax consistent)
 import validationService from './validationService'
 import policyFileService from './policyFileService'
 import errorHandlerService from './errorHandlingService'
 import utilityService from './utilityService'
+import { DataProcessor } from './dataProcessingService'
 
 export default {
   validation: validationService,
   policyFile: policyFileService,
   errorHandler: errorHandlerService,
-  utility: utilityService
+  utility: utilityService,
+  dataProcessor: DataProcessor
 }

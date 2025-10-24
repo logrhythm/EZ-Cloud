@@ -1,13 +1,14 @@
 # Wizard Backend Services Documentation
 
-This directory contains all backend logic and services for the JSON Policy Builder Wizard Step 1 (Introduction & Project Setup).
+This directory contains all backend logic and services for the LogRhythm JSON Policy Builder Wizard.
 
 ## Overview
 
-The backend implementation for Step 1 is organized into modular, reusable services that handle:
+The backend implementation is organized into modular, reusable services that handle:
 
 - **Data validation** (field-level and form-level)
 - **Policy file processing** (parsing, validation, analysis)
+- **Data processing** (JSON parsing, structure analysis, detection)
 - **Error handling** (centralized error management and recovery)
 - **State management** (Vuex actions and mutations)
 - **Utility functions** (debouncing, auto-save, formatting)
@@ -19,8 +20,10 @@ src/services/wizard/
 ├── index.js                      # Service exports
 ├── validationService.js          # Validation logic
 ├── policyFileService.js          # Policy file operations
+├── dataProcessingService.js      # JSON data processing
 ├── errorHandlingService.js       # Error handling
 ├── utilityService.js             # Utility functions
+├── dataProcessingService.test.js # Tests for data processing
 └── README.md                     # This file
 
 src/store/modules/wizard/
@@ -31,7 +34,7 @@ src/store/modules/wizard/
 
 ### 1. Validation Service (`validationService.js`)
 
-Provides comprehensive validation for all Step 1 inputs.
+Provides comprehensive validation for all wizard inputs.
 
 #### Key Classes
 
@@ -140,7 +143,51 @@ const json = PolicyFileService.exportPolicyToJson(policy, {
 - **Security Checks**: Detection of potentially dangerous patterns
 - **Performance Analysis**: Identification of performance concerns
 
-### 3. Error Handling Service (`errorHandlingService.js`)
+### 3. Data Processing Service (`dataProcessingService.js`)
+
+Provides specialized JSON data handling for Step 2, including parsing, structure analysis, and feature detection.
+
+#### Key Classes
+
+- **`DataProcessor`**: Main class for processing JSON data
+
+#### Usage Example
+
+```javascript
+import { DataProcessor } from '@/services/wizard/dataProcessingService'
+
+// Process raw JSON data
+const result = await DataProcessor.processSampleData(jsonString, 'manual')
+
+if (result.validationResult.isValid) {
+  console.log('Parsed data:', result.parsedData)
+  console.log('Data structure:', result.dataStructure)
+  console.log('Data statistics:', result.dataStats)
+} else {
+  console.error('Validation errors:', result.validationResult.errors)
+}
+
+// Find array fields in structure
+const arrayFields = DataProcessor.findArrayFields(result.dataStructure)
+
+// Find stringified JSON fields
+const stringifiedJsonFields = DataProcessor.findStringifiedJsonFields(result.parsedData)
+
+// Format JSON
+const formattedJson = DataProcessor.formatJson(jsonString)
+```
+
+#### Features
+
+- **JSON Parsing**: Robust JSON parsing with detailed error reporting
+- **Structure Analysis**: Deep analysis of JSON structure with metadata
+- **Array Detection**: Find and classify array fields for fanout
+- **Stringified JSON Detection**: Identify fields containing stringified JSON
+- **Data Statistics**: Calculate metrics about the data (record count, field count, nesting levels)
+- **Data Formatting**: Pretty-print JSON data with proper indentation
+- **Validation**: Comprehensive validation with specific error messages
+
+### 4. Error Handling Service (`errorHandlingService.js`)
 
 Centralized error handling with recovery suggestions and error tracking.
 
@@ -203,7 +250,7 @@ const recentErrors = errorHandlerService.getErrorLog({ limit: 10 })
 - **AUTO**: Automatic recovery possible
 - **NONE**: No recovery available
 
-### 4. Utility Service (`utilityService.js`)
+### 5. Utility Service (`utilityService.js`)
 
 Common utility functions for the wizard.
 
@@ -247,169 +294,155 @@ const state = storage.get('wizardState', defaultState)
 
 ## Vuex Integration
 
-### Step 1 Actions (`store/modules/wizard/step1Actions.js`)
+### State Management for Wizard
 
-Contains all Step 1 business logic actions.
+Contains Vuex actions and mutations for wizard steps.
 
 #### Available Actions
 
 ```javascript
-// Initialize Step 1
+// Step 1 actions
 await dispatch('initializeStep1')
-
-// Update project name
 await dispatch('updateProjectName', 'My Policy')
-
-// Update description
 await dispatch('updateProjectDescription', 'Policy description')
-
-// Change wizard mode
 await dispatch('changeWizardMode', 'create' | 'update')
-
-// Process policy file
 await dispatch('processPolicyFileUpload', file)
 
-// Validate create mode
-await dispatch('validateStep1Create')
+// Step 2 actions
+await dispatch('processSampleData', { rawData, inputMethod })
+await dispatch('updateSchemaRules', { convertToJson: jsonFields })
+await dispatch('updateSchemaRules', { fanout: arrayFields })
 
-// Validate update mode
-await dispatch('validateStep1Update')
+// Navigation actions
+await dispatch('navigateToStep', stepIndex)
+await dispatch('nextStep')
+await dispatch('previousStep')
+await dispatch('validateCurrentStep')
 
-// Proceed to next step
-await dispatch('proceedFromStep1')
+// State persistence
+await dispatch('saveState')
+await dispatch('loadState')
+await dispatch('clearState')
 
-// Auto-save
-await dispatch('autoSaveStep1')
-
-// Reset step
-await dispatch('resetStep1')
-
-// Get summary
-const summary = getters.getStep1Summary()
+// Policy generation
+await dispatch('generatePolicy')
 ```
-
-#### Action Flow
-
-1. **User Input** → Validation → State Update
-2. **File Upload** → File Processing → Policy Validation → State Update
-3. **Proceed** → Validation → Save State → Navigate
 
 #### State Structure
 
 ```javascript
 {
-  projectConfig: {
-    name: '',
-    description: '',
-    mode: 'create', // or 'update'
-    existingPolicy: null,
-    createdAt: null,
-    lastModified: null
-  },
+  // Navigation state
+  currentStep: 0,
+  completedSteps: [],
+
+  // Step status tracking
   steps: [
     {
       id: 'introduction',
       status: 'pending', // or 'in_progress', 'completed', 'error'
       isValid: false,
       validationErrors: []
+    },
+    {
+      id: 'dataupload',
+      status: 'pending',
+      isValid: false,
+      validationErrors: []
+    },
+    // ... other steps
+  ],
+
+  // Project configuration (Step 1)
+  projectConfig: {
+    name: '',
+    description: '',
+    mode: 'create', // or 'update'
+    existingPolicy: null,
+    createdBy: '',
+    createdAt: null,
+    lastModified: null
+  },
+
+  // Sample data (Step 2)
+  sampleData: {
+    inputMethod: 'manual', // manual, file, multiple
+    rawData: '',
+    parsedData: null,
+    dataStructure: null,
+    dataStats: {
+      recordCount: 0,
+      fieldCount: 0,
+      nestedLevels: 0
+    },
+    validationResult: {
+      isValid: false,
+      errors: [],
+      warnings: []
     }
-  ]
+  },
+
+  // Schema rules (Step 3)
+  schemaRules: {
+    convertToJson: [],
+    fanout: [],
+    detectedStringifiedJson: [],
+    manualSelections: []
+  },
+
+  // ... other step data
 }
 ```
 
-## Error Handling Strategy
+## Testing
 
-### 1. Input Validation Errors
+### Running Tests
 
-```javascript
-// Validation errors are non-blocking
-// User sees inline errors but can continue typing
-const result = await dispatch('updateProjectName', name)
-if (!result.validation.isValid) {
-  // Show inline error messages
-  showFieldError(result.validation.errors)
-}
+To run the tests for the Data Processing Service:
+
+```bash
+# Assuming Jest or similar test runner is configured
+jest dataProcessingService.test.js
+
+# Or manual browser testing
+# Open the test file in a browser with appropriate module loading
 ```
 
-### 2. File Processing Errors
+### Test Coverage
 
-```javascript
-// File errors block progression
-try {
-  const result = await dispatch('processPolicyFileUpload', file)
-  if (!result.success) {
-    // Show error dialog with recovery options
-    showErrorDialog(result.error)
-  }
-} catch (error) {
-  // Critical error - show full error modal
-  showCriticalError(error)
-}
-```
+The `dataProcessingService.test.js` file includes tests for:
 
-### 3. State Management Errors
-
-```javascript
-// State errors trigger recovery suggestions
-const result = await dispatch('proceedFromStep1')
-if (!result.success) {
-  // Show recovery options
-  if (result.error.recovery) {
-    showRecoveryDialog(result.error.recovery)
-  }
-}
-```
-
-## Testing Considerations
-
-### Unit Tests
-
-Test each service independently:
-
-```javascript
-// validationService.test.js
-describe('Step1Validator', () => {
-  test('validates project name correctly', () => {
-    const result = Step1Validator.validateProjectName('Valid Name')
-    expect(result.isValid).toBe(true)
-  })
-
-  test('rejects invalid project name', () => {
-    const result = Step1Validator.validateProjectName('a')
-    expect(result.isValid).toBe(false)
-    expect(result.errors[0].message).toContain('at least 3 characters')
-  })
-})
-```
-
-### Integration Tests
-
-Test action flows:
-
-```javascript
-// step1Actions.test.js
-describe('Step 1 Actions', () => {
-  test('complete create flow', async () => {
-    await dispatch('initializeStep1')
-    await dispatch('updateProjectName', 'Test Policy')
-    const result = await dispatch('proceedFromStep1')
-    expect(result.success).toBe(true)
-  })
-})
-```
+- Processing single JSON objects
+- Processing JSON arrays
+- Processing multiple JSON objects (one per line)
+- Handling invalid JSON input
+- Detecting stringified JSON fields
+- Finding array fields
+- Formatting JSON
 
 ## Best Practices
 
-### 1. Always Validate Before Proceeding
+### 1. Centralize Business Logic
 
 ```javascript
-// Bad
-await dispatch('nextStep')
+// Bad: Logic in component
+methods: {
+  async validateJsonData() {
+    try {
+      const parsedData = JSON.parse(this.rawData)
+      // Component-level processing...
+    } catch (e) {
+      this.error = e.message
+    }
+  }
+}
 
-// Good
-const validation = await dispatch('validateStep1Create')
-if (validation.success) {
-  await dispatch('nextStep')
+// Good: Use service
+methods: {
+  async validateJsonData() {
+    const result = await DataProcessor.processSampleData(this.rawData)
+    this.updateState(result)
+  }
 }
 ```
 
@@ -417,186 +450,27 @@ if (validation.success) {
 
 ```javascript
 try {
-  await dispatch('processPolicyFileUpload', file)
+  const result = await DataProcessor.processSampleData(rawData)
+  // Use result
 } catch (error) {
-  // Show user-friendly error message
-  // Log technical details for debugging
-  console.error('Technical error:', error)
-  showUserMessage('Failed to process file. Please try again.')
+  console.error('Processing error:', error)
+  // Show user-friendly message
 }
 ```
 
 ### 3. Use Debouncing for Input Validation
 
 ```javascript
-// Bad - validates on every keystroke
-watch: {
-  'projectConfig.name'(newVal) {
-    this.validateField('name')
-  }
-}
+// Use debounced validation for real-time input
+const debouncedValidate = debounce(() => {
+  DataProcessor.processSampleData(this.rawData)
+}, 500)
 
-// Good - debounced validation
-methods: {
-  onNameInput: debounce(function(value) {
-    this.dispatch('updateProjectName', value)
-  }, 300)
+// Call on input events
+onInput() {
+  debouncedValidate()
 }
 ```
-
-### 4. Provide User Feedback
-
-```javascript
-// Show loading state
-commit('SET_LOADING', { isLoading: true, message: 'Processing...' })
-
-try {
-  await processData()
-} finally {
-  // Always clear loading state
-  commit('SET_LOADING', { isLoading: false })
-}
-```
-
-## Performance Considerations
-
-### 1. Lazy Loading
-
-Services are loaded only when needed:
-
-```javascript
-// Component level
-async mounted() {
-  // Services loaded on demand
-  const { Step1Validator } = await import('@/services/wizard/validationService')
-}
-```
-
-### 2. Debounced Validation
-
-Input validation is debounced to reduce unnecessary processing:
-
-```javascript
-const debouncedValidate = debounce(validateField, 300)
-```
-
-### 3. Auto-Save Throttling
-
-Auto-save uses throttling to prevent excessive saves:
-
-```javascript
-const autoSave = new AutoSaveManager({
-  interval: 30000 // Save at most every 30 seconds
-})
-```
-
-## Security Considerations
-
-### 1. Input Sanitization
-
-All user inputs are sanitized:
-
-```javascript
-Validator.sanitizeInput(userInput)
-```
-
-### 2. File Validation
-
-Strict file validation prevents malicious uploads:
-
-- File type checking (only .json)
-- File size limits (5MB max)
-- JSON structure validation
-- Security pattern detection
-
-### 3. XSS Prevention
-
-No user input is rendered as HTML without sanitization.
-
-## Debugging
-
-### Enable Debug Logging
-
-```javascript
-// Auto-save debug
-const autoSave = new AutoSaveManager({ debug: true })
-
-// Error handler debug
-if (process.env.NODE_ENV === 'development') {
-  console.log('[Debug]', error)
-}
-```
-
-### Inspect Validation Results
-
-```javascript
-const result = Step1Validator.validateProjectName(name)
-console.log('Validation Result:', {
-  isValid: result.isValid,
-  errors: result.errors,
-  warnings: result.warnings,
-  info: result.info
-})
-```
-
-### Monitor State Changes
-
-```javascript
-// Vuex subscriptions
-store.subscribe((mutation, state) => {
-  console.log('Mutation:', mutation.type)
-  console.log('State:', state.wizard.projectConfig)
-})
-```
-
-## Future Enhancements
-
-### Planned Features
-
-1. **Offline Support**: Service worker integration for offline operation
-2. **Conflict Resolution**: Handle concurrent edits
-3. **Version History**: Track policy file versions
-4. **Template System**: Pre-configured policy templates
-5. **Collaboration**: Multi-user editing support
-6. **Advanced Validation**: Schema-based validation
-7. **Performance Metrics**: Track validation/processing times
-8. **A/B Testing**: Test different validation strategies
-
-## Troubleshooting
-
-### Common Issues
-
-**Issue**: Validation not triggering
-```javascript
-// Ensure validation is called after state update
-await dispatch('updateProjectName', name)
-// Validation happens automatically in the action
-```
-
-**Issue**: File upload fails
-```javascript
-// Check file constraints
-- Maximum 5MB
-- Must be .json extension
-- Must contain valid JSON
-```
-
-**Issue**: Auto-save not working
-```javascript
-// Ensure auto-save is started
-autoSave.start()
-
-// Mark data as dirty when changed
-autoSave.markDirty()
-```
-
-## Support
-
-For questions or issues:
-1. Check this documentation
-2. Review service source code
-3. Check error logs in browser console
-4. Contact the development team
 
 ## License
 

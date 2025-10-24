@@ -19,8 +19,8 @@
       <q-card class="method-selection-card wizard-card">
         <q-card-section class="card-header">
           <div class="card-title">
-            <q-icon name="input" class="q-mr-sm" />
-            Data Input Method
+            <q-icon name="input" class="q-mr-sm text-primary" />
+            <span>Data Input Method</span>
           </div>
           <p class="card-description">
             Choose how you want to provide your sample JSON data.
@@ -51,7 +51,7 @@
             <!-- Manual Input Tab -->
             <q-tab-panel name="manual" class="input-panel">
               <div class="panel-header">
-                <q-icon name="edit" class="q-mr-sm" />
+                <q-icon name="edit" class="q-mr-sm text-primary" />
                 <span class="text-h6">Paste JSON Data</span>
               </div>
               <p class="panel-description">
@@ -79,7 +79,7 @@
                       dense
                       icon="content_paste"
                       @click="pasteFromClipboard"
-                      class="paste-btn"
+                      class="paste-btn text-primary"
                     >
                       <q-tooltip>Paste from clipboard</q-tooltip>
                     </q-btn>
@@ -95,7 +95,7 @@
                     label="Format JSON"
                     :disable="!isValidJson"
                     @click="formatJson"
-                    class="format-btn"
+                    class="format-btn text-primary"
                   />
                   <q-btn
                     flat
@@ -103,7 +103,7 @@
                     icon="clear"
                     label="Clear"
                     @click="clearData"
-                    class="clear-btn"
+                    class="clear-btn text-grey-7"
                   />
                 </div>
               </div>
@@ -112,7 +112,7 @@
             <!-- File Upload Tab -->
             <q-tab-panel name="file" class="input-panel">
               <div class="panel-header">
-                <q-icon name="upload_file" class="q-mr-sm" />
+                <q-icon name="upload_file" class="q-mr-sm text-primary" />
                 <span class="text-h6">Upload JSON File</span>
               </div>
               <p class="panel-description">
@@ -130,10 +130,10 @@
                   :error="hasFileError"
                   :error-message="fileErrorMessage"
                   @input="onFileUpload"
-                  class="file-input"
+                  class="file-input wizard-file-input q-mt-md"
                 >
                   <template v-slot:prepend>
-                    <q-icon name="attach_file" />
+                    <q-icon name="attach_file" class="text-primary" />
                   </template>
                 </q-file>
 
@@ -150,7 +150,7 @@
                     <q-icon
                       :name="uploadedFile ? 'check_circle' : 'cloud_upload'"
                       size="48px"
-                      :class="uploadedFile ? 'text-positive' : 'text-grey-5'"
+                      :class="uploadedFile ? 'text-positive' : 'text-primary'"
                     />
                     <div class="drop-text">
                       <span v-if="!uploadedFile">
@@ -168,7 +168,7 @@
             <!-- Multiple Logs Tab -->
             <q-tab-panel name="multiple" class="input-panel">
               <div class="panel-header">
-                <q-icon name="format_list_bulleted" class="q-mr-sm" />
+                <q-icon name="format_list_bulleted" class="q-mr-sm text-primary" />
                 <span class="text-h6">Multiple JSON Objects</span>
               </div>
               <p class="panel-description">
@@ -221,8 +221,8 @@
         <q-card v-if="sampleData.parsedData" class="data-preview-card wizard-card">
           <q-card-section class="card-header">
             <div class="card-title">
-              <q-icon name="preview" class="q-mr-sm" />
-              Data Preview & Analysis
+              <q-icon name="preview" class="q-mr-sm text-primary" />
+              <span>Data Preview & Analysis</span>
             </div>
             <p class="card-description">
               Preview of your parsed JSON data with structural analysis.
@@ -235,68 +235,31 @@
               <div class="stats-grid">
                 <q-card flat bordered class="stat-card">
                   <q-card-section class="stat-content">
-                    <div class="stat-value">{{ sampleData.dataStats.recordCount }}</div>
+                    <div class="stat-value text-primary">{{ sampleData.dataStats.recordCount }}</div>
                     <div class="stat-label">Records</div>
                   </q-card-section>
                 </q-card>
 
                 <q-card flat bordered class="stat-card">
                   <q-card-section class="stat-content">
-                    <div class="stat-value">{{ sampleData.dataStats.fieldCount }}</div>
+                    <div class="stat-value text-primary">{{ sampleData.dataStats.fieldCount }}</div>
                     <div class="stat-label">Unique Fields</div>
                   </q-card-section>
                 </q-card>
 
                 <q-card flat bordered class="stat-card">
                   <q-card-section class="stat-content">
-                    <div class="stat-value">{{ sampleData.dataStats.nestedLevels }}</div>
+                    <div class="stat-value text-primary">{{ sampleData.dataStats.nestedLevels }}</div>
                     <div class="stat-label">Nesting Levels</div>
                   </q-card-section>
                 </q-card>
 
                 <q-card flat bordered class="stat-card">
                   <q-card-section class="stat-content">
-                    <div class="stat-value">{{ detectedArrays.length }}</div>
+                    <div class="stat-value text-primary">{{ detectedArrays.length }}</div>
                     <div class="stat-label">Arrays Found</div>
                   </q-card-section>
                 </q-card>
-              </div>
-            </div>
-
-            <!-- JSON Structure Tree -->
-            <div class="structure-section">
-              <div class="section-header">
-                <q-icon name="account_tree" class="q-mr-sm" />
-                <span class="text-h6">JSON Structure</span>
-                <q-space />
-                <q-btn-group flat dense>
-                  <q-btn
-                    flat
-                    dense
-                    icon="unfold_more"
-                    label="Expand All"
-                    @click="expandAllNodes"
-                    size="sm"
-                  />
-                  <q-btn
-                    flat
-                    dense
-                    icon="unfold_less"
-                    label="Collapse All"
-                    @click="collapseAllNodes"
-                    size="sm"
-                  />
-                </q-btn-group>
-              </div>
-
-              <div class="json-tree-container">
-                <JsonTreeViewer
-                  :data="sampleData.dataStructure"
-                  :expanded-nodes="expandedNodes"
-                  @toggle-node="toggleNode"
-                  @select-field="onFieldSelect"
-                  class="json-tree"
-                />
               </div>
             </div>
 
@@ -307,6 +270,7 @@
                 label="Raw Data Preview"
                 header-class="text-h6"
                 class="raw-expansion"
+                expand-icon-class="text-primary"
               >
                 <div class="raw-data-container">
                   <pre class="raw-json">{{ formattedPreviewData }}</pre>
@@ -317,7 +281,7 @@
             <!-- Auto-detected Insights -->
             <div v-if="dataInsights.length" class="insights-section">
               <div class="section-header">
-                <q-icon name="lightbulb" class="q-mr-sm" />
+                <q-icon name="lightbulb" class="q-mr-sm text-amber" />
                 <span class="text-h6">Detected Insights</span>
               </div>
 
@@ -325,12 +289,13 @@
                 <q-banner
                   v-for="(insight, index) in dataInsights"
                   :key="index"
+                  :class="['insight-banner', 'q-mb-sm', `bg-${insight.color}-1`, `text-${insight.color}-9`]"
                   :icon="insight.icon"
-                  :color="insight.color"
-                  class="insight-banner q-mb-sm"
+                  dense
+                  rounded
                 >
                   <template v-slot:avatar>
-                    <q-icon :name="insight.icon" />
+                    <q-icon :name="insight.icon" :class="`text-${insight.color}`" />
                   </template>
                   {{ insight.message }}
                   <template v-if="insight.action" v-slot:action>
@@ -339,7 +304,7 @@
                       dense
                       :label="insight.action.label"
                       @click="handleInsightAction(insight.action)"
-                      class="text-white"
+                      :color="insight.color"
                     />
                   </template>
                 </q-banner>
@@ -354,11 +319,13 @@
         <q-card
           v-if="sampleData.validationResult.errors.length || sampleData.validationResult.warnings.length"
           class="validation-card wizard-card"
+          :class="{'border-negative': sampleData.validationResult.errors.length}"
         >
-          <q-card-section class="card-header">
+          <q-card-section class="card-header" :class="{'bg-negative-1': sampleData.validationResult.errors.length}">
             <div class="card-title">
-              <q-icon name="rule" class="q-mr-sm" />
-              Validation Results
+              <q-icon :name="sampleData.validationResult.errors.length ? 'error' : 'warning'" class="q-mr-sm"
+                :class="sampleData.validationResult.errors.length ? 'text-negative' : 'text-warning'" />
+              <span>Validation Results</span>
             </div>
           </q-card-section>
 
@@ -370,7 +337,7 @@
                 <q-item
                   v-for="(error, index) in sampleData.validationResult.errors"
                   :key="`error-${index}`"
-                  class="error-item"
+                  class="error-item rounded-borders q-mb-xs"
                 >
                   <q-item-section avatar>
                     <q-icon name="error" color="negative" />
@@ -387,7 +354,7 @@
                 <q-item
                   v-for="(warning, index) in sampleData.validationResult.warnings"
                   :key="`warning-${index}`"
-                  class="warning-item"
+                  class="warning-item rounded-borders q-mb-xs"
                 >
                   <q-item-section avatar>
                     <q-icon name="warning" color="warning" />
@@ -430,24 +397,19 @@
 
 <script>
 import { mapState, mapActions, mapMutations } from 'vuex'
-import JsonTreeViewer from '../components/JsonTreeViewer.vue'
+import { DataProcessor } from '../../../services/wizard/dataProcessingService'
 
 export default {
   name: 'Step2_DataUpload',
-
-  components: {
-    JsonTreeViewer
-  },
 
   data () {
     return {
       uploadedFile: null,
       isDragOver: false,
-      expandedNodes: new Set(),
-      selectedFields: new Set(),
       fileErrorMessage: '',
       validationErrorMessage: '',
-      processingData: false
+      processingData: false,
+      validationTimer: null
     }
   },
 
@@ -505,7 +467,7 @@ export default {
 
     detectedArrays () {
       if (!this.sampleData.dataStructure) return []
-      return this.findArrayFields(this.sampleData.dataStructure)
+      return DataProcessor.findArrayFields(this.sampleData.dataStructure)
     },
 
     dataInsights () {
@@ -526,16 +488,20 @@ export default {
       if (this.sampleData.dataStats.nestedLevels > 3) {
         insights.push({
           icon: 'warning',
-          color: 'warning',
+          color: 'amber',
           message: 'Deep nesting detected. Consider flattening some structures for better performance.'
         })
       }
 
-      const stringifiedJsonFields = this.findStringifiedJsonFields(this.sampleData.parsedData)
+      // Use the service to find stringified JSON fields
+      const stringifiedJsonFields = this.sampleData.parsedData
+        ? DataProcessor.findStringifiedJsonFields(this.sampleData.parsedData)
+        : []
+
       if (stringifiedJsonFields.length > 0) {
         insights.push({
           icon: 'auto_fix_high',
-          color: 'positive',
+          color: 'green',
           message: `Found ${stringifiedJsonFields.length} field(s) containing stringified JSON that can be parsed.`,
           action: {
             label: 'Auto-select',
@@ -574,7 +540,9 @@ export default {
 
     debounceValidation () {
       // Debounce validation to avoid excessive processing
-      clearTimeout(this.validationTimer)
+      if (this.validationTimer) {
+        clearTimeout(this.validationTimer)
+      }
       this.validationTimer = setTimeout(() => {
         this.validateJsonData()
       }, 800)
@@ -593,20 +561,29 @@ export default {
       this.processingData = true
 
       try {
-        const result = await this.processSampleData({
+        // Use the DataProcessor service directly
+        const result = await DataProcessor.processSampleData(this.sampleData.rawData, this.sampleData.inputMethod)
+
+        // Update the store with results
+        this.SET_SAMPLE_DATA({
           rawData: this.sampleData.rawData,
-          inputMethod: this.sampleData.inputMethod
+          inputMethod: this.sampleData.inputMethod,
+          parsedData: result.parsedData,
+          dataStructure: result.dataStructure,
+          dataStats: result.dataStats,
+          validationResult: result.validationResult
         })
 
-        if (result.errors.length > 0) {
-          this.validationErrorMessage = result.errors[0]
+        if (result.validationResult.errors.length > 0) {
+          this.validationErrorMessage = result.validationResult.errors[0]
         }
 
         // Emit step validation status
-        this.$emit('step-valid', result.isValid)
+        this.$emit(result.validationResult.isValid ? 'step-valid' : 'step-invalid')
       } catch (error) {
         console.error('Error validating JSON data:', error)
         this.validationErrorMessage = 'Failed to process JSON data'
+        this.$emit('step-invalid')
       } finally {
         this.processingData = false
       }
@@ -632,7 +609,7 @@ export default {
       if (!this.isValidJson) return
 
       try {
-        const formatted = JSON.stringify(this.sampleData.parsedData, null, 2)
+        const formatted = DataProcessor.formatJson(this.sampleData.rawData)
         this.SET_SAMPLE_DATA({
           rawData: formatted,
           inputMethod: this.sampleData.inputMethod
@@ -720,62 +697,20 @@ export default {
       })
     },
 
-    // Tree navigation methods
-    expandAllNodes () {
-      this.expandedNodes = new Set(this.getAllNodePaths())
-    },
-
-    collapseAllNodes () {
-      this.expandedNodes.clear()
-    },
-
-    toggleNode (path) {
-      if (this.expandedNodes.has(path)) {
-        this.expandedNodes.delete(path)
-      } else {
-        this.expandedNodes.add(path)
-      }
-    },
-
-    onFieldSelect (path) {
-      if (this.selectedFields.has(path)) {
-        this.selectedFields.delete(path)
-      } else {
-        this.selectedFields.add(path)
-      }
-    },
-
-    getAllNodePaths () {
-      // Implementation would traverse the data structure and return all paths
-      return []
-    },
-
-    findArrayFields (structure, parentPath = '') {
-      // Find fields that contain arrays
-      const arrays = []
-      // Implementation would recursively search for array fields
-      return arrays
-    },
-
-    findStringifiedJsonFields (data) {
-      // Find fields that contain stringified JSON
-      const jsonFields = []
-      // Implementation would search for string fields containing valid JSON
-      return jsonFields
-    },
-
     handleInsightAction (action) {
       switch (action.type) {
         case 'select-arrays': {
           // Auto-select array fields for fanout
-          const arrayFields = this.detectedArrays
+          const arrayFields = DataProcessor.findArrayFields(this.sampleData.dataStructure)
           this.UPDATE_SCHEMA_RULES({ fanout: arrayFields })
           break
         }
         case 'select-json-strings': {
           // Auto-select stringified JSON fields
-          const jsonFields = this.findStringifiedJsonFields(this.sampleData.parsedData)
-          this.UPDATE_SCHEMA_RULES({ convertToJson: jsonFields })
+          if (this.sampleData.parsedData) {
+            const jsonFields = DataProcessor.findStringifiedJsonFields(this.sampleData.parsedData)
+            this.UPDATE_SCHEMA_RULES({ convertToJson: jsonFields })
+          }
           break
         }
       }
@@ -822,7 +757,7 @@ export default {
 .step-icon {
   margin-right: 1.5rem;
   padding: 1rem;
-  background: rgba(25, 118, 210, 0.1);
+  background: rgba(var(--q-primary-rgb), 0.1);
   border-radius: 12px;
 }
 
@@ -866,7 +801,10 @@ export default {
 
   &:hover {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
+  }
+
+  &.border-negative {
+    border-left: 4px solid var(--q-negative);
   }
 
   .dark-theme & {
@@ -878,9 +816,17 @@ export default {
   background: var(--q-color-grey-1);
   border-bottom: 1px solid var(--q-color-grey-3);
 
+  &.bg-negative-1 {
+    background: rgba(var(--q-negative-rgb), 0.05);
+  }
+
   .dark-theme & {
     background: var(--q-color-grey-9);
     border-color: var(--q-color-grey-8);
+
+    &.bg-negative-1 {
+      background: rgba(var(--q-negative-rgb), 0.15);
+    }
   }
 }
 
@@ -957,12 +903,12 @@ export default {
 
   &.has-valid-json .q-field__control {
     border-color: var(--q-positive);
-    background: rgba(33, 186, 69, 0.02);
+    background: rgba(var(--q-positive-rgb), 0.05);
   }
 
   &.has-invalid-json .q-field__control {
     border-color: var(--q-negative);
-    background: rgba(244, 67, 54, 0.02);
+    background: rgba(var(--q-negative-rgb), 0.05);
   }
 
   &.multiple-logs {
@@ -1005,13 +951,13 @@ export default {
 
   &.drag-over {
     border-color: var(--q-primary);
-    background: rgba(25, 118, 210, 0.04);
+    background: rgba(var(--q-primary-rgb), 0.04);
     transform: scale(1.02);
   }
 
   &.has-file {
     border-color: var(--q-positive);
-    background: rgba(33, 186, 69, 0.04);
+    background: rgba(var(--q-positive-rgb), 0.04);
   }
 
   .dark-theme & {
@@ -1054,7 +1000,7 @@ export default {
 
 .stat-card {
   text-align: center;
-  background: linear-gradient(135deg, rgba(25, 118, 210, 0.05) 0%, rgba(156, 39, 176, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(var(--q-primary-rgb), 0.05) 0%, rgba(var(--q-primary-rgb), 0.02) 100%);
   border-radius: 8px;
 }
 
@@ -1065,7 +1011,6 @@ export default {
 .stat-value {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--q-primary);
   line-height: 1;
 }
 
@@ -1079,10 +1024,6 @@ export default {
   }
 }
 
-.structure-section {
-  margin-bottom: 2rem;
-}
-
 .section-header {
   display: flex;
   align-items: center;
@@ -1093,23 +1034,6 @@ export default {
   .dark-theme & {
     border-color: var(--q-color-grey-8);
   }
-}
-
-.json-tree-container {
-  border: 1px solid var(--q-color-grey-3);
-  border-radius: 8px;
-  background: white;
-  max-height: 400px;
-  overflow-y: auto;
-
-  .dark-theme & {
-    background: var(--q-dark);
-    border-color: var(--q-color-grey-8);
-  }
-}
-
-.json-tree {
-  padding: 1rem;
 }
 
 .raw-preview-section {
@@ -1152,91 +1076,125 @@ export default {
   border-radius: 8px;
 }
 
-.validation-card {
-  border-left: 4px solid var(--q-negative);
+/* Force insight banners to render dark background and white text in this component.
+   Use deep selectors to override Quasar's default .q-banner background. */
+.insights-list ::v-deep .insight-banner.q-banner,
+.insights-list ::v-deep .insight-banner.q-banner.q-banner--dense {
+  background: var(--card-bg-dark, #0f0f10) !important;
+  color: var(--text-color-dark, #ffffff) !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+  box-shadow: none !important;
+  min-height: 40px !important;
+  padding: 8px 12px !important;
 }
 
-.step-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 2rem;
-  border-top: 1px solid var(--q-color-grey-3);
-
-  .dark-theme & {
-    border-color: var(--q-color-grey-8);
-  }
+/* Ensure banner content and avatar inherit the new text color */
+.insights-list ::v-deep .insight-banner.q-banner .q-banner__content,
+.insights-list ::v-deep .insight-banner.q-banner .q-banner__avatar,
+.insights-list ::v-deep .insight-banner.q-banner .q-banner__text {
+  color: inherit !important;
 }
 
-.wizard-btn {
-  border-radius: 6px;
-  font-weight: 500;
-  padding: 8px 16px;
-  transition: all 200ms ease;
-
-  &--primary {
-    box-shadow: 0 2px 4px rgba(25, 118, 210, 0.3);
-
-    &:hover:not(:disabled) {
-      box-shadow: 0 4px 8px rgba(25, 118, 210, 0.4);
-      transform: translateY(-1px);
-    }
-  }
-
-  &--secondary {
-    &:hover:not(:disabled) {
-      background: rgba(25, 118, 210, 0.04);
-    }
-  }
+/* Make banner icons and action buttons visible on dark background */
+.insights-list ::v-deep .insight-banner.q-banner .q-icon,
+.insights-list ::v-deep .insight-banner.q-banner .q-btn {
+  color: var(--text-color-dark, #ffffff) !important;
 }
 
-// Transition animations
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: all 400ms ease;
+/* When Quasar color utility classes (bg-*-1 / text-*-9) are present, prefer our dark card look
+   but keep the accent color for the small icon (make icon use the insight color while text stays white) */
+.insights-list ::v-deep .insight-banner.q-banner[ class*="bg-"] .q-icon {
+  /* keep icon accent but ensure visibility */
+  filter: brightness(1.1) !important;
 }
 
-.slide-fade-enter {
-  opacity: 0;
-  transform: translateY(-20px);
+/* Tighter spacing for dense banners */
+.insights-list ::v-deep .insight-banner.q-banner.q-banner--dense {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+  min-height: 36px !important;
 }
 
-.slide-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
+/* Validation errors/warnings styling */
+.error-item {
+  background-color: rgba(var(--q-negative-rgb), 0.05);
 }
 
-// Responsive design
-@media (max-width: 768px) {
-  .step-header {
-    flex-direction: column;
-    text-align: center;
+.warning-item {
+  background-color: rgba(var(--q-warning-rgb), 0.05);
+}
 
-    .step-icon {
-      align-self: center;
-      margin-right: 0;
-      margin-bottom: 1rem;
-    }
-  }
+/* Ensure file input control uses blue border and white text (stronger overrides) */
+.file-input ::v-deep .q-file__control,
+.wizard-file-input ::v-deep .q-file__control,
+.file-input ::v-deep .q-file__control .q-field__control,
+.wizard-file-input ::v-deep .q-file__control .q-field__control,
+.file-input ::v-deep .q-file__control .q-field__native,
+.wizard-file-input ::v-deep .q-file__control .q-field__native,
+.file-input ::v-deep .q-file__control .q-field__label,
+.wizard-file-input ::v-deep .q-file__control .q-field__label,
+.file-input ::v-deep .q-file__control .q-field__bottom,
+.wizard-file-input ::v-deep .q-file__control .q-field__bottom,
+.file-input ::v-deep .q-file__control .q-field__hint,
+.wizard-file-input ::v-deep .q-file__control .q-field__hint,
+.file-input ::v-deep .q-file__control .q-field__message,
+.wizard-file-input ::v-deep .q-file__control .q-field__message {
+  border: 1px solid var(--q-color-primary, var(--q-primary)) !important;
+  border-color: var(--q-color-primary, var(--q-primary)) !important;
+  color: #ffffff !important;
+  background: transparent !important;
+}
 
-  .step-title {
-    font-size: 1.5rem;
-  }
+/* Ensure blue border remains when the file control is NOT focused */
+.file-input:not(.q-file--focused) ::v-deep .q-file__control,
+.wizard-file-input:not(.q-file--focused) ::v-deep .q-file__control,
+.file-input:not(.q-file--focused) ::v-deep .q-field__control,
+.wizard-file-input:not(.q-file--focused) ::v-deep .q-field__control {
+  border: 1px solid var(--q-color-primary, #02b7fe) !important;
+  border-color: var(--q-color-primary, #02b7fe) !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
 
-  .step-subtitle {
-    font-size: 1rem;
-  }
+/* Also ensure the outlined pseudo-elements keep the blue border when unfocused */
+.file-input:not(.q-file--focused) ::v-deep .q-field__control::before,
+.wizard-file-input:not(.q-file--focused) ::v-deep .q-field__control::before,
+.file-input:not(.q-file--focused) ::v-deep .q-field__control::after,
+.wizard-file-input:not(.q-file--focused) ::v-deep .q-field__control::after,
+.file-input:not(.q-file--focused) ::v-deep .q-file__control::before,
+.wizard-file-input:not(.q-file--focused) ::v-deep .q-file__control::before,
+.file-input:not(.q-file--focused) ::v-deep .q-file__control::after,
+.wizard-file-input:not(.q-file--focused) ::v-deep .q-file__control::after {
+  border-color: var(--q-color-primary, #02b7fe) !important;
+  border: 1px solid var(--q-color-primary, #02b7fe) !important;
+  box-shadow: none !important;
+}
 
-  .card-content {
-    padding: 1.5rem;
-  }
+/* Make sure label and native text remain white and visible */
+.file-input:not(.q-file--focused) ::v-deep .q-field__label,
+.wizard-file-input:not(.q-file--focused) ::v-deep .q-field__label,
+.file-input:not(.q-file--focused) ::v-deep .q-field__native,
+.wizard-file-input:not(.q-file--focused) ::v-deep .q-field__native {
+  color: #ffffff !important;
+}
 
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* Focused state: stronger blue glow */
+.file-input ::v-deep .q-file--focused .q-file__control,
+.wizard-file-input ::v-deep .q-file--focused .q-file__control,
+.file-input ::v-deep .q-file--focused .q-field__control,
+.wizard-file-input ::v-deep .q-file--focused .q-field__control {
+  box-shadow: 0 0 0 6px rgba(2,183,254,0.12) !important; /* use primary color */
+  outline: none !important;
+}
 
-  .json-textarea {
-    font-size: 12px;
-  }
+/* Ensure the bottom/hint/message area of the file field renders white (overrides Quasar computed styles) */
+.file-input ::v-deep .q-field__bottom,
+.wizard-file-input ::v-deep .q-field__bottom,
+.file-input ::v-deep .q-file__bottom,
+.wizard-file-input ::v-deep .q-file__bottom {
+  color: #ffffff !important;
+  opacity: 1 !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
 }
 </style>
