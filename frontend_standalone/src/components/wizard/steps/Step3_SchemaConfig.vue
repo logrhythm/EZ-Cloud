@@ -48,9 +48,12 @@
                 v-ripple
               >
                 <q-item-section side>
+                  <!-- Checkbox uses array binding via v-model; label rendered in sibling section -->
                   <q-checkbox
-                    :model-value="isFieldSelected(field, 'convertToJson')"
-                    @update:model-value="toggleFieldSelection(field, 'convertToJson')"
+                    v-model="selectedConvertToJsonFields"
+                    :val="field"
+                    color="primary"
+                    keep-color
                   />
                 </q-item-section>
                 <q-item-section>
