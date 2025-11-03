@@ -674,16 +674,40 @@ export class DataProcessor {
    * @returns {Array} List of paths to array fields
    */
   static findArrayFields (structure) {
+    console.log('[findArrayFields] Called with structure:', structure)
     const arrayFields = []
+    const normalizedPaths = new Set()
 
     // Function for recursive traversal
     const traverse = (node, isRoot = false) => {
       // Skip traversal for invalid nodes
       if (!node || !node.type) return
 
+      console.log('[findArrayFields.traverse] Visiting node:', {
+        path: node.path,
+        type: node.type,
+        isRoot: isRoot
+      })
+
       // If this node is an array (but not the root), add its path
       if (node.type === 'array' && !isRoot) {
-        arrayFields.push(node.path)
+        console.log('[findArrayFields.traverse] Found array at path:', node.path)
+
+        // Normalize path for deduplication check (but keep original for return)
+        // e.g., both $.projects[0].teams and $.projects[1].teams normalize to $.projects[0].teams
+        const normalizedPath = node.path.replace(/\[(\d+)\]/g, '[0]')
+
+        console.log('[findArrayFields.traverse] Normalized path for dedup:', normalizedPath)
+
+        // Only add if we haven't seen this normalized path before
+        if (!normalizedPaths.has(normalizedPath)) {
+          normalizedPaths.add(normalizedPath)
+          // Push the normalized path so all arrays have consistent [0] indices
+          arrayFields.push(normalizedPath)
+          console.log('[findArrayFields.traverse] Added to arrayFields:', normalizedPath)
+        } else {
+          console.log('[findArrayFields.traverse] Skipped (duplicate)')
+        }
       }
 
       // Continue traversal for objects and arrays
@@ -698,6 +722,7 @@ export class DataProcessor {
 
     // Start traversal
     traverse(structure, true)
+    console.log('[findArrayFields] Returning arrayFields:', arrayFields)
     return arrayFields
   }
 

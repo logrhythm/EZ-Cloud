@@ -65,17 +65,22 @@ export {
 // Data Processing Service
 export { DataProcessor } from './dataProcessingService'
 
+// Schema Rule Service
+export { SchemaRuleService } from './schemaRuleService'
+
 // Default export with all services (use ES imports to keep module syntax consistent)
 import validationService from './validationService'
 import policyFileService from './policyFileService'
 import errorHandlerService from './errorHandlingService'
 import utilityService from './utilityService'
 import { DataProcessor } from './dataProcessingService'
+import { SchemaRuleService } from './schemaRuleService'
 
 export default {
   validation: validationService,
   policyFile: policyFileService,
   errorHandler: errorHandlerService,
   utility: utilityService,
-  dataProcessor: DataProcessor
+  dataProcessor: DataProcessor,
+  schemaRule: SchemaRuleService
 }

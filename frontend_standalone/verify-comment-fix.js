@@ -6,7 +6,7 @@
 import { readFileSync } from 'fs'
 
 // Inline the stripCommentsPreserveStrings function for testing
-function stripCommentsPreserveStrings(text) {
+function stripCommentsPreserveStrings (text) {
   if (!text || typeof text !== 'string') return text
 
   let out = ''
@@ -121,7 +121,6 @@ try {
   console.log('  ✅ Escaped characters preserved')
   console.log('  ✅ JSON structure maintained')
   console.log('  ✅ All fields accessible after parsing')
-
 } catch (error) {
   console.log('\n3. PARSING FAILED! ❌')
   console.log('-'.repeat(70))

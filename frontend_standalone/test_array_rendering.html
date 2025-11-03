@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Array Rendering Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #1976d2;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #1976d2;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        pre {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .test-case {
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .expected {
+            color: #4caf50;
+            font-weight: bold;
+        }
+        .actual {
+            color: #f44336;
+            font-weight: bold;
+        }
+        .issue {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .fix {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Array Rendering Debug Analysis</h1>
+
+        <div class="section">
+            <h2>Problem Summary</h2>
+            <p>Only 2 out of 4 nested arrays are showing checkboxes in the UI.</p>
+            <p><span class="expected">Expected:</span> 4 checkboxes (projects, teams, members, skills)</p>
+            <p><span class="actual">Actual:</span> 2 checkboxes (projects, teams only)</p>
+        </div>
+
+        <div class="section">
+            <h2>Sample JSON Structure</h2>
+            <pre>{
+  "company": "TechNova Solutions",
+  "projects": [                    ← Checkbox ✓ (Shows)
+    {
+      "projectId": "PRJ1001",
+      "teams": [                    ← Checkbox ✓ (Shows)
+        {
+          "teamId": "T01",
+          "members": [              ← Checkbox ✗ (MISSING!)
+            {
+              "id": 1,
+              "skills": [...]       ← Checkbox ✗ (MISSING!)
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}</pre>
+        </div>
+
+        <div class="section">
+            <h2>Detected Array Paths</h2>
+            <pre>✓ projects
+✓ projects[0].teams
+✓ projects[0].teams[0].members
+✓ projects[0].teams[0].members[0].skills
+
+Total: 4 arrays detected (correct)</pre>
+        </div>
+
+        <div class="issue">
+            <h2>🐛 Root Cause: filteredArrayChildren Logic</h2>
+            <p><strong>Location:</strong> JsonTreeNode.vue, lines 459-498</p>
+
+            <h3>The Problem:</h3>
+            <ol>
+                <li>When checking if array items contain nested arrays, the code only checks paths starting with <code>[0]</code></li>
+                <li>Example: When at path <code>"teams"</code>, it checks for <code>"teams[0].members"</code></li>
+                <li>But the actual arrayPaths contain <code>"projects[0].teams[0].members"</code></li>
+                <li>The path matching logic fails because it's not accounting for parent array indices</li>
+            </ol>
+
+            <h3>Specific Issue:</h3>
+            <p>At line 475, the code builds:</p>
+            <pre>const childPath = `${props.path}[0].${key}`</pre>
+
+            <p>If <code>props.path = "projects[0].teams"</code> and <code>key = "members"</code>:</p>
+            <pre>childPath = "projects[0].teams[0].members"  ✓ Correct!</pre>
+
+            <p>But when checking arrayPaths, it's looking for exact matches or startsWith patterns that may not account for the normalized paths used in filterToArraysOnly.</p>
+        </div>
+
+        <div class="fix">
+            <h2>✅ Solution</h2>
+
+            <h3>1. Enhanced Debug Logging (Already Added)</h3>
+            <p>Added console.log statements to track:</p>
+            <ul>
+                <li>Array paths being checked</li>
+                <li>Path matching logic results</li>
+                <li>Why certain paths are included/excluded</li>
+            </ul>
+
+            <h3>2. Improved Path Matching</h3>
+            <p>The fix enhances the pattern matching in <code>filteredArrayChildren</code> to check:</p>
+            <pre>// Check for ANY index [0], [1], [2], etc., not just [0]
+const pathPattern = `${props.path}`
+const keyToCheck = key
+
+// Check if any arrayPath matches this structure
+const matches = props.arrayPaths.some(arrayPath => {
+  // Check for exact match like "projects[0].teams"
+  if (arrayPath.startsWith(`${pathPattern}[`) &&
+      arrayPath.includes(`].${keyToCheck}`)) {
+    return true
+  }
+
+  // Check for deeper nesting
+  if (arrayPath.includes(`${pathPattern}[`) &&
+      arrayPath.includes(`.${keyToCheck}`)) {
+    return true
+  }
+
+  return false
+})</pre>
+
+            <h3>3. Test After Fix</h3>
+            <p>Open the wizard and navigate to Step 3:</p>
+            <ol>
+                <li>Check browser console for debug output</li>
+                <li>Verify all 4 arrays show checkboxes</li>
+                <li>Expand each level and confirm nested arrays appear</li>
+                <li>Check that selection works for all 4 arrays</li>
+            </ol>
+        </div>
+
+        <div class="test-case">
+            <h2>📋 Manual Testing Steps</h2>
+            <ol>
+                <li>Open browser dev tools (F12)</li>
+                <li>Navigate to Step 3 of the wizard</li>
+                <li>Look for console output starting with <code>[filteredArrayChildren]</code> and <code>[containsArrays]</code></li>
+                <li>Expand the "projects" array</li>
+                <li>Expand "projects[0]" object</li>
+                <li>Expand the "teams" array</li>
+                <li><strong>Critical:</strong> Expand "teams[0]" object - you should see "members" property with checkbox</li>
+                <li>Expand "members" array</li>
+                <li>Expand "members[0]" object - you should see "skills" property with checkbox</li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Success Criteria</h2>
+            <ul>
+                <li>✅ All 4 arrays (projects, teams, members, skills) have visible checkboxes</li>
+                <li>✅ Each array can be expanded to show its elements</li>
+                <li>✅ Array elements that contain nested arrays are visible</li>
+                <li>✅ The tree structure shows: root → projects → teams → members → skills</li>
+                <li>✅ Each level is expandable and checkboxes are interactive</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>📊 Console Output to Watch For</h2>
+            <p>When expanding teams[0], you should see:</p>
+            <pre>[containsArrays] Checking: childKey="members", currentPath="projects[0].teams[0]"
+[containsArrays] Value type: Array
+  ✓ Direct match found: projects[0].teams[0].members
+[filteredArrayChildren] hasNestedArrays result: true
+[filteredArrayChildren] Returning 1 items</pre>
+        </div>
+    </div>
+
+    <script>
+        console.log('%c🔍 Array Rendering Debug Test Page Loaded', 'color: #1976d2; font-size: 16px; font-weight: bold');
+        console.log('This page documents the array rendering issue and fix.');
+        console.log('Open the wizard in the dev server to see the actual implementation.');
+    </script>
+</body>
+</html>

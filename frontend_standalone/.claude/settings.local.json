@@ -11,7 +11,13 @@
       "Bash(curl:*)",
       "Bash(grep:*)",
       "Bash(ss:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(node verify-comment-fix.js)",
+      "Bash(node:*)",
+      "Bash(git log:*)",
+      "Read(//tmp/**)",
+      "Bash(git ls-tree:*)",
+      "Bash(npm run lint:*)"
     ],
     "deny": []
   }

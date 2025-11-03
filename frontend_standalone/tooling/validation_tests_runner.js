@@ -4,7 +4,7 @@ const path = require('path')
 const origPath = path.resolve(__dirname, '..', 'src', 'services', 'wizard', 'validationService.js')
 const tmpPath = path.resolve(__dirname, 'validationService.cjs.js')
 
-function transformSource(src) {
+function transformSource (src) {
   // Replace export default { with module.exports.__default = {
   src = src.replace(/export default\s*{/, 'module.exports.__default = {')
   // Replace export const/function/class with declarations
@@ -20,7 +20,7 @@ try {
   const src = fs.readFileSync(origPath, 'utf8')
   const transformed = transformSource(src)
   // Append module.exports assignment to expose named exports if not present
-  const footer = `\nmodule.exports = Object.assign({}, module.exports.__default || {}, { Validator, Step1Validator, AsyncValidator, ValidationResult, ValidationRuleTypes, ValidationSeverity, ValidationUtils })\n`
+  const footer = '\nmodule.exports = Object.assign({}, module.exports.__default || {}, { Validator, Step1Validator, AsyncValidator, ValidationResult, ValidationRuleTypes, ValidationSeverity, ValidationUtils })\n'
   fs.writeFileSync(tmpPath, transformed + footer, 'utf8')
   console.log('Wrote transformed module to', tmpPath)
 } catch (err) {
@@ -30,7 +30,7 @@ try {
 
 const svc = require(tmpPath)
 
-function assert(cond, msg) {
+function assert (cond, msg) {
   if (!cond) {
     console.error('ASSERT FAIL:', msg)
     return false
@@ -39,7 +39,7 @@ function assert(cond, msg) {
 }
 
 let failures = 0
-function ok(name, cond) {
+function ok (name, cond) {
   if (cond) console.log('PASS:', name)
   else { console.error('FAIL:', name); failures++ }
 }
@@ -119,7 +119,6 @@ try {
     if (failures > 0) process.exit(2)
     console.log('All tests complete, failures=', failures)
   }).catch(e => { console.error('async test error', e); process.exit(1) })
-
 } catch (err) {
   console.error('Test runner error', err)
   process.exit(1)

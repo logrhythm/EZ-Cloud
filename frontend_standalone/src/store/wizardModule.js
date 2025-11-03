@@ -108,6 +108,7 @@ const getInitialState = () => ({
   schemaRules: {
     convertToJson: [], // Fields to parse as JSON
     fanout: [], // Array fields for fanout processing
+    childfanouts: [], // Built childfanouts structure for policy
     detectedStringifiedJson: [], // Auto-detected stringified JSON fields
     manualSelections: [] // User manual selections
   },
@@ -542,6 +543,30 @@ const actions = {
         case 'dataupload':
           isValid = state.sampleData.validationResult.isValid
           if (!isValid) errors = state.sampleData.validationResult.errors
+          break
+
+        case 'schemaconfig':
+          // Step 3 is optional, so it's always valid
+          // We just validate the format of selections if any exist
+          isValid = true
+          if (state.schemaRules.convertToJson && state.schemaRules.convertToJson.length > 0) {
+            // Validate JSONPath format for convertToJson fields
+            for (const field of state.schemaRules.convertToJson) {
+              if (!field || typeof field !== 'string' || !field.startsWith('$')) {
+                isValid = false
+                errors.push(`Invalid JSONPath format for Convert to JSON field: ${field}`)
+              }
+            }
+          }
+          if (state.schemaRules.fanout && state.schemaRules.fanout.length > 0) {
+            // Validate JSONPath format for fanout fields
+            for (const field of state.schemaRules.fanout) {
+              if (!field || typeof field !== 'string' || !field.startsWith('$')) {
+                isValid = false
+                errors.push(`Invalid JSONPath format for Fanout field: ${field}`)
+              }
+            }
+          }
           break
 
         case 'mapping':

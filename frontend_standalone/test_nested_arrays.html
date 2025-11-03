@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Nested Arrays Display</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #1976d2;
+    }
+    .test-section {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    .test-data {
+      background: #fff;
+      padding: 15px;
+      border-left: 4px solid #1976d2;
+      overflow-x: auto;
+    }
+    pre {
+      margin: 0;
+      font-size: 14px;
+    }
+    .expected {
+      background: #e8f5e9;
+      border-left-color: #4caf50;
+    }
+    .instructions {
+      background: #fff3e0;
+      padding: 15px;
+      border-left: 4px solid #ff9800;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Nested Arrays Display Test</h1>
+
+  <div class="instructions">
+    <h3>Testing Instructions:</h3>
+    <ol>
+      <li>Open your application in development mode</li>
+      <li>Navigate to Step 3 (Schema Configuration)</li>
+      <li>Use the sample data below in Step 2</li>
+      <li>Verify that all nested arrays are shown in the tree view in Step 3</li>
+    </ol>
+  </div>
+
+  <div class="test-section">
+    <h2>Sample Data (Newline-Delimited JSON)</h2>
+    <div class="test-data">
+      <pre>{"timestamp": "2025-10-24T12:00:00Z", "event": "user_data_sync", "data": {"users": [{"id": 1, "name": "Manish Bhatnagar", "email": "manish@example.com", "orders": [{"orderId": "ORD1001", "date": "2025-10-20", "items": [{"productId": "P101", "name": "Laptop", "quantity": 1, "tags": ["electronics", "computers"]}]}, {"orderId": "ORD1002", "date": "2025-10-22", "items": [{"productId": "P202", "name": "Mouse", "quantity": 2, "tags": ["electronics", "accessories"]}, {"productId": "P303", "name": "Keyboard", "quantity": 1, "tags": ["electronics", "accessories"]}]}]}, {"id": 2, "name": "Jane Smith", "email": "jane@example.com", "orders": [{"orderId": "ORD2001", "date": "2025-10-21", "items": [{"productId": "P404", "name": "Monitor", "quantity": 1, "tags": ["electronics", "displays"]}]}]}], "metadata": {"totalUsers": 2, "syncTime": "2025-10-24T12:00:00Z"}}}
+{"timestamp": "2025-10-24T13:00:00Z", "event": "user_data_sync", "data": {"users": [{"id": 3, "name": "Bob Johnson", "email": "bob@example.com", "orders": []}], "metadata": {"totalUsers": 1, "syncTime": "2025-10-24T13:00:00Z"}}}
+{"timestamp": "2025-10-24T14:00:00Z", "event": "user_data_sync", "data": {"users": [], "metadata": {"totalUsers": 0, "syncTime": "2025-10-24T14:00:00Z"}}}</pre>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Expected Array Paths in Tree View</h2>
+    <div class="test-data expected">
+      <pre>✅ data.users (Array, 2 items)
+  └── Checkbox for array fanout selection
+
+✅ data.users[0].orders (Array, 2 items)
+  └── Nested under "users" array
+  └── Checkbox for array fanout selection
+
+✅ data.users[0].orders[0].items (Array, 1 item)
+  └── Nested under "orders" array
+  └── Checkbox for array fanout selection
+
+✅ data.users[0].orders[0].items[0].tags (Array, 2 items)
+  └── Nested under "items" array
+  └── Checkbox for array fanout selection</pre>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Expected Tree Structure Display</h2>
+    <div class="test-data expected">
+      <pre>root Object (1 property)
+└─▼ data Object (2 properties)
+    ├─☐ users Array (2 items)
+    │   └─▼ [0] Object
+    │       ├── id: 1
+    │       ├── name: "Manish Bhatnagar"
+    │       ├── email: "manish@example.com"
+    │       └─☐ orders Array (2 items)
+    │           └─▼ [0] Object
+    │               ├── orderId: "ORD1001"
+    │               ├── date: "2025-10-20"
+    │               └─☐ items Array (1 item)
+    │                   └─▼ [0] Object
+    │                       ├── productId: "P101"
+    │                       ├── name: "Laptop"
+    │                       ├── quantity: 1
+    │                       └─☐ tags Array (2 items)
+    │                           ├── [0] "electronics"
+    │                           └── [1] "computers"
+    └── metadata Object (2 properties)
+        ├── totalUsers: 2
+        └── syncTime: "2025-10-24T12:00:00Z"</pre>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>What to Verify:</h2>
+    <ul>
+      <li><strong>✅ All nested arrays are visible</strong> - not just the root array</li>
+      <li><strong>✅ Proper hierarchical display</strong> - nested arrays shown as children of parent arrays</li>
+      <li><strong>✅ Checkboxes appear next to arrays</strong> - for fanout selection</li>
+      <li><strong>✅ Array metadata is shown</strong> - (e.g., "Array, 2 items")</li>
+      <li><strong>✅ Paths are normalized</strong> - no leading [0]. prefix in displayed paths</li>
+      <li><strong>✅ Root array is not selectable</strong> - only nested arrays within the data</li>
+    </ul>
+  </div>
+
+  <div class="test-section">
+    <h2>Console Logs to Check:</h2>
+    <div class="test-data">
+      <pre>Look for these console messages:
+
+filterToArraysOnly - Input data: [Array with 3 objects]
+filterToArraysOnly - Array paths: ["[0].data.users", "[0].data.users[0].orders", ...]
+filterToArraysOnly - Normalized paths: ["data.users", "data.users[0].orders", ...]
+filterToArraysOnly - Output: {data: {users: [...]}}
+
+Normalized array paths: ["data.users", "data.users[0].orders", "data.users[0].orders[0].items", ...]</pre>
+    </div>
+  </div>
+
+</body>
+</html>

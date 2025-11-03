@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Deep Dive Debug - Array Rendering Issue</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 2px solid #333; background: #f5f5f5; }
+        .title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #d32f2f; }
+        .success { color: #4caf50; font-weight: bold; }
+        .error { color: #d32f2f; font-weight: bold; }
+        .warning { color: #ff9800; font-weight: bold; }
+        pre { background: white; padding: 10px; border-left: 3px solid #2196f3; }
+        button { padding: 10px 20px; margin: 5px; font-size: 14px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🔍 DEEP DIVE: Array Rendering Debug</h1>
+    <p>This will help identify exactly why nested arrays aren't rendering</p>
+
+    <div class="section">
+        <div class="title">STEP 1: Basic Detection</div>
+        <button onclick="step1()">Run Step 1</button>
+        <pre id="step1-output"></pre>
+    </div>
+
+    <div class="section">
+        <div class="title">STEP 2: Node Expansion State</div>
+        <button onclick="step2()">Run Step 2</button>
+        <pre id="step2-output"></pre>
+    </div>
+
+    <div class="section">
+        <div class="title">STEP 3: Check DOM Hierarchy</div>
+        <button onclick="step3()">Run Step 3</button>
+        <pre id="step3-output"></pre>
+    </div>
+
+    <div class="section">
+        <div class="title">STEP 4: Manual Expansion Test</div>
+        <button onclick="step4()">Run Step 4 - Auto Expand</button>
+        <pre id="step4-output"></pre>
+    </div>
+
+    <div class="section">
+        <div class="title">STEP 5: Check filteredObjectChildren</div>
+        <button onclick="step5()">Run Step 5</button>
+        <pre id="step5-output"></pre>
+    </div>
+
+    <div class="section">
+        <div class="title">STEP 6: Force Render Check</div>
+        <button onclick="step6()">Run Step 6</button>
+        <pre id="step6-output"></pre>
+    </div>
+
+    <script>
+        function step1() {
+            const output = document.getElementById('step1-output');
+            let log = '=== BASIC DETECTION ===\n\n';
+
+            // Get all checkboxes
+            const checkboxes = document.querySelectorAll('.q-checkbox');
+            log += `Total checkboxes found: ${checkboxes.length}\n`;
+            log += `Expected: 4 (projects, teams, members, skills)\n\n`;
+
+            // Get array names
+            const arrayNames = [];
+            checkboxes.forEach(cb => {
+                const parent = cb.closest('.node-content');
+                if (parent) {
+                    const keyEl = parent.querySelector('.node-key, .node-array-index');
+                    if (keyEl) {
+                        arrayNames.push(keyEl.textContent.trim().replace(':', ''));
+                    }
+                }
+            });
+
+            log += `Array names found: ${JSON.stringify(arrayNames)}\n\n`;
+
+            // Check Vue component data
+            log += '=== VUE COMPONENT DATA ===\n';
+            const viewer = document.querySelector('[class*="json-tree"]')?.parentElement;
+            if (viewer && viewer.__vue__) {
+                const vueData = viewer.__vue__;
+                log += `arrayPaths: ${JSON.stringify(vueData.arrayPaths || 'NOT FOUND')}\n`;
+            } else {
+                log += 'Could not access Vue component data\n';
+            }
+
+            output.textContent = log;
+        }
+
+        function step2() {
+            const output = document.getElementById('step2-output');
+            let log = '=== EXPANSION STATE ===\n\n';
+
+            // Find all expandable nodes
+            const expandableNodes = document.querySelectorAll('.node-expandable');
+            log += `Total expandable nodes: ${expandableNodes.length}\n\n`;
+
+            expandableNodes.forEach((node, idx) => {
+                const isExpanded = node.classList.contains('node-expanded');
+                const keyEl = node.querySelector('.node-key, .node-array-index');
+                const key = keyEl ? keyEl.textContent.trim() : 'UNKNOWN';
+                const expandIcon = node.querySelector('.toggle-icon');
+
+                log += `Node ${idx + 1}: "${key}"\n`;
+                log += `  - Expanded: ${isExpanded}\n`;
+                log += `  - Icon: ${expandIcon ? expandIcon.getAttribute('name') : 'NONE'}\n`;
+
+                // Check if it has children in DOM
+                const parent = node.closest('.json-tree-node');
+                const childrenDiv = parent?.querySelector('.node-children');
+                log += `  - Has children div: ${!!childrenDiv}\n`;
+                log += `  - Children visible: ${childrenDiv && childrenDiv.children.length > 0}\n`;
+                log += `  - Children count: ${childrenDiv?.children.length || 0}\n\n`;
+            });
+
+            output.textContent = log;
+        }
+
+        function step3() {
+            const output = document.getElementById('step3-output');
+            let log = '=== DOM HIERARCHY ===\n\n';
+
+            function traverseNode(element, depth = 0, maxDepth = 5) {
+                if (depth > maxDepth) return;
+
+                const indent = '  '.repeat(depth);
+                const keyEl = element.querySelector(':scope > .node-content .node-key, :scope > .node-content .node-array-index');
+                const key = keyEl ? keyEl.textContent.trim() : 'ROOT';
+                const hasCheckbox = element.querySelector(':scope > .node-content .q-checkbox');
+                const isExpanded = element.querySelector(':scope > .node-content')?.classList.contains('node-expanded');
+
+                log += `${indent}${key}`;
+                if (hasCheckbox) log += ' ✓ [CHECKBOX]';
+                if (isExpanded) log += ' [EXPANDED]';
+                log += '\n';
+
+                // Traverse children
+                const childrenContainer = element.querySelector(':scope > .node-children');
+                if (childrenContainer) {
+                    const childNodes = childrenContainer.querySelectorAll(':scope > .json-tree-node');
+                    childNodes.forEach(child => {
+                        traverseNode(child, depth + 1, maxDepth);
+                    });
+                }
+            }
+
+            const rootNode = document.querySelector('.json-tree-node');
+            if (rootNode) {
+                traverseNode(rootNode);
+            } else {
+                log = 'No root node found!';
+            }
+
+            output.textContent = log;
+        }
+
+        function step4() {
+            const output = document.getElementById('step4-output');
+            let log = '=== AUTO EXPANSION TEST ===\n\n';
+
+            // Find and click all expand icons
+            const expandIcons = document.querySelectorAll('.toggle-icon[name="chevron_right"]');
+            log += `Found ${expandIcons.length} collapsed nodes\n\n`;
+
+            expandIcons.forEach((icon, idx) => {
+                const nodeContent = icon.closest('.node-content');
+                const keyEl = nodeContent?.querySelector('.node-key, .node-array-index');
+                const key = keyEl ? keyEl.textContent.trim() : 'UNKNOWN';
+
+                log += `Expanding node ${idx + 1}: "${key}"\n`;
+                icon.click();
+            });
+
+            log += '\n=== Waiting 500ms for render... ===\n';
+            output.textContent = log;
+
+            setTimeout(() => {
+                log += '\n=== AFTER EXPANSION ===\n';
+                const checkboxes = document.querySelectorAll('.q-checkbox');
+                log += `Checkboxes now visible: ${checkboxes.length}\n\n`;
+
+                const arrayNames = [];
+                checkboxes.forEach(cb => {
+                    const parent = cb.closest('.node-content');
+                    if (parent) {
+                        const keyEl = parent.querySelector('.node-key, .node-array-index');
+                        if (keyEl) {
+                            arrayNames.push(keyEl.textContent.trim().replace(':', ''));
+                        }
+                    }
+                });
+                log += `Arrays now visible: ${JSON.stringify(arrayNames)}\n`;
+
+                if (arrayNames.length === 4 &&
+                    arrayNames.includes('projects') &&
+                    arrayNames.includes('teams') &&
+                    arrayNames.includes('members') &&
+                    arrayNames.includes('skills')) {
+                    log += '\n✅ SUCCESS! All arrays are now visible!\n';
+                    log += '👉 The issue was: NODES NEED TO BE MANUALLY EXPANDED\n';
+                } else {
+                    log += '\n❌ STILL BROKEN AFTER EXPANSION\n';
+                    log += '👉 The issue is NOT just expansion state\n';
+                }
+
+                output.textContent = log;
+            }, 500);
+        }
+
+        function step5() {
+            const output = document.getElementById('step5-output');
+            let log = '=== CHECK CONSOLE FOR LOGS ===\n\n';
+            log += 'Look for these log patterns in the console:\n';
+            log += '1. [filteredObjectChildren] Processing...\n';
+            log += '2. [containsArrays] Checking...\n';
+            log += '3. [filteredArrayChildren] Checking array...\n\n';
+            log += 'Pay attention to:\n';
+            log += '- Which paths are being checked\n';
+            log += '- Whether containsArrays returns true for members/skills\n';
+            log += '- Whether filteredObjectChildren includes members/skills\n\n';
+            log += '=== TRIGGER: Click expand icons to see logs ===\n';
+            output.textContent = log;
+        }
+
+        function step6() {
+            const output = document.getElementById('step6-output');
+            let log = '=== FORCE RENDER CHECK ===\n\n';
+
+            // Check if nodes exist but are hidden
+            const allNodes = document.querySelectorAll('.json-tree-node');
+            log += `Total nodes in DOM: ${allNodes.length}\n\n`;
+
+            const hiddenNodes = Array.from(allNodes).filter(node => {
+                const computed = window.getComputedStyle(node);
+                return computed.display === 'none' || computed.visibility === 'hidden' || computed.opacity === '0';
+            });
+
+            log += `Hidden nodes: ${hiddenNodes.length}\n\n`;
+
+            if (hiddenNodes.length > 0) {
+                log += 'Hidden nodes details:\n';
+                hiddenNodes.forEach((node, idx) => {
+                    const keyEl = node.querySelector('.node-key, .node-array-index');
+                    const key = keyEl ? keyEl.textContent.trim() : 'UNKNOWN';
+                    log += `  ${idx + 1}. "${key}"\n`;
+                });
+            }
+
+            // Check v-if conditions
+            log += '\n=== Checking for v-if attributes ===\n';
+            const nodesWithVIf = document.querySelectorAll('[v-if], [v-show]');
+            log += `Nodes with v-if/v-show: ${nodesWithVIf.length}\n`;
+
+            output.textContent = log;
+        }
+
+        // Auto-run step 1 on load
+        window.addEventListener('load', () => {
+            setTimeout(step1, 500);
+        });
+    </script>
+</body>
+</html>

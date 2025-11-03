@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Array-Only Tree View Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-case {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1976d2;
+        }
+        h2 {
+            color: #424242;
+            border-bottom: 2px solid #1976d2;
+            padding-bottom: 10px;
+        }
+        .test-description {
+            background: #e3f2fd;
+            padding: 15px;
+            border-left: 4px solid #1976d2;
+            margin-bottom: 15px;
+        }
+        .expected-behavior {
+            background: #f1f8e9;
+            padding: 15px;
+            border-left: 4px solid #8bc34a;
+            margin-top: 15px;
+        }
+        pre {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: 'Courier New', monospace;
+        }
+        .key-points {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .key-points li {
+            padding: 8px;
+            margin: 5px 0;
+            background: #fff3e0;
+            border-left: 3px solid #ff9800;
+        }
+        .key-points li::before {
+            content: "✓ ";
+            color: #ff9800;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 Array-Only Tree View - Test Cases</h1>
+    <p>This document demonstrates the expected behavior of the modified tree view components when displaying only JSON array fields.</p>
+
+    <!-- Test Case 1 -->
+    <div class="test-case">
+        <h2>Test Case 1: Simple Array</h2>
+        <div class="test-description">
+            <strong>Description:</strong> Object with one array field and one non-array field
+        </div>
+        <pre><code>{
+  "users": ["user1", "user2", "user3"],
+  "name": "test",
+  "count": 3
+}</code></pre>
+        <div class="expected-behavior">
+            <strong>Expected Behavior:</strong>
+            <ul class="key-points">
+                <li>Only "users" array should be visible</li>
+                <li>"name" string should be hidden</li>
+                <li>"count" number should be hidden</li>
+                <li>Root object should show "Object (1 arrays)"</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Test Case 2 -->
+    <div class="test-case">
+        <h2>Test Case 2: Nested Arrays</h2>
+        <div class="test-description">
+            <strong>Description:</strong> Nested object structure with arrays at multiple levels
+        </div>
+        <pre><code>{
+  "departments": [
+    {
+      "name": "Engineering",
+      "teams": [
+        { "name": "Backend", "size": 5 },
+        { "name": "Frontend", "size": 3 }
+      ]
+    },
+    {
+      "name": "Sales",
+      "teams": [
+        { "name": "Enterprise", "size": 10 }
+      ]
+    }
+  ],
+  "company": "ACME Corp",
+  "founded": 2020
+}</code></pre>
+        <div class="expected-behavior">
+            <strong>Expected Behavior:</strong>
+            <ul class="key-points">
+                <li>"departments" array visible with checkbox</li>
+                <li>Department items visible (to navigate to nested arrays)</li>
+                <li>"teams" nested array visible with checkbox</li>
+                <li>"company" and "founded" fields hidden</li>
+                <li>"name" and "size" inside team items hidden</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Test Case 3 -->
+    <div class="test-case">
+        <h2>Test Case 3: No Arrays</h2>
+        <div class="test-description">
+            <strong>Description:</strong> Object with only primitive fields, no arrays
+        </div>
+        <pre><code>{
+  "name": "John Doe",
+  "age": 30,
+  "active": true,
+  "email": "john@example.com"
+}</code></pre>
+        <div class="expected-behavior">
+            <strong>Expected Behavior:</strong>
+            <ul class="key-points">
+                <li>Show empty state message</li>
+                <li>Display: "No array fields detected in the data structure."</li>
+                <li>Show info icon</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Test Case 4 -->
+    <div class="test-case">
+        <h2>Test Case 4: Arrays of Arrays (Matrix)</h2>
+        <div class="test-description">
+            <strong>Description:</strong> Array containing nested arrays (2D array structure)
+        </div>
+        <pre><code>{
+  "matrix": [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+  ],
+  "dimensions": "3x3"
+}</code></pre>
+        <div class="expected-behavior">
+            <strong>Expected Behavior:</strong>
+            <ul class="key-points">
+                <li>"matrix" array visible with checkbox</li>
+                <li>Array items [0], [1], [2] visible (as they are arrays)</li>
+                <li>Nested arrays within matrix items visible</li>
+                <li>"dimensions" string hidden</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Test Case 5 -->
+    <div class="test-case">
+        <h2>Test Case 5: Complex Mixed Structure</h2>
+        <div class="test-description">
+            <strong>Description:</strong> Complex object with arrays at various nesting levels
+        </div>
+        <pre><code>{
+  "metadata": {
+    "version": "1.0",
+    "tags": ["tag1", "tag2", "tag3"]
+  },
+  "data": {
+    "records": [
+      {
+        "id": 1,
+        "values": [10, 20, 30],
+        "label": "Record A"
+      },
+      {
+        "id": 2,
+        "values": [40, 50, 60],
+        "label": "Record B"
+      }
+    ],
+    "summary": "Test data"
+  },
+  "timestamp": "2024-01-01"
+}</code></pre>
+        <div class="expected-behavior">
+            <strong>Expected Behavior:</strong>
+            <ul class="key-points">
+                <li>"metadata" object visible (contains "tags" array)</li>
+                <li>"tags" array visible with checkbox</li>
+                <li>"data" object visible (contains "records" array)</li>
+                <li>"records" array visible with checkbox</li>
+                <li>Record items visible (contain "values" arrays)</li>
+                <li>"values" nested array visible with checkbox</li>
+                <li>"version", "id", "label", "summary", "timestamp" hidden</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Test Case 6 -->
+    <div class="test-case">
+        <h2>Test Case 6: Root Array</h2>
+        <div class="test-description">
+            <strong>Description:</strong> JSON structure where root itself is an array
+        </div>
+        <pre><code>[
+  {
+    "id": 1,
+    "items": ["a", "b", "c"]
+  },
+  {
+    "id": 2,
+    "items": ["x", "y", "z"]
+  }
+]</code></pre>
+        <div class="expected-behavior">
+            <strong>Expected Behavior:</strong>
+            <ul class="key-points">
+                <li>Root array visible</li>
+                <li>Array items [0], [1] visible (contain "items" arrays)</li>
+                <li>"items" nested array visible with checkbox</li>
+                <li>"id" fields hidden</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Test Case 7 -->
+    <div class="test-case">
+        <h2>Test Case 7: Deep Nesting</h2>
+        <div class="test-description">
+            <strong>Description:</strong> Deeply nested array structure
+        </div>
+        <pre><code>{
+  "level1": {
+    "level2": {
+      "level3": {
+        "items": [
+          {
+            "subitems": [
+              { "value": 1 }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}</code></pre>
+        <div class="expected-behavior">
+            <strong>Expected Behavior:</strong>
+            <ul class="key-points">
+                <li>"level1", "level2", "level3" objects visible (navigation path)</li>
+                <li>"items" array visible with checkbox</li>
+                <li>Items visible (contain "subitems")</li>
+                <li>"subitems" nested array visible with checkbox</li>
+                <li>"value" primitive hidden</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Implementation Details -->
+    <div class="test-case">
+        <h2>📋 Implementation Details</h2>
+        <div class="test-description">
+            <strong>Key Implementation Features:</strong>
+        </div>
+        <ul class="key-points">
+            <li><strong>containsArrays() Helper:</strong> Recursively checks if a value contains arrays</li>
+            <li><strong>shouldShowNode Computed:</strong> Controls node visibility based on array content</li>
+            <li><strong>filteredObjectChildren:</strong> Filters object properties to show only array-containing ones</li>
+            <li><strong>filteredArrayChildren:</strong> Filters array items to show only those with nested arrays</li>
+            <li><strong>Path Building:</strong> Correctly builds paths for nested structures</li>
+            <li><strong>Empty State:</strong> Shows message when no arrays exist</li>
+        </ul>
+    </div>
+
+    <!-- Testing Instructions -->
+    <div class="test-case">
+        <h2>🧪 Testing Instructions</h2>
+        <div class="test-description">
+            <strong>How to Test:</strong>
+        </div>
+        <ol>
+            <li>Navigate to Step 3 (Schema Configuration) in the wizard</li>
+            <li>Load sample data with various array structures</li>
+            <li>Verify the tree view shows ONLY array fields</li>
+            <li>Check that non-array fields are completely hidden</li>
+            <li>Confirm nested arrays appear as children</li>
+            <li>Test selection functionality (checkboxes work correctly)</li>
+            <li>Verify empty state appears when no arrays exist</li>
+        </ol>
+    </div>
+
+</body>
+</html>
