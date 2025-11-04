@@ -127,7 +127,20 @@
 
           <div v-else class="json-structure-view">
             <div class="structure-header">
-              <h6>JSON Structure ({{ fanoutCandidates.length }} arrays found)</h6>
+              <div class="structure-header-left">
+                <h6>JSON Structure ({{ fanoutCandidates.length }} arrays found)</h6>
+                <q-chip
+                  v-if="isMultiLineLog"
+                  color="amber"
+                  text-color="white"
+                  icon="format_list_bulleted"
+                  size="sm"
+                  class="q-ml-sm"
+                >
+                  <q-tooltip>Array & JSON candidates derived from multiple log lines</q-tooltip>
+                  Aggregated (Multi-line Sample)
+                </q-chip>
+              </div>
               <q-chip color="secondary" text-color="white" icon="info">
                 Check arrays to include
               </q-chip>
@@ -229,16 +242,36 @@ export default {
       selectedConvertToJsonFields: [],
       selectedFanoutFields: [],
       convertToJsonCandidates: [],
-      fanoutCandidates: []
+      fanoutCandidates: [],
+      representativeData: null // Holds the representative structure for multi-line mode
     }
   },
 
   computed: {
     ...mapState('wizard', ['sampleData', 'schemaRules']),
     ...mapGetters('wizard', ['getParsedDataStructure']),
+
+    /**
+     * Determine if we're in multi-line log mode
+     */
+    isMultiLineLog () {
+      return this.sampleData?.logType === 'multiline'
+    },
+
+    /**
+     * Get the data to use for tree visualization
+     * In multi-line mode, this will be the representative structure
+     */
+    dataForTreeView () {
+      if (this.isMultiLineLog && this.representativeData) {
+        return this.representativeData
+      }
+      return this.sampleData?.parsedData
+    },
+
     fanoutArrayTreeData () {
-      // Build array-only hierarchical view from parsedData
-      const data = this.sampleData?.parsedData
+      // Build array-only hierarchical view from parsedData or representative data
+      const data = this.dataForTreeView
       if (!data) return {}
       const build = (node) => {
         if (node === null || node === undefined) return {}
@@ -311,6 +344,7 @@ export default {
       console.log('=== analyzeSampleData called ===')
       console.log('sampleData.parsedData exists?', !!this.sampleData.parsedData)
       console.log('sampleData.dataStructure exists?', !!this.sampleData.dataStructure)
+      console.log('isMultiLineLog?', this.isMultiLineLog)
 
       // Only analyze if we have parsed data
       if (!this.sampleData.parsedData || !this.sampleData.dataStructure) {
@@ -321,18 +355,25 @@ export default {
       try {
         console.log('Analyzing parsedData:', this.sampleData.parsedData)
 
-        // Find Convert to JSON candidates
-        this.convertToJsonCandidates = SchemaRuleService.findConvertToJsonCandidates(
-          this.sampleData.parsedData
-        )
-        console.log('Convert to JSON candidates found:', this.convertToJsonCandidates.length)
-
-        // Find Fanout candidates
-        this.fanoutCandidates = SchemaRuleService.findFanoutCandidates(
+        // Use the new multi-line aware analysis method
+        const analysisResult = SchemaRuleService.analyzeSampleDataWithMultiLineSupport(
           this.sampleData.parsedData,
-          this.sampleData.dataStructure
+          this.sampleData.dataStructure,
+          this.isMultiLineLog
         )
+
+        // Update candidates
+        this.convertToJsonCandidates = analysisResult.convertToJsonCandidates
+        this.fanoutCandidates = analysisResult.fanoutCandidates
+        this.representativeData = analysisResult.representativeData
+
+        console.log('Convert to JSON candidates found:', this.convertToJsonCandidates.length)
         console.log('Fanout candidates found:', this.fanoutCandidates.length, this.fanoutCandidates)
+        console.log('Representative data:', this.representativeData)
+
+        if (this.isMultiLineLog) {
+          console.log('Multi-line mode active: aggregated candidates across multiple records')
+        }
       } catch (error) {
         console.error('Error analyzing sample data for schema rules:', error)
         this.$q.notify({
@@ -587,6 +628,13 @@ export default {
     align-items: center;
     flex-wrap: wrap;
   }
+}
+
+.structure-header-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .json-tree-container {

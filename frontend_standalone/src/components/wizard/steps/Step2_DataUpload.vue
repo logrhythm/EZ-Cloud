@@ -644,6 +644,11 @@ export default {
         // Use the DataProcessor service directly
         const result = await DataProcessor.processSampleData(this.sampleData.rawData, this.sampleData.inputMethod)
 
+        console.log('=== Step 2: Data processing result ===')
+        console.log('Detected logType:', result.logType)
+        console.log('Input method:', this.sampleData.inputMethod)
+        console.log('Record count:', result.dataStats.recordCount)
+
         // Update the store with results
         this.SET_SAMPLE_DATA({
           rawData: this.sampleData.rawData,
@@ -651,6 +656,7 @@ export default {
           parsedData: result.parsedData,
           dataStructure: result.dataStructure,
           dataStats: result.dataStats,
+          logType: result.logType, // Store the detected log type
           validationResult: result.validationResult
         })
 
@@ -704,6 +710,7 @@ export default {
         rawData: '',
         parsedData: null,
         dataStructure: null,
+        logType: null,
         validationResult: { isValid: false, errors: [], warnings: [] },
         dataStats: { recordCount: 0, fieldCount: 0, nestedLevels: 0 }
       })

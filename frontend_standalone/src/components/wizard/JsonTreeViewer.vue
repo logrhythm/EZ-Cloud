@@ -808,11 +808,18 @@ export default defineComponent({
         }
 
         // Add all parent paths (but not the array itself)
+        console.log(`  → Parts for ${arrayPath}:`, parts)
         parts.forEach((part, idx) => {
+          const isLastPart = idx === parts.length - 1
+          const isArrayPath = part === arrayPath
+          console.log(`    Part[${idx}]: "${part}", isLastPart: ${isLastPart}, isArrayPath: ${isArrayPath}`)
+
           // Don't expand the final array path itself, only its containers
           if (idx < parts.length - 1 || part !== arrayPath) {
             pathsToExpand.add(part)
-            console.log(`  → Will expand: ${part}`)
+            console.log(`      ✓ Will expand: ${part}`)
+          } else {
+            console.log(`      ✗ Skip (is the array itself): ${part}`)
           }
         })
       })
@@ -820,14 +827,21 @@ export default defineComponent({
       console.log(`[autoExpandArrayContainers] Expanding ${pathsToExpand.size} paths:`, Array.from(pathsToExpand))
 
       // Expand all the container paths
+      // Create a new Set to trigger reactivity
+      const newExpandedNodes = new Set(expandedNodes.value)
       pathsToExpand.forEach(path => {
-        if (!expandedNodes.value.has(path)) {
-          expandedNodes.value.add(path)
+        if (!newExpandedNodes.has(path)) {
+          newExpandedNodes.add(path)
+          console.log(`  [autoExpandArrayContainers] Adding to expanded nodes: ${path}`)
         }
       })
 
+      // Replace the ref to trigger reactivity
+      expandedNodes.value = newExpandedNodes
+
       console.log('[autoExpandArrayContainers] Auto-expansion complete')
       console.log('[autoExpandArrayContainers] Total expanded nodes:', expandedNodes.value.size)
+      console.log('[autoExpandArrayContainers] Final expanded nodes:', Array.from(expandedNodes.value))
     }
 
     // Auto-expand on data change

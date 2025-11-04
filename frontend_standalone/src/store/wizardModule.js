@@ -91,6 +91,7 @@ const getInitialState = () => ({
     inputMethod: 'manual', // manual, file, multiple
     rawData: '',
     parsedData: null,
+    logType: null, // 'single', 'multiline', or null
     validationResult: {
       isValid: false,
       errors: [],

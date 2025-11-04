@@ -209,13 +209,20 @@ export default defineComponent({
       // Build the full path for this child
       const childPath = currentPath === 'root' ? childKey : `${currentPath}.${childKey}`
 
-      console.log(`[containsArrays] Checking: childKey="${childKey}", currentPath="${currentPath}", childPath="${childPath}"`)
-      console.log(`[containsArrays] Value type: ${Array.isArray(value) ? 'Array' : typeof value}`)
-      console.log('[containsArrays] Available arrayPaths:', props.arrayPaths)
+      // Special logging for tags to debug the issue
+      if (childKey === 'tags') {
+        console.log('[containsArrays] ⚠️ CHECKING TAGS PROPERTY ⚠️')
+        console.log(`[containsArrays] childKey="${childKey}", currentPath="${currentPath}", childPath="${childPath}"`)
+        console.log('[containsArrays] Value:', value)
+        console.log(`[containsArrays] Value type: ${Array.isArray(value) ? 'Array' : typeof value}`)
+        console.log('[containsArrays] Value length:', Array.isArray(value) ? value.length : 'N/A')
+        console.log('[containsArrays] Available arrayPaths:', props.arrayPaths)
+        console.log(`[containsArrays] Checking if arrayPaths includes "${childPath}":`, props.arrayPaths.includes(childPath))
+      }
 
       // Check if this specific path is in arrayPaths
       if (props.arrayPaths.includes(childPath)) {
-        console.log(`  ✓ Direct match found: ${childPath}`)
+        if (childKey === 'tags') console.log(`  ✓ Direct match found for tags: ${childPath}`)
         return true
       }
 
@@ -224,7 +231,7 @@ export default defineComponent({
         const result = props.arrayPaths.some(arrayPath =>
           arrayPath === childPath || arrayPath.startsWith(childPath + '.')
         )
-        console.log(`  Array check result: ${result}`)
+        if (childKey === 'tags') console.log(`  Array check result for tags: ${result}`)
         return result
       }
 
@@ -234,16 +241,12 @@ export default defineComponent({
         const result = props.arrayPaths.some(arrayPath => {
           const matchesDot = arrayPath.startsWith(childPath + '.')
           const matchesBracket = arrayPath.startsWith(childPath + '[')
-          if (matchesDot || matchesBracket) {
-            console.log(`  ✓ Object contains arrays: ${arrayPath} matches ${childPath}`)
-          }
           return matchesDot || matchesBracket
         })
-        console.log(`  Object check result: ${result}`)
         return result
       }
 
-      console.log('  ✗ No match found')
+      if (childKey === 'tags') console.log('  ✗ No match found for tags')
       return false
     }
 
@@ -276,12 +279,36 @@ export default defineComponent({
     const isBoolean = computed(() => typeof props.node === 'boolean')
     const isNull = computed(() => props.node === null)
 
-    const isExpandable = computed(() =>
-      (isObject.value && Object.keys(props.node).length > 0) ||
-      (isArray.value && props.node.length > 0)
-    )
+    const isExpandable = computed(() => {
+      const result = (isObject.value && Object.keys(props.node).length > 0) ||
+        (isArray.value && props.node.length > 0)
 
-    const isExpanded = computed(() => expandedNodes.value.has(props.path))
+      // Debug logging for items[0] node
+      if (props.path === 'data.users[0].orders[0].items[0]') {
+        console.log(`[isExpandable] Path: ${props.path}`)
+        console.log(`  - isObject: ${isObject.value}`)
+        console.log(`  - isArray: ${isArray.value}`)
+        console.log('  - Object keys:', isObject.value ? Object.keys(props.node) : 'N/A')
+        console.log('  - Object keys length:', isObject.value ? Object.keys(props.node).length : 0)
+        console.log(`  - result: ${result}`)
+      }
+
+      return result
+    })
+
+    const isExpanded = computed(() => {
+      const result = expandedNodes.value.has(props.path)
+
+      // Debug logging for items[0] node
+      if (props.path === 'data.users[0].orders[0].items[0]') {
+        console.log(`[isExpanded] Path: ${props.path}`)
+        console.log(`  - expandedNodes has this path: ${result}`)
+        console.log(`  - expandedNodes size: ${expandedNodes.value.size}`)
+        console.log('  - expandedNodes contents:', Array.from(expandedNodes.value))
+      }
+
+      return result
+    })
 
     /**
      * Determine if this node should be shown in the tree
@@ -466,17 +493,52 @@ export default defineComponent({
       emit('select-field', props.path, nodeInfo)
     }
 
+    // Debug computed to check if children should be rendered
+    const shouldRenderChildren = computed(() => {
+      const result = isExpanded.value && isExpandable.value
+
+      // Debug logging for items[0] node
+      if (props.path === 'data.users[0].orders[0].items[0]') {
+        console.log(`[shouldRenderChildren] Path: ${props.path}`)
+        console.log(`  - isExpanded: ${isExpanded.value}`)
+        console.log(`  - isExpandable: ${isExpandable.value}`)
+        console.log(`  - result: ${result}`)
+        console.log(`  - isObject: ${isObject.value}`)
+        console.log(`  - selectionMode: ${selectionMode}`)
+      }
+
+      return result
+    })
+
     /**
      * Filter object children to only show properties that contain arrays
      */
     const filteredObjectChildren = computed(() => {
-      if (!isObject.value) return []
+      if (!isObject.value) {
+        console.log(`[filteredObjectChildren] Not an object at path: ${props.path}`)
+        return []
+      }
 
       // When in array selection mode, only show children that contain arrays
       if (selectionMode === 'array') {
-        return Object.entries(props.node).filter(([childKey, childValue]) => {
-          return containsArrays(childValue, childKey, props.path)
+        console.log(`[filteredObjectChildren] 🔍 START Filtering object at path: ${props.path}`)
+        console.log(`[filteredObjectChildren] isExpanded: ${isExpanded.value}, isExpandable: ${isExpandable.value}`)
+        console.log('[filteredObjectChildren] Object keys:', Object.keys(props.node))
+        console.log('[filteredObjectChildren] About to call Object.entries...')
+
+        const entries = Object.entries(props.node)
+        console.log(`[filteredObjectChildren] Object.entries returned ${entries.length} entries`)
+
+        const filtered = entries.filter(([childKey, childValue]) => {
+          console.log(`[filteredObjectChildren] 🔎 Filtering childKey: '${childKey}'`)
+          const result = containsArrays(childValue, childKey, props.path)
+          console.log(`[filteredObjectChildren] ✓ Key '${childKey}' contains arrays? ${result}`)
+          return result
         })
+
+        console.log('[filteredObjectChildren] 🎯 Final filtered result:', filtered.map(([k]) => k))
+        console.log(`[filteredObjectChildren] ✅ DONE - Returning ${filtered.length} entries`)
+        return filtered
       }
 
       // In other modes, show all children
@@ -501,6 +563,17 @@ export default defineComponent({
         console.log(`[filteredArrayChildren] Checking array at path: ${props.path}`)
         console.log('[filteredArrayChildren] First item type:', typeof firstItem, Array.isArray(firstItem) ? 'Array' : '')
         console.log('[filteredArrayChildren] Available arrayPaths:', props.arrayPaths)
+
+        // Check if this array itself is in the arrayPaths (it's selectable)
+        const isThisArraySelectable = props.arrayPaths.includes(props.path)
+        console.log('[filteredArrayChildren] Is this array selectable?', isThisArraySelectable)
+
+        // If this array itself is selectable (a leaf array or an array of primitives),
+        // show its items for preview purposes (limited to first 20)
+        if (isThisArraySelectable) {
+          console.log(`[filteredArrayChildren] Array is selectable, returning ${items.length} items for preview`)
+          return items
+        }
 
         // If array items are objects, check if they contain nested arrays
         if (typeof firstItem === 'object' && firstItem !== null && !Array.isArray(firstItem)) {
@@ -569,7 +642,8 @@ export default defineComponent({
           return []
         }
 
-        // For non-object array items (primitives), don't show them in array mode
+        // For non-object array items (primitives or arrays), don't show them in array mode
+        // unless this array itself is selectable (which we already checked above)
         console.log('[filteredArrayChildren] Non-object items, returning empty')
         return []
       }
@@ -589,6 +663,7 @@ export default defineComponent({
       isNull,
       isExpandable,
       isExpanded,
+      shouldRenderChildren,
       shouldShowNode,
       isSelectable,
       isPotentialJson,
