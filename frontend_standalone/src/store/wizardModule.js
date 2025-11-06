@@ -672,10 +672,24 @@ const actions = {
     }
   },
 
+  /**
+   * Clears the wizard state completely, resetting it to the initial state
+   * This will remove data from all steps and navigate back to the first step
+   */
   async clearState ({ commit }) {
     try {
+      // Remove saved state from storage
       storage.remove(STORAGE_KEY)
+
+      // Reset wizard state completely
       commit('RESET_WIZARD')
+
+      // Reset current step to 0 (first step)
+      commit('SET_CURRENT_STEP', 0)
+
+      // Clear all completed steps
+      commit('RESET_STEP_STATUS', 0)
+
       return true
     } catch (error) {
       console.error('Failed to clear wizard state:', error)

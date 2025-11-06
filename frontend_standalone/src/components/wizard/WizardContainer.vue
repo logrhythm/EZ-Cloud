@@ -72,6 +72,9 @@
           :completed-steps="completedSteps"
           @navigate="navigateToStep"
           @toggle-sidebar="sidebarCollapsed = !sidebarCollapsed"
+          @reset-wizard="showResetWizardConfirmation"
+          @save-progress="saveState"
+          @show-help="toggleHelp"
         />
       </div>
 
@@ -210,6 +213,12 @@
       </q-card>
     </q-dialog>
 
+    <!-- Reset Wizard Confirmation Dialog -->
+    <ResetWizardConfirmDialog
+      v-model="showResetDialog"
+      @confirm="resetWizard"
+    />
+
     <!-- Error Messages -->
     <div class="error-messages">
       <transition-group name="error-message" tag="div">
@@ -244,6 +253,7 @@ import { mapState, mapGetters, mapActions } from 'vuex'
 import { themeService } from '../../boot/theme-service'
 import WizardNavigation from './WizardNavigation.vue'
 import WizardHelp from './WizardHelp.vue'
+import ResetWizardConfirmDialog from './ResetWizardConfirmDialog.vue'
 import debounce from 'lodash/debounce'
 
 // Step Components (lazy loaded)
@@ -259,12 +269,14 @@ export default {
 
   components: {
     WizardNavigation,
-    WizardHelp
+    WizardHelp,
+    ResetWizardConfirmDialog
   },
 
   data () {
     return {
       showExitDialog: false,
+      showResetDialog: false,
       showSaveIndicator: false,
       sidebarCollapsed: false,
       autoSaveTimer: null,
@@ -395,7 +407,8 @@ export default {
       'saveState',
       'loadState',
       'clearState',
-      'generatePolicy'
+      'generatePolicy',
+      'resetWizard'
     ]),
 
     async initializeWizard () {
@@ -499,6 +512,62 @@ export default {
           message: 'Failed to generate policy. Please check your configuration.',
           type: 'error'
         })
+      }
+    },
+
+    /**
+     * Shows the reset wizard confirmation dialog
+     * This displays a modal confirmation dialog asking the user to confirm
+     * they want to reset all wizard data
+     */
+    showResetWizardConfirmation () {
+      this.showResetDialog = true
+    },
+
+    /**
+     * Resets the wizard to its initial state and navigates to the first step
+     * This method:
+     * 1. Shows a loading state
+     * 2. Clears all wizard state data from local storage and Vuex store
+     * 3. Re-initializes the wizard with a clean state
+     * 4. Navigates back to step 1
+     * 5. Notifies the user that the reset was successful
+     */
+    async resetWizard () {
+      try {
+        // Show loading state
+        this.$store.commit('wizard/SET_LOADING', {
+          isLoading: true,
+          message: 'Resetting wizard...'
+        })
+
+        // Wait briefly to ensure loading state is shown
+        await new Promise(resolve => setTimeout(resolve, 300))
+
+        // Call the store action to clear the wizard state
+        await this.$store.dispatch('wizard/clearState')
+
+        // Re-initialize the wizard with fresh state
+        await this.initializeWizard()
+
+        // Navigate to the first step
+        await this.navigateToStep(0)
+
+        // Notify user of successful reset
+        this.$q.notify({
+          type: 'positive',
+          message: 'Wizard has been reset successfully',
+          timeout: 3000
+        })
+      } catch (error) {
+        console.error('Error resetting wizard:', error)
+        this.$store.commit('wizard/ADD_GLOBAL_ERROR', {
+          message: 'Failed to reset wizard. Please try again.',
+          type: 'error'
+        })
+      } finally {
+        // Hide loading state
+        this.$store.commit('wizard/SET_LOADING', { isLoading: false })
       }
     },
 
