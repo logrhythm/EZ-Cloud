@@ -694,6 +694,347 @@ export class SchemaRuleService {
       representativeData
     }
   }
+
+  /**
+   * ============================================================================
+   * DYNAMIC FANOUT DETECTION FROM PARSED JSON STRINGS
+   * These methods handle detecting arrays within stringified JSON fields
+   * ============================================================================
+   */
+
+  /**
+   * Parse a stringified JSON field and extract array candidates
+   * @param {Object|Array} data - The data containing the field
+   * @param {string} fieldPath - The path to the stringified JSON field
+   * @returns {Object} Parsing result with arrays and parsed structure
+   */
+  static parseJsonFieldForArrays (data, fieldPath) {
+    console.log('╔═══════════════════════════════════════════════════════════════════════')
+    console.log('║ [DEBUG SchemaRuleService.parseJsonFieldForArrays] Called')
+    console.log('║   fieldPath:', JSON.stringify(fieldPath))
+    console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+    const result = {
+      success: false,
+      parsedData: null,
+      arrayPaths: [],
+      error: null
+    }
+
+    try {
+      // Get the field value from the data
+      const fieldValue = this._getValueByPath(data, fieldPath)
+      console.log('[DEBUG] Field value type:', typeof fieldValue)
+      console.log('[DEBUG] Field value length:', fieldValue?.length)
+
+      if (!fieldValue || typeof fieldValue !== 'string') {
+        result.error = 'Field is not a string'
+        console.log('[DEBUG] Error:', result.error)
+        return result
+      }
+
+      // Try to parse the JSON string
+      const parsedValue = JSON.parse(fieldValue)
+      result.parsedData = parsedValue
+      result.success = true
+      console.log('[DEBUG] Successfully parsed JSON, type:', typeof parsedValue)
+
+      // Find all array paths within the parsed structure
+      result.arrayPaths = this._findArrayPathsInParsedJson(parsedValue, fieldPath)
+
+      console.log('╔═══════════════════════════════════════════════════════════════════════')
+      console.log('║ [DEBUG SchemaRuleService.parseJsonFieldForArrays] Result')
+      console.log('║   success:', result.success)
+      console.log('║   arrayPaths.length:', result.arrayPaths.length)
+      console.log('║   arrayPaths:')
+      result.arrayPaths.forEach((arr, idx) => {
+        console.log(`║     [${idx}] path: "${arr.path}", parentPath: "${arr.parentPath}", isParsedField: ${arr.isParsedField}`)
+      })
+      console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+      return result
+    } catch (error) {
+      result.error = `Failed to parse JSON: ${error.message}`
+      console.log('[DEBUG] Exception:', result.error)
+      return result
+    }
+  }
+
+  /**
+   * Find all array paths within a parsed JSON structure
+   * @param {*} data - The parsed JSON data
+   * @param {string} parentPath - The parent field path
+   * @param {string} currentPath - Current path within the parsed structure
+   * @returns {Array} Array of array path objects
+   * @private
+   */
+  static _findArrayPathsInParsedJson (data, parentPath, currentPath = '') {
+    const arrayPaths = []
+
+    // Helper to build the full path
+    const buildFullPath = (subPath) => {
+      if (!subPath) return parentPath
+      return `${parentPath}.${subPath}`
+    }
+
+    // Recursive traversal
+    const traverse = (obj, path = '') => {
+      if (obj === null || obj === undefined) return
+
+      if (Array.isArray(obj)) {
+        // Found an array - add it to the candidates
+        const fullPath = buildFullPath(path)
+        const arrayInfo = this._analyzeArrayStructure(obj)
+
+        arrayPaths.push({
+          path: fullPath,
+          relativePath: path || '(root)',
+          isHomogeneous: arrayInfo.isHomogeneous,
+          elementType: arrayInfo.elementType,
+          sampleSize: obj.length,
+          parentPath: parentPath,
+          isParsedField: true // Mark as coming from a parsed field
+        })
+
+        // Traverse array elements
+        if (obj.length > 0 && typeof obj[0] === 'object' && obj[0] !== null) {
+          traverse(obj[0], path ? `${path}[0]` : '[0]')
+        }
+      } else if (typeof obj === 'object') {
+        // Traverse object properties
+        for (const key in obj) {
+          const nextPath = path ? `${path}.${key}` : key
+          traverse(obj[key], nextPath)
+        }
+      }
+    }
+
+    traverse(data)
+    return arrayPaths
+  }
+
+  /**
+   * Analyze an array's structure to determine homogeneity and element type
+   * @param {Array} array - The array to analyze
+   * @returns {Object} Analysis result with isHomogeneous and elementType
+   * @private
+   */
+  static _analyzeArrayStructure (array) {
+    if (!Array.isArray(array) || array.length === 0) {
+      return {
+        isHomogeneous: true,
+        elementType: 'empty'
+      }
+    }
+
+    // Check the type of the first element
+    const firstElement = array[0]
+    const firstType = Array.isArray(firstElement)
+      ? 'array'
+      : (firstElement === null
+          ? 'null'
+          : typeof firstElement)
+
+    // Check if all elements have the same type
+    let isHomogeneous = true
+    for (let i = 1; i < Math.min(array.length, 10); i++) {
+      const element = array[i]
+      const elementType = Array.isArray(element)
+        ? 'array'
+        : (element === null
+            ? 'null'
+            : typeof element)
+
+      if (elementType !== firstType) {
+        isHomogeneous = false
+        break
+      }
+    }
+
+    return {
+      isHomogeneous,
+      elementType: firstType
+    }
+  }
+
+  /**
+   * Get a value from an object by path (supports nested paths and arrays)
+   * @param {Object|Array} obj - The object to traverse
+   * @param {string} path - The path to the value (e.g., 'field', 'parent.field', 'array[0].field')
+   * @returns {*} The value at the path or undefined
+   * @private
+   */
+  static _getValueByPath (obj, path) {
+    if (!obj || !path) return undefined
+
+    // Remove leading $ if present (JSONPath notation)
+    const cleanPath = path.replace(/^\$\.?/, '')
+    if (!cleanPath) return obj
+
+    // Split path by dots and brackets
+    const parts = cleanPath.split(/\.|\[|\]/).filter(p => p !== '')
+
+    let current = obj
+    for (const part of parts) {
+      if (current === null || current === undefined) return undefined
+
+      // Handle array indices
+      if (/^\d+$/.test(part)) {
+        current = current[parseInt(part)]
+      } else {
+        current = current[part]
+      }
+    }
+
+    return current
+  }
+
+  /**
+   * Merge parsed JSON arrays into existing fanout candidates
+   * @param {Array} existingCandidates - Existing fanout candidates
+   * @param {Array} parsedArrays - Arrays discovered from parsed JSON fields
+   * @returns {Array} Combined fanout candidates
+   */
+  static mergeParsedArraysIntoFanoutCandidates (existingCandidates, parsedArrays) {
+    // Create a map of existing candidates by path for deduplication
+    const candidateMap = new Map()
+
+    // Add existing candidates
+    for (const candidate of existingCandidates) {
+      candidateMap.set(candidate.path, candidate)
+    }
+
+    // Add parsed arrays
+    for (const parsedArray of parsedArrays) {
+      if (!candidateMap.has(parsedArray.path)) {
+        candidateMap.set(parsedArray.path, parsedArray)
+      }
+    }
+
+    return Array.from(candidateMap.values())
+  }
+
+  /**
+   * Remove parsed arrays from fanout candidates when a JSON field is deselected
+   * @param {Array} candidates - Current fanout candidates
+   * @param {string} jsonFieldPath - The path to the deselected JSON field
+   * @returns {Array} Updated fanout candidates
+   */
+  static removeParsedArraysFromField (candidates, jsonFieldPath) {
+    console.log('╔═══════════════════════════════════════════════════════════════════════')
+    console.log('║ [DEBUG SchemaRuleService.removeParsedArraysFromField] Called')
+    console.log('╠═══════════════════════════════════════════════════════════════════════')
+    console.log('║ Input jsonFieldPath:', JSON.stringify(jsonFieldPath))
+    console.log('║ Input candidates.length:', candidates.length)
+    console.log('║ Input candidates:')
+    candidates.forEach((c, idx) => {
+      console.log(`║   [${idx}] path: "${c.path}", isParsedField: ${c.isParsedField}, parentPath: "${c.parentPath || 'N/A'}"`)
+    })
+    console.log('╠═══════════════════════════════════════════════════════════════════════')
+    console.log('║ Filtering Logic:')
+    console.log('║   Remove if: (isParsedField === true) AND (parentPath === "' + jsonFieldPath + '")')
+    console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+    // Filter out candidates that came from this parsed field
+    const filtered = candidates.filter(candidate => {
+      // Check if this candidate is from the parsed field
+      const shouldRemove = candidate.isParsedField && candidate.parentPath === jsonFieldPath
+
+      if (shouldRemove) {
+        console.log(`║   [REMOVING] path: "${candidate.path}", isParsedField: ${candidate.isParsedField}, parentPath: "${candidate.parentPath}"`)
+      } else {
+        console.log(`║   [KEEPING] path: "${candidate.path}", isParsedField: ${candidate.isParsedField}, parentPath: "${candidate.parentPath || 'N/A'}"`)
+      }
+
+      return !shouldRemove
+    })
+
+    console.log('╔═══════════════════════════════════════════════════════════════════════')
+    console.log('║ [DEBUG SchemaRuleService.removeParsedArraysFromField] Result')
+    console.log('║ Original count:', candidates.length, '→ Filtered count:', filtered.length)
+    console.log('║ Removed:', candidates.length - filtered.length, 'candidates')
+    console.log('║ Filtered candidates:')
+    filtered.forEach((c, idx) => {
+      console.log(`║   [${idx}] path: "${c.path}", isParsedField: ${c.isParsedField}, parentPath: "${c.parentPath || 'N/A'}"`)
+    })
+    console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+    return filtered
+  }
+
+  /**
+   * Update representative data by merging parsed JSON fields
+   * @param {Object} baseData - The base representative data
+   * @param {Array} selectedJsonFields - Selected Convert to JSON fields
+   * @returns {Object} Updated representative data with parsed JSON fields
+   */
+  static updateRepresentativeDataWithParsedFields (baseData, selectedJsonFields) {
+    if (!baseData || !selectedJsonFields || selectedJsonFields.length === 0) {
+      return baseData
+    }
+
+    // Create a deep copy to avoid mutation
+    let updatedData
+    try {
+      updatedData = JSON.parse(JSON.stringify(baseData))
+    } catch (e) {
+      console.error('Error cloning representative data:', e)
+      return baseData
+    }
+
+    // Parse and replace each selected JSON field
+    for (const fieldPath of selectedJsonFields) {
+      try {
+        const fieldValue = this._getValueByPath(updatedData, fieldPath)
+
+        if (fieldValue && typeof fieldValue === 'string') {
+          const parsedValue = JSON.parse(fieldValue)
+          // Replace the string with the parsed object
+          this._setValueByPath(updatedData, fieldPath, parsedValue)
+        }
+      } catch (error) {
+        console.warn(`Failed to parse JSON field ${fieldPath}:`, error.message)
+        // Continue with other fields
+      }
+    }
+
+    return updatedData
+  }
+
+  /**
+   * Set a value in an object by path (supports nested paths and arrays)
+   * @param {Object|Array} obj - The object to modify
+   * @param {string} path - The path to set (e.g., 'field', 'parent.field', 'array[0].field')
+   * @param {*} value - The value to set
+   * @private
+   */
+  static _setValueByPath (obj, path, value) {
+    if (!obj || !path) return
+
+    // Remove leading $ if present (JSONPath notation)
+    const cleanPath = path.replace(/^\$\.?/, '')
+    if (!cleanPath) return
+
+    // Split path by dots and brackets
+    const parts = cleanPath.split(/\.|\[|\]/).filter(p => p !== '')
+
+    let current = obj
+    for (let i = 0; i < parts.length - 1; i++) {
+      const part = parts[i]
+
+      if (current[part] === undefined) {
+        // Create missing intermediate objects
+        const nextPart = parts[i + 1]
+        current[part] = /^\d+$/.test(nextPart) ? [] : {}
+      }
+
+      current = current[part]
+    }
+
+    // Set the final value
+    const lastPart = parts[parts.length - 1]
+    current[lastPart] = value
+  }
 }
 
 export default {

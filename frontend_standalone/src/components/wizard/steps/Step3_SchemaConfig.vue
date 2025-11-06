@@ -54,6 +54,7 @@
                     :val="field"
                     color="primary"
                     keep-color
+                    @update:model-value="() => { console.log('[DEBUG CHECKBOX] Convert to JSON checkbox toggled for field:', field, '| New selectedConvertToJsonFields:', JSON.stringify(selectedConvertToJsonFields)) }"
                   />
                 </q-item-section>
                 <q-item-section>
@@ -180,7 +181,18 @@
             <q-list bordered separator>
               <q-item v-for="array in selectedFanoutFields" :key="array">
                 <q-item-section>
-                  <q-item-label>{{ array }}</q-item-label>
+                  <q-item-label>
+                    {{ array }}
+                    <q-badge
+                      v-if="isParsedJsonArray(array)"
+                      color="purple"
+                      text-color="white"
+                      class="q-ml-sm"
+                    >
+                      <q-icon name="code" size="xs" class="q-mr-xs" />
+                      Parsed JSON
+                    </q-badge>
+                  </q-item-label>
                   <q-item-label caption>
                     {{ getArrayFieldInfo(array) }}
                   </q-item-label>
@@ -243,7 +255,9 @@ export default {
       selectedFanoutFields: [],
       convertToJsonCandidates: [],
       fanoutCandidates: [],
-      representativeData: null // Holds the representative structure for multi-line mode
+      representativeData: null, // Holds the representative structure for multi-line mode
+      baseFanoutCandidates: [], // Store the original fanout candidates before adding parsed arrays
+      parsedJsonArrays: [] // Track arrays discovered from parsed JSON fields
     }
   },
 
@@ -271,8 +285,19 @@ export default {
 
     fanoutArrayTreeData () {
       // Build array-only hierarchical view from parsedData or representative data
-      const data = this.dataForTreeView
+      // If we have selected Convert to JSON fields, update the representative data with parsed fields
+      let data = this.dataForTreeView
+
       if (!data) return {}
+
+      // Apply parsed JSON fields to the data for tree view
+      if (this.selectedConvertToJsonFields.length > 0) {
+        data = SchemaRuleService.updateRepresentativeDataWithParsedFields(
+          data,
+          this.selectedConvertToJsonFields
+        )
+      }
+
       const build = (node) => {
         if (node === null || node === undefined) return {}
         if (Array.isArray(node)) {
@@ -334,6 +359,44 @@ export default {
       },
       deep: true,
       immediate: true
+    },
+
+    // Watch for changes in Convert to JSON field selections
+    selectedConvertToJsonFields: {
+      handler (newFields, oldFields) {
+        console.log('╔══════════════════════════════════════════════════════════════════════════════')
+        console.log('║ [DEBUG WATCHER] selectedConvertToJsonFields changed')
+        console.log('╠══════════════════════════════════════════════════════════════════════════════')
+        console.log('║ Old fields:', JSON.stringify(oldFields))
+        console.log('║ New fields:', JSON.stringify(newFields))
+        console.log('║ Change type:')
+
+        if (!oldFields || oldFields.length === 0) {
+          console.log('║   → Initial load or first selection')
+        } else if (newFields.length > oldFields.length) {
+          console.log('║   → Field(s) ADDED')
+          const added = newFields.filter(f => !oldFields.includes(f))
+          console.log('║   → Added fields:', JSON.stringify(added))
+        } else if (newFields.length < oldFields.length) {
+          console.log('║   → Field(s) REMOVED (unchecked)')
+          const removed = oldFields.filter(f => !newFields.includes(f))
+          console.log('║   → Removed fields:', JSON.stringify(removed))
+        } else {
+          console.log('║   → Same length but different content')
+        }
+
+        console.log('║ Current selectedFanoutFields before calling update:', JSON.stringify(this.selectedFanoutFields))
+        console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+        // Update fanout candidates based on parsed JSON fields
+        this.updateFanoutCandidatesFromParsedJson(newFields, oldFields || [])
+
+        console.log('╔══════════════════════════════════════════════════════════════════════════════')
+        console.log('║ [DEBUG WATCHER] After updateFanoutCandidatesFromParsedJson returned')
+        console.log('║ Current selectedFanoutFields after calling update:', JSON.stringify(this.selectedFanoutFields))
+        console.log('╚══════════════════════════════════════════════════════════════════════════════')
+      },
+      deep: true
     }
   },
 
@@ -364,12 +427,19 @@ export default {
 
         // Update candidates
         this.convertToJsonCandidates = analysisResult.convertToJsonCandidates
-        this.fanoutCandidates = analysisResult.fanoutCandidates
+        // Store the base fanout candidates (before adding parsed arrays)
+        this.baseFanoutCandidates = [...analysisResult.fanoutCandidates]
+        this.fanoutCandidates = [...analysisResult.fanoutCandidates]
         this.representativeData = analysisResult.representativeData
 
         console.log('Convert to JSON candidates found:', this.convertToJsonCandidates.length)
-        console.log('Fanout candidates found:', this.fanoutCandidates.length, this.fanoutCandidates)
+        console.log('Base fanout candidates found:', this.baseFanoutCandidates.length, this.baseFanoutCandidates)
         console.log('Representative data:', this.representativeData)
+
+        // Re-apply parsed JSON arrays if any fields are already selected
+        if (this.selectedConvertToJsonFields.length > 0) {
+          this.updateFanoutCandidatesFromParsedJson(this.selectedConvertToJsonFields, [])
+        }
 
         if (this.isMultiLineLog) {
           console.log('Multi-line mode active: aggregated candidates across multiple records')
@@ -435,9 +505,19 @@ export default {
 
     handleSelectedUpdate (selectedPaths) {
       // This is called by JsonTreeViewer when selectedPaths changes internally
-      console.log('Step3 handleSelectedUpdate called with:', selectedPaths)
+      console.log('╔══════════════════════════════════════════════════════════════════════════════')
+      console.log('║ [DEBUG] handleSelectedUpdate called from JsonTreeViewer')
+      console.log('╠══════════════════════════════════════════════════════════════════════════════')
+      console.log('║ selectedPaths (from JsonTreeViewer):', JSON.stringify(selectedPaths))
+      console.log('║ Current selectedFanoutFields BEFORE update:', JSON.stringify(this.selectedFanoutFields))
+      console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
       this.selectedFanoutFields = [...selectedPaths]
-      console.log('Updated selectedFanoutFields:', this.selectedFanoutFields)
+
+      console.log('╔══════════════════════════════════════════════════════════════════════════════')
+      console.log('║ [DEBUG] handleSelectedUpdate - selectedFanoutFields AFTER update')
+      console.log('║ selectedFanoutFields:', JSON.stringify(this.selectedFanoutFields))
+      console.log('╚══════════════════════════════════════════════════════════════════════════════')
     },
 
     removeFieldSelection (field, type) {
@@ -469,17 +549,278 @@ export default {
       }
 
       const info = []
+
+      // Add badge for parsed JSON arrays
+      if (field.isParsedField) {
+        info.push('From parsed JSON')
+      }
+
       if (field.isHomogeneous) {
         info.push(`Homogeneous (${field.elementType})`)
       } else {
         info.push('Heterogeneous')
       }
 
-      if (field.parentPath) {
+      if (field.parentPath && !field.isParsedField) {
         info.push(`Parent: ${field.parentPath}`)
       }
 
       return info.join(' • ')
+    },
+
+    /**
+     * Check if an array is from a parsed JSON field
+     */
+    isParsedJsonArray (arrayPath) {
+      const field = this.fanoutCandidates.find(f => f.path === arrayPath)
+      return field?.isParsedField || false
+    },
+
+    /**
+     * Update fanout candidates based on selected Convert to JSON fields
+     * This method parses selected JSON string fields and adds their nested arrays to fanout candidates
+     */
+    updateFanoutCandidatesFromParsedJson (newFields, oldFields) {
+      console.log('╔═══════════════════════════════════════════════════════════════════════')
+      console.log('║ [DEBUG] updateFanoutCandidatesFromParsedJson - START')
+      console.log('╠═══════════════════════════════════════════════════════════════════════')
+      console.log('║ Input Parameters:')
+      console.log('║   newFields:', JSON.stringify(newFields))
+      console.log('║   oldFields:', JSON.stringify(oldFields))
+      console.log('╠═══════════════════════════════════════════════════════════════════════')
+      console.log('║ Current State BEFORE Processing:')
+      console.log('║   selectedFanoutFields:', JSON.stringify(this.selectedFanoutFields))
+      console.log('║   selectedFanoutFields.length:', this.selectedFanoutFields.length)
+      console.log('║   fanoutCandidates.length:', this.fanoutCandidates.length)
+      console.log('║   baseFanoutCandidates.length:', this.baseFanoutCandidates.length)
+      console.log('║   parsedJsonArrays.length:', this.parsedJsonArrays.length)
+      console.log('║   parsedJsonArrays:', JSON.stringify(this.parsedJsonArrays))
+      console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+      if (!this.sampleData?.parsedData || !this.representativeData) {
+        console.log('[DEBUG] No sample data available - EXITING')
+        return
+      }
+
+      // Determine which fields were added and which were removed
+      const addedFields = newFields.filter(f => !oldFields.includes(f))
+      const removedFields = oldFields.filter(f => !newFields.includes(f))
+
+      console.log('╔═══════════════════════════════════════════════════════════════════════')
+      console.log('║ [DEBUG] Field Changes Analysis:')
+      console.log('║   addedFields:', JSON.stringify(addedFields))
+      console.log('║   removedFields:', JSON.stringify(removedFields))
+      console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+      // Start with base fanout candidates
+      let updatedCandidates = [...this.baseFanoutCandidates]
+      console.log('[DEBUG] Starting with baseFanoutCandidates:', updatedCandidates.length, 'candidates')
+
+      // Remove arrays from deselected JSON fields
+      // Process in the correct order:
+      // 1. Identify which arrays need to be removed
+      // 2. Remove from selectedFanoutFields (deselect)
+      // 3. Remove from Vuex store's schemaRules.fanout
+      // 4. Remove from fanoutCandidates
+      for (const removedField of removedFields) {
+        console.log('╔═══════════════════════════════════════════════════════════════════════')
+        console.log('║ [DEBUG] Processing Removed Field:', removedField)
+        console.log('╠═══════════════════════════════════════════════════════════════════════')
+
+        // Inspect current fanoutCandidates to see what's tagged as parsed
+        console.log('║ Current fanoutCandidates (ALL):')
+        this.fanoutCandidates.forEach((c, idx) => {
+          console.log(`║   [${idx}] path: "${c.path}", isParsedField: ${c.isParsedField}, parentPath: "${c.parentPath || 'N/A'}"`)
+        })
+
+        // Step 1: Identify arrays that came from this parsed JSON field
+        // Use the current fanoutCandidates (before update) to find them
+        const arraysToRemove = this.fanoutCandidates
+          .filter(c => c.isParsedField && c.parentPath === removedField)
+          .map(c => c.path)
+
+        console.log('╠═══════════════════════════════════════════════════════════════════════')
+        console.log('║ [DEBUG] Step 1: Identify Arrays to Remove')
+        console.log('║   Looking for arrays where:')
+        console.log('║     - isParsedField === true')
+        console.log('║     - parentPath === "' + removedField + '"')
+        console.log('║   Arrays to remove:', JSON.stringify(arraysToRemove))
+        console.log('║   Count:', arraysToRemove.length)
+
+        // Normalize paths by removing $.  prefix for comparison with selectedFanoutFields
+        // arraysToRemove has paths like "$.configString.featureList"
+        // selectedFanoutFields has paths like "configString.featureList"
+        const normalizedArraysToRemove = arraysToRemove.map(path =>
+          path.startsWith('$.') ? path.substring(2) : path
+        )
+        console.log('║   Normalized arrays to remove:', JSON.stringify(normalizedArraysToRemove))
+
+        // Step 2: Remove from selectedFanoutFields (deselect any selected fanouts from this field)
+        if (normalizedArraysToRemove.length > 0) {
+          console.log('╠═══════════════════════════════════════════════════════════════════════')
+          console.log('║ [DEBUG] Step 2: Remove from selectedFanoutFields')
+          console.log('║   selectedFanoutFields BEFORE filter:', JSON.stringify(this.selectedFanoutFields))
+          const originalLength = this.selectedFanoutFields.length
+
+          // Detailed logging for each array
+          console.log('║   Checking each selected fanout field:')
+          this.selectedFanoutFields.forEach(path => {
+            const shouldRemove = normalizedArraysToRemove.includes(path)
+            console.log(`║     - "${path}" → ${shouldRemove ? 'REMOVE' : 'KEEP'}`)
+          })
+
+          this.selectedFanoutFields = this.selectedFanoutFields.filter(path => {
+            const shouldRemove = normalizedArraysToRemove.includes(path)
+            if (shouldRemove) {
+              console.log(`║   [REMOVING] Deselecting fanout: "${path}"`)
+            }
+            return !shouldRemove
+          })
+
+          console.log('║   selectedFanoutFields AFTER filter:', JSON.stringify(this.selectedFanoutFields))
+          const removedCount = originalLength - this.selectedFanoutFields.length
+          console.log('║   Removed count:', removedCount)
+          console.log('║   Original length:', originalLength, '→ New length:', this.selectedFanoutFields.length)
+
+          if (removedCount > 0) {
+            console.log('╠═══════════════════════════════════════════════════════════════════════')
+            console.log('║ [DEBUG] Step 3: Update Vuex Store')
+            console.log('║   Updating Vuex store with new fanout array:', JSON.stringify(this.selectedFanoutFields))
+
+            // Step 3: Update Vuex store to remove these fanout arrays
+            // This ensures the store stays in sync with the local component state
+            this.UPDATE_SCHEMA_RULES({
+              fanout: [...this.selectedFanoutFields]
+            })
+            console.log('║   Vuex store updated successfully')
+          }
+        } else {
+          console.log('╠═══════════════════════════════════════════════════════════════════════')
+          console.log('║ [DEBUG] No arrays found to remove for this field')
+        }
+
+        // Step 4: Remove from fanout candidates
+        console.log('╠═══════════════════════════════════════════════════════════════════════')
+        console.log('║ [DEBUG] Step 4: Remove from fanoutCandidates')
+        console.log('║   updatedCandidates BEFORE removeParsedArraysFromField:', updatedCandidates.length)
+        updatedCandidates.forEach((c, idx) => {
+          console.log(`║     [${idx}] path: "${c.path}", isParsedField: ${c.isParsedField}, parentPath: "${c.parentPath || 'N/A'}"`)
+        })
+
+        const beforeRemoveCount = updatedCandidates.length
+        updatedCandidates = SchemaRuleService.removeParsedArraysFromField(updatedCandidates, removedField)
+        const afterRemoveCount = updatedCandidates.length
+
+        console.log('║   updatedCandidates AFTER removeParsedArraysFromField:', afterRemoveCount)
+        console.log('║   Candidates removed from list:', beforeRemoveCount - afterRemoveCount)
+        updatedCandidates.forEach((c, idx) => {
+          console.log(`║     [${idx}] path: "${c.path}", isParsedField: ${c.isParsedField}, parentPath: "${c.parentPath || 'N/A'}"`)
+        })
+        console.log('╚═══════════════════════════════════════════════════════════════════════')
+      }
+
+      // Add arrays from newly selected JSON fields
+      const allParsedArrays = []
+      console.log('╔═══════════════════════════════════════════════════════════════════════')
+      console.log('║ [DEBUG] Processing Added Fields')
+      console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+      for (const addedField of addedFields) {
+        console.log(`[DEBUG] Parsing added field: "${addedField}"`)
+
+        try {
+          // Parse the JSON field and extract arrays
+          const parseResult = SchemaRuleService.parseJsonFieldForArrays(
+            this.representativeData,
+            addedField
+          )
+
+          if (parseResult.success) {
+            console.log(`[DEBUG] Found ${parseResult.arrayPaths.length} arrays in "${addedField}":`, JSON.stringify(parseResult.arrayPaths))
+            allParsedArrays.push(...parseResult.arrayPaths)
+          } else {
+            console.warn(`[DEBUG] Failed to parse "${addedField}":`, parseResult.error)
+
+            // Show warning notification to user
+            this.$q.notify({
+              type: 'warning',
+              message: `Could not parse JSON field "${addedField}"`,
+              caption: parseResult.error,
+              timeout: 3000
+            })
+          }
+        } catch (error) {
+          console.error(`[DEBUG] Error parsing "${addedField}":`, error)
+
+          this.$q.notify({
+            type: 'negative',
+            message: `Error parsing JSON field "${addedField}"`,
+            caption: error.message,
+            timeout: 3000
+          })
+        }
+      }
+
+      // For all currently selected fields (not just newly added), parse and collect arrays
+      // This ensures we have a complete set when re-analyzing
+      if (addedFields.length === 0 && newFields.length > 0) {
+        console.log('[DEBUG] No new fields added, but re-parsing all selected fields:', JSON.stringify(newFields))
+        for (const field of newFields) {
+          try {
+            const parseResult = SchemaRuleService.parseJsonFieldForArrays(
+              this.representativeData,
+              field
+            )
+
+            if (parseResult.success) {
+              console.log(`[DEBUG] Re-parsed "${field}": found ${parseResult.arrayPaths.length} arrays`)
+              allParsedArrays.push(...parseResult.arrayPaths)
+            }
+          } catch (error) {
+            console.error(`[DEBUG] Error re-parsing "${field}":`, error)
+          }
+        }
+      }
+
+      // Merge parsed arrays into candidates
+      if (allParsedArrays.length > 0) {
+        console.log('╔═══════════════════════════════════════════════════════════════════════')
+        console.log('║ [DEBUG] Merging Parsed Arrays')
+        console.log('║   allParsedArrays:', JSON.stringify(allParsedArrays))
+        console.log('║   allParsedArrays.length:', allParsedArrays.length)
+        console.log('║   updatedCandidates BEFORE merge:', updatedCandidates.length)
+        console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+        updatedCandidates = SchemaRuleService.mergeParsedArraysIntoFanoutCandidates(
+          updatedCandidates,
+          allParsedArrays
+        )
+
+        console.log('[DEBUG] updatedCandidates AFTER merge:', updatedCandidates.length)
+      }
+
+      // Update fanout candidates
+      this.fanoutCandidates = updatedCandidates
+      this.parsedJsonArrays = allParsedArrays
+
+      console.log('╔═══════════════════════════════════════════════════════════════════════')
+      console.log('║ [DEBUG] Final State AFTER Processing:')
+      console.log('║   this.fanoutCandidates.length:', this.fanoutCandidates.length)
+      console.log('║   this.parsedJsonArrays.length:', this.parsedJsonArrays.length)
+      console.log('║   this.parsedJsonArrays:', JSON.stringify(this.parsedJsonArrays))
+      console.log('║   this.selectedFanoutFields:', JSON.stringify(this.selectedFanoutFields))
+      console.log('║   this.selectedFanoutFields.length:', this.selectedFanoutFields.length)
+      console.log('╠═══════════════════════════════════════════════════════════════════════')
+      console.log('║ Final fanoutCandidates details:')
+      this.fanoutCandidates.forEach((c, idx) => {
+        console.log(`║   [${idx}] path: "${c.path}", isParsedField: ${c.isParsedField}, parentPath: "${c.parentPath || 'N/A'}"`)
+      })
+      console.log('╠═══════════════════════════════════════════════════════════════════════')
+      console.log('║ [DEBUG] updateFanoutCandidatesFromParsedJson - END')
+      console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+      // Force reactivity update
+      this.$forceUpdate()
     },
 
     proceedToNext () {
