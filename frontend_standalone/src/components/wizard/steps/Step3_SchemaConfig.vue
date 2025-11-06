@@ -154,9 +154,14 @@
                   :data="fanoutArrayTreeData"
                   :selection-mode="'array'"
                   :array-only-mode="true"
-                  :initial-selected-paths="selectedFanoutFields"
+                  :initial-selected-paths="selectedFanoutFields.length > 0 ? selectedFanoutFields : []"
                   @update:selected="handleSelectedUpdate"
                 />
+                <!-- Debug Info - Remove after fixing -->
+                <div class="debug-info q-mt-md" v-if="false">
+                  <p>Selected Fanout Fields: {{ selectedFanoutFields.length }}</p>
+                  <pre>{{ JSON.stringify(selectedFanoutFields, null, 2) }}</pre>
+                </div>
                 <div v-else class="no-structure-message">
                   <p>No sample data available. Please complete Step 2 first.</p>
                 </div>
@@ -266,6 +271,16 @@ export default {
     ...mapGetters('wizard', ['getParsedDataStructure']),
 
     /**
+     * Get the fanout selections from the Vuex store
+     * This ensures reactivity when the store is updated
+     */
+    storeFanoutSelections () {
+      const storedSelections = this.schemaRules?.fanout || []
+      console.log('[DEBUG] Step3 computed storeFanoutSelections:', JSON.stringify(storedSelections))
+      return storedSelections
+    },
+
+    /**
      * Determine if we're in multi-line log mode
      */
     isMultiLineLog () {
@@ -333,6 +348,28 @@ export default {
   },
 
   watch: {
+    // Watch for changes in the computed store fanout selections
+    // This ensures we have the latest values from the store
+    storeFanoutSelections: {
+      handler (newVal) {
+        console.log('[DEBUG] Step3 Watch: storeFanoutSelections changed:', JSON.stringify(newVal))
+        console.log('[DEBUG] Current selectedFanoutFields before update:', JSON.stringify(this.selectedFanoutFields))
+
+        // Check if this is an actual change
+        const currentSelections = JSON.stringify(this.selectedFanoutFields)
+        const newSelections = JSON.stringify(newVal)
+
+        if (currentSelections !== newSelections) {
+          console.log('[DEBUG] Updating selectedFanoutFields from store')
+          this.selectedFanoutFields = [...newVal]
+          console.log('[DEBUG] Updated selectedFanoutFields:', JSON.stringify(this.selectedFanoutFields))
+        } else {
+          console.log('[DEBUG] No change needed for selectedFanoutFields')
+        }
+      },
+      immediate: true
+    },
+
     'sampleData.parsedData': {
       handler (newVal) {
         console.log('=== Step3 Watch: sampleData.parsedData changed ===')
@@ -359,6 +396,34 @@ export default {
       },
       deep: true,
       immediate: true
+    },
+
+    // Watch for schema rules changes from store (e.g., when Step 2 resets them)
+    schemaRules: {
+      handler (newRules, oldRules) {
+        console.log('=== Step3 Watch: schemaRules changed in store ===')
+        console.log('Old convertToJson:', oldRules?.convertToJson)
+        console.log('New convertToJson:', newRules?.convertToJson)
+        console.log('Old fanout:', oldRules?.fanout)
+        console.log('New fanout:', newRules?.fanout)
+
+        // Check if schema rules were cleared (reset by Step 2)
+        const wasCleared = (
+          oldRules &&
+          (oldRules.convertToJson?.length > 0 || oldRules.fanout?.length > 0) &&
+          (!newRules.convertToJson || newRules.convertToJson.length === 0) &&
+          (!newRules.fanout || newRules.fanout.length === 0)
+        )
+
+        if (wasCleared) {
+          console.log('=== Step3: Schema rules were cleared - resetting local selections ===')
+          // Clear local component state when store was reset
+          this.selectedConvertToJsonFields = []
+          this.selectedFanoutFields = []
+          this.parsedJsonArrays = []
+        }
+      },
+      deep: true
     },
 
     // Watch for changes in Convert to JSON field selections
@@ -435,6 +500,62 @@ export default {
         console.log('Convert to JSON candidates found:', this.convertToJsonCandidates.length)
         console.log('Base fanout candidates found:', this.baseFanoutCandidates.length, this.baseFanoutCandidates)
         console.log('Representative data:', this.representativeData)
+
+        // Validate previous selections against new candidates
+        if (this.selectedConvertToJsonFields.length > 0) {
+          console.log('=== Validating previous Convert to JSON selections against new candidates ===')
+          console.log('Previous selections:', this.selectedConvertToJsonFields)
+          console.log('New candidates:', this.convertToJsonCandidates)
+
+          // Filter to only keep valid selections that still exist in new candidates
+          const validSelections = this.selectedConvertToJsonFields.filter(field =>
+            this.convertToJsonCandidates.includes(field)
+          )
+
+          if (validSelections.length !== this.selectedConvertToJsonFields.length) {
+            console.log('Some Convert to JSON selections are no longer valid')
+            console.log('Valid selections:', validSelections)
+            console.log('Removed:', this.selectedConvertToJsonFields.filter(f => !validSelections.includes(f)))
+            this.selectedConvertToJsonFields = validSelections
+          } else {
+            console.log('All Convert to JSON selections are still valid')
+          }
+        }
+
+        if (this.selectedFanoutFields.length > 0) {
+          console.log('=== Validating previous Fanout selections against new candidates ===')
+          console.log('Previous selections:', this.selectedFanoutFields)
+
+          // Create a set of valid fanout paths
+          const validFanoutPaths = new Set(this.baseFanoutCandidates.map(c => c.path))
+          console.log('Valid fanout paths:', Array.from(validFanoutPaths))
+
+          // Separate base array selections from parsed array selections
+          // Parsed arrays start with '$.' and will be validated later after parsing
+          const baseArraySelections = this.selectedFanoutFields.filter(field => !field.startsWith('$.'))
+          const parsedArraySelections = this.selectedFanoutFields.filter(field => field.startsWith('$.'))
+
+          console.log('Base array selections:', baseArraySelections)
+          console.log('Parsed array selections (deferred validation):', parsedArraySelections)
+
+          // Only validate base arrays against baseFanoutCandidates
+          // Parsed arrays will be validated after updateFanoutCandidatesFromParsedJson() runs
+          const validBaseSelections = baseArraySelections.filter(field =>
+            validFanoutPaths.has(field)
+          )
+
+          if (validBaseSelections.length !== baseArraySelections.length) {
+            console.log('Some base Fanout selections are no longer valid')
+            console.log('Valid base selections:', validBaseSelections)
+            console.log('Removed base selections:', baseArraySelections.filter(f => !validBaseSelections.includes(f)))
+          } else {
+            console.log('All base Fanout selections are still valid')
+          }
+
+          // Preserve parsed array selections - they will be validated after parsed JSON processing
+          this.selectedFanoutFields = [...validBaseSelections, ...parsedArraySelections]
+          console.log('Combined selections after validation:', this.selectedFanoutFields)
+        }
 
         // Re-apply parsed JSON arrays if any fields are already selected
         if (this.selectedConvertToJsonFields.length > 0) {
@@ -612,16 +733,32 @@ export default {
       console.log('║   removedFields:', JSON.stringify(removedFields))
       console.log('╚═══════════════════════════════════════════════════════════════════════')
 
+      // Store the current selection state before making any changes
+      // This will be used to restore selections after updating fanout candidates
+      const selectedFanoutFieldsBackup = [...this.selectedFanoutFields]
+      console.log('[DEBUG] Backed up current selections:', selectedFanoutFieldsBackup)
+
+      // Create a path normalization mapping to handle paths with or without $. prefix
+      // This is crucial for maintaining selections across navigation
+      const selectedPathsMap = new Map()
+      selectedFanoutFieldsBackup.forEach(path => {
+        // Store each path by its normalized version (without $. prefix)
+        const normalizedPath = path.startsWith('$.') ? path.substring(2) : path
+        selectedPathsMap.set(normalizedPath, path)
+      })
+
+      console.log('╔═══════════════════════════════════════════════════════════════════════')
+      console.log('║ [DEBUG] Initial selected paths mapping:')
+      selectedPathsMap.forEach((originalPath, normalizedPath) => {
+        console.log(`║   "${normalizedPath}" → "${originalPath}" (original)`)
+      })
+      console.log('╚═══════════════════════════════════════════════════════════════════════')
+
       // Start with base fanout candidates
       let updatedCandidates = [...this.baseFanoutCandidates]
       console.log('[DEBUG] Starting with baseFanoutCandidates:', updatedCandidates.length, 'candidates')
 
       // Remove arrays from deselected JSON fields
-      // Process in the correct order:
-      // 1. Identify which arrays need to be removed
-      // 2. Remove from selectedFanoutFields (deselect)
-      // 3. Remove from Vuex store's schemaRules.fanout
-      // 4. Remove from fanoutCandidates
       for (const removedField of removedFields) {
         console.log('╔═══════════════════════════════════════════════════════════════════════')
         console.log('║ [DEBUG] Processing Removed Field:', removedField)
@@ -647,30 +784,49 @@ export default {
         console.log('║   Arrays to remove:', JSON.stringify(arraysToRemove))
         console.log('║   Count:', arraysToRemove.length)
 
-        // Normalize paths by removing $.  prefix for comparison with selectedFanoutFields
-        // arraysToRemove has paths like "$.configString.featureList"
-        // selectedFanoutFields has paths like "configString.featureList"
-        const normalizedArraysToRemove = arraysToRemove.map(path =>
-          path.startsWith('$.') ? path.substring(2) : path
-        )
-        console.log('║   Normalized arrays to remove:', JSON.stringify(normalizedArraysToRemove))
+        // Normalize paths for comparison with selectedFanoutFields
+        // We need to handle both formats: with and without $. prefix
+        // Create a set of normalized paths for efficient lookup
+        const normalizedPathsToRemove = new Set()
+        arraysToRemove.forEach(path => {
+          // Add both full path and without prefix versions to cover all bases
+          normalizedPathsToRemove.add(path) // Full path
+          if (path.startsWith('$.')) {
+            normalizedPathsToRemove.add(path.substring(2)) // Without prefix
+          } else {
+            normalizedPathsToRemove.add(`$.${path}`) // With prefix added
+          }
+        })
 
-        // Step 2: Remove from selectedFanoutFields (deselect any selected fanouts from this field)
-        if (normalizedArraysToRemove.length > 0) {
+        console.log('║   Normalized paths to remove set:',
+          Array.from(normalizedPathsToRemove).map(p => `"${p}"`).join(', '))
+
+        // Step 2: Remove from selectedFanoutFields
+        if (normalizedPathsToRemove.size > 0) {
           console.log('╠═══════════════════════════════════════════════════════════════════════')
           console.log('║ [DEBUG] Step 2: Remove from selectedFanoutFields')
           console.log('║   selectedFanoutFields BEFORE filter:', JSON.stringify(this.selectedFanoutFields))
           const originalLength = this.selectedFanoutFields.length
 
-          // Detailed logging for each array
-          console.log('║   Checking each selected fanout field:')
-          this.selectedFanoutFields.forEach(path => {
-            const shouldRemove = normalizedArraysToRemove.includes(path)
-            console.log(`║     - "${path}" → ${shouldRemove ? 'REMOVE' : 'KEEP'}`)
+          // Remove items from the selectedPathsMap also
+          normalizedPathsToRemove.forEach(path => {
+            const normalized = path.startsWith('$.') ? path.substring(2) : path
+            if (selectedPathsMap.has(normalized)) {
+              console.log(`║   [REMOVING] from selectedPathsMap: "${normalized}"`)
+              selectedPathsMap.delete(normalized)
+            }
           })
 
+          // Filter selectedFanoutFields using the same normalized path check
           this.selectedFanoutFields = this.selectedFanoutFields.filter(path => {
-            const shouldRemove = normalizedArraysToRemove.includes(path)
+            // Convert to normalized form for checking
+            const normalized = path.startsWith('$.') ? path.substring(2) : path
+
+            // Check if this path is in the remove set (with or without prefix)
+            const shouldRemove = normalizedPathsToRemove.has(path) ||
+                               normalizedPathsToRemove.has(normalized) ||
+                               normalizedPathsToRemove.has(`$.${normalized}`)
+
             if (shouldRemove) {
               console.log(`║   [REMOVING] Deselecting fanout: "${path}"`)
             }
@@ -687,8 +843,7 @@ export default {
             console.log('║ [DEBUG] Step 3: Update Vuex Store')
             console.log('║   Updating Vuex store with new fanout array:', JSON.stringify(this.selectedFanoutFields))
 
-            // Step 3: Update Vuex store to remove these fanout arrays
-            // This ensures the store stays in sync with the local component state
+            // Step 3: Update Vuex store
             this.UPDATE_SCHEMA_RULES({
               fanout: [...this.selectedFanoutFields]
             })
@@ -803,6 +958,49 @@ export default {
       this.fanoutCandidates = updatedCandidates
       this.parsedJsonArrays = allParsedArrays
 
+      // Create a comprehensive path mapping between all possible formats
+      // This ensures robust selection restoration regardless of path format
+      const pathMapping = new Map()
+
+      // For each fanout candidate, create mappings for all possible path formats
+      this.fanoutCandidates.forEach(candidate => {
+        const fullPath = candidate.path
+        const withoutPrefix = fullPath.startsWith('$.') ? fullPath.substring(2) : fullPath
+        const withPrefix = fullPath.startsWith('$.') ? fullPath : `$.${fullPath}`
+
+        // Map all variants to the path format used by the component
+        pathMapping.set(fullPath, fullPath)
+        pathMapping.set(withoutPrefix, fullPath)
+        pathMapping.set(withPrefix, fullPath)
+      })
+
+      console.log('╔═══════════════════════════════════════════════════════════════════════')
+      console.log('║ [DEBUG] Comprehensive path mapping:')
+      pathMapping.forEach((mappedPath, key) => {
+        console.log(`║   "${key}" → "${mappedPath}"`)
+      })
+      console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+      // Restore selections using the comprehensive path mapping
+      const restoredSelections = []
+
+      // Process each path from the selectedPathsMap backup
+      selectedPathsMap.forEach((originalPath, normalizedPath) => {
+        // Check if this path exists in any format in the new candidates
+        const mappedPath = pathMapping.get(originalPath) || pathMapping.get(normalizedPath) ||
+                         pathMapping.get(`$.${normalizedPath}`)
+
+        if (mappedPath) {
+          console.log(`[DEBUG] Restoring selection: "${originalPath}" → "${mappedPath}"`)
+          restoredSelections.push(mappedPath)
+        } else {
+          console.log(`[DEBUG] Path no longer exists, dropping: "${originalPath}"`)
+        }
+      })
+
+      // Update selections with the restored paths
+      this.selectedFanoutFields = restoredSelections
+
       console.log('╔═══════════════════════════════════════════════════════════════════════')
       console.log('║ [DEBUG] Final State AFTER Processing:')
       console.log('║   this.fanoutCandidates.length:', this.fanoutCandidates.length)
@@ -816,7 +1014,9 @@ export default {
         console.log(`║   [${idx}] path: "${c.path}", isParsedField: ${c.isParsedField}, parentPath: "${c.parentPath || 'N/A'}"`)
       })
       console.log('╠═══════════════════════════════════════════════════════════════════════')
-      console.log('║ [DEBUG] updateFanoutCandidatesFromParsedJson - END')
+      console.log('║ [DEBUG] Restored selections:')
+      console.log('║   Original backup selections:', selectedFanoutFieldsBackup.length)
+      console.log('║   Final restored selections:', this.selectedFanoutFields.length)
       console.log('╚═══════════════════════════════════════════════════════════════════════')
 
       // Force reactivity update
@@ -824,18 +1024,43 @@ export default {
     },
 
     proceedToNext () {
-      // Build childfanouts structure
-      const childfanouts = SchemaRuleService.buildChildFanouts(
-        this.selectedFanoutFields,
-        this.fanoutCandidates
-      )
+      console.log('=== Step 3 proceedToNext: Processing ===')
 
-      // Update Vuex store with schema configuration
-      this.UPDATE_SCHEMA_RULES({
-        convertToJson: this.selectedConvertToJsonFields,
-        fanout: this.selectedFanoutFields,
-        childfanouts // Store the built childfanouts for policy generation
-      })
+      try {
+        // Make defensive copies of arrays
+        const fieldsToConvertToJson = [...this.selectedConvertToJsonFields]
+        const fieldsForFanout = [...this.selectedFanoutFields]
+
+        // Use available fanout candidates or empty array as fallback
+        const availableFanoutCandidates = Array.isArray(this.fanoutCandidates)
+          ? this.fanoutCandidates
+          : []
+
+        // Build childfanouts structure with error handling
+        let childfanouts = []
+        try {
+          childfanouts = SchemaRuleService.buildChildFanouts(
+            fieldsForFanout,
+            availableFanoutCandidates
+          )
+          console.log('=== Step 3 proceedToNext: Successfully built childfanouts ===', childfanouts.length)
+        } catch (error) {
+          console.error('=== Step 3 proceedToNext: Error building childfanouts ===', error)
+          // Create empty childfanouts in case of error
+          childfanouts = []
+        }
+
+        // Update Vuex store with schema configuration
+        this.UPDATE_SCHEMA_RULES({
+          convertToJson: fieldsToConvertToJson,
+          fanout: fieldsForFanout,
+          childfanouts // Store the built childfanouts for policy generation
+        })
+
+        console.log('=== Step 3 proceedToNext: Schema rules updated in store ===')
+      } catch (error) {
+        console.error('=== Step 3 proceedToNext: Error updating schema rules ===', error)
+      }
 
       // Validate (optional step, so always valid)
       this.$emit('step-valid')
@@ -844,15 +1069,100 @@ export default {
   },
 
   created () {
+    console.log('=== Step 3 Created: Initializing component ===')
+
     // Initialize from store state if available
     const storeSchemaRules = this.$store.state.wizard?.schemaRules
+    console.log('Store schemaRules:', storeSchemaRules)
+
     if (storeSchemaRules) {
-      this.selectedConvertToJsonFields = [...(storeSchemaRules.convertToJson || [])]
-      this.selectedFanoutFields = [...(storeSchemaRules.fanout || [])]
+      const storedConvertToJson = storeSchemaRules.convertToJson || []
+      const storedFanout = storeSchemaRules.fanout || []
+
+      if (storedConvertToJson.length > 0 || storedFanout.length > 0) {
+        console.log('=== Step 3: Restoring previous selections from Vuex store ===')
+        console.log('Restoring Convert to JSON fields:', storedConvertToJson)
+        console.log('Restoring Fanout fields:', storedFanout)
+
+        this.selectedConvertToJsonFields = [...storedConvertToJson]
+
+        // Handle different path formats for fanout fields
+        // Some paths may have '$.' prefix, others may not
+        const normalizedFanout = storedFanout.map(path => {
+          // Preserve the path format as-is, we'll handle both formats in updateFanoutCandidatesFromParsedJson
+          // and in JsonTreeViewer's handling of selected paths
+          return path
+        })
+
+        // Explicitly set the selectedFanoutFields and force an update
+        this.$nextTick(() => {
+          console.log('[DEBUG] Setting selectedFanoutFields in nextTick:', normalizedFanout)
+          this.selectedFanoutFields = [...normalizedFanout]
+
+          // Add a small delay to ensure the value is available when JsonTreeViewer is created
+          setTimeout(() => {
+            console.log('[DEBUG] Verifying selectedFanoutFields after delay:', this.selectedFanoutFields)
+            this.$forceUpdate()
+          }, 100)
+        })
+      } else {
+        console.log('=== Step 3: No previous selections found in store ===')
+      }
+    } else {
+      console.log('=== Step 3: Store schemaRules not available ===')
     }
 
     // Analyze sample data if available
     this.analyzeSampleData()
+  },
+
+  beforeDestroy () {
+    console.log('=== Step 3 beforeDestroy: Saving selections to store ===')
+    console.log('Current selectedConvertToJsonFields:', this.selectedConvertToJsonFields)
+    console.log('Current selectedFanoutFields:', this.selectedFanoutFields)
+    console.log('Current fanoutCandidates count:', this.fanoutCandidates ? this.fanoutCandidates.length : 0)
+
+    try {
+      // Always save current selections before component is destroyed
+      // This ensures selections are preserved regardless of navigation direction
+      if (this.selectedConvertToJsonFields.length > 0 || this.selectedFanoutFields.length > 0) {
+        // Make a defensive copy of the arrays to avoid any mutation issues
+        const fieldsToConvertToJson = [...this.selectedConvertToJsonFields]
+        const fieldsForFanout = [...this.selectedFanoutFields]
+
+        // Use available fanout candidates or an empty array as fallback
+        const availableFanoutCandidates = Array.isArray(this.fanoutCandidates)
+          ? this.fanoutCandidates
+          : []
+
+        // Build childfanouts structure with error handling
+        let childfanouts = []
+        try {
+          childfanouts = SchemaRuleService.buildChildFanouts(
+            fieldsForFanout,
+            availableFanoutCandidates
+          )
+          console.log('=== Step 3 beforeDestroy: Successfully built childfanouts ===', childfanouts.length)
+        } catch (error) {
+          console.error('=== Step 3 beforeDestroy: Error building childfanouts ===', error)
+          // Create empty childfanouts in case of error
+          childfanouts = []
+        }
+
+        // Update Vuex store with current selections
+        this.UPDATE_SCHEMA_RULES({
+          convertToJson: fieldsToConvertToJson,
+          fanout: fieldsForFanout,
+          childfanouts // Store the built childfanouts for policy generation
+        })
+
+        console.log('=== Step 3 beforeDestroy: Selections saved to store ===')
+      } else {
+        console.log('=== Step 3 beforeDestroy: No selections to save (both arrays empty) ===')
+      }
+    } catch (error) {
+      console.error('=== Step 3 beforeDestroy: Error saving selections ===', error)
+    }
   }
 }
 </script>

@@ -425,7 +425,8 @@ export default {
       fileErrorMessage: '',
       validationErrorMessage: '',
       processingData: false,
-      validationTimer: null
+      validationTimer: null,
+      lastProcessedRawData: null // Track last processed JSON to detect changes
     }
   },
 
@@ -596,6 +597,12 @@ export default {
   },
 
   mounted () {
+    // Initialize lastProcessedRawData with current data if it exists
+    if (this.sampleData.rawData && this.sampleData.parsedData) {
+      this.lastProcessedRawData = this.sampleData.rawData
+      console.log('=== Step 2 Mounted: Initialized lastProcessedRawData ===')
+    }
+
     // Auto-focus on input area
     this.$nextTick(() => {
       const textarea = this.$el.querySelector('textarea')
@@ -641,6 +648,15 @@ export default {
       this.processingData = true
 
       try {
+        // Check if raw data has actually changed
+        const currentRawData = this.sampleData.rawData
+        const hasDataChanged = this.lastProcessedRawData !== currentRawData
+
+        console.log('=== Step 2: Validating JSON data ===')
+        console.log('Current raw data length:', currentRawData?.length)
+        console.log('Last processed data length:', this.lastProcessedRawData?.length)
+        console.log('Has data changed?', hasDataChanged)
+
         // Use the DataProcessor service directly
         const result = await DataProcessor.processSampleData(this.sampleData.rawData, this.sampleData.inputMethod)
 
@@ -662,6 +678,77 @@ export default {
 
         if (result.validationResult.errors.length > 0) {
           this.validationErrorMessage = result.validationResult.errors[0]
+        }
+
+        // Handle schema rules based on data change
+        if (hasDataChanged && result.validationResult.isValid) {
+          console.log('=== Step 2: Raw data has changed - checking if Step 3 selections need reset ===')
+
+          // Get current schema rules from store
+          const currentRules = this.$store.state.wizard?.schemaRules
+
+          // Check if the data structure has significantly changed
+          let needsReset = false
+
+          // If we have fanout selections, check if they're still valid with new structure
+          if (currentRules && currentRules.fanout && currentRules.fanout.length > 0) {
+            // Get the list of array fields in the new data
+            const arrayFields = result.dataStructure
+              ? DataProcessor.findArrayFields(result.dataStructure)
+              : []
+
+            console.log('=== Step 2: Checking existing fanout selections against new data structure ===')
+            console.log('Current fanout selections:', currentRules.fanout)
+            console.log('Available array fields in new data:', arrayFields)
+
+            // Create a set for easier lookup (handles both path formats)
+            const arrayFieldsSet = new Set()
+            arrayFields.forEach(field => {
+              // Add both normalized and prefixed versions to cover all bases
+              arrayFieldsSet.add(field) // Original
+              arrayFieldsSet.add(`$.${field}`) // With $. prefix
+            })
+
+            // Check if any selected arrays are no longer present
+            const invalidSelections = currentRules.fanout.filter(field => {
+              // Handle both formats: with and without $.
+              const withoutPrefix = field.startsWith('$.') ? field.substring(2) : field
+              const withPrefix = field.startsWith('$.') ? field : `$.${field}`
+
+              // Not valid if neither format exists in the array fields
+              return !arrayFieldsSet.has(field) &&
+                     !arrayFieldsSet.has(withoutPrefix) &&
+                     !arrayFieldsSet.has(withPrefix)
+            })
+
+            if (invalidSelections.length > 0) {
+              console.log('=== Step 2: Found invalid fanout selections, reset needed ===')
+              console.log('Invalid selections:', invalidSelections)
+              needsReset = true
+            } else {
+              console.log('=== Step 2: All fanout selections are still valid with new data ===')
+            }
+          }
+
+          if (needsReset) {
+            console.log('=== Step 2: Resetting Step 3 selections due to structure changes ===')
+            // Reset Step 3 selections when data structure changed significantly
+            this.UPDATE_SCHEMA_RULES({
+              convertToJson: [],
+              fanout: [],
+              childfanouts: [],
+              detectedStringifiedJson: [],
+              manualSelections: []
+            })
+          } else {
+            console.log('=== Step 2: Preserving Step 3 selections despite data change ===')
+            console.log('=== Current schema rules will be preserved and revalidated in Step 3 ===')
+          }
+
+          // Update last processed data
+          this.lastProcessedRawData = currentRawData
+        } else if (!hasDataChanged) {
+          console.log('=== Step 2: Raw data unchanged - preserving Step 3 selections ===')
         }
 
         // Emit step validation status
@@ -706,6 +793,8 @@ export default {
     },
 
     clearData () {
+      console.log('=== Step 2: Clearing data - resetting Step 3 selections ===')
+
       this.SET_SAMPLE_DATA({
         rawData: '',
         parsedData: null,
@@ -714,6 +803,19 @@ export default {
         validationResult: { isValid: false, errors: [], warnings: [] },
         dataStats: { recordCount: 0, fieldCount: 0, nestedLevels: 0 }
       })
+
+      // Reset Step 3 selections when data is cleared
+      this.UPDATE_SCHEMA_RULES({
+        convertToJson: [],
+        fanout: [],
+        childfanouts: [],
+        detectedStringifiedJson: [],
+        manualSelections: []
+      })
+
+      // Reset last processed data
+      this.lastProcessedRawData = null
+
       this.uploadedFile = null
       this.validationErrorMessage = ''
       this.fileErrorMessage = ''

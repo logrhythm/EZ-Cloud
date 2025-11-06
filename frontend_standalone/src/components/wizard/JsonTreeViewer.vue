@@ -83,7 +83,11 @@ export default defineComponent({
     const expandedNodes = ref(new Set(['root']))
 
     // Track selected field paths
-    const selectedPaths = ref([...props.initialSelectedPaths])
+    console.log('JsonTreeViewer initialSelectedPaths:', props.initialSelectedPaths)
+    const selectedPaths = ref(Array.isArray(props.initialSelectedPaths) ? [...props.initialSelectedPaths] : [])
+
+    // Log selected paths after initialization
+    console.log('JsonTreeViewer selectedPaths after initialization:', selectedPaths.value)
 
     // Track parsed JSON strings
     const parsedJsonFields = ref(new Map())
@@ -735,7 +739,19 @@ export default defineComponent({
     // Watch for changes in initial selected paths
     watch(() => props.initialSelectedPaths, (newPaths) => {
       console.log('JsonTreeViewer: initialSelectedPaths changed:', newPaths)
-      selectedPaths.value = [...newPaths]
+
+      // Ensure we have valid array to spread
+      if (Array.isArray(newPaths)) {
+        console.log('JsonTreeViewer: Updating selectedPaths with new values:', newPaths)
+        // Always set selectedPaths to a fresh copy of newPaths, even if empty
+        selectedPaths.value = [...newPaths]
+      } else {
+        console.log('JsonTreeViewer: initialSelectedPaths is invalid (not an array):', newPaths)
+        // Initialize as empty array if not an array
+        selectedPaths.value = []
+      }
+
+      console.log('JsonTreeViewer: selectedPaths after update:', selectedPaths.value)
     }, { deep: true, immediate: true })
 
     // Auto-expand nodes to show the structure on mount

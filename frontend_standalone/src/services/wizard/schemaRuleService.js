@@ -170,6 +170,28 @@ export class SchemaRuleService {
   static buildChildFanouts (selectedArrayPaths, allArrayFields) {
     const childfanouts = []
 
+    // Handle empty or invalid input
+    if (!selectedArrayPaths || !Array.isArray(selectedArrayPaths) || selectedArrayPaths.length === 0) {
+      console.log('[buildChildFanouts] No selectedArrayPaths provided, returning empty array')
+      return []
+    }
+
+    if (!allArrayFields || !Array.isArray(allArrayFields) || allArrayFields.length === 0) {
+      console.log('[buildChildFanouts] No allArrayFields metadata provided, using synthetic metadata')
+      // If no metadata is provided, construct synthetic metadata for the selected paths
+      // to avoid errors when navigating between steps
+      const syntheticFields = selectedArrayPaths.map(path => ({
+        path: path,
+        isHomogeneous: true,
+        elementType: 'unknown',
+        sampleSize: 1,
+        parentPath: null,
+        // Mark as synthetic so we know this was generated
+        isSynthetic: true
+      }))
+      allArrayFields = syntheticFields
+    }
+
     // Create a map of paths to field metadata for quick lookup
     const fieldMap = {}
     for (const field of allArrayFields) {
@@ -178,10 +200,21 @@ export class SchemaRuleService {
 
     // Process each selected array path
     for (const path of selectedArrayPaths) {
-      const field = fieldMap[path]
+      // Try to get field from metadata or create a synthetic one if missing
+      let field = fieldMap[path]
+
+      // If field not found in metadata, create a synthetic one with the path
+      // This ensures navigation between steps doesn't throw errors
       if (!field) {
-        console.warn(`Array field not found in metadata: ${path}`)
-        continue
+        console.warn(`Array field not found in metadata: ${path}. Creating synthetic metadata.`)
+        field = {
+          path: path,
+          isHomogeneous: true,
+          elementType: 'unknown',
+          sampleSize: 1,
+          parentPath: null,
+          isSynthetic: true
+        }
       }
 
       // Determine the parent path
