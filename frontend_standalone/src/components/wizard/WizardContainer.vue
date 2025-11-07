@@ -108,58 +108,19 @@
           </transition>
         </div>
 
-        <!-- Navigation Controls -->
-        <div class="wizard-controls">
-          <div class="controls-left">
-            <q-btn
-              flat
-              :disable="currentStep === 0"
-              icon="arrow_back"
-              label="Back"
-              @click="previousStep"
-              class="wizard-btn wizard-btn--secondary"
-            />
-          </div>
-
-          <div class="controls-center">
-            <!-- Auto-save indicator -->
-            <transition name="fade">
-              <q-chip
-                v-if="lastSaved && showSaveIndicator"
-                icon="check_circle"
-                color="positive"
-                text-color="white"
-                dense
-                class="save-indicator"
-              >
-                Saved {{ formatTimeAgo(lastSaved) }}
-              </q-chip>
-            </transition>
-          </div>
-
-          <div class="controls-right">
-            <q-btn
-              v-if="currentStep < steps.length - 1"
-              unelevated
-              :disable="!isCurrentStepValid"
-              icon-right="arrow_forward"
-              label="Next"
-              color="primary"
-              @click="nextStep"
-              class="wizard-btn wizard-btn--primary"
-            />
-            <q-btn
-              v-else
-              unelevated
-              :disable="!isReadyForExport"
-              icon-right="file_download"
-              label="Generate Policy"
-              color="positive"
-              @click="generateFinalPolicy"
-              class="wizard-btn wizard-btn--primary"
-            />
-          </div>
-        </div>
+        <!-- Auto-save indicator (floating) -->
+        <transition name="fade">
+          <q-chip
+            v-if="lastSaved && showSaveIndicator"
+            icon="check_circle"
+            color="positive"
+            text-color="white"
+            dense
+            class="save-indicator floating-save-indicator"
+          >
+            Saved {{ formatTimeAgo(lastSaved) }}
+          </q-chip>
+        </transition>
       </div>
 
       <!-- Help Panel -->
@@ -728,35 +689,7 @@ export default {
   width: 100%;
 }
 
-.wizard-controls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem 2rem;
-  background: white;
-  border-top: 1px solid var(--q-color-grey-3);
-
-  .dark-theme & {
-    background: #232323;
-    border-color: var(--q-color-grey-8);
-  }
-}
-
-.controls-left,
-.controls-right {
-  flex: 1;
-}
-
-.controls-right {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.controls-center {
-  flex: 0 0 auto;
-  display: flex;
-  justify-content: center;
-}
+// Wizard controls removed as requested by the user
 
 .wizard-help {
   position: fixed;
@@ -822,6 +755,14 @@ export default {
 
 .save-indicator {
   opacity: 0.8;
+}
+
+.floating-save-indicator {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 900;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 // Wizard-specific button styles
@@ -919,10 +860,6 @@ export default {
   }
 
   .step-content {
-    padding: 1rem;
-  }
-
-  .wizard-controls {
     padding: 1rem;
   }
 

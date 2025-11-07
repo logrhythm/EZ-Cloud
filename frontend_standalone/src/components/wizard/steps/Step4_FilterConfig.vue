@@ -371,6 +371,19 @@ export default {
   color: var(--q-color-primary);
 }
 
+/* Fix the input field text color */
+.condition-field ::v-deep .q-field__native,
+.condition-operator ::v-deep .q-field__native,
+.condition-value ::v-deep .q-field__native {
+  color: #ffffff !important;
+}
+
+.condition-field ::v-deep .q-field__label,
+.condition-operator ::v-deep .q-field__label,
+.condition-value ::v-deep .q-field__label {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
 @media (max-width: 768px) {
   .condition-row {
     flex-direction: column;
@@ -382,5 +395,55 @@ export default {
   .condition-value {
     width: 100%;
   }
+}
+</style>
+
+<style lang="scss">
+/* Global styles (not scoped) for dropdown menus - they render outside the component */
+/* Fix dropdown menu visibility for Step 4 Filter Config dropdowns */
+.q-menu .q-item {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  margin: 2px 4px !important;
+  border-radius: 4px !important;
+}
+
+.q-menu .q-item:hover {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 1px #02b7fe !important;
+}
+
+.q-menu .q-item__label {
+  color: #ffffff !important;
+}
+
+.q-menu .q-item.q-manual-focusable--focused {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 1px #02b7fe !important;
+}
+
+.q-menu .q-item--active {
+  background-color: #1a1a1a !important;
+  color: #02b7fe !important;
+  font-weight: 500 !important;
+  box-shadow: 0 0 0 1px #02b7fe !important;
+}
+
+.q-menu .q-virtual-scroll__content {
+  background-color: #000000 !important;
+  padding: 4px !important;
+}
+
+/* Ensure the menu itself has black background */
+.q-menu {
+  background-color: #000000 !important;
+  border-radius: 4px !important;
+}
+
+.q-menu .q-list {
+  background-color: #000000 !important;
+  padding: 4px !important;
 }
 </style>

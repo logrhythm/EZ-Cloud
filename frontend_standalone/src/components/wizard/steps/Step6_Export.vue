@@ -63,6 +63,14 @@
             <div class="export-actions">
               <q-btn
                 unelevated
+                color="positive"
+                icon="file_download"
+                label="Generate Policy"
+                @click="generatePolicy"
+                class="export-btn primary-export-btn"
+              />
+              <q-btn
+                unelevated
                 color="primary"
                 icon="file_download"
                 label="Download Policy JSON"
@@ -144,6 +152,26 @@ export default {
     formatDate (dateString) {
       if (!dateString) return 'Not set'
       return new Date(dateString).toLocaleDateString()
+    },
+
+    async generatePolicy () {
+      try {
+        // Call the store action to generate the policy
+        await this.$store.dispatch('wizard/generatePolicy')
+
+        this.$q.notify({
+          type: 'positive',
+          message: 'Policy generated successfully',
+          timeout: 2000
+        })
+      } catch (error) {
+        this.$q.notify({
+          type: 'negative',
+          message: 'Failed to generate policy. Please check your configuration.',
+          timeout: 2000
+        })
+        console.error('Error generating policy:', error)
+      }
     },
 
     async downloadPolicy () {
@@ -378,6 +406,18 @@ export default {
   padding: 0.75rem 1.5rem;
   border-radius: 6px;
   font-weight: 500;
+}
+
+.primary-export-btn {
+  font-size: 1.05rem;
+  margin-bottom: 1rem;
+  width: 100%;
+  box-shadow: 0 2px 4px rgba(33, 186, 69, 0.3);
+
+  &:hover {
+    box-shadow: 0 4px 8px rgba(33, 186, 69, 0.4);
+    transform: translateY(-1px);
+  }
 }
 
 .steps-list {

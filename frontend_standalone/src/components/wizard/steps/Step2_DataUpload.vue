@@ -267,10 +267,11 @@
                 v-if="sampleData.logType"
                 class="q-mt-md log-type-banner"
                 :class="logTypeBannerClass"
+                :text-color="logTypeBannerTextColor"
                 rounded
               >
                 <template v-slot:avatar>
-                  <q-icon :name="logTypeIcon" />
+                  <q-icon :name="logTypeIcon" :color="logTypeBannerIconColor" />
                 </template>
                 <div>
                   <div class="log-type-title">{{ logTypeTitle }}</div>
@@ -580,11 +581,33 @@ export default {
     logTypeBannerClass () {
       switch (this.logType) {
         case 'single':
-          return 'bg-info-1'
+          return 'bg-blue-2'
         case 'multiline':
-          return 'bg-amber-1'
+          return 'bg-amber-2'
         default:
           return 'bg-grey-4'
+      }
+    },
+
+    logTypeBannerTextColor () {
+      switch (this.logType) {
+        case 'single':
+          return 'blue-10'
+        case 'multiline':
+          return 'amber-10'
+        default:
+          return 'grey-9'
+      }
+    },
+
+    logTypeBannerIconColor () {
+      switch (this.logType) {
+        case 'single':
+          return 'blue-7'
+        case 'multiline':
+          return 'amber-8'
+        default:
+          return 'grey-7'
       }
     }
   },
@@ -1278,12 +1301,16 @@ export default {
   border: 1px solid;
   transition: all 0.2s ease-in-out;
 
-  &.bg-info-1 {
-    border-color: rgba(var(--q-info-rgb), 0.2);
+  &.bg-blue-2 {
+    background-color: #e3f2fd !important;
+    border-color: rgba(33, 150, 243, 0.3) !important;
+    color: #0d47a1 !important;
   }
 
-  &.bg-amber-1 {
-    border-color: rgba(var(--q-amber-rgb), 0.2);
+  &.bg-amber-2 {
+    background-color: #fff3e0 !important;
+    border-color: rgba(255, 152, 0, 0.3) !important;
+    color: #e65100 !important;
   }
 
   &.bg-grey-4 {
@@ -1291,14 +1318,16 @@ export default {
   }
 
   .dark-theme & {
-    &.bg-info-1 {
-      background: rgba(var(--q-info-rgb), 0.1);
-      border-color: rgba(var(--q-info-rgb), 0.3);
+    &.bg-blue-2 {
+      background-color: rgba(33, 150, 243, 0.15) !important;
+      border-color: rgba(33, 150, 243, 0.4) !important;
+      color: #90caf9 !important;
     }
 
-    &.bg-amber-1 {
-      background: rgba(var(--q-amber-rgb), 0.1);
-      border-color: rgba(var(--q-amber-rgb), 0.3);
+    &.bg-amber-2 {
+      background-color: rgba(255, 152, 0, 0.15) !important;
+      border-color: rgba(255, 152, 0, 0.4) !important;
+      color: #ffcc80 !important;
     }
 
     &.bg-grey-4 {
@@ -1308,15 +1337,25 @@ export default {
   }
 }
 
+/* Force text color on log type banner content */
+.log-type-banner ::v-deep .q-banner__content,
+.log-type-banner ::v-deep .q-banner__avatar,
+.log-type-banner.bg-blue-2,
+.log-type-banner.bg-amber-2 {
+  color: inherit !important;
+}
+
 .log-type-title {
   font-weight: 600;
   font-size: 1rem;
   margin-bottom: 0.25rem;
+  color: inherit !important;
 }
 
 .log-type-description {
   font-size: 0.875rem;
-  opacity: 0.8;
+  opacity: 0.9;
+  color: inherit !important;
 }
 
 .insights-section {
