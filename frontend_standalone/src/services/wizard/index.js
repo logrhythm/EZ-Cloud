@@ -68,6 +68,9 @@ export { DataProcessor } from './dataProcessingService'
 // Schema Rule Service
 export { SchemaRuleService } from './schemaRuleService'
 
+// Filter Rule Service
+export { FilterRuleService } from './filterRuleService'
+
 // Default export with all services (use ES imports to keep module syntax consistent)
 import validationService from './validationService'
 import policyFileService from './policyFileService'
@@ -75,6 +78,7 @@ import errorHandlerService from './errorHandlingService'
 import utilityService from './utilityService'
 import { DataProcessor } from './dataProcessingService'
 import { SchemaRuleService } from './schemaRuleService'
+import { FilterRuleService } from './filterRuleService'
 
 export default {
   validation: validationService,
@@ -82,5 +86,6 @@ export default {
   errorHandler: errorHandlerService,
   utility: utilityService,
   dataProcessor: DataProcessor,
-  schemaRule: SchemaRuleService
+  schemaRule: SchemaRuleService,
+  filterRule: FilterRuleService
 }

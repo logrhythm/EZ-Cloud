@@ -3,7 +3,7 @@
  * This simulates the logic from JsonTreeViewer.vue autoExpandArrayContainers function
  */
 
-function testPathParsing(arrayPath) {
+function testPathParsing (arrayPath) {
   console.log(`\n=== Testing: "${arrayPath}" ===`)
 
   let currentPath = ''

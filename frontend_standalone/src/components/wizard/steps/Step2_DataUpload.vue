@@ -768,6 +768,11 @@ export default {
             console.log('=== Current schema rules will be preserved and revalidated in Step 3 ===')
           }
 
+          // ALWAYS reset Step 4 filter rules when data changes
+          // Filter conditions are based on sample data fields, so they must be recalculated
+          console.log('=== Step 2: Resetting Step 4 filter rules due to data change ===')
+          this.$store.commit('wizard/RESET_FILTER_RULES')
+
           // Update last processed data
           this.lastProcessedRawData = currentRawData
         } else if (!hasDataChanged) {

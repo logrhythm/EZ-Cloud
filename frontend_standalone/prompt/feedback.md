@@ -1,6 +1,0 @@
-- On wizard step 1 
-    - remove project configuration section 
-    - when user selects to create new policy, show a textbox which take policy name as input  
-- on Step 3, Schema Rule Configuration add dummy controls as per requirements mention for schema rule in frontend_standalone/prompt/wizard-ux-prompt.md
-- on step 4, Filter Rule Configuration add dummy controls as per requirements for filter in frontend_standalone/prompt/wizard-ux-prompt.md
-- on step 5, Field Mapping show dummy controls as per requirements in for schema mapping in frontend_standalone/prompt/wizard-ux-prompt.md

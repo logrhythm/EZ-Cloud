@@ -119,7 +119,8 @@ const getInitialState = () => ({
     conditions: [], // Filter conditions
     operator: 'AND', // AND, OR
     expression: '', // Generated filter expression
-    testResults: null // Results of testing filter against sample data
+    testResults: null, // Results of testing filter against sample data
+    availableFields: [] // Fields extracted from sample data
   },
 
   // Field mapping (Step 5)
@@ -377,6 +378,28 @@ const mutations = {
     }
   },
 
+  RESET_FILTER_RULES (state) {
+    state.filterRules = {
+      conditions: [],
+      operator: 'AND',
+      expression: '',
+      testResults: null,
+      availableFields: []
+    }
+  },
+
+  SET_FILTER_AVAILABLE_FIELDS (state, fields) {
+    state.filterRules.availableFields = fields
+  },
+
+  SET_FILTER_TEST_RESULTS (state, results) {
+    state.filterRules.testResults = results
+  },
+
+  SET_FILTER_EXPRESSION (state, expression) {
+    state.filterRules.expression = expression
+  },
+
   // Field mapping mutations
   UPDATE_FIELD_MAPPINGS (state, mappings) {
     state.fieldMappings = { ...state.fieldMappings, ...mappings }
@@ -565,6 +588,21 @@ const actions = {
               if (!field || typeof field !== 'string' || !field.startsWith('$')) {
                 isValid = false
                 errors.push(`Invalid JSONPath format for Fanout field: ${field}`)
+              }
+            }
+          }
+          break
+
+        case 'filterconfig':
+          // Step 4 is optional, so it's always valid
+          // We validate the format of conditions if any exist
+          isValid = true
+          if (state.filterRules.conditions && state.filterRules.conditions.length > 0) {
+            for (let i = 0; i < state.filterRules.conditions.length; i++) {
+              const condition = state.filterRules.conditions[i]
+              if (!condition.field || !condition.operator) {
+                isValid = false
+                errors.push(`Filter condition ${i + 1} is incomplete`)
               }
             }
           }
