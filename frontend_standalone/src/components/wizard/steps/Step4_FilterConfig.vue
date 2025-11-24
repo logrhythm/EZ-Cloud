@@ -1286,6 +1286,43 @@ export default {
       this.isSaving = true
 
       try {
+        // Check if at least one filter condition is defined
+        if (!this.localConditions || this.localConditions.length === 0) {
+          this.$q.notify({
+            type: 'warning',
+            message: 'At least one filter condition is required',
+            caption: 'Please add at least one filter condition before proceeding',
+            position: 'top',
+            timeout: 4000,
+            icon: 'warning'
+          })
+
+          // Clear saving state and return
+          this.isSaving = false
+          return
+        }
+
+        // Check if all conditions are complete (have field, operator, and value)
+        const incompleteConditions = this.localConditions.filter(condition => {
+          return !condition.field || !condition.operator ||
+                 condition.value === '' || condition.value === null || condition.value === undefined
+        })
+
+        if (incompleteConditions.length > 0) {
+          this.$q.notify({
+            type: 'warning',
+            message: 'All filter conditions must be complete',
+            caption: 'Please fill in all fields (Field, Operator, and Value) for each condition',
+            position: 'top',
+            timeout: 4000,
+            icon: 'warning'
+          })
+
+          // Clear saving state and return
+          this.isSaving = false
+          return
+        }
+
         // Check for value type validation errors
         const hasValidationErrors = Object.keys(this.conditionValidation).some(key => {
           const validation = this.conditionValidation[key]

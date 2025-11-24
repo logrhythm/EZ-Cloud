@@ -764,6 +764,9 @@ export default {
         console.log('║ [DEBUG] Processing Removed Field:', removedField)
         console.log('╠═══════════════════════════════════════════════════════════════════════')
 
+        // Remove parsed JSON data from Vuex when field is deselected
+        this.$store.commit('wizard/REMOVE_PARSED_STRINGIFIED_JSON', removedField)
+
         // Inspect current fanoutCandidates to see what's tagged as parsed
         console.log('║ Current fanoutCandidates (ALL):')
         this.fanoutCandidates.forEach((c, idx) => {
@@ -893,6 +896,29 @@ export default {
           if (parseResult.success) {
             console.log(`[DEBUG] Found ${parseResult.arrayPaths.length} arrays in "${addedField}":`, JSON.stringify(parseResult.arrayPaths))
             allParsedArrays.push(...parseResult.arrayPaths)
+
+            // Store parsed JSON data in Vuex for Step 5 to use
+            console.log('╔════════════════════════════════════════════════════════════════════════')
+            console.log('║ [Step 3] Storing parsed JSON in Vuex')
+            console.log('╠════════════════════════════════════════════════════════════════════════')
+            console.log('║ fieldPath:', addedField)
+            console.log('║ parsedData type:', typeof parseResult.parsedData)
+            console.log('║ parsedData:', JSON.stringify(parseResult.parsedData, null, 2))
+            console.log('╚════════════════════════════════════════════════════════════════════════')
+
+            this.$store.commit('wizard/SET_PARSED_STRINGIFIED_JSON', {
+              fieldPath: addedField,
+              parsedData: parseResult.parsedData
+            })
+
+            // Verify it was stored correctly
+            const storedData = this.$store.state.wizard.schemaRules.parsedStringifiedJsonFields
+            console.log('╔════════════════════════════════════════════════════════════════════════')
+            console.log('║ [Step 3] Verifying stored data in Vuex')
+            console.log('╠════════════════════════════════════════════════════════════════════════')
+            console.log('║ storedData keys:', Object.keys(storedData || {}))
+            console.log('║ storedData[', addedField, ']:', storedData ? storedData[addedField] : 'NOT FOUND')
+            console.log('╚════════════════════════════════════════════════════════════════════════')
           } else {
             console.warn(`[DEBUG] Failed to parse "${addedField}":`, parseResult.error)
 
@@ -930,6 +956,12 @@ export default {
             if (parseResult.success) {
               console.log(`[DEBUG] Re-parsed "${field}": found ${parseResult.arrayPaths.length} arrays`)
               allParsedArrays.push(...parseResult.arrayPaths)
+
+              // Store parsed JSON data in Vuex for Step 5 to use
+              this.$store.commit('wizard/SET_PARSED_STRINGIFIED_JSON', {
+                fieldPath: field,
+                parsedData: parseResult.parsedData
+              })
             }
           } catch (error) {
             console.error(`[DEBUG] Error re-parsing "${field}":`, error)

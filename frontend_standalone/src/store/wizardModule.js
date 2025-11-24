@@ -111,7 +111,8 @@ const getInitialState = () => ({
     fanout: [], // Array fields for fanout processing
     childfanouts: [], // Built childfanouts structure for policy
     detectedStringifiedJson: [], // Auto-detected stringified JSON fields
-    manualSelections: [] // User manual selections
+    manualSelections: [], // User manual selections
+    parsedStringifiedJsonFields: {} // Map of field paths to their parsed JSON data
   },
 
   // Filter rules (Step 4)
@@ -191,6 +192,9 @@ const getters = {
   getParsedDataStructure: (state) => state.sampleData.dataStructure,
   getFieldMappingCount: (state) => state.fieldMappings.mappings.length,
   getUnmappedFieldCount: (state) => state.fieldMappings.unmappedFields.length,
+
+  // Fanout arrays getter for Step 5 path resolution
+  getFanoutArrays: (state) => state.schemaRules?.fanout || [],
 
   // Policy generation getters
   isReadyForExport: (state) => {
@@ -354,6 +358,37 @@ const mutations = {
     const index = state.schemaRules.fanout.indexOf(fieldPath)
     if (index > -1) {
       state.schemaRules.fanout.splice(index, 1)
+    }
+  },
+
+  SET_PARSED_STRINGIFIED_JSON (state, { fieldPath, parsedData }) {
+    console.log('╔════════════════════════════════════════════════════════════════════════')
+    console.log('║ [Vuex] SET_PARSED_STRINGIFIED_JSON mutation called')
+    console.log('╠════════════════════════════════════════════════════════════════════════')
+    console.log('║ fieldPath:', fieldPath)
+    console.log('║ parsedData type:', typeof parsedData)
+    console.log('║ parsedData:', JSON.stringify(parsedData, null, 2))
+    console.log('║ Before mutation - parsedStringifiedJsonFields exists:', !!state.schemaRules.parsedStringifiedJsonFields)
+    console.log('║ Before mutation - keys:', state.schemaRules.parsedStringifiedJsonFields ? Object.keys(state.schemaRules.parsedStringifiedJsonFields) : 'N/A')
+    console.log('╚════════════════════════════════════════════════════════════════════════')
+
+    if (!state.schemaRules.parsedStringifiedJsonFields) {
+      state.schemaRules.parsedStringifiedJsonFields = {}
+      console.log('[Vuex] Initialized parsedStringifiedJsonFields object')
+    }
+    state.schemaRules.parsedStringifiedJsonFields[fieldPath] = parsedData
+
+    console.log('╔════════════════════════════════════════════════════════════════════════')
+    console.log('║ [Vuex] After mutation - state updated')
+    console.log('╠════════════════════════════════════════════════════════════════════════')
+    console.log('║ parsedStringifiedJsonFields keys:', Object.keys(state.schemaRules.parsedStringifiedJsonFields))
+    console.log('║ parsedStringifiedJsonFields[', fieldPath, ']:', state.schemaRules.parsedStringifiedJsonFields[fieldPath])
+    console.log('╚════════════════════════════════════════════════════════════════════════')
+  },
+
+  REMOVE_PARSED_STRINGIFIED_JSON (state, fieldPath) {
+    if (state.schemaRules.parsedStringifiedJsonFields) {
+      delete state.schemaRules.parsedStringifiedJsonFields[fieldPath]
     }
   },
 

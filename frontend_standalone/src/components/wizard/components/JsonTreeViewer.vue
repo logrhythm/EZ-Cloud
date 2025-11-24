@@ -10,8 +10,12 @@
         :selectable-types="selectableTypes"
         :selected-fields="selectedFields"
         :show-path="showPath"
+        :mapped-paths="mappedPaths"
+        :highlighted-path="highlightedPath"
+        :clickable-mode="clickableMode"
         @toggle="onToggle"
         @select="onSelect"
+        @node-click="onNodeClick"
       />
     </div>
   </div>
@@ -47,6 +51,21 @@ export default {
     showPath: {
       type: Boolean,
       default: false
+    },
+    // NEW: Mapped paths for showing checkmarks
+    mappedPaths: {
+      type: Set,
+      default: () => new Set()
+    },
+    // NEW: Highlighted path for "show in tree" feature
+    highlightedPath: {
+      type: String,
+      default: null
+    },
+    // NEW: Enable clickable nodes for mapping
+    clickableMode: {
+      type: Boolean,
+      default: false
     }
   },
 
@@ -61,6 +80,11 @@ export default {
         selected: data.selected,
         type: data.type
       })
+    },
+
+    // NEW: Handle node click
+    onNodeClick (nodeData) {
+      this.$emit('node-click', nodeData)
     }
   }
 }
@@ -69,8 +93,8 @@ export default {
 <style lang="scss" scoped>
 .json-tree-viewer {
   font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 16px; /* Increased from 14px for better readability */
+  line-height: 1.6;
   overflow-x: auto;
   position: relative;
 }

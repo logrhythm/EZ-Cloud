@@ -17,7 +17,20 @@
       "Bash(git log:*)",
       "Read(//tmp/**)",
       "Bash(git ls-tree:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(pdftotext:*)",
+      "Bash(python3:*)",
+      "Bash(/tmp/policybuilder_extracted.txt)",
+      "Bash(pip3 install:*)",
+      "Bash(npx eslint --ext .js,.vue src --fix)",
+      "Bash(for file in IsIPOperationConfig.vue MathOperationConfig.vue SplitOperationConfig.vue ToStringOperationConfig.vue ConcatOperationConfig.vue)",
+      "Bash(do )",
+      "Bash(if grep -q \"\\.operation-info-banner\" \"$file\")",
+      "Bash(then )",
+      "Bash(echo:*)",
+      "Bash(else )",
+      "Bash(fi)",
+      "Bash(done)"
     ],
     "deny": []
   }
