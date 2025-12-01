@@ -223,7 +223,8 @@ const Step2DataUpload = () => import('./steps/Step2_DataUpload.vue')
 const Step3SchemaConfig = () => import('./steps/Step3_SchemaConfig.vue')
 const Step4FilterConfig = () => import('./steps/Step4_FilterConfig.vue')
 const Step5Mapping = () => import('./steps/Step5_Mapping.vue')
-const Step6Export = () => import('./steps/Step6_Export.vue')
+const Step6SubTransformConfig = () => import('./steps/Step6_SubTransformConfig.vue')
+const Step7Export = () => import('./steps/Step7_Export.vue')
 
 export default {
   name: 'WizardContainer',
@@ -308,7 +309,8 @@ export default {
         2: Step3SchemaConfig,
         3: Step4FilterConfig,
         4: Step5Mapping,
-        5: Step6Export
+        5: Step6SubTransformConfig,
+        6: Step7Export
       }
       return stepComponents[this.currentStep] || Step1Introduction
     }

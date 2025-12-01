@@ -50,11 +50,19 @@ const WIZARD_STEPS = [
     required: true
   },
   {
+    id: 'subtransform',
+    title: 'SubTransform Configuration',
+    description: 'Configure conditional field mappings',
+    icon: 'account_tree_outline',
+    order: 5,
+    required: false
+  },
+  {
     id: 'review',
     title: 'Review & Export',
     description: 'Review policy and export',
     icon: 'preview',
-    order: 5,
+    order: 6,
     required: true
   }
 ]
@@ -132,7 +140,20 @@ const getInitialState = () => ({
     previewResults: null // Preview of mapping results
   },
 
-  // Generated policy (Step 6)
+  // SubTransform configuration (Step 6)
+  subTransforms: {
+    skipSubTransforms: false, // User choice to skip SubTransforms
+    subTransformsList: [], // Array of SubTransform objects
+    testResults: {
+      lastRun: null,
+      executionTrace: [],
+      finalOutput: {}
+    },
+    validationIssues: [], // Validation errors
+    templates: [] // Pre-built SubTransform templates
+  },
+
+  // Generated policy (Step 7)
   generatedPolicy: {
     policy: null, // Complete SMA policy object
     policyJson: '', // JSON string representation
@@ -456,6 +477,64 @@ const mutations = {
     }
   },
 
+  // SubTransform mutations (Step 6)
+  ADD_SUBTRANSFORM (state, subtransform) {
+    state.subTransforms.subTransformsList.push(subtransform)
+  },
+
+  UPDATE_SUBTRANSFORM (state, { id, updates }) {
+    const updateSubTransformRecursive = (list) => {
+      for (let i = 0; i < list.length; i++) {
+        if (list[i].id === id) {
+          // Use Object.assign to update in place to maintain Vue reactivity
+          Object.assign(list[i], updates)
+          return true
+        }
+        if (list[i].subTransforms && list[i].subTransforms.length > 0) {
+          if (updateSubTransformRecursive(list[i].subTransforms)) {
+            return true
+          }
+        }
+      }
+      return false
+    }
+    updateSubTransformRecursive(state.subTransforms.subTransformsList)
+  },
+
+  DELETE_SUBTRANSFORM (state, id) {
+    const deleteSubTransformRecursive = (list) => {
+      for (let i = 0; i < list.length; i++) {
+        if (list[i].id === id) {
+          list.splice(i, 1)
+          return true
+        }
+        if (list[i].subTransforms && list[i].subTransforms.length > 0) {
+          if (deleteSubTransformRecursive(list[i].subTransforms)) {
+            return true
+          }
+        }
+      }
+      return false
+    }
+    deleteSubTransformRecursive(state.subTransforms.subTransformsList)
+  },
+
+  REORDER_SUBTRANSFORMS (state, { oldIndex, newIndex }) {
+    const list = state.subTransforms.subTransformsList
+    if (oldIndex >= 0 && oldIndex < list.length && newIndex >= 0 && newIndex < list.length) {
+      const item = list.splice(oldIndex, 1)[0]
+      list.splice(newIndex, 0, item)
+    }
+  },
+
+  SET_SKIP_SUBTRANSFORMS (state, value) {
+    state.subTransforms.skipSubTransforms = value
+  },
+
+  SET_SUBTRANSFORM_TEST_RESULTS (state, results) {
+    state.subTransforms.testResults = results
+  },
+
   // Generated policy mutations
   SET_GENERATED_POLICY (state, { policy, policyJson }) {
     state.generatedPolicy.policy = policy
@@ -648,6 +727,21 @@ const actions = {
           if (!isValid) errors.push('At least one field mapping is required')
           break
 
+        case 'subtransform':
+          // Step 6 is optional - valid if skipped or has at least one SubTransform
+          isValid = state.subTransforms.skipSubTransforms ||
+                    state.subTransforms.subTransformsList.length > 0
+          if (!isValid) {
+            // If not skipping and no SubTransforms, add warning but allow navigation
+            isValid = true // Make it valid anyway since it's optional
+          }
+          break
+
+        case 'review':
+          // Final step - always valid if we got here
+          isValid = true
+          break
+
         // Add other step validations as needed
       }
 
@@ -711,6 +805,44 @@ const actions = {
       return { isValid: false, errors: [error.message], warnings: [] }
     } finally {
       commit('SET_LOADING', { isLoading: false })
+    }
+  },
+
+  // SubTransform actions (Step 6)
+  addSubTransformAction ({ commit }, subtransform) {
+    commit('ADD_SUBTRANSFORM', subtransform)
+  },
+
+  updateSubTransformAction ({ commit }, payload) {
+    commit('UPDATE_SUBTRANSFORM', payload)
+  },
+
+  deleteSubTransformAction ({ commit }, id) {
+    commit('DELETE_SUBTRANSFORM', id)
+  },
+
+  reorderSubTransformAction ({ commit }, payload) {
+    commit('REORDER_SUBTRANSFORMS', payload)
+  },
+
+  setSkipSubTransforms ({ commit }, value) {
+    commit('SET_SKIP_SUBTRANSFORMS', value)
+  },
+
+  async testSubTransforms ({ commit, state }, sampleData) {
+    try {
+      // TODO: Implement test logic in Phase 6
+      // This will evaluate SubTransforms against sample data
+      const results = {
+        lastRun: new Date().toISOString(),
+        executionTrace: [],
+        finalOutput: {}
+      }
+      commit('SET_SUBTRANSFORM_TEST_RESULTS', results)
+      return results
+    } catch (error) {
+      commit('ADD_GLOBAL_ERROR', error)
+      return null
     }
   },
 
