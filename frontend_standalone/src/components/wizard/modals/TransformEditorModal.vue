@@ -432,138 +432,41 @@ export default {
     // Build JSON path options from ALL available fields, with fanout info from Step 5
     jsonPathOptions () {
       console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [TransformEditorModal] jsonPathOptions - Computing options')
+      console.log('║ [TransformEditorModal] jsonPathOptions - Computing options with fanout resolution')
       console.log('╠════════════════════════════════════════════════════════════════════════')
       console.log('║ allAvailableFields count:', this.allAvailableFields.length)
-      console.log('║ step5Mappings count:', this.step5Mappings.length)
       console.log('║ fanoutArrays:', JSON.stringify(this.fanoutArrays))
       console.log('║ fanoutArrays count:', this.fanoutArrays.length)
       console.log('╚════════════════════════════════════════════════════════════════════════')
 
-      // Start with ALL available fields from filterRules
+      // Use MappingService.resolvePathForFanout to properly transform paths based on fanout rules
       const allPaths = this.allAvailableFields.map(field => {
         // Handle both string and object formats
-        const fieldPath = typeof field === 'string' ? field : (field.path || field.value || field)
+        const absolutePath = typeof field === 'string' ? field : (field.path || field.value || field)
 
         console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ Processing field:', fieldPath)
+        console.log('║ Processing field:', absolutePath)
         console.log('╠════════════════════════════════════════════════════════════════════════')
 
-        // Strategy 1: Try to find exact match in Step 5 mappings
-        let mappingWithFanout = this.step5Mappings.find(mapping => {
-          const mappingPath = mapping.inputRule || mapping.inputrule
-          return mappingPath === fieldPath
-        })
+        // Use MappingService to resolve path based on fanout arrays (implements all 5 rules)
+        const resolved = MappingService.resolvePathForFanout(absolutePath, this.fanoutArrays)
 
-        if (mappingWithFanout) {
-          console.log('║ Strategy 1: ✓ Found EXACT match in Step 5 mappings')
-          console.log('║   inputRule:', mappingWithFanout.inputRule)
-          console.log('║   fanoutParentElement:', mappingWithFanout.fanoutParentElement)
-        } else {
-          console.log('║ Strategy 1: ✗ No exact match in Step 5 mappings')
-        }
-
-        // Strategy 2: If no exact match, try to match by extracting field path from operation syntax
-        if (!mappingWithFanout) {
-          console.log('║ Strategy 2: Checking operation extraction...')
-          mappingWithFanout = this.step5Mappings.find(mapping => {
-            const mappingPath = mapping.inputRule || mapping.inputrule
-
-            // Extract base path from operation syntax (e.g., "LOOKUP($.field, ...)" -> "$.field")
-            const pathMatch = mappingPath.match(/^([A-Z_]+)\(([$.][\w.[\]*]+)/)
-            if (pathMatch) {
-              const basePath = pathMatch[2]
-              return basePath === fieldPath
-            }
-
-            return false
-          })
-
-          if (mappingWithFanout) {
-            console.log('║ Strategy 2: ✓ Found match via OPERATION EXTRACTION')
-            console.log('║   inputRule:', mappingWithFanout.inputRule)
-            console.log('║   fanoutParentElement:', mappingWithFanout.fanoutParentElement)
-          } else {
-            console.log('║ Strategy 2: ✗ Not applicable (no operation syntax)')
-          }
-        }
-
-        // Strategy 3: If still no match, check if field is within any fanout array
-        let fanoutParent = mappingWithFanout?.fanoutParentElement || null
-
-        if (!fanoutParent && this.fanoutArrays.length > 0) {
-          console.log('║ Strategy 3: Checking fanout arrays...')
-          console.log('║   Available fanout arrays:', this.fanoutArrays)
-
-          // Check if this field path is a child of any fanout array
-          for (const fanoutArray of this.fanoutArrays) {
-            console.log('║   Checking fanoutArray:', fanoutArray)
-
-            // Normalize both paths for comparison
-            const normalizedField = fieldPath.replace(/\[(\d+)\]/g, '[*]')
-            const normalizedFanout = fanoutArray.replace(/\[(\d+)\]/g, '[*]')
-
-            console.log('║     normalizedField:', normalizedField)
-            console.log('║     normalizedFanout:', normalizedFanout)
-
-            // FIXED: Check if field starts with fanout array path
-            // The field might be $.thresholds[*].limit and fanout is $.thresholds[*]
-            // So we need to check if normalized field starts with normalized fanout
-            // and the next character is either '.' or '[' or end of string
-            if (normalizedField === normalizedFanout) {
-              // Exact match - this field IS the fanout array itself
-              console.log('║     ⚠ Field is the fanout array itself, not a child')
-              continue
-            } else if (normalizedField.startsWith(normalizedFanout)) {
-              // Check what comes after the fanout path
-              const afterFanout = normalizedField.substring(normalizedFanout.length)
-              console.log('║     afterFanout:', afterFanout)
-
-              // Valid child if starts with . or [
-              if (afterFanout.startsWith('.') || afterFanout.startsWith('[')) {
-                fanoutParent = fanoutArray
-                console.log('║ Strategy 3: ✓ Detected fanout parent via PATH MATCHING')
-                console.log('║   fanoutParent:', fanoutParent)
-                break
-              } else {
-                console.log('║     ✗ Invalid separator after fanout:', afterFanout[0])
-              }
-            } else {
-              console.log('║     ✗ Field does not start with fanout array')
-            }
-          }
-
-          if (!fanoutParent) {
-            console.log('║ Strategy 3: ✗ No fanout parent found')
-          }
-        } else if (!fanoutParent) {
-          console.log('║ Strategy 3: ✗ Skipped (no fanout arrays available)')
-        }
-
-        // Strategy 4: Fallback - extract fanout from path itself
-        if (!fanoutParent && fieldPath.includes('[*]')) {
-          console.log('║ Strategy 4: Fallback - extracting fanout from path itself')
-
-          // Find the last occurrence of [*] and extract everything up to and including it
-          const lastBracketIndex = fieldPath.lastIndexOf('[*]')
-          if (lastBracketIndex !== -1) {
-            fanoutParent = fieldPath.substring(0, lastBracketIndex + 3) // +3 to include [*]
-            console.log('║ Strategy 4: ✓ Extracted fanout parent from path')
-            console.log('║   fanoutParent:', fanoutParent)
-          }
-        }
-
-        console.log('║ Final fanoutParent:', fanoutParent)
+        console.log('║ Resolved path:', resolved.jsonPath)
+        console.log('║ Fanout parent:', resolved.fanoutParent)
         console.log('╚════════════════════════════════════════════════════════════════════════')
 
+        // Return the RESOLVED path (relative to fanout) as the display value
+        // But keep the absolute path as metadata for reference
         return {
-          label: fieldPath,
-          value: fieldPath,
-          fanoutParent: fanoutParent
+          label: resolved.jsonPath, // Display the relative path
+          value: resolved.jsonPath, // Use relative path as value
+          fanoutParent: resolved.fanoutParent, // Store fanout parent
+          absolutePath: absolutePath, // Keep absolute path for reference
+          sampleValue: typeof field === 'object' ? field.sampleValue : null
         }
       })
 
-      // Remove duplicates based on value
+      // Remove duplicates based on value (relative path)
       const uniqueMap = new Map()
       allPaths.forEach(path => {
         if (!uniqueMap.has(path.value)) {
@@ -572,6 +475,12 @@ export default {
           // If duplicate, prefer the one with fanout info
           const existing = uniqueMap.get(path.value)
           if (path.fanoutParent && !existing.fanoutParent) {
+            uniqueMap.set(path.value, path)
+          } else if (!path.fanoutParent && existing.fanoutParent) {
+            // Keep existing if it has fanout info
+
+          } else if (path.sampleValue && !existing.sampleValue) {
+            // Prefer the one with sample value
             uniqueMap.set(path.value, path)
           }
         }
@@ -584,8 +493,12 @@ export default {
       console.log('║ Total options:', result.length)
       console.log('║ Options with fanout:', result.filter(r => r.fanoutParent).length)
       console.log('║ Sample options with fanout:')
-      result.filter(r => r.fanoutParent).slice(0, 3).forEach(opt => {
-        console.log('║   -', opt.value, '→', opt.fanoutParent)
+      result.filter(r => r.fanoutParent).slice(0, 5).forEach(opt => {
+        console.log('║   - Label:', opt.label, '→ Fanout:', opt.fanoutParent)
+      })
+      console.log('║ Sample options without fanout:')
+      result.filter(r => !r.fanoutParent).slice(0, 5).forEach(opt => {
+        console.log('║   - Label:', opt.label)
       })
       console.log('╚════════════════════════════════════════════════════════════════════════')
 
@@ -892,19 +805,62 @@ export default {
     extractAvailableJsonPaths () {
       try {
         const data = this.sampleData || this.$store.state.wizard.sampleData
+        const schemaRules = this.$store.state.wizard.schemaRules
 
-        if (!data || !data.parsedData) {
+        if (!data || !data.parsedData || !data.dataStructure) {
+          console.warn('[TransformEditorModal] Missing required data for JSON path extraction:', {
+            hasData: !!data,
+            hasParsedData: !!data?.parsedData,
+            hasDataStructure: !!data?.dataStructure
+          })
           this.availableJsonPaths = []
           this.alternativeFieldOptionsFiltered = []
           return
         }
 
-        // Use MappingService to extract JSON paths
+        console.log('╔════════════════════════════════════════════════════════════════════════')
+        console.log('║ [TransformEditorModal] extractAvailableJsonPaths - START')
+        console.log('╠════════════════════════════════════════════════════════════════════════')
+        console.log('║ Checking for JSON-to-String fields to include in JSON path extraction')
+
+        // Get JSON-to-String fields and their parsed data from store
+        const jsonToStringFields = schemaRules?.convertToJson || []
+        const parsedStringifiedFields = schemaRules?.parsedStringifiedJsonFields || {}
+
+        console.log('║ Found jsonToStringFields count:', jsonToStringFields.length)
+        console.log('║ Found parsedStringifiedFields keys:', Object.keys(parsedStringifiedFields))
+        console.log('╚════════════════════════════════════════════════════════════════════════')
+
+        // Use MappingService to extract JSON paths with JSON-to-String field handling
         this.availableJsonPaths = MappingService.extractJsonPaths(
           data.parsedData,
-          null
+          data.dataStructure, // Pass actual dataStructure to extract normal JSON fields
+          {
+            jsonToStringFields,
+            parsedStringifiedFields
+          }
         )
         this.alternativeFieldOptionsFiltered = this.alternativeFieldOptions
+
+        console.log('╔════════════════════════════════════════════════════════════════════════')
+        console.log('║ [TransformEditorModal] extractAvailableJsonPaths - COMPLETE')
+        console.log('╠════════════════════════════════════════════════════════════════════════')
+        console.log('║ Total extracted paths:', this.availableJsonPaths.length)
+        const normalPaths = this.availableJsonPaths.filter(p => !p.isFromJsonString)
+        const jsonStringPaths = this.availableJsonPaths.filter(p => p.isFromJsonString)
+        console.log('║ Normal JSON field paths:', normalPaths.length)
+        console.log('║ JSON-to-String field paths:', jsonStringPaths.length)
+
+        // Log sample fields for debugging
+        if (normalPaths.length > 0) {
+          console.log('║ Sample normal JSON fields:')
+          normalPaths.slice(0, 3).forEach(p => console.log(`║   - ${p.value} (${p.type})`))
+        }
+        if (jsonStringPaths.length > 0) {
+          console.log('║ Sample JSON-to-String fields:')
+          jsonStringPaths.slice(0, 3).forEach(p => console.log(`║   - ${p.value} (${p.type})`))
+        }
+        console.log('╚════════════════════════════════════════════════════════════════════════')
       } catch (error) {
         console.error('[TransformEditorModal] Error extracting JSON paths:', error)
         this.availableJsonPaths = []

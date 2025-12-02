@@ -42,6 +42,7 @@ export class FilterRuleService {
    *
    * @param {Object|Array} parsedData - The parsed JSON data from Step 2
    * @param {Object} dataStructure - The analyzed structure from DataProcessor
+   * @param {Object} options - Optional parameters: { jsonToStringFields: Array, parsedStringifiedFields: Object }
    * @returns {Array<Object>} Array of field objects with path, type, and sample values
    * @throws {Error} If input validation fails
    *
@@ -49,7 +50,7 @@ export class FilterRuleService {
    * const fields = FilterRuleService.extractFieldCandidates(data, structure)
    * // Returns: [{ path: '$.user.name', label: '@.user.name', type: 'string', sampleValues: [...] }]
    */
-  static extractFieldCandidates (parsedData, dataStructure) {
+  static extractFieldCandidates (parsedData, dataStructure, options = {}) {
     try {
       // Input validation
       if (!parsedData) {
@@ -68,16 +69,34 @@ export class FilterRuleService {
         return []
       }
 
+      // Get JSON-to-String fields from options
+      const jsonToStringFields = options?.jsonToStringFields || []
+      const parsedStringifiedFields = options?.parsedStringifiedFields || {}
+
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [FilterRuleService] extractFieldCandidates called with JSON-to-String options')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ jsonToStringFields count:', jsonToStringFields.length)
+      console.log('║ jsonToStringFields:', jsonToStringFields)
+      console.log('║ parsedStringifiedFields keys:', Object.keys(parsedStringifiedFields))
+      console.log('║ parsedData type:', Array.isArray(parsedData) ? 'array' : typeof parsedData)
+      console.log('║ parsedData isArray:', Array.isArray(parsedData))
+      if (Array.isArray(parsedData)) {
+        console.log('║ parsedData array length:', parsedData.length)
+      }
+      console.log('╚════════════════════════════════════════════════════════════════════════')
+
       const fields = []
       const visited = new Set()
 
       /**
        * Recursively traverse the data structure to find leaf fields
        * @param {Object} node - Current node in the structure tree
-       * @param {*} data - Corresponding data for this node
+       * @param {*} data - Corresponding data for this node (for traversal only)
        * @param {number} depth - Current recursion depth
+       * @param {*} rootData - Original root data (for sample extraction)
        */
-      const traverse = (node, data, depth = 0) => {
+      const traverse = (node, data, depth = 0, rootData = parsedData) => {
         // Safety check for recursion depth
         if (depth > CONSTANTS.MAX_FIELD_DEPTH) {
           console.warn('[FilterRuleService] Maximum field depth reached:', CONSTANTS.MAX_FIELD_DEPTH)
@@ -121,9 +140,9 @@ export class FilterRuleService {
               return
             }
 
-            // Get sample values from the ROOT data (not the current node's data)
-            // This ensures we can properly navigate to arrays and extract all values
-            const sampleValues = this._getSampleValuesForField(parsedData, normalizedPath, CONSTANTS.MAX_SAMPLE_VALUES)
+            // Get sample values from the ORIGINAL ROOT data (not the traversal data)
+            // This ensures we can properly navigate to arrays and extract all values from multiline NDJSON
+            const sampleValues = this._getSampleValuesForField(rootData, normalizedPath, CONSTANTS.MAX_SAMPLE_VALUES)
 
             // Sanitize the label to prevent XSS
             const sanitizedLabel = this._sanitizeFieldLabel(this._formatFieldLabel(normalizedPath))
@@ -144,11 +163,11 @@ export class FilterRuleService {
               try {
                 // For arrays, use the first element's data
                 if (node.type === 'array' && Array.isArray(data) && data.length > 0) {
-                  traverse(child, data[0], depth + 1)
+                  traverse(child, data[0], depth + 1, rootData)
                 } else if (typeof data === 'object' && data !== null && child.key) {
-                  traverse(child, data[child.key], depth + 1)
+                  traverse(child, data[child.key], depth + 1, rootData)
                 } else {
-                  traverse(child, data, depth + 1)
+                  traverse(child, data, depth + 1, rootData)
                 }
               } catch (childError) {
                 console.error('[FilterRuleService] Error processing child node:', childError)
@@ -162,18 +181,100 @@ export class FilterRuleService {
         }
       }
 
-      // Start traversal
-      traverse(dataStructure, parsedData, 0)
+      // Start traversal for base paths
+      // For multiline NDJSON (array of objects), use first element for traversal
+      // but keep the original parsedData for sample value extraction
+      let dataForTraversal = parsedData
+      let isMultilineNdjson = false
+
+      if (Array.isArray(parsedData) && parsedData.length > 0) {
+        dataForTraversal = parsedData[0]
+        isMultilineNdjson = true
+        console.log('[FilterRuleService] Detected multiline NDJSON array, using first element for structure traversal')
+        console.log('[FilterRuleService] Keeping original array for sample value extraction')
+      }
+
+      // For multiline NDJSON, we need to adjust the dataStructure to use $. notation instead of $[*].
+      // This is because in NDJSON, each record is processed independently, not as an array.
+      let adjustedDataStructure = dataStructure
+      if (isMultilineNdjson && dataStructure.type === 'array' && dataStructure.children && dataStructure.children.length > 0) {
+        // Take the first child's structure and adjust its path to start with $ instead of $[0]
+        const firstChild = dataStructure.children[0]
+        if (firstChild && firstChild.path && firstChild.path.startsWith('$[0]')) {
+          console.log('[FilterRuleService] Adjusting paths for multiline NDJSON: converting $[0]. to $.')
+          adjustedDataStructure = this._adjustPathsForNdjson(firstChild)
+        }
+      }
+
+      traverse(adjustedDataStructure, dataForTraversal, 0, parsedData)
+
+      // Process each JSON-to-String field to add nested paths
+      if (jsonToStringFields && jsonToStringFields.length > 0) {
+        console.log('╔════════════════════════════════════════════════════════════════════════')
+        console.log('║ [FilterRuleService] Processing JSON-to-String fields for nested paths')
+        console.log('╠════════════════════════════════════════════════════════════════════════')
+        console.log(`║ Total JSON-to-String fields to process: ${jsonToStringFields.length}`)
+        console.log(`║ Fields: ${jsonToStringFields.join(', ')}`)
+        console.log(`║ parsedStringifiedFields keys: ${Object.keys(parsedStringifiedFields).join(', ')}`)
+
+        for (const fieldPath of jsonToStringFields) {
+          console.log(`║ Processing field: ${fieldPath}`)
+
+          // Check if we have parsed data for this field
+          if (!parsedStringifiedFields[fieldPath]) {
+            console.log(`║ No parsed data available for: ${fieldPath}`)
+            continue
+          }
+
+          const parsedJsonData = parsedStringifiedFields[fieldPath]
+          console.log(`║ Found parsed data for ${fieldPath}: type=${typeof parsedJsonData}, isArray=${Array.isArray(parsedJsonData)}`)
+
+          if (Array.isArray(parsedJsonData)) {
+            console.log(`║ Array data with length: ${parsedJsonData.length}`)
+          } else if (typeof parsedJsonData === 'object' && parsedJsonData !== null) {
+            console.log(`║ Object data with keys: ${Object.keys(parsedJsonData).join(', ')}`)
+          }
+
+          // Process JSON-to-String fields
+          try {
+            console.log(`║ Extracting nested fields from ${fieldPath}...`)
+            this._extractNestedFieldsFromJsonString(
+              parsedJsonData,
+              fieldPath,
+              fields,
+              0, // Start depth at 0 for each JSON-to-String field
+              parsedData, // Pass the root data for sample value extraction
+              fieldPath // Pass the parent field path
+            )
+            console.log(`║ Extraction complete for ${fieldPath}`)
+          } catch (error) {
+            console.error(`[FilterRuleService] Error processing JSON-string field ${fieldPath}:`, error)
+          }
+        }
+
+        // Log the fields that were extracted from JSON strings
+        const jsonStringFields = fields.filter(f => f.isFromJsonString)
+        console.log(`║ Total fields extracted from JSON strings: ${jsonStringFields.length}`)
+        if (jsonStringFields.length > 0) {
+          console.log('║ Sample fields extracted from JSON strings:')
+          jsonStringFields.slice(0, 5).forEach(field => {
+            console.log(`║   - ${field.path} (${field.type})`)
+          })
+        }
+
+        console.log('╚════════════════════════════════════════════════════════════════════════')
+      }
 
       console.log(`[FilterRuleService] Extracted ${fields.length} field candidates`)
 
       // Debug: Log the extracted fields for troubleshooting
       if (fields.length > 0) {
-        console.log('[FilterRuleService] Extracted fields:', fields.map(f => ({
+        console.log('[FilterRuleService] Extracted fields sample:', fields.slice(0, 5).map(f => ({
           path: f.path,
           label: f.label,
           type: f.type,
-          sampleCount: f.sampleValues?.length || 0
+          sampleCount: f.sampleValues?.length || 0,
+          isFromJsonString: f.isFromJsonString || false
         })))
       }
 
@@ -181,6 +282,283 @@ export class FilterRuleService {
     } catch (error) {
       console.error('[FilterRuleService] Fatal error in extractFieldCandidates:', error)
       // Return empty array instead of throwing to maintain graceful degradation
+      return []
+    }
+  }
+
+  /**
+   * Adjust paths in a data structure for multiline NDJSON
+   * Converts $[0]. prefix to $. since each record is processed independently
+   *
+   * @param {Object} structure - The data structure node to adjust
+   * @returns {Object} Adjusted structure with corrected paths
+   * @private
+   */
+  static _adjustPathsForNdjson (structure) {
+    if (!structure) return structure
+
+    // Clone the structure to avoid mutations
+    const adjusted = { ...structure }
+
+    // Adjust the path: convert $[0] to $ and $[0]. to $.
+    if (adjusted.path) {
+      adjusted.path = adjusted.path.replace(/^\$\[0\]\.?/, '$.')
+      // Also handle cases where path is exactly $[0]
+      if (adjusted.path === '$[0]') {
+        adjusted.path = '$'
+      }
+    }
+
+    // Recursively adjust children
+    if (adjusted.children && Array.isArray(adjusted.children)) {
+      adjusted.children = adjusted.children.map(child => this._adjustPathsForNdjson(child))
+    }
+
+    return adjusted
+  }
+
+  /**
+   * Extract nested fields from a parsed JSON string field
+   *
+   * @param {Object|Array} parsedJson - The parsed JSON data from the stringified field
+   * @param {string} parentPath - The path to the parent field
+   * @param {Array} fields - Array of fields to append to
+   * @param {number} depth - Current recursion depth
+   * @param {Object|Array} rootData - The root data object for sample value extraction
+   * @param {string} jsonStringFieldPath - The path to the JSON string field in the root data
+   * @private
+   */
+  static _extractNestedFieldsFromJsonString (parsedJson, parentPath, fields, depth = 0, rootData = null, jsonStringFieldPath = null) {
+    // Safety check for recursion depth
+    if (depth > CONSTANTS.MAX_FIELD_DEPTH) {
+      console.warn('[FilterRuleService] Maximum field depth reached in JSON-string field:', CONSTANTS.MAX_FIELD_DEPTH)
+      return
+    }
+
+    // Skip if data is null or undefined
+    if (parsedJson === null || parsedJson === undefined) {
+      return
+    }
+
+    console.log('╔════════════════════════════════════════════════════════════════════════')
+    console.log(`║ [FilterRuleService] _extractNestedFieldsFromJsonString - Processing path: ${parentPath}`)
+    console.log(`║ Data type: ${Array.isArray(parsedJson) ? 'array' : typeof parsedJson}`)
+    console.log('╚════════════════════════════════════════════════════════════════════════')
+
+    // Process based on data type
+    if (Array.isArray(parsedJson)) {
+      // Handle arrays
+      if (parsedJson.length > 0) {
+        // Only process first element for array type inference
+        const firstItem = parsedJson[0]
+
+        // If it's a primitive array, add it as a field
+        if (typeof firstItem !== 'object' || firstItem === null) {
+          // Add the array itself as a field
+          const fieldType = typeof firstItem
+          const sanitizedLabel = this._sanitizeFieldLabel(this._formatFieldLabel(parentPath))
+
+          // Extract sample values from root data if available
+          const sampleValues = rootData && jsonStringFieldPath
+            ? this._getSampleValuesFromJsonStringField(rootData, jsonStringFieldPath, parentPath)
+            : parsedJson.slice(0, CONSTANTS.MAX_SAMPLE_VALUES).map(v => String(v))
+
+          fields.push({
+            path: parentPath,
+            label: sanitizedLabel,
+            type: fieldType === 'object' ? 'null' : fieldType,
+            sampleValues: sampleValues,
+            isNested: true,
+            depth: depth,
+            isFromJsonString: true
+          })
+          return
+        }
+
+        // For object arrays, recursively process first element with array index notation
+        this._extractNestedFieldsFromJsonString(firstItem, `${parentPath}[*]`, fields, depth + 1, rootData, jsonStringFieldPath)
+      } else {
+        // Empty array - just add as a field
+        const sanitizedLabel = this._sanitizeFieldLabel(this._formatFieldLabel(parentPath))
+        fields.push({
+          path: parentPath,
+          label: sanitizedLabel,
+          type: 'unknown',
+          sampleValues: ['[]'],
+          isNested: true,
+          depth: depth,
+          isFromJsonString: true
+        })
+      }
+    } else if (typeof parsedJson === 'object' && parsedJson !== null) {
+      // Handle objects
+      for (const key in parsedJson) {
+        if (Object.prototype.hasOwnProperty.call(parsedJson, key)) {
+          const value = parsedJson[key]
+          const fieldPath = `${parentPath}.${key}`
+
+          if (value === null || value === undefined) {
+            // Handle null values
+            const sanitizedLabel = this._sanitizeFieldLabel(this._formatFieldLabel(fieldPath))
+
+            // Extract sample values from root data if available
+            const sampleValues = rootData && jsonStringFieldPath
+              ? this._getSampleValuesFromJsonStringField(rootData, jsonStringFieldPath, fieldPath)
+              : ['null']
+
+            fields.push({
+              path: fieldPath,
+              label: sanitizedLabel,
+              type: 'null',
+              sampleValues: sampleValues,
+              isNested: true,
+              depth: depth + 1,
+              isFromJsonString: true
+            })
+          } else if (typeof value !== 'object') {
+            // Handle primitive types
+            const fieldType = typeof value
+            const sanitizedLabel = this._sanitizeFieldLabel(this._formatFieldLabel(fieldPath))
+
+            // Extract sample values from root data if available
+            const sampleValues = rootData && jsonStringFieldPath
+              ? this._getSampleValuesFromJsonStringField(rootData, jsonStringFieldPath, fieldPath)
+              : [String(value)]
+
+            fields.push({
+              path: fieldPath,
+              label: sanitizedLabel,
+              type: fieldType,
+              sampleValues: sampleValues,
+              isNested: true,
+              depth: depth + 1,
+              isFromJsonString: true
+            })
+          } else {
+            // Recursively process nested objects and arrays
+            this._extractNestedFieldsFromJsonString(value, fieldPath, fields, depth + 1, rootData, jsonStringFieldPath)
+          }
+        }
+      }
+    } else {
+      // Handle primitive values (should not happen at the root level, but handle anyway)
+      const fieldType = typeof parsedJson
+      const sanitizedLabel = this._sanitizeFieldLabel(this._formatFieldLabel(parentPath))
+
+      fields.push({
+        path: parentPath,
+        label: sanitizedLabel,
+        type: fieldType,
+        sampleValues: [String(parsedJson)],
+        isNested: false,
+        depth: depth,
+        isFromJsonString: true
+      })
+    }
+  }
+
+  /**
+   * Extract sample values from a nested field within a JSON string field
+   * This method handles extracting values from all records that contain the JSON string
+   *
+   * @param {Object|Array} rootData - The root data object containing the JSON string fields
+   * @param {string} jsonStringFieldPath - The path to the JSON string field in the root data
+   * @param {string} nestedFieldPath - The full path to the nested field (includes JSON string field path)
+   * @param {number} limit - Maximum number of unique values to return
+   * @returns {Array<string>} Array of unique sample values
+   * @private
+   */
+  static _getSampleValuesFromJsonStringField (rootData, jsonStringFieldPath, nestedFieldPath, limit = CONSTANTS.MAX_SAMPLE_VALUES) {
+    const values = new Set()
+
+    try {
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [FilterRuleService] _getSampleValuesFromJsonStringField')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ jsonStringFieldPath:', jsonStringFieldPath)
+      console.log('║ nestedFieldPath:', nestedFieldPath)
+      console.log('╚════════════════════════════════════════════════════════════════════════')
+
+      if (!rootData || !jsonStringFieldPath || !nestedFieldPath) {
+        return []
+      }
+
+      // Extract the relative path within the JSON string
+      // For example: if jsonStringFieldPath = "data.payload" and nestedFieldPath = "data.payload.user.name"
+      // then relativePath = "user.name"
+      let relativePath = nestedFieldPath
+      if (nestedFieldPath.startsWith(jsonStringFieldPath)) {
+        relativePath = nestedFieldPath.substring(jsonStringFieldPath.length)
+        // Remove leading dot or bracket
+        relativePath = relativePath.replace(/^[.[]/, '')
+        // Add back bracket if it was removed
+        if (nestedFieldPath.charAt(jsonStringFieldPath.length) === '[') {
+          relativePath = '[' + relativePath
+        }
+      }
+
+      console.log('║ relativePath within JSON string:', relativePath)
+
+      // Get all records (handle both single object and array of objects)
+      const records = Array.isArray(rootData) ? rootData : [rootData]
+      const recordsToCheck = records.slice(0, CONSTANTS.MAX_TEST_RECORDS)
+
+      // For each record, get the JSON string field, parse it, and extract the nested value
+      for (const record of recordsToCheck) {
+        if (values.size >= limit) break
+
+        try {
+          // Get the JSON string from the record
+          const jsonString = this._getValueByPath(record, jsonStringFieldPath)
+
+          if (!jsonString || typeof jsonString !== 'string') {
+            continue
+          }
+
+          // Parse the JSON string
+          let parsedJson
+          try {
+            parsedJson = JSON.parse(jsonString)
+          } catch (parseError) {
+            console.warn('[FilterRuleService] Failed to parse JSON string:', parseError)
+            continue
+          }
+
+          // Extract the nested field value from the parsed JSON
+          const value = this._getValueByPath(parsedJson, relativePath)
+
+          if (value !== undefined && value !== null) {
+            // Sanitize value to prevent XSS
+            let stringValue = typeof value === 'string' ? value : JSON.stringify(value)
+
+            // Limit value length for performance and UI
+            if (stringValue.length > 100) {
+              stringValue = stringValue.substring(0, 97) + '...'
+            }
+
+            // HTML escape the value
+            stringValue = this._escapeHtml(stringValue)
+
+            values.add(stringValue)
+          }
+        } catch (recordError) {
+          console.warn('[FilterRuleService] Error extracting value from record:', recordError)
+          // Continue with other records
+        }
+      }
+
+      const result = Array.from(values).slice(0, limit)
+
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [FilterRuleService] _getSampleValuesFromJsonStringField - Result')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ Found', result.length, 'unique sample values')
+      console.log('║ Sample values:', result.slice(0, 3))
+      console.log('╚════════════════════════════════════════════════════════════════════════')
+
+      return result
+    } catch (error) {
+      console.error('[FilterRuleService] Error in _getSampleValuesFromJsonStringField:', error)
       return []
     }
   }
@@ -248,8 +626,14 @@ export class FilterRuleService {
             return []
           }
         } else {
-          // Simple path without array notation
-          records = [data]
+          // Simple path without array notation (e.g., $.field)
+          // For multiline NDJSON (root array), iterate through all records
+          // For single objects, wrap in array for consistent processing
+          if (Array.isArray(data)) {
+            records = data.slice(0, CONSTANTS.MAX_TEST_RECORDS)
+          } else {
+            records = [data]
+          }
           fieldName = fieldPath.replace(/^\$\.?/, '')
         }
       }

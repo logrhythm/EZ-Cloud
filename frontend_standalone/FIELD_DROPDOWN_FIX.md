@@ -235,3 +235,37 @@ If the field value is correct in the logs but not in the UI, the issue may be wi
 - Quasar component rendering
 - CSS issues hiding the value
 - The `:options` array format
+
+## Update: JSON Field Support Fix - December 1, 2025
+
+### New Issue Addressed
+In addition to fixing the dropdown interaction behavior, we've also fixed an issue where the dropdown in Step 4 (Filter Conditions) wasn't showing stringified JSON fields that were visible in the Step 6 (SubTransform) dropdown.
+
+### Additional Changes Made
+1. **Enhanced FilterRuleService._extractNestedFieldsFromJsonString**:
+   - Added detailed logging to help trace stringified JSON field extraction
+   - Improved consistency with logging format to match other components
+
+2. **Enhanced FilterRuleService JSON-to-String field processing**:
+   - Added more comprehensive logging for JSON-to-String fields
+   - Added validation for array and object data types
+   - Added logging for fields extracted from JSON strings
+
+3. **Enhanced ConditionEditorModal.fieldOptions computation**:
+   - Added detailed logging to verify field extraction
+   - Added counting of normal vs. JSON string fields
+   - Added proper flagging of JSON-sourced fields with the isJsonField property
+   - Added sample field logging for verification
+
+4. **Improved Field Option Display in Dropdown**:
+   - Added visual indicators for JSON fields in the dropdown
+   - Added a "JSON" tag for fields sourced from stringified JSON
+   - Added an icon to visually distinguish JSON fields
+
+### Additional Benefits
+- Users can now create filter conditions based on all available fields, including those within stringified JSON
+- Consistent field display across the entire wizard UI (Step 4 and Step 6 show the same fields)
+- Better user experience with visual indicators for JSON fields
+- More reliable filtering capability for complex data structures
+
+This fix completes the dropdown interaction improvements by ensuring that all field types are properly displayed and available for selection.

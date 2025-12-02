@@ -129,8 +129,16 @@
                           v-on="scope.itemEvents"
                         >
                           <q-item-section>
-                            <q-item-label>{{ scope.opt.label }}</q-item-label>
-                            <q-item-label caption>{{ scope.opt.type }}</q-item-label>
+                            <q-item-label>
+                              <span v-if="scope.opt.isJsonField" class="json-field-indicator">
+                                <q-icon name="data_object" color="info" size="xs" />
+                              </span>
+                              {{ scope.opt.label }}
+                            </q-item-label>
+                            <q-item-label caption>
+                              <span>{{ scope.opt.type }}</span>
+                              <span v-if="scope.opt.isJsonField" class="json-field-tag">JSON</span>
+                            </q-item-label>
                           </q-item-section>
                         </q-item>
                       </template>
@@ -335,11 +343,26 @@ export default {
           return []
         }
 
+        console.log('╔════════════════════════════════════════════════════════════════════════')
+        console.log('║ [ConditionEditorModal] Computing fieldOptions')
+        console.log('╠════════════════════════════════════════════════════════════════════════')
+        console.log(`║ Total available fields: ${this.availableFields.length}`)
+
+        // Count fields from JSON strings
+        const jsonStringFields = this.availableFields.filter(f => f.isFromJsonString)
+        console.log(`║ Fields from JSON strings: ${jsonStringFields.length}`)
+
+        // Count normal fields
+        const normalFields = this.availableFields.filter(f => !f.isFromJsonString)
+        console.log(`║ Normal fields: ${normalFields.length}`)
+
         const uniqueFields = []
         const seenValues = new Set()
 
         for (const field of this.availableFields) {
           const value = field.label || ''
+          const path = field.path || ''
+          const isJsonField = field.isFromJsonString || false
 
           if (value && !seenValues.has(value)) {
             seenValues.add(value)
@@ -347,10 +370,27 @@ export default {
               label: field.label || '',
               value: field.label || '',
               type: field.type || 'unknown',
-              sampleValues: field.sampleValues || []
+              sampleValues: field.sampleValues || [],
+              path: path,
+              isJsonField: isJsonField
             })
           }
         }
+
+        console.log(`║ Unique field options: ${uniqueFields.length}`)
+
+        // Log sample fields for verification
+        if (uniqueFields.length > 0) {
+          console.log('║ Sample normal fields:')
+          uniqueFields.filter(f => !f.isJsonField).slice(0, 3)
+            .forEach(f => console.log(`║   - ${f.label} (${f.type})`))
+
+          console.log('║ Sample JSON string fields:')
+          uniqueFields.filter(f => f.isJsonField).slice(0, 3)
+            .forEach(f => console.log(`║   - ${f.label} (${f.type})`))
+        }
+
+        console.log('╚════════════════════════════════════════════════════════════════════════')
 
         return uniqueFields
       } catch (error) {
@@ -401,16 +441,63 @@ export default {
     extractFieldsFromSampleData () {
       try {
         const data = this.sampleData
+        const schemaRules = this.$store.state.wizard.schemaRules
 
         if (!data || !data.parsedData || !data.dataStructure) {
           this.availableFields = []
           return
         }
 
+        console.log('╔════════════════════════════════════════════════════════════════════════')
+        console.log('║ [ConditionEditorModal] extractFieldsFromSampleData - START')
+        console.log('╠════════════════════════════════════════════════════════════════════════')
+        console.log('║ Checking for JSON-to-String fields to include in field extraction')
+
+        // Get JSON-to-String fields and their parsed data from store
+        const jsonToStringFields = schemaRules?.convertToJson || []
+        const parsedStringifiedFields = schemaRules?.parsedStringifiedJsonFields || {}
+
+        console.log('║ Found jsonToStringFields count:', jsonToStringFields.length)
+        console.log('║ jsonToStringFields:', jsonToStringFields)
+        console.log('║ Found parsedStringifiedFields keys:', Object.keys(parsedStringifiedFields))
+
+        if (Object.keys(parsedStringifiedFields).length > 0) {
+          console.log('║ parsedStringifiedFields sample:')
+          const firstKey = Object.keys(parsedStringifiedFields)[0]
+          const parsedData = parsedStringifiedFields[firstKey]
+          console.log(`║   ${firstKey}: ${typeof parsedData}, isArray=${Array.isArray(parsedData)}`)
+          if (typeof parsedData === 'object' && parsedData !== null) {
+            console.log(`║   Keys: ${Object.keys(parsedData).slice(0, 5).join(', ')}...`)
+          }
+        }
+
+        // Use FilterRuleService to extract fields with JSON-to-String field handling
         this.availableFields = FilterRuleService.extractFieldCandidates(
           data.parsedData,
-          data.dataStructure
+          data.dataStructure,
+          {
+            jsonToStringFields,
+            parsedStringifiedFields
+          }
         )
+
+        console.log('║ Total extracted fields:', this.availableFields.length)
+        console.log('║ Fields from JSON-to-String fields:',
+          this.availableFields.filter(f => f.isFromJsonString).length)
+
+        // Log sample fields for debugging
+        if (this.availableFields.length > 0) {
+          const normalFields = this.availableFields.filter(f => !f.isFromJsonString).slice(0, 3)
+          const jsonStringFields = this.availableFields.filter(f => f.isFromJsonString).slice(0, 3)
+
+          console.log('║ Sample normal fields:')
+          normalFields.forEach(f => console.log(`║   - ${f.path} (${f.type})`))
+
+          console.log('║ Sample JSON string fields:')
+          jsonStringFields.forEach(f => console.log(`║   - ${f.path} (${f.type})`))
+        }
+
+        console.log('╚════════════════════════════════════════════════════════════════════════')
       } catch (error) {
         console.error('[ConditionEditorModal] Error extracting fields:', error)
         this.availableFields = []
@@ -1094,6 +1181,23 @@ export default {
 
   .q-item__label {
     color: #ffffff !important;
+  }
+
+  .json-field-indicator {
+    margin-right: 4px;
+    display: inline-flex;
+    vertical-align: middle;
+  }
+
+  .json-field-tag {
+    background: #0288d1;
+    color: white;
+    border-radius: 4px;
+    padding: 1px 4px;
+    font-size: 10px;
+    margin-left: 4px;
+    display: inline-block;
+    text-transform: uppercase;
   }
 }
 </style>

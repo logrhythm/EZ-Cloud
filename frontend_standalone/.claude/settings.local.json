@@ -30,7 +30,10 @@
       "Bash(echo:*)",
       "Bash(else )",
       "Bash(fi)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(npx eslint:*)",
+      "Bash(npm run serve)",
+      "Bash(cat -n)"
     ],
     "deny": []
   }

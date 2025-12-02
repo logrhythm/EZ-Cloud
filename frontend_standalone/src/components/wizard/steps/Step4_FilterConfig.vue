@@ -418,7 +418,7 @@ export default {
   },
 
   computed: {
-    ...mapState('wizard', ['sampleData', 'filterRules']),
+    ...mapState('wizard', ['sampleData', 'filterRules', 'schemaRules']),
 
     /**
      * Format field options for the select dropdown
@@ -489,6 +489,60 @@ export default {
         }
       },
       immediate: true
+    },
+
+    /**
+     * Watch for changes in schemaRules (JSON-to-String selections) to re-extract fields
+     * This enables real-time updates when user checks/unchecks JSON-to-String in Step 3
+     */
+    'schemaRules.convertToJson': {
+      handler (newFields, oldFields) {
+        if (!this.isDestroyed && this.sampleData?.parsedData) {
+          // Check if the arrays are different
+          const newFieldsStr = JSON.stringify(newFields || [])
+          const oldFieldsStr = JSON.stringify(oldFields || [])
+
+          if (newFieldsStr !== oldFieldsStr) {
+            console.log('╔════════════════════════════════════════════════════════════════════════')
+            console.log('║ [Step 4] JSON-to-String selections changed - re-extracting fields')
+            console.log('╠════════════════════════════════════════════════════════════════════════')
+            console.log('║ Old fields:', oldFields || [])
+            console.log('║ New fields:', newFields || [])
+            console.log('╚════════════════════════════════════════════════════════════════════════')
+
+            this.extractFieldsFromSampleData()
+          }
+        }
+      },
+      deep: true,
+      immediate: false
+    },
+
+    /**
+     * Watch for changes in parsed stringified JSON fields
+     * This ensures fields are updated when JSON string parsing completes
+     */
+    'schemaRules.parsedStringifiedJsonFields': {
+      handler (newParsed, oldParsed) {
+        if (!this.isDestroyed && this.sampleData?.parsedData) {
+          // Check if the objects are different
+          const newKeys = Object.keys(newParsed || {}).sort().join(',')
+          const oldKeys = Object.keys(oldParsed || {}).sort().join(',')
+
+          if (newKeys !== oldKeys) {
+            console.log('╔════════════════════════════════════════════════════════════════════════')
+            console.log('║ [Step 4] Parsed stringified JSON fields updated - re-extracting fields')
+            console.log('╠════════════════════════════════════════════════════════════════════════')
+            console.log('║ Old keys:', oldKeys || '(none)')
+            console.log('║ New keys:', newKeys || '(none)')
+            console.log('╚════════════════════════════════════════════════════════════════════════')
+
+            this.extractFieldsFromSampleData()
+          }
+        }
+      },
+      deep: true,
+      immediate: false
     }
   },
 
@@ -551,10 +605,24 @@ export default {
       this.isExtractingFields = true
 
       try {
+        // Prepare options for JSON-to-String field processing
+        const options = {
+          jsonToStringFields: this.schemaRules?.convertToJson || [],
+          parsedStringifiedFields: this.schemaRules?.parsedStringifiedJsonFields || {}
+        }
+
+        console.log('╔════════════════════════════════════════════════════════════════════════')
+        console.log('║ [Step 4] Extracting fields with JSON-to-String support')
+        console.log('╠════════════════════════════════════════════════════════════════════════')
+        console.log('║ convertToJson fields:', options.jsonToStringFields)
+        console.log('║ parsedStringifiedJsonFields keys:', Object.keys(options.parsedStringifiedFields))
+        console.log('╚════════════════════════════════════════════════════════════════════════')
+
         // Use FilterRuleService to extract field candidates with error handling
         const fields = FilterRuleService.extractFieldCandidates(
           this.sampleData.parsedData,
-          this.sampleData.dataStructure
+          this.sampleData.dataStructure,
+          options
         )
 
         // Validate extracted fields

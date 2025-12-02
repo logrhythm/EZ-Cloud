@@ -29,12 +29,12 @@
 
         <q-card-section class="card-content">
           <q-tabs
-            v-model="sampleData.inputMethod"
+            v-model="localInputMethod"
             dense
             class="input-method-tabs"
             active-color="primary"
             indicator-color="primary"
-            @input="onInputMethodChange"
+            @update:model-value="onInputMethodChange"
           >
             <q-tab name="manual" icon="edit" label="Manual Input" />
             <q-tab name="file" icon="upload_file" label="File Upload" />
@@ -42,11 +42,12 @@
           </q-tabs>
 
           <q-tab-panels
-            v-model="sampleData.inputMethod"
+            v-model="localInputMethod"
             animated
             transition-prev="jump-up"
             transition-next="jump-down"
             class="input-panels"
+            @update:model-value="onInputMethodChange"
           >
             <!-- Manual Input Tab -->
             <q-tab-panel name="manual" class="input-panel">
@@ -189,7 +190,19 @@
                   @blur="validateJsonData"
                   class="json-textarea multiple-logs"
                   :class="{ 'has-valid-json': isValidJson, 'has-invalid-json': hasValidationError }"
-                />
+                >
+                  <template v-slot:append>
+                    <q-btn
+                      flat
+                      dense
+                      icon="content_paste"
+                      @click="pasteFromClipboard"
+                      class="paste-btn text-primary"
+                    >
+                      <q-tooltip>Paste from clipboard</q-tooltip>
+                    </q-btn>
+                  </template>
+                </q-input>
 
                 <div class="line-count-info">
                   <q-chip
@@ -421,13 +434,16 @@ export default {
 
   data () {
     return {
+      // Local copy of input method for v-model binding
+      localInputMethod: 'manual',
       uploadedFile: null,
       isDragOver: false,
       fileErrorMessage: '',
       validationErrorMessage: '',
       processingData: false,
       validationTimer: null,
-      lastProcessedRawData: null // Track last processed JSON to detect changes
+      lastProcessedRawData: null, // Track last processed JSON to detect changes
+      clipboardPermissionState: null // Track clipboard permission state
     }
   },
 
@@ -613,23 +629,56 @@ export default {
   },
 
   watch: {
-    'sampleData.inputMethod' () {
-      // Clear data when switching methods
-      this.clearData()
+    // Watch Vuex state change and sync to local state
+    'sampleData.inputMethod': {
+      handler (newValue, oldValue) {
+        // Only clear data and update local state if the value has actually changed
+        if (newValue !== oldValue) {
+          // Update local state to match Vuex state
+          this.localInputMethod = newValue
+
+          // Use the value we received in the handler, not from sampleData
+          // This avoids a circular reactivity issue
+          this.$nextTick(() => {
+            this.clearDataPreserveInputMethod()
+          })
+        }
+      }
+    },
+
+    // Watch local input method changes and sync to Vuex
+    localInputMethod: {
+      handler (newValue, oldValue) {
+        if (newValue !== oldValue && newValue !== this.sampleData.inputMethod) {
+          // Update Vuex state through mutation
+          this.onInputMethodChange(newValue)
+        }
+      }
     }
   },
 
   mounted () {
+    // Initialize local input method from Vuex state
+    this.localInputMethod = this.sampleData.inputMethod
+
     // Initialize lastProcessedRawData with current data if it exists
     if (this.sampleData.rawData && this.sampleData.parsedData) {
       this.lastProcessedRawData = this.sampleData.rawData
       console.log('=== Step 2 Mounted: Initialized lastProcessedRawData ===')
     }
 
+    // Check clipboard permissions
+    this.checkClipboardPermission()
+
     // Auto-focus on input area
     this.$nextTick(() => {
       const textarea = this.$el.querySelector('textarea')
-      if (textarea) textarea.focus()
+      if (textarea) {
+        textarea.focus()
+
+        // Add keyboard shortcut listeners to the textarea
+        textarea.addEventListener('keydown', this.handleTextareaKeydown)
+      }
     })
   },
 
@@ -792,16 +841,78 @@ export default {
 
     async pasteFromClipboard () {
       try {
-        const text = await navigator.clipboard.readText()
-        this.SET_SAMPLE_DATA({
-          rawData: text,
-          inputMethod: this.sampleData.inputMethod
-        })
-        this.validateJsonData()
+        // First, try using the Clipboard API based on permission state
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          // If we have or might have permission, try the Clipboard API
+          if (this.clipboardPermissionState === 'granted' ||
+              this.clipboardPermissionState === 'prompt' ||
+              this.clipboardPermissionState === 'unknown') {
+            try {
+              console.log('Attempting to read from clipboard with Clipboard API...')
+              const text = await navigator.clipboard.readText()
+              console.log('Successfully read from clipboard with Clipboard API')
+
+              this.SET_SAMPLE_DATA({
+                rawData: text,
+                inputMethod: this.sampleData.inputMethod
+              })
+              this.validateJsonData()
+              return
+            } catch (clipboardError) {
+              console.warn('Clipboard API access failed, falling back to execCommand:', clipboardError)
+              // If permission was previously unknown, update it
+              if (this.clipboardPermissionState === 'unknown') {
+                this.clipboardPermissionState = 'denied'
+              }
+              // Fall through to the document.execCommand fallback
+            }
+          } else {
+            console.log('Clipboard permission is denied, using fallback method')
+          }
+        } else {
+          console.log('Clipboard API not available, using fallback method')
+        }
+
+        // Fallback to document.execCommand (deprecated but still works in most browsers)
+        console.log('Attempting fallback paste method with execCommand...')
+        const textArea = document.createElement('textarea')
+        textArea.setAttribute('style', 'position: absolute; top: -9999px; left: -9999px')
+        document.body.appendChild(textArea)
+        textArea.focus()
+
+        // Execute the paste command
+        const successful = document.execCommand('paste')
+
+        if (successful) {
+          const text = textArea.value
+          document.body.removeChild(textArea)
+          console.log('Successfully pasted using execCommand fallback')
+
+          this.SET_SAMPLE_DATA({
+            rawData: text,
+            inputMethod: this.sampleData.inputMethod
+          })
+          this.validateJsonData()
+        } else {
+          document.body.removeChild(textArea)
+          throw new Error('execCommand paste failed')
+        }
       } catch (error) {
+        console.error('Paste operation failed:', error)
+
+        // Show a more helpful message based on the error
+        let message = 'Failed to paste from clipboard. '
+
+        if (error.name === 'NotAllowedError' || error.name === 'SecurityError') {
+          message += 'The application does not have permission to access the clipboard. '
+        }
+
+        message += 'Please use keyboard shortcut (Ctrl+V or Cmd+V) instead.'
+
         this.$q.notify({
           type: 'negative',
-          message: 'Failed to paste from clipboard'
+          message: message,
+          timeout: 4000
         })
       }
     },
@@ -850,10 +961,50 @@ export default {
       this.$emit('step-invalid')
     },
 
-    onInputMethodChange () {
+    clearDataPreserveInputMethod () {
+      console.log('=== Step 2: Clearing data but preserving input method ===')
+
+      // Store current input method so we don't overwrite it
+      const currentInputMethod = this.sampleData.inputMethod
+
       this.SET_SAMPLE_DATA({
-        inputMethod: this.sampleData.inputMethod
+        rawData: '',
+        parsedData: null,
+        dataStructure: null,
+        logType: null,
+        inputMethod: currentInputMethod, // Preserve the input method
+        validationResult: { isValid: false, errors: [], warnings: [] },
+        dataStats: { recordCount: 0, fieldCount: 0, nestedLevels: 0 }
       })
+
+      // Reset Step 3 selections when data is cleared
+      this.UPDATE_SCHEMA_RULES({
+        convertToJson: [],
+        fanout: [],
+        childfanouts: [],
+        detectedStringifiedJson: [],
+        manualSelections: []
+      })
+
+      // Reset last processed data
+      this.lastProcessedRawData = null
+
+      this.uploadedFile = null
+      this.validationErrorMessage = ''
+      this.fileErrorMessage = ''
+      this.$emit('step-invalid')
+    },
+
+    onInputMethodChange (newValue) {
+      // Use the passed event value to ensure we're getting fresh data, not reading from sampleData
+      // This ensures we're not reading from Vuex state and modifying it outside of a mutation
+      if (newValue) {
+        // Always update using Vuex mutation, even if the value appears the same
+        // This ensures that if we got here from an event, we properly update the store
+        this.SET_SAMPLE_DATA({
+          inputMethod: newValue
+        })
+      }
     },
 
     async onFileUpload (file) {
@@ -962,12 +1113,70 @@ export default {
       // Mark step as valid and proceed
       this.$emit('step-valid')
       this.$emit('next-step')
+    },
+
+    handleTextareaKeydown (e) {
+      // Handle Ctrl+V or Cmd+V (for macOS) manually if needed
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+        // Let the default paste behavior work, but log for debugging
+        console.log('Paste keyboard shortcut detected')
+      }
+    },
+
+    async checkClipboardPermission () {
+      // Check if Clipboard API is available
+      if (!navigator.clipboard) {
+        this.clipboardPermissionState = 'unavailable'
+        console.log('Clipboard API not available, will use fallback methods')
+        return
+      }
+
+      try {
+        // Check if we have permission to read from clipboard
+        if (navigator.permissions && navigator.permissions.query) {
+          const permission = await navigator.permissions.query({ name: 'clipboard-read' })
+          this.clipboardPermissionState = permission.state
+
+          // Add listener for permission changes
+          permission.addEventListener('change', this.onPermissionChange)
+
+          console.log('Clipboard permission state:', permission.state)
+        } else {
+          // If permissions API isn't available, we'll just try using the clipboard
+          this.clipboardPermissionState = 'unknown'
+          console.log('Permissions API not available, clipboard permission unknown')
+        }
+      } catch (error) {
+        console.warn('Error checking clipboard permission:', error)
+        this.clipboardPermissionState = 'error'
+      }
+    },
+
+    onPermissionChange (event) {
+      // Update permission state when it changes
+      this.clipboardPermissionState = event.target.state
+      console.log('Clipboard permission state changed to:', event.target.state)
     }
   },
 
   beforeDestroy () {
     if (this.validationTimer) {
       clearTimeout(this.validationTimer)
+    }
+
+    // Remove event listeners to prevent memory leaks
+    const textarea = this.$el.querySelector('textarea')
+    if (textarea) {
+      textarea.removeEventListener('keydown', this.handleTextareaKeydown)
+    }
+
+    // Clean up clipboard permission listener if it exists
+    if (navigator.permissions && this.clipboardPermissionState) {
+      navigator.permissions.query({ name: 'clipboard-read' })
+        .then(permission => {
+          permission.removeEventListener('change', this.onPermissionChange)
+        })
+        .catch(error => console.warn('Failed to clean up permission listener:', error))
     }
   }
 }

@@ -50,6 +50,7 @@ export class MappingService {
    *
    * @param {Object|Array} parsedData - The parsed JSON data from Step 2
    * @param {Object} dataStructure - The analyzed structure from DataProcessor
+   * @param {Object} options - Optional parameters: { jsonToStringFields: Array, parsedStringifiedFields: Object }
    * @returns {Array<Object>} Array of path objects with value, label, type
    * @throws {Error} If input validation fails
    *
@@ -57,7 +58,7 @@ export class MappingService {
    * const paths = MappingService.extractJsonPaths(data, structure)
    * // Returns: [{ value: '$.user.name', label: '$.user.name', type: 'string', sampleValue: 'John' }]
    */
-  static extractJsonPaths (parsedData, dataStructure) {
+  static extractJsonPaths (parsedData, dataStructure, options = {}) {
     try {
       // Input validation
       if (!parsedData) {
@@ -75,6 +76,23 @@ export class MappingService {
         console.error('[MappingService] Invalid dataStructure type:', typeof dataStructure)
         return []
       }
+
+      // Get JSON-to-String fields from options
+      const jsonToStringFields = options?.jsonToStringFields || []
+      const parsedStringifiedFields = options?.parsedStringifiedFields || {}
+
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [MappingService] extractJsonPaths called with JSON-to-String options')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ jsonToStringFields count:', jsonToStringFields.length)
+      console.log('║ jsonToStringFields:', jsonToStringFields)
+      console.log('║ parsedStringifiedFields keys:', Object.keys(parsedStringifiedFields))
+      console.log('║ parsedData type:', Array.isArray(parsedData) ? 'array' : typeof parsedData)
+      console.log('║ parsedData isArray:', Array.isArray(parsedData))
+      if (Array.isArray(parsedData)) {
+        console.log('║ parsedData array length:', parsedData.length)
+      }
+      console.log('╚════════════════════════════════════════════════════════════════════════')
 
       const paths = []
       const visited = new Set()
@@ -126,7 +144,13 @@ export class MappingService {
           // Include all leaf nodes (primitive types) for mapping
           if (node.type && node.type !== 'object' && node.type !== 'array') {
             // Get a sample value from the data
-            const sampleValue = this._getSampleValueForPath(parsedData, node.path)
+            // For multiline NDJSON (array of objects), extract from first object
+            let dataForSample = parsedData
+            if (Array.isArray(parsedData) && parsedData.length > 0) {
+              dataForSample = parsedData[0]
+              console.log('[MappingService] Using first array element for sample extraction:', node.path)
+            }
+            const sampleValue = this._getSampleValueForPath(dataForSample, node.path)
 
             // Sanitize the path
             const sanitizedPath = this._sanitizeJsonPath(node.path)
@@ -165,8 +189,181 @@ export class MappingService {
         }
       }
 
-      // Start traversal
-      traverse(dataStructure, parsedData, 0)
+      // Start traversal for base paths
+      // For multiline NDJSON (array of objects), use first element for traversal
+      let dataForTraversal = parsedData
+      if (Array.isArray(parsedData) && parsedData.length > 0) {
+        dataForTraversal = parsedData[0]
+        console.log('[MappingService] Detected multiline NDJSON array, using first element for structure traversal')
+      }
+      traverse(dataStructure, dataForTraversal, 0)
+
+      // Process each JSON-to-String field to add nested paths
+      if (jsonToStringFields && jsonToStringFields.length > 0) {
+        console.log('╔════════════════════════════════════════════════════════════════════════')
+        console.log('║ [MappingService] Processing JSON-to-String fields for nested paths')
+        console.log('╠════════════════════════════════════════════════════════════════════════')
+
+        for (const fieldPath of jsonToStringFields) {
+          console.log(`║ Processing field: ${fieldPath}`)
+
+          // Check if we have parsed data for this field
+          if (!parsedStringifiedFields[fieldPath]) {
+            console.log(`║ No parsed data available for: ${fieldPath}`)
+            continue
+          }
+
+          const parsedData = parsedStringifiedFields[fieldPath]
+          console.log(`║ Found parsed data: ${typeof parsedData}`)
+
+          // Create a temporary structure for traversal
+          // If it's an object, create a structure with the object as the root
+          // If it's an array, create a structure with the array as the root
+          let tempStructure = null
+          if (Array.isArray(parsedData)) {
+            tempStructure = {
+              path: fieldPath,
+              type: 'array',
+              children: []
+            }
+            // Add children based on first element if available
+            if (parsedData.length > 0) {
+              const firstItem = parsedData[0]
+              if (typeof firstItem === 'object' && firstItem !== null) {
+                for (const key in firstItem) {
+                  if (Object.prototype.hasOwnProperty.call(firstItem, key)) {
+                    const childType = typeof firstItem[key]
+                    tempStructure.children.push({
+                      path: `${fieldPath}.${key}`,
+                      key: key,
+                      type: childType === 'object' && firstItem[key] !== null
+                        ? (Array.isArray(firstItem[key]) ? 'array' : 'object')
+                        : childType
+                    })
+                  }
+                }
+              }
+            }
+          } else if (typeof parsedData === 'object' && parsedData !== null) {
+            tempStructure = {
+              path: fieldPath,
+              type: 'object',
+              children: []
+            }
+            // Add children based on keys
+            for (const key in parsedData) {
+              if (Object.prototype.hasOwnProperty.call(parsedData, key)) {
+                const childType = typeof parsedData[key]
+                tempStructure.children.push({
+                  path: `${fieldPath}.${key}`,
+                  key: key,
+                  type: childType === 'object' && parsedData[key] !== null
+                    ? (Array.isArray(parsedData[key]) ? 'array' : 'object')
+                    : childType
+                })
+              }
+            }
+          }
+
+          if (tempStructure) {
+            console.log(`║ Created temp structure with ${tempStructure.children?.length || 0} children`)
+            // Traverse the temp structure to extract paths
+            try {
+              // Create a new set to track visited paths for this specific field
+              // to avoid conflicts with the main traversal
+              const tempVisited = new Set()
+
+              // Define a special traverse function for JSON-to-String fields
+              const traverseJsonStringField = (node, data, depth = 0, parentPath = fieldPath) => {
+                // Use same depth limit as main traversal
+                if (depth > CONSTANTS.MAX_FIELD_DEPTH) {
+                  return
+                }
+
+                // Skip null nodes
+                if (!node) {
+                  return
+                }
+
+                // Skip nodes without path or with invalid path
+                if (!node.path) {
+                  return
+                }
+
+                // Avoid circular references within this specific traversal
+                if (tempVisited.has(node.path)) {
+                  return
+                }
+                tempVisited.add(node.path)
+
+                // Respect the same max path limit
+                if (paths.length >= CONSTANTS.MAX_JSON_PATHS) {
+                  return
+                }
+
+                try {
+                  // Add the current node as a path if it's a leaf node
+                  if (node.type && node.type !== 'object' && node.type !== 'array') {
+                    // Get sample value from the stringified JSON field's parsed data
+                    // For multiline data inside the parsed stringified field, use first element
+                    let dataForNestedSample = parsedData
+                    if (Array.isArray(parsedData) && parsedData.length > 0) {
+                      dataForNestedSample = parsedData[0]
+                      console.log('[MappingService] Using first array element for nested JSON string sample extraction:', node.path)
+                    }
+
+                    const sampleValue = this._getNestedValueByPath(
+                      dataForNestedSample,
+                      node.path.substring(fieldPath.length + 1) // Remove parent field path + dot
+                    )
+
+                    // Use the same path sanitization
+                    const sanitizedPath = this._sanitizeJsonPath(node.path)
+
+                    paths.push({
+                      value: sanitizedPath,
+                      label: sanitizedPath,
+                      type: node.type,
+                      sampleValue: sampleValue,
+                      isNested: true, // Always true since these are nested inside a field
+                      depth: depth,
+                      isFromJsonString: true // Mark as coming from a JSON-to-String field
+                    })
+                  }
+
+                  // Recursively process children
+                  if (node.children && Array.isArray(node.children)) {
+                    for (const child of node.children) {
+                      try {
+                        // For arrays, use the first element if available
+                        if (node.type === 'array' && Array.isArray(data) && data.length > 0) {
+                          traverseJsonStringField(child, data[0], depth + 1, parentPath)
+                        } else if (typeof data === 'object' && data !== null && child.key) {
+                          traverseJsonStringField(child, data[child.key], depth + 1, parentPath)
+                        } else {
+                          traverseJsonStringField(child, data, depth + 1, parentPath)
+                        }
+                      } catch (childError) {
+                        console.error(`[MappingService] Error processing JSON-string child node: ${childError.message}`)
+                      }
+                    }
+                  }
+                } catch (nodeError) {
+                  console.error(`[MappingService] Error processing JSON-string node: ${nodeError.message}`)
+                }
+              }
+
+              // Start traversal for the JSON-to-String field
+              traverseJsonStringField(tempStructure, parsedData, 0)
+            } catch (traverseError) {
+              console.error(`[MappingService] Error traversing JSON-string field ${fieldPath}:`, traverseError)
+            }
+          } else {
+            console.log(`║ Could not create temp structure for ${fieldPath}, data is not a valid object or array`)
+          }
+        }
+        console.log('╚════════════════════════════════════════════════════════════════════════')
+      }
 
       console.log(`[MappingService] Extracted ${paths.length} JSON paths`)
 
@@ -175,7 +372,8 @@ export class MappingService {
         console.log('[MappingService] Sample paths:', paths.slice(0, 5).map(p => ({
           path: p.value,
           type: p.type,
-          sample: p.sampleValue
+          sample: p.sampleValue,
+          isFromJsonString: p.isFromJsonString || false
         })))
       }
 
@@ -330,6 +528,70 @@ export class MappingService {
       return current
     } catch (error) {
       console.error('[MappingService] Error getting value by path:', error)
+      return undefined
+    }
+  }
+
+  /**
+   * Get a nested value from parsed JSON string data
+   * This is similar to _getValueByPath but optimized for parsed JSON string fields
+   *
+   * @param {Object|Array} obj - The parsed JSON object/array
+   * @param {string} path - The nested path within the JSON (without parent path)
+   * @returns {*} The value at the path or undefined
+   * @private
+   */
+  static _getNestedValueByPath (obj, path) {
+    try {
+      if (!obj) {
+        return undefined
+      }
+
+      if (!path || typeof path !== 'string') {
+        return undefined
+      }
+
+      // For root object/array
+      if (path === '') {
+        return obj
+      }
+
+      // Split path by dots and handle bracket notation
+      const parts = path.split(/\.|\[|\]/).filter(p => p !== '')
+
+      let current = obj
+
+      for (const part of parts) {
+        if (current === null || current === undefined) {
+          return undefined
+        }
+
+        // Security check
+        if (part === '__proto__' || part === 'constructor' || part === 'prototype') {
+          return undefined
+        }
+
+        // Handle array indices
+        if (/^\d+$/.test(part)) {
+          const index = parseInt(part, 10)
+          if (Array.isArray(current) && index >= 0 && index < current.length) {
+            current = current[index]
+          } else {
+            return undefined
+          }
+        } else {
+          // Handle object property access
+          if (typeof current === 'object' && part in current) {
+            current = current[part]
+          } else {
+            return undefined
+          }
+        }
+      }
+
+      return current
+    } catch (error) {
+      console.error('[MappingService] Error getting nested value by path:', error)
       return undefined
     }
   }
@@ -2016,9 +2278,16 @@ export class MappingService {
         if (!path) return ''
         // Replace numeric indices [0], [1], [2] with [*]
         // Also handle paths without brackets
-        return path
+        let normalized = path
           .replace(/\[(\d+)\]/g, '[*]') // Convert [0], [1], [2] to [*]
           .replace(/\[\*\]/g, '[*]') // Ensure consistent [*] format
+
+        // Ensure $ prefix for consistency
+        if (!normalized.startsWith('$')) {
+          normalized = '$.' + normalized
+        }
+
+        return normalized
       }
 
       const normalizedPath = normalizePath(absolutePath)
@@ -2039,13 +2308,9 @@ export class MappingService {
 
       // Find the nearest fanout parent that contains this path
       let nearestFanout = null
-      for (const fanout of sortedFanouts) {
-        // Normalize fanout to have $ prefix if missing
-        // Fanout arrays from Step 3 might not have the $ prefix
-        let normalizedFanout = fanout
-        if (!normalizedFanout.startsWith('$')) {
-          normalizedFanout = '$.' + normalizedFanout
-        }
+
+      for (let i = 0; i < sortedFanouts.length; i++) {
+        const normalizedFanout = sortedFanouts[i]
 
         // Build the fanout prefix to check if path is within this fanout
         // The fanout might be "$.teamMembers" or "$.teamMembers[*]"
@@ -2057,16 +2322,17 @@ export class MappingService {
           fanoutPrefix = fanoutPrefix.substring(0, fanoutPrefix.length - 3)
         }
 
-        console.log(`[MappingService] Checking fanout: "${fanout}" → normalized: "${normalizedFanout}", prefix: "${fanoutPrefix}"`)
+        console.log(`[MappingService] Checking fanout: "${normalizedFanout}", prefix: "${fanoutPrefix}"`)
         console.log(`[MappingService] Does "${normalizedPath}" start with "${fanoutPrefix}"?`)
 
         // Check if path is within this fanout
         // Path must start with fanout prefix followed by . or [
         if (normalizedPath === fanoutPrefix ||
+            normalizedPath === normalizedFanout ||
             normalizedPath.startsWith(fanoutPrefix + '.') ||
             normalizedPath.startsWith(fanoutPrefix + '[')) {
-          nearestFanout = normalizedFanout // Use the normalized version
-          console.log(`[MappingService] ✓ MATCH FOUND! fanout: "${fanout}" matches path: "${normalizedPath}"`)
+          nearestFanout = normalizedFanout // Use the normalized version with [*]
+          console.log(`[MappingService] ✓ MATCH FOUND! fanout: "${normalizedFanout}" matches path: "${normalizedPath}"`)
           break
         }
       }
@@ -2092,6 +2358,7 @@ export class MappingService {
 
       console.log('[MappingService] Making path relative')
       console.log('[MappingService] fanoutPrefix for removal:', fanoutPrefix)
+      console.log('[MappingService] normalizedPath:', normalizedPath)
 
       if (normalizedPath.startsWith(fanoutPrefix + '.')) {
         // Path is deeper than fanout - make it relative
@@ -2102,8 +2369,15 @@ export class MappingService {
       } else if (normalizedPath.startsWith(fanoutPrefix + '[')) {
         // Path continues with array notation after fanout
         // e.g., "$.teamMembers[*].tasks" with fanout "$.teamMembers"
-        // becomes "$.tasks"
-        relativePath = '$' + normalizedPath.substring(fanoutPrefix.length).replace(/^\[\*\]\.?/, '.')
+        // becomes "$[*].tasks" then cleaned to "$.tasks"
+        const afterPrefix = normalizedPath.substring(fanoutPrefix.length)
+        if (afterPrefix.startsWith('[*].')) {
+          relativePath = '$.' + afterPrefix.substring(4) // Skip [*].
+        } else if (afterPrefix === '[*]') {
+          relativePath = '$'
+        } else {
+          relativePath = '$' + afterPrefix
+        }
         console.log('[MappingService] Relative path (array notation):', relativePath)
       } else if (normalizedPath === fanoutPrefix || normalizedPath === fanoutPrefix + '[*]') {
         // Path is exactly the fanout array itself
@@ -2112,21 +2386,29 @@ export class MappingService {
       }
 
       // Clean up path
-      relativePath = relativePath.replace(/^\./, '') // Remove leading dot if present
+      relativePath = relativePath.replace(/^\$\.\./, '$.') // Fix $.. to $.
       relativePath = relativePath.replace(/\.\[/g, '[') // Fix .[*] to [*]
 
       console.log('[MappingService] Final relative path after cleanup:', relativePath)
+
+      // Ensure fanout parent has [*] notation at the end
+      let fanoutParentResult = nearestFanout
+      if (!fanoutParentResult.endsWith('[*]') && !fanoutParentResult.endsWith(']')) {
+        // If fanout doesn't end with array notation, add it
+        fanoutParentResult = fanoutParentResult + '[*]'
+        console.log('[MappingService] Added [*] to fanout parent:', fanoutParentResult)
+      }
 
       console.log('╔═══════════════════════════════════════════════════════════════════════')
       console.log('║ [MappingService] resolvePathForFanout - RESULT')
       console.log('╠═══════════════════════════════════════════════════════════════════════')
       console.log('║ jsonPath:', relativePath)
-      console.log('║ fanoutParent:', nearestFanout)
+      console.log('║ fanoutParent:', fanoutParentResult)
       console.log('╚═══════════════════════════════════════════════════════════════════════')
 
       return {
         jsonPath: relativePath,
-        fanoutParent: nearestFanout
+        fanoutParent: fanoutParentResult
       }
     } catch (error) {
       console.error('[MappingService] Error in resolvePathForFanout:', error)

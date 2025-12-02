@@ -159,6 +159,28 @@
       </div>
     </div>
 
+    <!-- Navigation Buttons -->
+    <div class="step-actions">
+      <q-btn
+        flat
+        icon="arrow_back"
+        label="Previous"
+        :disable="isSaving"
+        @click="$emit('prev-step')"
+        class="wizard-btn wizard-btn--secondary"
+      />
+
+      <q-btn
+        unelevated
+        color="primary"
+        icon-right="arrow_forward"
+        label="Continue to Export"
+        :loading="isSaving"
+        @click="proceedToNext"
+        class="wizard-btn wizard-btn--primary"
+      />
+    </div>
+
     <!-- Condition Editor Modal -->
     <ConditionEditorModal
       v-model="conditionDialog"
@@ -208,7 +230,9 @@ export default {
       editingTransformIndex: null,
       editingTransformMode: null,
       currentCondition: '',
-      currentTransforms: []
+      currentTransforms: [],
+      // Navigation state
+      isSaving: false
     }
   },
 
@@ -248,7 +272,9 @@ export default {
       'updateSubTransformAction',
       'deleteSubTransformAction',
       'reorderSubTransformAction',
-      'setSkipSubTransforms'
+      'setSkipSubTransforms',
+      'nextStep',
+      'previousStep'
     ]),
 
     addSubTransform () {
@@ -483,6 +509,46 @@ export default {
         const v = c === 'x' ? r : (r & 0x3 | 0x8)
         return v.toString(16)
       })
+    },
+
+    /**
+     * Handle navigation to next step
+     * Validates the step and saves the state before proceeding
+     */
+    async proceedToNext () {
+      try {
+        this.isSaving = true
+
+        // Validate step (Step 6 is optional - valid if skipped or has at least one SubTransform)
+        const isValid = this.localSkipSubTransforms || this.subTransformsList.length > 0
+
+        if (!isValid) {
+          this.$q.notify({
+            type: 'warning',
+            message: 'Please add at least one SubTransform or enable "Skip SubTransforms"',
+            position: 'top',
+            timeout: 3000
+          })
+          this.isSaving = false
+          return
+        }
+
+        // Emit step validation event to mark it as valid
+        this.$emit('step-valid')
+
+        // Navigate to the next step (using the action from Vuex)
+        this.$emit('next-step')
+      } catch (error) {
+        console.error('[Step 6] Error proceeding to next step:', error)
+        this.$q.notify({
+          type: 'negative',
+          message: 'Failed to proceed to next step',
+          caption: error.message,
+          position: 'top'
+        })
+      } finally {
+        this.isSaving = false
+      }
     }
   }
 }
@@ -627,5 +693,24 @@ body.body--dark {
       }
     }
   }
+}
+
+/* Step Actions */
+.step-actions {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 2rem;
+  border-top: 1px solid var(--q-color-grey-3);
+  margin-top: 2rem;
+}
+
+.wizard-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+}
+
+/* Dark mode adjustments for step actions */
+body.body--dark .step-actions {
+  border-color: var(--q-color-grey-8);
 }
 </style>
