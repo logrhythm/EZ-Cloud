@@ -1272,14 +1272,17 @@ export default {
           return
         }
 
-        // Save mapping
+        // Save mapping (exclude sampleValue - it's only for UI display)
+        const cleanMapping = { ...this.mappingForm }
+        delete cleanMapping.sampleValue
+
         if (this.editingMapping) {
           const index = this.localMappings.findIndex(m => m.id === this.editingMapping.id)
           if (index !== -1) {
-            this.$set(this.localMappings, index, { ...this.mappingForm })
+            this.$set(this.localMappings, index, cleanMapping)
           }
         } else {
-          this.localMappings.push({ ...this.mappingForm })
+          this.localMappings.push(cleanMapping)
         }
 
         // Close dialog

@@ -5,7 +5,7 @@
  * - Fanout: Identifies array fields and builds parent path relationships
  */
 
-import { DataProcessor } from './dataProcessingService'
+import { DataProcessor } from './dataProcessingService.js'
 
 /**
  * SchemaRuleService class for wizard Step 3
@@ -163,12 +163,25 @@ export class SchemaRuleService {
 
   /**
    * Build the schema rule childfanouts structure based on selected arrays
+   * This creates the new hierarchical structure with proper parent-child relationships
+   *
+   * Rules:
+   * - Root-level arrays: parentpath = null, field has absolute path from root with $.
+   * - Nested arrays: parentpath references parent array field, field is relative to parent
+   * - Every non-null parentpath must exist as a field value elsewhere in childfanouts
+   * - All array paths must use [*] notation
+   *
    * @param {Array} selectedArrayPaths - Array of selected array field paths
    * @param {Array} allArrayFields - All available array field metadata
    * @returns {Array} Childfanouts array structure for policy
    */
   static buildChildFanouts (selectedArrayPaths, allArrayFields) {
-    const childfanouts = []
+    console.log('╔═══════════════════════════════════════════════════════════════════════')
+    console.log('║ [buildChildFanouts] START')
+    console.log('╠═══════════════════════════════════════════════════════════════════════')
+    console.log('║ selectedArrayPaths:', JSON.stringify(selectedArrayPaths))
+    console.log('║ allArrayFields count:', allArrayFields?.length || 0)
+    console.log('╚═══════════════════════════════════════════════════════════════════════')
 
     // Handle empty or invalid input
     if (!selectedArrayPaths || !Array.isArray(selectedArrayPaths) || selectedArrayPaths.length === 0) {
@@ -179,97 +192,240 @@ export class SchemaRuleService {
     if (!allArrayFields || !Array.isArray(allArrayFields) || allArrayFields.length === 0) {
       console.log('[buildChildFanouts] No allArrayFields metadata provided, using synthetic metadata')
       // If no metadata is provided, construct synthetic metadata for the selected paths
-      // to avoid errors when navigating between steps
       const syntheticFields = selectedArrayPaths.map(path => ({
         path: path,
         isHomogeneous: true,
         elementType: 'unknown',
         sampleSize: 1,
         parentPath: null,
-        // Mark as synthetic so we know this was generated
         isSynthetic: true
       }))
       allArrayFields = syntheticFields
     }
 
-    // Create a map of paths to field metadata for quick lookup
-    const fieldMap = {}
-    for (const field of allArrayFields) {
-      fieldMap[field.path] = field
-    }
+    // Normalize all paths to ensure they start with $ and have [*] notation
+    const normalizedPaths = selectedArrayPaths.map(path => this._normalizeArrayPathForPolicy(path))
+    console.log('[buildChildFanouts] Normalized paths:', JSON.stringify(normalizedPaths))
 
-    // Process each selected array path
-    for (const path of selectedArrayPaths) {
-      // Try to get field from metadata or create a synthetic one if missing
-      let field = fieldMap[path]
+    // Build parent-child relationships
+    // Sort paths by depth (root arrays first, then nested arrays)
+    const sortedPaths = [...normalizedPaths].sort((a, b) => {
+      const depthA = (a.match(/\./g) || []).length
+      const depthB = (b.match(/\./g) || []).length
+      return depthA - depthB
+    })
 
-      // If field not found in metadata, create a synthetic one with the path
-      // This ensures navigation between steps doesn't throw errors
-      if (!field) {
-        console.warn(`Array field not found in metadata: ${path}. Creating synthetic metadata.`)
-        field = {
-          path: path,
-          isHomogeneous: true,
-          elementType: 'unknown',
-          sampleSize: 1,
-          parentPath: null,
-          isSynthetic: true
-        }
-      }
+    console.log('[buildChildFanouts] Sorted paths by depth:', JSON.stringify(sortedPaths))
 
-      // Determine the parent path
-      let parentpath = null
+    const childfanouts = []
+    // Map to track full path -> field value mapping
+    const pathToFieldMap = new Map()
 
-      // Check if this array is nested within another selected array
-      for (const otherPath of selectedArrayPaths) {
-        if (otherPath !== path && path.startsWith(otherPath)) {
-          // This array is nested within another selected array
-          // Set parentpath to the immediate parent array that's selected
-          if (!parentpath || otherPath.length > parentpath.length) {
-            parentpath = otherPath
+    // Process each path to determine its parent
+    for (const currentPath of sortedPaths) {
+      console.log('╔═══════════════════════════════════════════════════════════════════════')
+      console.log('║ Processing path:', currentPath)
+      console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+      // Find the immediate parent (longest matching path that's not the current path)
+      let parentFullPath = null
+      let longestMatch = 0
+
+      for (const potentialParent of sortedPaths) {
+        if (potentialParent === currentPath) continue
+
+        // Check if currentPath is nested within potentialParent
+        // For a path to be a parent, the child path must start with parent path
+        // and have additional segments after it
+        if (currentPath.startsWith(potentialParent)) {
+          // Extract the part after the parent path
+          const remainder = currentPath.substring(potentialParent.length)
+
+          // Check if remainder starts with a dot or bracket (indicates nesting)
+          if (remainder.startsWith('.') || remainder.startsWith('[')) {
+            // This is a valid parent relationship
+            // Use the longest (most specific) parent
+            if (potentialParent.length > longestMatch) {
+              longestMatch = potentialParent.length
+              parentFullPath = potentialParent
+            }
           }
         }
       }
 
-      // Convert path to relative path if parent exists
-      let fieldPath = path
-      if (parentpath) {
-        // Remove parent path prefix to make it relative
-        // For example: $.departments[*].teams[*] with parent $.departments[*]
-        // should become $.teams[*]
-        fieldPath = '$' + path.substring(parentpath.length)
-      }
+      console.log('║ Found parent full path:', parentFullPath || 'null (root level)')
 
-      // Add [*] to indicate array fanout if not already present
-      if (!fieldPath.endsWith('[*]') && !fieldPath.includes('[*]')) {
-        // Find where to add [*]
-        // If path ends with array index like [0], replace with [*]
-        if (fieldPath.match(/\[\d+\]$/)) {
-          fieldPath = fieldPath.replace(/\[\d+\]$/, '[*]')
+      // Determine the field path
+      let fieldPath = currentPath
+
+      if (parentFullPath) {
+        // This is a nested array - make the path relative to parent
+        let remainder = currentPath.substring(parentFullPath.length)
+
+        // Build relative path starting with $
+        // CRITICAL: Preserve [*] notation in the remainder
+        if (remainder.startsWith('.')) {
+          // Example: $.outerArray[*].innerArray[*] with parent $.outerArray[*]
+          // remainder = ".innerArray[*]"
+          // fieldPath should be "$.innerArray[*]"
+          fieldPath = '$' + remainder
+        } else if (remainder.startsWith('[')) {
+          // Handle case where nested array is accessed via bracket notation
+          // e.g., parent is $.items[*] and child is $.items[*][*].subArray[*]
+          // remainder = "[*].subArray[*]" → should become "$.subArray[*]"
+          // Remove the leading [*] and optional dot
+          remainder = remainder.replace(/^\[\*\]\.?/, '')
+
+          // Also remove any numeric [0] indices that might still be there
+          remainder = remainder.replace(/^\[\d+\]\.?/, '')
+
+          if (remainder.startsWith('.')) {
+            fieldPath = '$' + remainder
+          } else if (remainder) {
+            fieldPath = '$.' + remainder
+          } else {
+            // Edge case: remainder is empty after stripping [*]
+            // This shouldn't happen with properly normalized paths
+            fieldPath = currentPath
+          }
         } else {
-          // Otherwise append [*]
+          // Fallback: use full path with $
+          fieldPath = '$.' + remainder.replace(/^\./, '')
+        }
+
+        // CRITICAL FIX: Ensure the field path ends with [*] for arrays
+        // If the original currentPath had [*] but our fieldPath doesn't, add it
+        if (currentPath.endsWith('[*]') && !fieldPath.endsWith('[*]')) {
           fieldPath += '[*]'
         }
+
+        console.log('║ Relative field path:', fieldPath)
+      } else {
+        // Root-level array - use absolute path as-is (already starts with $)
+        console.log('║ Absolute field path (root level):', fieldPath)
       }
 
-      // Similarly process parent path
-      if (parentpath) {
-        if (!parentpath.endsWith('[*]') && !parentpath.includes('[*]')) {
-          if (parentpath.match(/\[\d+\]$/)) {
-            parentpath = parentpath.replace(/\[\d+\]$/, '[*]')
-          } else {
-            parentpath += '[*]'
-          }
-        }
-      }
+      // Store the mapping of full path to field value
+      pathToFieldMap.set(currentPath, fieldPath)
 
+      // Get the parentpath value: use the parent's field value from the map
+      // This ensures parentpath references the parent entry's field value
+      const parentpathValue = parentFullPath ? pathToFieldMap.get(parentFullPath) : null
+
+      console.log('║ Parent field value (parentpath):', parentpathValue || 'null')
+
+      // Add to childfanouts array
       childfanouts.push({
         field: fieldPath,
-        parentpath: parentpath
+        parentpath: parentpathValue
       })
+
+      console.log('║ Added to childfanouts:', JSON.stringify({ field: fieldPath, parentpath: parentpathValue }))
     }
 
+    console.log('╔═══════════════════════════════════════════════════════════════════════')
+    console.log('║ [buildChildFanouts] COMPLETE')
+    console.log('╠═══════════════════════════════════════════════════════════════════════')
+    console.log('║ Total childfanouts:', childfanouts.length)
+    childfanouts.forEach((cf, idx) => {
+      console.log(`║   [${idx}] field: "${cf.field}", parentpath: ${cf.parentpath ? '"' + cf.parentpath + '"' : 'null'}`)
+    })
+    console.log('╚═══════════════════════════════════════════════════════════════════════')
+
     return childfanouts
+  }
+
+  /**
+   * Normalize an array path for policy generation
+   * Ensures path starts with $ and uses [*] notation for arrays
+   *
+   * CRITICAL: The [*] notation MUST always be at the END of each attribute name as a SUFFIX
+   * Correct format: $.attributeName[*] or $.parent[*].child[*]
+   *
+   * Examples:
+   *   Input: "tags[0]" or "tags" → Output: "$.tags[*]"
+   *   Input: "$.tags[0]" → Output: "$.tags[*]"
+   *   Input: "[0].tags" or "$[0].tags" → Output: "$.tags[*]"
+   *   Input: "outerArray[0].innerArray[0]" → Output: "$.outerArray[*].innerArray[*]"
+   *   Input: "$.outerArray[0].innerArray[0]" → Output: "$.outerArray[*].innerArray[*]"
+   *
+   * @param {string} path - Array path to normalize
+   * @returns {string} Normalized path
+   * @private
+   */
+  static _normalizeArrayPathForPolicy (path) {
+    if (!path || typeof path !== 'string') {
+      return path
+    }
+
+    // Remove any leading/trailing whitespace
+    let normalized = path.trim()
+
+    // Step 1: Remove any leading array notation that represents root-level array access
+    // Examples: "[0].field" → "field", "$[0].field" → "field"
+    if (normalized.startsWith('[')) {
+      normalized = normalized.replace(/^\[\d+\]\.?/, '').replace(/^\[\*\]\.?/, '')
+    }
+    if (normalized.startsWith('$[')) {
+      normalized = normalized.replace(/^\$\[\d+\]\.?/, '').replace(/^\$\[\*\]\.?/, '')
+    }
+
+    // Step 2: Ensure path starts with $.
+    if (!normalized.startsWith('$')) {
+      normalized = `$.${normalized}`
+    }
+
+    // Step 3: Replace all numeric array indices [0], [1], etc. with [*]
+    // This handles both single and nested arrays correctly
+    // Example: $.outerArray[0].innerArray[5] → $.outerArray[*].innerArray[*]
+    normalized = normalized.replace(/\[\d+\]/g, '[*]')
+
+    // Step 4: If the path doesn't end with [*], append it
+    // This handles cases where the input is just an attribute name without indices
+    // Example: "$.tags" → "$.tags[*]"
+    if (!normalized.endsWith('[*]')) {
+      normalized += '[*]'
+    }
+
+    return normalized
+  }
+
+  /**
+   * Validate that an array path has correct format
+   * @param {string} path - Path to validate
+   * @returns {boolean} True if valid
+   * @private
+   */
+  static _isValidArrayPath (path) {
+    if (!path || typeof path !== 'string') {
+      return false
+    }
+
+    // Path must end with [*]
+    if (!path.endsWith('[*]')) {
+      return false
+    }
+
+    // Path must start with $.
+    if (!path.startsWith('$.')) {
+      return false
+    }
+
+    // No $.[*] or $[*]. patterns allowed at the START (bracket must be suffix to attribute name, not prefix)
+    if (path.includes('$.[*]') || path.includes('$[*].')) {
+      return false
+    }
+
+    // Check for invalid patterns where [*] comes BEFORE the attribute name
+    // Invalid: $.[*]attr, Valid: $.attr[*] or $.parent[*].child[*]
+    // The pattern .[*] is only valid if followed by a dot (for nested arrays)
+    // Use regex to ensure [*] is always a suffix: must be followed by end-of-string or a dot
+    const validPattern = /^\$\.([a-zA-Z0-9_]+\[\*\])(\.([a-zA-Z0-9_]+\[\*\]))*$/
+    if (!validPattern.test(path)) {
+      return false
+    }
+
+    return true
   }
 
   /**
@@ -295,7 +451,7 @@ export class SchemaRuleService {
   }
 
   /**
-   * Validate Step 3 selections
+   * Validate Step 3 selections including childfanouts structure
    * @param {Object} schemaRules - Schema rules from store
    * @returns {Object} Validation result with isValid and errors
    */
@@ -316,6 +472,7 @@ export class SchemaRuleService {
 
     const hasConvertToJson = schemaRules.convertToJson && schemaRules.convertToJson.length > 0
     const hasFanout = schemaRules.fanout && schemaRules.fanout.length > 0
+    const hasChildFanouts = schemaRules.childfanouts && schemaRules.childfanouts.length > 0
 
     if (!hasConvertToJson && !hasFanout) {
       result.warnings.push('No schema rules configured. This step can be skipped if not needed.')
@@ -338,6 +495,150 @@ export class SchemaRuleService {
           result.isValid = false
           result.errors.push(`Invalid JSONPath format: ${field}`)
         }
+      }
+    }
+
+    // Validate childfanouts structure
+    if (hasChildFanouts) {
+      const childFanoutsValidation = this.validateChildFanouts(schemaRules.childfanouts)
+      if (!childFanoutsValidation.isValid) {
+        result.isValid = false
+        result.errors.push(...childFanoutsValidation.errors)
+      }
+      if (childFanoutsValidation.warnings.length > 0) {
+        result.warnings.push(...childFanoutsValidation.warnings)
+      }
+    }
+
+    return result
+  }
+
+  /**
+   * Validate childfanouts array structure
+   * @param {Array} childfanouts - Childfanouts array to validate
+   * @returns {Object} Validation result with isValid, errors, and warnings
+   */
+  static validateChildFanouts (childfanouts) {
+    const result = {
+      isValid: true,
+      errors: [],
+      warnings: []
+    }
+
+    if (!childfanouts || !Array.isArray(childfanouts)) {
+      result.isValid = false
+      result.errors.push('Childfanouts must be an array')
+      return result
+    }
+
+    if (childfanouts.length === 0) {
+      // Empty array is valid
+      return result
+    }
+
+    // Track all field values for validation
+    const fieldValues = new Set()
+    const parentpathValues = new Set()
+
+    // Validate each childfanout entry
+    for (let i = 0; i < childfanouts.length; i++) {
+      const entry = childfanouts[i]
+
+      // 1. Validate structure
+      if (!entry || typeof entry !== 'object') {
+        result.isValid = false
+        result.errors.push(`Childfanout entry ${i} is not an object`)
+        continue
+      }
+
+      if (!entry.field || typeof entry.field !== 'string') {
+        result.isValid = false
+        result.errors.push(`Childfanout entry ${i} missing or invalid 'field' property`)
+        continue
+      }
+
+      if (entry.parentpath !== null && typeof entry.parentpath !== 'string') {
+        result.isValid = false
+        result.errors.push(`Childfanout entry ${i} has invalid 'parentpath' property (must be string or null)`)
+        continue
+      }
+
+      // 2. Validate path format - all paths must use [*] notation
+      if (!entry.field.includes('[*]')) {
+        result.isValid = false
+        result.errors.push(`Childfanout entry ${i} field "${entry.field}" must use [*] notation for arrays`)
+      }
+
+      if (entry.parentpath && !entry.parentpath.includes('[*]')) {
+        result.isValid = false
+        result.errors.push(`Childfanout entry ${i} parentpath "${entry.parentpath}" must use [*] notation for arrays`)
+      }
+
+      // 3. Check for duplicate field values
+      if (fieldValues.has(entry.field)) {
+        result.isValid = false
+        result.errors.push(`Duplicate field value found: "${entry.field}"`)
+      }
+      fieldValues.add(entry.field)
+
+      // 4. Track parentpath values
+      if (entry.parentpath !== null) {
+        parentpathValues.add(entry.parentpath)
+      }
+    }
+
+    // 5. Validate that every non-null parentpath exists as a field value
+    for (const parentpath of parentpathValues) {
+      if (!fieldValues.has(parentpath)) {
+        result.isValid = false
+        result.errors.push(`Parentpath "${parentpath}" does not exist as a field in childfanouts`)
+      }
+    }
+
+    // 6. Check for circular references
+    const circularCheck = this._checkCircularReferences(childfanouts)
+    if (!circularCheck.isValid) {
+      result.isValid = false
+      result.errors.push(...circularCheck.errors)
+    }
+
+    return result
+  }
+
+  /**
+   * Check for circular references in childfanouts
+   * @param {Array} childfanouts - Childfanouts array
+   * @returns {Object} Validation result
+   * @private
+   */
+  static _checkCircularReferences (childfanouts) {
+    const result = {
+      isValid: true,
+      errors: []
+    }
+
+    // Build parent-child map
+    const parentMap = new Map()
+    for (const entry of childfanouts) {
+      if (entry.parentpath !== null) {
+        parentMap.set(entry.field, entry.parentpath)
+      }
+    }
+
+    // Check each field for circular references by traversing up the parent chain
+    for (const entry of childfanouts) {
+      const visited = new Set()
+      let current = entry.field
+
+      while (current) {
+        if (visited.has(current)) {
+          result.isValid = false
+          result.errors.push(`Circular reference detected in path: ${Array.from(visited).join(' -> ')} -> ${current}`)
+          break
+        }
+
+        visited.add(current)
+        current = parentMap.get(current)
       }
     }
 

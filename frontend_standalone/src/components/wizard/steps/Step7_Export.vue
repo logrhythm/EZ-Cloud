@@ -1,120 +1,304 @@
 <template>
   <div class="step-export">
+    <!-- Header -->
     <div class="step-header">
       <div class="step-icon">
-        <q-icon name="preview" size="48px" class="text-primary" />
+        <q-icon name="check_circle" size="48px" class="text-positive" />
       </div>
       <div class="step-title-section">
-        <h2 class="step-title">Review & Export</h2>
+        <h2 class="step-title">Review & Export Policy</h2>
         <p class="step-subtitle">
-          Review your complete policy and export it for use.
+          Your JSON policy has been generated successfully. Review and export below.
         </p>
       </div>
     </div>
 
-    <div class="step-content">
-      <q-card class="wizard-card">
-        <q-card-section class="card-header">
-          <div class="card-title">
-            <q-icon name="check_circle" class="q-mr-sm" />
-            Policy Complete
-          </div>
-          <p class="card-description">
-            Your JSON policy has been successfully generated and is ready for export.
+    <!-- Loading Overlay -->
+    <q-inner-loading :showing="isGenerating" class="loading-overlay">
+      <div class="loading-content">
+        <q-spinner-dots size="50px" color="primary" />
+        <p class="text-body2 q-mt-md">{{ loadingMessage }}</p>
+      </div>
+    </q-inner-loading>
+
+    <!-- Main Content -->
+    <div v-if="!isGenerating" class="step-content">
+
+      <!-- Success Banner -->
+      <q-banner v-if="generatedPolicy" rounded class="success-banner q-mb-md">
+        <template v-slot:avatar>
+          <q-icon name="check_circle" color="positive" size="32px" />
+        </template>
+        <div class="banner-content">
+          <h6 class="q-mb-sm">Policy Generated Successfully</h6>
+          <p class="q-mb-none text-body2">
+            Your LogRhythm JSON policy is ready for export and implementation.
           </p>
+        </div>
+      </q-banner>
+
+      <!-- Error Banner -->
+      <q-banner v-else rounded class="error-banner q-mb-md" dense>
+        <template v-slot:avatar>
+          <q-icon name="error" color="negative" />
+        </template>
+        <div class="banner-content">
+          <strong>Policy Generation Failed</strong>
+          <p class="q-mb-none text-caption">Please review your configuration and try again.</p>
+        </div>
+        <template v-slot:action>
+          <q-btn flat label="Regenerate" color="negative" @click="regeneratePolicy" />
+        </template>
+      </q-banner>
+
+      <!-- Policy Summary Card -->
+      <q-card flat bordered class="summary-card q-mb-md">
+        <q-card-section class="card-header">
+          <div class="row items-center">
+            <q-icon name="summarize" size="24px" class="q-mr-sm" />
+            <span class="text-h6">Policy Summary</span>
+          </div>
         </q-card-section>
 
-        <q-card-section class="card-content">
-          <div class="completion-message">
-            <q-icon name="check_circle" size="64px" class="completion-icon text-positive" />
-            <h3 class="completion-title">Policy Generated</h3>
-            <p class="completion-text">
-              Your JSON Policy Builder wizard is now complete. The policy has been generated
-              based on your configuration and is ready to be exported and implemented.
-            </p>
-          </div>
+        <q-separator />
 
-          <!-- Policy Summary -->
-          <div class="policy-summary">
-            <h6>Policy Summary:</h6>
-            <div class="summary-grid">
-              <div class="summary-item">
-                <span class="summary-label">Project Name:</span>
-                <span class="summary-value">{{ projectConfig.name || 'Untitled Project' }}</span>
+        <q-card-section>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <div class="summary-label">
+                <q-icon name="label" size="18px" class="q-mr-xs" />
+                Policy Name
               </div>
-              <div class="summary-item">
-                <span class="summary-label">Created:</span>
-                <span class="summary-value">{{ formatDate(projectConfig.createdAt) }}</span>
+              <div class="summary-value">{{ projectConfig.name || 'Untitled Policy' }}</div>
+            </div>
+
+            <div class="summary-item">
+              <div class="summary-label">
+                <q-icon name="calendar_today" size="18px" class="q-mr-xs" />
+                Created
               </div>
-              <div class="summary-item">
-                <span class="summary-label">Records Processed:</span>
-                <span class="summary-value">{{ sampleData.dataStats.recordCount }}</span>
+              <div class="summary-value">{{ formatDate(projectConfig.createdAt) }}</div>
+            </div>
+
+            <div class="summary-item">
+              <div class="summary-label">
+                <q-icon name="data_object" size="18px" class="q-mr-xs" />
+                Sample Records
               </div>
-              <div class="summary-item">
-                <span class="summary-label">Fields Mapped:</span>
-                <span class="summary-value">{{ fieldMappings.mappings.length }}</span>
+              <div class="summary-value">{{ sampleData.dataStats.recordCount }}</div>
+            </div>
+
+            <div class="summary-item">
+              <div class="summary-label">
+                <q-icon name="account_tree" size="18px" class="q-mr-xs" />
+                Fields Mapped
+              </div>
+              <div class="summary-value">{{ fieldMappings.mappings.length }}</div>
+            </div>
+
+            <div v-if="schemaRules.convertToJson.length > 0" class="summary-item">
+              <div class="summary-label">
+                <q-icon name="transform" size="18px" class="q-mr-xs" />
+                JSON Conversions
+              </div>
+              <div class="summary-value">{{ schemaRules.convertToJson.length }}</div>
+            </div>
+
+            <div v-if="schemaRules.fanout.length > 0" class="summary-item">
+              <div class="summary-label">
+                <q-icon name="account_tree" size="18px" class="q-mr-xs" />
+                Array Fanouts
+              </div>
+              <div class="summary-value">{{ schemaRules.fanout.length }}</div>
+            </div>
+
+            <div v-if="filterRules.expression" class="summary-item">
+              <div class="summary-label">
+                <q-icon name="filter_alt" size="18px" class="q-mr-xs" />
+                Filter Applied
+              </div>
+              <div class="summary-value">
+                <q-icon name="check" color="positive" />
               </div>
             </div>
-          </div>
 
-          <!-- Export Options -->
-          <div class="export-section">
-            <h6>Export Options:</h6>
-            <div class="export-actions">
-              <q-btn
-                unelevated
-                color="positive"
-                icon="file_download"
-                label="Generate Policy"
-                @click="generatePolicy"
-                class="export-btn primary-export-btn"
-              />
-              <q-btn
-                unelevated
-                color="primary"
-                icon="file_download"
-                label="Download Policy JSON"
-                @click="downloadPolicy"
-                class="export-btn"
-              />
+            <div v-if="!subTransforms.skipSubTransforms && subTransforms.subTransformsList.length > 0" class="summary-item">
+              <div class="summary-label">
+                <q-icon name="rule" size="18px" class="q-mr-xs" />
+                SubTransforms
+              </div>
+              <div class="summary-value">{{ subTransforms.subTransformsList.length }}</div>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+
+      <!-- Policy Preview Card -->
+      <q-card flat bordered class="policy-preview-card q-mb-md">
+        <q-card-section class="card-header">
+          <div class="row items-center justify-between">
+            <div class="row items-center">
+              <q-icon name="code" size="24px" class="q-mr-sm" />
+              <span class="text-h6">Policy Preview</span>
+            </div>
+            <div class="policy-actions">
               <q-btn
                 flat
+                dense
+                icon="unfold_less"
+                @click="collapsePreview"
+                class="q-mr-xs"
+              >
+                <q-tooltip>Collapse All</q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                dense
+                icon="unfold_more"
+                @click="expandPreview"
+                class="q-mr-xs"
+              >
+                <q-tooltip>Expand All</q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                dense
                 icon="content_copy"
-                label="Copy to Clipboard"
-                @click="copyToClipboard"
-                class="export-btn"
-              />
-              <q-btn
-                flat
-                icon="open_in_new"
-                label="Open in Main Editor"
-                @click="openInEditor"
-                class="export-btn"
-              />
+                @click="copyPolicyToClipboard"
+              >
+                <q-tooltip>Copy to Clipboard</q-tooltip>
+              </q-btn>
             </div>
           </div>
+        </q-card-section>
 
-          <!-- Next Steps -->
-          <div class="next-steps">
-            <h6>Next Steps:</h6>
-            <ol class="steps-list">
-              <li>Download or copy your generated policy</li>
-              <li>Import the policy into your LogRhythm environment</li>
-              <li>Test with live data to validate parsing</li>
-              <li>Adjust field mappings as needed</li>
-            </ol>
+        <q-separator />
+
+        <q-card-section class="policy-preview-content">
+          <div class="policy-size-info q-mb-sm">
+            <q-chip dense size="sm" icon="info">
+              Policy Size: {{ formatBytes(policySize) }}
+            </q-chip>
+            <q-chip dense size="sm" icon="dns" v-if="policyStats.totalTransforms">
+              Total Transforms: {{ policyStats.totalTransforms }}
+            </q-chip>
           </div>
+
+          <pre class="policy-json-preview"><code>{{ formattedPolicyJson }}</code></pre>
+        </q-card-section>
+      </q-card>
+
+      <!-- Export Options Card -->
+      <q-card flat bordered class="export-card q-mb-md">
+        <q-card-section class="card-header">
+          <div class="row items-center">
+            <q-icon name="file_download" size="24px" class="q-mr-sm" />
+            <span class="text-h6">Export Options</span>
+          </div>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section>
+          <div class="export-options">
+            <q-btn
+              unelevated
+              color="positive"
+              icon="file_download"
+              label="Download Policy JSON"
+              @click="downloadPolicy"
+              class="export-btn primary-btn"
+              :disable="!generatedPolicy"
+            />
+
+            <q-btn
+              unelevated
+              color="primary"
+              icon="content_copy"
+              label="Copy to Clipboard"
+              @click="copyPolicyToClipboard"
+              class="export-btn"
+              :disable="!generatedPolicy"
+            />
+
+            <q-btn
+              outline
+              color="primary"
+              icon="edit"
+              label="Edit Policy JSON"
+              @click="showEditDialog = true"
+              class="export-btn"
+              :disable="!generatedPolicy"
+            />
+          </div>
+        </q-card-section>
+      </q-card>
+
+      <!-- Next Steps Card -->
+      <q-card flat bordered class="next-steps-card">
+        <q-card-section class="card-header">
+          <div class="row items-center">
+            <q-icon name="lightbulb" size="24px" class="q-mr-sm" />
+            <span class="text-h6">Next Steps</span>
+          </div>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section>
+          <q-list>
+            <q-item>
+              <q-item-section avatar>
+                <q-avatar color="primary" text-color="white" size="32px">1</q-avatar>
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Download or copy your generated policy</q-item-label>
+                <q-item-label caption>Export the policy JSON file for implementation</q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item>
+              <q-item-section avatar>
+                <q-avatar color="primary" text-color="white" size="32px">2</q-avatar>
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Import the policy into your LogRhythm environment</q-item-label>
+                <q-item-label caption>Upload and configure the policy in LogRhythm SIEM</q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item>
+              <q-item-section avatar>
+                <q-avatar color="primary" text-color="white" size="32px">3</q-avatar>
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Test with live data to validate parsing</q-item-label>
+                <q-item-label caption>Verify that logs are parsed correctly with real data</q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item>
+              <q-item-section avatar>
+                <q-avatar color="primary" text-color="white" size="32px">4</q-avatar>
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Monitor and adjust field mappings as needed</q-item-label>
+                <q-item-label caption>Fine-tune the policy based on production data</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
         </q-card-section>
       </q-card>
     </div>
 
+    <!-- Footer Actions -->
     <div class="step-actions">
       <q-btn
         flat
         icon="arrow_back"
         label="Previous"
         @click="$emit('prev-step')"
-        class="wizard-btn wizard-btn--secondary"
+        class="wizard-btn"
       />
 
       <div class="final-actions">
@@ -122,8 +306,8 @@
           flat
           icon="refresh"
           label="Start New Policy"
-          @click="startNewPolicy"
-          class="wizard-btn wizard-btn--ghost"
+          @click="confirmStartNew"
+          class="wizard-btn"
         />
         <q-btn
           unelevated
@@ -131,66 +315,381 @@
           icon="check"
           label="Complete Wizard"
           @click="completeWizard"
-          class="wizard-btn wizard-btn--success"
+          class="wizard-btn"
+          :disable="!generatedPolicy"
         />
       </div>
     </div>
+
+    <!-- Edit Policy Dialog -->
+    <q-dialog v-model="showEditDialog" persistent>
+      <q-card class="edit-policy-dialog">
+        <q-card-section class="dialog-header">
+          <div class="row items-center no-wrap">
+            <q-icon name="edit" size="24px" class="q-mr-sm text-primary" />
+            <div>
+              <div class="text-h6">Edit Policy JSON</div>
+              <div class="text-caption text-grey-6">
+                Make changes to your policy JSON. Ensure valid JSON format before saving.
+              </div>
+            </div>
+            <q-space />
+            <q-btn icon="close" flat round dense @click="cancelEdit" />
+          </div>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section class="edit-dialog-content">
+          <!-- Validation Status Banner -->
+          <q-banner
+            v-if="hasJsonError"
+            rounded
+            class="error-validation-banner q-mb-md"
+            dense
+          >
+            <template v-slot:avatar>
+              <q-icon name="error" color="negative" size="24px" />
+            </template>
+            <div class="validation-error-content">
+              <strong>Invalid JSON Format</strong>
+              <div class="text-caption">{{ jsonErrorMessage }}</div>
+            </div>
+          </q-banner>
+
+          <q-banner
+            v-else
+            rounded
+            class="success-validation-banner q-mb-md"
+            dense
+          >
+            <template v-slot:avatar>
+              <q-icon name="check_circle" color="positive" size="24px" />
+            </template>
+            <div class="validation-success-content">
+              <strong>Valid JSON Format</strong>
+              <div class="text-caption">Your JSON is properly formatted and ready to save.</div>
+            </div>
+          </q-banner>
+
+          <!-- JSON Editor -->
+          <div class="json-editor-wrapper">
+            <q-input
+              v-model="editablePolicyJson"
+              type="textarea"
+              filled
+              class="policy-editor"
+              :error="hasJsonError"
+              placeholder="Enter your policy JSON here..."
+              @update:model-value="validateJson"
+            >
+              <template v-slot:prepend>
+                <q-icon name="code" />
+              </template>
+              <template v-slot:append>
+                <q-btn
+                  flat
+                  dense
+                  round
+                  icon="format_indent_increase"
+                  @click="formatJson"
+                  :disable="hasJsonError"
+                >
+                  <q-tooltip>Format JSON</q-tooltip>
+                </q-btn>
+              </template>
+            </q-input>
+
+            <!-- Editor Stats -->
+            <div class="editor-stats q-mt-sm">
+              <q-chip dense size="sm" icon="text_fields">
+                Lines: {{ jsonLineCount }}
+              </q-chip>
+              <q-chip dense size="sm" icon="data_object">
+                Size: {{ formatBytes(editablePolicyJson.length) }}
+              </q-chip>
+              <q-chip
+                dense
+                size="sm"
+                :icon="hasJsonError ? 'error' : 'check_circle'"
+                :color="hasJsonError ? 'negative' : 'positive'"
+                text-color="white"
+              >
+                {{ hasJsonError ? 'Invalid' : 'Valid' }}
+              </q-chip>
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right" class="dialog-actions">
+          <q-btn
+            flat
+            label="Cancel"
+            icon="close"
+            @click="cancelEdit"
+            class="action-btn"
+          />
+          <q-btn
+            unelevated
+            color="primary"
+            label="Save Changes"
+            icon="save"
+            @click="applyPolicyEdits"
+            :disable="hasJsonError || !hasChanges"
+            class="action-btn"
+          >
+            <q-tooltip v-if="hasJsonError">
+              Fix JSON errors before saving
+            </q-tooltip>
+            <q-tooltip v-else-if="!hasChanges">
+              No changes to save
+            </q-tooltip>
+          </q-btn>
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Confirm Start New Dialog -->
+    <q-dialog v-model="showStartNewDialog">
+      <q-card class="confirm-dialog">
+        <q-card-section>
+          <div class="text-h6">Start New Policy?</div>
+        </q-card-section>
+
+        <q-card-section>
+          <p>Are you sure you want to start a new policy?</p>
+          <p class="text-caption text-grey-6">
+            This will clear all wizard data and start from the beginning.
+          </p>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" v-close-popup />
+          <q-btn
+            unelevated
+            color="negative"
+            label="Start New"
+            @click="startNewPolicy"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
 <script>
 import { mapState } from 'vuex'
+import { copyToClipboard } from 'quasar'
 
 export default {
-  name: 'Step6_Export',
+  name: 'Step7_Export',
+
+  data () {
+    return {
+      isGenerating: false,
+      loadingMessage: 'Generating policy...',
+      showEditDialog: false,
+      showStartNewDialog: false,
+      editablePolicyJson: '',
+      originalPolicyJson: '',
+      hasJsonError: false,
+      jsonErrorMessage: '',
+      previewExpanded: true
+    }
+  },
 
   computed: {
-    ...mapState('wizard', ['projectConfig', 'sampleData', 'fieldMappings'])
+    ...mapState('wizard', [
+      'projectConfig',
+      'sampleData',
+      'schemaRules',
+      'filterRules',
+      'fieldMappings',
+      'subTransforms',
+      'generatedPolicy'
+    ]),
+
+    completePolicy () {
+      if (!this.generatedPolicy || !this.generatedPolicy.policy) {
+        return this.generatePolicyObject()
+      }
+      return this.generatedPolicy.policy
+    },
+
+    formattedPolicyJson () {
+      try {
+        return JSON.stringify(this.completePolicy, null, 2)
+      } catch (error) {
+        console.error('Error formatting policy JSON:', error)
+        return '{}'
+      }
+    },
+
+    policySize () {
+      return new Blob([this.formattedPolicyJson]).size
+    },
+
+    policyStats () {
+      const policy = this.completePolicy
+      let totalTransforms = 0
+
+      if (policy && policy.transforms && Array.isArray(policy.transforms)) {
+        totalTransforms += policy.transforms.length
+      }
+
+      if (policy && policy.subtransforms && Array.isArray(policy.subtransforms)) {
+        policy.subtransforms.forEach(st => {
+          if (st.transforms && Array.isArray(st.transforms)) {
+            totalTransforms += st.transforms.length
+          }
+        })
+      }
+
+      return {
+        totalTransforms
+      }
+    },
+
+    hasChanges () {
+      return this.editablePolicyJson !== this.originalPolicyJson
+    },
+
+    jsonLineCount () {
+      return this.editablePolicyJson ? this.editablePolicyJson.split('\n').length : 0
+    }
+  },
+
+  mounted () {
+    // ALWAYS regenerate policy when entering Step 7
+    // This ensures any changes made in previous steps are reflected
+    this.regeneratePolicy()
+
+    // Notify parent that step is valid
+    this.$emit('step-valid')
   },
 
   methods: {
-    formatDate (dateString) {
-      if (!dateString) return 'Not set'
-      return new Date(dateString).toLocaleDateString()
+    generatePolicyObject () {
+      try {
+        const policy = {
+          name: this.projectConfig.name || 'Untitled Policy',
+          description: this.projectConfig.description || ''
+        }
+
+        // Add filter if present
+        if (this.filterRules.expression) {
+          policy.filter = this.filterRules.expression
+        }
+
+        // Add schema rules if present
+        const hasSchemaRules = this.schemaRules.convertToJson.length > 0 ||
+                              (this.schemaRules.childfanouts && this.schemaRules.childfanouts.length > 0)
+
+        if (hasSchemaRules) {
+          policy.schemarule = {}
+
+          // Add ConvertoJson if present
+          if (this.schemaRules.convertToJson.length > 0) {
+            policy.schemarule.ConvertoJson = this.schemaRules.convertToJson
+          }
+
+          // Add childfanouts if present (new hierarchical structure)
+          if (this.schemaRules.childfanouts && this.schemaRules.childfanouts.length > 0) {
+            policy.schemarule.childfanouts = this.schemaRules.childfanouts
+          }
+        }
+
+        // Add field mappings (transforms) - clean up any UI-only attributes
+        if (this.fieldMappings.mappings && this.fieldMappings.mappings.length > 0) {
+          // Remove sampleValue and other UI-only attributes from transforms
+          policy.transforms = this.fieldMappings.mappings.map(mapping => {
+            const cleanMapping = { ...mapping }
+            delete cleanMapping.sampleValue
+            delete cleanMapping.id // Remove any internal IDs if present
+            return cleanMapping
+          })
+        }
+
+        // Add subtransforms if not skipped - clean up any UI-only attributes
+        if (!this.subTransforms.skipSubTransforms &&
+            this.subTransforms.subTransformsList &&
+            this.subTransforms.subTransformsList.length > 0) {
+          // Recursively clean subtransforms and their nested transforms
+          const cleanSubTransforms = (subtransformsList) => {
+            return subtransformsList.map(subtransform => {
+              const cleanSubtransform = { ...subtransform }
+
+              // Remove UI-only properties from subtransform
+              delete cleanSubtransform.id
+              delete cleanSubtransform.name
+
+              // Clean nested transforms within subtransform
+              if (cleanSubtransform.transforms && Array.isArray(cleanSubtransform.transforms)) {
+                cleanSubtransform.transforms = cleanSubtransform.transforms.map(transform => {
+                  const cleanTransform = { ...transform }
+                  delete cleanTransform.sampleValue
+                  delete cleanTransform.id
+                  return cleanTransform
+                })
+              }
+
+              // Recursively clean nested subtransforms
+              if (cleanSubtransform.subTransforms && Array.isArray(cleanSubtransform.subTransforms) && cleanSubtransform.subTransforms.length > 0) {
+                cleanSubtransform.subTransforms = cleanSubTransforms(cleanSubtransform.subTransforms)
+              }
+
+              return cleanSubtransform
+            })
+          }
+
+          policy.subtransforms = cleanSubTransforms(this.subTransforms.subTransformsList)
+        }
+
+        return policy
+      } catch (error) {
+        console.error('Error generating policy object:', error)
+        return {}
+      }
     },
 
-    async generatePolicy () {
+    async regeneratePolicy () {
+      this.isGenerating = true
+      this.loadingMessage = 'Generating policy from configuration...'
+
       try {
-        // Call the store action to generate the policy
+        // Generate policy using store action
         await this.$store.dispatch('wizard/generatePolicy')
 
         this.$q.notify({
           type: 'positive',
           message: 'Policy generated successfully',
-          timeout: 2000
+          position: 'top'
         })
       } catch (error) {
+        console.error('Error generating policy:', error)
         this.$q.notify({
           type: 'negative',
           message: 'Failed to generate policy. Please check your configuration.',
-          timeout: 2000
+          position: 'top'
         })
-        console.error('Error generating policy:', error)
+      } finally {
+        this.isGenerating = false
       }
     },
 
     async downloadPolicy () {
       try {
-        // Generate a basic policy structure for download
-        const policy = {
-          name: this.projectConfig.name,
-          description: this.projectConfig.description,
-          created: this.projectConfig.createdAt,
-          transforms: this.fieldMappings.mappings
-        }
+        const policyJson = this.formattedPolicyJson
+        const fileName = `${this.projectConfig.name || 'policy'}.json`
 
-        const jsonString = JSON.stringify(policy, null, 2)
-        const blob = new Blob([jsonString], { type: 'application/json' })
+        const blob = new Blob([policyJson], { type: 'application/json' })
         const url = URL.createObjectURL(blob)
 
         const link = document.createElement('a')
         link.href = url
-        link.download = `${this.projectConfig.name || 'policy'}.json`
+        link.download = fileName
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
@@ -198,62 +697,233 @@ export default {
 
         this.$q.notify({
           type: 'positive',
-          message: 'Policy downloaded successfully'
+          message: `Policy downloaded as ${fileName}`,
+          position: 'top'
         })
       } catch (error) {
+        console.error('Error downloading policy:', error)
         this.$q.notify({
           type: 'negative',
-          message: 'Failed to download policy'
+          message: 'Failed to download policy',
+          position: 'top'
         })
       }
     },
 
-    async copyToClipboard () {
+    async copyPolicyToClipboard () {
       try {
-        const policy = {
-          name: this.projectConfig.name,
-          description: this.projectConfig.description,
-          created: this.projectConfig.createdAt,
-          transforms: this.fieldMappings.mappings
-        }
-
-        const jsonString = JSON.stringify(policy, null, 2)
-        await navigator.clipboard.writeText(jsonString)
+        await copyToClipboard(this.formattedPolicyJson)
 
         this.$q.notify({
           type: 'positive',
-          message: 'Policy copied to clipboard'
+          message: 'Policy copied to clipboard',
+          position: 'top',
+          icon: 'content_copy'
         })
       } catch (error) {
+        console.error('Error copying to clipboard:', error)
         this.$q.notify({
           type: 'negative',
-          message: 'Failed to copy to clipboard'
+          message: 'Failed to copy to clipboard',
+          position: 'top'
         })
       }
     },
 
-    openInEditor () {
-      // Navigate to the main mapping editor
-      this.$router.push('/')
+    validateJson () {
+      try {
+        if (!this.editablePolicyJson || this.editablePolicyJson.trim() === '') {
+          this.hasJsonError = true
+          this.jsonErrorMessage = 'JSON content cannot be empty'
+          return
+        }
+
+        JSON.parse(this.editablePolicyJson)
+        this.hasJsonError = false
+        this.jsonErrorMessage = ''
+      } catch (error) {
+        this.hasJsonError = true
+        // Provide more detailed error messages
+        if (error.message.includes('Unexpected token')) {
+          const match = error.message.match(/position (\d+)/)
+          if (match) {
+            const position = parseInt(match[1])
+            const lines = this.editablePolicyJson.substring(0, position).split('\n')
+            const lineNumber = lines.length
+            const columnNumber = lines[lines.length - 1].length + 1
+            this.jsonErrorMessage = `Syntax error at line ${lineNumber}, column ${columnNumber}: ${error.message}`
+          } else {
+            this.jsonErrorMessage = `Syntax error: ${error.message}`
+          }
+        } else if (error.message.includes('Unexpected end of JSON')) {
+          this.jsonErrorMessage = 'Incomplete JSON: Missing closing brackets or braces'
+        } else {
+          this.jsonErrorMessage = error.message
+        }
+      }
+    },
+
+    formatJson () {
+      try {
+        const parsed = JSON.parse(this.editablePolicyJson)
+        this.editablePolicyJson = JSON.stringify(parsed, null, 2)
+        this.validateJson()
+
+        this.$q.notify({
+          type: 'positive',
+          message: 'JSON formatted successfully',
+          position: 'top',
+          timeout: 1000
+        })
+      } catch (error) {
+        this.$q.notify({
+          type: 'negative',
+          message: 'Cannot format invalid JSON',
+          position: 'top'
+        })
+      }
+    },
+
+    cancelEdit () {
+      if (this.hasChanges) {
+        this.$q.dialog({
+          title: 'Discard Changes?',
+          message: 'You have unsaved changes. Are you sure you want to discard them?',
+          cancel: true,
+          persistent: true
+        }).onOk(() => {
+          this.showEditDialog = false
+          this.editablePolicyJson = ''
+          this.originalPolicyJson = ''
+          this.hasJsonError = false
+          this.jsonErrorMessage = ''
+        })
+      } else {
+        this.showEditDialog = false
+        this.editablePolicyJson = ''
+        this.originalPolicyJson = ''
+        this.hasJsonError = false
+        this.jsonErrorMessage = ''
+      }
+    },
+
+    applyPolicyEdits () {
+      try {
+        // Validate one more time before applying
+        const editedPolicy = JSON.parse(this.editablePolicyJson)
+
+        // Validate that it's an object
+        if (typeof editedPolicy !== 'object' || editedPolicy === null) {
+          throw new Error('Policy must be a valid JSON object')
+        }
+
+        // Update the store with the edited policy
+        this.$store.commit('wizard/SET_GENERATED_POLICY', {
+          policy: editedPolicy,
+          policyJson: this.editablePolicyJson
+        })
+
+        // Close the dialog
+        this.showEditDialog = false
+
+        // Reset edit state
+        this.editablePolicyJson = ''
+        this.originalPolicyJson = ''
+        this.hasJsonError = false
+        this.jsonErrorMessage = ''
+
+        // Show success notification
+        this.$q.notify({
+          type: 'positive',
+          message: 'Policy updated successfully',
+          caption: 'All changes have been saved and will be reflected in downloads and clipboard copies',
+          position: 'top',
+          icon: 'check_circle',
+          timeout: 3000
+        })
+      } catch (error) {
+        console.error('Error applying policy edits:', error)
+        this.$q.notify({
+          type: 'negative',
+          message: 'Failed to save policy changes',
+          caption: error.message || 'Please check your JSON format and try again',
+          position: 'top',
+          icon: 'error',
+          timeout: 3000
+        })
+      }
+    },
+
+    expandPreview () {
+      this.previewExpanded = true
+      // This would expand the JSON preview if we implement collapsible sections
+    },
+
+    collapsePreview () {
+      this.previewExpanded = false
+      // This would collapse the JSON preview if we implement collapsible sections
+    },
+
+    confirmStartNew () {
+      this.showStartNewDialog = true
     },
 
     startNewPolicy () {
-      // Reset wizard and start over
+      this.showStartNewDialog = false
       this.$store.dispatch('wizard/clearState')
       this.$store.commit('wizard/SET_CURRENT_STEP', 0)
+
+      this.$q.notify({
+        type: 'info',
+        message: 'Starting new policy wizard...',
+        position: 'top'
+      })
     },
 
     completeWizard () {
-      // Complete wizard and navigate away
       this.$q.notify({
         type: 'positive',
         message: 'Wizard completed successfully!',
-        timeout: 2000
+        timeout: 2000,
+        position: 'top'
       })
 
       setTimeout(() => {
         this.$router.push('/')
       }, 1000)
+    },
+
+    formatDate (dateString) {
+      if (!dateString) return 'Not set'
+      const date = new Date(dateString)
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    },
+
+    formatBytes (bytes) {
+      if (bytes === 0) return '0 Bytes'
+      const k = 1024
+      const sizes = ['Bytes', 'KB', 'MB', 'GB']
+      const i = Math.floor(Math.log(bytes) / Math.log(k))
+      return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
+    }
+  },
+
+  watch: {
+    showEditDialog (newVal) {
+      if (newVal) {
+        // Initialize the editor with the current policy JSON
+        this.editablePolicyJson = this.formattedPolicyJson
+        this.originalPolicyJson = this.formattedPolicyJson
+        this.hasJsonError = false
+        this.jsonErrorMessage = ''
+
+        // Validate the initial content
+        this.validateJson()
+      }
     }
   }
 }
@@ -261,172 +931,209 @@ export default {
 
 <style lang="scss" scoped>
 .step-export {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 1rem;
 }
 
 .step-header {
   display: flex;
   align-items: flex-start;
   margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid var(--q-color-grey-3);
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--q-color-grey-3);
+
+  .step-icon {
+    margin-right: 1.5rem;
+    padding: 1rem;
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 12px;
+  }
+
+  .step-title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: var(--q-color-grey-9);
+  }
+
+  .step-subtitle {
+    font-size: 1.125rem;
+    color: var(--q-color-grey-7);
+    margin: 0;
+  }
 }
 
-.step-icon {
-  margin-right: 1.5rem;
-  padding: 1rem;
-  background: rgba(25, 118, 210, 0.1);
-  border-radius: 12px;
+.loading-overlay {
+  background: rgba(255, 255, 255, 0.95);
+
+  .loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
-.step-title {
-  font-size: 2rem;
-  font-weight: 600;
-  margin: 0 0 0.5rem 0;
+.success-banner {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(33, 150, 243, 0.1) 100%);
+  border-left: 4px solid var(--q-positive);
+
+  .banner-content {
+    h6 {
+      margin: 0 0 0.5rem 0;
+      color: var(--q-positive);
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+
+    p {
+      color: var(--q-color-grey-7);
+    }
+  }
 }
 
-.step-subtitle {
-  font-size: 1.125rem;
-  color: var(--q-color-grey-7);
-  margin: 0;
+.error-banner {
+  background: rgba(244, 67, 54, 0.1);
+  border-left: 4px solid var(--q-negative);
 }
 
-.step-content {
-  margin-bottom: 3rem;
-}
-
-.wizard-card {
+.summary-card,
+.policy-preview-card,
+.export-card,
+.next-steps-card {
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  }
 }
 
 .card-header {
-  background: linear-gradient(135deg, rgba(33, 186, 69, 0.1) 0%, rgba(25, 118, 210, 0.1) 100%);
-  border-bottom: 1px solid var(--q-color-grey-3);
-}
+  background: linear-gradient(135deg, rgba(33, 150, 243, 0.05) 0%, rgba(33, 150, 243, 0.1) 100%);
+  padding: 1.25rem;
 
-.card-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--q-color-grey-9);
-  display: flex;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.card-description {
-  color: var(--q-color-grey-6);
-  margin: 0;
-}
-
-.card-content {
-  padding: 2rem;
-}
-
-.completion-message {
-  text-align: center;
-  margin-bottom: 3rem;
-  padding: 2rem;
-  background: linear-gradient(135deg, rgba(33, 186, 69, 0.05) 0%, rgba(25, 118, 210, 0.05) 100%);
-  border-radius: 12px;
-}
-
-.completion-icon {
-  margin-bottom: 1rem;
-  animation: bounce 2s infinite;
-}
-
-.completion-title {
-  color: var(--q-positive);
-  margin-bottom: 1rem;
-}
-
-.completion-text {
-  color: var(--q-color-grey-7);
-  font-size: 1.125rem;
-  line-height: 1.6;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.policy-summary,
-.export-section,
-.next-steps {
-  margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid var(--q-color-grey-3);
-
-  &:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-  }
-
-  h6 {
-    color: var(--q-color-grey-9);
-    margin-bottom: 1rem;
-    font-size: 1.125rem;
+  .text-h6 {
     font-weight: 600;
+    color: var(--q-color-grey-9);
   }
 }
 
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
 }
 
 .summary-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem;
+  padding: 1rem;
   background: var(--q-color-grey-1);
-  border-radius: 6px;
-}
-
-.summary-label {
-  font-weight: 500;
-  color: var(--q-color-grey-7);
-}
-
-.summary-value {
-  font-weight: 600;
-  color: var(--q-color-grey-9);
-}
-
-.export-actions {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.export-btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  font-weight: 500;
-}
-
-.primary-export-btn {
-  font-size: 1.05rem;
-  margin-bottom: 1rem;
-  width: 100%;
-  box-shadow: 0 2px 4px rgba(33, 186, 69, 0.3);
+  border-radius: 8px;
+  transition: all 0.2s ease;
 
   &:hover {
-    box-shadow: 0 4px 8px rgba(33, 186, 69, 0.4);
-    transform: translateY(-1px);
+    background: var(--q-color-grey-2);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .summary-label {
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--q-color-grey-7);
+    margin-bottom: 0.5rem;
+  }
+
+  .summary-value {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--q-color-grey-9);
   }
 }
 
-.steps-list {
-  color: var(--q-color-grey-7);
-  line-height: 1.6;
-  padding-left: 1.5rem;
+.policy-preview-content {
+  .policy-size-info {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
 
-  li {
-    margin-bottom: 0.5rem;
+  .policy-json-preview {
+    background: var(--q-color-grey-1);
+    border: 1px solid var(--q-color-grey-3);
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+    max-height: 500px;
+    overflow-y: auto;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--q-color-grey-9);
+    white-space: pre;
+
+    code {
+      font-family: inherit;
+    }
+
+    &::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: var(--q-color-grey-2);
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--q-color-grey-5);
+      border-radius: 4px;
+
+      &:hover {
+        background: var(--q-color-grey-6);
+      }
+    }
+  }
+}
+
+.policy-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.export-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+
+  .export-btn {
+    padding: 0.75rem 1rem;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+
+    &.primary-btn {
+      box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+
+      &:hover:not(:disabled) {
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        transform: translateY(-2px);
+      }
+    }
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 }
 
@@ -434,8 +1141,9 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 2rem;
-  border-top: 1px solid var(--q-color-grey-3);
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--q-color-grey-3);
 }
 
 .final-actions {
@@ -444,36 +1152,148 @@ export default {
 }
 
 .wizard-btn {
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 0.75rem 1.5rem;
   font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s ease;
 
-  &--success {
-    box-shadow: 0 2px 4px rgba(33, 186, 69, 0.3);
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+}
 
-    &:hover {
-      box-shadow: 0 4px 8px rgba(33, 186, 69, 0.4);
-      transform: translateY(-1px);
+.edit-policy-dialog {
+  width: 90vw;
+  max-width: 1200px;
+  max-height: 90vh;
+}
+
+.dialog-header {
+  background: linear-gradient(135deg, rgba(33, 150, 243, 0.05) 0%, rgba(33, 150, 243, 0.1) 100%);
+  padding: 1.25rem;
+
+  .text-h6 {
+    font-weight: 600;
+    color: var(--q-color-grey-9);
+    margin-bottom: 0.25rem;
+  }
+}
+
+.edit-dialog-content {
+  padding: 1.5rem;
+  min-height: 500px;
+  max-height: calc(90vh - 250px);
+  overflow-y: auto;
+
+  .error-validation-banner {
+    background: rgba(244, 67, 54, 0.1);
+    border-left: 4px solid var(--q-negative);
+
+    .validation-error-content {
+      strong {
+        color: var(--q-negative);
+        display: block;
+        margin-bottom: 0.25rem;
+      }
+    }
+  }
+
+  .success-validation-banner {
+    background: rgba(76, 175, 80, 0.1);
+    border-left: 4px solid var(--q-positive);
+
+    .validation-success-content {
+      strong {
+        color: var(--q-positive);
+        display: block;
+        margin-bottom: 0.25rem;
+      }
+    }
+  }
+
+  .json-editor-wrapper {
+    .policy-editor {
+      width: 100%;
+
+      :deep(.q-field__control) {
+        font-family: 'Roboto Mono', monospace;
+        font-size: 0.875rem;
+        line-height: 1.6;
+        min-height: 450px;
+        background: var(--q-color-grey-1);
+      }
+
+      :deep(textarea) {
+        min-height: 450px;
+        max-height: 450px;
+        resize: vertical;
+        font-family: 'Roboto Mono', monospace;
+        font-size: 0.875rem;
+        line-height: 1.6;
+        padding: 1rem;
+        tab-size: 2;
+
+        &::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: var(--q-color-grey-2);
+          border-radius: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: var(--q-color-grey-5);
+          border-radius: 4px;
+
+          &:hover {
+            background: var(--q-color-grey-6);
+          }
+        }
+      }
+
+      :deep(.q-field__prepend) {
+        padding-top: 12px;
+        align-self: flex-start;
+      }
+
+      :deep(.q-field__append) {
+        padding-top: 12px;
+        align-self: flex-start;
+      }
+    }
+
+    .editor-stats {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      padding: 0.5rem 0;
     }
   }
 }
 
-@keyframes bounce {
-  0%, 20%, 53%, 80%, 100% {
-    transform: translate3d(0, 0, 0);
-  }
-  40%, 43% {
-    transform: translate3d(0, -10px, 0);
-  }
-  70% {
-    transform: translate3d(0, -5px, 0);
-  }
-  90% {
-    transform: translate3d(0, -2px, 0);
+.dialog-actions {
+  padding: 1rem 1.5rem;
+  background: var(--q-color-grey-1);
+
+  .action-btn {
+    padding: 0.625rem 1.5rem;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+    }
   }
 }
 
-// Responsive design
+.confirm-dialog {
+  min-width: 400px;
+}
+
+// Responsive Design
 @media (max-width: 768px) {
   .step-header {
     flex-direction: column;
@@ -486,16 +1306,77 @@ export default {
     }
   }
 
-  .export-actions {
-    flex-direction: column;
-  }
-
-  .final-actions {
-    flex-direction: column;
-  }
-
   .summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .export-options {
+    grid-template-columns: 1fr;
+  }
+
+  .step-actions {
+    flex-direction: column;
+    gap: 1rem;
+
+    .final-actions {
+      width: 100%;
+      flex-direction: column;
+    }
+  }
+
+  .wizard-btn {
+    width: 100%;
+  }
+}
+
+// Dark Mode Support
+.body--dark {
+  .step-header {
+    border-bottom-color: var(--q-color-grey-8);
+
+    .step-title {
+      color: var(--q-dark-page);
+    }
+  }
+
+  .summary-item {
+    background: var(--q-dark);
+
+    &:hover {
+      background: var(--q-color-grey-9);
+    }
+  }
+
+  .policy-json-preview {
+    background: var(--q-dark);
+    border-color: var(--q-color-grey-8);
+    color: var(--q-dark-page);
+  }
+
+  .edit-policy-dialog {
+    .dialog-header {
+      background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(33, 150, 243, 0.15) 100%);
+
+      .text-h6 {
+        color: var(--q-dark-page);
+      }
+    }
+
+    .edit-dialog-content {
+      .policy-editor {
+        :deep(.q-field__control) {
+          background: var(--q-dark);
+        }
+
+        :deep(textarea) {
+          color: var(--q-dark-page);
+        }
+      }
+    }
+
+    .dialog-actions {
+      background: var(--q-dark);
+    }
   }
 }
 </style>

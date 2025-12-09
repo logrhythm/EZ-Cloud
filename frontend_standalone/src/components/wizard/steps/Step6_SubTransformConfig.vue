@@ -31,6 +31,25 @@
       </div>
     </div>
 
+    <!-- Advanced Feature Warning Banner -->
+    <q-banner
+      dense
+      rounded
+      class="advanced-feature-banner q-mb-md"
+    >
+      <template v-slot:avatar>
+        <q-icon name="lightbulb" color="amber-8" size="32px" />
+      </template>
+      <div class="banner-content">
+        <div class="banner-title">Advanced Feature</div>
+        <div class="banner-message">
+          This step is intended for <strong>advanced use cases only</strong>.
+          For most users, we recommend exploring the option of creating a new policy file
+          instead of configuring SubTransforms.
+        </div>
+      </div>
+    </q-banner>
+
     <div class="step-content">
       <!-- Empty State -->
       <div v-if="subTransformsList.length === 0" class="empty-state-subtransform">
@@ -615,6 +634,32 @@ export default {
     }
   }
 
+  .advanced-feature-banner {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.12) 0%, rgba(255, 193, 7, 0.06) 100%);
+    border-left: 4px solid #f57f17;
+    padding: 16px 20px;
+
+    .banner-content {
+      .banner-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #f57f17;
+        margin-bottom: 8px;
+      }
+
+      .banner-message {
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--q-dark);
+
+        strong {
+          color: #f57f17;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
   .step-content {
     .empty-state-subtransform {
       .empty-state-card {
@@ -683,6 +728,25 @@ body.body--dark {
 
     .instructions-banner {
       background: linear-gradient(135deg, rgba(66, 165, 245, 0.15) 0%, rgba(66, 165, 245, 0.08) 100%);
+    }
+
+    .advanced-feature-banner {
+      background: linear-gradient(135deg, rgba(255, 193, 7, 0.18) 0%, rgba(255, 193, 7, 0.1) 100%);
+      border-left-color: #ffb300;
+
+      .banner-content {
+        .banner-title {
+          color: #ffb300;
+        }
+
+        .banner-message {
+          color: rgba(255, 255, 255, 0.87);
+
+          strong {
+            color: #ffb300;
+          }
+        }
+      }
     }
 
     .step-content {

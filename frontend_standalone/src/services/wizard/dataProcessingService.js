@@ -3,7 +3,7 @@
  * Handles sample data validation, parsing, and analysis for Step 2
  */
 
-import { ValidationResult } from './validationService'
+import { ValidationResult } from './validationService.js'
 
 /**
  * DataProcessing class for wizard Step 2
@@ -70,7 +70,20 @@ export class DataProcessor {
       // If parsing was successful, analyze the structure
       if (result.parsedData && result.validationResult.isValid) {
         // Analyze JSON structure
-        result.dataStructure = this.analyzeDataStructure(result.parsedData)
+        // IMPORTANT FIX: For multiline data (array of objects), analyze the structure of
+        // a single representative object, not the array wrapper itself.
+        // This ensures we detect arrays WITHIN the objects, not the top-level array of records.
+        let dataToAnalyze = result.parsedData
+
+        if (result.logType === this.LogTypes.MULTILINE && Array.isArray(result.parsedData)) {
+          // For multiline logs, build a representative structure by merging all objects
+          // This allows us to detect all possible fields and arrays across all log entries
+          console.log('[processSampleData] Multiline mode: Building representative structure from', result.parsedData.length, 'records')
+          dataToAnalyze = this._buildRepresentativeObject(result.parsedData)
+          console.log('[processSampleData] Representative structure:', dataToAnalyze)
+        }
+
+        result.dataStructure = this.analyzeDataStructure(dataToAnalyze)
 
         // Calculate statistics
         result.dataStats.fieldCount = this.countUniqueFields(result.dataStructure)
@@ -198,6 +211,90 @@ export class DataProcessor {
     // Calculate similarity as percentage of common keys
     const similarityRatio = commonKeyCount / firstKeys.length
     return similarityRatio >= 0.5 // At least 50% similar
+  }
+
+  /**
+   * Build a representative object by deep-merging multiple log objects
+   * This creates a synthetic object that contains all possible fields and structures
+   * found across multiple log entries.
+   * @param {Array} records - Array of log objects to merge
+   * @returns {Object} Representative merged object
+   * @private
+   */
+  static _buildRepresentativeObject (records) {
+    if (!Array.isArray(records) || records.length === 0) {
+      return {}
+    }
+
+    // Start with the first record as the base
+    let representative = JSON.parse(JSON.stringify(records[0]))
+
+    // Merge each subsequent record
+    const maxRecords = Math.min(records.length, 50) // Limit to 50 records for performance
+    for (let i = 1; i < maxRecords; i++) {
+      representative = this._deepMerge(representative, records[i])
+    }
+
+    return representative
+  }
+
+  /**
+   * Deep merge two objects, combining all keys and nested structures
+   * @param {*} target - Target object
+   * @param {*} source - Source object to merge
+   * @returns {*} Merged result
+   * @private
+   */
+  static _deepMerge (target, source) {
+    // Handle null/undefined cases
+    if (target == null) return source
+    if (source == null) return target
+
+    // If types differ, prefer target
+    if (typeof target !== typeof source) return target
+
+    // Handle primitives
+    if (typeof target !== 'object') return target
+
+    // Handle arrays
+    if (Array.isArray(target) && Array.isArray(source)) {
+      // For arrays, merge the first elements if they're objects
+      if (target.length > 0 && source.length > 0) {
+        const first1 = target[0]
+        const first2 = source[0]
+
+        if (first1 != null && first2 != null &&
+            typeof first1 === 'object' && !Array.isArray(first1) &&
+            typeof first2 === 'object' && !Array.isArray(first2)) {
+          // Merge the first elements
+          return [this._deepMerge(first1, first2)]
+        }
+      }
+
+      // For arrays of primitives or empty arrays, keep the longer one
+      return target.length >= source.length ? target : source
+    }
+
+    // Handle objects - union keys
+    if (!Array.isArray(target) && !Array.isArray(source)) {
+      const result = { ...target }
+
+      // Add keys from source that don't exist in target
+      for (const key of Object.keys(source)) {
+        if (key in result) {
+          // Key exists in both - recursively merge
+          result[key] = this._deepMerge(result[key], source[key])
+        } else {
+          // Key only in source - add it
+          result[key] = source[key]
+        }
+      }
+
+      return result
+    }
+
+    // Default: prefer target
+    return target
   }
 
   /**

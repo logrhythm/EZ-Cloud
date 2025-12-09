@@ -917,13 +917,64 @@ const actions = {
         name: state.projectConfig.name,
         description: state.projectConfig.description,
         filter: state.filterRules.expression || null,
-        schemarule: {
-          ConvertoJson: state.schemaRules.convertToJson.length ? state.schemaRules.convertToJson : null,
-          fanout: {
-            InputField: state.schemaRules.fanout.length ? state.schemaRules.fanout : null
-          }
-        },
-        transforms: state.fieldMappings.mappings
+        schemarule: {},
+        // Clean transforms - remove UI-only attributes like sampleValue and id
+        transforms: state.fieldMappings.mappings.map(mapping => {
+          const cleanMapping = { ...mapping }
+          delete cleanMapping.sampleValue
+          delete cleanMapping.id
+          return cleanMapping
+        })
+      }
+
+      // Build schema rule section
+      if (state.schemaRules.convertToJson && state.schemaRules.convertToJson.length > 0) {
+        policy.schemarule.ConvertoJson = state.schemaRules.convertToJson
+      }
+
+      // Add childfanouts if present (new hierarchical structure)
+      if (state.schemaRules.childfanouts && state.schemaRules.childfanouts.length > 0) {
+        policy.schemarule.childfanouts = state.schemaRules.childfanouts
+      }
+
+      // Remove schemarule if empty
+      if (Object.keys(policy.schemarule).length === 0) {
+        delete policy.schemarule
+      }
+
+      // Add subtransforms if not skipped (Step 6 - SubTransform Configuration)
+      if (!state.subTransforms.skipSubTransforms &&
+          state.subTransforms.subTransformsList &&
+          state.subTransforms.subTransformsList.length > 0) {
+        // Recursively clean subtransforms
+        const cleanSubTransforms = (subtransformsList) => {
+          return subtransformsList.map(subtransform => {
+            const cleanSubtransform = { ...subtransform }
+
+            // Remove UI-only properties from subtransform
+            delete cleanSubtransform.id
+            delete cleanSubtransform.name
+
+            // Clean nested transforms within subtransform
+            if (cleanSubtransform.transforms && Array.isArray(cleanSubtransform.transforms)) {
+              cleanSubtransform.transforms = cleanSubtransform.transforms.map(transform => {
+                const cleanTransform = { ...transform }
+                delete cleanTransform.sampleValue
+                delete cleanTransform.id
+                return cleanTransform
+              })
+            }
+
+            // Recursively clean nested subtransforms
+            if (cleanSubtransform.subTransforms && Array.isArray(cleanSubtransform.subTransforms) && cleanSubtransform.subTransforms.length > 0) {
+              cleanSubtransform.subTransforms = cleanSubTransforms(cleanSubtransform.subTransforms)
+            }
+
+            return cleanSubtransform
+          })
+        }
+
+        policy.subtransforms = cleanSubTransforms(state.subTransforms.subTransformsList)
       }
 
       const policyJson = JSON.stringify(policy, null, 2)

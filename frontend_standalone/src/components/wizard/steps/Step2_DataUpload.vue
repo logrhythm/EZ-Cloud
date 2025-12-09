@@ -61,7 +61,7 @@
 
               <div class="json-input-container">
                 <q-input
-                  v-model="sampleData.rawData"
+                  v-model="localRawData"
                   type="textarea"
                   outlined
                   dense
@@ -178,7 +178,7 @@
 
               <div class="multiple-input-container">
                 <q-input
-                  v-model="sampleData.rawData"
+                  v-model="localRawData"
                   type="textarea"
                   outlined
                   dense
@@ -436,6 +436,8 @@ export default {
     return {
       // Local copy of input method for v-model binding
       localInputMethod: 'manual',
+      // Local copy of rawData to avoid direct Vuex state mutation
+      localRawData: '',
       uploadedFile: null,
       isDragOver: false,
       fileErrorMessage: '',
@@ -467,14 +469,14 @@ export default {
     },
 
     lineCount () {
-      if (!this.sampleData.rawData) return 0
-      return this.sampleData.rawData.trim().split('\n').filter(line => line.trim()).length
+      if (!this.localRawData) return 0
+      return this.localRawData.trim().split('\n').filter(line => line.trim()).length
     },
 
     validLogCount () {
-      if (this.sampleData.inputMethod !== 'multiple' || !this.sampleData.rawData) return 0
+      if (this.sampleData.inputMethod !== 'multiple' || !this.localRawData) return 0
 
-      const lines = this.sampleData.rawData.trim().split('\n').filter(line => line.trim())
+      const lines = this.localRawData.trim().split('\n').filter(line => line.trim())
       let validCount = 0
 
       lines.forEach(line => {
@@ -629,6 +631,17 @@ export default {
   },
 
   watch: {
+    // Sync localRawData with Vuex state when navigating back to this step
+    'sampleData.rawData': {
+      handler (newValue) {
+        // Only update local if it's different and not empty (avoid overwriting user input)
+        if (newValue !== this.localRawData) {
+          this.localRawData = newValue || ''
+        }
+      },
+      immediate: true
+    },
+
     // Watch Vuex state change and sync to local state
     'sampleData.inputMethod': {
       handler (newValue, oldValue) {
@@ -661,6 +674,9 @@ export default {
     // Initialize local input method from Vuex state
     this.localInputMethod = this.sampleData.inputMethod
 
+    // Initialize localRawData from Vuex state
+    this.localRawData = this.sampleData.rawData || ''
+
     // Initialize lastProcessedRawData with current data if it exists
     if (this.sampleData.rawData && this.sampleData.parsedData) {
       this.lastProcessedRawData = this.sampleData.rawData
@@ -688,6 +704,11 @@ export default {
 
     async onDataInput () {
       this.validationErrorMessage = ''
+      // Update Vuex state with new value
+      this.SET_SAMPLE_DATA({
+        rawData: this.localRawData,
+        inputMethod: this.sampleData.inputMethod
+      })
       this.debounceValidation()
     },
 
@@ -702,7 +723,7 @@ export default {
     },
 
     async validateJsonData () {
-      if (!this.sampleData.rawData?.trim()) {
+      if (!this.localRawData?.trim()) {
         this.SET_SAMPLE_DATA({
           validationResult: {
             isValid: false,
@@ -721,7 +742,7 @@ export default {
 
       try {
         // Check if raw data has actually changed
-        const currentRawData = this.sampleData.rawData
+        const currentRawData = this.localRawData
         const hasDataChanged = this.lastProcessedRawData !== currentRawData
 
         console.log('=== Step 2: Validating JSON data ===')
@@ -730,7 +751,7 @@ export default {
         console.log('Has data changed?', hasDataChanged)
 
         // Use the DataProcessor service directly
-        const result = await DataProcessor.processSampleData(this.sampleData.rawData, this.sampleData.inputMethod)
+        const result = await DataProcessor.processSampleData(this.localRawData, this.sampleData.inputMethod)
 
         console.log('=== Step 2: Data processing result ===')
         console.log('Detected logType:', result.logType)
@@ -739,7 +760,7 @@ export default {
 
         // Update the store with results
         this.SET_SAMPLE_DATA({
-          rawData: this.sampleData.rawData,
+          rawData: this.localRawData,
           inputMethod: this.sampleData.inputMethod,
           parsedData: result.parsedData,
           dataStructure: result.dataStructure,
@@ -852,6 +873,7 @@ export default {
               const text = await navigator.clipboard.readText()
               console.log('Successfully read from clipboard with Clipboard API')
 
+              this.localRawData = text
               this.SET_SAMPLE_DATA({
                 rawData: text,
                 inputMethod: this.sampleData.inputMethod
@@ -888,6 +910,7 @@ export default {
           document.body.removeChild(textArea)
           console.log('Successfully pasted using execCommand fallback')
 
+          this.localRawData = text
           this.SET_SAMPLE_DATA({
             rawData: text,
             inputMethod: this.sampleData.inputMethod
@@ -921,7 +944,8 @@ export default {
       if (!this.isValidJson) return
 
       try {
-        const formatted = DataProcessor.formatJson(this.sampleData.rawData)
+        const formatted = DataProcessor.formatJson(this.localRawData)
+        this.localRawData = formatted
         this.SET_SAMPLE_DATA({
           rawData: formatted,
           inputMethod: this.sampleData.inputMethod
@@ -933,6 +957,8 @@ export default {
 
     clearData () {
       console.log('=== Step 2: Clearing data - resetting Step 3 selections ===')
+
+      this.localRawData = ''
 
       this.SET_SAMPLE_DATA({
         rawData: '',
@@ -966,6 +992,8 @@ export default {
 
       // Store current input method so we don't overwrite it
       const currentInputMethod = this.sampleData.inputMethod
+
+      this.localRawData = ''
 
       this.SET_SAMPLE_DATA({
         rawData: '',
@@ -1029,6 +1057,7 @@ export default {
         if (!fileContent || fileContent.trim() === '') {
           // Instead of throwing an error immediately, let's set the file content and let
           // the validation system handle it to display in the validation results section
+          this.localRawData = fileContent
           this.SET_SAMPLE_DATA({
             rawData: fileContent,
             inputMethod: 'file',
@@ -1045,6 +1074,7 @@ export default {
           return
         }
 
+        this.localRawData = fileContent
         this.SET_SAMPLE_DATA({
           rawData: fileContent,
           inputMethod: 'file'

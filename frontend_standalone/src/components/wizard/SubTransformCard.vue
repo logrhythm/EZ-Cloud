@@ -136,7 +136,7 @@
               unelevated
               dense
               icon="edit"
-              label="Edit Condition"
+              label="Add/Edit Condition"
               @click="editCondition"
               size="sm"
               color="blue"
@@ -205,7 +205,7 @@
               unelevated
               dense
               icon="add"
-              label="Add"
+              label="Add Mapping"
               @click="addTransform"
               size="sm"
               color="blue"
@@ -283,7 +283,7 @@
                 unelevated
                 dense
                 icon="add"
-                label="Add Nested"
+                label="Add Nested SubTransform"
                 @click="addNested"
                 size="sm"
                 color="blue"
