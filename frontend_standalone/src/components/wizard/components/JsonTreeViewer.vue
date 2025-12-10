@@ -13,6 +13,7 @@
         :mapped-paths="mappedPaths"
         :highlighted-path="highlightedPath"
         :clickable-mode="clickableMode"
+        :search-query="searchQuery"
         @toggle="onToggle"
         @select="onSelect"
         @node-click="onNodeClick"
@@ -66,6 +67,11 @@ export default {
     clickableMode: {
       type: Boolean,
       default: false
+    },
+    // NEW: Search query for filtering tree nodes
+    searchQuery: {
+      type: String,
+      default: ''
     }
   },
 

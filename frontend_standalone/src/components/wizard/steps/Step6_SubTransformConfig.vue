@@ -268,6 +268,18 @@ export default {
       handler (value) {
         this.localSkipSubTransforms = value
       }
+    },
+
+    // Watch for changes in subTransforms list from Vuex store
+    // This ensures component reacts when store is reset
+    subTransformsList: {
+      handler (newList) {
+        console.log('[Step 6] Detected subTransformsList change in store:', newList?.length || 0)
+        // The component already reads from Vuex directly via computed property
+        // So we just need to validate the step when the list changes
+        this.validateStep()
+      },
+      deep: true
     }
   },
 

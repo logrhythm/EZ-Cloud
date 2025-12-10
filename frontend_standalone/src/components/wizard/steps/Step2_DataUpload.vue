@@ -838,10 +838,17 @@ export default {
             console.log('=== Current schema rules will be preserved and revalidated in Step 3 ===')
           }
 
-          // ALWAYS reset Step 4 filter rules when data changes
-          // Filter conditions are based on sample data fields, so they must be recalculated
-          console.log('=== Step 2: Resetting Step 4 filter rules due to data change ===')
+          // ALWAYS reset Step 4, 5, and 6 when data changes
+          // These steps depend on the sample data structure and fields
+          console.log('=== Step 2: Resetting Step 4, 5, and 6 due to data change ===')
           this.$store.commit('wizard/RESET_FILTER_RULES')
+          this.$store.commit('wizard/RESET_FIELD_MAPPINGS')
+          this.$store.commit('wizard/RESET_SUBTRANSFORMS')
+
+          // Also reset step status for steps 4, 5, and 6
+          this.$store.commit('wizard/RESET_STEP_STATUS', 3) // Step 4
+          this.$store.commit('wizard/RESET_STEP_STATUS', 4) // Step 5
+          this.$store.commit('wizard/RESET_STEP_STATUS', 5) // Step 6
 
           // Update last processed data
           this.lastProcessedRawData = currentRawData
@@ -956,7 +963,7 @@ export default {
     },
 
     clearData () {
-      console.log('=== Step 2: Clearing data - resetting Step 3 selections ===')
+      console.log('=== Step 2: Clearing data - resetting Step 3, 4, 5, and 6 ===')
 
       this.localRawData = ''
 
@@ -977,6 +984,17 @@ export default {
         detectedStringifiedJson: [],
         manualSelections: []
       })
+
+      // Reset Step 4, 5, and 6 when data is cleared
+      this.$store.commit('wizard/RESET_FILTER_RULES')
+      this.$store.commit('wizard/RESET_FIELD_MAPPINGS')
+      this.$store.commit('wizard/RESET_SUBTRANSFORMS')
+
+      // Also reset step status for steps 3, 4, 5, and 6
+      this.$store.commit('wizard/RESET_STEP_STATUS', 2) // Step 3
+      this.$store.commit('wizard/RESET_STEP_STATUS', 3) // Step 4
+      this.$store.commit('wizard/RESET_STEP_STATUS', 4) // Step 5
+      this.$store.commit('wizard/RESET_STEP_STATUS', 5) // Step 6
 
       // Reset last processed data
       this.lastProcessedRawData = null
@@ -1013,6 +1031,17 @@ export default {
         detectedStringifiedJson: [],
         manualSelections: []
       })
+
+      // Reset Step 4, 5, and 6 when data is cleared
+      this.$store.commit('wizard/RESET_FILTER_RULES')
+      this.$store.commit('wizard/RESET_FIELD_MAPPINGS')
+      this.$store.commit('wizard/RESET_SUBTRANSFORMS')
+
+      // Also reset step status for steps 3, 4, 5, and 6
+      this.$store.commit('wizard/RESET_STEP_STATUS', 2) // Step 3
+      this.$store.commit('wizard/RESET_STEP_STATUS', 3) // Step 4
+      this.$store.commit('wizard/RESET_STEP_STATUS', 4) // Step 5
+      this.$store.commit('wizard/RESET_STEP_STATUS', 5) // Step 6
 
       // Reset last processed data
       this.lastProcessedRawData = null

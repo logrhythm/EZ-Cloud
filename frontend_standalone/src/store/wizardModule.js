@@ -477,6 +477,16 @@ const mutations = {
     }
   },
 
+  RESET_FIELD_MAPPINGS (state) {
+    console.log('[Vuex] RESET_FIELD_MAPPINGS mutation called')
+    state.fieldMappings = {
+      mappings: [],
+      unmappedFields: [],
+      validationIssues: [],
+      previewResults: null
+    }
+  },
+
   // SubTransform mutations (Step 6)
   ADD_SUBTRANSFORM (state, subtransform) {
     state.subTransforms.subTransformsList.push(subtransform)
@@ -533,6 +543,21 @@ const mutations = {
 
   SET_SUBTRANSFORM_TEST_RESULTS (state, results) {
     state.subTransforms.testResults = results
+  },
+
+  RESET_SUBTRANSFORMS (state) {
+    console.log('[Vuex] RESET_SUBTRANSFORMS mutation called')
+    state.subTransforms = {
+      skipSubTransforms: false,
+      subTransformsList: [],
+      testResults: {
+        lastRun: null,
+        executionTrace: [],
+        finalOutput: {}
+      },
+      validationIssues: [],
+      templates: []
+    }
   },
 
   // Generated policy mutations
@@ -881,19 +906,30 @@ const actions = {
    * Clears the wizard state completely, resetting it to the initial state
    * This will remove data from all steps and navigate back to the first step
    */
-  async clearState ({ commit }) {
+  async clearState ({ commit, state }) {
     try {
+      console.log('[Vuex] clearState action called - resetting all wizard state')
+
       // Remove saved state from storage
       storage.remove(STORAGE_KEY)
 
       // Reset wizard state completely
       commit('RESET_WIZARD')
 
+      // Explicitly reset all step-specific state to ensure clean reset
+      commit('RESET_FILTER_RULES')
+      commit('RESET_FIELD_MAPPINGS')
+      commit('RESET_SUBTRANSFORMS')
+
       // Reset current step to 0 (first step)
       commit('SET_CURRENT_STEP', 0)
 
-      // Clear all completed steps
-      commit('RESET_STEP_STATUS', 0)
+      // Clear status for all steps
+      for (let i = 0; i < state.steps.length; i++) {
+        commit('RESET_STEP_STATUS', i)
+      }
+
+      console.log('[Vuex] clearState completed - all state reset')
 
       return true
     } catch (error) {

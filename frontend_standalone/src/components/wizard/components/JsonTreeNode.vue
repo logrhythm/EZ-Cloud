@@ -1,5 +1,6 @@
 <template>
   <div
+    v-show="isVisible"
     class="json-tree-node"
     :class="{
       'is-expandable': isExpandable,
@@ -12,7 +13,8 @@
       'is-selected': isSelected,
       'is-mapped': isMapped,
       'is-highlighted': isHighlighted,
-      'is-clickable': isClickable
+      'is-clickable': isClickable,
+      'is-search-match': hasSearchQuery && matchesSearch
     }"
   >
     <!-- Node toggle for expandable items -->
@@ -49,7 +51,12 @@
     </div>
 
     <!-- Key for object properties -->
-    <div v-if="data.key !== undefined" class="node-key">
+    <div
+      v-if="data.key !== undefined"
+      class="node-key"
+      :class="{ 'node-key-clickable': isClickable }"
+      @click="handleNodeClick"
+    >
       {{ data.key }}:
     </div>
 
@@ -137,7 +144,7 @@
       class="node-children"
     >
       <json-tree-node
-        v-for="(child, index) in data.children"
+        v-for="(child, index) in visibleChildren"
         :key="`${data.path}_${index}`"
         :data="child"
         :expanded-nodes="expandedNodes"
@@ -147,6 +154,7 @@
         :mapped-paths="mappedPaths"
         :highlighted-path="highlightedPath"
         :clickable-mode="clickableMode"
+        :search-query="searchQuery"
         @toggle="onToggle"
         @select="onSelect"
         @node-click="$emit('node-click', $event)"
@@ -194,6 +202,11 @@ export default {
     clickableMode: {
       type: Boolean,
       default: false
+    },
+    // NEW: Search query for filtering tree nodes
+    searchQuery: {
+      type: String,
+      default: ''
     }
   },
 
@@ -350,6 +363,87 @@ export default {
       // Extract field name from path
       const parts = this.data.path.split('.')
       return parts[parts.length - 1] || this.data.path
+    },
+
+    // NEW: Check if search is active
+    hasSearchQuery () {
+      return this.searchQuery && this.searchQuery.trim().length > 0
+    },
+
+    // NEW: Check if this node matches the search query
+    matchesSearch () {
+      if (!this.hasSearchQuery) {
+        return true // Show all nodes when no search
+      }
+
+      const query = this.searchQuery.toLowerCase().trim()
+
+      // Check if key matches
+      if (this.data.key && this.data.key.toLowerCase().includes(query)) {
+        return true
+      }
+
+      // Check if path matches
+      if (this.data.path && this.data.path.toLowerCase().includes(query)) {
+        return true
+      }
+
+      // Check if any aggregated value matches (for primitive types)
+      if (this.hasAggregatedValues) {
+        return this.data.aggregatedValues.some(val => {
+          if (val === null || val === undefined) return false
+          return String(val).toLowerCase().includes(query)
+        })
+      }
+
+      // Check if single value matches
+      if (this.data.value !== undefined && this.data.value !== null) {
+        return String(this.data.value).toLowerCase().includes(query)
+      }
+
+      return false
+    },
+
+    // NEW: Check if any descendant matches search
+    hasMatchingDescendant () {
+      if (!this.hasSearchQuery || !this.hasChildren) {
+        return false
+      }
+
+      return this.checkDescendantsMatch(this.data)
+    },
+
+    // NEW: Determine if node should be visible based on search
+    isVisible () {
+      if (!this.hasSearchQuery) {
+        return true // Show all when no search
+      }
+
+      // Show if this node matches
+      if (this.matchesSearch) {
+        return true
+      }
+
+      // Show if any descendant matches (for parent nodes)
+      if (this.hasMatchingDescendant) {
+        return true
+      }
+
+      return false
+    },
+
+    // NEW: Filter visible children based on search
+    visibleChildren () {
+      if (!this.hasChildren) {
+        return []
+      }
+
+      if (!this.hasSearchQuery) {
+        return this.data.children
+      }
+
+      // Return all children - let each child determine its own visibility
+      return this.data.children
     }
   },
 
@@ -364,6 +458,50 @@ export default {
 
     onSelect (data) {
       this.$emit('select', data)
+    },
+
+    // NEW: Recursively check if any descendant matches search
+    checkDescendantsMatch (node) {
+      if (!node || !node.children || node.children.length === 0) {
+        return false
+      }
+
+      const query = this.searchQuery.toLowerCase().trim()
+
+      for (const child of node.children) {
+        // Check if child matches
+        if (child.key && child.key.toLowerCase().includes(query)) {
+          return true
+        }
+
+        if (child.path && child.path.toLowerCase().includes(query)) {
+          return true
+        }
+
+        // Check child's value or aggregated values
+        if (child.aggregatedValues && child.aggregatedValues.length > 0) {
+          const hasMatchingValue = child.aggregatedValues.some(val => {
+            if (val === null || val === undefined) return false
+            return String(val).toLowerCase().includes(query)
+          })
+          if (hasMatchingValue) {
+            return true
+          }
+        }
+
+        if (child.value !== undefined && child.value !== null) {
+          if (String(child.value).toLowerCase().includes(query)) {
+            return true
+          }
+        }
+
+        // Recursively check child's descendants
+        if (this.checkDescendantsMatch(child)) {
+          return true
+        }
+      }
+
+      return false
     },
 
     // NEW: Handle node click for mapping
@@ -477,6 +615,28 @@ export default {
 
   .dark-theme & {
     color: #ff9800;
+  }
+
+  &.node-key-clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0.125rem 0.25rem;
+    border-radius: 4px;
+
+    &:hover {
+      background-color: rgba(33, 150, 243, 0.15);
+      color: #2196F3;
+      font-weight: 700;
+
+      .dark-theme & {
+        background-color: rgba(33, 150, 243, 0.2);
+        color: #64b5f6;
+      }
+    }
+
+    &:active {
+      background-color: rgba(33, 150, 243, 0.25);
+    }
   }
 }
 
@@ -656,6 +816,21 @@ export default {
     50% {
       background-color: rgba(255, 193, 7, 0.4);
     }
+  }
+}
+
+// NEW: Search match highlight
+.is-search-match {
+  background-color: rgba(255, 235, 59, 0.15);
+  border-left: 3px solid #FFEB3B;
+
+  .node-key {
+    color: #FDD835;
+    font-weight: 700;
+  }
+
+  &:hover {
+    background-color: rgba(255, 235, 59, 0.25);
   }
 }
 

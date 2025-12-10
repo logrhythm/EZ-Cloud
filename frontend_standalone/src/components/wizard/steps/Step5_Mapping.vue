@@ -118,6 +118,7 @@
                 :mapped-paths="mappedPathsSet"
                 :highlighted-path="highlightedPath"
                 :clickable-mode="true"
+                :search-query="treeSearchQuery"
                 @toggle-node="toggleNode"
                 @node-click="handleTreeNodeClick"
               />
@@ -132,22 +133,15 @@
                 Configured Mappings
               </div>
               <div class="panel-actions">
-                <!-- Unified dropdown styling -->
-                <q-select
+                <!-- Search textbox for filtering mappings -->
+                <q-input
                   v-model="gridSearchQuery"
                   dense
                   outlined
-                  use-input
-                  input-debounce="300"
-                  fill-input
-                  hide-selected
-                  :options="mappingFilterOptions"
-                  @filter="onMappingFilterFilter"
                   placeholder="Filter mappings..."
-                  class="grid-search uniform-select"
-                  popup-content-class="dropdown-dark"
-                  emit-value
-                  map-options
+                  class="grid-search"
+                  debounce="300"
+                  clearable
                 >
                   <template v-slot:prepend>
                     <q-icon name="search" size="xs" />
@@ -160,14 +154,7 @@
                       @click="gridSearchQuery = ''"
                     />
                   </template>
-                  <template v-slot:no-option>
-                    <q-item>
-                      <q-item-section class="text-grey">
-                        Type to filter by JSON Path or LR Field
-                      </q-item-section>
-                    </q-item>
-                  </template>
-                </q-select>
+                </q-input>
 
                 <q-btn
                   flat
@@ -187,6 +174,13 @@
                 <q-icon name="touch_app" size="64px" color="grey-5" />
                 <p class="empty-message">No mappings defined yet</p>
                 <p class="empty-hint">Click on any field in the JSON tree to create a mapping</p>
+              </div>
+
+              <!-- No Results After Filter -->
+              <div v-else-if="filteredMappings.length === 0" class="empty-mappings">
+                <q-icon name="search_off" size="64px" color="grey-5" />
+                <p class="empty-message">No mappings match your search</p>
+                <p class="empty-hint">Try a different search term or clear the filter</p>
               </div>
 
               <!-- Mappings Table -->
@@ -226,6 +220,22 @@
                       >
                         {{ props.row.lrSchemaField }}
                       </q-chip>
+                    </q-td>
+
+                    <!-- Fanout Parent -->
+                    <q-td key="fanoutParentElement" :props="props">
+                      <div v-if="props.row.fanoutParentElement" class="fanout-parent-cell">
+                        <q-chip
+                          color="purple"
+                          text-color="white"
+                          size="sm"
+                          dense
+                          icon="account_tree"
+                        >
+                          {{ props.row.fanoutParentElement }}
+                        </q-chip>
+                      </div>
+                      <span v-else class="no-fanout-text">—</span>
                     </q-td>
 
                     <!-- Type -->
@@ -321,6 +331,7 @@
                 :mapped-paths="mappedPathsSet"
                 :highlighted-path="highlightedPath"
                 :clickable-mode="true"
+                :search-query="treeSearchQuery"
                 @toggle-node="toggleNode"
                 @node-click="handleTreeNodeClick"
               />
@@ -759,6 +770,13 @@ export default {
           sortable: true
         },
         {
+          name: 'fanoutParentElement',
+          label: 'Fanout Parent',
+          field: 'fanoutParentElement',
+          align: 'left',
+          sortable: true
+        },
+        {
           name: 'type',
           label: 'Type',
           field: 'type',
@@ -772,6 +790,38 @@ export default {
           align: 'center'
         }
       ]
+    }
+  },
+
+  watch: {
+    treeSearchQuery (newQuery) {
+      if (newQuery && newQuery.trim().length > 0) {
+        // When searching, expand all nodes to show results
+        this.expandAll()
+      }
+    },
+
+    // Watch for changes in field mappings from Vuex store
+    // This ensures local state is updated when store is reset
+    'fieldMappings.mappings': {
+      handler (newMappings) {
+        // Only update local mappings if they differ from store
+        // This prevents circular updates
+        const storeJson = JSON.stringify(newMappings || [])
+        const localJson = JSON.stringify(this.localMappings || [])
+
+        if (storeJson !== localJson) {
+          console.log('[Step 5] Detected mappings change in store, updating local state')
+          this.restoreStateFromStore()
+
+          // If mappings were cleared (reset), also rebuild the tree
+          if (!newMappings || newMappings.length === 0) {
+            console.log('[Step 5] Mappings were reset, rebuilding tree')
+            this.buildJsonTree()
+          }
+        }
+      },
+      deep: true
     }
   },
 
@@ -789,7 +839,50 @@ export default {
       const paths = new Set()
       this.localMappings.forEach(m => {
         if (m.inputRule) {
+          // Add the original inputRule
           paths.add(m.inputRule)
+
+          // If mapping has a fanout parent, reconstruct full paths for tree matching
+          if (m.fanoutParentElement) {
+            // Extract the base path without operation syntax
+            let basePath = m.inputRule
+            const parsed = parseOperationFromInputRule(m.inputRule)
+            if (parsed.fieldPath) {
+              basePath = parsed.fieldPath
+            }
+
+            // Strip leading $. from basePath if present (relative paths)
+            // because we'll be concatenating with fanoutParent which already has $
+            if (basePath.startsWith('$.')) {
+              basePath = basePath.substring(2)
+            } else if (basePath.startsWith('$')) {
+              basePath = basePath.substring(1)
+            }
+
+            // Strip leading . from basePath
+            if (basePath.startsWith('.')) {
+              basePath = basePath.substring(1)
+            }
+
+            let fanoutParent = m.fanoutParentElement
+
+            // Strip trailing [*] from fanoutParent if present
+            if (fanoutParent.endsWith('[*]')) {
+              fanoutParent = fanoutParent.substring(0, fanoutParent.length - 3)
+            }
+
+            // Construct tree paths: $.parent[*].field
+            // The tree always uses [*] notation for array children
+            const treePath = `${fanoutParent}[*].${basePath}`
+            paths.add(treePath)
+
+            console.log('[Step 5] Reconstructed tree path for fanout field:', {
+              originalInputRule: m.inputRule,
+              fanoutParent: m.fanoutParentElement,
+              basePath,
+              treePath
+            })
+          }
         }
       })
       return paths
@@ -824,23 +917,6 @@ export default {
       )
 
       return [...suggested, ...others]
-    },
-
-    mappingFilterOptions () {
-      // Build unique list of JSON paths & LR fields for suggestion dropdown
-      const opts = []
-      const seen = new Set()
-      this.localMappings.forEach(m => {
-        if (m.inputRule && !seen.has(m.inputRule)) {
-          seen.add(m.inputRule)
-          opts.push({ label: m.inputRule, value: m.inputRule })
-        }
-        if (m.lrSchemaField && !seen.has(m.lrSchemaField)) {
-          seen.add(m.lrSchemaField)
-          opts.push({ label: m.lrSchemaField, value: m.lrSchemaField })
-        }
-      })
-      return opts
     }
   },
 
@@ -861,7 +937,8 @@ export default {
         }
 
         // Determine if multi-line processing is needed
-        const isMultiLine = this.sampleData.dataStructure === 'multi-line'
+        // NDJSON/JSONL data is stored with logType: 'multiline'
+        const isMultiLine = this.sampleData.logType === 'multiline'
 
         // Parse data for tree building
         let dataForTree = this.sampleData.parsedData
@@ -1336,11 +1413,55 @@ export default {
     },
 
     highlightInTree (jsonPath) {
-      // Set highlighted path
-      this.highlightedPath = jsonPath
+      // Find the mapping to check for fanout parent
+      const mapping = this.localMappings.find(m => m.inputRule === jsonPath)
+
+      let treePathToHighlight = jsonPath
+
+      // If mapping has fanout parent, reconstruct the full tree path
+      if (mapping && mapping.fanoutParentElement) {
+        // Extract the base path without operation syntax
+        let basePath = jsonPath
+        const parsed = parseOperationFromInputRule(jsonPath)
+        if (parsed.fieldPath) {
+          basePath = parsed.fieldPath
+        }
+
+        // Strip leading $. from basePath if present (relative paths)
+        if (basePath.startsWith('$.')) {
+          basePath = basePath.substring(2)
+        } else if (basePath.startsWith('$')) {
+          basePath = basePath.substring(1)
+        }
+
+        // Strip leading . from basePath
+        if (basePath.startsWith('.')) {
+          basePath = basePath.substring(1)
+        }
+
+        let fanoutParent = mapping.fanoutParentElement
+
+        // Strip trailing [*] from fanoutParent if present
+        if (fanoutParent.endsWith('[*]')) {
+          fanoutParent = fanoutParent.substring(0, fanoutParent.length - 3)
+        }
+
+        // Construct tree path: $.parent[*].field
+        treePathToHighlight = `${fanoutParent}[*].${basePath}`
+
+        console.log('[Step 5] highlightInTree - Reconstructed path for fanout field:', {
+          originalJsonPath: jsonPath,
+          fanoutParent: mapping.fanoutParentElement,
+          basePath,
+          treePathToHighlight
+        })
+      }
+
+      // Set highlighted path (use reconstructed path for fanout fields)
+      this.highlightedPath = treePathToHighlight
 
       // Expand all parent nodes
-      const parentPaths = MappingService.getParentPaths(jsonPath)
+      const parentPaths = MappingService.getParentPaths(treePathToHighlight)
       parentPaths.forEach(path => this.expandedNodes.add(path))
       this.expandedNodes = new Set(this.expandedNodes)
 
@@ -1552,14 +1673,6 @@ export default {
         console.error('[Step 5] Error saving state:', error)
         throw error
       }
-    },
-
-    onMappingFilterFilter (val, update) {
-      const needle = (val || '').toLowerCase()
-      update(() => {
-        if (!needle) return this.mappingFilterOptions
-        return this.mappingFilterOptions.filter(o => o.label.toLowerCase().includes(needle))
-      })
     }
   },
 
@@ -1662,7 +1775,7 @@ export default {
 /* Split Panel Layout (Desktop) */
 .split-panel-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1.6fr;
   gap: 1.5rem;
   min-height: 800px; /* Increased from 600px for better visibility */
 }
@@ -1702,6 +1815,36 @@ export default {
 .tree-search,
 .grid-search {
   width: 200px;
+
+  ::v-deep .q-field__control {
+    background: rgba(255, 255, 255, 0.1);
+    color: #E3F2FD;
+
+    &:before {
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  ::v-deep .q-field__native,
+  ::v-deep input {
+    color: #E3F2FD !important;
+  }
+
+  ::v-deep .q-icon {
+    color: #2196F3;
+  }
+
+  ::v-deep .q-field__control:hover:before {
+    border-color: rgba(33, 150, 243, 0.5);
+  }
+
+  ::v-deep .q-field--focused .q-field__control:before {
+    border-color: #2196F3;
+  }
+
+  ::v-deep ::placeholder {
+    color: rgba(227, 242, 253, 0.5);
+  }
 }
 
 .panel-content {
@@ -1797,6 +1940,19 @@ export default {
   display: flex;
   gap: 4px;
   justify-content: center;
+}
+
+.fanout-parent-cell {
+  display: flex;
+  align-items: center;
+}
+
+.no-fanout-text {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.875rem;
+  text-align: center;
+  display: block;
+  width: 100%;
 }
 
 /* Mobile: Tabbed Layout */
