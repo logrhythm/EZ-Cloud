@@ -161,8 +161,9 @@
                       @input="(value) => onOperatorChange(index, value)"
                     />
 
-                    <!-- Value Input -->
+                    <!-- Value Input (Hidden for 'exists' operator) -->
                     <q-select
+                      v-if="condition.operator !== 'exists'"
                       v-model="condition.value"
                       :options="getSampleValuesForField(condition.field)"
                       outlined
@@ -190,6 +191,19 @@
                         </q-item>
                       </template>
                     </q-select>
+
+                    <!-- Placeholder for 'exists' operator (shows helpful text) -->
+                    <div
+                      v-else
+                      class="condition-value-placeholder"
+                      :title="'No value needed - checks if attribute exists'"
+                    >
+                      <q-icon name="check_circle" color="positive" size="sm" class="q-mr-xs" />
+                      <span class="placeholder-text">No value needed</span>
+                      <q-tooltip>
+                        The "Has Attribute" operator checks if the field exists in the JSON, regardless of its value or data type.
+                      </q-tooltip>
+                    </div>
 
                     <!-- Remove Button -->
                     <q-btn
@@ -515,32 +529,76 @@ export default {
         for (let i = 0; i < parts.length; i += 2) {
           const condPart = parts[i].trim()
 
-          // Match pattern: field operator value
-          const match = condPart.match(/^(.+?)\s*(==|!=|>|<|>=|<=|contains|startsWith|endsWith)\s*(.+)$/)
+          // Check if this is an 'exists' operator (just a field name with no operator or value)
+          // Match pattern: @.fieldname or fieldname (without any operator following)
+          const existsMatch = condPart.match(/^(@?\.?[a-zA-Z0-9_.[\\]*-]+)$/)
 
-          if (match) {
-            const field = match[1].trim()
-            const operator = match[2].trim()
-            let value = match[3].trim()
-
-            // Remove quotes if present
-            if ((value.startsWith("'") && value.endsWith("'")) ||
-                (value.startsWith('"') && value.endsWith('"'))) {
-              value = value.slice(1, -1)
-            }
-
+          if (existsMatch) {
+            // This is an 'exists' condition
+            const field = existsMatch[1].trim()
             const fieldInfo = this.availableFields.find(f => f.label === field)
 
             const newCondition = {
               id: `condition-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
               field: field,
-              operator: operator,
-              value: value,
+              operator: 'exists',
+              value: '', // No value needed for exists
               fieldType: fieldInfo?.type || 'string',
               logicalOperator: parts[i + 1] === '||' ? 'OR' : 'AND'
             }
 
             conditions.push(newCondition)
+          } else {
+            // Match pattern: field operator value
+            const match = condPart.match(/^(.+?)\s*(==|!=|>|<|>=|<=|contains|startsWith|endsWith|=~)\s*(.+)$/)
+
+            if (match) {
+              const field = match[1].trim()
+              let operator = match[2].trim()
+              let value = match[3].trim()
+
+              // Remove quotes if present
+              if ((value.startsWith("'") && value.endsWith("'")) ||
+                  (value.startsWith('"') && value.endsWith('"'))) {
+                value = value.slice(1, -1)
+              }
+
+              // Handle regex patterns (contains, startsWith, endsWith)
+              if (operator === '=~') {
+                // Extract pattern from regex notation /pattern/
+                const regexMatch = value.match(/^\/(.*)\/[igm]*$/)
+                if (regexMatch) {
+                  value = regexMatch[1]
+                  // Determine operator type from pattern
+                  if (value.startsWith('.*') && value.endsWith('.*')) {
+                    // contains
+                    value = value.slice(2, -2)
+                    operator = 'contains'
+                  } else if (value.startsWith('^') && value.endsWith('.*')) {
+                    // startsWith
+                    value = value.slice(1, -2)
+                    operator = 'startsWith'
+                  } else if (value.startsWith('.*') && value.endsWith('$')) {
+                    // endsWith
+                    value = value.slice(2, -1)
+                    operator = 'endsWith'
+                  }
+                }
+              }
+
+              const fieldInfo = this.availableFields.find(f => f.label === field)
+
+              const newCondition = {
+                id: `condition-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                field: field,
+                operator: operator,
+                value: value,
+                fieldType: fieldInfo?.type || 'string',
+                logicalOperator: parts[i + 1] === '||' ? 'OR' : 'AND'
+              }
+
+              conditions.push(newCondition)
+            }
           }
         }
 
@@ -854,7 +912,13 @@ export default {
 
         this.localConditions.forEach((condition, index) => {
           // Skip incomplete conditions
-          if (!condition.field || !condition.operator || condition.value === '' || condition.value === null || condition.value === undefined) {
+          // Note: 'exists' operator doesn't need a value
+          if (!condition.field || !condition.operator) {
+            return
+          }
+
+          // Skip conditions that require a value but don't have one
+          if (condition.operator !== 'exists' && (condition.value === '' || condition.value === null || condition.value === undefined)) {
             return
           }
 
@@ -891,9 +955,16 @@ export default {
       }
 
       // Check for incomplete conditions
+      // Note: 'exists' operator doesn't require a value
       const incompleteConditions = this.localConditions.filter(condition => {
-        return !condition.field || !condition.operator ||
-               condition.value === '' || condition.value === null || condition.value === undefined
+        if (!condition.field || !condition.operator) {
+          return true
+        }
+        // Only require value for operators that need it (not 'exists')
+        if (condition.operator !== 'exists' && (condition.value === '' || condition.value === null || condition.value === undefined)) {
+          return true
+        }
+        return false
       })
 
       if (incompleteConditions.length > 0) {
@@ -1075,6 +1146,32 @@ export default {
 .condition-value {
   flex: 2;
   min-width: 150px;
+}
+
+.condition-value-placeholder {
+  flex: 2;
+  min-width: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  border: 1px solid rgba(0, 200, 83, 0.3);
+  border-radius: 4px;
+  background: rgba(0, 200, 83, 0.05);
+  color: var(--q-color-positive);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: help;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(0, 200, 83, 0.1);
+    border-color: rgba(0, 200, 83, 0.5);
+  }
+
+  .placeholder-text {
+    color: var(--q-color-positive);
+  }
 }
 
 .logical-operator-section {

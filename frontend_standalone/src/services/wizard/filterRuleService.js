@@ -808,6 +808,16 @@ export class FilterRuleService {
         fieldType = 'unknown'
       }
 
+      // Existence operator - works for all types
+      const existenceOperator = [
+        {
+          label: 'Has Attribute (Exists)',
+          value: 'exists',
+          types: ['string', 'number', 'boolean', 'null', 'unknown'],
+          description: 'Checks if the attribute exists in the JSON, regardless of its value or data type'
+        }
+      ]
+
       const baseOperators = [
         { label: 'Equals (==)', value: '==', types: ['string', 'number', 'boolean'] },
         { label: 'Not Equals (!=)', value: '!=', types: ['string', 'number', 'boolean'] }
@@ -840,6 +850,9 @@ export class FilterRuleService {
       if (fieldType === 'unknown') {
         operators = [...operators, ...stringOperators, ...numericOperators]
       }
+
+      // Add existence operator for all types (at the end of the list)
+      operators = [...operators, ...existenceOperator]
 
       return operators
     } catch (error) {
@@ -937,9 +950,17 @@ export class FilterRuleService {
           return false
         }
 
-        return c.field &&
-               c.operator &&
-               (c.value !== undefined && c.value !== '' && c.value !== null)
+        // Field and operator are always required
+        if (!c.field || !c.operator) {
+          return false
+        }
+
+        // Value is only required for operators that need it (not 'exists')
+        if (c.operator !== 'exists' && (c.value === undefined || c.value === '' || c.value === null)) {
+          return false
+        }
+
+        return true
       })
 
       if (validConditions.length === 0) {
@@ -1007,6 +1028,11 @@ export class FilterRuleService {
 
       // Handle special operators
       switch (operator) {
+        case 'exists':
+          // For exists operator, only return the field path (no comparison)
+          // This checks if the attribute exists regardless of its value
+          return sanitizedField
+
         case 'contains':
           // For contains, we use regex matching
           return `${sanitizedField} =~ /.*${this._escapeRegex(value)}.*/`
@@ -1431,7 +1457,8 @@ export class FilterRuleService {
           result.isValid = false
         }
 
-        if (condition.value === undefined || condition.value === '' || condition.value === null) {
+        // Only require value for operators that need it (not 'exists')
+        if (condition.operator !== 'exists' && (condition.value === undefined || condition.value === '' || condition.value === null)) {
           result.warnings.push(`Condition ${i + 1}: Value is empty`)
         }
       }

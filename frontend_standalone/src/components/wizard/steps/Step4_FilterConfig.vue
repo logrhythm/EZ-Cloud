@@ -204,8 +204,9 @@
                         :aria-label="`Select operator for condition ${index + 1}`"
                       />
 
-                      <!-- Value Input with Suggestions -->
+                      <!-- Value Input with Suggestions (Hidden for 'exists' operator) -->
                       <q-select
+                        v-if="condition.operator !== 'exists'"
                         v-model="condition.value"
                         :options="getSampleValuesForField(condition.field)"
                         outlined
@@ -237,6 +238,19 @@
                           </q-item>
                         </template>
                       </q-select>
+
+                      <!-- Placeholder for 'exists' operator (shows helpful text) -->
+                      <div
+                        v-else
+                        class="condition-value-placeholder"
+                        :title="'No value needed - checks if attribute exists'"
+                      >
+                        <q-icon name="check_circle" color="positive" size="sm" class="q-mr-xs" />
+                        <span class="placeholder-text">No value needed</span>
+                        <q-tooltip>
+                          The "Has Attribute" operator checks if the field exists in the JSON, regardless of its value or data type.
+                        </q-tooltip>
+                      </div>
 
                       <!-- Remove Button -->
                       <q-btn
@@ -1248,7 +1262,13 @@ export default {
 
         this.localConditions.forEach((condition, index) => {
           // Skip incomplete conditions
-          if (!condition.field || !condition.operator || condition.value === '' || condition.value === null || condition.value === undefined) {
+          // Note: 'exists' operator doesn't need a value
+          if (!condition.field || !condition.operator) {
+            return
+          }
+
+          // Skip conditions that require a value but don't have one
+          if (condition.operator !== 'exists' && (condition.value === '' || condition.value === null || condition.value === undefined)) {
             return
           }
 
@@ -1370,17 +1390,24 @@ export default {
           return
         }
 
-        // Check if all conditions are complete (have field, operator, and value)
+        // Check if all conditions are complete (have field, operator, and value when required)
+        // Note: 'exists' operator doesn't require a value
         const incompleteConditions = this.localConditions.filter(condition => {
-          return !condition.field || !condition.operator ||
-                 condition.value === '' || condition.value === null || condition.value === undefined
+          if (!condition.field || !condition.operator) {
+            return true
+          }
+          // Only require value for operators that need it (not 'exists')
+          if (condition.operator !== 'exists' && (condition.value === '' || condition.value === null || condition.value === undefined)) {
+            return true
+          }
+          return false
         })
 
         if (incompleteConditions.length > 0) {
           this.$q.notify({
             type: 'warning',
             message: 'All filter conditions must be complete',
-            caption: 'Please fill in all fields (Field, Operator, and Value) for each condition',
+            caption: 'Please fill in all required fields for each condition',
             position: 'top',
             timeout: 4000,
             icon: 'warning'
@@ -2028,6 +2055,32 @@ export default {
 .condition-value {
   flex: 2;
   min-width: 150px;
+}
+
+.condition-value-placeholder {
+  flex: 2;
+  min-width: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  border: 1px solid rgba(0, 200, 83, 0.3);
+  border-radius: 4px;
+  background: rgba(0, 200, 83, 0.05);
+  color: var(--q-color-positive);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: help;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(0, 200, 83, 0.1);
+    border-color: rgba(0, 200, 83, 0.5);
+  }
+
+  .placeholder-text {
+    color: var(--q-color-positive);
+  }
 }
 
 /* Logical Operator Section with Visual Connectors */
