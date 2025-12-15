@@ -1096,8 +1096,9 @@ export class SchemaRuleService {
 
   /**
    * Find all array paths within a parsed JSON structure
+   * Supports nested fanout arrays where child arrays are relative to parent array context
    * @param {*} data - The parsed JSON data
-   * @param {string} parentPath - The parent field path
+   * @param {string} parentPath - The parent field path (e.g., "$.log")
    * @param {string} currentPath - Current path within the parsed structure
    * @returns {Array} Array of array path objects
    * @private
@@ -1111,34 +1112,78 @@ export class SchemaRuleService {
       return `${parentPath}.${subPath}`
     }
 
-    // Recursive traversal
-    const traverse = (obj, path = '') => {
+    // Recursive traversal with parent array tracking
+    const traverse = (obj, path = '', insideArrayContext = null) => {
       if (obj === null || obj === undefined) return
 
       if (Array.isArray(obj)) {
-        // Found an array - add it to the candidates
+        // Found an array
         const fullPath = buildFullPath(path)
         const arrayInfo = this._analyzeArrayStructure(obj)
 
+        // Determine if this is a root array or nested array
+        const isNestedArray = insideArrayContext !== null
+        const relativePath = isNestedArray
+          ? path.replace(/^\$\./, '') // Remove $. prefix for relative paths
+          : path || '(root)'
+
         arrayPaths.push({
           path: fullPath,
-          relativePath: path || '(root)',
+          relativePath: relativePath,
           isHomogeneous: arrayInfo.isHomogeneous,
           elementType: arrayInfo.elementType,
           sampleSize: obj.length,
-          parentPath: parentPath,
-          isParsedField: true // Mark as coming from a parsed field
+          parentPath: isNestedArray ? insideArrayContext : parentPath,
+          isParsedField: true, // Mark as coming from a parsed field
+          isNestedFanout: isNestedArray // Flag to indicate this is a nested fanout array
         })
 
-        // Traverse array elements
+        // Traverse array elements to find nested arrays
+        // Pass the current array's full path as the parent context for nested arrays
         if (obj.length > 0 && typeof obj[0] === 'object' && obj[0] !== null) {
-          traverse(obj[0], path ? `${path}[0]` : '[0]')
+          // Continue traversal inside the array element, marking we're in an array context
+          traverseObject(obj[0], '', fullPath)
         }
       } else if (typeof obj === 'object') {
         // Traverse object properties
         for (const key in obj) {
           const nextPath = path ? `${path}.${key}` : key
-          traverse(obj[key], nextPath)
+          traverse(obj[key], nextPath, insideArrayContext)
+        }
+      }
+    }
+
+    // Separate function to traverse object properties inside an array element
+    const traverseObject = (obj, pathPrefix, parentArrayPath) => {
+      if (!obj || typeof obj !== 'object') return
+
+      for (const key in obj) {
+        const value = obj[key]
+        const fieldPath = pathPrefix ? `${pathPrefix}.${key}` : `$.${key}`
+
+        if (Array.isArray(value)) {
+          // Found a nested array inside a parent array element
+          const arrayInfo = this._analyzeArrayStructure(value)
+          const relativePath = fieldPath // This is relative to parent array context
+
+          arrayPaths.push({
+            path: relativePath, // Store as relative path (e.g., $.requestParameters.changeBatch.changes[*])
+            relativePath: relativePath,
+            isHomogeneous: arrayInfo.isHomogeneous,
+            elementType: arrayInfo.elementType,
+            sampleSize: value.length,
+            parentPath: parentArrayPath, // Reference to parent array
+            isParsedField: true,
+            isNestedFanout: true // This is a nested fanout array
+          })
+
+          // Continue traversing deeper into nested array elements
+          if (value.length > 0 && typeof value[0] === 'object' && value[0] !== null) {
+            traverseObject(value[0], fieldPath, relativePath)
+          }
+        } else if (value && typeof value === 'object') {
+          // Continue traversing nested objects
+          traverseObject(value, fieldPath, parentArrayPath)
         }
       }
     }

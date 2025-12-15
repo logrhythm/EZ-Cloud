@@ -6,7 +6,7 @@
  */
 
 // Mock MappingService.resolvePathForFanout implementation
-function resolvePathForFanout(absolutePath, fanoutArrays) {
+function resolvePathForFanout (absolutePath, fanoutArrays) {
   try {
     console.log('╔═══════════════════════════════════════════════════════════════════════')
     console.log('║ resolvePathForFanout - START')

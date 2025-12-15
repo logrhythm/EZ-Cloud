@@ -94,6 +94,20 @@ const getInitialState = () => ({
     lastModified: null
   },
 
+  // Policy file upload state (for update mode - Phase 1)
+  policyUpload: {
+    uploadedFile: null, // Original File object
+    uploadedPolicyData: null, // Parsed policy JSON
+    validationResult: {
+      valid: false,
+      errors: [],
+      warnings: []
+    },
+    metadata: null, // Policy metadata (name, complexity, etc.)
+    isUploading: false,
+    uploadError: null
+  },
+
   // Sample data (Step 2)
   sampleData: {
     inputMethod: 'manual', // manual, file, multiple
@@ -336,6 +350,36 @@ const mutations = {
     state.projectConfig.lastModified = new Date().toISOString()
   },
 
+  // Policy upload mutations (Phase 1)
+  SET_UPLOADED_POLICY_FILE (state, file) {
+    state.policyUpload.uploadedFile = file
+  },
+
+  SET_UPLOADED_POLICY_DATA (state, { policyData, validationResult, metadata }) {
+    state.policyUpload.uploadedPolicyData = policyData
+    state.policyUpload.validationResult = validationResult || { valid: false, errors: [], warnings: [] }
+    state.policyUpload.metadata = metadata || null
+  },
+
+  SET_POLICY_UPLOAD_LOADING (state, isLoading) {
+    state.policyUpload.isUploading = isLoading
+  },
+
+  SET_POLICY_UPLOAD_ERROR (state, error) {
+    state.policyUpload.uploadError = error
+  },
+
+  CLEAR_UPLOADED_POLICY (state) {
+    state.policyUpload = {
+      uploadedFile: null,
+      uploadedPolicyData: null,
+      validationResult: { valid: false, errors: [], warnings: [] },
+      metadata: null,
+      isUploading: false,
+      uploadError: null
+    }
+  },
+
   // Sample data mutations
   SET_SAMPLE_DATA (state, data) {
     state.sampleData = { ...state.sampleData, ...data }
@@ -411,6 +455,23 @@ const mutations = {
     if (state.schemaRules.parsedStringifiedJsonFields) {
       delete state.schemaRules.parsedStringifiedJsonFields[fieldPath]
     }
+  },
+
+  SET_CHILD_FANOUTS (state, childFanouts) {
+    console.log('[Vuex] SET_CHILD_FANOUTS mutation called with:', childFanouts)
+    state.schemaRules.childfanouts = childFanouts || []
+  },
+
+  SET_CONVERT_TO_JSON_FIELDS (state, fields) {
+    console.log('[Vuex] SET_CONVERT_TO_JSON_FIELDS mutation called with:', fields)
+    state.schemaRules.convertToJson = fields || []
+  },
+
+  SET_SCHEMA_TYPE (state, schemaType) {
+    console.log('[Vuex] SET_SCHEMA_TYPE mutation called with:', schemaType)
+    // Store schema type if needed (multiline vs singleline)
+    // Currently not used in state structure, but adding for future extensibility
+    state.schemaRules.schemaType = schemaType
   },
 
   // Filter rules mutations
@@ -936,6 +997,87 @@ const actions = {
       console.error('Failed to clear wizard state:', error)
       return false
     }
+  },
+
+  // Policy file upload actions (Phase 1)
+  async uploadPolicyFile ({ commit }, file) {
+    // Import the PolicyValidator service dynamically
+    const { PolicyValidator } = await import('../services/wizard/policyValidator.js')
+
+    commit('SET_POLICY_UPLOAD_LOADING', true)
+    commit('SET_POLICY_UPLOAD_ERROR', null)
+
+    try {
+      console.log('[Vuex] uploadPolicyFile: Starting validation for file:', file?.name)
+
+      // Validate the policy file
+      const validationResult = await PolicyValidator.validatePolicyFile(file)
+
+      console.log('[Vuex] uploadPolicyFile: Validation result:', {
+        valid: validationResult.valid,
+        errorCount: validationResult.errors.length,
+        warningCount: validationResult.warnings.length
+      })
+
+      // Store the file object
+      commit('SET_UPLOADED_POLICY_FILE', file)
+
+      // Store the validation result and parsed policy data
+      commit('SET_UPLOADED_POLICY_DATA', {
+        policyData: validationResult.policy,
+        validationResult: {
+          valid: validationResult.valid,
+          errors: validationResult.errors,
+          warnings: validationResult.warnings
+        },
+        metadata: validationResult.metadata
+      })
+
+      // If validation succeeded, also update projectConfig.existingPolicy
+      if (validationResult.valid && validationResult.policy) {
+        commit('UPDATE_PROJECT_CONFIG', {
+          existingPolicy: validationResult.policy
+        })
+
+        console.log('[Vuex] uploadPolicyFile: Policy successfully uploaded and stored')
+      } else {
+        console.warn('[Vuex] uploadPolicyFile: Validation failed with errors:', validationResult.errors)
+      }
+
+      return validationResult
+    } catch (error) {
+      console.error('[Vuex] uploadPolicyFile: Unexpected error:', error)
+      const errorMessage = error.message || 'Unexpected error during file upload'
+      commit('SET_POLICY_UPLOAD_ERROR', errorMessage)
+      commit('SET_UPLOADED_POLICY_DATA', {
+        policyData: null,
+        validationResult: {
+          valid: false,
+          errors: [errorMessage],
+          warnings: []
+        },
+        metadata: null
+      })
+
+      return {
+        valid: false,
+        errors: [errorMessage],
+        warnings: [],
+        policy: null,
+        metadata: null
+      }
+    } finally {
+      commit('SET_POLICY_UPLOAD_LOADING', false)
+    }
+  },
+
+  clearPolicyFile ({ commit }) {
+    console.log('[Vuex] clearPolicyFile: Clearing uploaded policy')
+    commit('CLEAR_UPLOADED_POLICY')
+    commit('UPDATE_PROJECT_CONFIG', {
+      existingPolicy: null,
+      mode: 'create'
+    })
   },
 
   // Policy generation actions

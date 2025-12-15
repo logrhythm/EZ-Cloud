@@ -71,6 +71,20 @@
         >
           <q-tooltip>Select for JSON parsing</q-tooltip>
         </q-checkbox>
+
+        <!-- Warning badge for missing arrays -->
+        <q-badge
+          v-if="isArray && isMissingArray"
+          color="orange"
+          text-color="white"
+          class="q-ml-sm"
+        >
+          <q-icon name="warning" size="xs" class="q-mr-xs" />
+          Missing
+          <q-tooltip>
+            This array is defined in the policy but not found in the current sample data
+          </q-tooltip>
+        </q-badge>
       </div>
 
       <!-- Debug indicator for array paths -->
@@ -92,6 +106,7 @@
           :selected-paths="selectedPaths"
           :potential-json-paths="potentialJsonPaths"
           :array-paths="arrayPaths"
+          :missing-array-paths="missingArrayPaths"
           @toggle-node="(p) => $emit('toggle-node', p)"
           @select-field="(p, t) => $emit('select-field', p, t)"
         />
@@ -113,6 +128,7 @@
               :selected-paths="selectedPaths"
               :potential-json-paths="potentialJsonPaths"
               :array-paths="arrayPaths"
+              :missing-array-paths="missingArrayPaths"
               @toggle-node="(p) => $emit('toggle-node', p)"
               @select-field="(p, t) => $emit('select-field', p, t)"
             />
@@ -183,6 +199,14 @@ export default defineComponent({
      * Paths of fields detected as arrays
      */
     arrayPaths: {
+      type: Array,
+      default: () => []
+    },
+
+    /**
+     * Paths of arrays that are missing from sample data but defined in policy
+     */
+    missingArrayPaths: {
       type: Array,
       default: () => []
     }
@@ -377,14 +401,50 @@ export default defineComponent({
 
     // Check if this node is selected as array or JSON
     const isSelectedArray = computed(() => {
-      // Check if this path is included in the selected paths and is an array path
-      const pathIncluded = props.selectedPaths.includes(props.path)
+      // Normalize path for comparison - remove $. prefix and [0] suffix
+      const normalizePath = (path) => {
+        if (!path) return ''
+        return path
+          .replace(/^\$\.?/, '') // Remove $. or $ prefix
+          .replace(/\[0\]$/, '') // Remove [0] suffix
+          .replace(/\[\*\]$/, '') // Remove [*] suffix
+          .replace(/\[\d+\]/g, '[0]') // Normalize all numeric indices to [0]
+      }
+
+      const normalizedCurrentPath = normalizePath(props.path)
+
+      // Check if any selected path matches this path (after normalization)
+      const pathIncluded = props.selectedPaths.some(selectedPath => {
+        const normalizedSelectedPath = normalizePath(selectedPath)
+
+        // Exact match
+        if (normalizedSelectedPath === normalizedCurrentPath) {
+          return true
+        }
+
+        // For nested fanout arrays: check if the current path ends with the selected path
+        // This handles cases where:
+        //   - currentPath: "log.Records[0].requestParameters.changeBatch.changes"
+        //   - selectedPath: "$.requestParameters.changeBatch.changes" (relative to parent)
+        // After normalization:
+        //   - currentPath: "log.Records[0].requestParameters.changeBatch.changes"
+        //   - selectedPath: "requestParameters.changeBatch.changes"
+        // The current path should end with ".requestParameters.changeBatch.changes"
+        if (normalizedCurrentPath.endsWith('.' + normalizedSelectedPath) ||
+            normalizedCurrentPath.endsWith('[0].' + normalizedSelectedPath)) {
+          return true
+        }
+
+        return false
+      })
+
       const isArrayPath = props.arrayPaths.includes(props.path)
       const result = pathIncluded && isArrayPath
 
       // Only log for array nodes to reduce noise
       if (isArray.value) {
         console.log(`isSelectedArray computed - Path: ${props.path}`)
+        console.log('  - normalizedCurrentPath:', normalizedCurrentPath)
         console.log('  - pathIncluded:', pathIncluded)
         console.log('  - isArrayPath:', isArrayPath)
         console.log('  - result:', result)
@@ -395,8 +455,50 @@ export default defineComponent({
       return result
     })
 
+    /**
+     * Check if this array is marked as missing from sample data
+     */
+    const isMissingArray = computed(() => {
+      if (!isArray.value) return false
+
+      // Normalize path for comparison
+      const normalizePath = (path) => {
+        if (!path) return ''
+        return path
+          .replace(/^\$\.?/, '') // Remove $. or $ prefix
+          .replace(/\[0\]$/, '') // Remove [0] suffix
+          .replace(/\[\*\]$/, '') // Remove [*] suffix
+      }
+
+      const normalizedCurrentPath = normalizePath(props.path)
+
+      // Check if this path is in the missing arrays list
+      return props.missingArrayPaths.some(missingPath => {
+        const normalizedMissingPath = normalizePath(missingPath)
+        return normalizedMissingPath === normalizedCurrentPath ||
+               normalizedCurrentPath.endsWith('.' + normalizedMissingPath)
+      })
+    })
+
     const isSelectedJson = computed(() => {
-      return props.selectedPaths.includes(props.path) && props.potentialJsonPaths.includes(props.path)
+      // Normalize path for comparison - remove $. prefix and [0] suffix
+      const normalizePath = (path) => {
+        if (!path) return ''
+        return path
+          .replace(/^\$\.?/, '') // Remove $. or $ prefix
+          .replace(/\[0\]$/, '') // Remove [0] suffix
+          .replace(/\[\*\]$/, '') // Remove [*] suffix
+      }
+
+      const normalizedCurrentPath = normalizePath(props.path)
+
+      // Check if any selected path matches this path (after normalization)
+      const pathIncluded = props.selectedPaths.some(selectedPath => {
+        const normalizedSelectedPath = normalizePath(selectedPath)
+        return normalizedSelectedPath === normalizedCurrentPath
+      })
+
+      return pathIncluded && props.potentialJsonPaths.includes(props.path)
     })
 
     // Display helpers
@@ -668,6 +770,7 @@ export default defineComponent({
       isSelectable,
       isPotentialJson,
       isSelectedArray,
+      isMissingArray,
       isSelectedJson,
       displayKey,
       displayValue,
@@ -840,6 +943,14 @@ export default defineComponent({
 /* Style the debug indicator */
 .debug-indicator {
   margin-left: 8px;
+}
+
+/* Style for missing array indicators */
+.node-content:has(.selection-controls .q-badge) {
+  background-color: rgba(255, 152, 0, 0.05);
+  border-left: 2px solid #ff9800;
+  padding-left: 4px;
+  margin-left: -6px;
 }
 
 .node-children {

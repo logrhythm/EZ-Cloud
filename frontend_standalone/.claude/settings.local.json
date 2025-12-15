@@ -33,7 +33,8 @@
       "Bash(done)",
       "Bash(npx eslint:*)",
       "Bash(npm run serve)",
-      "Bash(cat -n)"
+      "Bash(cat -n)",
+      "Bash(cat:*)"
     ],
     "deny": []
   }

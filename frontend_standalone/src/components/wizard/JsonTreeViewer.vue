@@ -21,6 +21,7 @@
           :selected-paths="selectedPaths"
           :potential-json-paths="potentialJsonPaths"
           :array-paths="selectionMode === 'array' ? normalizedArrayPaths : arrayPaths"
+          :missing-array-paths="missingArrayPaths"
           @toggle-node="toggleNode"
           @select-field="selectField"
         />
@@ -73,6 +74,14 @@ export default defineComponent({
     arrayOnlyMode: {
       type: Boolean,
       default: false
+    },
+
+    /**
+     * Array of paths that are missing from sample data but defined in policy
+     */
+    missingArrayPaths: {
+      type: Array,
+      default: () => []
     }
   },
 

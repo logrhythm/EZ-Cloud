@@ -58,11 +58,38 @@
                   />
                 </q-item-section>
                 <q-item-section>
-                  <q-item-label>{{ field }}</q-item-label>
-                  <q-item-label caption>Contains stringified JSON</q-item-label>
+                  <q-item-label>
+                    {{ field }}
+                    <!-- Warning indicator for missing or invalid format fields -->
+                    <q-icon
+                      v-if="isFieldMissing(field)"
+                      name="warning"
+                      :color="getFieldWarningBadgeColor(field) === 'red' ? 'negative' : 'warning'"
+                      size="sm"
+                      class="q-ml-xs"
+                    >
+                      <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 8]">
+                        {{ getFieldWarningMessage(field) }}
+                      </q-tooltip>
+                    </q-icon>
+                  </q-item-label>
+                  <q-item-label caption>
+                    <span v-if="!isFieldMissing(field)">Contains stringified JSON</span>
+                    <span v-else-if="isFieldMissing(field) && isFieldMissing(field).reason === 'missing'" class="text-warning">
+                      <q-icon name="info" size="xs" class="q-mr-xs" />
+                      Not found in current sample data
+                    </span>
+                    <span v-else-if="isFieldMissing(field) && isFieldMissing(field).reason === 'invalid-format'" class="text-negative">
+                      <q-icon name="error" size="xs" class="q-mr-xs" />
+                      {{ isFieldMissing(field).message }}
+                    </span>
+                  </q-item-label>
                 </q-item-section>
                 <q-item-section side>
-                  <q-badge color="primary">string</q-badge>
+                  <q-badge v-if="!isFieldMissing(field)" color="primary">string</q-badge>
+                  <q-badge v-else :color="getFieldWarningBadgeColor(field)">
+                    {{ getFieldWarningBadgeText(field) }}
+                  </q-badge>
                 </q-item-section>
               </q-item>
             </q-list>
@@ -85,7 +112,37 @@
             <q-list bordered separator>
               <q-item v-for="field in selectedConvertToJsonFields" :key="field">
                 <q-item-section>
-                  <q-item-label>{{ field }}</q-item-label>
+                  <q-item-label>
+                    {{ field }}
+                    <!-- Warning indicator for missing or invalid format fields -->
+                    <q-icon
+                      v-if="isFieldMissing(field)"
+                      name="warning"
+                      :color="getFieldWarningBadgeColor(field) === 'red' ? 'negative' : 'warning'"
+                      size="sm"
+                      class="q-ml-xs"
+                    >
+                      <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 8]">
+                        {{ getFieldWarningMessage(field) }}
+                      </q-tooltip>
+                    </q-icon>
+                    <!-- Badge showing the issue type -->
+                    <q-badge
+                      v-if="isFieldMissing(field)"
+                      :color="getFieldWarningBadgeColor(field)"
+                      class="q-ml-xs"
+                    >
+                      {{ getFieldWarningBadgeText(field) }}
+                    </q-badge>
+                  </q-item-label>
+                  <q-item-label caption v-if="isFieldMissing(field)">
+                    <span v-if="isFieldMissing(field).reason === 'missing'" class="text-warning">
+                      Not found in current sample data
+                    </span>
+                    <span v-else-if="isFieldMissing(field).reason === 'invalid-format'" class="text-negative">
+                      {{ isFieldMissing(field).message }}
+                    </span>
+                  </q-item-label>
                 </q-item-section>
                 <q-item-section side>
                   <q-btn
@@ -151,10 +208,12 @@
               <div class="json-tree">
                 <JsonTreeViewer
                   v-if="sampleData && sampleData.parsedData"
+                  :key="`tree-${selectedFanoutFields.join(',')}`"
                   :data="fanoutArrayTreeData"
                   :selection-mode="'array'"
                   :array-only-mode="true"
                   :initial-selected-paths="selectedFanoutFields.length > 0 ? selectedFanoutFields : []"
+                  :missing-array-paths="missingFanoutArrayPaths"
                   @update:selected="handleSelectedUpdate"
                 />
                 <!-- Debug Info - Remove after fixing -->
@@ -188,6 +247,19 @@
                 <q-item-section>
                   <q-item-label>
                     {{ array }}
+                    <!-- Badge for missing arrays -->
+                    <q-badge
+                      v-if="isFanoutArrayMissing(array)"
+                      color="orange"
+                      text-color="white"
+                      class="q-ml-sm"
+                    >
+                      <q-icon name="warning" size="xs" class="q-mr-xs" />
+                      Missing
+                      <q-tooltip>
+                        This array is defined in the policy but not found in the current sample data
+                      </q-tooltip>
+                    </q-badge>
                     <q-badge
                       v-if="isParsedJsonArray(array)"
                       color="purple"
@@ -197,9 +269,28 @@
                       <q-icon name="code" size="xs" class="q-mr-xs" />
                       Parsed JSON
                     </q-badge>
+                    <!-- Badge for nested fanout arrays -->
+                    <q-badge
+                      v-if="fanoutCandidates.find(f => f.path === array && f.isNestedFanout)"
+                      color="orange"
+                      text-color="white"
+                      class="q-ml-sm"
+                    >
+                      <q-icon name="call_split" size="xs" class="q-mr-xs" />
+                      Nested Fanout
+                      <q-tooltip>
+                        This array is nested within a parent fanout array. Each element of the parent array will be fanned out, and then this nested array will be processed.
+                      </q-tooltip>
+                    </q-badge>
                   </q-item-label>
                   <q-item-label caption>
-                    {{ getArrayFieldInfo(array) }}
+                    <span v-if="isFanoutArrayMissing(array)" class="text-warning">
+                      <q-icon name="info" size="xs" class="q-mr-xs" />
+                      Not found in current sample data
+                    </span>
+                    <span v-else>
+                      {{ getArrayFieldInfo(array) }}
+                    </span>
                   </q-item-label>
                 </q-item-section>
                 <q-item-section side>
@@ -262,7 +353,8 @@ export default {
       fanoutCandidates: [],
       representativeData: null, // Holds the representative structure for multi-line mode
       baseFanoutCandidates: [], // Store the original fanout candidates before adding parsed arrays
-      parsedJsonArrays: [] // Track arrays discovered from parsed JSON fields
+      parsedJsonArrays: [], // Track arrays discovered from parsed JSON fields
+      missingPolicyFields: [] // Track fields from policy not in sample data (Scenario 1)
     }
   },
 
@@ -285,6 +377,15 @@ export default {
      */
     isMultiLineLog () {
       return this.sampleData?.logType === 'multiline'
+    },
+
+    /**
+     * Get array of missing fanout array paths for tree visualization
+     */
+    missingFanoutArrayPaths () {
+      return this.fanoutCandidates
+        .filter(c => c.isMissing)
+        .map(c => c.path)
     },
 
     /**
@@ -313,14 +414,67 @@ export default {
         )
       }
 
-      const build = (node) => {
+      // Inject synthetic nodes for missing fanout arrays
+      // This ensures missing arrays appear in the tree with visual indicators
+      const missingArrays = this.fanoutCandidates.filter(c => c.isMissing)
+      if (missingArrays.length > 0) {
+        console.log('[Step3] Injecting missing arrays into tree data:', missingArrays.map(a => a.path))
+
+        // Clone data to avoid mutations
+        data = JSON.parse(JSON.stringify(data))
+
+        // Inject each missing array into the tree structure
+        for (const missingArray of missingArrays) {
+          const path = missingArray.path
+          console.log('[Step3] Injecting path:', path)
+
+          // Split path into parts (e.g., "requestParameters.changeBatch.changes" -> ["requestParameters", "changeBatch", "changes"])
+          const parts = path.split('.')
+
+          // Navigate/create the path in the data structure
+          let current = data
+          for (let i = 0; i < parts.length - 1; i++) {
+            const part = parts[i]
+            if (!current[part]) {
+              // Create intermediate object if it doesn't exist
+              current[part] = {}
+              console.log(`[Step3] Created intermediate node: ${parts.slice(0, i + 1).join('.')}`)
+            }
+            current = current[part]
+          }
+
+          // Set the final array node with a special marker
+          const lastPart = parts[parts.length - 1]
+          if (!current[lastPart]) {
+            // Create a synthetic empty array with a marker
+            current[lastPart] = []
+            // Add metadata to mark this as synthetic (we'll use a Symbol or special property)
+            // Since we're working with JSON, we'll add a special first element
+            current[lastPart].__isMissing = true
+            console.log(`[Step3] Created synthetic array node: ${path}`)
+          }
+        }
+      }
+
+      const build = (node, currentPath = '') => {
         if (node === null || node === undefined) return {}
+
+        // Check if this is a marked missing array
+        const isMissingArray = Array.isArray(node) && node.__isMissing === true
+
         if (Array.isArray(node)) {
-          if (node.length === 0) return []
+          if (node.length === 0 || isMissingArray) {
+            // For empty arrays or missing arrays, return empty array with marker
+            const arr = []
+            if (isMissingArray) {
+              arr.__isMissing = true
+            }
+            return arr
+          }
           // For arrays of objects, keep first element reduced
           const first = node[0]
           if (typeof first === 'object' && first !== null) {
-            return [build(first)]
+            return [build(first, currentPath)]
           }
           // Primitive arrays: keep entire array
           return node
@@ -328,13 +482,17 @@ export default {
         if (typeof node === 'object') {
           const out = {}
           for (const k of Object.keys(node)) {
+            if (k === '__isMissing') continue // Skip metadata property
+
             const v = node[k]
+            const childPath = currentPath ? `${currentPath}.${k}` : k
+
             if (Array.isArray(v)) {
-              out[k] = build(v)
+              out[k] = build(v, childPath)
             } else if (v && typeof v === 'object') {
-              const child = build(v)
+              const child = build(v, childPath)
               // include ancestor only if descendant has arrays
-              if (child && ((Array.isArray(child) && child.length > 0) || (typeof child === 'object' && Object.keys(child).length > 0))) {
+              if (child && ((Array.isArray(child) && child.length >= 0) || (typeof child === 'object' && Object.keys(child).length > 0))) {
                 out[k] = child
               }
             }
@@ -343,6 +501,7 @@ export default {
         }
         return {}
       }
+
       return build(data)
     }
   },
@@ -467,6 +626,166 @@ export default {
 
   methods: {
     ...mapMutations('wizard', ['UPDATE_SCHEMA_RULES']),
+
+    /**
+     * Check if a field path exists in the sample data
+     * @param {string} fieldPath - JSONPath expression (e.g., "$.log" or "log")
+     * @returns {boolean} - True if field exists in sample data, false otherwise
+     */
+    checkFieldExistsInSampleData (fieldPath) {
+      try {
+        const sampleData = this.sampleData?.parsedData
+        if (!sampleData) {
+          console.warn('[Step3] checkFieldExistsInSampleData: No sample data available')
+          return false
+        }
+
+        // Normalize the path (remove leading $.)
+        const normalizedPath = fieldPath.replace(/^\$\./, '')
+
+        console.log('[Step3] Checking field existence:', {
+          originalPath: fieldPath,
+          normalizedPath,
+          sampleDataKeys: Object.keys(sampleData)
+        })
+
+        // Split path by dots and brackets, filtering out empty strings
+        const pathParts = normalizedPath.split(/[.[\]]+/).filter(Boolean)
+
+        // Traverse the object
+        let current = sampleData
+        for (let i = 0; i < pathParts.length; i++) {
+          const part = pathParts[i]
+
+          // Check if current is an object/array and has the property
+          if (current && typeof current === 'object') {
+            // Handle array notation (e.g., "0", "1", "*")
+            if (Array.isArray(current)) {
+              // For arrays, check if the part is a number or "*" (wildcard)
+              if (part === '*') {
+                // Wildcard - check if array has at least one element
+                if (current.length === 0) {
+                  console.log(`[Step3] Array is empty at path segment: ${part}`)
+                  return false
+                }
+                // Continue with first element for subsequent checks
+                current = current[0]
+                continue
+              } else if (!isNaN(part)) {
+                // Numeric index
+                const index = parseInt(part, 10)
+                if (index >= current.length) {
+                  console.log(`[Step3] Array index ${index} out of bounds at path segment: ${part}`)
+                  return false
+                }
+                current = current[index]
+                continue
+              }
+            }
+
+            // Check if property exists
+            if (part in current) {
+              current = current[part]
+            } else {
+              console.log(`[Step3] Property "${part}" not found in current object at path segment ${i}/${pathParts.length}`)
+              return false
+            }
+          } else {
+            console.log(`[Step3] Current value is not an object/array at path segment: ${part}`)
+            return false
+          }
+        }
+
+        console.log(`[Step3] Field "${fieldPath}" EXISTS in sample data`)
+        return true
+      } catch (error) {
+        console.error('[Step3] Error checking field existence:', error)
+        return false
+      }
+    },
+
+    /**
+     * Check if a field contains stringified JSON (valid for String to JSON conversion)
+     * @param {string} fieldPath - JSONPath expression (e.g., "$.log" or "log")
+     * @returns {Object} - { valid: boolean, reason: string|null, actualType: string|null }
+     */
+    checkFieldContainsStringifiedJson (fieldPath) {
+      try {
+        const sampleData = this.sampleData?.parsedData
+        if (!sampleData) {
+          console.warn('[Step3] checkFieldContainsStringifiedJson: No sample data available')
+          return { valid: true, reason: null }
+        }
+
+        // Get the field value using the same logic as checkFieldExistsInSampleData
+        const normalizedPath = fieldPath.replace(/^\$\./, '')
+        const pathParts = normalizedPath.split(/[.[\]]+/).filter(Boolean)
+
+        let current = sampleData
+        for (const part of pathParts) {
+          if (current && typeof current === 'object' && part in current) {
+            current = current[part]
+          } else {
+            // Field doesn't exist - handled by other check
+            return { valid: true, reason: null }
+          }
+        }
+
+        console.log(`[Step3] Field "${fieldPath}" value type:`, typeof current, '| isArray:', Array.isArray(current))
+
+        // Field exists, now check if it's a string
+        if (typeof current !== 'string') {
+          // Field is not a string (it's already JSON object/array)
+          const actualType = Array.isArray(current) ? 'array' : typeof current
+          console.warn(`[Step3] Field "${fieldPath}" contains ${actualType} instead of stringified JSON`)
+          return {
+            valid: false,
+            reason: `Field contains ${actualType} instead of stringified JSON`,
+            actualType: actualType
+          }
+        }
+
+        // Field is a string, check if it contains valid JSON
+        try {
+          JSON.parse(current)
+          console.log(`[Step3] Field "${fieldPath}" contains VALID stringified JSON`)
+          return { valid: true, reason: null } // Valid stringified JSON
+        } catch (parseError) {
+          // String but not valid JSON
+          console.warn(`[Step3] Field "${fieldPath}" is a string but does not contain valid JSON`)
+          return {
+            valid: false,
+            reason: 'Field is a string but does not contain valid JSON',
+            actualType: 'string (not parseable as JSON)'
+          }
+        }
+      } catch (error) {
+        console.error('[Step3] Error checking field JSON format:', error)
+        return { valid: true, reason: null } // Don't block on errors
+      }
+    },
+
+    /**
+     * Check if a fanout array is marked as missing from sample data
+     * @param {string} arrayPath - The array path to check
+     * @returns {boolean} - True if array is missing, false otherwise
+     */
+    isFanoutArrayMissing (arrayPath) {
+      const candidate = this.fanoutCandidates.find(f => f.path === arrayPath)
+      return candidate?.isMissing || false
+    },
+
+    /**
+     * Check if a field is marked as missing from sample data
+     * @param {string} fieldPath - The field path to check
+     * @returns {Object|null} - The missing field object or null
+     */
+    isFieldMissing (fieldPath) {
+      const missing = this.missingPolicyFields.find(
+        field => field.type === 'convertoJson' && field.path === fieldPath
+      )
+      return missing || null
+    },
 
     analyzeSampleData () {
       console.log('=== analyzeSampleData called ===')
@@ -676,13 +995,18 @@ export default {
         info.push('From parsed JSON')
       }
 
+      // Add badge for nested fanout arrays
+      if (field.isNestedFanout) {
+        info.push(`Nested fanout (parent: ${field.parentPath})`)
+      }
+
       if (field.isHomogeneous) {
         info.push(`Homogeneous (${field.elementType})`)
       } else {
         info.push('Heterogeneous')
       }
 
-      if (field.parentPath && !field.isParsedField) {
+      if (field.parentPath && !field.isParsedField && !field.isNestedFanout) {
         info.push(`Parent: ${field.parentPath}`)
       }
 
@@ -698,9 +1022,607 @@ export default {
     },
 
     /**
+     * Get the warning message for a field
+     * @param {string} fieldPath - The field path to check
+     * @returns {string} - The warning message
+     */
+    getFieldWarningMessage (fieldPath) {
+      const missing = this.missingPolicyFields.find(
+        field => field.type === 'convertoJson' && field.path === fieldPath
+      )
+
+      if (!missing) return ''
+
+      if (missing.reason === 'missing') {
+        return 'This field is defined in the policy but not found in the current sample data'
+      } else if (missing.reason === 'invalid-format') {
+        return `This field contains ${missing.actualType} instead of stringified JSON`
+      }
+
+      return missing.message
+    },
+
+    /**
+     * Get the badge color for a field warning
+     * @param {string} fieldPath - The field path to check
+     * @returns {string} - The badge color
+     */
+    getFieldWarningBadgeColor (fieldPath) {
+      const missing = this.missingPolicyFields.find(
+        field => field.type === 'convertoJson' && field.path === fieldPath
+      )
+
+      if (!missing) return 'grey'
+
+      if (missing.reason === 'missing') return 'orange'
+      if (missing.reason === 'invalid-format') return 'red'
+
+      return 'warning'
+    },
+
+    /**
+     * Get the badge text for a field warning
+     * @param {string} fieldPath - The field path to check
+     * @returns {string} - The badge text
+     */
+    getFieldWarningBadgeText (fieldPath) {
+      const missing = this.missingPolicyFields.find(
+        field => field.type === 'convertoJson' && field.path === fieldPath
+      )
+
+      if (!missing) return ''
+
+      if (missing.reason === 'missing') return 'missing'
+      if (missing.reason === 'invalid-format') return 'wrong type'
+
+      return 'warning'
+    },
+
+    /**
      * Update fanout candidates based on selected Convert to JSON fields
      * This method parses selected JSON string fields and adds their nested arrays to fanout candidates
      */
+    /**
+     * Pre-fill Step 3 from uploaded policy data (Update mode - Phase 2)
+     * Extracts schema configuration from policy and populates UI
+     * @param {Object} schemaRule - The schemaRule object from uploaded policy
+     */
+    async prefillFromPolicy (schemaRule) {
+      try {
+        console.log('╔══════════════════════════════════════════════════════════════════════════════')
+        console.log('║ [Step 3] prefillFromPolicy: Starting pre-fill process')
+        console.log('╠══════════════════════════════════════════════════════════════════════════════')
+        console.log('║ schemaRule:', JSON.stringify(schemaRule, null, 2))
+        console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+        // Wait for sample data analysis to complete
+        // This ensures fanoutCandidates and convertToJsonCandidates are populated
+        await this.$nextTick()
+
+        // Step 1: Extract and pre-fill convertToJson fields
+        const convertToJsonFields = schemaRule.convertoJson || schemaRule.ConvertoJson || []
+        console.log('[Step 3] Extracted convertToJson fields:', convertToJsonFields)
+
+        // Track missing fields for warning display (Scenario 1)
+        const missingFields = []
+
+        if (convertToJsonFields.length > 0) {
+          // Check each field for existence in sample data
+          const fieldsToSelect = []
+
+          console.log('╔══════════════════════════════════════════════════════════════════════════════')
+          console.log('║ [Step 3] Processing convertToJson fields from policy')
+          console.log('╠══════════════════════════════════════════════════════════════════════════════')
+          console.log('║ Current convertToJsonCandidates:', JSON.stringify(this.convertToJsonCandidates))
+          console.log('║ Fields to process:', JSON.stringify(convertToJsonFields))
+          console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+          for (const fieldPath of convertToJsonFields) {
+            console.log('╔══════════════════════════════════════════════════════════════════════════════')
+            console.log('║ [Step 3] Processing field:', fieldPath)
+            console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+            // Check if field exists in sample data
+            const fieldExists = this.checkFieldExistsInSampleData(fieldPath)
+
+            if (!fieldExists) {
+              console.warn('║ ❌ Field from policy NOT FOUND in sample data:', fieldPath)
+              missingFields.push({
+                type: 'convertoJson',
+                path: fieldPath,
+                message: 'Field defined in policy but not found in current sample data',
+                reason: 'missing'
+              })
+            } else {
+              console.log('║ ✅ Field from policy FOUND in sample data:', fieldPath)
+
+              // Field exists, now check if it contains stringified JSON
+              const formatCheck = this.checkFieldContainsStringifiedJson(fieldPath)
+
+              if (!formatCheck.valid) {
+                console.warn('║ ⚠️  Field exists but has WRONG FORMAT:', {
+                  path: fieldPath,
+                  reason: formatCheck.reason,
+                  actualType: formatCheck.actualType
+                })
+
+                missingFields.push({
+                  type: 'convertoJson',
+                  path: fieldPath,
+                  message: formatCheck.reason,
+                  reason: 'invalid-format',
+                  actualType: formatCheck.actualType
+                })
+              } else {
+                console.log('║ ✅ Field has VALID stringified JSON format')
+              }
+            }
+
+            // Always add to selection (even if missing or invalid format) to reflect policy configuration
+            // Three scenarios:
+            // 1. Field exists in convertToJsonCandidates (normal case) → add to selection
+            // 2. Field is missing from sample data → add to candidates and selection
+            // 3. Field exists but has wrong format → add to candidates and selection
+            console.log('║')
+            console.log('║ Checking if field is in convertToJsonCandidates...')
+            console.log('║   convertToJsonCandidates.includes("' + fieldPath + '"):', this.convertToJsonCandidates.includes(fieldPath))
+
+            if (this.convertToJsonCandidates.includes(fieldPath)) {
+              // Field already in candidates (normal case)
+              fieldsToSelect.push(fieldPath)
+              console.log('║ ✓ Field already in convertToJsonCandidates, adding to selection:', fieldPath)
+            } else {
+              // Field NOT in candidates - either missing or has wrong format
+              // Add it to convertToJsonCandidates so it can be displayed with warning
+              console.log('║ ✓ Field NOT in candidates - adding it now')
+              this.convertToJsonCandidates.push(fieldPath)
+              fieldsToSelect.push(fieldPath)
+
+              if (!fieldExists) {
+                console.log('║ ✓ Added MISSING field to convertToJsonCandidates:', fieldPath)
+              } else {
+                console.log('║ ✓ Added INVALID FORMAT field to convertToJsonCandidates:', fieldPath)
+              }
+            }
+
+            console.log('║')
+            console.log('║ Updated state after processing field:')
+            console.log('║   convertToJsonCandidates.length:', this.convertToJsonCandidates.length)
+            console.log('║   fieldsToSelect.length:', fieldsToSelect.length)
+            console.log('╚══════════════════════════════════════════════════════════════════════════════')
+          }
+
+          // Store missing fields for warning display
+          this.missingPolicyFields = missingFields
+
+          console.log('╔══════════════════════════════════════════════════════════════════════════════')
+          console.log('║ [Step 3] SUMMARY: All convertToJson fields processed')
+          console.log('╠══════════════════════════════════════════════════════════════════════════════')
+          console.log('║ Final convertToJsonCandidates:', JSON.stringify(this.convertToJsonCandidates))
+          console.log('║ Fields to select:', JSON.stringify(fieldsToSelect))
+          console.log('║ Missing/Invalid fields:', JSON.stringify(missingFields))
+          console.log('║')
+          console.log('║ Breakdown:')
+          console.log('║   - Total candidates:', this.convertToJsonCandidates.length)
+          console.log('║   - Total to select:', fieldsToSelect.length)
+          console.log('║   - Missing from sample:', missingFields.filter(f => f.reason === 'missing').length)
+          console.log('║   - Invalid format:', missingFields.filter(f => f.reason === 'invalid-format').length)
+          console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+          if (fieldsToSelect.length > 0) {
+            this.selectedConvertToJsonFields = [...fieldsToSelect]
+            console.log('╔══════════════════════════════════════════════════════════════════════════════')
+            console.log('║ [Step 3] Setting selectedConvertToJsonFields')
+            console.log('╠══════════════════════════════════════════════════════════════════════════════')
+            console.log('║ selectedConvertToJsonFields:', JSON.stringify(this.selectedConvertToJsonFields))
+            console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+            // Trigger parsing of JSON fields to discover nested arrays
+            // Only parse fields that actually exist in sample data
+            const existingFields = fieldsToSelect.filter(field =>
+              !missingFields.some(mf => mf.path === field)
+            )
+
+            if (existingFields.length > 0) {
+              await this.$nextTick()
+              console.log('[Step 3] Calling updateFanoutCandidatesFromParsedJson with existingFields:', existingFields)
+              this.updateFanoutCandidatesFromParsedJson(existingFields, [])
+
+              // Wait for the fanout candidates to be fully updated
+              await this.$nextTick()
+              await this.$nextTick()
+
+              console.log('[Step 3] After updateFanoutCandidatesFromParsedJson, fanoutCandidates.length:', this.fanoutCandidates.length)
+              console.log('[Step 3] fanoutCandidates paths:', JSON.stringify(this.fanoutCandidates.map(c => c.path)))
+            } else {
+              console.log('[Step 3] No existing fields to parse for nested arrays')
+            }
+          } else {
+            console.warn('[Step 3] No valid convertToJson fields found')
+          }
+        } else {
+          // No convertToJson fields in policy, clear missing fields
+          this.missingPolicyFields = []
+        }
+
+        // Step 2: Wait for fanout candidates to be updated after JSON parsing
+        // This is critical because fanout arrays from parsed JSON fields won't be in candidates yet
+        console.log('[Step 3] === STEP 2: PROCESSING FANOUT PATHS ===')
+        console.log('[Step 3] Waiting for all updates to propagate before processing fanout paths...')
+        await this.$nextTick()
+        await this.$nextTick()
+
+        console.log('[Step 3] fanoutCandidates ready. Total candidates:', this.fanoutCandidates.length)
+        console.log('[Step 3] All fanout candidate paths:', JSON.stringify(this.fanoutCandidates.map(c => c.path)))
+
+        // Determine if this is old or new implementation
+        const hasOldImplementation = schemaRule.fanout?.inputField && Array.isArray(schemaRule.fanout.inputField)
+        const hasNewImplementation = schemaRule.childfanouts && Array.isArray(schemaRule.childfanouts)
+
+        console.log('[Step 3] Implementation type detection:')
+        console.log('  - Has old implementation (fanout.inputField):', hasOldImplementation)
+        console.log('  - Has new implementation (childfanouts):', hasNewImplementation)
+
+        // Process based on implementation type
+        if (hasNewImplementation) {
+          // NEW IMPLEMENTATION: Process childfanouts with relative path resolution
+          console.log('[Step 3] === USING NEW IMPLEMENTATION (childfanouts) ===')
+          await this.processChildFanoutsNew(schemaRule.childfanouts, missingFields)
+        } else if (hasOldImplementation) {
+          // OLD IMPLEMENTATION: Process fanout.inputField
+          console.log('[Step 3] === USING OLD IMPLEMENTATION (fanout.inputField) ===')
+          await this.processChildFanoutsOld(schemaRule.fanout.inputField, missingFields)
+        } else {
+          console.log('[Step 3] No fanout configuration found in policy')
+        }
+
+        // Store child fanouts in Vuex if present
+        if (hasNewImplementation) {
+          this.$store.commit('wizard/SET_CHILD_FANOUTS', schemaRule.childfanouts)
+          console.log('[Step 3] Stored child fanouts in Vuex')
+        }
+
+        // Update missing policy fields
+        this.missingPolicyFields = [...this.missingPolicyFields, ...missingFields]
+
+        // Step 4: Update Vuex store with pre-filled data
+        const childFanouts = schemaRule.childfanouts || []
+        this.UPDATE_SCHEMA_RULES({
+          convertToJson: [...this.selectedConvertToJsonFields],
+          fanout: [...this.selectedFanoutFields],
+          childfanouts: childFanouts
+        })
+
+        console.log('╔══════════════════════════════════════════════════════════════════════════════')
+        console.log('║ [Step 3] Pre-fill completed successfully')
+        console.log('╠══════════════════════════════════════════════════════════════════════════════')
+        console.log('║ Final selectedConvertToJsonFields:', this.selectedConvertToJsonFields)
+        console.log('║ Final selectedFanoutFields:', this.selectedFanoutFields)
+        console.log('║ Stored child fanouts:', childFanouts.length)
+        console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+        // Force UI update
+        await this.$nextTick()
+        this.$forceUpdate()
+
+        // Show success notification with warning about missing fields if any
+        if (this.selectedConvertToJsonFields.length > 0 || this.selectedFanoutFields.length > 0) {
+          const missingCount = this.missingPolicyFields.length
+          const notificationType = missingCount > 0 ? 'warning' : 'positive'
+          const baseMessage = 'Schema configuration loaded from policy'
+          const caption = `${this.selectedConvertToJsonFields.length} string-to-JSON fields, ${this.selectedFanoutFields.length} fanout arrays`
+          const missingCaption = missingCount > 0
+            ? ` (${missingCount} field${missingCount > 1 ? 's' : ''} not found in sample data)`
+            : ''
+
+          this.$q?.notify({
+            type: notificationType,
+            message: baseMessage,
+            caption: caption + missingCaption,
+            timeout: missingCount > 0 ? 5000 : 3000,
+            position: 'top',
+            icon: missingCount > 0 ? 'warning' : undefined
+          })
+        }
+      } catch (error) {
+        console.error('╔══════════════════════════════════════════════════════════════════════════════')
+        console.error('║ [Step 3] Error in prefillFromPolicy:', error)
+        console.error('╚══════════════════════════════════════════════════════════════════════════════')
+
+        this.$q?.notify({
+          type: 'negative',
+          message: 'Failed to load schema configuration from policy',
+          caption: error.message,
+          timeout: 5000,
+          position: 'top'
+        })
+      }
+    },
+
+    /**
+     * Process child fanouts using OLD implementation format (fanout.inputField array)
+     * This handles absolute paths in a flat array structure
+     */
+    async processChildFanoutsOld (fanoutPaths, missingFields) {
+      console.log('╔══════════════════════════════════════════════════════════════════════════════')
+      console.log('║ [Step 3] Processing fanout paths (OLD FORMAT)')
+      console.log('╠══════════════════════════════════════════════════════════════════════════════')
+      console.log('║ Number of fanout paths:', fanoutPaths.length)
+      console.log('║ Paths:', JSON.stringify(fanoutPaths))
+      console.log('║ Current fanoutCandidates.length:', this.fanoutCandidates.length)
+      console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+      // Process each fanout path from the policy
+      for (let i = 0; i < fanoutPaths.length; i++) {
+        const fanoutPath = fanoutPaths[i]
+
+        console.log('╔══════════════════════════════════════════════════════════════════════════════')
+        console.log(`║ [Step 3] Processing fanout path [${i + 1}/${fanoutPaths.length}]`)
+        console.log('╠══════════════════════════════════════════════════════════════════════════════')
+        console.log('║ Original path:', fanoutPath)
+        console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+        // Try multiple path format variations to find a match
+        const pathVariations = [
+          fanoutPath, // Original with $. prefix
+          fanoutPath.replace(/^\$\./, ''), // Without $. prefix
+          fanoutPath.replace(/\[\*\]/g, ''), // Without [*] wildcards
+          fanoutPath.replace(/^\$\./, '').replace(/\[\*\]/g, ''), // Without both
+          fanoutPath.replace(/\[0\]/g, ''), // Without [0] indices
+          fanoutPath.replace(/^\$\./, '').replace(/\[0\]/g, '') // Without $. and [0]
+        ]
+
+        console.log('[Step 3] Trying path variations:', pathVariations)
+
+        // Find matching candidate
+        let matchedPath = null
+        for (const variation of pathVariations) {
+          const candidate = this.fanoutCandidates.find(c =>
+            c.path === variation ||
+            c.path === variation.replace(/\[\*\]/g, '') ||
+            c.path === variation.replace(/\[0\]/g, '')
+          )
+
+          if (candidate) {
+            matchedPath = candidate.path
+            console.log('[Step 3] ✅ FOUND matching candidate for variation:', variation, '→', matchedPath)
+            break
+          }
+        }
+
+        if (matchedPath) {
+          // Add to selectedFanoutFields if not already present
+          if (!this.selectedFanoutFields.includes(matchedPath)) {
+            this.selectedFanoutFields.push(matchedPath)
+            console.log('[Step 3] ✅ Added fanout path to selections:', matchedPath)
+          } else {
+            console.log('[Step 3] Fanout path already in selections:', matchedPath)
+          }
+        } else {
+          console.warn('[Step 3] ⚠️ Fanout path not found in candidates')
+          this.injectMissingFanoutArray(fanoutPath, null, missingFields)
+        }
+      }
+
+      console.log('╔══════════════════════════════════════════════════════════════════════════════')
+      console.log('║ [Step 3] Completed processing fanout paths (OLD FORMAT)')
+      console.log('║ Total selectedFanoutFields:', this.selectedFanoutFields.length)
+      console.log('║ selectedFanoutFields:', JSON.stringify(this.selectedFanoutFields))
+      console.log('╚══════════════════════════════════════════════════════════════════════════════')
+    },
+
+    /**
+     * Process child fanouts using NEW implementation format (childfanouts array)
+     * This handles relative paths with parent-child relationships
+     */
+    async processChildFanoutsNew (childFanouts, missingFields) {
+      console.log('╔══════════════════════════════════════════════════════════════════════════════')
+      console.log('║ [Step 3] Processing child fanouts (NEW FORMAT)')
+      console.log('╠══════════════════════════════════════════════════════════════════════════════')
+      console.log('║ Number of child fanouts:', childFanouts.length)
+      console.log('║ Child fanouts:', JSON.stringify(childFanouts, null, 2))
+      console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+      // Build a map of parent paths for absolute path resolution
+      // Key: field path, Value: absolute path
+      const pathResolutionMap = new Map()
+
+      // First pass: Process root-level arrays (parentpath === null)
+      const rootFanouts = childFanouts.filter(cf => cf.parentpath === null)
+      const nestedFanouts = childFanouts.filter(cf => cf.parentpath !== null)
+
+      console.log('[Step 3] Root-level fanouts:', rootFanouts.length)
+      console.log('[Step 3] Nested fanouts:', nestedFanouts.length)
+
+      // Process root-level arrays first
+      for (const cf of rootFanouts) {
+        console.log('╔══════════════════════════════════════════════════════════════════════════════')
+        console.log('║ [Step 3] Processing ROOT-LEVEL fanout')
+        console.log('╠══════════════════════════════════════════════════════════════════════════════')
+        console.log('║ Field:', cf.field)
+        console.log('║ Parent path:', cf.parentpath)
+        console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+        // For root arrays, field is already absolute
+        const absolutePath = cf.field
+        const normalizedPath = this.normalizeFanoutPath(absolutePath)
+
+        // Store in resolution map
+        pathResolutionMap.set(cf.field, normalizedPath)
+
+        // Try to find in candidates
+        const matched = this.findFanoutCandidate(absolutePath)
+
+        if (matched) {
+          if (!this.selectedFanoutFields.includes(matched)) {
+            this.selectedFanoutFields.push(matched)
+            console.log('[Step 3] ✅ Added root fanout to selections:', matched)
+          }
+        } else {
+          console.warn('[Step 3] ⚠️ Root fanout not found in candidates')
+          this.injectMissingFanoutArray(absolutePath, null, missingFields)
+          pathResolutionMap.set(cf.field, normalizedPath)
+        }
+      }
+
+      // Second pass: Process nested arrays using resolution map
+      // Keep trying until all are resolved or no progress is made
+      let unprocessed = [...nestedFanouts]
+      const maxIterations = 10 // Prevent infinite loops
+      let iteration = 0
+
+      while (unprocessed.length > 0 && iteration < maxIterations) {
+        iteration++
+        console.log(`[Step 3] === Nested fanout resolution pass ${iteration} ===`)
+        console.log(`[Step 3] Unprocessed fanouts remaining: ${unprocessed.length}`)
+
+        const stillUnprocessed = []
+
+        for (const cf of unprocessed) {
+          console.log('╔══════════════════════════════════════════════════════════════════════════════')
+          console.log('║ [Step 3] Processing NESTED fanout')
+          console.log('╠══════════════════════════════════════════════════════════════════════════════')
+          console.log('║ Field (relative):', cf.field)
+          console.log('║ Parent path:', cf.parentpath)
+          console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+          // Check if parent has been resolved
+          const parentAbsolutePath = pathResolutionMap.get(cf.parentpath)
+
+          if (!parentAbsolutePath) {
+            console.warn('[Step 3] ⚠️ Parent path not yet resolved, deferring:', cf.parentpath)
+            stillUnprocessed.push(cf)
+            continue
+          }
+
+          console.log('[Step 3] Parent resolved to:', parentAbsolutePath)
+
+          // Build absolute path by combining parent + relative field
+          // field is relative to parent, so we need to strip $. and append
+          const relativeField = cf.field.replace(/^\$\./, '')
+          const absolutePath = `${parentAbsolutePath}.${relativeField}`
+
+          console.log('[Step 3] Constructed absolute path:', absolutePath)
+
+          const normalizedPath = this.normalizeFanoutPath(absolutePath)
+
+          // Store in resolution map
+          pathResolutionMap.set(cf.field, normalizedPath)
+
+          // Try to find in candidates
+          const matched = this.findFanoutCandidate(absolutePath)
+
+          if (matched) {
+            if (!this.selectedFanoutFields.includes(matched)) {
+              this.selectedFanoutFields.push(matched)
+              console.log('[Step 3] ✅ Added nested fanout to selections:', matched)
+            }
+          } else {
+            console.warn('[Step 3] ⚠️ Nested fanout not found in candidates')
+            this.injectMissingFanoutArray(absolutePath, parentAbsolutePath, missingFields)
+            pathResolutionMap.set(cf.field, normalizedPath)
+          }
+        }
+
+        unprocessed = stillUnprocessed
+      }
+
+      if (unprocessed.length > 0) {
+        console.error('[Step 3] ⚠️ Failed to resolve all nested fanouts after', iteration, 'iterations')
+        console.error('[Step 3] Unresolved fanouts:', unprocessed.map(cf => cf.field))
+      }
+
+      console.log('╔══════════════════════════════════════════════════════════════════════════════')
+      console.log('║ [Step 3] Completed processing child fanouts (NEW FORMAT)')
+      console.log('║ Total selectedFanoutFields:', this.selectedFanoutFields.length)
+      console.log('║ selectedFanoutFields:', JSON.stringify(this.selectedFanoutFields))
+      console.log('║ Path resolution map:', Array.from(pathResolutionMap.entries()))
+      console.log('╚══════════════════════════════════════════════════════════════════════════════')
+    },
+
+    /**
+     * Normalize fanout path by removing $. prefix and [*] wildcards
+     */
+    normalizeFanoutPath (path) {
+      return path.replace(/^\$\./, '').replace(/\[\*\]/g, '')
+    },
+
+    /**
+     * Find a fanout candidate using various path format variations
+     */
+    findFanoutCandidate (fanoutPath) {
+      const pathVariations = [
+        fanoutPath, // Original
+        fanoutPath.replace(/^\$\./, ''), // Without $. prefix
+        fanoutPath.replace(/\[\*\]/g, ''), // Without [*] wildcards
+        fanoutPath.replace(/^\$\./, '').replace(/\[\*\]/g, ''), // Without both
+        fanoutPath.replace(/\[0\]/g, ''), // Without [0] indices
+        fanoutPath.replace(/^\$\./, '').replace(/\[0\]/g, '') // Without $. and [0]
+      ]
+
+      for (const variation of pathVariations) {
+        const candidate = this.fanoutCandidates.find(c =>
+          c.path === variation ||
+          c.path === variation.replace(/\[\*\]/g, '') ||
+          c.path === variation.replace(/\[0\]/g, '')
+        )
+
+        if (candidate) {
+          console.log('[Step 3] Found candidate match:', variation, '→', candidate.path)
+          return candidate.path
+        }
+      }
+
+      return null
+    },
+
+    /**
+     * Inject a missing fanout array as a synthetic candidate
+     */
+    injectMissingFanoutArray (fanoutPath, parentPath, missingFields) {
+      console.log('[Step 3] 📌 Injecting missing fanout array as synthetic candidate')
+
+      // Normalize the path
+      const normalizedPath = this.normalizeFanoutPath(fanoutPath)
+      const normalizedParentPath = parentPath ? this.normalizeFanoutPath(parentPath) : null
+
+      // Create synthetic candidate object
+      const syntheticCandidate = {
+        path: normalizedPath,
+        parentPath: normalizedParentPath,
+        isHomogeneous: true,
+        elementType: 'unknown',
+        isParsedField: false,
+        isNestedFanout: !!normalizedParentPath,
+        isMissing: true,
+        originalPolicyPath: fanoutPath
+      }
+
+      console.log('[Step 3] Created synthetic candidate:', JSON.stringify(syntheticCandidate))
+
+      // Add to fanoutCandidates
+      this.fanoutCandidates.push(syntheticCandidate)
+
+      // Add to selectedFanoutFields
+      if (!this.selectedFanoutFields.includes(normalizedPath)) {
+        this.selectedFanoutFields.push(normalizedPath)
+      }
+
+      // Track in missing fields for warning display
+      missingFields.push({
+        type: 'fanout',
+        path: normalizedPath,
+        message: normalizedParentPath
+          ? 'Nested array field defined in policy but not found in current sample data'
+          : 'Array field defined in policy but not found in current sample data',
+        reason: 'missing',
+        originalPath: fanoutPath,
+        parentPath: normalizedParentPath
+      })
+
+      console.log('[Step 3] ✅ Injected and selected missing fanout array:', normalizedPath)
+    },
+
     updateFanoutCandidatesFromParsedJson (newFields, oldFields) {
       console.log('╔═══════════════════════════════════════════════════════════════════════')
       console.log('║ [DEBUG] updateFanoutCandidatesFromParsedJson - START')
@@ -899,7 +1821,7 @@ export default {
 
             // Store parsed JSON data in Vuex for Step 5 to use
             console.log('╔════════════════════════════════════════════════════════════════════════')
-            console.log('║ [Step 3] Storing parsed JSON in Vuex')
+            console.log('║ [Step  3] Storing parsed JSON in Vuex')
             console.log('╠════════════════════════════════════════════════════════════════════════')
             console.log('║ fieldPath:', addedField)
             console.log('║ parsedData type:', typeof parseResult.parsedData)
@@ -1100,7 +2022,7 @@ export default {
     }
   },
 
-  created () {
+  async created () {
     console.log('=== Step 3 Created: Initializing component ===')
 
     // Initialize from store state if available
@@ -1146,6 +2068,42 @@ export default {
 
     // Analyze sample data if available
     this.analyzeSampleData()
+  },
+
+  async mounted () {
+    console.log('╔══════════════════════════════════════════════════════════════════════════════')
+    console.log('║ [Step 3] Mounted: Checking for Update mode pre-fill')
+    console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+    // Check if Step 3 already has data (user navigating back)
+    const hasExistingStep3Data = (
+      (this.selectedConvertToJsonFields && this.selectedConvertToJsonFields.length > 0) ||
+      (this.selectedFanoutFields && this.selectedFanoutFields.length > 0)
+    )
+
+    if (hasExistingStep3Data) {
+      console.log('[Step 3] Step 3 already has data, skipping pre-fill')
+      console.log('[Step 3] Existing convertToJson:', this.selectedConvertToJsonFields)
+      console.log('[Step 3] Existing fanout:', this.selectedFanoutFields)
+      return
+    }
+
+    // Check wizard mode
+    const mode = this.$store.state.wizard?.projectConfig?.mode
+    console.log('[Step 3] Wizard mode:', mode)
+
+    if (mode === 'update') {
+      const policyData = this.$store.state.wizard?.policyUpload?.uploadedPolicyData
+
+      if (policyData && policyData.schemaRule) {
+        console.log('[Step 3] Update mode detected with policy data - initiating pre-fill')
+        await this.prefillFromPolicy(policyData.schemaRule)
+      } else {
+        console.log('[Step 3] Update mode but no policy schemaRule found')
+      }
+    } else {
+      console.log('[Step 3] Create mode - no pre-fill needed')
+    }
   },
 
   beforeDestroy () {
@@ -1392,5 +2350,23 @@ export default {
 .inline-checkbox {
   display: inline-block;
   margin: 0 8px;
+}
+
+/* Warning styling for missing fields (Scenario 1) */
+.text-warning {
+  color: #f2c037 !important;
+}
+
+/* Error styling for invalid format fields (Scenario 2) */
+.text-negative {
+  color: #c10015 !important;
+}
+
+.json-field-list .q-item {
+  transition: background-color 0.2s ease;
+}
+
+.json-field-list .q-item:hover {
+  background-color: rgba(0, 0, 0, 0.03);
 }
 </style>

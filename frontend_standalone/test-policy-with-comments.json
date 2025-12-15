@@ -1,0 +1,40 @@
+{
+  // This is the policy name
+  "name": "test_policy_with_comments",
+  // Filter condition
+  "filter": "$.status == 'active'",
+  "schemaRule": {
+    // Fanout configuration
+    "fanout": {
+      "inputField": ["$.items[*]"]
+    },
+    // Child fanouts are optional
+    "childfanouts": null,
+    "convertoJson": null
+  },
+  "transforms": [
+    // Field mappings
+    {
+      "sourcePath": "$.field", // Source field path
+      "targetField": "target" // Target field name
+    },
+    {
+      // URL preservation test
+      "sourcePath": "$.url",
+      "targetField": "website", // This should preserve http://
+      "defaultValue": "http://example.com"
+    },
+    {
+      // Path preservation test
+      "sourcePath": "$.path",
+      "targetField": "filepath",
+      "defaultValue": "C://folder//file.txt" // Windows path with //
+    },
+    {
+      // String with comment-like content
+      "sourcePath": "$.comment",
+      "targetField": "commentField",
+      "defaultValue": "// this is in a string and should be preserved"
+    }
+  ]
+}

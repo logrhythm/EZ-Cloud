@@ -33,7 +33,6 @@
             v-model="projectMode"
             :options="modeOptions"
             color="primary"
-            @input="onModeChange"
             class="mode-selection"
           />
 
@@ -125,16 +124,109 @@
                 </template>
               </q-file>
 
-              <!-- File Preview -->
+              <!-- File Preview & Metadata -->
               <transition name="fade">
                 <div v-if="existingPolicyPreview" class="file-preview q-mt-md">
+                  <!-- Policy Metadata Card -->
+                  <q-card v-if="policyUpload.metadata" flat bordered class="metadata-card q-mb-md">
+                    <q-card-section>
+                      <div class="preview-header">
+                        <q-icon name="info" class="q-mr-sm text-info" />
+                        <span class="text-subtitle2">Policy Information</span>
+                        <q-space />
+                        <q-btn
+                          flat
+                          dense
+                          icon="close"
+                          label="Clear Policy"
+                          color="negative"
+                          @click="clearUploadedPolicy"
+                          class="text-caption"
+                        >
+                          <q-tooltip>Clear uploaded policy and start over</q-tooltip>
+                        </q-btn>
+                      </div>
+                      <div class="metadata-content q-mt-md">
+                        <div class="metadata-row">
+                          <span class="metadata-label">Policy Name:</span>
+                          <span class="metadata-value">{{ policyUpload.metadata.policyName || 'N/A' }}</span>
+                        </div>
+                        <div class="metadata-row">
+                          <span class="metadata-label">Complexity:</span>
+                          <q-chip
+                            dense
+                            :color="getComplexityColor(policyUpload.metadata.complexity)"
+                            text-color="white"
+                            size="sm"
+                          >
+                            {{ policyUpload.metadata.complexity }}
+                          </q-chip>
+                        </div>
+                        <div class="metadata-row">
+                          <span class="metadata-label">Field Mappings:</span>
+                          <span class="metadata-value">{{ policyUpload.metadata.transformCount }}</span>
+                        </div>
+                        <div class="metadata-row">
+                          <span class="metadata-label">Has Filter:</span>
+                          <q-icon
+                            :name="policyUpload.metadata.hasFilter ? 'check_circle' : 'cancel'"
+                            :color="policyUpload.metadata.hasFilter ? 'positive' : 'grey'"
+                            size="sm"
+                          />
+                        </div>
+                        <div class="metadata-row">
+                          <span class="metadata-label">Has Schema Rules:</span>
+                          <q-icon
+                            :name="policyUpload.metadata.hasSchemaRule ? 'check_circle' : 'cancel'"
+                            :color="policyUpload.metadata.hasSchemaRule ? 'positive' : 'grey'"
+                            size="sm"
+                          />
+                        </div>
+                        <div class="metadata-row" v-if="policyUpload.metadata.hasSubTransforms">
+                          <span class="metadata-label">SubTransforms:</span>
+                          <span class="metadata-value">{{ policyUpload.metadata.subTransformCount }}</span>
+                        </div>
+                      </div>
+                    </q-card-section>
+                  </q-card>
+
+                  <!-- Policy Preview Card -->
                   <q-card flat bordered class="preview-card">
                     <q-card-section>
                       <div class="preview-header">
                         <q-icon name="preview" class="q-mr-sm" />
-                        <span class="text-subtitle2">Policy Preview</span>
+                        <span class="text-subtitle2">Policy Preview (first 500 chars)</span>
                       </div>
                       <pre class="policy-preview">{{ existingPolicyPreview }}</pre>
+                    </q-card-section>
+                  </q-card>
+
+                  <!-- Validation Warnings -->
+                  <q-card
+                    v-if="policyUpload.validationResult.warnings && policyUpload.validationResult.warnings.length > 0"
+                    flat
+                    bordered
+                    class="warnings-card q-mt-md"
+                  >
+                    <q-card-section>
+                      <div class="preview-header">
+                        <q-icon name="warning" class="q-mr-sm text-warning" />
+                        <span class="text-subtitle2">Validation Warnings</span>
+                      </div>
+                      <q-list dense class="q-mt-sm">
+                        <q-item
+                          v-for="(warning, index) in policyUpload.validationResult.warnings"
+                          :key="`warning-${index}`"
+                          class="warning-item"
+                        >
+                          <q-item-section avatar>
+                            <q-icon name="warning" color="warning" size="sm" />
+                          </q-item-section>
+                          <q-item-section>
+                            <q-item-label class="text-caption">{{ warning }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </q-list>
                     </q-card-section>
                   </q-card>
                 </div>
@@ -225,7 +317,7 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from 'vuex'
+import { mapState, mapMutations, mapActions } from 'vuex'
 import { Step1Validator } from '../../../../tooling/validationService.cjs.js'
 
 export default {
@@ -258,7 +350,7 @@ export default {
   },
 
   computed: {
-    ...mapState('wizard', ['projectConfig']),
+    ...mapState('wizard', ['projectConfig', 'policyUpload']),
 
     // Computed getter/setter wrappers to avoid direct mutation of Vuex state by v-model
     projectMode: {
@@ -313,10 +405,40 @@ export default {
     },
 
     isStepValid () {
-      return Boolean(
-        (this.projectConfig.mode === 'create' && this.projectConfig.name?.trim()) ||
-        (this.projectConfig.mode === 'update' && this.existingPolicyFile)
-      )
+      if (this.projectConfig.mode === 'create') {
+        return Boolean(this.projectConfig.name?.trim())
+      } else if (this.projectConfig.mode === 'update') {
+        // For update mode: Check if we have a valid uploaded policy
+        return Boolean(
+          this.existingPolicyFile &&
+          this.policyUpload.validationResult.valid &&
+          this.policyUpload.uploadedPolicyData
+        )
+      }
+      return false
+    }
+  },
+
+  watch: {
+    // Watch for mode changes to clear file-related state
+    'projectConfig.mode' (newMode, oldMode) {
+      if (oldMode && newMode !== oldMode) {
+        console.log('[Step1] Mode changed from', oldMode, 'to', newMode)
+
+        // Clear file-related errors when switching modes
+        this.errors.existingPolicy = []
+
+        // Only clear file data when switching FROM update mode
+        if (oldMode === 'update') {
+          console.log('[Step1] Clearing file data from update mode')
+          this.existingPolicyFile = null
+          this.existingPolicyPreview = null
+          this.clearPolicyFile()
+        }
+
+        // Emit validation status
+        this.$emit('step-valid')
+      }
     }
   },
 
@@ -327,6 +449,7 @@ export default {
 
   methods: {
     ...mapMutations('wizard', ['UPDATE_PROJECT_CONFIG']),
+    ...mapActions('wizard', ['uploadPolicyFile', 'clearPolicyFile']),
 
     onFieldChange (fieldName) {
       // Clear errors when user starts typing
@@ -392,22 +515,6 @@ export default {
       return validationResult ? validationResult.isValid : false
     },
 
-    onModeChange () {
-      // Clear file-related errors when switching modes
-      this.errors.existingPolicy = []
-      this.existingPolicyFile = null
-      this.existingPolicyPreview = null
-
-      // Update store
-      this.UPDATE_PROJECT_CONFIG({
-        mode: this.projectConfig.mode,
-        existingPolicy: null
-      })
-
-      // Emit validation status
-      this.$emit('step-valid')
-    },
-
     async onFileUpload (file) {
       this.errors.existingPolicy = []
 
@@ -417,77 +524,68 @@ export default {
       }
 
       try {
-        // Use centralized file validation
-        const fileValidationResult = Step1Validator.validateFile(file)
+        console.log('[Step1] onFileUpload: Processing file:', file.name)
 
-        if (!fileValidationResult.isValid) {
-          this.errors.existingPolicy = fileValidationResult.errors.map(e => e.message)
-          this.existingPolicyFile = null
-          this.existingPolicyPreview = null
-          return
-        }
+        // Use the new Vuex action to upload and validate the policy file
+        const validationResult = await this.uploadPolicyFile(file)
 
-        // Read file content
-        const fileContent = await this.readFileAsText(file)
-
-        // Use centralized JSON content validation
-        const contentValidationResult = Step1Validator.validateJsonContent(fileContent)
-
-        if (!contentValidationResult.isValid) {
-          this.errors.existingPolicy = contentValidationResult.errors.map(e => e.message)
-          this.existingPolicyFile = null
-          this.existingPolicyPreview = null
-          return
-        }
-
-        // Parse the JSON content
-        let parsedPolicy = null
-        try {
-          if (Step1Validator.sanitizeAndExtractJson && typeof Step1Validator.sanitizeAndExtractJson === 'function') {
-            const jsonText = Step1Validator.sanitizeAndExtractJson(fileContent)
-            parsedPolicy = JSON.parse(jsonText)
-          } else if (Step1Validator.stripCommentsPreserveStrings && typeof Step1Validator.stripCommentsPreserveStrings === 'function') {
-            const withoutComments = Step1Validator.stripCommentsPreserveStrings(fileContent)
-            const cleaned = withoutComments.replace(/,\s*(\}|\])/g, '$1')
-            const extracted = (Step1Validator.extractJsonFromText && typeof Step1Validator.extractJsonFromText === 'function') ? Step1Validator.extractJsonFromText(cleaned) : cleaned
-            parsedPolicy = JSON.parse(extracted)
-          } else {
-            parsedPolicy = JSON.parse(fileContent)
-          }
-        } catch (parseErr) {
-          throw new Error(`Failed to parse JSON policy: ${parseErr.message}`)
-        }
-
-        // Use centralized policy structure validation
-        const policyValidationResult = Step1Validator.validatePolicyStructure(parsedPolicy)
-
-        if (!policyValidationResult.isValid) {
-          this.errors.existingPolicy = policyValidationResult.errors.map(e => e.message)
-          this.existingPolicyFile = null
-          this.existingPolicyPreview = null
-          return
-        }
-
-        // Store parsed policy
-        this.UPDATE_PROJECT_CONFIG({
-          existingPolicy: parsedPolicy
+        console.log('[Step1] onFileUpload: Validation result:', {
+          valid: validationResult.valid,
+          errorCount: validationResult.errors?.length || 0,
+          warningCount: validationResult.warnings?.length || 0
         })
+
+        // Handle validation errors
+        if (!validationResult.valid || validationResult.errors?.length > 0) {
+          this.errors.existingPolicy = validationResult.errors || ['Unknown validation error']
+          this.existingPolicyFile = null
+          this.existingPolicyPreview = null
+          this.$emit('step-invalid', 'Policy file validation failed')
+          return
+        }
+
+        // Success: Policy is valid and stored in Vuex
+        const parsedPolicy = validationResult.policy
 
         // Create preview
         this.existingPolicyPreview = JSON.stringify(parsedPolicy, null, 2).substring(0, 500) + '...'
 
-        // Auto-populate fields from policy if empty
+        // Auto-populate policy name if empty
         if (!this.projectConfig.name && parsedPolicy.name) {
           this.UPDATE_PROJECT_CONFIG({ name: parsedPolicy.name })
         }
+
+        // Display warnings if any
+        if (validationResult.warnings && validationResult.warnings.length > 0) {
+          console.warn('[Step1] onFileUpload: Validation warnings:', validationResult.warnings)
+          // Optionally display warnings to the user
+          const warningCount = validationResult.warnings?.length || 0
+          this.$q?.notify({
+            type: 'warning',
+            message: 'Policy uploaded with ' + warningCount + ' warning(s). Check console for details.',
+            timeout: 3000
+          })
+        }
+
+        // Display success message
+        const policyName = parsedPolicy.name || file.name
+        this.$q?.notify({
+          type: 'positive',
+          message: 'Policy "' + policyName + '" uploaded successfully!',
+          timeout: 2000
+        })
+
+        console.log('[Step1] onFileUpload: Policy successfully uploaded and validated')
+
+        // Emit validation status
+        this.$emit('step-valid')
       } catch (error) {
+        console.error('[Step1] onFileUpload: Error processing file:', error)
         this.errors.existingPolicy = [error.message || 'An error occurred while processing the file']
         this.existingPolicyFile = null
         this.existingPolicyPreview = null
+        this.$emit('step-invalid', error.message)
       }
-
-      // Emit validation status
-      this.$emit('step-valid')
     },
 
     readFileAsText (file) {
@@ -526,6 +624,34 @@ export default {
       // Mark step as valid and proceed
       this.$emit('step-valid')
       this.$emit('next-step')
+    },
+
+    clearUploadedPolicy () {
+      console.log('[Step1] clearUploadedPolicy: Clearing policy')
+      this.clearPolicyFile()
+      this.existingPolicyFile = null
+      this.existingPolicyPreview = null
+      this.errors.existingPolicy = []
+      this.$emit('step-invalid')
+
+      this.$q?.notify({
+        type: 'info',
+        message: 'Policy cleared. You can upload a new policy file.',
+        timeout: 2000
+      })
+    },
+
+    getComplexityColor (complexity) {
+      switch (complexity) {
+        case 'simple':
+          return 'green'
+        case 'moderate':
+          return 'orange'
+        case 'complex':
+          return 'red'
+        default:
+          return 'grey'
+      }
     }
   }
 }
@@ -753,13 +879,23 @@ export default {
 }
 
 .file-preview {
-  .preview-card {
+  .preview-card,
+  .metadata-card,
+  .warnings-card {
     border-radius: 8px;
     background: var(--q-color-grey-1);
 
     .dark-theme & {
       background: var(--q-color-grey-9);
     }
+  }
+
+  .metadata-card {
+    border-left: 4px solid var(--q-info);
+  }
+
+  .warnings-card {
+    border-left: 4px solid var(--q-warning);
   }
 }
 
@@ -768,6 +904,49 @@ export default {
   align-items: center;
   font-weight: 600;
   margin-bottom: 1rem;
+}
+
+.metadata-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.metadata-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 4px;
+
+  .dark-theme & {
+    background: rgba(255, 255, 255, 0.02);
+  }
+}
+
+.metadata-label {
+  font-weight: 500;
+  color: var(--q-color-grey-7);
+
+  .dark-theme & {
+    color: var(--q-color-grey-4);
+  }
+}
+
+.metadata-value {
+  font-weight: 600;
+  color: var(--q-color-grey-9);
+
+  .dark-theme & {
+    color: var(--q-color-grey-2);
+  }
+}
+
+.warning-item {
+  background: rgba(var(--q-warning-rgb), 0.05);
+  border-radius: 4px;
+  margin-bottom: 0.25rem;
 }
 
 .policy-preview {
