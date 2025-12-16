@@ -1101,6 +1101,7 @@ const actions = {
           const cleanMapping = { ...mapping }
           delete cleanMapping.sampleValue
           delete cleanMapping.id
+          delete cleanMapping.originalInputRule // Remove UI tracking field
           return cleanMapping
         })
       }
@@ -1139,6 +1140,8 @@ const actions = {
                 const cleanTransform = { ...transform }
                 delete cleanTransform.sampleValue
                 delete cleanTransform.id
+                delete cleanTransform.originalInputRule // Remove UI tracking field
+                delete cleanTransform._originalInputRule // Remove UI tracking field (subtransform variant)
                 return cleanTransform
               })
             }

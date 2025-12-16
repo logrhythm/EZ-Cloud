@@ -73,8 +73,6 @@
           @navigate="navigateToStep"
           @toggle-sidebar="sidebarCollapsed = !sidebarCollapsed"
           @reset-wizard="showResetWizardConfirmation"
-          @save-progress="saveState"
-          @show-help="toggleHelp"
         />
       </div>
 

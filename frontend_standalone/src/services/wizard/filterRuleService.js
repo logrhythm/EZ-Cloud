@@ -824,9 +824,7 @@ export class FilterRuleService {
       ]
 
       const stringOperators = [
-        { label: 'Contains', value: 'contains', types: ['string'] },
-        { label: 'Starts With', value: 'startsWith', types: ['string'] },
-        { label: 'Ends With', value: 'endsWith', types: ['string'] }
+        { label: 'Contains', value: 'contains', types: ['string'] }
       ]
 
       const numericOperators = [
@@ -1033,15 +1031,13 @@ export class FilterRuleService {
           // This checks if the attribute exists regardless of its value
           return sanitizedField
 
-        case 'contains':
-          // For contains, we use regex matching
-          return `${sanitizedField} =~ /.*${this._escapeRegex(value)}.*/`
-
-        case 'startsWith':
-          return `${sanitizedField} =~ /^${this._escapeRegex(value)}.*/`
-
-        case 'endsWith':
-          return `${sanitizedField} =~ /.*${this._escapeRegex(value)}$/`
+        case 'contains': {
+          // For contains, we use regex matching with =~ operator
+          // Support case-insensitive flag if present
+          const escapedValue = this._escapeRegex(value)
+          const caseInsensitiveFlag = condition.caseInsensitive ? '(?i)' : ''
+          return `${sanitizedField} =~ /${caseInsensitiveFlag}.*${escapedValue}.*/`
+        }
 
         case '==':
         case '!=':
@@ -1297,7 +1293,7 @@ export class FilterRuleService {
         }
       }
 
-      // Handle regex-like patterns (contains, startsWith, endsWith)
+      // Handle regex-like patterns (contains)
       // Convert =~ /.../ to JavaScript regex test
       evalExpression = this._convertRegexPatterns(evalExpression)
 
@@ -1642,6 +1638,236 @@ export class FilterRuleService {
       return condition
     }
   }
+
+  /**
+   * Parse a filter expression string from policy into structured conditions
+   * Extracts field paths, operators, values, and logical operators
+   *
+   * @param {string} filterExpression - Filter expression string (e.g., "$.field1 == 'value' && $.field2 != 'test'")
+   * @returns {Object} Parsed result with conditions array and parsing status
+   *
+   * @example
+   * const result = FilterRuleService.parseFilterExpression("$.user == 'admin' && $.status != 'inactive'")
+   * // Returns: {
+   * //   success: true,
+   * //   conditions: [
+   * //     { field: '@.user', operator: '==', value: 'admin', logicalOperator: 'AND' },
+   * //     { field: '@.status', operator: '!=', value: 'inactive', logicalOperator: 'AND' }
+   * //   ]
+   * // }
+   */
+  static parseFilterExpression (filterExpression) {
+    try {
+      // Validate input
+      if (!filterExpression || typeof filterExpression !== 'string') {
+        return {
+          success: false,
+          conditions: [],
+          error: 'Invalid or empty filter expression'
+        }
+      }
+
+      console.log('[FilterRuleService] Parsing filter expression:', filterExpression)
+
+      const conditions = []
+
+      // Operator patterns for parsing (order matters - more specific patterns first)
+      const operatorPatterns = [
+        { regex: /\s*==\s*/g, value: '==', label: '== (Equals)' },
+        { regex: /\s*!=\s*/g, value: '!=', label: '!= (Not Equals)' },
+        { regex: /\s*>=\s*/g, value: '>=', label: '>= (Greater or Equal)' },
+        { regex: /\s*<=\s*/g, value: '<=', label: '<= (Less or Equal)' },
+        { regex: /\s*>\s*/g, value: '>', label: '> (Greater Than)' },
+        { regex: /\s*<\s*/g, value: '<', label: '< (Less Than)' },
+        { regex: /\s*=~\s*/g, value: 'contains', label: 'Contains' }, // Regex operator for contains
+        { value: 'exists', label: 'Has Attribute (exists)' } // No regex - handled specially
+      ]
+
+      // First, split by logical operators while preserving them
+      // We need to handle both && and ||
+      const logicalOperatorRegex = /\s*(&&|\|\|)\s*/g
+
+      // Split the expression but keep track of logical operators
+      const parts = []
+      let lastIndex = 0
+      let match
+
+      while ((match = logicalOperatorRegex.exec(filterExpression)) !== null) {
+        // Extract the condition before this logical operator
+        const conditionPart = filterExpression.substring(lastIndex, match.index).trim()
+        if (conditionPart) {
+          parts.push({
+            condition: conditionPart,
+            logicalOperator: match[1] === '||' ? 'OR' : 'AND'
+          })
+        }
+        lastIndex = logicalOperatorRegex.lastIndex
+      }
+
+      // Add the last condition (no logical operator after it)
+      const lastCondition = filterExpression.substring(lastIndex).trim()
+      if (lastCondition) {
+        parts.push({
+          condition: lastCondition,
+          logicalOperator: 'AND' // Default for the last condition
+        })
+      }
+
+      console.log('[FilterRuleService] Split into parts:', parts.length, parts)
+
+      // Parse each condition part
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i]
+        let conditionStr = part.condition.trim()
+
+        // Remove surrounding parentheses if present
+        if (conditionStr.startsWith('(') && conditionStr.endsWith(')')) {
+          conditionStr = conditionStr.substring(1, conditionStr.length - 1).trim()
+        }
+
+        console.log(`[FilterRuleService] Parsing condition ${i + 1}:`, conditionStr)
+
+        // Try to match each operator pattern
+        let parsed = null
+
+        // First, try to match contains operator with =~ /pattern/
+        // Pattern: @.field =~ /(?i)pattern/ or @.field =~ /pattern/
+        const containsRegex = /^([@$]\.[@a-zA-Z0-9_.[\]\-*]+)\s*=~\s*\/(.+?)\/$/
+        const containsMatch = conditionStr.match(containsRegex)
+
+        if (containsMatch) {
+          let pattern = containsMatch[2]
+          let caseInsensitive = false
+
+          // Check for case-insensitive flag (?i)
+          if (pattern.startsWith('(?i)')) {
+            caseInsensitive = true
+            pattern = pattern.substring(4) // Remove (?i) prefix
+          }
+
+          // Remove .* at start and end if present (from contains conversion)
+          if (pattern.startsWith('.*')) {
+            pattern = pattern.substring(2)
+          }
+          if (pattern.endsWith('.*')) {
+            pattern = pattern.substring(0, pattern.length - 2)
+          }
+
+          parsed = {
+            field: containsMatch[1],
+            operator: 'contains',
+            value: pattern,
+            caseInsensitive: caseInsensitive,
+            logicalOperator: part.logicalOperator
+          }
+          console.log('[FilterRuleService] Matched contains operator (=~):', parsed)
+        } else {
+          // Try standard operators
+          for (const opPattern of operatorPatterns) {
+            if (opPattern.value === 'exists') {
+              // Handle exists operator: standalone field reference without any operator
+              // Pattern: @.field or $.field (no operator, no value)
+              // This must be checked AFTER other operators to avoid false matches
+              const existsRegex = /^([@$]\.[@a-zA-Z0-9_.[\]\-*]+)$/
+              const existsMatch = conditionStr.match(existsRegex)
+
+              if (existsMatch) {
+                parsed = {
+                  field: existsMatch[1],
+                  operator: 'exists',
+                  value: '', // No value for exists
+                  logicalOperator: part.logicalOperator
+                }
+                console.log('[FilterRuleService] Matched exists operator (standalone field):', parsed)
+                break
+              }
+            } else if (opPattern.value === 'contains') {
+              // Already handled above with =~ operator
+              continue
+            } else {
+              // Standard comparison operators (==, !=, <, >, <=, >=)
+              // Pattern: $.field <operator> 'value' or @.@metadata.beat <operator> 'value'
+              // Support both $ and @ prefixes, and field names with special chars like @metadata
+              // Escape the operator for regex (important for characters like <, >, etc.)
+              const escapedOp = opPattern.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+              const comparisonRegex = new RegExp(`^([@$]\\.[@a-zA-Z0-9_.\\[\\]\\-*]+)\\s*${escapedOp}\\s*(.+)$`)
+              const compMatch = conditionStr.match(comparisonRegex)
+
+              if (compMatch) {
+                let value = compMatch[2].trim()
+
+                // Remove surrounding quotes if present
+                if ((value.startsWith("'") && value.endsWith("'")) ||
+                    (value.startsWith('"') && value.endsWith('"'))) {
+                  value = value.substring(1, value.length - 1)
+                }
+
+                parsed = {
+                  field: compMatch[1],
+                  operator: opPattern.value,
+                  value: value,
+                  logicalOperator: part.logicalOperator
+                }
+                console.log(`[FilterRuleService] Matched ${opPattern.value} operator:`, parsed)
+                break
+              }
+            }
+          }
+        }
+
+        if (parsed) {
+          // Normalize field path: Convert $.field to @.field for UI consistency
+          let normalizedField = parsed.field
+          if (normalizedField.startsWith('$.')) {
+            normalizedField = '@.' + normalizedField.substring(2)
+          } else if (normalizedField === '$') {
+            normalizedField = '@'
+          } else if (normalizedField.startsWith('@.')) {
+            // Already in correct format
+            normalizedField = parsed.field
+          } else if (normalizedField === '@') {
+            // Already in correct format
+            normalizedField = '@'
+          }
+
+          const conditionObj = {
+            id: `condition-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 9)}`,
+            field: normalizedField,
+            operator: parsed.operator,
+            value: parsed.value,
+            logicalOperator: parsed.logicalOperator,
+            fieldType: 'string' // Will be updated when matched with actual field
+          }
+
+          // Add caseInsensitive flag if present (for contains operator)
+          if (parsed.caseInsensitive !== undefined) {
+            conditionObj.caseInsensitive = parsed.caseInsensitive
+          }
+
+          conditions.push(conditionObj)
+        } else {
+          console.warn('[FilterRuleService] Could not parse condition:', conditionStr)
+        }
+      }
+
+      console.log('[FilterRuleService] Successfully parsed', conditions.length, 'conditions')
+
+      return {
+        success: true,
+        conditions: conditions,
+        error: null
+      }
+    } catch (error) {
+      console.error('[FilterRuleService] Error parsing filter expression:', error)
+      return {
+        success: false,
+        conditions: [],
+        error: error.message || 'Failed to parse filter expression'
+      }
+    }
+  }
+
+  // ...existing code...
 }
 
 export default {

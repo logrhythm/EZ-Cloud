@@ -251,15 +251,58 @@ export default {
       currentCondition: '',
       currentTransforms: [],
       // Navigation state
-      isSaving: false
+      isSaving: false,
+      // Update mode state
+      isLoadingFromPolicy: false,
+      missingPolicyFields: [] // Track fields from policy that don't exist in sample data
     }
   },
 
   computed: {
     ...mapState('wizard', {
       subTransformsList: state => state.subTransforms.subTransformsList,
-      skipSubTransforms: state => state.subTransforms.skipSubTransforms
-    })
+      skipSubTransforms: state => state.subTransforms.skipSubTransforms,
+      sampleData: state => state.sampleData,
+      schemaRules: state => state.schemaRules,
+      projectConfig: state => state.projectConfig,
+      policyUpload: state => state.policyUpload
+    }),
+
+    /**
+     * Check if application is in update mode
+     * @returns {boolean}
+     */
+    isUpdateMode () {
+      return this.projectConfig?.mode === 'update' &&
+             this.policyUpload?.uploadedPolicyData !== null
+    },
+
+    /**
+     * Get available JSON paths from sample data for field validation
+     * @returns {Array}
+     */
+    availableJsonPaths () {
+      // Import MappingService to extract paths
+      const MappingService = require('../../../services/wizard/mappingService').MappingService
+
+      if (!this.sampleData?.parsedData || !this.sampleData?.dataStructure) {
+        return []
+      }
+
+      try {
+        return MappingService.extractJsonPaths(
+          this.sampleData.parsedData,
+          this.sampleData.dataStructure,
+          {
+            jsonToStringFields: this.schemaRules?.convertToJson || [],
+            parsedStringifiedFields: this.schemaRules?.parsedStringifiedJsonFields || {}
+          }
+        )
+      } catch (error) {
+        console.error('[Step 6] Error extracting JSON paths:', error)
+        return []
+      }
+    }
   },
 
   watch: {
@@ -287,6 +330,23 @@ export default {
     // Listen for expand/collapse all events
     this.$root.$on('subtransform-expand-all', this.handleExpandAll)
     this.$root.$on('subtransform-collapse-all', this.handleCollapseAll)
+
+    // Check if in update mode and pre-fill from policy
+    if (this.isUpdateMode && this.policyUpload.uploadedPolicyData) {
+      // Check if sub-transforms were already loaded from store
+      const hasExistingSubTransforms = this.subTransformsList && this.subTransformsList.length > 0
+
+      if (!hasExistingSubTransforms) {
+        console.log('[Step 6] Update mode detected - will pre-fill from policy')
+
+        // Wait for component to be fully mounted before prefilling
+        this.$nextTick(async () => {
+          await this.prefillFromPolicy(this.policyUpload.uploadedPolicyData)
+        })
+      } else {
+        console.log('[Step 6] Update mode detected but sub-transforms already loaded from store - skipping prefill')
+      }
+    }
 
     // Emit step validation
     this.validateStep()
@@ -381,11 +441,16 @@ export default {
       this.editingSubTransformId = subtransformId
       this.currentCondition = subtransform.condition || ''
 
-      // Open condition editor modal
-      this.conditionDialog = true
+      console.log('[Step 6] Setting currentCondition:', this.currentCondition)
 
-      console.log('[Step 6] conditionDialog is now:', this.conditionDialog)
-      console.log('[Step 6] currentCondition:', this.currentCondition)
+      // Use $nextTick to ensure the condition prop is updated before opening the modal
+      this.$nextTick(() => {
+        // Open condition editor modal
+        this.conditionDialog = true
+
+        console.log('[Step 6] conditionDialog is now:', this.conditionDialog)
+        console.log('[Step 6] currentCondition prop should be set to:', this.currentCondition)
+      })
     },
 
     editTransform (payload) {
@@ -540,6 +605,311 @@ export default {
         const v = c === 'x' ? r : (r & 0x3 | 0x8)
         return v.toString(16)
       })
+    },
+
+    /**
+     * Check if a field path exists in the current sample data
+     * @param {string} fieldPath - The field path to check (e.g., "@.errorMessage")
+     * @param {string} fanoutParent - Optional fanout parent element
+     * @returns {boolean}
+     */
+    checkFieldExistsInSampleData (fieldPath, fanoutParent = null) {
+      if (!fieldPath || !this.availableJsonPaths) {
+        return false
+      }
+
+      // Normalize the path for comparison
+      const normalizedPath = fieldPath.replace(/^@\./, '$.').replace(/^\$\./, '')
+
+      // Check if field exists in available paths
+      return this.availableJsonPaths.some(pathObj => {
+        const availablePath = (pathObj.value || pathObj.label || '').replace(/^@\./, '$.').replace(/^\$\./, '')
+        return availablePath === normalizedPath ||
+               availablePath === fieldPath ||
+               pathObj.value === fieldPath ||
+               pathObj.label === fieldPath
+      })
+    },
+
+    /**
+     * Extract field references from a JSONPath condition expression
+     * @param {string} condition - The condition expression (e.g., "@.errorMessage || @.errorCode")
+     * @returns {Array<string>} - Array of field paths referenced in the condition
+     */
+    extractFieldsFromCondition (condition) {
+      if (!condition || typeof condition !== 'string') {
+        return []
+      }
+
+      // Match field patterns like @.fieldName or @['fieldName'] or @["fieldName"]
+      const fieldPattern = /@\.[\w.[\]'"]+|@\[['"][^\]]+['"]\]/g
+      const matches = condition.match(fieldPattern) || []
+
+      // Clean up the matches
+      return matches.map(match => {
+        // Convert @['field'] to @.field format
+        return match.replace(/@\[['"]([^'"]+)['"]\]/, '@.$1')
+      })
+    },
+
+    /**
+     * Validate a condition against sample data
+     * @param {string} condition - The condition expression
+     * @param {string} fanoutParent - Optional fanout parent element
+     * @returns {Object} - { isValid: boolean, missingFields: Array }
+     */
+    validateCondition (condition, fanoutParent = null) {
+      // Null or empty condition is a catch-all rule (always valid)
+      if (!condition || condition.trim() === '') {
+        return { isValid: true, missingFields: [] }
+      }
+
+      const fields = this.extractFieldsFromCondition(condition)
+      const missingFields = []
+
+      for (const field of fields) {
+        if (!this.checkFieldExistsInSampleData(field, fanoutParent)) {
+          missingFields.push(field)
+        }
+      }
+
+      return {
+        isValid: missingFields.length === 0,
+        missingFields
+      }
+    },
+
+    /**
+     * Validate transform mappings against sample data
+     * @param {Array} transforms - Array of transform objects
+     * @param {string} fanoutParent - Optional fanout parent element
+     * @returns {Object} - { isValid: boolean, missingFields: Array }
+     */
+    validateSubTransformMappings (transforms, fanoutParent = null) {
+      if (!Array.isArray(transforms) || transforms.length === 0) {
+        return { isValid: true, missingFields: [] }
+      }
+
+      const missingFields = []
+
+      for (const transform of transforms) {
+        const inputRule = transform.inputRule
+        if (inputRule && !this.checkFieldExistsInSampleData(inputRule, fanoutParent)) {
+          missingFields.push({
+            field: inputRule,
+            lrField: transform.LRSchemaField || 'unknown'
+          })
+        }
+
+        // Check alternative fields if present
+        if (transform.alternativeFields && Array.isArray(transform.alternativeFields)) {
+          for (const altField of transform.alternativeFields) {
+            if (altField && !this.checkFieldExistsInSampleData(altField, fanoutParent)) {
+              missingFields.push({
+                field: altField,
+                lrField: transform.LRSchemaField || 'unknown',
+                isAlternative: true
+              })
+            }
+          }
+        }
+      }
+
+      return {
+        isValid: missingFields.length === 0,
+        missingFields
+      }
+    },
+
+    /**
+     * Normalize data type from policy format to UI format
+     * @param {string} type - The type from policy
+     * @returns {string}
+     */
+    normalizeDataType (type) {
+      if (!type) return 'String'
+
+      const typeMap = {
+        string: 'String',
+        String: 'String',
+        number: 'Number',
+        Number: 'Number',
+        integer: 'Number',
+        Integer: 'Number',
+        decimal: 'Decimal',
+        Decimal: 'Decimal',
+        float: 'Decimal',
+        Float: 'Decimal',
+        boolean: 'Boolean',
+        Boolean: 'Boolean',
+        datetime: 'DateTime',
+        DateTime: 'DateTime',
+        date: 'DateTime',
+        Date: 'DateTime'
+      }
+
+      return typeMap[type] || 'String'
+    },
+
+    /**
+     * Pre-fill Step 6 from uploaded policy data (Update mode)
+     * Extracts subtransforms from policy and populates the UI
+     * @param {Object} policyData - The uploaded policy data
+     * @async
+     */
+    async prefillFromPolicy (policyData) {
+      try {
+        console.log('============================================================')
+        console.log('[Step 6] prefillFromPolicy: Starting pre-fill process')
+        console.log('============================================================')
+
+        this.isLoadingFromPolicy = true
+
+        // Wait for component to be fully ready
+        await this.$nextTick()
+        await this.$nextTick()
+
+        // Extract subtransforms from policy
+        const subtransforms = policyData?.subtransforms || []
+
+        if (!Array.isArray(subtransforms) || subtransforms.length === 0) {
+          console.log('[Step 6] No subtransforms found in policy')
+          this.isLoadingFromPolicy = false
+          return
+        }
+
+        console.log('[Step 6] Found', subtransforms.length, 'subtransforms in policy')
+
+        // Track missing fields globally
+        const allMissingFields = []
+
+        // Process each subtransform
+        for (let index = 0; index < subtransforms.length; index++) {
+          const subtransform = subtransforms[index]
+
+          console.log('------------------------------------------------------------')
+          console.log('[Step 6] Processing subtransform', index + 1)
+          console.log('  condition:', subtransform.condition)
+          console.log('  exitonmatch:', subtransform.exitonmatch)
+          console.log('  transforms count:', subtransform.transforms?.length || 0)
+
+          // Validate condition
+          const conditionValidation = this.validateCondition(
+            subtransform.condition,
+            subtransform.FanoutParentElement
+          )
+
+          if (!conditionValidation.isValid) {
+            console.warn('[Step 6] Condition references missing fields:', conditionValidation.missingFields)
+            conditionValidation.missingFields.forEach(field => {
+              allMissingFields.push({
+                subtransformIndex: index,
+                type: 'subtransform-condition',
+                field,
+                message: `Condition field "${field}" not found in sample data`
+              })
+            })
+          }
+
+          // Validate transform mappings
+          const mappingValidation = this.validateSubTransformMappings(
+            subtransform.transforms,
+            subtransform.FanoutParentElement
+          )
+
+          if (!mappingValidation.isValid) {
+            console.warn('[Step 6] Transform mappings reference missing fields:', mappingValidation.missingFields)
+            mappingValidation.missingFields.forEach(missingField => {
+              allMissingFields.push({
+                subtransformIndex: index,
+                type: 'subtransform-mapping',
+                field: missingField.field,
+                lrField: missingField.lrField,
+                isAlternative: missingField.isAlternative,
+                message: `Mapping field "${missingField.field}" not found in sample data`
+              })
+            })
+          }
+
+          // Create subtransform object for UI
+          const newSubTransform = {
+            id: this.generateUUID(),
+            name: `SubTransform ${index + 1}`,
+            condition: subtransform.condition || '', // Empty string for catch-all
+            exitOnMatch: subtransform.exitonmatch === true,
+            transforms: (subtransform.transforms || []).map(transform => ({
+              inputRule: transform.inputRule || '',
+              lrSchemaField: transform.LRSchemaField || '',
+              fanoutParentElement: transform.FanoutParentElement || null,
+              dataType: this.normalizeDataType(transform.type),
+              defaultValue: transform.default !== null ? String(transform.default) : '',
+              alternativeFields: Array.isArray(transform.alternativeFields) ? transform.alternativeFields : [],
+              format: transform.format || '',
+              subtransforms: transform.subtransforms || null,
+              // Add metadata for missing field tracking
+              _isMissingField: !this.checkFieldExistsInSampleData(transform.inputRule),
+              _originalInputRule: transform.inputRule
+            })),
+            subTransforms: [], // Nested subtransforms (future support)
+            // Track missing fields for this subtransform
+            _missingConditionFields: conditionValidation.missingFields,
+            _missingMappingFields: mappingValidation.missingFields
+          }
+
+          // Add subtransform to store
+          this.addSubTransformAction(newSubTransform)
+
+          console.log('[Step 6] Added subtransform to store:', newSubTransform.name)
+        }
+
+        // Store missing fields globally
+        this.missingPolicyFields = allMissingFields
+
+        console.log('============================================================')
+        console.log('[Step 6] Pre-fill completed successfully')
+        console.log('  Total subtransforms loaded:', subtransforms.length)
+        console.log('  Missing fields:', allMissingFields.length)
+        console.log('============================================================')
+
+        // Force UI update
+        await this.$nextTick()
+        this.$forceUpdate()
+
+        // Validate the step
+        this.validateStep()
+
+        // Show success notification
+        const missingCount = allMissingFields.length
+        const notificationType = missingCount > 0 ? 'warning' : 'positive'
+        const baseMessage = 'Sub-transforms loaded from policy'
+        const caption = `${subtransforms.length} sub-transform${subtransforms.length !== 1 ? 's' : ''} loaded`
+        const missingCaption = missingCount > 0
+          ? ` (${missingCount} field${missingCount !== 1 ? 's' : ''} not found in sample data)`
+          : ''
+
+        this.$q.notify({
+          type: notificationType,
+          message: baseMessage,
+          caption: caption + missingCaption,
+          timeout: missingCount > 0 ? 5000 : 3000,
+          position: 'top',
+          icon: missingCount > 0 ? 'warning' : 'check_circle'
+        })
+      } catch (error) {
+        console.error('============================================================')
+        console.error('[Step 6] Error in prefillFromPolicy:', error)
+        console.error('============================================================')
+
+        this.$q.notify({
+          type: 'negative',
+          message: 'Failed to load sub-transforms from policy',
+          caption: error.message || 'An unexpected error occurred',
+          timeout: 5000,
+          position: 'top'
+        })
+      } finally {
+        this.isLoadingFromPolicy = false
+      }
     },
 
     /**

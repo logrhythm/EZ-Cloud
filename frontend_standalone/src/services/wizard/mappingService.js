@@ -732,20 +732,11 @@ export class MappingService {
         return { isDuplicate: false, duplicateField: null, message: '' }
       }
 
-      // Check for duplicate inputRule (same JSON path)
-      const duplicateInput = existingMappings.find(m =>
-        m.inputRule === mapping.inputRule && m.id !== mapping.id
-      )
-
-      if (duplicateInput) {
-        return {
-          isDuplicate: true,
-          duplicateField: 'inputRule',
-          message: `JSON Path "${mapping.inputRule}" is already mapped to "${duplicateInput.lrSchemaField}"`
-        }
-      }
+      // NOTE: One JSON attribute (inputRule) CAN be mapped to multiple LR Schema fields - this is ALLOWED
+      // We do NOT check for duplicate inputRule anymore
 
       // Check for duplicate lrSchemaField (same LogRhythm field)
+      // One LR Schema field can ONLY be mapped to a single JSON attribute - this is NOT ALLOWED
       const duplicateLRField = existingMappings.find(m =>
         m.lrSchemaField === mapping.lrSchemaField && m.id !== mapping.id
       )

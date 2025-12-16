@@ -608,6 +608,7 @@ export default {
             const cleanMapping = { ...mapping }
             delete cleanMapping.sampleValue
             delete cleanMapping.id // Remove any internal IDs if present
+            delete cleanMapping.originalInputRule // Remove UI tracking field
             return cleanMapping
           })
         }
@@ -631,6 +632,8 @@ export default {
                   const cleanTransform = { ...transform }
                   delete cleanTransform.sampleValue
                   delete cleanTransform.id
+                  delete cleanTransform.originalInputRule // Remove UI tracking field
+                  delete cleanTransform._originalInputRule // Remove UI tracking field (subtransform variant)
                   return cleanTransform
                 })
               }

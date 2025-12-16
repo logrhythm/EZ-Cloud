@@ -131,6 +131,33 @@
                   Define when this SubTransform should apply using JSONPath filter expressions
                 </q-tooltip>
               </q-icon>
+              <!-- Missing condition fields warning -->
+              <q-badge
+                v-if="hasMissingConditionFields"
+                color="orange"
+                class="q-ml-sm"
+              >
+                <q-icon name="warning" size="xs" class="q-mr-xs" />
+                Missing Fields
+                <q-tooltip max-width="400px">
+                  <div class="text-bold q-mb-xs">Condition references fields not found in sample data:</div>
+                  <ul class="q-pl-md q-mb-none">
+                    <li v-for="(field, idx) in subtransform._missingConditionFields" :key="idx">
+                      {{ field }}
+                    </li>
+                  </ul>
+                </q-tooltip>
+              </q-badge>
+              <!-- Catch-all badge -->
+              <q-badge
+                v-else-if="isCatchAllRule"
+                color="purple"
+                class="q-ml-sm"
+              >
+                <q-icon name="filter_none" size="xs" class="q-mr-xs" />
+                Catch-All
+                <q-tooltip>This rule matches all records (no condition filter)</q-tooltip>
+              </q-badge>
             </div>
             <q-btn
               unelevated
@@ -145,11 +172,12 @@
             />
           </div>
 
-          <div class="condition-display" :class="{ 'no-condition': !subtransform.condition }">
+          <div class="condition-display" :class="{ 'no-condition': !subtransform.condition, 'has-warning': hasMissingConditionFields }">
             <code v-if="subtransform.condition">{{ subtransform.condition }}</code>
             <div v-else class="text-grey-6 text-center q-py-sm">
-              <q-icon name="warning" class="q-mr-xs" />
-              No condition defined yet. Click "Edit" to add one.
+              <q-icon name="info" class="q-mr-xs" />
+              <span v-if="isCatchAllRule">No condition - This is a catch-all rule that matches all records</span>
+              <span v-else>No condition defined yet. Click "Edit" to add one.</span>
             </div>
           </div>
         </q-card-section>
@@ -200,6 +228,18 @@
               <q-chip size="sm" color="primary" text-color="white">
                 {{ transformCount }}
               </q-chip>
+              <!-- Missing mapping fields warning -->
+              <q-badge
+                v-if="hasMissingMappingFields"
+                color="orange"
+                class="q-ml-sm"
+              >
+                <q-icon name="warning" size="xs" class="q-mr-xs" />
+                {{ missingMappingFieldsCount }} Missing
+                <q-tooltip max-width="400px">
+                  <div class="text-bold q-mb-xs">Transform mappings reference fields not found in sample data</div>
+                </q-tooltip>
+              </q-badge>
             </div>
             <q-btn
               unelevated
@@ -224,14 +264,25 @@
               v-for="(transform, tIndex) in subtransform.transforms"
               :key="`transform-${tIndex}`"
               class="transform-item"
+              :class="{ 'has-missing-field': transform._isMissingField }"
             >
               <div class="transform-content">
                 <q-icon name="swap_horiz" size="sm" color="primary" class="q-mr-sm" />
                 <div class="transform-mapping">
                   <span class="transform-source">{{ getTransformSource(transform) }}</span>
                   <q-icon name="arrow_forward" size="xs" class="q-mx-xs text-grey-6" />
-                  <span class="transform-target">{{ transform.LRSchemaField }}</span>
+                  <span class="transform-target">{{ transform.lrSchemaField || transform.LRSchemaField }}</span>
                 </div>
+                <!-- Missing field indicator -->
+                <q-icon
+                  v-if="transform._isMissingField"
+                  name="warning"
+                  color="orange"
+                  size="sm"
+                  class="q-ml-sm"
+                >
+                  <q-tooltip>Field "{{ transform._originalInputRule || transform.inputRule }}" not found in sample data</q-tooltip>
+                </q-icon>
               </div>
               <div class="transform-actions">
                 <q-btn
@@ -433,6 +484,38 @@ export default {
       set (value) {
         this.updateExitOnMatch(value)
       }
+    },
+
+    /**
+     * Check if this is a catch-all rule (no condition)
+     */
+    isCatchAllRule () {
+      return !this.subtransform.condition || this.subtransform.condition.trim() === ''
+    },
+
+    /**
+     * Check if condition has missing fields
+     */
+    hasMissingConditionFields () {
+      return this.subtransform._missingConditionFields &&
+             Array.isArray(this.subtransform._missingConditionFields) &&
+             this.subtransform._missingConditionFields.length > 0
+    },
+
+    /**
+     * Check if any mapping has missing fields
+     */
+    hasMissingMappingFields () {
+      return this.subtransform._missingMappingFields &&
+             Array.isArray(this.subtransform._missingMappingFields) &&
+             this.subtransform._missingMappingFields.length > 0
+    },
+
+    /**
+     * Count of missing mapping fields
+     */
+    missingMappingFieldsCount () {
+      return this.subtransform._missingMappingFields?.length || 0
     }
   },
 
@@ -756,6 +839,11 @@ export default {
           border-style: dashed;
         }
 
+        &.has-warning {
+          background: rgba(255, 152, 0, 0.05);
+          border-color: rgba(255, 152, 0, 0.3);
+        }
+
         code {
           font-family: 'Roboto Mono', monospace;
           font-size: 13px;
@@ -805,6 +893,11 @@ export default {
           &:hover {
             background: var(--q-grey-2);
             border-color: var(--q-primary);
+          }
+
+          &.has-missing-field {
+            background: rgba(255, 152, 0, 0.05);
+            border-color: rgba(255, 152, 0, 0.3);
           }
 
           .transform-content {

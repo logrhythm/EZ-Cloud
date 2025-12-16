@@ -424,6 +424,21 @@ export default {
           this.initializeModal()
         }
       }
+    },
+    condition: {
+      immediate: false,
+      handler (newVal, oldVal) {
+        console.log('[ConditionEditorModal] condition prop changed:', {
+          old: oldVal,
+          new: newVal,
+          dialogOpen: this.value
+        })
+        // Re-initialize if dialog is already open and condition changes
+        if (this.value && newVal !== oldVal) {
+          console.log('[ConditionEditorModal] Re-initializing with new condition...')
+          this.initializeModal()
+        }
+      }
     }
   },
 
@@ -520,89 +535,38 @@ export default {
 
     parseExistingCondition (conditionString) {
       try {
-        // Simple parser: Extract conditions from expression like "field1 == 'value1' && field2 != 'value2'"
-        const conditions = []
+        console.log('[ConditionEditorModal] parseExistingCondition called with:', conditionString)
 
-        // Split by logical operators while preserving them
-        const parts = conditionString.split(/\s+(&&|\|\|)\s+/)
+        // Use FilterRuleService's robust parser instead of custom parsing
+        const parseResult = FilterRuleService.parseFilterExpression(conditionString)
 
-        for (let i = 0; i < parts.length; i += 2) {
-          const condPart = parts[i].trim()
+        console.log('[ConditionEditorModal] Parse result:', JSON.parse(JSON.stringify(parseResult)))
 
-          // Check if this is an 'exists' operator (just a field name with no operator or value)
-          // Match pattern: @.fieldname or fieldname (without any operator following)
-          const existsMatch = condPart.match(/^(@?\.?[a-zA-Z0-9_.[\\]*-]+)$/)
-
-          if (existsMatch) {
-            // This is an 'exists' condition
-            const field = existsMatch[1].trim()
-            const fieldInfo = this.availableFields.find(f => f.label === field)
-
-            const newCondition = {
-              id: `condition-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              field: field,
-              operator: 'exists',
-              value: '', // No value needed for exists
-              fieldType: fieldInfo?.type || 'string',
-              logicalOperator: parts[i + 1] === '||' ? 'OR' : 'AND'
-            }
-
-            conditions.push(newCondition)
-          } else {
-            // Match pattern: field operator value
-            const match = condPart.match(/^(.+?)\s*(==|!=|>|<|>=|<=|contains|startsWith|endsWith|=~)\s*(.+)$/)
-
-            if (match) {
-              const field = match[1].trim()
-              let operator = match[2].trim()
-              let value = match[3].trim()
-
-              // Remove quotes if present
-              if ((value.startsWith("'") && value.endsWith("'")) ||
-                  (value.startsWith('"') && value.endsWith('"'))) {
-                value = value.slice(1, -1)
-              }
-
-              // Handle regex patterns (contains, startsWith, endsWith)
-              if (operator === '=~') {
-                // Extract pattern from regex notation /pattern/
-                const regexMatch = value.match(/^\/(.*)\/[igm]*$/)
-                if (regexMatch) {
-                  value = regexMatch[1]
-                  // Determine operator type from pattern
-                  if (value.startsWith('.*') && value.endsWith('.*')) {
-                    // contains
-                    value = value.slice(2, -2)
-                    operator = 'contains'
-                  } else if (value.startsWith('^') && value.endsWith('.*')) {
-                    // startsWith
-                    value = value.slice(1, -2)
-                    operator = 'startsWith'
-                  } else if (value.startsWith('.*') && value.endsWith('$')) {
-                    // endsWith
-                    value = value.slice(2, -1)
-                    operator = 'endsWith'
-                  }
-                }
-              }
-
-              const fieldInfo = this.availableFields.find(f => f.label === field)
-
-              const newCondition = {
-                id: `condition-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                field: field,
-                operator: operator,
-                value: value,
-                fieldType: fieldInfo?.type || 'string',
-                logicalOperator: parts[i + 1] === '||' ? 'OR' : 'AND'
-              }
-
-              conditions.push(newCondition)
-            }
-          }
+        if (!parseResult.success || !parseResult.conditions || parseResult.conditions.length === 0) {
+          console.warn('[ConditionEditorModal] Failed to parse condition or no conditions found')
+          this.localConditions = []
+          this.updateFilterExpression()
+          return
         }
 
-        this.localConditions = conditions.length > 0 ? conditions : []
+        // Match parsed conditions with available fields to get correct field types
+        const conditions = parseResult.conditions.map(parsedCondition => {
+          const fieldInfo = this.availableFields.find(f => f.label === parsedCondition.field)
+
+          return {
+            id: parsedCondition.id || `condition-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            field: parsedCondition.field,
+            operator: parsedCondition.operator,
+            value: parsedCondition.value || '',
+            fieldType: fieldInfo?.type || parsedCondition.fieldType || 'string',
+            logicalOperator: parsedCondition.logicalOperator || 'AND',
+            caseInsensitive: parsedCondition.caseInsensitive
+          }
+        })
+
+        console.log('[ConditionEditorModal] Mapped conditions with field types:', JSON.parse(JSON.stringify(conditions)))
+
+        this.localConditions = conditions
         this.updateFilterExpression()
       } catch (error) {
         console.error('[ConditionEditorModal] Error parsing condition:', error)

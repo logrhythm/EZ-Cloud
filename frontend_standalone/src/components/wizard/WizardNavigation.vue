@@ -150,29 +150,9 @@
             <q-btn
               flat
               dense
-              icon="save"
-              label="Save Progress"
-              @click="$emit('save-progress')"
-              class="action-btn"
-              size="sm"
-            />
-
-            <q-btn
-              flat
-              dense
               icon="refresh"
               label="Reset Wizard"
               @click="$emit('reset-wizard')"
-              class="action-btn"
-              size="sm"
-            />
-
-            <q-btn
-              flat
-              dense
-              icon="help_outline"
-              label="Help"
-              @click="$emit('show-help')"
               class="action-btn"
               size="sm"
             />
@@ -437,31 +417,44 @@ export default {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--q-color-grey-3);
+  background: rgba(0, 0, 0, 0.08); /* Lighter background for better contrast */
   position: relative;
   z-index: 1;
 
   .dark-theme & {
-    background: var(--q-color-grey-7);
+    background: rgba(255, 255, 255, 0.12); /* Lighter background in dark mode for better visibility */
+  }
+
+  /* Add subtle border for better definition */
+  border: 1px solid rgba(0, 0, 0, 0.12);
+
+  .dark-theme & {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  /* Highlight current step with colored background */
+  .step-current & {
+    background: rgba(33, 150, 243, 0.12);
+    border-color: var(--q-primary);
   }
 }
 
 .step-icon {
   &.completed {
     color: var(--q-positive);
-    background: white;
+    background: transparent; /* Removed white background to prevent hiding text */
     border-radius: 50%;
   }
 
   &.error {
     color: var(--q-negative);
-    background: white;
+    background: transparent; /* Removed white background to prevent hiding text */
     border-radius: 50%;
   }
 
   &.active {
     color: var(--q-primary);
-    background: white;
+    background: transparent; /* Removed white background to prevent hiding text */
     border-radius: 50%;
   }
 }
@@ -469,14 +462,23 @@ export default {
 .step-number {
   font-size: 14px;
   font-weight: 600;
-  color: var(--q-color-grey-7);
+  color: var(--q-color-grey-8); /* Darker for better contrast */
 
   .step-current & {
     color: var(--q-primary);
+    font-weight: 700; /* Bolder for active step */
+  }
+
+  .step-completed & {
+    color: var(--q-positive);
   }
 
   .dark-theme & {
-    color: var(--q-color-grey-4);
+    color: var(--q-color-grey-3); /* Lighter in dark mode */
+  }
+
+  .dark-theme .step-current & {
+    color: var(--q-primary);
   }
 }
 

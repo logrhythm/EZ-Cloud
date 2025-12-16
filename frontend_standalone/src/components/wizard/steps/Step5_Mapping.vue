@@ -32,9 +32,11 @@
 
     <div class="step-content">
       <!-- Loading State -->
-      <div v-if="isExtractingFields" class="loading-state">
+      <div v-if="isExtractingFields || isLoadingFromPolicy" class="loading-state">
         <q-spinner color="primary" size="48px" />
-        <p class="loading-message">Building JSON tree structure...</p>
+        <p class="loading-message">
+          {{ isLoadingFromPolicy ? 'Loading existing field mappings...' : 'Building JSON tree structure...' }}
+        </p>
       </div>
 
       <!-- No Sample Data Warning -->
@@ -196,12 +198,25 @@
                 hide-pagination
               >
                 <template v-slot:body="props">
-                  <q-tr :props="props">
+                  <q-tr :props="props" :class="{ 'missing-field-row': isMissingField(props.row) }">
                     <!-- JSON Path -->
                     <q-td key="inputRule" :props="props">
                       <div class="json-path-cell">
                         <q-icon :name="getTypeIcon(props.row.type)" :color="getTypeIconColor(props.row.type)" size="xs" class="q-mr-xs" />
                         <span class="path-text">{{ props.row.inputRule }}</span>
+                        <!-- Missing Field Warning Badge -->
+                        <q-badge
+                          v-if="isMissingField(props.row)"
+                          color="orange"
+                          text-color="white"
+                          class="missing-field-badge q-ml-sm"
+                        >
+                          <q-icon name="warning" size="12px" class="q-mr-xs" />
+                          missing
+                          <q-tooltip>
+                            {{ getFieldWarningMessage(props.row) }}
+                          </q-tooltip>
+                        </q-badge>
                       </div>
                     </q-td>
 
@@ -348,11 +363,26 @@
 
               <!-- Mappings List (Mobile) -->
               <q-list v-else bordered separator class="mappings-list-mobile">
-                <q-item v-for="mapping in localMappings" :key="mapping.id" class="mapping-item-mobile">
+                <q-item
+                  v-for="mapping in localMappings"
+                  :key="mapping.id"
+                  class="mapping-item-mobile"
+                  :class="{ 'missing-field-item': isMissingField(mapping) }"
+                >
                   <q-item-section>
                     <q-item-label class="json-path-mobile">
                       <q-icon :name="getTypeIcon(mapping.type)" :color="getTypeIconColor(mapping.type)" size="xs" class="q-mr-xs" />
                       {{ mapping.inputRule }}
+                      <!-- Missing Field Badge (Mobile) -->
+                      <q-badge
+                        v-if="isMissingField(mapping)"
+                        color="orange"
+                        text-color="white"
+                        class="missing-field-badge q-ml-sm"
+                      >
+                        <q-icon name="warning" size="12px" class="q-mr-xs" />
+                        missing
+                      </q-badge>
                     </q-item-label>
                     <q-item-label caption>
                       <q-icon name="arrow_forward" size="xs" class="q-mr-xs" />
@@ -409,6 +439,21 @@
           </q-card-section>
 
           <q-separator />
+
+          <!-- Missing Field Warning Banner (Update Mode) -->
+          <q-banner
+            v-if="editingMapping && isMissingField(editingMapping)"
+            class="bg-orange text-white missing-field-warning-banner"
+            dense
+          >
+            <template v-slot:avatar>
+              <q-icon name="warning" color="white" />
+            </template>
+            <div>
+              <strong>Warning:</strong> This field path does not exist in the current sample data.
+              Verify the path or update the sample data.
+            </div>
+          </q-banner>
 
           <q-card-section class="mapping-form-section">
             <div class="mapping-form">
@@ -746,6 +791,10 @@ export default {
       // Component lifecycle
       isDestroyed: false,
 
+      // Update mode state
+      missingPolicyFields: [], // Track fields from policy that are missing in sample data
+      isLoadingFromPolicy: false, // Loading state for policy prefill
+
       // Table columns
       mappingColumns: [
         {
@@ -753,41 +802,46 @@ export default {
           label: 'JSON Path',
           field: 'inputRule',
           align: 'left',
-          sortable: true
+          sortable: true,
+          style: 'max-width: 400px; word-wrap: break-word; overflow-wrap: break-word;' // Better wrapping for long paths
         },
         {
           name: 'arrow',
           label: '',
           field: 'arrow',
           align: 'center',
-          style: 'width: 40px;'
+          style: 'width: 40px; padding: 4px;'
         },
         {
           name: 'lrSchemaField',
           label: 'LR Field',
           field: 'lrSchemaField',
           align: 'left',
-          sortable: true
+          sortable: true,
+          style: 'width: 200px;'
         },
         {
           name: 'fanoutParentElement',
           label: 'Fanout Parent',
           field: 'fanoutParentElement',
           align: 'left',
-          sortable: true
+          sortable: true,
+          style: 'width: 220px;'
         },
         {
           name: 'type',
           label: 'Type',
           field: 'type',
           align: 'center',
-          sortable: true
+          sortable: true,
+          style: 'width: 100px;'
         },
         {
           name: 'actions',
           label: 'Actions',
           field: 'actions',
-          align: 'center'
+          align: 'center',
+          style: 'width: 150px; min-width: 150px;' // Fixed width to ensure buttons are always visible
         }
       ]
     }
@@ -826,7 +880,16 @@ export default {
   },
 
   computed: {
-    ...mapState('wizard', ['sampleData', 'fieldMappings', 'schemaRules']),
+    ...mapState('wizard', ['sampleData', 'fieldMappings', 'schemaRules', 'projectConfig', 'policyUpload']),
+
+    /**
+     * Check if application is in update mode
+     * @returns {boolean}
+     */
+    isUpdateMode () {
+      return this.projectConfig?.mode === 'update' &&
+             this.policyUpload?.uploadedPolicyData !== null
+    },
 
     /**
      * Get fanout arrays from Step 3 for path resolution
@@ -1629,6 +1692,44 @@ export default {
           return
         }
 
+        // Check for missing fields (Update Mode) and confirm with user
+        if (this.missingPolicyFields && this.missingPolicyFields.length > 0) {
+          const missingCount = this.missingPolicyFields.length
+
+          // Show confirmation dialog
+          this.$q.dialog({
+            title: 'Missing Fields Detected',
+            message: `${missingCount} mapping${missingCount !== 1 ? 's' : ''} reference field${missingCount !== 1 ? 's' : ''} not found in the current sample data. Do you want to continue anyway?`,
+            persistent: true,
+            ok: {
+              label: 'Continue',
+              color: 'primary'
+            },
+            cancel: {
+              label: 'Review Mappings',
+              color: 'grey'
+            }
+          }).onOk(() => {
+            // User confirmed, proceed
+            this.saveStateToStore()
+            this.$emit('step-valid')
+            this.$emit('next-step')
+          }).onCancel(() => {
+            // User wants to review
+            this.$q.notify({
+              type: 'info',
+              message: 'Review the mappings with "missing" badges',
+              caption: 'You can edit or delete mappings with missing fields',
+              position: 'top',
+              timeout: 4000
+            })
+          }).finally(() => {
+            this.isSaving = false
+          })
+
+          return
+        }
+
         // Save to store
         this.saveStateToStore()
 
@@ -1673,6 +1774,250 @@ export default {
         console.error('[Step 5] Error saving state:', error)
         throw error
       }
+    },
+
+    // ========================================
+    // UPDATE MODE METHODS
+    // ========================================
+
+    /**
+     * Check if a field path exists in the current sample data
+     * @param {string} fieldPath - The field path to check (inputRule)
+     * @returns {boolean}
+     */
+    checkFieldExistsInSampleData (fieldPath) {
+      if (!fieldPath || !this.availableJsonPaths) {
+        return false
+      }
+
+      // Normalize the path for comparison
+      const normalizedPath = fieldPath.replace(/^@\./, '$.').replace(/^\$\./, '')
+
+      // Check if field exists in available paths
+      return this.availableJsonPaths.some(pathObj => {
+        const availablePath = (pathObj.value || pathObj.label || '').replace(/^@\./, '$.').replace(/^\$\./, '')
+        return availablePath === normalizedPath ||
+               availablePath === fieldPath ||
+               pathObj.value === fieldPath ||
+               pathObj.label === fieldPath
+      })
+    },
+
+    /**
+     * Check if a mapping has a missing field
+     * @param {Object} mapping - The mapping object to check
+     * @returns {boolean}
+     */
+    isMissingField (mapping) {
+      if (!mapping || !mapping.inputRule) {
+        return false
+      }
+
+      return this.missingPolicyFields.some(m =>
+        m.path === mapping.inputRule ||
+        m.path === mapping.originalInputRule
+      )
+    },
+
+    /**
+     * Get warning message for a missing field
+     * @param {Object} mapping - The mapping object
+     * @returns {string}
+     */
+    getFieldWarningMessage (mapping) {
+      if (!this.isMissingField(mapping)) {
+        return ''
+      }
+
+      const missingField = this.missingPolicyFields.find(m =>
+        m.path === mapping.inputRule ||
+        m.path === mapping.originalInputRule
+      )
+
+      return missingField?.message || 'Field defined in policy but not found in current sample data'
+    },
+
+    /**
+     * Pre-fill Step 5 from uploaded policy data (Update mode)
+     * Extracts transforms from policy and populates the mappings grid
+     * @param {Object} policyData - The uploaded policy data
+     * @async
+     */
+    async prefillFromPolicy (policyData) {
+      try {
+        console.log('============================================================')
+        console.log('[Step 5] prefillFromPolicy: Starting pre-fill process')
+        console.log('============================================================')
+
+        this.isLoadingFromPolicy = true
+
+        // Wait for tree building to complete
+        await this.$nextTick()
+        await this.$nextTick()
+
+        // Extract transforms from policy
+        const transforms = policyData?.transforms || policyData?.Transforms || []
+
+        if (!Array.isArray(transforms) || transforms.length === 0) {
+          console.log('[Step 5] No transforms found in policy')
+          this.isLoadingFromPolicy = false
+          return
+        }
+
+        console.log('[Step 5] Found', transforms.length, 'transforms in policy')
+
+        // Track missing fields
+        const missingFields = []
+        const mappingsToAdd = []
+
+        // Process each transform
+        for (let index = 0; index < transforms.length; index++) {
+          const transform = transforms[index]
+
+          console.log('------------------------------------------------------------')
+          console.log('[Step 5] Processing transform', index + 1)
+          console.log('  inputRule:', transform.inputRule)
+          console.log('  LRSchemaField:', transform.LRSchemaField)
+          console.log('  type:', transform.type)
+          console.log('------------------------------------------------------------')
+
+          // Skip invalid transforms
+          if (!transform.inputRule && !transform.LRSchemaField) {
+            console.warn('[Step 5] Skipping invalid transform at index', index)
+            continue
+          }
+
+          // Parse operation from inputRule if present
+          const parsed = parseOperationFromInputRule(transform.inputRule || '')
+          const originalFieldPath = parsed.fieldPath || transform.inputRule
+
+          // Check if field exists in sample data
+          const fieldExists = this.checkFieldExistsInSampleData(originalFieldPath)
+
+          if (!fieldExists) {
+            console.warn('[Step 5] Field from policy NOT FOUND in sample data:', originalFieldPath)
+
+            // Track as missing field
+            missingFields.push({
+              type: 'mapping',
+              path: transform.inputRule,
+              originalPath: originalFieldPath,
+              message: 'Field defined in policy but not found in current sample data',
+              reason: 'missing'
+            })
+          } else {
+            console.log('[Step 5] Field from policy FOUND in sample data:', originalFieldPath)
+          }
+
+          // Create mapping object
+          const mapping = {
+            id: `mapping-policy-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`,
+            inputRule: transform.inputRule || '',
+            lrSchemaField: transform.LRSchemaField || '',
+            type: this.normalizeDataType(transform.type),
+            format: transform.format || null,
+            default: transform.default || null,
+            alternativeFields: transform.alternativeFields ? [...transform.alternativeFields] : [],
+            fanoutParentElement: transform.FanoutParentElement || null,
+            sampleValue: null, // Will be populated if field exists
+            originalInputRule: transform.inputRule // Keep original for reference
+          }
+
+          // Try to get sample value if field exists
+          if (fieldExists) {
+            const pathOption = this.availableJsonPaths.find(p =>
+              p.value === originalFieldPath ||
+              p.value === transform.inputRule
+            )
+            if (pathOption && pathOption.sampleValue) {
+              mapping.sampleValue = pathOption.sampleValue
+            }
+          }
+
+          mappingsToAdd.push(mapping)
+        }
+
+        // Store missing fields
+        this.missingPolicyFields = missingFields
+
+        // Set local mappings
+        this.localMappings = mappingsToAdd
+
+        // Update Vuex store
+        this.saveStateToStore()
+
+        console.log('============================================================')
+        console.log('[Step 5] Pre-fill completed successfully')
+        console.log('  Total mappings loaded:', mappingsToAdd.length)
+        console.log('  Missing fields:', missingFields.length)
+        console.log('============================================================')
+
+        // Force UI update
+        await this.$nextTick()
+        this.$forceUpdate()
+
+        // Show success notification
+        const missingCount = missingFields.length
+        const notificationType = missingCount > 0 ? 'warning' : 'positive'
+        const baseMessage = 'Field mappings loaded from policy'
+        const caption = `${mappingsToAdd.length} mapping${mappingsToAdd.length !== 1 ? 's' : ''} loaded`
+        const missingCaption = missingCount > 0
+          ? ` (${missingCount} field${missingCount !== 1 ? 's' : ''} not found in sample data)`
+          : ''
+
+        this.$q.notify({
+          type: notificationType,
+          message: baseMessage,
+          caption: caption + missingCaption,
+          timeout: missingCount > 0 ? 5000 : 3000,
+          position: 'top',
+          icon: missingCount > 0 ? 'warning' : 'check_circle'
+        })
+      } catch (error) {
+        console.error('============================================================')
+        console.error('[Step 5] Error in prefillFromPolicy:', error)
+        console.error('============================================================')
+
+        this.$q.notify({
+          type: 'negative',
+          message: 'Failed to load field mappings from policy',
+          caption: error.message || 'An unexpected error occurred',
+          timeout: 5000,
+          position: 'top'
+        })
+      } finally {
+        this.isLoadingFromPolicy = false
+      }
+    },
+
+    /**
+     * Normalize data type from policy format to UI format
+     * @param {string} type - The type from policy
+     * @returns {string}
+     */
+    normalizeDataType (type) {
+      if (!type) return 'String'
+
+      const typeMap = {
+        string: 'String',
+        String: 'String',
+        number: 'Number',
+        Number: 'Number',
+        integer: 'Number',
+        Integer: 'Number',
+        decimal: 'Decimal',
+        Decimal: 'Decimal',
+        float: 'Decimal',
+        Float: 'Decimal',
+        boolean: 'Boolean',
+        Boolean: 'Boolean',
+        datetime: 'DateTime',
+        DateTime: 'DateTime',
+        date: 'DateTime',
+        Date: 'DateTime'
+      }
+
+      return typeMap[type] || 'String'
     }
   },
 
@@ -1682,6 +2027,24 @@ export default {
       this.loadDataTypeOptions()
       this.buildJsonTree()
       this.restoreStateFromStore()
+
+      // Check if in update mode and pre-fill from policy
+      // Only prefill if we don't already have mappings from store (avoid duplicate load)
+      if (this.isUpdateMode && this.policyUpload.uploadedPolicyData) {
+        // Check if mappings were already loaded from store
+        const hasExistingMappings = this.localMappings && this.localMappings.length > 0
+
+        if (!hasExistingMappings) {
+          console.log('[Step 5] Update mode detected - will pre-fill from policy')
+
+          // Wait for tree building to complete before prefilling
+          this.$nextTick(async () => {
+            await this.prefillFromPolicy(this.policyUpload.uploadedPolicyData)
+          })
+        } else {
+          console.log('[Step 5] Update mode detected but mappings already loaded from store - skipping prefill')
+        }
+      }
     } catch (error) {
       console.error('[Step 5] Error during initialization:', error)
     }
@@ -1775,7 +2138,7 @@ export default {
 /* Split Panel Layout (Desktop) */
 .split-panel-layout {
   display: grid;
-  grid-template-columns: 1fr 1.6fr;
+  grid-template-columns: 1fr 2fr; /* Balanced layout: JSON tree gets more space, mappings still prominent */
   gap: 1.5rem;
   min-height: 800px; /* Increased from 600px for better visibility */
 }
@@ -1915,31 +2278,78 @@ export default {
     color: #2196F3;
     font-weight: 600;
     font-size: 0.875rem;
+    white-space: nowrap; /* Prevent header text wrapping */
   }
 
   ::v-deep .q-table tbody td {
     color: #E3F2FD;
     font-size: 0.875rem;
     padding: 12px 8px;
+    vertical-align: top; /* Align content to top when text wraps */
+  }
+
+  /* Ensure table uses full width */
+  ::v-deep .q-table__container {
+    width: 100%;
+  }
+
+  /* Remove horizontal scroll */
+  ::v-deep .q-table__middle {
+    overflow-x: visible;
   }
 }
 
 .json-path-cell {
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Align to top for better multi-line display */
   font-family: monospace;
   font-size: 0.875rem;
+  flex-wrap: wrap; /* Allow wrapping to prevent horizontal scroll */
+  gap: 4px; /* Space between icon and text when wrapped */
+  max-width: 400px; /* Ensure wrapping at reasonable width */
 }
 
 .path-text {
   color: #A5D6A7;
   font-weight: 500;
+  word-break: break-word; /* Better word breaking for long paths */
+  overflow-wrap: break-word; /* Ensure long words wrap */
+  word-wrap: break-word; /* Legacy support */
+  hyphens: auto; /* Optional: add hyphens for better readability */
+  flex: 1;
+  min-width: 0; /* Allow text to shrink */
+  line-height: 1.4; /* Better line height for wrapped text */
 }
 
 .action-buttons {
   display: flex;
   gap: 4px;
   justify-content: center;
+  flex-wrap: nowrap; /* Prevent buttons from wrapping */
+  min-width: 120px; /* Ensure minimum width for all 3 buttons */
+}
+
+/* Missing Field Styles (Update Mode) */
+.missing-field-row {
+  background-color: rgba(255, 152, 0, 0.1) !important;
+  border-left: 3px solid #FF9800 !important;
+}
+
+.missing-field-badge {
+  font-size: 11px;
+  padding: 2px 6px;
+  animation: pulse-warning 2s ease-in-out infinite;
+}
+
+.missing-field-warning-banner {
+  margin: 0;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@keyframes pulse-warning {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 .fanout-parent-cell {
@@ -2060,6 +2470,11 @@ export default {
   background: rgba(255, 255, 255, 0.05);
   margin-bottom: 0.5rem;
   border-radius: 8px;
+}
+
+.missing-field-item {
+  background: rgba(255, 152, 0, 0.15) !important;
+  border-left: 3px solid #FF9800 !important;
 }
 
 .json-path-mobile {

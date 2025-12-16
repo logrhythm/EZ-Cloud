@@ -141,43 +141,69 @@
 
                     <div class="condition-row">
                       <!-- Field Selector -->
-                      <q-select
-                        :ref="`fieldSelect_${index}`"
-                        v-model="condition.field"
-                        :options="fieldOptions"
-                        outlined
-                        dense
-                        label="Field"
-                        class="condition-field"
-                        emit-value
-                        map-options
-                        option-value="value"
-                        option-label="label"
-                        options-dense
-                        bg-color="white"
-                        color="primary"
-                        popup-content-class="dropdown-dark"
-                        popup-content-style="z-index: 9999;"
-                        :disable="isSaving"
-                        @input="(value) => onFieldChange(index, value)"
-                        @popup-show="onDropdownOpen('field', index)"
-                        :aria-label="`Select field for condition ${index + 1}`"
-                        :aria-describedby="`field-hint-${index}`"
-                      >
-                        <template v-slot:option="scope">
-                          <q-item
-                            v-bind="scope.itemProps"
-                            class="dropdown-item"
-                            @click.native="() => handleFieldItemClick(index, scope.opt.value)"
-                            clickable
-                          >
-                            <q-item-section>
-                              <q-item-label>{{ scope.opt.label }}</q-item-label>
-                              <q-item-label caption>{{ scope.opt.type }}</q-item-label>
-                            </q-item-section>
-                          </q-item>
-                        </template>
-                      </q-select>
+                      <div class="condition-field-wrapper">
+                        <q-select
+                          :ref="`fieldSelect_${index}`"
+                          v-model="condition.field"
+                          :options="fieldOptions"
+                          outlined
+                          dense
+                          label="Field"
+                          class="condition-field"
+                          emit-value
+                          map-options
+                          option-value="value"
+                          option-label="label"
+                          options-dense
+                          bg-color="white"
+                          color="primary"
+                          popup-content-class="dropdown-dark"
+                          popup-content-style="z-index: 9999;"
+                          :disable="isSaving"
+                          @input="(value) => onFieldChange(index, value)"
+                          @popup-show="onDropdownOpen('field', index)"
+                          :aria-label="`Select field for condition ${index + 1}`"
+                          :aria-describedby="`field-hint-${index}`"
+                        >
+                          <template v-slot:option="scope">
+                            <q-item
+                              v-bind="scope.itemProps"
+                              class="dropdown-item"
+                              @click.native="() => handleFieldItemClick(index, scope.opt.value)"
+                              clickable
+                            >
+                              <q-item-section>
+                                <q-item-label>
+                                  {{ scope.opt.label }}
+                                  <q-badge
+                                    v-if="isFieldMissing(scope.opt.value)"
+                                    color="orange"
+                                    text-color="white"
+                                    class="q-ml-xs"
+                                  >
+                                    missing
+                                  </q-badge>
+                                </q-item-label>
+                                <q-item-label caption>{{ scope.opt.type }}</q-item-label>
+                              </q-item-section>
+                            </q-item>
+                          </template>
+                        </q-select>
+
+                        <!-- Missing Field Warning Badge -->
+                        <q-badge
+                          v-if="isFieldMissing(condition.field)"
+                          color="orange"
+                          text-color="white"
+                          class="missing-field-badge"
+                        >
+                          <q-icon name="warning" size="14px" class="q-mr-xs" />
+                          missing
+                          <q-tooltip>
+                            {{ getFieldWarningMessage(condition.field) }}
+                          </q-tooltip>
+                        </q-badge>
+                      </div>
                       <span :id="`field-hint-${index}`" class="sr-only">
                         Choose a field from your sample data to create a filter condition
                       </span>
@@ -205,39 +231,56 @@
                       />
 
                       <!-- Value Input with Suggestions (Hidden for 'exists' operator) -->
-                      <q-select
-                        v-if="condition.operator !== 'exists'"
-                        v-model="condition.value"
-                        :options="getSampleValuesForField(condition.field)"
-                        outlined
-                        dense
-                        :label="`Value${condition.fieldType ? ' (' + condition.fieldType + ')' : ''}`"
-                        class="condition-value"
-                        use-input
-                        input-debounce="300"
-                        new-value-mode="add-unique"
-                        hide-selected
-                        fill-input
-                        bg-color="white"
-                        color="primary"
-                        popup-content-class="dropdown-dark"
-                        :disable="isSaving"
-                        :error="!!(conditionValidation[index] && !conditionValidation[index].isValid)"
-                        :error-message="conditionValidation[index] && conditionValidation[index].errorMessage || ''"
-                        @input-value="(val) => onValueInputChange(index, val)"
-                        @filter="(val, update) => onValueFilter(index, val, update)"
-                        @new-value="(inputValue, doneFn) => onValueNew(index, inputValue, doneFn)"
-                        @popup-show="onDropdownOpen('value', index)"
-                        :aria-label="`Enter value for condition ${index + 1}`"
-                      >
-                        <template v-slot:no-option>
-                          <q-item>
-                            <q-item-section class="text-grey">
-                              Type to enter a custom value
-                            </q-item-section>
-                          </q-item>
-                        </template>
-                      </q-select>
+                      <div v-if="condition.operator !== 'exists'" class="condition-value-group">
+                        <q-select
+                          v-model="condition.value"
+                          :options="getSampleValuesForField(condition.field)"
+                          outlined
+                          dense
+                          :label="`Value${condition.fieldType ? ' (' + condition.fieldType + ')' : ''}`"
+                          class="condition-value"
+                          use-input
+                          input-debounce="300"
+                          new-value-mode="add-unique"
+                          hide-selected
+                          fill-input
+                          bg-color="white"
+                          color="primary"
+                          popup-content-class="dropdown-dark"
+                          :disable="isSaving"
+                          :error="!!(conditionValidation[index] && !conditionValidation[index].isValid)"
+                          :error-message="conditionValidation[index] && conditionValidation[index].errorMessage || ''"
+                          @input-value="(val) => onValueInputChange(index, val)"
+                          @filter="(val, update) => onValueFilter(index, val, update)"
+                          @new-value="(inputValue, doneFn) => onValueNew(index, inputValue, doneFn)"
+                          @popup-show="onDropdownOpen('value', index)"
+                          :aria-label="`Enter value for condition ${index + 1}`"
+                        >
+                          <template v-slot:no-option>
+                            <q-item>
+                              <q-item-section class="text-grey">
+                                Type to enter a custom value
+                              </q-item-section>
+                            </q-item>
+                          </template>
+                        </q-select>
+
+                        <!-- Case Insensitive Checkbox (for contains operator only) -->
+                        <q-checkbox
+                          v-if="condition.operator === 'contains'"
+                          v-model="condition.caseInsensitive"
+                          label="Case Insensitive"
+                          color="primary"
+                          :disable="isSaving"
+                          @input="() => onCaseInsensitiveChange(index)"
+                          class="case-insensitive-checkbox"
+                          :aria-label="`Toggle case-insensitive matching for condition ${index + 1}`"
+                        >
+                          <q-tooltip>
+                            When checked, the search will ignore case differences (e.g., "Test" will match "test", "TEST", etc.)
+                          </q-tooltip>
+                        </q-checkbox>
+                      </div>
 
                       <!-- Placeholder for 'exists' operator (shows helpful text) -->
                       <div
@@ -427,12 +470,24 @@ export default {
 
       // Drag and drop state
       draggedIndex: null,
-      dragOverIndex: null
+      dragOverIndex: null,
+
+      // Track missing fields from policy (Update mode)
+      missingPolicyFields: []
     }
   },
 
   computed: {
-    ...mapState('wizard', ['sampleData', 'filterRules', 'schemaRules']),
+    ...mapState('wizard', ['sampleData', 'filterRules', 'schemaRules', 'projectConfig', 'policyUpload']),
+
+    /**
+     * Check if application is in update mode
+     * @returns {boolean}
+     */
+    isUpdateMode () {
+      return this.projectConfig?.mode === 'update' &&
+             this.policyUpload?.uploadedPolicyData !== null
+    },
 
     /**
      * Format field options for the select dropdown
@@ -777,7 +832,8 @@ export default {
           operator: '==',
           value: '',
           fieldType: this.availableFields[0]?.type || 'string',
-          logicalOperator: 'AND' // Default for next condition
+          logicalOperator: 'AND', // Default for next condition
+          caseInsensitive: false // Default case sensitivity for contains operator
         }
 
         // Add to local conditions
@@ -1009,6 +1065,26 @@ export default {
         this.debouncedUpdateExpression()
       } catch (error) {
         console.error('[Step 4] Error handling operator change:', error)
+      }
+    },
+
+    /**
+     * Handle case-insensitive checkbox change
+     * @param {number} index - Index of condition being updated
+     */
+    onCaseInsensitiveChange (index) {
+      console.log(`[Step 4] Case insensitive change - Index: ${index}`)
+
+      try {
+        // Validate index
+        if (typeof index !== 'number' || index < 0 || index >= this.localConditions.length) {
+          throw new Error('Invalid condition index')
+        }
+
+        // Update expression
+        this.debouncedUpdateExpression()
+      } catch (error) {
+        console.error('[Step 4] Error handling case-insensitive change:', error)
       }
     },
 
@@ -1719,7 +1795,229 @@ export default {
         console.error('[Step 4] Error restoring state:', error)
         // Don't notify user - this is not critical
       }
+    },
+
+    /**
+     * Check if a field path exists in the sample data
+     * @param {string} fieldPath - Field path (e.g., "@.user.name")
+     * @returns {boolean} - True if field exists in sample data
+     */
+    checkFieldExistsInSampleData (fieldPath) {
+      try {
+        // Normalize the field path
+        const normalizedPath = fieldPath.replace(/^[@$]\./, '')
+
+        // Check if field exists in availableFields
+        const fieldExists = this.availableFields.some(f =>
+          f.label === fieldPath ||
+          f.label === `@.${normalizedPath}` ||
+          f.path === fieldPath ||
+          f.path === normalizedPath
+        )
+
+        console.log(`[Step 4] Field existence check: "${fieldPath}" → ${fieldExists}`)
+        return fieldExists
+      } catch (error) {
+        console.error('[Step 4] Error checking field existence:', error)
+        return false
+      }
+    },
+
+    /**
+     * Check if a field is marked as missing from sample data
+     * @param {string} fieldPath - The field path to check
+     * @returns {boolean} - True if field is missing
+     */
+    isFieldMissing (fieldPath) {
+      return this.missingPolicyFields.some(f => f.path === fieldPath)
+    },
+
+    /**
+     * Get warning message for a missing field
+     * @param {string} fieldPath - The field path
+     * @returns {string} - Warning message
+     */
+    getFieldWarningMessage (fieldPath) {
+      const missing = this.missingPolicyFields.find(f => f.path === fieldPath)
+      return missing?.message || ''
+    },
+
+    /**
+     * Pre-fill Step 4 from uploaded policy data (Update mode)
+     * Extracts filter configuration from policy and populates UI
+     * @param {Object} policyData - The uploaded policy data
+     * @async
+     */
+    async prefillFromPolicy (policyData) {
+      try {
+        console.log('╔══════════════════════════════════════════════════════════════════════════════')
+        console.log('║ [Step 4] prefillFromPolicy: Starting pre-fill process')
+        console.log('╠══════════════════════════════════════════════════════════════════════════════')
+        console.log('║ policyData:', JSON.stringify(policyData, null, 2))
+        console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+        // Wait for field extraction to complete
+        await this.$nextTick()
+        await this.$nextTick()
+
+        // Extract filter expression from policy
+        const filterExpression = policyData?.filter || policyData?.Filter || ''
+
+        if (!filterExpression || typeof filterExpression !== 'string') {
+          console.log('[Step 4] No filter expression found in policy')
+          return
+        }
+
+        console.log('[Step 4] Found filter expression in policy:', filterExpression)
+
+        // Parse the filter expression
+        const parseResult = FilterRuleService.parseFilterExpression(filterExpression)
+
+        if (!parseResult.success || !parseResult.conditions || parseResult.conditions.length === 0) {
+          console.error('[Step 4] Failed to parse filter expression:', parseResult.error)
+          this.$q.notify({
+            type: 'warning',
+            message: 'Could not parse filter expression from policy',
+            caption: parseResult.error || 'Invalid filter format',
+            position: 'top',
+            timeout: 4000
+          })
+          return
+        }
+
+        console.log('[Step 4] Successfully parsed', parseResult.conditions.length, 'conditions')
+
+        // Track missing fields
+        const missingFields = []
+
+        // Process each parsed condition
+        const conditionsToAdd = []
+
+        for (const condition of parseResult.conditions) {
+          console.log('╔══════════════════════════════════════════════════════════════════════════════')
+          console.log('║ [Step 4] Processing condition from policy')
+          console.log('╠══════════════════════════════════════════════════════════════════════════════')
+          console.log('║ Field:', condition.field)
+          console.log('║ Operator:', condition.operator)
+          console.log('║ Value:', condition.value)
+          console.log('║ Logical Operator:', condition.logicalOperator)
+          console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+          // Check if field exists in sample data
+          const fieldExists = this.checkFieldExistsInSampleData(condition.field)
+
+          if (!fieldExists) {
+            console.warn('║ ❌ Field from policy NOT FOUND in sample data:', condition.field)
+
+            // Inject missing field into availableFields
+            const normalizedPath = condition.field.replace(/^@\./, '')
+            const syntheticField = {
+              path: normalizedPath,
+              label: condition.field,
+              type: condition.fieldType || 'string',
+              sampleValues: [],
+              isNested: normalizedPath.includes('.') || normalizedPath.includes('['),
+              isMissing: true
+            }
+
+            // Add to availableFields
+            this.availableFields.push(syntheticField)
+
+            // Track as missing
+            missingFields.push({
+              type: 'filter',
+              path: condition.field,
+              message: 'Field defined in policy but not found in current sample data',
+              reason: 'missing'
+            })
+
+            console.log('║ ✓ Injected missing field into availableFields:', condition.field)
+          } else {
+            console.log('║ ✅ Field from policy FOUND in sample data:', condition.field)
+
+            // Update field type from availableFields
+            const matchingField = this.availableFields.find(f =>
+              f.label === condition.field ||
+              f.label === `@.${condition.field.replace(/^@\./, '')}`
+            )
+
+            if (matchingField && matchingField.type) {
+              condition.fieldType = matchingField.type
+            }
+          }
+
+          // Add condition to the list
+          conditionsToAdd.push(condition)
+        }
+
+        // Store missing fields
+        this.missingPolicyFields = missingFields
+
+        // Set local conditions
+        this.localConditions = conditionsToAdd
+
+        // Initialize validation state for all conditions
+        conditionsToAdd.forEach((condition, index) => {
+          this.$set(this.conditionValidation, index, {
+            isValid: true,
+            errorMessage: ''
+          })
+        })
+
+        // Update filter expression
+        this.updateFilterExpression()
+
+        // Update Vuex store
+        this.UPDATE_FILTER_RULES({
+          conditions: [...this.localConditions],
+          expression: this.generatedExpression,
+          availableFields: [...this.availableFields]
+        })
+
+        console.log('╔══════════════════════════════════════════════════════════════════════════════')
+        console.log('║ [Step 4] Pre-fill completed successfully')
+        console.log('╠══════════════════════════════════════════════════════════════════════════════')
+        console.log('║ Total conditions loaded:', this.localConditions.length)
+        console.log('║ Missing fields:', missingFields.length)
+        console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+        // Force UI update
+        await this.$nextTick()
+        this.$forceUpdate()
+
+        // Show success notification
+        const missingCount = missingFields.length
+        const notificationType = missingCount > 0 ? 'warning' : 'positive'
+        const baseMessage = 'Filter configuration loaded from policy'
+        const caption = `${this.localConditions.length} condition${this.localConditions.length !== 1 ? 's' : ''} loaded`
+        const missingCaption = missingCount > 0
+          ? ` (${missingCount} field${missingCount !== 1 ? 's' : ''} not found in sample data)`
+          : ''
+
+        this.$q.notify({
+          type: notificationType,
+          message: baseMessage,
+          caption: caption + missingCaption,
+          timeout: missingCount > 0 ? 5000 : 3000,
+          position: 'top',
+          icon: missingCount > 0 ? 'warning' : undefined
+        })
+      } catch (error) {
+        console.error('╔══════════════════════════════════════════════════════════════════════════════')
+        console.error('║ [Step 4] Error in prefillFromPolicy:', error)
+        console.error('╚══════════════════════════════════════════════════════════════════════════════')
+
+        this.$q.notify({
+          type: 'negative',
+          message: 'Failed to load filter configuration from policy',
+          caption: error.message || 'An unexpected error occurred',
+          timeout: 5000,
+          position: 'top'
+        })
+      }
     }
+
+    // ...existing code...
   },
 
   created () {
@@ -1735,6 +2033,16 @@ export default {
 
       // Restore previous state from store
       this.restoreStateFromStore()
+
+      // Check if in update mode and pre-fill from policy
+      if (this.isUpdateMode && this.policyUpload.uploadedPolicyData) {
+        console.log('[Step 4] Update mode detected - will pre-fill from policy')
+
+        // Wait for field extraction to complete before prefilling
+        this.$nextTick(async () => {
+          await this.prefillFromPolicy(this.policyUpload.uploadedPolicyData)
+        })
+      }
     } catch (error) {
       console.error('[Step 4] Error during initialization:', error)
     }
@@ -2043,7 +2351,7 @@ export default {
 }
 
 .condition-field {
-  flex: 2;
+  flex: 1;
   min-width: 150px;
 }
 
@@ -2057,9 +2365,22 @@ export default {
   min-width: 150px;
 }
 
-.condition-value-placeholder {
+.condition-value-group {
   flex: 2;
   min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.case-insensitive-checkbox {
+  margin-left: 4px;
+  font-size: 13px;
+}
+
+.condition-value-placeholder {
+  flex: 2;
+  min-width:  150px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2127,6 +2448,7 @@ export default {
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+
     color: rgba(255, 255, 255, 0.8);
   }
 
