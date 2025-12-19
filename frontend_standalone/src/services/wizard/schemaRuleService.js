@@ -8,6 +8,28 @@
 import { DataProcessor } from './dataProcessingService.js'
 
 /**
+ * Phase 3: Case-insensitive property access helper
+ * Get a property from an object in a case-insensitive manner
+ * @param {Object} obj - The object to search
+ * @param {String} propertyName - The property name to find (case-insensitive)
+ * @returns {*} The property value, or undefined if not found
+ */
+function getCaseInsensitiveProperty (obj, propertyName) {
+  if (!obj || typeof obj !== 'object') return undefined
+
+  const lowerPropName = propertyName.toLowerCase()
+  const keys = Object.keys(obj)
+
+  for (const key of keys) {
+    if (key.toLowerCase() === lowerPropName) {
+      return obj[key]
+    }
+  }
+
+  return undefined
+}
+
+/**
  * SchemaRuleService class for wizard Step 3
  * Provides methods for schema rule generation and analysis
  */
@@ -1238,6 +1260,7 @@ export class SchemaRuleService {
 
   /**
    * Get a value from an object by path (supports nested paths and arrays)
+   * Phase 3: Updated to use case-insensitive property access
    * @param {Object|Array} obj - The object to traverse
    * @param {string} path - The path to the value (e.g., 'field', 'parent.field', 'array[0].field')
    * @returns {*} The value at the path or undefined
@@ -1261,7 +1284,8 @@ export class SchemaRuleService {
       if (/^\d+$/.test(part)) {
         current = current[parseInt(part)]
       } else {
-        current = current[part]
+        // Phase 3: Use case-insensitive property access for object properties
+        current = getCaseInsensitiveProperty(current, part)
       }
     }
 

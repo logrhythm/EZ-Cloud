@@ -1,0 +1,329 @@
+{
+  //Done - But few implementaion remaining
+  "name": "aws cloud trail",
+  "filter": "@.@metadata.beat == 's3beat' && @.device_type =~ /(?i)cloud trail/  || @.device_type =~ /(?i)cloudtrail/ ||  @.device_type =~ /(?i)cloud%20trail/ || @.device_type =~ /(?i)cloud_trail/",
+  "SCHEMARULE": {
+    "FANOUT": {
+      "InputField": [ "$.log.Records[*]", "$.requestParameters.changeBatch.changes[*]" ]
+    },
+    "ConverToJson": [
+      "$.Log"
+    ]
+  },
+  "transforms": [
+    {
+
+      "inputRule": "$.@metadata.beat",
+      "LRSchemaField": "beatname",
+      "type": "String",
+      "default": null,
+      "alternativeFields": [],
+      "format": null
+    },
+    {
+      "inputRule": "AWSCloudTrail",
+      "LRSchemaField": "device_type",
+      "type": "String",
+      "default": null,
+      "alternativeFields": [],
+      "format": null
+    },
+    {
+      "inputRule": "$.fullyqualifiedbeatname",
+      "LRSchemaField": "fullyqualifiedbeatname",
+      "type": "String",
+      "default": null,
+      "alternativeFields": [ "$.@metadata.beat" ],
+      "format": null
+    },
+    {
+      "inputRule": "$.eventName",
+      "LRSchemaField": "vmid",
+      "type": "string",
+      "default": null,
+      "FanoutParentElement": "$.log.Records[*]",
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.userIdentity.type",
+      "LRSchemaField": "sessiontype",
+      "type": "string",
+      "default": null,
+      "FanoutParentElement": "$.log.Records[*]",
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.eventTime",
+      "LRSchemaField": "normal_msg_date",
+      "FanoutParentElement": "$.log.Records[*]",
+      "type": "datetime",
+      "default": null,
+      "alternativeFields": null,
+      "format": "yyyy-MM-ddTHH:mm:ss.fffK"
+
+    },
+    {
+      "inputRule": "$.eventSource",
+      "LRSchemaField": "process",
+      "FanoutParentElement": "$.log.Records[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.userAgent",
+      "LRSchemaField": "useragent",
+      "FanoutParentElement": "$.log.Records[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.userIdentity.accountId",
+      "LRSchemaField": "domainorigin",
+      "FanoutParentElement": "$.log.Records[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.recipientAccountId",
+      "LRSchemaField": "domainimpacted",
+      "FanoutParentElement": "$.log.Records[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": null,
+      "format": null,
+      "condition": null
+    },
+    {
+      "inputRule": "$.awsRegion",
+      "LRSchemaField": "version",
+      "FanoutParentElement": "$.log.Records[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.digestS3Object",
+      "LRSchemaField": "objectname",
+      "FanoutParentElement": "$.log.Records[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": [ "$.requestParameters.key" ],
+      "format": null
+    },
+    {
+      "inputRule": "$.sharedEventID",
+      "LRSchemaField": "parentprocessid",
+      "FanoutParentElement": "$.log.Records[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": [ "$.eventID" ],
+      "format": null
+    },
+    {
+      "inputRule": "$.requestParameters.groupName",
+      "LRSchemaField": "group",
+       "FanoutParentElement": "$.log.Records[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.responseElements.encrypted",
+      "LRSchemaField": "status",
+      "FanoutParentElement": "$.log.Records[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.action",
+      "LRSchemaField": "action",
+      "FanoutParentElement": "$.requestParameters.changeBatch.changes[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.resources.ARN",
+      "LRSchemaField": "subject",
+      "type": "string",
+      "FanoutParentElement": "$.log.Records[*]",
+      "default": null,
+      "alternativeFields": [ "$.responseElements.stackId" ],
+      "format": null
+    },
+    {
+      "inputRule": "$.requestParameters.templateURL",
+      "LRSchemaField": "url",
+      "FanoutParentElement": "$.log.Records[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": null,
+      "format": null,
+      "condition": null
+    },
+    {
+      "inputRule": "$.digestPublicKeyFingerprint",
+      "FanoutParentElement": "$.log.Records[*]",
+      "LRSchemaField": "hash",
+      "type": "string",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    },
+    //todo : implement IPV$ verify
+    {
+      "inputRule": "IsIP($.sourceIPAddress,true)",
+      "FanoutParentElement": "$.log.Records[*]",
+      "LRSchemaField": "sip",
+      "type": "string",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    },
+    //todo - implement Verfy IPV4
+    {
+      "inputRule": "IsIP($.sourceIPAddress,false)",
+      "LRSchemaField": "sname",
+      "FanoutParentElement": "$.log.Records[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.userIdentity.userName",
+      "LRSchemaField": "login",
+      "FanoutParentElement": "$.log.Records[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": [ "$.userIdentity.accessKeyId", "$.userIdentity.invokedBy" ],
+      "format": null
+    },
+    {
+      "inputRule": "$.errorCode",
+      "LRSchemaField": "responsecode",
+      "FanoutParentElement": "$.log.Records[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    },
+    {
+      "inputRule": "$.errorMessage",
+      "LRSchemaField": "reason",
+      "FanoutParentElement": "$.log.Records[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    },
+    //todo - field name cases sensitivity
+    {
+      "inputRule": "$.responseElements.masterEncryptionKeyId",
+      "LRSchemaField": "object",
+      "FanoutParentElement": "$.log.Records[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": [
+        "$.requestParameters.arn",
+        "$.responseElements.arn",
+        "$.requestParameters.groupName",
+        "$.requestParameters.userName",
+        "$.requestParameters.alarmName",
+        "$.requestParameters.roleSessionName",
+        "$.requestParameter.name",
+        "$.requestParameter.id",
+        "$.responseElements.id",
+        "$.responseElements.groupName",
+        "$.responseElements.userName",
+        "$.responseElements.name",
+        "$.digestS3Bucket"
+      ],
+      "format": null
+    },
+
+    {
+      "inputRule": "$.requestParameters.userName",
+      "LRSchemaField": "account",
+      "FanoutParentElement": "$.log.Records[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": [ "$.requestParameters.emailAddress", "$.responseElements.credentials.accessKeyId", "$.awsAccountId" ],
+      "format": null
+    },
+
+    {
+      "inputRule": "$.requestParameters.roleSessionName",
+      "LRSchemaField": "session",
+      "FanoutParentElement": "$.log.Records[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": [ "SPLIT($.userIdentity.principalId,':',1)", "$.userIdentity.arn" ],
+      "format": null
+    },
+    {
+      "inputRule": "$.userIdentity.sessionContext.sessionIssuer.arn",
+      "LRSchemaField": "policy",
+      "FanoutParentElement": "$.log.Records[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": [ "Regex($.userIdentity.sessionContext.sessionIssuer,arn=(?<arn>.*?);,arn)", "$.requestParameters.roleArn" ],
+      "format": null
+    },
+    {
+      "inputRule": "$.eventName",
+      "LRSchemaField": "tag1",
+      "FanoutParentElement": "$.log.Records[*]",
+      "type": "string",
+      "default": null,
+      "alternativeFields": null,
+      "format": null
+    }
+  ],
+  "subtransforms": [
+    {
+      "condition": "@.errorMessage || @.errorCode",
+      "exitonmatch": true,
+      "transforms": [
+        {
+          "inputRule": "Failure",
+          "LRSchemaField": "tag2",
+          "FanoutParentElement": "$.log.Records[*]",
+          "type": "string",
+          "default": null,
+          "alternativeFields": null,
+          "format": null
+        }
+      ]
+    },
+    {
+      "condition": null,
+      "exitonmatch": true,
+      "transforms": [
+        {
+          "inputRule": "Success",
+          "LRSchemaField": "tag2",
+          "FanoutParentElement": "$.log.Records[*]",
+          "type": "string",
+          "default": null,
+          "alternativeFields": null,
+          "format": null
+        }
+      ]
+    }
+
+  ]
+}

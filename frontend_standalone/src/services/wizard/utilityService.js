@@ -486,6 +486,221 @@ export function safeJsonStringify (obj, pretty = false) {
 }
 
 /**
+ * Get a property from an object in a case-insensitive manner
+ * @param {Object} obj - The object to search
+ * @param {String} propertyName - The property name to find (case-insensitive)
+ * @returns {*} The property value, or undefined if not found
+ */
+export function getCaseInsensitiveProperty (obj, propertyName) {
+  if (!obj || typeof obj !== 'object') {
+    return undefined
+  }
+
+  // First try exact match (performance optimization)
+  if (propertyName in obj) {
+    return obj[propertyName]
+  }
+
+  // Try case-insensitive match
+  const lowerPropName = propertyName.toLowerCase()
+  const keys = Object.keys(obj)
+
+  for (const key of keys) {
+    if (key.toLowerCase() === lowerPropName) {
+      return obj[key]
+    }
+  }
+
+  return undefined
+}
+
+/**
+ * Resolve a JSONPath expression against sample data with case-insensitive field matching
+ * Handles array notation like [0], [*], and nested paths like $.events[0].name
+ *
+ * @param {Object|Array} sampleData - The sample data to traverse
+ * @param {String} jsonPath - JSONPath expression (e.g., "$.log", "$.events[*].name")
+ * @returns {*} The value at the path, or undefined if not found
+ */
+export function resolveJsonPathCaseInsensitive (sampleData, jsonPath) {
+  try {
+    if (!sampleData || !jsonPath) {
+      return undefined
+    }
+
+    // Normalize path: remove leading $. or @.
+    const normalizedPath = jsonPath.replace(/^[$@]\./, '')
+
+    if (normalizedPath === '') {
+      // Root path
+      return sampleData
+    }
+
+    // Split path by dots, but preserve array notation
+    const parts = normalizedPath.split('.')
+    let current = sampleData
+
+    for (let i = 0; i < parts.length; i++) {
+      if (current === null || current === undefined) {
+        return undefined
+      }
+
+      const part = parts[i]
+
+      // Security: Prevent prototype pollution
+      if (part === '__proto__' || part === 'constructor' || part === 'prototype') {
+        return undefined
+      }
+
+      // Handle array notation: "fieldName[0]" or "fieldName[*]"
+      const arrayMatch = part.match(/^(.+?)\[(\d+|\*)\]$/)
+
+      if (arrayMatch) {
+        // Extract field name and array index
+        const fieldName = arrayMatch[1]
+        const arrayIndex = arrayMatch[2]
+
+        // Get the field value using case-insensitive lookup
+        current = getCaseInsensitiveProperty(current, fieldName)
+
+        if (!Array.isArray(current)) {
+          return undefined
+        }
+
+        // Handle array access
+        if (arrayIndex === '*') {
+          // Wildcard - use first element for further traversal
+          if (current.length === 0) {
+            return undefined
+          }
+          current = current[0]
+        } else {
+          // Specific index
+          const index = parseInt(arrayIndex, 10)
+          if (index < 0 || index >= current.length) {
+            return undefined
+          }
+          current = current[index]
+        }
+      } else if (/^\d+$/.test(part)) {
+        // Standalone numeric index (for already accessed arrays)
+        const index = parseInt(part, 10)
+        if (!Array.isArray(current) || index < 0 || index >= current.length) {
+          return undefined
+        }
+        current = current[index]
+      } else {
+        // Regular property access - case-insensitive
+        current = getCaseInsensitiveProperty(current, part)
+      }
+    }
+
+    return current
+  } catch (error) {
+    console.error('[UtilityService] Error resolving JSONPath:', error)
+    return undefined
+  }
+}
+
+/**
+ * Check if a JSONPath expression exists in sample data (case-insensitive)
+ *
+ * @param {Object|Array} sampleData - The sample data to check
+ * @param {String} jsonPath - JSONPath expression (e.g., "$.log", "$.events[0].name")
+ * @returns {Boolean} True if the path exists and resolves to a non-null/undefined value
+ */
+export function checkJsonPathExists (sampleData, jsonPath) {
+  try {
+    const value = resolveJsonPathCaseInsensitive(sampleData, jsonPath)
+    return value !== undefined && value !== null
+  } catch (error) {
+    console.error('[UtilityService] Error checking JSONPath existence:', error)
+    return false
+  }
+}
+
+/**
+ * Extract multiple values from sample data using JSONPath with wildcard support
+ * For paths like $.events[*].name, returns an array of all matching values
+ *
+ * @param {Object|Array} sampleData - The sample data to traverse
+ * @param {String} jsonPath - JSONPath expression
+ * @returns {Array} Array of matched values (empty array if none found)
+ */
+export function extractJsonPathValues (sampleData, jsonPath) {
+  try {
+    if (!sampleData || !jsonPath) {
+      return []
+    }
+
+    // Check if path contains wildcard
+    if (!jsonPath.includes('[*]')) {
+      // Simple path - return single value as array
+      const value = resolveJsonPathCaseInsensitive(sampleData, jsonPath)
+      return value !== undefined ? [value] : []
+    }
+
+    // Handle wildcard paths
+    const normalizedPath = jsonPath.replace(/^[$@]\./, '')
+    const parts = normalizedPath.split('.')
+    let results = [sampleData]
+
+    for (const part of parts) {
+      const newResults = []
+
+      for (const current of results) {
+        if (current === null || current === undefined) {
+          continue
+        }
+
+        // Security check
+        if (part === '__proto__' || part === 'constructor' || part === 'prototype') {
+          continue
+        }
+
+        const arrayMatch = part.match(/^(.+?)\[(\d+|\*)\]$/)
+
+        if (arrayMatch) {
+          const fieldName = arrayMatch[1]
+          const arrayIndex = arrayMatch[2]
+
+          const fieldValue = getCaseInsensitiveProperty(current, fieldName)
+
+          if (Array.isArray(fieldValue)) {
+            if (arrayIndex === '*') {
+              // Wildcard - add all array elements
+              newResults.push(...fieldValue)
+            } else {
+              const index = parseInt(arrayIndex, 10)
+              if (index >= 0 && index < fieldValue.length) {
+                newResults.push(fieldValue[index])
+              }
+            }
+          }
+        } else if (/^\d+$/.test(part)) {
+          const index = parseInt(part, 10)
+          if (Array.isArray(current) && index >= 0 && index < current.length) {
+            newResults.push(current[index])
+          }
+        } else {
+          const value = getCaseInsensitiveProperty(current, part)
+          if (value !== undefined) {
+            newResults.push(value)
+          }
+        }
+      }
+
+      results = newResults
+    }
+
+    return results.filter(r => r !== undefined && r !== null)
+  } catch (error) {
+    console.error('[UtilityService] Error extracting JSONPath values:', error)
+    return []
+  }
+}
+
+/**
  * Local storage wrapper with error handling
  */
 export const storage = {
@@ -570,5 +785,9 @@ export default {
   isValidJsonPath,
   safeJsonParse,
   safeJsonStringify,
-  storage
+  storage,
+  getCaseInsensitiveProperty,
+  resolveJsonPathCaseInsensitive,
+  checkJsonPathExists,
+  extractJsonPathValues
 }

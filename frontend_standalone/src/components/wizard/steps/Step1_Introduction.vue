@@ -394,9 +394,7 @@ export default {
           color: 'primary', /* changed from 'secondary' to 'primary' */
           features: [
             'Import existing configuration',
-            'Visual diff comparison',
             'Preserve custom modifications',
-            'Version history tracking',
             'Backward compatibility'
           ]
         }

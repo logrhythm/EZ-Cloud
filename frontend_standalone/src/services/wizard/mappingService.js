@@ -10,6 +10,9 @@
  * @production-ready - Enhanced with comprehensive error handling, validation, and security
  */
 
+// Import case-insensitive utilities for Phase 2 JSONPath field matching
+import { getCaseInsensitiveProperty } from './utilityService'
+
 // Constants for production-quality configuration
 const CONSTANTS = {
   MAX_FIELD_DEPTH: 10,
@@ -434,8 +437,8 @@ export class MappingService {
       return ''
     }
 
-    // Only allow valid JSON path characters
-    return path.replace(/[^a-zA-Z0-9._[\]$*-]/g, '_')
+    // Only allow valid JSON path characters (including @ for fields like @metadata, @timestamp)
+    return path.replace(/[^a-zA-Z0-9._[\]$*@-]/g, '_')
   }
 
   /**
@@ -516,9 +519,12 @@ export class MappingService {
             return undefined
           }
         } else {
-          // Handle object property access
-          if (typeof current === 'object' && part in current) {
-            current = current[part]
+          // Handle object property access - CASE-INSENSITIVE (Phase 2)
+          if (typeof current === 'object') {
+            current = getCaseInsensitiveProperty(current, part)
+            if (current === undefined) {
+              return undefined
+            }
           } else {
             return undefined
           }
@@ -580,9 +586,12 @@ export class MappingService {
             return undefined
           }
         } else {
-          // Handle object property access
-          if (typeof current === 'object' && part in current) {
-            current = current[part]
+          // Handle object property access - CASE-INSENSITIVE (Phase 2)
+          if (typeof current === 'object') {
+            current = getCaseInsensitiveProperty(current, part)
+            if (current === undefined) {
+              return undefined
+            }
           } else {
             return undefined
           }
@@ -2488,6 +2497,7 @@ export class MappingService {
         .replace(/\[\*\]/g, '') // Remove [*] array notation
         .replace(/^\./, '') // Remove leading dot if present
         .trim()
+        .toLowerCase() // *** CASE-INSENSITIVE: Convert to lowercase for comparison ***
     }
 
     const normalizedTarget = normalizeForComparison(targetPath)
@@ -2496,27 +2506,27 @@ export class MappingService {
     console.log(`[MappingService] _findNodeByPathInTree: Normalized target: "${normalizedTarget}"`)
     console.log(`[MappingService] _findNodeByPathInTree: Normalized node: "${normalizedNodePath}"`)
 
-    // Try exact match first
-    if (tree.path === targetPath) {
-      console.log('[MappingService] _findNodeByPathInTree: ✓ EXACT MATCH FOUND!')
+    // Try exact match first (case-insensitive)
+    if (tree.path.toLowerCase() === targetPath.toLowerCase()) {
+      console.log('[MappingService] _findNodeByPathInTree: ✓ EXACT MATCH FOUND (case-insensitive)!')
       return tree
     }
 
-    // Try normalized match
+    // Try normalized match (already case-insensitive due to toLowerCase in normalization)
     if (normalizedNodePath === normalizedTarget) {
-      console.log('[MappingService] _findNodeByPathInTree: ✓ NORMALIZED MATCH FOUND!')
+      console.log('[MappingService] _findNodeByPathInTree: ✓ NORMALIZED MATCH FOUND (case-insensitive)!')
       return tree
     }
 
-    // Try with $ prefix added to target
-    if (tree.path === `$.${normalizedTarget}`) {
-      console.log('[MappingService] _findNodeByPathInTree: ✓ MATCH WITH $ PREFIX!')
+    // Try with $ prefix added to target (case-insensitive)
+    if (tree.path.toLowerCase() === `$.${normalizedTarget}`.toLowerCase()) {
+      console.log('[MappingService] _findNodeByPathInTree: ✓ MATCH WITH $ PREFIX (case-insensitive)!')
       return tree
     }
 
-    // Try without $ prefix on both
-    if (tree.path.replace(/^\$\.?/, '') === normalizedTarget) {
-      console.log('[MappingService] _findNodeByPathInTree: ✓ MATCH WITHOUT $ PREFIX!')
+    // Try without $ prefix on both (case-insensitive)
+    if (tree.path.replace(/^\$\.?/, '').toLowerCase() === normalizedTarget) {
+      console.log('[MappingService] _findNodeByPathInTree: ✓ MATCH WITHOUT $ PREFIX (case-insensitive)!')
       return tree
     }
 

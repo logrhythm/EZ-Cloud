@@ -619,15 +619,19 @@ export default {
       }
 
       // Normalize the path for comparison
-      const normalizedPath = fieldPath.replace(/^@\./, '$.').replace(/^\$\./, '')
+      const normalizedPath = fieldPath.replace(/^@\./, '$.').replace(/^\$\./, '').toLowerCase()
 
-      // Check if field exists in available paths
+      // Check if field exists in available paths - CASE-INSENSITIVE (Phase 2)
       return this.availableJsonPaths.some(pathObj => {
-        const availablePath = (pathObj.value || pathObj.label || '').replace(/^@\./, '$.').replace(/^\$\./, '')
+        const availablePath = (pathObj.value || pathObj.label || '').replace(/^@\./, '$.').replace(/^\$\./, '').toLowerCase()
+        const fieldPathLower = fieldPath.toLowerCase()
+        const valuePathLower = (pathObj.value || '').toLowerCase()
+        const labelPathLower = (pathObj.label || '').toLowerCase()
+
         return availablePath === normalizedPath ||
-               availablePath === fieldPath ||
-               pathObj.value === fieldPath ||
-               pathObj.label === fieldPath
+               availablePath === fieldPathLower ||
+               valuePathLower === fieldPathLower ||
+               labelPathLower === fieldPathLower
       })
     },
 
@@ -769,8 +773,8 @@ export default {
         await this.$nextTick()
         await this.$nextTick()
 
-        // Extract subtransforms from policy
-        const subtransforms = policyData?.subtransforms || []
+        // Extract subtransforms from policy (case-insensitive)
+        const subtransforms = this.getCaseInsensitiveProperty(policyData, 'subtransforms') || []
 
         if (!Array.isArray(subtransforms) || subtransforms.length === 0) {
           console.log('[Step 6] No subtransforms found in policy')
@@ -793,10 +797,16 @@ export default {
           console.log('  exitonmatch:', subtransform.exitonmatch)
           console.log('  transforms count:', subtransform.transforms?.length || 0)
 
+          // Extract properties with case-insensitive access
+          const condition = this.getCaseInsensitiveProperty(subtransform, 'condition') || ''
+          const exitonmatch = this.getCaseInsensitiveProperty(subtransform, 'exitonmatch') === true
+          const transforms = this.getCaseInsensitiveProperty(subtransform, 'transforms') || []
+          const fanoutParentElement = this.getCaseInsensitiveProperty(subtransform, 'FanoutParentElement') || null
+
           // Validate condition
           const conditionValidation = this.validateCondition(
-            subtransform.condition,
-            subtransform.FanoutParentElement
+            condition,
+            fanoutParentElement
           )
 
           if (!conditionValidation.isValid) {
@@ -813,8 +823,8 @@ export default {
 
           // Validate transform mappings
           const mappingValidation = this.validateSubTransformMappings(
-            subtransform.transforms,
-            subtransform.FanoutParentElement
+            transforms,
+            fanoutParentElement
           )
 
           if (!mappingValidation.isValid) {
@@ -835,21 +845,32 @@ export default {
           const newSubTransform = {
             id: this.generateUUID(),
             name: `SubTransform ${index + 1}`,
-            condition: subtransform.condition || '', // Empty string for catch-all
-            exitOnMatch: subtransform.exitonmatch === true,
-            transforms: (subtransform.transforms || []).map(transform => ({
-              inputRule: transform.inputRule || '',
-              lrSchemaField: transform.LRSchemaField || '',
-              fanoutParentElement: transform.FanoutParentElement || null,
-              dataType: this.normalizeDataType(transform.type),
-              defaultValue: transform.default !== null ? String(transform.default) : '',
-              alternativeFields: Array.isArray(transform.alternativeFields) ? transform.alternativeFields : [],
-              format: transform.format || '',
-              subtransforms: transform.subtransforms || null,
-              // Add metadata for missing field tracking
-              _isMissingField: !this.checkFieldExistsInSampleData(transform.inputRule),
-              _originalInputRule: transform.inputRule
-            })),
+            condition: condition,
+            exitOnMatch: exitonmatch,
+            transforms: transforms.map(transform => {
+              const inputRule = this.getCaseInsensitiveProperty(transform, 'inputRule') || ''
+              const lrSchemaField = this.getCaseInsensitiveProperty(transform, 'LRSchemaField') || ''
+              const transformFanoutParent = this.getCaseInsensitiveProperty(transform, 'FanoutParentElement') || null
+              const type = this.getCaseInsensitiveProperty(transform, 'type')
+              const defaultValue = this.getCaseInsensitiveProperty(transform, 'default')
+              const alternativeFields = this.getCaseInsensitiveProperty(transform, 'alternativeFields')
+              const format = this.getCaseInsensitiveProperty(transform, 'format') || ''
+              const subtransforms = this.getCaseInsensitiveProperty(transform, 'subtransforms') || null
+
+              return {
+                inputRule: inputRule,
+                lrSchemaField: lrSchemaField,
+                fanoutParentElement: transformFanoutParent,
+                dataType: this.normalizeDataType(type),
+                defaultValue: defaultValue !== null ? String(defaultValue) : '',
+                alternativeFields: Array.isArray(alternativeFields) ? alternativeFields : [],
+                format: format,
+                subtransforms: subtransforms,
+                // Add metadata for missing field tracking
+                _isMissingField: !this.checkFieldExistsInSampleData(inputRule),
+                _originalInputRule: inputRule
+              }
+            }),
             subTransforms: [], // Nested subtransforms (future support)
             // Track missing fields for this subtransform
             _missingConditionFields: conditionValidation.missingFields,
@@ -950,6 +971,28 @@ export default {
       } finally {
         this.isSaving = false
       }
+    },
+
+    /**
+     * Helper function to get a property from an object in a case-insensitive manner
+     * @param {Object} obj - The object to search
+     * @param {string} key - The property name to find (case-insensitive)
+     * @returns {*} - The value of the property, or undefined if not found
+     */
+    getCaseInsensitiveProperty (obj, key) {
+      if (!obj || typeof obj !== 'object') {
+        return undefined
+      }
+
+      // First try exact match
+      if (key in obj) {
+        return obj[key]
+      }
+
+      // Try case-insensitive match
+      const lowerKey = key.toLowerCase()
+      const foundKey = Object.keys(obj).find(k => k.toLowerCase() === lowerKey)
+      return foundKey ? obj[foundKey] : undefined
     }
   }
 }

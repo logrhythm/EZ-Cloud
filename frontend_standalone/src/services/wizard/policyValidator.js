@@ -5,6 +5,20 @@
  */
 
 /**
+ * Helper function to get a property value from an object in a case-insensitive manner
+ * @param {Object} obj - The object to search
+ * @param {string} key - The key to find (case-insensitive)
+ * @returns {*} The value of the property, or undefined if not found
+ */
+function getCaseInsensitiveProperty (obj, key) {
+  if (!obj || typeof obj !== 'object') return undefined
+
+  const lowerKey = key.toLowerCase()
+  const foundKey = Object.keys(obj).find(k => k.toLowerCase() === lowerKey)
+  return foundKey ? obj[foundKey] : undefined
+}
+
+/**
  * Validation result structure for policy files
  */
 export class PolicyValidationResult {
@@ -39,41 +53,56 @@ export class PolicyValidationResult {
  */
 export class PolicyMetadata {
   constructor (policy) {
-    this.policyName = policy.name || null
-    this.hasFilter = Boolean(policy.filter)
-    this.hasTransforms = Boolean(policy.transforms && policy.transforms.length > 0)
-    this.hasSchemaRule = Boolean(policy.schemaRule || policy.schemarule)
-    this.hasSubTransforms = Boolean(policy.subtransforms && policy.subtransforms.length > 0)
-    this.transformCount = policy.transforms ? policy.transforms.length : 0
-    this.subTransformCount = policy.subtransforms ? policy.subtransforms.length : 0
+    this.policyName = getCaseInsensitiveProperty(policy, 'name') || null
+    this.hasFilter = Boolean(getCaseInsensitiveProperty(policy, 'filter'))
+    this.hasTransforms = Boolean(
+      getCaseInsensitiveProperty(policy, 'transforms') &&
+      getCaseInsensitiveProperty(policy, 'transforms').length > 0
+    )
+
+    const schemaRule = getCaseInsensitiveProperty(policy, 'schemaRule')
+    this.hasSchemaRule = Boolean(schemaRule)
+
+    const subtransforms = getCaseInsensitiveProperty(policy, 'subtransforms')
+    this.hasSubTransforms = Boolean(subtransforms && subtransforms.length > 0)
+
+    const transforms = getCaseInsensitiveProperty(policy, 'transforms')
+    this.transformCount = transforms ? transforms.length : 0
+    this.subTransformCount = subtransforms ? subtransforms.length : 0
     this.complexity = this.calculateComplexity(policy)
   }
 
   calculateComplexity (policy) {
     let score = 0
 
-    if (policy.transforms) {
-      score += policy.transforms.length
+    const transforms = getCaseInsensitiveProperty(policy, 'transforms')
+    if (transforms) {
+      score += transforms.length
     }
 
-    const schemaRule = policy.schemaRule || policy.schemarule
+    const schemaRule = getCaseInsensitiveProperty(policy, 'schemaRule')
     if (schemaRule) {
-      if (schemaRule.ConvertoJson || schemaRule.convertoJson || schemaRule.convertToJson) {
-        const field = schemaRule.ConvertoJson || schemaRule.convertoJson || schemaRule.convertToJson
-        score += (Array.isArray(field) ? field.length : 1) * 2
+      const convertoJson = getCaseInsensitiveProperty(schemaRule, 'convertoJson')
+      if (convertoJson) {
+        score += (Array.isArray(convertoJson) ? convertoJson.length : 1) * 2
       }
-      if (schemaRule.childfanouts || schemaRule.fanout) {
-        const field = schemaRule.childfanouts || schemaRule.fanout
+
+      const childfanouts = getCaseInsensitiveProperty(schemaRule, 'childfanouts')
+      const fanout = getCaseInsensitiveProperty(schemaRule, 'fanout')
+      if (childfanouts || fanout) {
+        const field = childfanouts || fanout
         score += (Array.isArray(field) ? field.length : 1) * 3
       }
     }
 
-    if (policy.filter) {
+    const filter = getCaseInsensitiveProperty(policy, 'filter')
+    if (filter) {
       score += 5
     }
 
-    if (policy.subtransforms) {
-      score += policy.subtransforms.length * 2
+    const subtransforms = getCaseInsensitiveProperty(policy, 'subtransforms')
+    if (subtransforms) {
+      score += subtransforms.length * 2
     }
 
     if (score < 5) return 'simple'
@@ -219,57 +248,103 @@ export class PolicyValidator {
   }
 
   /**
-   * Strip single-line comments (// ...) from JSON content
-   * Preserves // inside quoted strings (e.g., URLs, paths)
+   * Strip JavaScript-style comments (// and /* *\/) from JSON content
+   * Preserves // and /* inside quoted strings (e.g., URLs, paths)
+   * Also fixes trailing commas that may result from comment removal
    * @param {string} jsonString - Raw JSON content with potential comments
    * @returns {string} - Cleaned JSON without comments
    */
   static stripJsonComments (jsonString) {
-    const lines = jsonString.split('\n')
-    const cleanedLines = []
+    let result = ''
+    let inString = false
+    let inBlockComment = false
+    let inLineComment = false
+    let escaped = false
 
-    for (const line of lines) {
-      let inString = false
-      let escaped = false
-      let cleanLine = ''
+    // First pass: Remove all comments while preserving strings
+    for (let i = 0; i < jsonString.length; i++) {
+      const char = jsonString[i]
+      const nextChar = jsonString[i + 1]
 
-      for (let i = 0; i < line.length; i++) {
-        const char = line[i]
-        const nextChar = line[i + 1]
+      // Handle escape sequences in strings
+      if (inString && char === '\\' && !escaped) {
+        escaped = true
+        result += char
+        continue
+      }
 
-        // Check for escape character
-        if (char === '\\' && !escaped) {
-          escaped = true
-          cleanLine += char
-          continue
-        }
+      // Handle string boundaries (double quotes only, as JSON doesn't support single quotes)
+      if (char === '"' && !escaped && !inBlockComment && !inLineComment) {
+        inString = !inString
+        result += char
+        escaped = false
+        continue
+      }
 
-        // Check for string boundaries (double quotes)
-        if (char === '"' && !escaped) {
-          inString = !inString
-          cleanLine += char
-          escaped = false
-          continue
-        }
-
-        // Check for comment start (outside strings)
-        if (char === '/' && nextChar === '/' && !inString) {
-          // Rest of line is a comment, stop processing this line
-          break
-        }
-
-        cleanLine += char
+      // Reset escaped flag
+      if (escaped) {
         escaped = false
       }
 
-      // Only add lines that have content after trimming
-      const trimmed = cleanLine.trim()
-      if (trimmed.length > 0) {
-        cleanedLines.push(cleanLine)
+      // Skip processing if we're inside a string
+      if (inString) {
+        result += char
+        continue
       }
+
+      // Handle block comment start /* (outside strings)
+      if (!inBlockComment && !inLineComment && char === '/' && nextChar === '*') {
+        inBlockComment = true
+        i++ // Skip the next character (*)
+        continue
+      }
+
+      // Handle block comment end */ (outside strings)
+      if (inBlockComment && char === '*' && nextChar === '/') {
+        inBlockComment = false
+        i++ // Skip the next character (/)
+        continue
+      }
+
+      // Handle line comment start // (outside strings and block comments)
+      if (!inBlockComment && !inLineComment && char === '/' && nextChar === '/') {
+        inLineComment = true
+        i++ // Skip the next character (/)
+        continue
+      }
+
+      // Handle line comment end (newline)
+      if (inLineComment && (char === '\n' || char === '\r')) {
+        inLineComment = false
+        result += char // Preserve the newline
+        continue
+      }
+
+      // Skip characters that are part of comments
+      if (inBlockComment || inLineComment) {
+        continue
+      }
+
+      // Add non-comment characters
+      result += char
     }
 
-    return cleanedLines.join('\n')
+    // Second pass: Fix trailing commas that may result from removed comments
+    result = this.fixTrailingCommas(result)
+
+    return result
+  }
+
+  /**
+   * Fix trailing commas in JSON (commas before closing brackets/braces)
+   * This handles cases where removing comments leaves trailing commas
+   * @param {string} jsonString - JSON string that may have trailing commas
+   * @returns {string} - JSON string with trailing commas removed
+   */
+  static fixTrailingCommas (jsonString) {
+    // Remove trailing commas before ] or } (with optional whitespace)
+    // This regex finds: comma, optional whitespace, then ] or }
+    return jsonString.replace(/,(\s*)([\]}])/g, '$1$2')
   }
 
   /**
@@ -323,16 +398,17 @@ export class PolicyValidator {
       return result
     }
 
-    // Check for policy name (recommended but not strictly required)
-    if (!policy.name || typeof policy.name !== 'string' || policy.name.trim() === '') {
+    // Check for policy name (recommended but not strictly required) - case insensitive
+    const name = getCaseInsensitiveProperty(policy, 'name')
+    if (!name || typeof name !== 'string' || name.trim() === '') {
       result.addWarning('Policy name is missing or empty (recommended)')
     }
 
-    // Normalize schemarule variants
-    const schemaRule = policy.schemaRule || policy.schemarule
-    const filter = policy.filter
-    const transforms = policy.transforms
-    const subtransforms = policy.subtransforms
+    // Get properties in a case-insensitive way
+    const schemaRule = getCaseInsensitiveProperty(policy, 'schemaRule')
+    const filter = getCaseInsensitiveProperty(policy, 'filter')
+    const transforms = getCaseInsensitiveProperty(policy, 'transforms')
+    const subtransforms = getCaseInsensitiveProperty(policy, 'subtransforms')
 
     // Check that at least one of the main sections exists
     const hasTransforms = Array.isArray(transforms) && transforms.length > 0
@@ -347,7 +423,7 @@ export class PolicyValidator {
     }
 
     // Validate transforms structure if present
-    if (policy.transforms !== undefined) {
+    if (transforms !== undefined) {
       if (!Array.isArray(transforms)) {
         result.addError('Field "transforms" must be an array')
       } else if (transforms.length === 0) {
@@ -360,10 +436,10 @@ export class PolicyValidator {
       if (typeof schemaRule !== 'object') {
         result.addError('Field "schemaRule" must be an object')
       } else {
-        // Check schemaRule sub-fields
-        const convertoJson = schemaRule.ConvertoJson || schemaRule.convertoJson || schemaRule.convertToJson
-        const fanout = schemaRule.fanout
-        const childfanouts = schemaRule.childfanouts
+        // Check schemaRule sub-fields - case insensitive
+        const convertoJson = getCaseInsensitiveProperty(schemaRule, 'convertoJson')
+        const fanout = getCaseInsensitiveProperty(schemaRule, 'fanout')
+        const childfanouts = getCaseInsensitiveProperty(schemaRule, 'childfanouts')
 
         // DEBUG: Log schemaRule validation
         console.log('[PolicyValidator] Validating schemaRule:', {
@@ -376,10 +452,6 @@ export class PolicyValidator {
           fanoutType: typeof fanout,
           fanoutIsNull: fanout === null,
           fanoutIsObject: typeof fanout === 'object',
-          fanoutInputField: fanout?.inputField,
-          fanoutInputFieldType: typeof fanout?.inputField,
-          fanoutInputFieldIsNull: fanout?.inputField === null,
-          fanoutInputFieldIsArray: Array.isArray(fanout?.inputField),
           childfanouts: childfanouts,
           childfanoutsType: typeof childfanouts,
           childfanoutsIsNull: childfanouts === null,
@@ -397,8 +469,8 @@ export class PolicyValidator {
           if (typeof fanout !== 'object') {
             result.addError('Field "fanout" must be an object when provided')
           } else {
-            // Now validate fanout.inputField if it exists
-            const inputField = fanout.inputField
+            // Now validate fanout.inputField if it exists - case insensitive
+            const inputField = getCaseInsensitiveProperty(fanout, 'inputField')
             // Only validate inputField if it's not null/undefined
             if (inputField !== undefined && inputField !== null && !Array.isArray(inputField)) {
               result.addError('Field "fanout.inputField" must be an array when provided')
@@ -421,7 +493,7 @@ export class PolicyValidator {
     }
 
     // Validate subtransforms structure if present
-    if (policy.subtransforms !== undefined) {
+    if (subtransforms !== undefined) {
       if (!Array.isArray(subtransforms)) {
         result.addError('Field "subtransforms" must be an array')
       } else if (subtransforms.length === 0) {
@@ -439,36 +511,42 @@ export class PolicyValidator {
   static validatePolicyDataTypes (policy) {
     const result = new PolicyValidationResult()
 
-    // Validate transforms if present
-    if (Array.isArray(policy.transforms)) {
-      policy.transforms.forEach((transform, index) => {
+    // Validate transforms if present - case insensitive
+    const transforms = getCaseInsensitiveProperty(policy, 'transforms')
+    if (Array.isArray(transforms)) {
+      transforms.forEach((transform, index) => {
         if (typeof transform !== 'object') {
           result.addError(`Transform at index ${index} must be an object`)
           return
         }
 
-        // Validate required transform fields
-        if (!transform.sourcePath && !transform.inputRule) {
+        // Validate required transform fields - case insensitive
+        const sourcePath = getCaseInsensitiveProperty(transform, 'sourcePath')
+        const inputRule = getCaseInsensitiveProperty(transform, 'inputRule')
+        if (!sourcePath && !inputRule) {
           result.addWarning(`Transform at index ${index} is missing "sourcePath" field`)
         }
 
-        if (!transform.targetField && !transform.LRSchemaField) {
+        const targetField = getCaseInsensitiveProperty(transform, 'targetField')
+        const lrSchemaField = getCaseInsensitiveProperty(transform, 'LRSchemaField')
+        if (!targetField && !lrSchemaField) {
           result.addWarning(`Transform at index ${index} is missing "targetField" field`)
         }
 
-        // Validate transformations array if present
-        if (transform.transformations !== undefined) {
-          if (!Array.isArray(transform.transformations)) {
+        // Validate transformations array if present - case insensitive
+        const transformations = getCaseInsensitiveProperty(transform, 'transformations')
+        if (transformations !== undefined) {
+          if (!Array.isArray(transformations)) {
             result.addError(`Transform at index ${index}: "transformations" must be an array`)
           }
         }
       })
     }
 
-    // Validate schemaRule data types
-    const schemaRule = policy.schemaRule || policy.schemarule
+    // Validate schemaRule data types - case insensitive
+    const schemaRule = getCaseInsensitiveProperty(policy, 'schemaRule')
     if (schemaRule) {
-      const convertoJson = schemaRule.ConvertoJson || schemaRule.convertoJson || schemaRule.convertToJson
+      const convertoJson = getCaseInsensitiveProperty(schemaRule, 'convertoJson')
       if (Array.isArray(convertoJson)) {
         convertoJson.forEach((path, index) => {
           if (typeof path !== 'string') {
@@ -477,19 +555,22 @@ export class PolicyValidator {
         })
       }
 
-      const fanout = schemaRule.fanout
-      // Only validate fanout.inputField if it exists and is not null
-      if (fanout && fanout.inputField !== null && fanout.inputField !== undefined) {
-        if (Array.isArray(fanout.inputField)) {
-          fanout.inputField.forEach((path, index) => {
-            if (typeof path !== 'string') {
-              result.addError(`fanout.inputField at index ${index} must be a string`)
-            }
-          })
+      const fanout = getCaseInsensitiveProperty(schemaRule, 'fanout')
+      // Only validate fanout.inputField if it exists and is not null - case insensitive
+      if (fanout && fanout !== null) {
+        const inputField = getCaseInsensitiveProperty(fanout, 'inputField')
+        if (inputField !== null && inputField !== undefined) {
+          if (Array.isArray(inputField)) {
+            inputField.forEach((path, index) => {
+              if (typeof path !== 'string') {
+                result.addError(`fanout.inputField at index ${index} must be a string`)
+              }
+            })
+          }
         }
       }
 
-      const childfanouts = schemaRule.childfanouts
+      const childfanouts = getCaseInsensitiveProperty(schemaRule, 'childfanouts')
       if (Array.isArray(childfanouts)) {
         childfanouts.forEach((fanout, index) => {
           if (typeof fanout !== 'object') {
@@ -497,32 +578,36 @@ export class PolicyValidator {
             return
           }
 
-          if (!fanout.field || typeof fanout.field !== 'string') {
+          const field = getCaseInsensitiveProperty(fanout, 'field')
+          if (!field || typeof field !== 'string') {
             result.addError(`childfanout at index ${index} is missing "field" property`)
           }
         })
       }
     }
 
-    // Validate subtransforms if present
-    if (Array.isArray(policy.subtransforms)) {
-      policy.subtransforms.forEach((subtransform, index) => {
+    // Validate subtransforms if present - case insensitive
+    const subtransforms = getCaseInsensitiveProperty(policy, 'subtransforms')
+    if (Array.isArray(subtransforms)) {
+      subtransforms.forEach((subtransform, index) => {
         if (typeof subtransform !== 'object') {
           result.addError(`SubTransform at index ${index} must be an object`)
           return
         }
 
-        // Validate condition field
+        // Validate condition field - case insensitive
+        const condition = getCaseInsensitiveProperty(subtransform, 'condition')
         // - null: Acts as a catch-all/default case (always matches)
         // - string: JSONPath condition expression to evaluate
         // - undefined/missing: Also treated as catch-all
-        if (subtransform.condition !== undefined &&
-            subtransform.condition !== null &&
-            typeof subtransform.condition !== 'string') {
+        if (condition !== undefined &&
+            condition !== null &&
+            typeof condition !== 'string') {
           result.addError(`SubTransform at index ${index}: "condition" must be a string or null`)
         }
 
-        if (!subtransform.transforms || !Array.isArray(subtransform.transforms)) {
+        const transforms = getCaseInsensitiveProperty(subtransform, 'transforms')
+        if (!transforms || !Array.isArray(transforms)) {
           result.addError(`SubTransform at index ${index} is missing "transforms" array`)
         }
       })
@@ -553,59 +638,71 @@ export class PolicyValidator {
       }
     }
 
-    // Validate transforms paths
-    if (Array.isArray(policy.transforms)) {
-      policy.transforms.forEach((transform, index) => {
-        if (transform.sourcePath) {
-          validatePath(transform.sourcePath, `Transform ${index} sourcePath`)
+    // Validate transforms paths - case insensitive
+    const transforms = getCaseInsensitiveProperty(policy, 'transforms')
+    if (Array.isArray(transforms)) {
+      transforms.forEach((transform, index) => {
+        const sourcePath = getCaseInsensitiveProperty(transform, 'sourcePath')
+        if (sourcePath) {
+          validatePath(sourcePath, `Transform ${index} sourcePath`)
         }
-        if (transform.inputRule) {
-          validatePath(transform.inputRule, `Transform ${index} inputRule`)
+        const inputRule = getCaseInsensitiveProperty(transform, 'inputRule')
+        if (inputRule) {
+          validatePath(inputRule, `Transform ${index} inputRule`)
         }
       })
     }
 
-    // Validate schemaRule paths
-    const schemaRule = policy.schemaRule || policy.schemarule
+    // Validate schemaRule paths - case insensitive
+    const schemaRule = getCaseInsensitiveProperty(policy, 'schemaRule')
     if (schemaRule) {
-      const convertoJson = schemaRule.ConvertoJson || schemaRule.convertoJson || schemaRule.convertToJson
+      const convertoJson = getCaseInsensitiveProperty(schemaRule, 'convertoJson')
       if (Array.isArray(convertoJson)) {
         convertoJson.forEach((path, index) => {
           validatePath(path, `convertoJson ${index}`)
         })
       }
 
-      const fanout = schemaRule.fanout
-      // Only validate paths if fanout.inputField exists, is not null, and is an array
-      if (fanout && fanout.inputField !== null && fanout.inputField !== undefined && Array.isArray(fanout.inputField)) {
-        fanout.inputField.forEach((path, index) => {
-          validatePath(path, `fanout.inputField ${index}`)
-        })
+      const fanout = getCaseInsensitiveProperty(schemaRule, 'fanout')
+      // Only validate paths if fanout.inputField exists, is not null, and is an array - case insensitive
+      if (fanout && fanout !== null) {
+        const inputField = getCaseInsensitiveProperty(fanout, 'inputField')
+        if (inputField !== null && inputField !== undefined && Array.isArray(inputField)) {
+          inputField.forEach((path, index) => {
+            validatePath(path, `fanout.inputField ${index}`)
+          })
+        }
       }
 
-      const childfanouts = schemaRule.childfanouts
+      const childfanouts = getCaseInsensitiveProperty(schemaRule, 'childfanouts')
       if (Array.isArray(childfanouts)) {
         childfanouts.forEach((fanout, index) => {
-          if (fanout.field) {
-            validatePath(fanout.field, `childfanout ${index} field`)
+          const field = getCaseInsensitiveProperty(fanout, 'field')
+          if (field) {
+            validatePath(field, `childfanout ${index} field`)
           }
-          if (fanout.parentpath) {
-            validatePath(fanout.parentpath, `childfanout ${index} parentpath`)
+          const parentpath = getCaseInsensitiveProperty(fanout, 'parentpath')
+          if (parentpath) {
+            validatePath(parentpath, `childfanout ${index} parentpath`)
           }
         })
       }
     }
 
-    // Validate subtransform paths
-    if (Array.isArray(policy.subtransforms)) {
-      policy.subtransforms.forEach((subtransform, index) => {
-        if (Array.isArray(subtransform.transforms)) {
-          subtransform.transforms.forEach((transform, tIndex) => {
-            if (transform.sourcePath) {
-              validatePath(transform.sourcePath, `SubTransform ${index} Transform ${tIndex} sourcePath`)
+    // Validate subtransform paths - case insensitive
+    const subtransforms = getCaseInsensitiveProperty(policy, 'subtransforms')
+    if (Array.isArray(subtransforms)) {
+      subtransforms.forEach((subtransform, index) => {
+        const transforms = getCaseInsensitiveProperty(subtransform, 'transforms')
+        if (Array.isArray(transforms)) {
+          transforms.forEach((transform, tIndex) => {
+            const sourcePath = getCaseInsensitiveProperty(transform, 'sourcePath')
+            if (sourcePath) {
+              validatePath(sourcePath, `SubTransform ${index} Transform ${tIndex} sourcePath`)
             }
-            if (transform.inputRule) {
-              validatePath(transform.inputRule, `SubTransform ${index} Transform ${tIndex} inputRule`)
+            const inputRule = getCaseInsensitiveProperty(transform, 'inputRule')
+            if (inputRule) {
+              validatePath(inputRule, `SubTransform ${index} Transform ${tIndex} inputRule`)
             }
           })
         }

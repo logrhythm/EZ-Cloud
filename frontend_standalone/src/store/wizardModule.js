@@ -397,7 +397,17 @@ const mutations = {
 
   // Schema rules mutations
   UPDATE_SCHEMA_RULES (state, rules) {
-    state.schemaRules = { ...state.schemaRules, ...rules }
+    // Preserve parsedStringifiedJsonFields when updating schema rules
+    // This ensures parsed JSON data is not lost when updating other properties
+    const preservedParsedFields = state.schemaRules.parsedStringifiedJsonFields || {}
+    state.schemaRules = {
+      ...state.schemaRules,
+      ...rules,
+      // Explicitly preserve parsedStringifiedJsonFields unless it's being explicitly updated
+      parsedStringifiedJsonFields: rules.parsedStringifiedJsonFields !== undefined
+        ? rules.parsedStringifiedJsonFields
+        : preservedParsedFields
+    }
   },
 
   ADD_CONVERT_TO_JSON_FIELD (state, fieldPath) {

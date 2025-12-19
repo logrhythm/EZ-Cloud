@@ -10,6 +10,28 @@
  * @production-ready - Enhanced with comprehensive error handling, validation, and security
  */
 
+/**
+ * Phase 3: Case-insensitive property access helper
+ * Get a property from an object in a case-insensitive manner
+ * @param {Object} obj - The object to search
+ * @param {String} propertyName - The property name to find (case-insensitive)
+ * @returns {*} The property value, or undefined if not found
+ */
+function getCaseInsensitiveProperty (obj, propertyName) {
+  if (!obj || typeof obj !== 'object') return undefined
+
+  const lowerPropName = propertyName.toLowerCase()
+  const keys = Object.keys(obj)
+
+  for (const key of keys) {
+    if (key.toLowerCase() === lowerPropName) {
+      return obj[key]
+    }
+  }
+
+  return undefined
+}
+
 // Constants for production-quality configuration
 const CONSTANTS = {
   MAX_SAMPLE_VALUES: 100,
@@ -1346,6 +1368,7 @@ export class FilterRuleService {
 
   /**
    * Get a value from an object by path (supports nested paths and arrays)
+   * Phase 3: Updated to use case-insensitive property access
    *
    * @param {Object|Array} obj - The object to traverse
    * @param {string} path - The path to the value
@@ -1391,12 +1414,8 @@ export class FilterRuleService {
             return undefined
           }
         } else {
-          // Handle object property access
-          if (typeof current === 'object' && part in current) {
-            current = current[part]
-          } else {
-            return undefined
-          }
+          // Phase 3: Use case-insensitive property access for object properties
+          current = getCaseInsensitiveProperty(current, part)
         }
       }
 

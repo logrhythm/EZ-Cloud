@@ -198,7 +198,13 @@
                 hide-pagination
               >
                 <template v-slot:body="props">
-                  <q-tr :props="props" :class="{ 'missing-field-row': isMissingField(props.row) }">
+                  <q-tr
+                    :props="props"
+                    :class="{ 'missing-field-row': isMissingField(props.row) }"
+                    class="clickable-row"
+                    @click="editMapping(props.row)"
+                    style="cursor: pointer;"
+                  >
                     <!-- JSON Path -->
                     <q-td key="inputRule" :props="props">
                       <div class="json-path-cell">
@@ -270,7 +276,7 @@
                           size="sm"
                           icon="my_location"
                           color="info"
-                          @click="highlightInTree(props.row.inputRule)"
+                          @click.stop="highlightInTree(props.row.inputRule)"
                         >
                           <q-tooltip>Show in Tree</q-tooltip>
                         </q-btn>
@@ -282,7 +288,7 @@
                           size="sm"
                           icon="edit"
                           color="primary"
-                          @click="editMapping(props.row)"
+                          @click.stop="editMapping(props.row)"
                         >
                           <q-tooltip>Edit Mapping</q-tooltip>
                         </q-btn>
@@ -294,7 +300,7 @@
                           size="sm"
                           icon="delete"
                           color="negative"
-                          @click="deleteMapping(props.row.id)"
+                          @click.stop="deleteMapping(props.row.id)"
                         >
                           <q-tooltip>Delete Mapping</q-tooltip>
                         </q-btn>
@@ -366,6 +372,8 @@
                 <q-item
                   v-for="mapping in localMappings"
                   :key="mapping.id"
+                  clickable
+                  @click="editMapping(mapping)"
                   class="mapping-item-mobile"
                   :class="{ 'missing-field-item': isMissingField(mapping) }"
                 >
@@ -409,7 +417,7 @@
                         size="sm"
                         icon="edit"
                         color="primary"
-                        @click="editMapping(mapping)"
+                        @click.stop="editMapping(mapping)"
                       />
                       <q-btn
                         flat
@@ -418,7 +426,7 @@
                         size="sm"
                         icon="delete"
                         color="negative"
-                        @click="deleteMapping(mapping.id)"
+                        @click.stop="deleteMapping(mapping.id)"
                       />
                     </div>
                   </q-item-section>
@@ -1787,20 +1795,99 @@ export default {
      */
     checkFieldExistsInSampleData (fieldPath) {
       if (!fieldPath || !this.availableJsonPaths) {
+        console.log('[Step 5] checkFieldExistsInSampleData - early return:', { fieldPath, hasAvailablePaths: !!this.availableJsonPaths })
         return false
       }
 
-      // Normalize the path for comparison
-      const normalizedPath = fieldPath.replace(/^@\./, '$.').replace(/^\$\./, '')
+      // Normalize path: ensure it starts with $. and convert to lowercase
+      const normalizePath = (path) => {
+        if (!path) return ''
+        let normalized = path.trim()
 
-      // Check if field exists in available paths
-      return this.availableJsonPaths.some(pathObj => {
-        const availablePath = (pathObj.value || pathObj.label || '').replace(/^@\./, '$.').replace(/^\$\./, '')
-        return availablePath === normalizedPath ||
-               availablePath === fieldPath ||
-               pathObj.value === fieldPath ||
-               pathObj.label === fieldPath
+        // Convert @. to $.
+        if (normalized.startsWith('@.')) {
+          normalized = '$.' + normalized.substring(2)
+        }
+
+        // Ensure it starts with $.
+        if (!normalized.startsWith('$.')) {
+          normalized = '$.' + normalized
+        }
+
+        // Replace all @ symbols with _ (underscore)
+        // This handles cases like $.@metadata.beat -> $._metadata.beat
+        // because JavaScript uses underscore for properties that start with @
+        normalized = normalized.replace(/@/g, '_')
+
+        // Remove array indices [0], [1], etc. for comparison (but keep [*])
+        // This handles cases like $.response.user.groups[0] matching $.response.user.groups
+        normalized = normalized.replace(/\[\d+\]/g, '')
+
+        return normalized.toLowerCase()
+      }
+
+      const normalizedFieldPath = normalizePath(fieldPath)
+
+      // Check if field exists in available paths - CASE-INSENSITIVE
+      // First, try direct match
+      const directMatch = this.availableJsonPaths.some(pathObj => {
+        const pathValue = pathObj.value || pathObj.label || ''
+        const normalizedAvailablePath = normalizePath(pathValue)
+        return normalizedAvailablePath === normalizedFieldPath
       })
+
+      if (directMatch) {
+        console.log(`✓ [Step 5] Field FOUND (direct match): ${fieldPath}`)
+        return true
+      }
+
+      // If no direct match and fanout arrays exist, try matching with fanout parents
+      // This handles cases where policy has $.eventName but tree has $.Log.Records[*].eventName
+      if (this.fanoutArrays && this.fanoutArrays.length > 0) {
+        console.log(`[Step 5] No direct match for ${fieldPath}, trying fanout-based matching...`)
+        console.log('[Step 5] Available fanout arrays:', this.fanoutArrays)
+
+        // For each fanout parent, try to reconstruct what the full path would be
+        for (const fanoutParent of this.fanoutArrays) {
+          // Build potential full path by combining fanout parent with the field path
+          // Strip $. from fieldPath for concatenation
+          let relativePath = fieldPath
+          if (relativePath.startsWith('$.')) {
+            relativePath = relativePath.substring(2)
+          } else if (relativePath.startsWith('$')) {
+            relativePath = relativePath.substring(1)
+          }
+
+          // Build full path: fanoutParent + [*] + relativePath
+          let reconstructedPath = fanoutParent
+          if (!reconstructedPath.endsWith('[*]')) {
+            reconstructedPath += '[*]'
+          }
+          reconstructedPath += '.' + relativePath
+
+          const normalizedReconstructedPath = normalizePath(reconstructedPath)
+
+          console.log(`[Step 5] Trying reconstructed path: ${reconstructedPath} (normalized: ${normalizedReconstructedPath})`)
+
+          // Check if this reconstructed path exists in availableJsonPaths
+          const fanoutMatch = this.availableJsonPaths.some(pathObj => {
+            const pathValue = pathObj.value || pathObj.label || ''
+            const normalizedAvailablePath = normalizePath(pathValue)
+            return normalizedAvailablePath === normalizedReconstructedPath
+          })
+
+          if (fanoutMatch) {
+            console.log(`✓ [Step 5] Field FOUND (fanout match): ${fieldPath} -> ${reconstructedPath}`)
+            return true
+          }
+        }
+
+        console.log(`⚠️  [Step 5] Field NOT FOUND even with fanout matching: ${fieldPath}`)
+      } else {
+        console.log(`⚠️  [Step 5] Field NOT FOUND: ${fieldPath} (normalized: ${normalizedFieldPath})`)
+      }
+
+      return false
     },
 
     /**
@@ -1855,8 +1942,8 @@ export default {
         await this.$nextTick()
         await this.$nextTick()
 
-        // Extract transforms from policy
-        const transforms = policyData?.transforms || policyData?.Transforms || []
+        // Extract transforms from policy (case-insensitive)
+        const transforms = this.getCaseInsensitiveProperty(policyData, 'transforms') || []
 
         if (!Array.isArray(transforms) || transforms.length === 0) {
           console.log('[Step 5] No transforms found in policy')
@@ -1881,15 +1968,32 @@ export default {
           console.log('  type:', transform.type)
           console.log('------------------------------------------------------------')
 
+          // Extract properties with case-insensitive access
+          const inputRule = this.getCaseInsensitiveProperty(transform, 'inputRule') || ''
+          const lrSchemaField = this.getCaseInsensitiveProperty(transform, 'LRSchemaField') || ''
+          const type = this.getCaseInsensitiveProperty(transform, 'type')
+          const format = this.getCaseInsensitiveProperty(transform, 'format') || null
+          const defaultValue = this.getCaseInsensitiveProperty(transform, 'default') || null
+          const alternativeFields = this.getCaseInsensitiveProperty(transform, 'alternativeFields')
+          const fanoutParentElement = this.getCaseInsensitiveProperty(transform, 'FanoutParentElement') || null
+
           // Skip invalid transforms
-          if (!transform.inputRule && !transform.LRSchemaField) {
+          if (!inputRule && !lrSchemaField) {
             console.warn('[Step 5] Skipping invalid transform at index', index)
             continue
           }
 
           // Parse operation from inputRule if present
-          const parsed = parseOperationFromInputRule(transform.inputRule || '')
-          const originalFieldPath = parsed.fieldPath || transform.inputRule
+          const parsed = parseOperationFromInputRule(inputRule)
+          const originalFieldPath = parsed.fieldPath || inputRule
+
+          console.log(`[Step 5] Processing transform #${index}:`, {
+            inputRule,
+            parsedFieldPath: parsed.fieldPath,
+            parsedOperation: parsed.operation,
+            originalFieldPath,
+            lrSchemaField
+          })
 
           // Check if field exists in sample data
           const fieldExists = this.checkFieldExistsInSampleData(originalFieldPath)
@@ -1900,7 +2004,7 @@ export default {
             // Track as missing field
             missingFields.push({
               type: 'mapping',
-              path: transform.inputRule,
+              path: inputRule,
               originalPath: originalFieldPath,
               message: 'Field defined in policy but not found in current sample data',
               reason: 'missing'
@@ -1909,25 +2013,25 @@ export default {
             console.log('[Step 5] Field from policy FOUND in sample data:', originalFieldPath)
           }
 
-          // Create mapping object
+          // Create mapping object with case-insensitive property values
           const mapping = {
             id: `mapping-policy-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`,
-            inputRule: transform.inputRule || '',
-            lrSchemaField: transform.LRSchemaField || '',
-            type: this.normalizeDataType(transform.type),
-            format: transform.format || null,
-            default: transform.default || null,
-            alternativeFields: transform.alternativeFields ? [...transform.alternativeFields] : [],
-            fanoutParentElement: transform.FanoutParentElement || null,
+            inputRule: inputRule,
+            lrSchemaField: lrSchemaField,
+            type: this.normalizeDataType(type),
+            format: format,
+            default: defaultValue,
+            alternativeFields: alternativeFields ? [...alternativeFields] : [],
+            fanoutParentElement: fanoutParentElement,
             sampleValue: null, // Will be populated if field exists
-            originalInputRule: transform.inputRule // Keep original for reference
+            originalInputRule: inputRule // Keep original for reference
           }
 
           // Try to get sample value if field exists
           if (fieldExists) {
             const pathOption = this.availableJsonPaths.find(p =>
               p.value === originalFieldPath ||
-              p.value === transform.inputRule
+              p.value === inputRule
             )
             if (pathOption && pathOption.sampleValue) {
               mapping.sampleValue = pathOption.sampleValue
@@ -1950,6 +2054,12 @@ export default {
         console.log('[Step 5] Pre-fill completed successfully')
         console.log('  Total mappings loaded:', mappingsToAdd.length)
         console.log('  Missing fields:', missingFields.length)
+        if (missingFields.length > 0) {
+          console.log('  Missing field details:')
+          missingFields.forEach((field, idx) => {
+            console.log(`    [${idx}] ${field.originalPath} (from: ${field.path})`)
+          })
+        }
         console.log('============================================================')
 
         // Force UI update
@@ -2018,6 +2128,28 @@ export default {
       }
 
       return typeMap[type] || 'String'
+    },
+
+    /**
+     * Helper function to get a property from an object in a case-insensitive manner
+     * @param {Object} obj - The object to search
+     * @param {string} key - The property name to find (case-insensitive)
+     * @returns {*} - The value of the property, or undefined if not found
+     */
+    getCaseInsensitiveProperty (obj, key) {
+      if (!obj || typeof obj !== 'object') {
+        return undefined
+      }
+
+      // First try exact match
+      if (key in obj) {
+        return obj[key]
+      }
+
+      // Try case-insensitive match
+      const lowerKey = key.toLowerCase()
+      const foundKey = Object.keys(obj).find(k => k.toLowerCase() === lowerKey)
+      return foundKey ? obj[foundKey] : undefined
     }
   },
 
@@ -2063,8 +2195,9 @@ export default {
 
 <style lang="scss" scoped>
 .step-mapping {
-  max-width: 1400px;
+  max-width: 95%; /* Utilize more screen space */
   margin: 0 auto;
+  padding: 0 1rem;
 }
 
 .step-header {
@@ -2138,9 +2271,10 @@ export default {
 /* Split Panel Layout (Desktop) */
 .split-panel-layout {
   display: grid;
-  grid-template-columns: 1fr 2fr; /* Balanced layout: JSON tree gets more space, mappings still prominent */
+  grid-template-columns: 1fr 1.5fr; /* More balanced layout: give more space to both panels */
   gap: 1.5rem;
   min-height: 800px; /* Increased from 600px for better visibility */
+  max-width: none; /* Remove max-width constraint */
 }
 
 .panel {
@@ -2215,7 +2349,7 @@ export default {
   overflow-y: auto; /* Smooth scrolling with visible scrollbar */
   overflow-x: hidden;
   padding: 1rem;
-  max-height: calc(100vh - 400px); /* Ensure scrolling when content exceeds viewport */
+  max-height: calc(100vh - 320px); /* Utilize more vertical space - increased from 400px */
 
   /* Custom scrollbar styling for dark theme */
   &::-webkit-scrollbar {
@@ -2279,13 +2413,14 @@ export default {
     font-weight: 600;
     font-size: 0.875rem;
     white-space: nowrap; /* Prevent header text wrapping */
+    padding: 12px 10px;
   }
 
   ::v-deep .q-table tbody td {
     color: #E3F2FD;
     font-size: 0.875rem;
-    padding: 12px 8px;
-    vertical-align: top; /* Align content to top when text wraps */
+    padding: 14px 10px;
+    vertical-align: middle; /* Center align content for better button visibility */
   }
 
   /* Ensure table uses full width */
@@ -2297,6 +2432,51 @@ export default {
   ::v-deep .q-table__middle {
     overflow-x: visible;
   }
+
+  /* Column widths for better control visibility */
+  ::v-deep .q-table th:nth-child(1),
+  ::v-deep .q-table td:nth-child(1) {
+    width: 25%; /* JSON Path */
+    min-width: 180px;
+  }
+
+  ::v-deep .q-table th:nth-child(2),
+  ::v-deep .q-table td:nth-child(2) {
+    width: 3%; /* Arrow */
+    min-width: 40px;
+    text-align: center;
+  }
+
+  ::v-deep .q-table th:nth-child(3),
+  ::v-deep .q-table td:nth-child(3) {
+    width: 20%; /* LR Field */
+    min-width: 150px;
+  }
+
+  ::v-deep .q-table th:nth-child(4),
+  ::v-deep .q-table td:nth-child(4) {
+    width: 12%; /* Type */
+    min-width: 100px;
+  }
+
+  ::v-deep .q-table th:nth-child(5),
+  ::v-deep .q-table td:nth-child(5) {
+    width: 15%; /* Format */
+    min-width: 120px;
+  }
+
+  ::v-deep .q-table th:nth-child(6),
+  ::v-deep .q-table td:nth-child(6) {
+    width: 15%; /* Fanout Parent */
+    min-width: 120px;
+  }
+
+  ::v-deep .q-table th:nth-child(7),
+  ::v-deep .q-table td:nth-child(7) {
+    width: 10%; /* Actions */
+    min-width: 150px;
+    text-align: center;
+  }
 }
 
 .json-path-cell {
@@ -2306,33 +2486,58 @@ export default {
   font-size: 0.875rem;
   flex-wrap: wrap; /* Allow wrapping to prevent horizontal scroll */
   gap: 4px; /* Space between icon and text when wrapped */
-  max-width: 400px; /* Ensure wrapping at reasonable width */
+  max-width: 100%; /* Use full available width */
+  min-width: 200px; /* Ensure minimum readability */
 }
 
 .path-text {
   color: #A5D6A7;
   font-weight: 500;
-  word-break: break-word; /* Better word breaking for long paths */
+  word-break: break-all; /* Force break long paths without spaces */
   overflow-wrap: break-word; /* Ensure long words wrap */
   word-wrap: break-word; /* Legacy support */
-  hyphens: auto; /* Optional: add hyphens for better readability */
+  hyphens: none; /* No hyphens for JSON paths */
   flex: 1;
   min-width: 0; /* Allow text to shrink */
-  line-height: 1.4; /* Better line height for wrapped text */
+  line-height: 1.5; /* Better line height for wrapped text */
+  white-space: normal; /* Allow text to wrap */
 }
 
 .action-buttons {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   justify-content: center;
   flex-wrap: nowrap; /* Prevent buttons from wrapping */
-  min-width: 120px; /* Ensure minimum width for all 3 buttons */
+  min-width: 140px; /* Ensure minimum width for all 3 buttons - increased for visibility */
+
+  ::v-deep .q-btn {
+    min-width: 36px;
+    min-height: 36px;
+  }
+}
+
+/* Clickable row styling */
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(33, 150, 243, 0.08) !important;
+  }
+
+  &:active {
+    background-color: rgba(33, 150, 243, 0.15) !important;
+  }
 }
 
 /* Missing Field Styles (Update Mode) */
 .missing-field-row {
   background-color: rgba(255, 152, 0, 0.1) !important;
-  border-left: 3px solid #FF9800 !important;
+   border-left: 3px solid #FF9800 !important;
+
+  &:hover {
+    background-color: rgba(255, 152, 0, 0.2) !important;
+  }
 }
 
 .missing-field-badge {
@@ -2355,6 +2560,37 @@ export default {
 .fanout-parent-cell {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+
+  .q-chip {
+    margin: 2px 0;
+  }
+}
+
+/* LR Field cell styling */
+.q-table tbody td:nth-child(3) {
+  .q-chip {
+    max-width: 100%;
+    white-space: normal;
+    word-break: break-word;
+    height: auto;
+    min-height: 28px;
+    padding: 6px 12px;
+  }
+}
+
+/* Format cell styling */
+.q-table tbody td:nth-child(5) {
+  word-break: break-word;
+  white-space: normal;
+}
+
+/* Type cell styling */
+.q-table tbody td:nth-child(4) {
+  .q-chip {
+    white-space: nowrap;
+  }
 }
 
 .no-fanout-text {
@@ -2363,324 +2599,6 @@ export default {
   text-align: center;
   display: block;
   width: 100%;
-}
-
-/* Mobile: Tabbed Layout */
-.tabbed-layout {
-  display: none;
-}
-
-.mobile-only {
-  display: none;
-}
-
-.desktop-only {
-  display: grid;
-}
-
-@media (max-width: 1024px) {
-  .desktop-only {
-    display: none;
-  }
-
-  .mobile-only {
-    display: block;
-  }
-
-  .tabbed-layout {
-    display: block;
-    background: #263238;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .mapping-tabs {
-    background: rgba(255, 255, 255, 0.05);
-  }
-
-  .tab-panels {
-    min-height: 500px;
-  }
-
-  .tree-tab-panel,
-  .mappings-tab-panel {
-    padding: 1rem;
-  }
-
-  .mobile-search {
-    margin-bottom: 1rem;
-  }
-}
-
-/* Mapping Dialog */
-.dialog-header {
-  background: var(--q-color-grey-10);
-  color: #E3F2FD;
-}
-
-.mapping-form-section {
-  /* Removed max-height and overflow-y to allow full content display */
-}
-
-.sample-value-banner {
-  background: rgba(33, 150, 243, 0.1);
-  border-left: 3px solid #2196F3;
-}
-
-.sample-value-content {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-
-  code {
-    background: rgba(0, 0, 0, 0.2);
-    padding: 2px 8px;
-    border-radius: 4px;
-    color: #A5D6A7;
-    font-size: 0.9rem;
-  }
-}
-
-.suggestions-header {
-  background: rgba(255, 193, 7, 0.1);
-  padding: 8px 16px;
-  font-weight: 600;
-  color: #FFC107;
-}
-
-/* Step Actions */
-.step-actions {
-  display: flex;
-  justify-content: space-between;
-  padding-top: 2rem;
-  border-top: 1px solid var(--q-color-grey-3);
-}
-
-.wizard-btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-}
-
-/* Mobile Mappings List */
-.mappings-list-mobile {
-  background: transparent;
-}
-
-.mapping-item-mobile {
-  background: rgba(255, 255, 255, 0.05);
-  margin-bottom: 0.5rem;
-  border-radius: 8px;
-}
-
-.missing-field-item {
-  background: rgba(255, 152, 0, 0.15) !important;
-  border-left: 3px solid #FF9800 !important;
-}
-
-.json-path-mobile {
-  font-family: monospace;
-  font-size: 0.875rem;
-  color: #A5D6A7;
-  font-weight: 500;
-}
-
-.mobile-actions {
-  display: flex;
-  gap: 4px;
-}
-
-.empty-mappings-mobile {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 300px;
-  text-align: center;
-  color: var(--q-color-grey-6);
-}
-
-/* Dark Theme Input Styles - Matching Step 4 exactly */
-::v-deep .mapping-form-section {
-  .q-field {
-    .q-field__control {
-      background-color: whitesmoke !important;
-      color: #000000 !important;
-      border-radius: 4px;
-    }
-
-    .q-field__native,
-    .q-field__input {
-      color: #000000 !important;
-      background-color: transparent !important;
-    }
-
-    .q-field__label {
-      color: rgba(0, 0, 0, 0.6) !important;
-    }
-
-    .q-field__control:before {
-      border-color: rgba(0, 0, 0, 0.24) !important;
-    }
-
-    .q-field--focused .q-field__label {
-      color: var(--q-color-primary) !important;
-    }
-
-    .q-field--focused .q-field__control:before {
-      border-color: var(--q-color-primary) !important;
-    }
-  }
-
-  // Error state styling with better visibility - Blue instead of red
-  .q-field--error {
-    .q-field__label {
-      color: #2196f3 !important;
-      font-weight: 500;
-    }
-
-    .q-field__control:before {
-      border-color: #2196f3 !important;
-      border-width: 2px !important;
-    }
-
-    .q-field__control:after {
-      border-color: #2196f3 !important;
-    }
-
-    .q-field__append .q-icon {
-      color: #2196f3 !important;
-    }
-  }
-
-  // Ensure the selected value is visible
-  .q-field__marginal {
-    color: #000000 !important;
-  }
-
-  // Dropdown icon
-  .q-select__dropdown-icon {
-    color: var(--q-color-primary) !important;
-  }
-
-  // Style the actual text display area
-  input {
-    color: #000000 !important;
-    background-color: transparent !important;
-  }
-
-  // For use-input mode in q-select
-  .q-field__control-container {
-    input {
-      color: #000000 !important;
-      background-color: transparent !important;
-    }
-  }
-
-  // Selected item text in q-select (but not chips)
-  .q-field__native > span:not(.q-chip) {
-    color: #000000 !important;
-  }
-
-  // Error message styling - Blue color instead of red
-  .q-field__messages {
-    color: #2196f3 !important;
-    font-weight: 600;
-    font-size: 13px;
-    margin-top: 6px;
-    padding: 0 12px;
-    min-height: 20px;
-    display: block !important;
-    visibility: visible !important;
-  }
-
-  .q-field__bottom {
-    padding-top: 6px;
-    min-height: 24px;
-
-    > div {
-      color: #2196f3 !important;
-      font-weight: 600;
-      font-size: 13px;
-      display: block !important;
-      visibility: visible !important;
-    }
-  }
-
-  // Ensure error messages are always shown when field has error
-  .q-field--error {
-    .q-field__bottom {
-      display: block !important;
-      visibility: visible !important;
-    }
-
-    .q-field__messages {
-      display: block !important;
-      visibility: visible !important;
-    }
-  }
-
-  // Chips styling for multiple select
-  .q-chip {
-    background: #03a9f4 !important;
-    background-color: #03a9f4 !important;
-    background-image: none !important;
-    color: #000000 !important;
-    border: 2px solid #29b6f6 !important;
-    font-weight: 700 !important;
-    font-size: 14px !important;
-    padding: 8px 14px !important;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4) !important;
-
-    span,
-    .q-chip__content,
-    .q-chip__content span {
-      color: #000000 !important;
-    }
-
-    .q-icon,
-    .q-chip__icon--remove {
-      color: #000000 !important;
-      opacity: 1 !important;
-      font-weight: bold !important;
-
-      &:hover {
-        opacity: 1 !important;
-        background-color: rgba(0, 0, 0, 0.2) !important;
-        border-radius: 50%;
-      }
-    }
-  }
-
-  // Help icon in append slot
-  .q-field__append .q-icon {
-    color: rgba(0, 0, 0, 0.6) !important;
-  }
-
-  // For read-only fields
-  .q-field--readonly {
-    .q-field__control {
-      background-color: #f5f5f5 !important;
-    }
-
-    .q-field__native,
-    .q-field__input {
-      color: rgba(0, 0, 0, 0.6) !important;
-    }
-  }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .instructions-banner {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .mapping-progress {
-    width: 100%;
-    justify-content: flex-start;
-  }
 }
 </style>
 

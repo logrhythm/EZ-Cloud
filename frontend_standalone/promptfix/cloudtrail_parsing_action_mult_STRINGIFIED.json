@@ -1,0 +1,21 @@
+{
+    "@metadata": {
+        "beat": "s3beat",
+        "type": "doc",
+        "version": "6.6.0"
+    },
+    "fullyqualifiedbeatname": "s3beat_test",
+    "@timestamp": "2020-02-24T23:37:04.075Z",
+    "beat": {
+        "hostname": "5ab1431eb662",
+        "name": "5ab1431eb662",
+        "version": "6.6.0"
+    },
+    "counter": 0,
+    "device_type": "awscloudtrail/AWSLogs/772817959278/CloudTrail/us-east-1/2020/02/24/772817959278_CloudTrail_us-east-1_20200224T2330Z_b7c5G5TBhMywR0us.json.gz",
+    "host": {
+        "name": "5ab1431eb662"
+    },
+    "LOG": "{\"Records\":[{\"additionalEventData\":{\"Note\":\"Do not use to reconstruct hosted zone\"},\"apiVersion\":\"2013-04-01\",\"awsRegion\":\"us-east-1\",\"eventID\":\"bcb04621-8927-46ed-b13f-1d7ce61a6ff0\",\"eventName\":\"ChangeResourceRecordSets\",\"eventSource\":\"route53.amazonaws.com\",\"eventTime\":\"2020-02-24T23:28:26Z\",\"eventType\":\"AwsApiCall\",\"eventVersion\":\"1.05\",\"recipientAccountId\":\"772817959278\",\"requestID\":\"1f01b630-5850-4998-b5b3-1d99ffc106ca\",\"requestParameters\":{\"changeBatch\":{\"changes\":[{\"action\":\"UPSERT\",\"resourceRecordSet\":{\"name\":\"maur-ddns.saltupsert.io\",\"resourceRecords\":[{\"value\":\"196.27.85.190\"}],\"tTL\":20,\"type\":\"A\"}},{\"action\":\"CREATE\",\"resourceRecordSet\":{\"name\":\"maur-ddns.saltcreate.io\",\"resourceRecords\":[{\"value\":\"196.27.85.190\"}],\"tTL\":20,\"type\":\"A\"}},{\"action\":\"DELETE\",\"resourceRecordSet\":{\"name\":\"maur-ddns.saltdelete.io\",\"resourceRecords\":[{\"value\":\"196.27.85.190\"}],\"tTL\":20,\"type\":\"A\"}}]},\"hostedZoneId\":\"Z3EAIHOYC4OPA5\"},\"responseElements\":{\"changeInfo\":{\"id\":\"/change/C015616414P3QPVMHZSR2\",\"status\":\"PENDING\",\"submittedAt\":\"Feb 24, 2020 11:28:26 PM\"}},\"sourceIPAddress\":\"54.69.206.122\",\"userAgent\":\"Boto3/1.10.34 Python/3.7.6 Linux/4.14.138-99.102.amzn2.x86_64 exec-env/AWS_Lambda_python3.7 Botocore/1.13.34\",\"userIdentity\":{\"accessKeyId\":\"ASIA3H34KHFXNJSZEFNK\",\"accountId\":\"772817959278\",\"arn\":\"arn:aws:sts::772817959278:assumed-role/Maur-DDNS-role-ow9l51ad/Maur-DDNS\",\"principalId\":\"AROA3H34KHFXB4EQS2NLR:Maur-DDNS\",\"sessionContext\":{\"attributes\":{\"creationDate\":\"2020-02-24T23:02:36Z\",\"mfaAuthenticated\":\"false\"},\"sessionIssuer\":{\"accountId\":\"772817959278\",\"arn\":\"arn:aws:iam::772817959278:role/service-role/Maur-DDNS-role-ow9l51ad\",\"principalId\":\"AROA3H34KHFXB4EQS2NLR\",\"type\":\"Role\",\"userName\":\"Maur-DDNS-role-ow9l51ad\"},\"webIdFederationData\":{}},\"type\":\"AssumedRole\"}}]}",
+    "type": "5ab1431eb662"
+}

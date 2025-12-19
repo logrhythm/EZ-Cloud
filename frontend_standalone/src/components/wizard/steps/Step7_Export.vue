@@ -571,6 +571,28 @@ export default {
   },
 
   methods: {
+    /**
+     * Helper function to get a property from an object in a case-insensitive manner
+     * @param {Object} obj - The object to search
+     * @param {string} key - The property name to find (case-insensitive)
+     * @returns {*} - The value of the property, or undefined if not found
+     */
+    getCaseInsensitiveProperty (obj, key) {
+      if (!obj || typeof obj !== 'object') {
+        return undefined
+      }
+
+      // First try exact match
+      if (key in obj) {
+        return obj[key]
+      }
+
+      // Try case-insensitive match
+      const lowerKey = key.toLowerCase()
+      const foundKey = Object.keys(obj).find(k => k.toLowerCase() === lowerKey)
+      return foundKey ? obj[foundKey] : undefined
+    },
+
     generatePolicyObject () {
       try {
         const policy = {

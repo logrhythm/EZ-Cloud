@@ -183,6 +183,14 @@
                                   >
                                     missing
                                   </q-badge>
+                                  <q-badge
+                                    v-else-if="isFieldCaseMismatch(scope.opt.value)"
+                                    color="warning"
+                                    text-color="white"
+                                    class="q-ml-xs"
+                                  >
+                                    case mismatch
+                                  </q-badge>
                                 </q-item-label>
                                 <q-item-label caption>{{ scope.opt.type }}</q-item-label>
                               </q-item-section>
@@ -190,15 +198,15 @@
                           </template>
                         </q-select>
 
-                        <!-- Missing Field Warning Badge -->
+                        <!-- Missing/Case Mismatch Field Warning Badge -->
                         <q-badge
-                          v-if="isFieldMissing(condition.field)"
-                          color="orange"
+                          v-if="isFieldMissing(condition.field) || isFieldCaseMismatch(condition.field)"
+                          :color="getFieldWarningColor(condition.field)"
                           text-color="white"
                           class="missing-field-badge"
                         >
                           <q-icon name="warning" size="14px" class="q-mr-xs" />
-                          missing
+                          {{ getFieldWarningLabel(condition.field) }}
                           <q-tooltip>
                             {{ getFieldWarningMessage(condition.field) }}
                           </q-tooltip>
@@ -1800,26 +1808,67 @@ export default {
     /**
      * Check if a field path exists in the sample data
      * @param {string} fieldPath - Field path (e.g., "@.user.name")
-     * @returns {boolean} - True if field exists in sample data
+     * @returns {Object} - { exists: boolean, exactMatch: boolean, matchedField: string|null }
      */
     checkFieldExistsInSampleData (fieldPath) {
       try {
         // Normalize the field path
         const normalizedPath = fieldPath.replace(/^[@$]\./, '')
 
-        // Check if field exists in availableFields
-        const fieldExists = this.availableFields.some(f =>
+        // Check for exact match first
+        const exactMatch = this.availableFields.find(f =>
           f.label === fieldPath ||
           f.label === `@.${normalizedPath}` ||
           f.path === fieldPath ||
           f.path === normalizedPath
         )
 
-        console.log(`[Step 4] Field existence check: "${fieldPath}" → ${fieldExists}`)
-        return fieldExists
+        if (exactMatch) {
+          console.log(`[Step 4] Field existence check: "${fieldPath}" → EXACT MATCH`)
+          return {
+            exists: true,
+            exactMatch: true,
+            matchedField: exactMatch.label || exactMatch.path
+          }
+        }
+
+        // Check for case-insensitive match
+        const lowerFieldPath = fieldPath.toLowerCase()
+        const lowerNormalizedPath = normalizedPath.toLowerCase()
+
+        const caseInsensitiveMatch = this.availableFields.find(f => {
+          const fLabel = (f.label || '').toLowerCase()
+          const fPath = (f.path || '').toLowerCase()
+          const fLabelWithPrefix = `@.${(f.path || '').replace(/^[@$]\./, '')}`.toLowerCase()
+
+          return fLabel === lowerFieldPath ||
+                 fLabelWithPrefix === lowerFieldPath ||
+                 fPath === lowerNormalizedPath ||
+                 fLabel === `@.${lowerNormalizedPath}`
+        })
+
+        if (caseInsensitiveMatch) {
+          console.log(`[Step 4] Field existence check: "${fieldPath}" → CASE-INSENSITIVE MATCH with "${caseInsensitiveMatch.label || caseInsensitiveMatch.path}"`)
+          return {
+            exists: true,
+            exactMatch: false,
+            matchedField: caseInsensitiveMatch.label || caseInsensitiveMatch.path
+          }
+        }
+
+        console.log(`[Step 4] Field existence check: "${fieldPath}" → NOT FOUND`)
+        return {
+          exists: false,
+          exactMatch: false,
+          matchedField: null
+        }
       } catch (error) {
         console.error('[Step 4] Error checking field existence:', error)
-        return false
+        return {
+          exists: false,
+          exactMatch: false,
+          matchedField: null
+        }
       }
     },
 
@@ -1829,17 +1878,48 @@ export default {
      * @returns {boolean} - True if field is missing
      */
     isFieldMissing (fieldPath) {
-      return this.missingPolicyFields.some(f => f.path === fieldPath)
+      return this.missingPolicyFields.some(f => f.path === fieldPath && f.reason === 'missing')
     },
 
     /**
-     * Get warning message for a missing field
+     * Check if a field has a case mismatch with sample data
+     * @param {string} fieldPath - The field path to check
+     * @returns {boolean} - True if field has case mismatch
+     */
+    isFieldCaseMismatch (fieldPath) {
+      return this.missingPolicyFields.some(f => f.path === fieldPath && f.reason === 'case-mismatch')
+    },
+
+    /**
+     * Get warning message for a missing or mismatched field
      * @param {string} fieldPath - The field path
      * @returns {string} - Warning message
      */
     getFieldWarningMessage (fieldPath) {
-      const missing = this.missingPolicyFields.find(f => f.path === fieldPath)
-      return missing?.message || ''
+      const issue = this.missingPolicyFields.find(f => f.path === fieldPath)
+      return issue?.message || ''
+    },
+
+    /**
+     * Get badge color for field warning
+     * @param {string} fieldPath - The field path
+     * @returns {string} - Badge color
+     */
+    getFieldWarningColor (fieldPath) {
+      const issue = this.missingPolicyFields.find(f => f.path === fieldPath)
+      if (!issue) return 'orange'
+      return issue.reason === 'case-mismatch' ? 'warning' : 'orange'
+    },
+
+    /**
+     * Get badge label for field warning
+     * @param {string} fieldPath - The field path
+     * @returns {string} - Badge label
+     */
+    getFieldWarningLabel (fieldPath) {
+      const issue = this.missingPolicyFields.find(f => f.path === fieldPath)
+      if (!issue) return 'missing'
+      return issue.reason === 'case-mismatch' ? 'case mismatch' : 'missing'
     },
 
     /**
@@ -1860,8 +1940,8 @@ export default {
         await this.$nextTick()
         await this.$nextTick()
 
-        // Extract filter expression from policy
-        const filterExpression = policyData?.filter || policyData?.Filter || ''
+        // Extract filter expression from policy (case-insensitive)
+        const filterExpression = this.getCaseInsensitiveProperty(policyData, 'filter') || ''
 
         if (!filterExpression || typeof filterExpression !== 'string') {
           console.log('[Step 4] No filter expression found in policy')
@@ -1903,10 +1983,11 @@ export default {
           console.log('║ Logical Operator:', condition.logicalOperator)
           console.log('╚══════════════════════════════════════════════════════════════════════════════')
 
-          // Check if field exists in sample data
-          const fieldExists = this.checkFieldExistsInSampleData(condition.field)
+          // Check if field exists in sample data (with case sensitivity check)
+          const fieldCheck = this.checkFieldExistsInSampleData(condition.field)
 
-          if (!fieldExists) {
+          if (!fieldCheck.exists) {
+            // Field not found at all - mark as missing
             console.warn('║ ❌ Field from policy NOT FOUND in sample data:', condition.field)
 
             // Inject missing field into availableFields
@@ -1932,8 +2013,34 @@ export default {
             })
 
             console.log('║ ✓ Injected missing field into availableFields:', condition.field)
+          } else if (!fieldCheck.exactMatch) {
+            // Field found but with different casing - mark as case mismatch
+            console.warn('║ ⚠️  Field from policy has CASE MISMATCH:', condition.field, '→', fieldCheck.matchedField)
+
+            // Track as case mismatch
+            missingFields.push({
+              type: 'filter',
+              path: condition.field,
+              matchedField: fieldCheck.matchedField,
+              message: `Field casing differs: policy has "${condition.field}" but sample data has "${fieldCheck.matchedField}"`,
+              reason: 'case-mismatch'
+            })
+
+            console.log('║ ✓ Tracked case mismatch - Policy:', condition.field, 'Sample:', fieldCheck.matchedField)
+
+            // Update field type from availableFields (using the matched field)
+            const matchingField = this.availableFields.find(f =>
+              (f.label || '').toLowerCase() === (condition.field || '').toLowerCase() ||
+              (f.label || '').toLowerCase() === `@.${(condition.field || '').replace(/^@\./, '').toLowerCase()}` ||
+              (f.path || '').toLowerCase() === (condition.field || '').replace(/^@\./, '').toLowerCase()
+            )
+
+            if (matchingField && matchingField.type) {
+              condition.fieldType = matchingField.type
+            }
           } else {
-            console.log('║ ✅ Field from policy FOUND in sample data:', condition.field)
+            // Exact match found
+            console.log('║ ✅ Field from policy FOUND in sample data (exact match):', condition.field)
 
             // Update field type from availableFields
             const matchingField = this.availableFields.find(f =>
@@ -1978,7 +2085,8 @@ export default {
         console.log('║ [Step 4] Pre-fill completed successfully')
         console.log('╠══════════════════════════════════════════════════════════════════════════════')
         console.log('║ Total conditions loaded:', this.localConditions.length)
-        console.log('║ Missing fields:', missingFields.length)
+        console.log('║ Missing fields:', missingFields.filter(f => f.reason === 'missing').length)
+        console.log('║ Case mismatch fields:', missingFields.filter(f => f.reason === 'case-mismatch').length)
         console.log('╚══════════════════════════════════════════════════════════════════════════════')
 
         // Force UI update
@@ -1986,21 +2094,30 @@ export default {
         this.$forceUpdate()
 
         // Show success notification
-        const missingCount = missingFields.length
-        const notificationType = missingCount > 0 ? 'warning' : 'positive'
+        const missingCount = missingFields.filter(f => f.reason === 'missing').length
+        const caseMismatchCount = missingFields.filter(f => f.reason === 'case-mismatch').length
+        const totalIssues = missingCount + caseMismatchCount
+
+        const notificationType = totalIssues > 0 ? 'warning' : 'positive'
         const baseMessage = 'Filter configuration loaded from policy'
         const caption = `${this.localConditions.length} condition${this.localConditions.length !== 1 ? 's' : ''} loaded`
-        const missingCaption = missingCount > 0
-          ? ` (${missingCount} field${missingCount !== 1 ? 's' : ''} not found in sample data)`
-          : ''
+
+        let issueCaption = ''
+        if (missingCount > 0 && caseMismatchCount > 0) {
+          issueCaption = ` (${missingCount} missing, ${caseMismatchCount} case mismatch)`
+        } else if (missingCount > 0) {
+          issueCaption = ` (${missingCount} field${missingCount !== 1 ? 's' : ''} not found)`
+        } else if (caseMismatchCount > 0) {
+          issueCaption = ` (${caseMismatchCount} field${caseMismatchCount !== 1 ? 's' : ''} with case mismatch)`
+        }
 
         this.$q.notify({
           type: notificationType,
           message: baseMessage,
-          caption: caption + missingCaption,
-          timeout: missingCount > 0 ? 5000 : 3000,
+          caption: caption + issueCaption,
+          timeout: totalIssues > 0 ? 5000 : 3000,
           position: 'top',
-          icon: missingCount > 0 ? 'warning' : undefined
+          icon: totalIssues > 0 ? 'warning' : undefined
         })
       } catch (error) {
         console.error('╔══════════════════════════════════════════════════════════════════════════════')
@@ -2015,9 +2132,29 @@ export default {
           position: 'top'
         })
       }
-    }
+    },
 
-    // ...existing code...
+    /**
+     * Helper function to get a property from an object in a case-insensitive manner
+     * @param {Object} obj - The object to search
+     * @param {string} key - The property name to find (case-insensitive)
+     * @returns {*} - The value of the property, or undefined if not found
+     */
+    getCaseInsensitiveProperty (obj, key) {
+      if (!obj || typeof obj !== 'object') {
+        return undefined
+      }
+
+      // First try exact match
+      if (key in obj) {
+        return obj[key]
+      }
+
+      // Try case-insensitive match
+      const lowerKey = key.toLowerCase()
+      const foundKey = Object.keys(obj).find(k => k.toLowerCase() === lowerKey)
+      return foundKey ? obj[foundKey] : undefined
+    }
   },
 
   created () {

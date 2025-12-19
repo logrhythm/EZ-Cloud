@@ -338,6 +338,28 @@ import { mapGetters, mapState, mapMutations } from 'vuex'
 import { SchemaRuleService } from '../../../services/wizard/schemaRuleService'
 import JsonTreeViewer from '../JsonTreeViewer.vue'
 
+/**
+ * Helper function to get a property value from an object in a case-insensitive manner
+ * @param {Object} obj - The object to search
+ * @param {string} key - The key to find (case-insensitive)
+ * @returns {*} The value of the property, or undefined if not found
+ */
+function getCaseInsensitiveProperty (obj, key) {
+  if (!obj || typeof obj !== 'object') {
+    return undefined
+  }
+
+  // First try exact match (faster)
+  if (key in obj) {
+    return obj[key]
+  }
+
+  // Try case-insensitive match
+  const lowerKey = key.toLowerCase()
+  const foundKey = Object.keys(obj).find(k => k.toLowerCase() === lowerKey)
+  return foundKey ? obj[foundKey] : undefined
+}
+
 export default {
   name: 'Step3_SchemaConfig',
 
@@ -367,7 +389,7 @@ export default {
      * This ensures reactivity when the store is updated
      */
     storeFanoutSelections () {
-      const storedSelections = this.schemaRules?.fanout || []
+      const storedSelections = getCaseInsensitiveProperty(this.schemaRules, 'fanout') || []
       console.log('[DEBUG] Step3 computed storeFanoutSelections:', JSON.stringify(storedSelections))
       return storedSelections
     },
@@ -561,17 +583,22 @@ export default {
     schemaRules: {
       handler (newRules, oldRules) {
         console.log('=== Step3 Watch: schemaRules changed in store ===')
-        console.log('Old convertToJson:', oldRules?.convertToJson)
-        console.log('New convertToJson:', newRules?.convertToJson)
-        console.log('Old fanout:', oldRules?.fanout)
-        console.log('New fanout:', newRules?.fanout)
+        console.log('Old convertToJson:', getCaseInsensitiveProperty(oldRules, 'convertToJson'))
+        console.log('New convertToJson:', getCaseInsensitiveProperty(newRules, 'convertToJson'))
+        console.log('Old fanout:', getCaseInsensitiveProperty(oldRules, 'fanout'))
+        console.log('New fanout:', getCaseInsensitiveProperty(newRules, 'fanout'))
 
         // Check if schema rules were cleared (reset by Step 2)
+        const oldConvertToJson = getCaseInsensitiveProperty(oldRules, 'convertToJson')
+        const oldFanout = getCaseInsensitiveProperty(oldRules, 'fanout')
+        const newConvertToJson = getCaseInsensitiveProperty(newRules, 'convertToJson')
+        const newFanout = getCaseInsensitiveProperty(newRules, 'fanout')
+
         const wasCleared = (
           oldRules &&
-          (oldRules.convertToJson?.length > 0 || oldRules.fanout?.length > 0) &&
-          (!newRules.convertToJson || newRules.convertToJson.length === 0) &&
-          (!newRules.fanout || newRules.fanout.length === 0)
+          (oldConvertToJson?.length > 0 || oldFanout?.length > 0) &&
+          (!newConvertToJson || newConvertToJson.length === 0) &&
+          (!newFanout || newFanout.length === 0)
         )
 
         if (wasCleared) {
@@ -683,9 +710,10 @@ export default {
               }
             }
 
-            // Check if property exists
-            if (part in current) {
-              current = current[part]
+            // Check if property exists - CASE-INSENSITIVE (Phase 2)
+            const value = getCaseInsensitiveProperty(current, part)
+            if (value !== undefined) {
+              current = value
             } else {
               console.log(`[Step3] Property "${part}" not found in current object at path segment ${i}/${pathParts.length}`)
               return false
@@ -723,8 +751,15 @@ export default {
 
         let current = sampleData
         for (const part of pathParts) {
-          if (current && typeof current === 'object' && part in current) {
-            current = current[part]
+          if (current && typeof current === 'object') {
+            // CASE-INSENSITIVE property access (Phase 2)
+            const value = getCaseInsensitiveProperty(current, part)
+            if (value !== undefined) {
+              current = value
+            } else {
+              // Field doesn't exist - handled by other check
+              return { valid: true, reason: null }
+            }
           } else {
             // Field doesn't exist - handled by other check
             return { valid: true, reason: null }
@@ -824,12 +859,39 @@ export default {
         if (this.selectedConvertToJsonFields.length > 0) {
           console.log('=== Validating previous Convert to JSON selections against new candidates ===')
           console.log('Previous selections:', this.selectedConvertToJsonFields)
-          console.log('New candidates:', this.convertToJsonCandidates)
+          console.log('New candidates (before adjustment):', this.convertToJsonCandidates)
 
-          // Filter to only keep valid selections that still exist in new candidates
-          const validSelections = this.selectedConvertToJsonFields.filter(field =>
-            this.convertToJsonCandidates.includes(field)
+          // Replace candidates with policy/store versions (case-insensitive match)
+          // This ensures the UI shows the correct casing from the policy/store
+          const adjustedCandidates = this.convertToJsonCandidates.map(candidate => {
+            const candidateLower = candidate.toLowerCase()
+            const matchingSelection = this.selectedConvertToJsonFields.find(
+              selected => selected.toLowerCase() === candidateLower
+            )
+            return matchingSelection || candidate
+          })
+
+          // Also add any selected fields that weren't found in candidates (missing from sample)
+          const candidatesLower = new Set(adjustedCandidates.map(c => c.toLowerCase()))
+          const missingSelections = this.selectedConvertToJsonFields.filter(
+            selected => !candidatesLower.has(selected.toLowerCase())
           )
+
+          if (missingSelections.length > 0) {
+            console.log('Some selections are missing from sample data:', missingSelections)
+            adjustedCandidates.push(...missingSelections)
+          }
+
+          this.convertToJsonCandidates = adjustedCandidates
+          console.log('New candidates (after adjustment):', this.convertToJsonCandidates)
+
+          // Filter to only keep valid selections that still exist in new candidates (case-insensitive)
+          const validSelections = this.selectedConvertToJsonFields.filter(field => {
+            const normalizedField = field.toLowerCase()
+            return this.convertToJsonCandidates.some(candidate =>
+              candidate.toLowerCase() === normalizedField
+            )
+          })
 
           if (validSelections.length !== this.selectedConvertToJsonFields.length) {
             console.log('Some Convert to JSON selections are no longer valid')
@@ -1099,8 +1161,8 @@ export default {
         // This ensures fanoutCandidates and convertToJsonCandidates are populated
         await this.$nextTick()
 
-        // Step 1: Extract and pre-fill convertToJson fields
-        const convertToJsonFields = schemaRule.convertoJson || schemaRule.ConvertoJson || []
+        // Step 1: Extract and pre-fill convertToJson fields - USE CASE-INSENSITIVE ACCESS
+        const convertToJsonFields = getCaseInsensitiveProperty(schemaRule, 'convertoJson') || []
         console.log('[Step 3] Extracted convertToJson fields:', convertToJsonFields)
 
         // Track missing fields for warning display (Scenario 1)
@@ -1167,10 +1229,30 @@ export default {
             console.log('║ Checking if field is in convertToJsonCandidates...')
             console.log('║   convertToJsonCandidates.includes("' + fieldPath + '"):', this.convertToJsonCandidates.includes(fieldPath))
 
-            if (this.convertToJsonCandidates.includes(fieldPath)) {
-              // Field already in candidates (normal case)
+            // Check for EXACT match first
+            const exactMatchIndex = this.convertToJsonCandidates.indexOf(fieldPath)
+
+            // Check for CASE-INSENSITIVE match (to handle duplicates like $.LOG vs $.Log)
+            const normalizedFieldPath = fieldPath.toLowerCase()
+            const caseInsensitiveMatchIndex = this.convertToJsonCandidates.findIndex(
+              candidate => candidate.toLowerCase() === normalizedFieldPath
+            )
+
+            if (exactMatchIndex !== -1) {
+              // Field already in candidates with exact case match (normal case)
               fieldsToSelect.push(fieldPath)
-              console.log('║ ✓ Field already in convertToJsonCandidates, adding to selection:', fieldPath)
+              console.log('║ ✓ Field already in convertToJsonCandidates (exact match), adding to selection:', fieldPath)
+            } else if (caseInsensitiveMatchIndex !== -1) {
+              // Field exists with different case - REPLACE with policy version to avoid duplicates
+              const existingCandidate = this.convertToJsonCandidates[caseInsensitiveMatchIndex]
+              console.log('║ ⚠️  Found case-insensitive duplicate:')
+              console.log('║     Sample data version:', existingCandidate)
+              console.log('║     Policy version:', fieldPath)
+              console.log('║ ✓ Replacing sample data version with policy version to avoid duplicates')
+
+              // Replace the existing candidate with the policy version
+              this.convertToJsonCandidates.splice(caseInsensitiveMatchIndex, 1, fieldPath)
+              fieldsToSelect.push(fieldPath)
             } else {
               // Field NOT in candidates - either missing or has wrong format
               // Add it to convertToJsonCandidates so it can be displayed with warning
@@ -1255,9 +1337,13 @@ export default {
         console.log('[Step 3] fanoutCandidates ready. Total candidates:', this.fanoutCandidates.length)
         console.log('[Step 3] All fanout candidate paths:', JSON.stringify(this.fanoutCandidates.map(c => c.path)))
 
-        // Determine if this is old or new implementation
-        const hasOldImplementation = schemaRule.fanout?.inputField && Array.isArray(schemaRule.fanout.inputField)
-        const hasNewImplementation = schemaRule.childfanouts && Array.isArray(schemaRule.childfanouts)
+        // Determine if this is old or new implementation - USE CASE-INSENSITIVE ACCESS
+        const fanout = getCaseInsensitiveProperty(schemaRule, 'fanout')
+        const inputField = fanout ? getCaseInsensitiveProperty(fanout, 'inputField') : undefined
+        const childfanouts = getCaseInsensitiveProperty(schemaRule, 'childfanouts')
+
+        const hasOldImplementation = inputField && Array.isArray(inputField)
+        const hasNewImplementation = childfanouts && Array.isArray(childfanouts)
 
         console.log('[Step 3] Implementation type detection:')
         console.log('  - Has old implementation (fanout.inputField):', hasOldImplementation)
@@ -1267,18 +1353,18 @@ export default {
         if (hasNewImplementation) {
           // NEW IMPLEMENTATION: Process childfanouts with relative path resolution
           console.log('[Step 3] === USING NEW IMPLEMENTATION (childfanouts) ===')
-          await this.processChildFanoutsNew(schemaRule.childfanouts, missingFields)
+          await this.processChildFanoutsNew(childfanouts, missingFields)
         } else if (hasOldImplementation) {
           // OLD IMPLEMENTATION: Process fanout.inputField
           console.log('[Step 3] === USING OLD IMPLEMENTATION (fanout.inputField) ===')
-          await this.processChildFanoutsOld(schemaRule.fanout.inputField, missingFields)
+          await this.processChildFanoutsOld(inputField, missingFields)
         } else {
           console.log('[Step 3] No fanout configuration found in policy')
         }
 
         // Store child fanouts in Vuex if present
         if (hasNewImplementation) {
-          this.$store.commit('wizard/SET_CHILD_FANOUTS', schemaRule.childfanouts)
+          this.$store.commit('wizard/SET_CHILD_FANOUTS', childfanouts)
           console.log('[Step 3] Stored child fanouts in Vuex')
         }
 
@@ -1286,11 +1372,11 @@ export default {
         this.missingPolicyFields = [...this.missingPolicyFields, ...missingFields]
 
         // Step 4: Update Vuex store with pre-filled data
-        const childFanouts = schemaRule.childfanouts || []
+        const childFanoutsForStore = childfanouts || []
         this.UPDATE_SCHEMA_RULES({
           convertToJson: [...this.selectedConvertToJsonFields],
           fanout: [...this.selectedFanoutFields],
-          childfanouts: childFanouts
+          childfanouts: childFanoutsForStore
         })
 
         console.log('╔══════════════════════════════════════════════════════════════════════════════')
@@ -1298,7 +1384,7 @@ export default {
         console.log('╠══════════════════════════════════════════════════════════════════════════════')
         console.log('║ Final selectedConvertToJsonFields:', this.selectedConvertToJsonFields)
         console.log('║ Final selectedFanoutFields:', this.selectedFanoutFields)
-        console.log('║ Stored child fanouts:', childFanouts.length)
+        console.log('║ Stored child fanouts:', childFanoutsForStore.length)
         console.log('╚══════════════════════════════════════════════════════════════════════════════')
 
         // Force UI update
@@ -1374,14 +1460,33 @@ export default {
 
         console.log('[Step 3] Trying path variations:', pathVariations)
 
-        // Find matching candidate
+        // Find matching candidate using CASE-INSENSITIVE comparison
         let matchedPath = null
         for (const variation of pathVariations) {
-          const candidate = this.fanoutCandidates.find(c =>
-            c.path === variation ||
-            c.path === variation.replace(/\[\*\]/g, '') ||
-            c.path === variation.replace(/\[0\]/g, '')
-          )
+          const variationLower = variation.toLowerCase().trim()
+
+          const candidate = this.fanoutCandidates.find(c => {
+            const candidatePathLower = (c.path || '').toLowerCase().trim()
+            const variationNoWildcards = variation.replace(/\[\*\]/g, '').toLowerCase().trim()
+            const variationNoIndices = variation.replace(/\[0\]/g, '').toLowerCase().trim()
+
+            // Try exact match (case-insensitive)
+            if (candidatePathLower === variationLower) {
+              return true
+            }
+
+            // Try without wildcards
+            if (candidatePathLower === variationNoWildcards) {
+              return true
+            }
+
+            // Try without indices
+            if (candidatePathLower === variationNoIndices) {
+              return true
+            }
+
+            return false
+          })
 
           if (candidate) {
             matchedPath = candidate.path
@@ -1427,28 +1532,37 @@ export default {
       // Key: field path, Value: absolute path
       const pathResolutionMap = new Map()
 
-      // First pass: Process root-level arrays (parentpath === null)
-      const rootFanouts = childFanouts.filter(cf => cf.parentpath === null)
-      const nestedFanouts = childFanouts.filter(cf => cf.parentpath !== null)
+      // First pass: Process root-level arrays (parentpath === null) - USE CASE-INSENSITIVE ACCESS
+      const rootFanouts = childFanouts.filter(cf => {
+        const parentpath = getCaseInsensitiveProperty(cf, 'parentpath')
+        return parentpath === null || parentpath === undefined
+      })
+      const nestedFanouts = childFanouts.filter(cf => {
+        const parentpath = getCaseInsensitiveProperty(cf, 'parentpath')
+        return parentpath !== null && parentpath !== undefined
+      })
 
       console.log('[Step 3] Root-level fanouts:', rootFanouts.length)
       console.log('[Step 3] Nested fanouts:', nestedFanouts.length)
 
       // Process root-level arrays first
       for (const cf of rootFanouts) {
+        const field = getCaseInsensitiveProperty(cf, 'field')
+        const parentpath = getCaseInsensitiveProperty(cf, 'parentpath')
+
         console.log('╔══════════════════════════════════════════════════════════════════════════════')
         console.log('║ [Step 3] Processing ROOT-LEVEL fanout')
         console.log('╠══════════════════════════════════════════════════════════════════════════════')
-        console.log('║ Field:', cf.field)
-        console.log('║ Parent path:', cf.parentpath)
+        console.log('║ Field:', field)
+        console.log('║ Parent path:', parentpath)
         console.log('╚══════════════════════════════════════════════════════════════════════════════')
 
         // For root arrays, field is already absolute
-        const absolutePath = cf.field
+        const absolutePath = field
         const normalizedPath = this.normalizeFanoutPath(absolutePath)
 
         // Store in resolution map
-        pathResolutionMap.set(cf.field, normalizedPath)
+        pathResolutionMap.set(field, normalizedPath)
 
         // Try to find in candidates
         const matched = this.findFanoutCandidate(absolutePath)
@@ -1479,18 +1593,21 @@ export default {
         const stillUnprocessed = []
 
         for (const cf of unprocessed) {
+          const field = getCaseInsensitiveProperty(cf, 'field')
+          const parentpath = getCaseInsensitiveProperty(cf, 'parentpath')
+
           console.log('╔══════════════════════════════════════════════════════════════════════════════')
           console.log('║ [Step 3] Processing NESTED fanout')
           console.log('╠══════════════════════════════════════════════════════════════════════════════')
-          console.log('║ Field (relative):', cf.field)
-          console.log('║ Parent path:', cf.parentpath)
+          console.log('║ Field (relative):', field)
+          console.log('║ Parent path:', parentpath)
           console.log('╚══════════════════════════════════════════════════════════════════════════════')
 
           // Check if parent has been resolved
-          const parentAbsolutePath = pathResolutionMap.get(cf.parentpath)
+          const parentAbsolutePath = pathResolutionMap.get(parentpath)
 
           if (!parentAbsolutePath) {
-            console.warn('[Step 3] ⚠️ Parent path not yet resolved, deferring:', cf.parentpath)
+            console.warn('[Step 3] ⚠️ Parent path not yet resolved, deferring:', parentpath)
             stillUnprocessed.push(cf)
             continue
           }
@@ -1499,7 +1616,7 @@ export default {
 
           // Build absolute path by combining parent + relative field
           // field is relative to parent, so we need to strip $. and append
-          const relativeField = cf.field.replace(/^\$\./, '')
+          const relativeField = field.replace(/^\$\./, '')
           const absolutePath = `${parentAbsolutePath}.${relativeField}`
 
           console.log('[Step 3] Constructed absolute path:', absolutePath)
@@ -1548,9 +1665,23 @@ export default {
     },
 
     /**
-     * Find a fanout candidate using various path format variations
+     * Find a fanout candidate using various path format variations with case-insensitive matching
      */
     findFanoutCandidate (fanoutPath) {
+      console.group('🔍 [findFanoutCandidate] Searching for fanout:', fanoutPath)
+
+      if (!fanoutPath || !this.fanoutCandidates || this.fanoutCandidates.length === 0) {
+        console.log('❌ Early exit - fanoutPath:', fanoutPath, 'candidates:', this.fanoutCandidates?.length || 0)
+        console.groupEnd()
+        return null
+      }
+
+      // Log all available candidates
+      console.log('📋 Available candidates (' + this.fanoutCandidates.length + '):')
+      this.fanoutCandidates.forEach((c, idx) => {
+        console.log(`  [${idx}] path: "${c.path}", parentPath: "${c.parentPath || 'N/A'}", isHomogeneous: ${c.isHomogeneous}`)
+      })
+
       const pathVariations = [
         fanoutPath, // Original
         fanoutPath.replace(/^\$\./, ''), // Without $. prefix
@@ -1560,19 +1691,90 @@ export default {
         fanoutPath.replace(/^\$\./, '').replace(/\[0\]/g, '') // Without $. and [0]
       ]
 
-      for (const variation of pathVariations) {
-        const candidate = this.fanoutCandidates.find(c =>
-          c.path === variation ||
-          c.path === variation.replace(/\[\*\]/g, '') ||
-          c.path === variation.replace(/\[0\]/g, '')
-        )
+      console.log('🔄 Path variations to try:', pathVariations)
 
-        if (candidate) {
-          console.log('[Step 3] Found candidate match:', variation, '→', candidate.path)
-          return candidate.path
+      // Try each variation with case-insensitive matching
+      for (let varIdx = 0; varIdx < pathVariations.length; varIdx++) {
+        const variation = pathVariations[varIdx]
+        const variationLower = variation.toLowerCase().trim()
+
+        console.log(`\n  🔸 Variation [${varIdx}]: "${variation}" (lowercase: "${variationLower}")`)
+
+        // Search through all candidates
+        let matchedCandidate = null
+        for (let candIdx = 0; candIdx < this.fanoutCandidates.length; candIdx++) {
+          const c = this.fanoutCandidates[candIdx]
+
+          // Ensure we're working with strings and normalize them
+          const candidatePath = String(c.path || '').trim()
+          const candidatePathLower = candidatePath.toLowerCase()
+
+          console.log(`    🔹 Checking candidate [${candIdx}]: "${c.path}"`)
+          console.log(`       Candidate normalized: "${candidatePath}" → lowercase: "${candidatePathLower}" (length: ${candidatePathLower.length})`)
+          console.log(`       Variation normalized: "${variation}" → lowercase: "${variationLower}" (length: ${variationLower.length})`)
+          console.log(`       Comparing: "${candidatePathLower}" === "${variationLower}" ? ${candidatePathLower === variationLower}`)
+
+          // Debug: character-by-character comparison for exact match
+          if (candidatePathLower.length === variationLower.length) {
+            let charMismatch = false
+            for (let i = 0; i < candidatePathLower.length; i++) {
+              if (candidatePathLower.charCodeAt(i) !== variationLower.charCodeAt(i)) {
+                console.log(`       ⚠️ Character mismatch at position ${i}: candidate[${i}]='${candidatePathLower[i]}' (code ${candidatePathLower.charCodeAt(i)}) vs variation[${i}]='${variationLower[i]}' (code ${variationLower.charCodeAt(i)})`)
+                charMismatch = true
+                break
+              }
+            }
+            if (!charMismatch) {
+              console.log(`       ✓ All characters match! But === returned ${candidatePathLower === variationLower}`)
+            }
+          } else {
+            console.log(`       ⚠️ Length mismatch: candidate has ${candidatePathLower.length} chars, variation has ${variationLower.length} chars`)
+          }
+
+          // Try exact match (case-insensitive)
+          if (candidatePathLower === variationLower) {
+            console.log('      ✅ EXACT MATCH (case-insensitive)!')
+            matchedCandidate = c
+            break
+          }
+
+          // Try without [*] wildcards from variation
+          const withoutWildcards = variation.replace(/\[\*\]/g, '').trim()
+          const withoutWildcardsLower = withoutWildcards.toLowerCase()
+          console.log(`       Comparing without wildcards: "${candidatePathLower}" === "${withoutWildcardsLower}" (length: ${withoutWildcardsLower.length}) ? ${candidatePathLower === withoutWildcardsLower}`)
+          if (candidatePathLower === withoutWildcardsLower) {
+            console.log('      ✅ MATCH without wildcards!')
+            matchedCandidate = c
+            break
+          }
+
+          // Try without [0] indices from variation
+          const withoutIndices = variation.replace(/\[0\]/g, '').trim()
+          const withoutIndicesLower = withoutIndices.toLowerCase()
+          console.log(`       Comparing without indices: "${candidatePathLower}" === "${withoutIndicesLower}" (length: ${withoutIndicesLower.length}) ? ${candidatePathLower === withoutIndicesLower}`)
+          if (candidatePathLower === withoutIndicesLower) {
+            console.log('      ✅ MATCH without indices!')
+            matchedCandidate = c
+            break
+          }
+
+          console.log(`      ❌ No match for candidate [${candIdx}]`)
+        }
+
+        if (matchedCandidate) {
+          console.log(`\n✅ SUCCESS! Found matching candidate for variation "${variation}":`)
+          console.log('   Matched candidate path:', matchedCandidate.path)
+          console.log('   Parent path:', matchedCandidate.parentPath || 'N/A')
+          console.log('   Is homogeneous:', matchedCandidate.isHomogeneous)
+          console.groupEnd()
+          return matchedCandidate.path
+        } else {
+          console.log(`  ❌ No match found for variation [${varIdx}]: "${variation}"`)
         }
       }
 
+      console.log('\n❌ FINAL RESULT: No matching candidate found for any variation of path:', fanoutPath)
+      console.groupEnd()
       return null
     },
 
@@ -2030,8 +2232,8 @@ export default {
     console.log('Store schemaRules:', storeSchemaRules)
 
     if (storeSchemaRules) {
-      const storedConvertToJson = storeSchemaRules.convertToJson || []
-      const storedFanout = storeSchemaRules.fanout || []
+      const storedConvertToJson = getCaseInsensitiveProperty(storeSchemaRules, 'convertToJson') || []
+      const storedFanout = getCaseInsensitiveProperty(storeSchemaRules, 'fanout') || []
 
       if (storedConvertToJson.length > 0 || storedFanout.length > 0) {
         console.log('=== Step 3: Restoring previous selections from Vuex store ===')
@@ -2095,11 +2297,18 @@ export default {
     if (mode === 'update') {
       const policyData = this.$store.state.wizard?.policyUpload?.uploadedPolicyData
 
-      if (policyData && policyData.schemaRule) {
-        console.log('[Step 3] Update mode detected with policy data - initiating pre-fill')
-        await this.prefillFromPolicy(policyData.schemaRule)
+      if (policyData) {
+        // Use case-insensitive property access for schemaRule
+        const schemaRule = getCaseInsensitiveProperty(policyData, 'schemaRule')
+
+        if (schemaRule) {
+          console.log('[Step 3] Update mode detected with policy data - initiating pre-fill')
+          await this.prefillFromPolicy(schemaRule)
+        } else {
+          console.log('[Step 3] Update mode but no policy schemaRule found')
+        }
       } else {
-        console.log('[Step 3] Update mode but no policy schemaRule found')
+        console.log('[Step 3] Update mode but no policy data found')
       }
     } else {
       console.log('[Step 3] Create mode - no pre-fill needed')
