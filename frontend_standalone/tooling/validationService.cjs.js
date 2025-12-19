@@ -310,6 +310,7 @@ class Step1Validator extends Validator {
 
     // Check for required fields based on policy type
     // Normalize schemarule variants: accept schemarule, schemaRule, schemarules, schema_rules, etc.
+    // IMPORTANT: Do NOT mutate the input policy object (it may be from Vuex store)
     const rawSchema = policy.schemarule || policy.schemaRule || policy.schemarules || policy.schema_rules || null
     let schemarule = null
     if (rawSchema && typeof rawSchema === 'object') {
@@ -324,11 +325,11 @@ class Step1Validator extends Validator {
       }
     }
 
-    // Replace local var for downstream checks
-    if (schemarule) policy.schemarule = schemarule
+    // Use normalized schemarule for validation checks (DO NOT mutate policy object)
+    const normalizedSchemaRule = schemarule || policy.schemarule
 
     const hasTransforms = Array.isArray(policy.transforms) && policy.transforms.length > 0
-    const hasSchemaRule = policy.schemarule && typeof policy.schemarule === 'object' && ((Array.isArray(policy.schemarule.ConvertoJson) && policy.schemarule.ConvertoJson.length > 0) || (Array.isArray(policy.schemarule.childfanouts) && policy.schemarule.childfanouts.length > 0))
+    const hasSchemaRule = normalizedSchemaRule && typeof normalizedSchemaRule === 'object' && ((Array.isArray(normalizedSchemaRule.ConvertoJson) && normalizedSchemaRule.ConvertoJson.length > 0) || (Array.isArray(normalizedSchemaRule.childfanouts) && normalizedSchemaRule.childfanouts.length > 0))
     const hasFilter = policy.filter !== undefined && policy.filter !== null && policy.filter !== ''
 
     // At least one of these should be present for a valid policy
@@ -341,13 +342,13 @@ class Step1Validator extends Validator {
       result.addError('transforms', 'Transforms must be an array')
     }
 
-    // Validate schemarule structure if present
-    if (policy.schemarule) {
-      if (policy.schemarule.ConvertoJson && !Array.isArray(policy.schemarule.ConvertoJson)) {
+    // Validate schemarule structure if present (use normalized version)
+    if (normalizedSchemaRule) {
+      if (normalizedSchemaRule.ConvertoJson && !Array.isArray(normalizedSchemaRule.ConvertoJson)) {
         result.addError('schemarule', 'ConvertoJson must be an array')
       }
 
-      if (policy.schemarule.childfanouts && !Array.isArray(policy.schemarule.childfanouts)) {
+      if (normalizedSchemaRule.childfanouts && !Array.isArray(normalizedSchemaRule.childfanouts)) {
         result.addError('schemarule', 'childfanouts must be an array')
       }
     }
@@ -364,12 +365,12 @@ class Step1Validator extends Validator {
       result.addInfo('policy', `Policy contains ${policy.transforms.length} field mapping(s)`)
     }
 
-    if (hasSchemaRule) {
-      if (policy.schemarule.ConvertoJson) {
-        result.addInfo('policy', `Policy contains ${policy.schemarule.ConvertoJson.length} JSON conversion rule(s)`)
+    if (hasSchemaRule && normalizedSchemaRule) {
+      if (normalizedSchemaRule.ConvertoJson && normalizedSchemaRule.ConvertoJson.length > 0) {
+        result.addInfo('policy', `Policy contains ${normalizedSchemaRule.ConvertoJson.length} JSON conversion rule(s)`)
       }
-      if (policy.schemarule.childfanouts) {
-        result.addInfo('policy', `Policy contains ${policy.schemarule.childfanouts.length} fanout rule(s)`)
+      if (normalizedSchemaRule.childfanouts && normalizedSchemaRule.childfanouts.length > 0) {
+        result.addInfo('policy', `Policy contains ${normalizedSchemaRule.childfanouts.length} fanout rule(s)`)
       }
     }
 

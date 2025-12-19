@@ -432,6 +432,13 @@ export default {
           this.existingPolicyFile = null
           this.existingPolicyPreview = null
           this.clearPolicyFile()
+
+          // Clear project name when switching to create mode
+          // (prevent auto-population from uploaded policy)
+          if (newMode === 'create') {
+            console.log('[Step1] Clearing project name when switching to create mode')
+            this.UPDATE_PROJECT_CONFIG({ name: '' })
+          }
         }
 
         // Emit validation status
@@ -441,12 +448,42 @@ export default {
   },
 
   mounted () {
-    // Validate on mount if fields have values
+    // Restore file upload state if policy is already uploaded in update mode
+    // Do this BEFORE validation to ensure file state is correct
+    if (this.projectConfig.mode === 'update' && this.policyUpload.uploadedPolicyData) {
+      console.log('[Step1] mounted: Restoring uploaded policy state')
+
+      // Restore the file object if it exists in Vuex
+      if (this.policyUpload.uploadedFile) {
+        this.existingPolicyFile = this.policyUpload.uploadedFile
+      }
+
+      // Restore the preview from the uploaded policy data
+      const policy = this.policyUpload.uploadedPolicyData
+      this.existingPolicyPreview = JSON.stringify(policy, null, 2).substring(0, 500) + '...'
+
+      // Clear any existing policy errors since we have a valid file
+      this.errors.existingPolicy = []
+
+      console.log('[Step1] mounted: Policy state restored successfully')
+    }
+
+    // Validate on mount if fields have values (after restoring state)
     this.validateAllFields()
   },
 
   methods: {
-    ...mapMutations('wizard', ['UPDATE_PROJECT_CONFIG']),
+    ...mapMutations('wizard', [
+      'UPDATE_PROJECT_CONFIG',
+      'CLEAR_UPLOADED_POLICY',
+      'RESET_FIELD_MAPPINGS',
+      'UPDATE_SCHEMA_RULES',
+      'RESET_FILTER_RULES',
+      'RESET_SUBTRANSFORMS',
+      'SET_SAMPLE_DATA',
+      'SET_PARSED_DATA',
+      'UPDATE_DATA_VALIDATION'
+    ]),
     ...mapActions('wizard', ['uploadPolicyFile', 'clearPolicyFile']),
 
     onFieldChange (fieldName) {
@@ -524,6 +561,19 @@ export default {
       try {
         console.log('[Step1] onFileUpload: Processing file:', file.name)
 
+        // Check if this is a different file than the currently uploaded one
+        const previousFile = this.policyUpload.uploadedFile
+        const isDifferentFile = !previousFile ||
+                                previousFile.name !== file.name ||
+                                previousFile.size !== file.size ||
+                                previousFile.lastModified !== file.lastModified
+
+        if (isDifferentFile) {
+          console.log('[Step1] onFileUpload: New/different file detected - will clear state on next step')
+        } else {
+          console.log('[Step1] onFileUpload: Same file detected - state will be preserved')
+        }
+
         // Use the new Vuex action to upload and validate the policy file
         const validationResult = await this.uploadPolicyFile(file)
 
@@ -551,6 +601,12 @@ export default {
         // Auto-populate policy name if empty
         if (!this.projectConfig.name && parsedPolicy.name) {
           this.UPDATE_PROJECT_CONFIG({ name: parsedPolicy.name })
+        }
+
+        // If this is a different file, clear all downstream state
+        if (isDifferentFile) {
+          console.log('[Step1] onFileUpload: Clearing downstream state due to file change')
+          this.clearDownstreamState()
         }
 
         // Display warnings if any
@@ -586,6 +642,66 @@ export default {
       }
     },
 
+    clearDownstreamState () {
+      console.log('[Step1] clearDownstreamState: Clearing all downstream step state')
+
+      // Clear sample data
+      this.SET_SAMPLE_DATA({
+        inputMethod: 'manual',
+        rawData: '',
+        parsedData: null,
+        logType: null,
+        validationResult: {
+          isValid: false,
+          errors: [],
+          warnings: []
+        },
+        dataStructure: null,
+        dataStats: {
+          recordCount: 0,
+          fieldCount: 0,
+          nestedLevels: 0
+        }
+      })
+
+      this.SET_PARSED_DATA({
+        parsedData: null,
+        dataStructure: null,
+        dataStats: {
+          recordCount: 0,
+          fieldCount: 0,
+          nestedLevels: 0
+        }
+      })
+
+      this.UPDATE_DATA_VALIDATION({
+        isValid: false,
+        errors: [],
+        warnings: []
+      })
+
+      // Clear schema rules
+      this.UPDATE_SCHEMA_RULES({
+        convertToJson: [],
+        fanout: [],
+        childfanouts: [],
+        detectedStringifiedJson: [],
+        manualSelections: [],
+        parsedStringifiedJsonFields: {}
+      })
+
+      // Clear field mappings
+      this.RESET_FIELD_MAPPINGS()
+
+      // Clear filter rules
+      this.RESET_FILTER_RULES()
+
+      // Clear subtransforms
+      this.RESET_SUBTRANSFORMS()
+
+      console.log('[Step1] clearDownstreamState: Downstream state cleared successfully')
+    },
+
     readFileAsText (file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader()
@@ -617,6 +733,24 @@ export default {
       if (!this.isStepValid) {
         this.$emit('step-invalid', 'Please complete all required fields')
         return
+      }
+
+      console.log('[Step1] proceedToNext: Mode:', this.projectConfig.mode)
+
+      // Only clear state when in CREATE mode
+      // In UPDATE mode, preserve all changes made in subsequent steps
+      if (this.projectConfig.mode === 'create') {
+        console.log('[Step1] proceedToNext: Clearing state for create mode')
+
+        // Clear uploaded policy data (in case user switched from update to create)
+        this.CLEAR_UPLOADED_POLICY()
+
+        // Clear all downstream state
+        this.clearDownstreamState()
+
+        console.log('[Step1] proceedToNext: Create mode state cleared successfully')
+      } else {
+        console.log('[Step1] proceedToNext: Update mode - preserving existing changes')
       }
 
       // Mark step as valid and proceed
