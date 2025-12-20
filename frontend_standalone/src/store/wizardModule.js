@@ -114,6 +114,7 @@ const getInitialState = () => ({
     rawData: '',
     parsedData: null,
     logType: null, // 'single', 'multiline', or null
+    uploadedFileName: null, // Store file name for file upload method
     validationResult: {
       isValid: false,
       errors: [],

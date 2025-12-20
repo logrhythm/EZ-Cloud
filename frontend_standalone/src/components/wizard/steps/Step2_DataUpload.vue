@@ -445,6 +445,7 @@ export default {
       processingData: false,
       validationTimer: null,
       lastProcessedRawData: null, // Track last processed JSON to detect changes
+      lastProceededRawData: null, // Track the data when user last clicked "Next"
       clipboardPermissionState: null // Track clipboard permission state
     }
   },
@@ -653,7 +654,11 @@ export default {
           // Use the value we received in the handler, not from sampleData
           // This avoids a circular reactivity issue
           this.$nextTick(() => {
-            this.clearDataPreserveInputMethod()
+            // Only clear data if switching away from the current method
+            // Don't clear if we're just initializing or switching back to a method with existing data
+            if (oldValue) {
+              this.clearDataPreserveInputMethod()
+            }
           })
         }
       }
@@ -667,6 +672,20 @@ export default {
           this.onInputMethodChange(newValue)
         }
       }
+    },
+
+    // Watch for uploaded file name changes to restore file display
+    'sampleData.uploadedFileName': {
+      handler (newValue) {
+        if (newValue && this.sampleData.inputMethod === 'file' && !this.uploadedFile) {
+          // Create a mock File object to display the file name in the UI
+          this.uploadedFile = new File([], newValue, { type: 'application/json' })
+        } else if (!newValue) {
+          // Clear the uploaded file if the name was cleared
+          this.uploadedFile = null
+        }
+      },
+      immediate: true
     }
   },
 
@@ -677,10 +696,33 @@ export default {
     // Initialize localRawData from Vuex state
     this.localRawData = this.sampleData.rawData || ''
 
+    // Restore uploaded file if user is returning to this step with file input method
+    if (this.sampleData.inputMethod === 'file' && this.sampleData.uploadedFileName) {
+      console.log('=== Step 2 Mounted: Restoring uploaded file ===')
+      console.log('File name:', this.sampleData.uploadedFileName)
+
+      // Create a mock File object to display in the UI
+      // We can't recreate the actual File object, but we can create a representation
+      this.uploadedFile = new File([], this.sampleData.uploadedFileName, { type: 'application/json' })
+    }
+
     // Initialize lastProcessedRawData with current data if it exists
     if (this.sampleData.rawData && this.sampleData.parsedData) {
       this.lastProcessedRawData = this.sampleData.rawData
-      console.log('=== Step 2 Mounted: Initialized lastProcessedRawData ===')
+      // Also initialize lastProceededRawData when returning to this step
+      // This assumes if user is coming back, they've already proceeded before
+      this.lastProceededRawData = this.sampleData.rawData
+      console.log('=== Step 2 Mounted: Initialized lastProcessedRawData and lastProceededRawData ===')
+
+      // Only validate on mount if we have data (user is returning to this step)
+      // Don't validate empty state to allow navigation back without errors
+      this.$nextTick(() => {
+        this.validateJsonData()
+      })
+    } else {
+      console.log('=== Step 2 Mounted: No data present, skipping validation ===')
+      // Clear any existing validation errors when mounted with no data
+      this.validationErrorMessage = ''
     }
 
     // Check clipboard permissions
@@ -727,14 +769,15 @@ export default {
         this.SET_SAMPLE_DATA({
           validationResult: {
             isValid: false,
-            errors: ['The file is empty or contains only whitespace'],
+            errors: [],
             warnings: []
           },
           parsedData: null,
           dataStructure: null
         })
-        this.validationErrorMessage = 'The input is empty or contains only whitespace'
-        this.$emit('step-invalid')
+        this.validationErrorMessage = ''
+        // Don't emit step-invalid for empty data - allow navigation backwards
+        // Only show error when user tries to proceed forward
         return
       }
 
@@ -775,85 +818,18 @@ export default {
 
         // Handle schema rules based on data change
         if (hasDataChanged && result.validationResult.isValid) {
-          console.log('=== Step 2: Raw data has changed - checking if Step 3 selections need reset ===')
+          console.log('=== Step 2: Raw data has changed ===')
+          console.log('Data will be checked against step configurations when user proceeds to next step')
 
-          // Get current schema rules from store
-          const currentRules = this.$store.state.wizard?.schemaRules
-
-          // Check if the data structure has significantly changed
-          let needsReset = false
-
-          // If we have fanout selections, check if they're still valid with new structure
-          if (currentRules && currentRules.fanout && currentRules.fanout.length > 0) {
-            // Get the list of array fields in the new data
-            const arrayFields = result.dataStructure
-              ? DataProcessor.findArrayFields(result.dataStructure)
-              : []
-
-            console.log('=== Step 2: Checking existing fanout selections against new data structure ===')
-            console.log('Current fanout selections:', currentRules.fanout)
-            console.log('Available array fields in new data:', arrayFields)
-
-            // Create a set for easier lookup (handles both path formats)
-            const arrayFieldsSet = new Set()
-            arrayFields.forEach(field => {
-              // Add both normalized and prefixed versions to cover all bases
-              arrayFieldsSet.add(field) // Original
-              arrayFieldsSet.add(`$.${field}`) // With $. prefix
-            })
-
-            // Check if any selected arrays are no longer present
-            const invalidSelections = currentRules.fanout.filter(field => {
-              // Handle both formats: with and without $.
-              const withoutPrefix = field.startsWith('$.') ? field.substring(2) : field
-              const withPrefix = field.startsWith('$.') ? field : `$.${field}`
-
-              // Not valid if neither format exists in the array fields
-              return !arrayFieldsSet.has(field) &&
-                     !arrayFieldsSet.has(withoutPrefix) &&
-                     !arrayFieldsSet.has(withPrefix)
-            })
-
-            if (invalidSelections.length > 0) {
-              console.log('=== Step 2: Found invalid fanout selections, reset needed ===')
-              console.log('Invalid selections:', invalidSelections)
-              needsReset = true
-            } else {
-              console.log('=== Step 2: All fanout selections are still valid with new data ===')
-            }
-          }
-
-          if (needsReset) {
-            console.log('=== Step 2: Resetting Step 3 selections due to structure changes ===')
-            // Reset Step 3 selections when data structure changed significantly
-            this.UPDATE_SCHEMA_RULES({
-              convertToJson: [],
-              fanout: [],
-              childfanouts: [],
-              detectedStringifiedJson: [],
-              manualSelections: []
-            })
-          } else {
-            console.log('=== Step 2: Preserving Step 3 selections despite data change ===')
-            console.log('=== Current schema rules will be preserved and revalidated in Step 3 ===')
-          }
-
-          // ALWAYS reset Step 4, 5, and 6 when data changes
-          // These steps depend on the sample data structure and fields
-          console.log('=== Step 2: Resetting Step 4, 5, and 6 due to data change ===')
-          this.$store.commit('wizard/RESET_FILTER_RULES')
-          this.$store.commit('wizard/RESET_FIELD_MAPPINGS')
-          this.$store.commit('wizard/RESET_SUBTRANSFORMS')
-
-          // Also reset step status for steps 4, 5, and 6
-          this.$store.commit('wizard/RESET_STEP_STATUS', 3) // Step 4
-          this.$store.commit('wizard/RESET_STEP_STATUS', 4) // Step 5
-          this.$store.commit('wizard/RESET_STEP_STATUS', 5) // Step 6
-
-          // Update last processed data
+          // Update last processed data (for validation tracking)
           this.lastProcessedRawData = currentRawData
+
+          // NOTE: We do NOT reset steps here anymore.
+          // Steps will be reset in proceedToNext() when user clicks "Next" button
+          // This allows users to edit data without losing their Step 3+ configurations
+          // until they actually proceed forward
         } else if (!hasDataChanged) {
-          console.log('=== Step 2: Raw data unchanged - preserving Step 3 selections ===')
+          console.log('=== Step 2: Raw data unchanged - preserving all steps ===')
         }
 
         // Emit step validation status
@@ -972,6 +948,7 @@ export default {
         parsedData: null,
         dataStructure: null,
         logType: null,
+        uploadedFileName: null, // Clear stored file name
         validationResult: { isValid: false, errors: [], warnings: [] },
         dataStats: { recordCount: 0, fieldCount: 0, nestedLevels: 0 }
       })
@@ -998,6 +975,7 @@ export default {
 
       // Reset last processed data
       this.lastProcessedRawData = null
+      this.lastProceededRawData = null
 
       this.uploadedFile = null
       this.validationErrorMessage = ''
@@ -1019,6 +997,7 @@ export default {
         dataStructure: null,
         logType: null,
         inputMethod: currentInputMethod, // Preserve the input method
+        uploadedFileName: null, // Clear stored file name
         validationResult: { isValid: false, errors: [], warnings: [] },
         dataStats: { recordCount: 0, fieldCount: 0, nestedLevels: 0 }
       })
@@ -1045,6 +1024,7 @@ export default {
 
       // Reset last processed data
       this.lastProcessedRawData = null
+      this.lastProceededRawData = null
 
       this.uploadedFile = null
       this.validationErrorMessage = ''
@@ -1090,6 +1070,7 @@ export default {
           this.SET_SAMPLE_DATA({
             rawData: fileContent,
             inputMethod: 'file',
+            uploadedFileName: file.name, // Store file name
             validationResult: {
               isValid: false,
               errors: ['The file is empty or contains only whitespace'],
@@ -1106,7 +1087,8 @@ export default {
         this.localRawData = fileContent
         this.SET_SAMPLE_DATA({
           rawData: fileContent,
-          inputMethod: 'file'
+          inputMethod: 'file',
+          uploadedFileName: file.name // Store file name for persistence
         })
 
         await this.validateJsonData()
@@ -1167,6 +1149,48 @@ export default {
       if (!this.isStepValid) {
         this.$emit('step-invalid', 'Please provide valid JSON data')
         return
+      }
+
+      // Check if data has changed since the last time user proceeded to next step
+      const currentRawData = this.sampleData.rawData
+      const hasDataChangedSinceLastProceed = this.lastProceededRawData !== currentRawData
+
+      if (hasDataChangedSinceLastProceed) {
+        console.log('=== Step 2: Data changed since last proceed - Resetting Steps 3, 4, 5, and 6 ===')
+        console.log('Last proceeded data length:', this.lastProceededRawData?.length)
+        console.log('Current data length:', currentRawData?.length)
+
+        // Reset Step 3 (Schema Rules)
+        this.UPDATE_SCHEMA_RULES({
+          convertToJson: [],
+          fanout: [],
+          childfanouts: [],
+          detectedStringifiedJson: [],
+          manualSelections: [],
+          parsedStringifiedJsonFields: {}
+        })
+
+        // Reset Step 4 (Filter Rules)
+        this.$store.commit('wizard/RESET_FILTER_RULES')
+
+        // Reset Step 5 (Field Mappings)
+        this.$store.commit('wizard/RESET_FIELD_MAPPINGS')
+
+        // Reset Step 6 (SubTransforms)
+        this.$store.commit('wizard/RESET_SUBTRANSFORMS')
+
+        // Reset step status for steps 3, 4, 5, and 6
+        this.$store.commit('wizard/RESET_STEP_STATUS', 2) // Step 3
+        this.$store.commit('wizard/RESET_STEP_STATUS', 3) // Step 4
+        this.$store.commit('wizard/RESET_STEP_STATUS', 4) // Step 5
+        this.$store.commit('wizard/RESET_STEP_STATUS', 5) // Step 6
+
+        // Update the last proceeded data to current data
+        this.lastProceededRawData = currentRawData
+
+        console.log('=== Step 2: All subsequent steps have been reset ===')
+      } else {
+        console.log('=== Step 2: Data unchanged since last proceed - Preserving all steps ===')
       }
 
       // Mark step as valid and proceed
