@@ -152,6 +152,7 @@
         :selected-fields="selectedFields"
         :show-path="showPath"
         :mapped-paths="mappedPaths"
+        :mapped-paths-case-map="mappedPathsCaseMap"
         :highlighted-path="highlightedPath"
         :clickable-mode="clickableMode"
         :search-query="searchQuery"
@@ -192,6 +193,11 @@ export default {
     mappedPaths: {
       type: Set,
       default: () => new Set()
+    },
+    // NEW: Case-insensitive map for mapped paths (lowercase -> [original paths])
+    mappedPathsCaseMap: {
+      type: Map,
+      default: () => new Map()
     },
     // NEW: Highlighted path for "show in tree" feature
     highlightedPath: {
@@ -283,14 +289,35 @@ export default {
       return value.substring(0, maxLength) + '...'
     },
 
-    // NEW: Check if this node is mapped
+    // NEW: Check if this node is mapped (case-insensitive)
     isMapped () {
-      return this.mappedPaths.has(this.data.path)
+      if (!this.data.path) return false
+
+      // First try exact match (fast path)
+      if (this.mappedPaths.has(this.data.path)) {
+        return true
+      }
+
+      // If no exact match and we have a case-insensitive map, check it
+      if (this.mappedPathsCaseMap && this.mappedPathsCaseMap.size > 0) {
+        const lowerPath = this.data.path.toLowerCase()
+        return this.mappedPathsCaseMap.has(lowerPath)
+      }
+
+      return false
     },
 
-    // NEW: Check if this node is highlighted
+    // NEW: Check if this node is highlighted (case-insensitive)
     isHighlighted () {
-      return this.highlightedPath === this.data.path
+      if (!this.highlightedPath || !this.data.path) return false
+
+      // First try exact match
+      if (this.highlightedPath === this.data.path) {
+        return true
+      }
+
+      // Try case-insensitive match
+      return this.highlightedPath.toLowerCase() === this.data.path.toLowerCase()
     },
 
     // NEW: Check if this is a leaf node (can be clicked for mapping)

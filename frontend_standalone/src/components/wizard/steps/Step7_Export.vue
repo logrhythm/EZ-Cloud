@@ -512,10 +512,9 @@ export default {
     ]),
 
     completePolicy () {
-      if (!this.generatedPolicy || !this.generatedPolicy.policy) {
-        return this.generatePolicyObject()
-      }
-      return this.generatedPolicy.policy
+      // ALWAYS generate a clean policy object to ensure all UI-only metadata is removed
+      // This ensures _isMissingField and other flags are never included in exports
+      return this.generatePolicyObject()
     },
 
     formattedPolicyJson () {
@@ -562,6 +561,11 @@ export default {
   },
 
   mounted () {
+    console.log('[Step 7] Component mounted - subTransforms state:', {
+      skipSubTransforms: this.subTransforms.skipSubTransforms,
+      subTransformsCount: this.subTransforms.subTransformsList?.length || 0
+    })
+
     // ALWAYS regenerate policy when entering Step 7
     // This ensures any changes made in previous steps are reflected
     this.regeneratePolicy()
@@ -595,6 +599,11 @@ export default {
 
     generatePolicyObject () {
       try {
+        console.log('[Step 7] generatePolicyObject called - subTransforms:', {
+          skipSubTransforms: this.subTransforms.skipSubTransforms,
+          subTransformsCount: this.subTransforms.subTransformsList?.length || 0
+        })
+
         const policy = {
           name: this.projectConfig.name || 'Untitled Policy',
           description: this.projectConfig.description || ''
@@ -619,7 +628,36 @@ export default {
 
           // Add childfanouts if present (new hierarchical structure)
           if (this.schemaRules.childfanouts && this.schemaRules.childfanouts.length > 0) {
-            policy.schemarule.childfanouts = this.schemaRules.childfanouts
+            // Clean childfanouts to remove UI-only metadata
+            const cleanChildFanouts = (fanouts) => {
+              if (!Array.isArray(fanouts)) return fanouts
+
+              return fanouts.map(fanout => {
+                // If it's a simple string, return as-is
+                if (typeof fanout === 'string') {
+                  return fanout
+                }
+
+                // If it's an object, clean UI-only properties
+                const cleanFanout = {}
+
+                // Copy only valid policy fields (field and parentpath)
+                if (fanout.field !== undefined) {
+                  cleanFanout.field = fanout.field
+                }
+                if (fanout.parentpath !== undefined) {
+                  cleanFanout.parentpath = fanout.parentpath
+                }
+
+                // Recursively clean nested childfanouts
+                if (fanout.childfanouts && Array.isArray(fanout.childfanouts)) {
+                  cleanFanout.childfanouts = cleanChildFanouts(fanout.childfanouts)
+                }
+
+                return cleanFanout
+              })
+            }
+            policy.schemarule.childfanouts = cleanChildFanouts(this.schemaRules.childfanouts)
           }
         }
 
@@ -631,14 +669,20 @@ export default {
             delete cleanMapping.sampleValue
             delete cleanMapping.id // Remove any internal IDs if present
             delete cleanMapping.originalInputRule // Remove UI tracking field
+            delete cleanMapping._isMissingField // Remove missing field flag
+            delete cleanMapping._originalInputRule // Remove UI tracking field
+            delete cleanMapping.subtransforms // Remove subtransforms from individual transforms (invalid structure)
+            delete cleanMapping.subTransforms // Remove alternative casing variant
             return cleanMapping
           })
         }
 
-        // Add subtransforms if not skipped - clean up any UI-only attributes
-        if (!this.subTransforms.skipSubTransforms &&
-            this.subTransforms.subTransformsList &&
+        // Add subtransforms if they exist - clean up any UI-only attributes
+        // Note: We include subtransforms if they exist, regardless of skipSubTransforms flag
+        // This handles the case where user initially skips, then goes back to add them
+        if (this.subTransforms.subTransformsList &&
             this.subTransforms.subTransformsList.length > 0) {
+          console.log('[Step 7] Adding subtransforms to policy:', this.subTransforms.subTransformsList.length)
           // Recursively clean subtransforms and their nested transforms
           const cleanSubTransforms = (subtransformsList) => {
             return subtransformsList.map(subtransform => {
@@ -647,6 +691,8 @@ export default {
               // Remove UI-only properties from subtransform
               delete cleanSubtransform.id
               delete cleanSubtransform.name
+              delete cleanSubtransform._missingConditionFields // Remove missing condition fields tracking
+              delete cleanSubtransform._missingMappingFields // Remove missing mapping fields tracking
 
               // Clean nested transforms within subtransform
               if (cleanSubtransform.transforms && Array.isArray(cleanSubtransform.transforms)) {
@@ -656,6 +702,9 @@ export default {
                   delete cleanTransform.id
                   delete cleanTransform.originalInputRule // Remove UI tracking field
                   delete cleanTransform._originalInputRule // Remove UI tracking field (subtransform variant)
+                  delete cleanTransform._isMissingField // Remove missing field flag
+                  delete cleanTransform.subtransforms // Remove subtransforms from individual transforms (invalid structure)
+                  delete cleanTransform.subTransforms // Remove alternative casing variant
                   return cleanTransform
                 })
               }
@@ -938,6 +987,19 @@ export default {
   },
 
   watch: {
+    // Watch for changes in subTransforms to ensure policy is updated
+    subTransforms: {
+      handler (newVal) {
+        console.log('[Step 7] subTransforms changed:', {
+          skipSubTransforms: newVal.skipSubTransforms,
+          subTransformsCount: newVal.subTransformsList?.length || 0
+        })
+        // Computed property 'completePolicy' should auto-update, but we can
+        // log this to verify reactivity is working
+      },
+      deep: true
+    },
+
     showEditDialog (newVal) {
       if (newVal) {
         // Initialize the editor with the current policy JSON

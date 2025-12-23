@@ -319,6 +319,7 @@
         label="Previous"
         @click="$emit('prev-step')"
         class="wizard-btn wizard-btn--secondary"
+        aria-label="Go to previous step"
       />
 
       <q-btn
@@ -328,6 +329,7 @@
         label="Continue to Filter Rules"
         @click="proceedToNext"
         class="wizard-btn wizard-btn--primary"
+        aria-label="Continue to filter rules step"
       />
     </div>
   </div>

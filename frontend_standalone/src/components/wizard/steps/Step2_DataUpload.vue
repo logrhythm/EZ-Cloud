@@ -406,6 +406,7 @@
         label="Previous"
         @click="$emit('prev-step')"
         class="wizard-btn wizard-btn--secondary"
+        aria-label="Go to previous step"
       />
 
       <q-btn
@@ -416,9 +417,10 @@
         :disable="!isStepValid"
         @click="proceedToNext"
         class="wizard-btn wizard-btn--primary"
+        aria-label="Continue to schema rules step"
       >
         <q-tooltip v-if="!isStepValid" anchor="top middle" self="bottom middle">
-          Please provide valid JSON data to continue
+          Please provide valid JSON data before proceeding
         </q-tooltip>
       </q-btn>
     </div>

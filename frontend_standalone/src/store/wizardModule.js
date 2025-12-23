@@ -1132,9 +1132,10 @@ const actions = {
         delete policy.schemarule
       }
 
-      // Add subtransforms if not skipped (Step 6 - SubTransform Configuration)
-      if (!state.subTransforms.skipSubTransforms &&
-          state.subTransforms.subTransformsList &&
+      // Add subtransforms if they exist (Step 6 - SubTransform Configuration)
+      // Note: We include subtransforms if they exist, regardless of skipSubTransforms flag
+      // This handles the case where user initially skips, then goes back to add them
+      if (state.subTransforms.subTransformsList &&
           state.subTransforms.subTransformsList.length > 0) {
         // Recursively clean subtransforms
         const cleanSubTransforms = (subtransformsList) => {

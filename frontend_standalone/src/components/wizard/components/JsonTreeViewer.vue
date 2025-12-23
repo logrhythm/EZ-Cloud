@@ -11,6 +11,7 @@
         :selected-fields="selectedFields"
         :show-path="showPath"
         :mapped-paths="mappedPaths"
+        :mapped-paths-case-map="mappedPathsCaseMap"
         :highlighted-path="highlightedPath"
         :clickable-mode="clickableMode"
         :search-query="searchQuery"
@@ -57,6 +58,11 @@ export default {
     mappedPaths: {
       type: Set,
       default: () => new Set()
+    },
+    // NEW: Case-insensitive map for mapped paths (lowercase -> [original paths])
+    mappedPathsCaseMap: {
+      type: Map,
+      default: () => new Map()
     },
     // NEW: Highlighted path for "show in tree" feature
     highlightedPath: {

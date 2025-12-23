@@ -118,6 +118,7 @@
                 :data="jsonTreeData"
                 :expanded-nodes="expandedNodes"
                 :mapped-paths="mappedPathsSet"
+                :mapped-paths-case-map="mappedPathsCaseInsensitiveMap"
                 :highlighted-path="highlightedPath"
                 :clickable-mode="true"
                 :search-query="treeSearchQuery"
@@ -350,6 +351,7 @@
                 :data="jsonTreeData"
                 :expanded-nodes="expandedNodes"
                 :mapped-paths="mappedPathsSet"
+                :mapped-paths-case-map="mappedPathsCaseInsensitiveMap"
                 :highlighted-path="highlightedPath"
                 :clickable-mode="true"
                 :search-query="treeSearchQuery"
@@ -709,16 +711,18 @@
         :disable="isSaving"
         @click="$emit('prev-step')"
         class="wizard-btn wizard-btn--secondary"
+        aria-label="Go to previous step"
       />
 
       <q-btn
         unelevated
         color="primary"
         icon-right="arrow_forward"
-        label="Continue to Review"
+        label="Continue to Sub transform"
         :loading="isSaving"
         @click="proceedToNext"
         class="wizard-btn wizard-btn--primary"
+        aria-label="Continue to sub transform step"
       />
     </div>
   </div>
@@ -906,8 +910,70 @@ export default {
       return this.$store.getters['wizard/getFanoutArrays']
     },
 
+    /**
+     * Build a case-insensitive map for mapped paths
+     * Map structure: lowercase path -> [original paths with their actual casing]
+     */
+    mappedPathsCaseInsensitiveMap () {
+      const caseInsensitiveMap = new Map()
+
+      this.localMappings.forEach(m => {
+        if (m.inputRule) {
+          // Store case-insensitive version of inputRule for lookup
+          const originalPath = m.inputRule
+          const lowerPath = originalPath.toLowerCase()
+          if (!caseInsensitiveMap.has(lowerPath)) {
+            caseInsensitiveMap.set(lowerPath, [])
+          }
+          caseInsensitiveMap.get(lowerPath).push(originalPath)
+
+          // If mapping has a fanout parent, also store the reconstructed tree path
+          if (m.fanoutParentElement) {
+            // Extract the base path without operation syntax
+            let basePath = m.inputRule
+            const parsed = parseOperationFromInputRule(m.inputRule)
+            if (parsed.fieldPath) {
+              basePath = parsed.fieldPath
+            }
+
+            // Strip leading $. from basePath if present (relative paths)
+            if (basePath.startsWith('$.')) {
+              basePath = basePath.substring(2)
+            } else if (basePath.startsWith('$')) {
+              basePath = basePath.substring(1)
+            }
+
+            // Strip leading . from basePath
+            if (basePath.startsWith('.')) {
+              basePath = basePath.substring(1)
+            }
+
+            let fanoutParent = m.fanoutParentElement
+
+            // Strip trailing [*] from fanoutParent if present
+            if (fanoutParent.endsWith('[*]')) {
+              fanoutParent = fanoutParent.substring(0, fanoutParent.length - 3)
+            }
+
+            // Construct tree path: $.parent[*].field
+            const treePath = `${fanoutParent}[*].${basePath}`
+
+            // Store case-insensitive version for lookup
+            const lowerTreePath = treePath.toLowerCase()
+            if (!caseInsensitiveMap.has(lowerTreePath)) {
+              caseInsensitiveMap.set(lowerTreePath, [])
+            }
+            caseInsensitiveMap.get(lowerTreePath).push(treePath)
+          }
+        }
+      })
+
+      return caseInsensitiveMap
+    },
+
     mappedPathsSet () {
       const paths = new Set()
+
       this.localMappings.forEach(m => {
         if (m.inputRule) {
           // Add the original inputRule
@@ -956,6 +1022,7 @@ export default {
           }
         }
       })
+
       return paths
     },
 
@@ -2195,7 +2262,7 @@ export default {
 
 <style lang="scss" scoped>
 .step-mapping {
-  max-width: 95%; /* Utilize more screen space */
+  max-width: 75%; /* Reduced from 95% to make panels narrower */
   margin: 0 auto;
   padding: 0 1rem;
 }
@@ -2273,7 +2340,8 @@ export default {
   display: grid;
   grid-template-columns: 1fr 1.5fr; /* More balanced layout: give more space to both panels */
   gap: 1.5rem;
-  min-height: 800px; /* Increased from 600px for better visibility */
+  min-height: 800px; /* Restored to original height */
+  max-height: none; /* Remove max height restriction */
   max-width: none; /* Remove max-width constraint */
 }
 
@@ -2349,7 +2417,8 @@ export default {
   overflow-y: auto; /* Smooth scrolling with visible scrollbar */
   overflow-x: hidden;
   padding: 1rem;
-  max-height: calc(100vh - 320px); /* Utilize more vertical space - increased from 400px */
+  max-height: calc(100vh - 320px); /* Restored to original dynamic height */
+  min-height: 350px; /* Keep minimum height for consistency */
 
   /* Custom scrollbar styling for dark theme */
   &::-webkit-scrollbar {
@@ -2378,7 +2447,7 @@ export default {
   align-items: center;
   justify-content: center;
   height: 100%;
-  min-height: 400px;
+  min-height: 400px; /* Restored to original height */
   text-align: center;
   color: var(--q-color-grey-6);
 }

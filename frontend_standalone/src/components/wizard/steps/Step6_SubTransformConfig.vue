@@ -187,6 +187,7 @@
         :disable="isSaving"
         @click="$emit('prev-step')"
         class="wizard-btn wizard-btn--secondary"
+        aria-label="Go to previous step"
       />
 
       <q-btn
@@ -197,6 +198,7 @@
         :loading="isSaving"
         @click="proceedToNext"
         class="wizard-btn wizard-btn--primary"
+        aria-label="Continue to export step"
       />
     </div>
 
@@ -609,35 +611,92 @@ export default {
 
     /**
      * Check if a field path exists in the current sample data
-     * @param {string} fieldPath - The field path to check (e.g., "@.errorMessage")
+     * @param {string} fieldPath - The field path to check (e.g., "@.type", "$.name", "$.@metadata.beat")
      * @param {string} fanoutParent - Optional fanout parent element
      * @returns {boolean}
      */
     checkFieldExistsInSampleData (fieldPath, fanoutParent = null) {
       if (!fieldPath || !this.availableJsonPaths) {
+        console.log('[Step 6] checkFieldExistsInSampleData - early return:', { fieldPath, hasAvailablePaths: !!this.availableJsonPaths })
         return false
       }
 
-      // Normalize the path for comparison
-      const normalizedPath = fieldPath.replace(/^@\./, '$.').replace(/^\$\./, '').toLowerCase()
+      /**
+       * Normalize a path for comparison
+       * Handles multiple formats:
+       * - @.field -> field
+       * - $.field -> field
+       * - @.@metadata.beat -> @metadata.beat (@ is part of property name)
+       * - $.@metadata.beat -> @metadata.beat
+       */
+      const normalizePath = (path) => {
+        if (!path) return ''
+        let normalized = path.trim()
 
-      // Check if field exists in available paths - CASE-INSENSITIVE (Phase 2)
-      return this.availableJsonPaths.some(pathObj => {
-        const availablePath = (pathObj.value || pathObj.label || '').replace(/^@\./, '$.').replace(/^\$\./, '').toLowerCase()
-        const fieldPathLower = fieldPath.toLowerCase()
-        const valuePathLower = (pathObj.value || '').toLowerCase()
-        const labelPathLower = (pathObj.label || '').toLowerCase()
+        // Convert @. prefix to $. for consistency
+        if (normalized.startsWith('@.')) {
+          normalized = '$.' + normalized.substring(2)
+        }
 
-        return availablePath === normalizedPath ||
-               availablePath === fieldPathLower ||
-               valuePathLower === fieldPathLower ||
-               labelPathLower === fieldPathLower
+        // Ensure it starts with $.
+        if (!normalized.startsWith('$.')) {
+          normalized = '$.' + normalized
+        }
+
+        // Remove the leading $. for comparison
+        normalized = normalized.substring(2)
+
+        // Remove array indices [0], [1], etc. for comparison (but keep [*])
+        normalized = normalized.replace(/\[\d+\]/g, '')
+
+        // Remove [*] for comparison
+        normalized = normalized.replace(/\[\*\]/g, '')
+
+        return normalized.toLowerCase()
+      }
+
+      const normalizedFieldPath = normalizePath(fieldPath)
+
+      console.log('[Step 6] Checking field existence:', {
+        originalPath: fieldPath,
+        normalizedPath: normalizedFieldPath,
+        availablePathsCount: this.availableJsonPaths.length
       })
+
+      // Check if field exists in available paths - CASE-INSENSITIVE
+      const found = this.availableJsonPaths.some(pathObj => {
+        const pathValue = pathObj.value || pathObj.label || ''
+        const normalizedAvailablePath = normalizePath(pathValue)
+
+        // Try exact normalized match
+        if (normalizedAvailablePath === normalizedFieldPath) {
+          console.log('[Step 6] ✓ FOUND match:', {
+            fieldPath,
+            matchedAgainst: pathValue
+          })
+          return true
+        }
+
+        return false
+      })
+
+      if (!found) {
+        console.log('[Step 6] ⚠️  NOT FOUND:', {
+          fieldPath,
+          normalizedPath: normalizedFieldPath,
+          sampleAvailablePaths: this.availableJsonPaths.slice(0, 5).map(p => ({
+            original: p.value || p.label,
+            normalized: normalizePath(p.value || p.label)
+          }))
+        })
+      }
+
+      return found
     },
 
     /**
      * Extract field references from a JSONPath condition expression
-     * @param {string} condition - The condition expression (e.g., "@.errorMessage || @.errorCode")
+     * @param {string} condition - The condition expression (e.g., "@.type=='access'", "@.errorMessage || @.errorCode")
      * @returns {Array<string>} - Array of field paths referenced in the condition
      */
     extractFieldsFromCondition (condition) {
@@ -645,15 +704,51 @@ export default {
         return []
       }
 
-      // Match field patterns like @.fieldName or @['fieldName'] or @["fieldName"]
-      const fieldPattern = /@\.[\w.[\]'"]+|@\[['"][^\]]+['"]\]/g
+      // Enhanced pattern to match:
+      // - @.fieldName
+      // - @.@metadata.beat (@ can be part of property name)
+      // - @['fieldName'] or @["fieldName"]
+      // - Nested paths like @.response.events[*].type
+      const fieldPattern = /@\.[a-zA-Z_@][\w.@[\]'"*]*/g
       const matches = condition.match(fieldPattern) || []
 
-      // Clean up the matches
-      return matches.map(match => {
-        // Convert @['field'] to @.field format
-        return match.replace(/@\[['"]([^'"]+)['"]\]/, '@.$1')
+      console.log('[Step 6] Extracting fields from condition:', {
+        condition,
+        rawMatches: matches
       })
+
+      // Clean up the matches - extract just the field path part
+      const cleanedFields = matches.map(match => {
+        // Remove comparison operators and values
+        // For example: "@.type=='access'" -> "@.type"
+        let cleaned = match
+
+        // Split on comparison operators
+        const operators = ['==', '!=', '>=', '<=', '>', '<', '&&', '||', ' ']
+        for (const op of operators) {
+          const index = cleaned.indexOf(op)
+          if (index > 0) {
+            cleaned = cleaned.substring(0, index)
+            break
+          }
+        }
+
+        // Remove quotes if present
+        cleaned = cleaned.replace(/['"]/g, '')
+
+        // Convert bracket notation to dot notation
+        cleaned = cleaned.replace(/@\['([^']+)'\]/g, '@.$1')
+        cleaned = cleaned.replace(/@\["([^"]+)"\]/g, '@.$1')
+
+        return cleaned
+      })
+
+      // Remove duplicates
+      const uniqueFields = [...new Set(cleanedFields)]
+
+      console.log('[Step 6] Extracted field paths:', uniqueFields)
+
+      return uniqueFields
     },
 
     /**
