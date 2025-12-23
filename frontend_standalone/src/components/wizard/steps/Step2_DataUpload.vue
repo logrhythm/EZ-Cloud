@@ -448,7 +448,8 @@ export default {
       validationTimer: null,
       lastProcessedRawData: null, // Track last processed JSON to detect changes
       lastProceededRawData: null, // Track the data when user last clicked "Next"
-      clipboardPermissionState: null // Track clipboard permission state
+      clipboardPermissionState: null, // Track clipboard permission state
+      isAutoSwitching: false // Flag to prevent data clearing during auto-detection
     }
   },
 
@@ -648,6 +649,8 @@ export default {
     // Watch Vuex state change and sync to local state
     'sampleData.inputMethod': {
       handler (newValue, oldValue) {
+        console.log('[WATCHER] sampleData.inputMethod changed:', { oldValue, newValue, isAutoSwitching: this.isAutoSwitching })
+
         // Only clear data and update local state if the value has actually changed
         if (newValue !== oldValue) {
           // Update local state to match Vuex state
@@ -658,8 +661,18 @@ export default {
           this.$nextTick(() => {
             // Only clear data if switching away from the current method
             // Don't clear if we're just initializing or switching back to a method with existing data
-            if (oldValue) {
+            // Also, don't clear if we're auto-switching (multiline detection)
+            console.log('[WATCHER $nextTick] About to check if should clear data:', {
+              oldValue,
+              isAutoSwitching: this.isAutoSwitching,
+              willClear: oldValue && !this.isAutoSwitching
+            })
+
+            if (oldValue && !this.isAutoSwitching) {
+              console.log('[WATCHER] Clearing data because manual tab switch detected')
               this.clearDataPreserveInputMethod()
+            } else {
+              console.log('[WATCHER] NOT clearing data - auto-switching or initial load')
             }
           })
         }
@@ -756,6 +769,56 @@ export default {
       this.debounceValidation()
     },
 
+    /**
+     * Detect the appropriate input method based on data content
+     * Returns 'manual', 'multiple', or current method if detection is inconclusive
+     */
+    detectInputMethod (rawData) {
+      if (!rawData || !rawData.trim()) {
+        return this.sampleData.inputMethod || 'manual'
+      }
+
+      const trimmedData = rawData.trim()
+
+      // Try to detect multiline format (newline-delimited JSON objects)
+      const lines = trimmedData.split('\n').filter(line => line.trim())
+
+      // If multiple lines exist, check if each line is a valid JSON object
+      if (lines.length > 1) {
+        let validJsonLinesCount = 0
+        let invalidJsonLinesCount = 0
+
+        for (const line of lines) {
+          try {
+            const parsed = JSON.parse(line.trim())
+            // Count as valid if it's a JSON object (not primitive)
+            if (typeof parsed === 'object' && parsed !== null) {
+              validJsonLinesCount++
+            }
+          } catch (e) {
+            invalidJsonLinesCount++
+          }
+        }
+
+        // If at least 2 lines are valid JSON objects and majority are valid, it's multiline
+        if (validJsonLinesCount >= 2 && validJsonLinesCount > invalidJsonLinesCount) {
+          console.log(`[detectInputMethod] Detected multiline: ${validJsonLinesCount} valid JSON objects`)
+          return 'multiple'
+        }
+      }
+
+      // Try to parse as single JSON (manual input)
+      try {
+        JSON.parse(trimmedData)
+        console.log('[detectInputMethod] Detected single JSON object/array')
+        return 'manual'
+      } catch (e) {
+        // If it's not valid single JSON and not multiline, keep current method
+        console.log('[detectInputMethod] Unable to detect format, keeping current method')
+        return this.sampleData.inputMethod || 'manual'
+      }
+    },
+
     debounceValidation () {
       // Debounce validation to avoid excessive processing
       if (this.validationTimer) {
@@ -795,7 +858,63 @@ export default {
         console.log('Last processed data length:', this.lastProcessedRawData?.length)
         console.log('Has data changed?', hasDataChanged)
 
-        // Use the DataProcessor service directly
+        // Auto-detect if data is multiline when user is in manual input mode
+        // This detects if user pasted multiline data into the manual input field
+        if (this.sampleData.inputMethod === 'manual' || this.sampleData.inputMethod === 'file') {
+          const detectedInputMethod = this.detectInputMethod(this.localRawData)
+          console.log('=== Step 2: Auto-detection ===')
+          console.log('Current input method:', this.sampleData.inputMethod)
+          console.log('Detected input method:', detectedInputMethod)
+
+          // If multiline data detected and user is not already in multiple mode, switch to it
+          if (detectedInputMethod === 'multiple' && this.sampleData.inputMethod !== 'multiple') {
+            console.log('=== Step 2: Switching to multiple input method (multiline detected) ===')
+
+            // Store the current data before switching tabs
+            const currentData = this.localRawData
+            console.log('[AUTO-SWITCH] Stored data length:', currentData?.length)
+
+            // Set flag to prevent clearing data in the watcher
+            console.log('[AUTO-SWITCH] Setting isAutoSwitching = true BEFORE tab switch')
+            this.isAutoSwitching = true
+
+            // Switch to multiple mode
+            this.localInputMethod = 'multiple'
+            console.log('[AUTO-SWITCH] Called SET_SAMPLE_DATA with inputMethod=multiple')
+            this.SET_SAMPLE_DATA({
+              inputMethod: 'multiple',
+              rawData: currentData // Ensure data is preserved in Vuex
+            })
+
+            // Use nextTick to ensure the tab panel is rendered before setting data
+            this.$nextTick(() => {
+              console.log('[AUTO-SWITCH $nextTick] Re-assigning data to localRawData')
+              console.log('[AUTO-SWITCH $nextTick] Data length before assignment:', this.localRawData?.length)
+
+              // Re-assign the data to ensure it's visible in the new tab
+              this.localRawData = currentData
+
+              console.log('[AUTO-SWITCH $nextTick] Data length after assignment:', this.localRawData?.length)
+              console.log('=== Step 2: Data set in Multiple Logs tab ===', currentData.substring(0, 100))
+
+              // Use another nextTick to reset the flag after everything is settled
+              this.$nextTick(() => {
+                console.log('[AUTO-SWITCH] Setting isAutoSwitching = false AFTER all updates')
+                this.isAutoSwitching = false
+              })
+            })
+
+            // Show notification to user
+            this.$q?.notify({
+              type: 'info',
+              message: 'Multiple JSON objects detected - switched to Multiple Logs mode',
+              timeout: 3000,
+              icon: 'info'
+            })
+          }
+        }
+
+        // Use the DataProcessor service directly with the current/detected input method
         const result = await DataProcessor.processSampleData(this.localRawData, this.sampleData.inputMethod)
 
         console.log('=== Step 2: Data processing result ===')
@@ -1086,12 +1205,64 @@ export default {
           return
         }
 
+        // Auto-detect if file contains multiline JSON
+        const detectedInputMethod = this.detectInputMethod(fileContent)
+        console.log('=== Step 2: File Upload - Auto-detection ===')
+        console.log('Detected input method:', detectedInputMethod)
+
+        // Set local data first
         this.localRawData = fileContent
-        this.SET_SAMPLE_DATA({
-          rawData: fileContent,
-          inputMethod: 'file',
-          uploadedFileName: file.name // Store file name for persistence
-        })
+
+        // Use detected input method instead of always 'file'
+        if (detectedInputMethod === 'multiple') {
+          console.log('=== Step 2: File contains multiple JSON objects - switching to multiple mode ===')
+          console.log('[FILE AUTO-SWITCH] File content length:', fileContent?.length)
+
+          // Set flag to prevent clearing data in the watcher
+          console.log('[FILE AUTO-SWITCH] Setting isAutoSwitching = true BEFORE tab switch')
+          this.isAutoSwitching = true
+
+          // Switch to multiple mode
+          this.localInputMethod = 'multiple'
+          console.log('[FILE AUTO-SWITCH] Called SET_SAMPLE_DATA with inputMethod=multiple')
+          this.SET_SAMPLE_DATA({
+            rawData: fileContent,
+            inputMethod: 'multiple',
+            uploadedFileName: file.name // Store file name for persistence
+          })
+
+          // Use nextTick to ensure the tab panel is rendered before setting data
+          this.$nextTick(() => {
+            console.log('[FILE AUTO-SWITCH $nextTick] Re-assigning data to localRawData')
+            console.log('[FILE AUTO-SWITCH $nextTick] Data length before assignment:', this.localRawData?.length)
+
+            // Re-assign the data to ensure it's visible in the new tab
+            this.localRawData = fileContent
+
+            console.log('[FILE AUTO-SWITCH $nextTick] Data length after assignment:', this.localRawData?.length)
+            console.log('=== Step 2: File data set in Multiple Logs tab ===', fileContent.substring(0, 100))
+
+            // Use another nextTick to reset the flag after everything is settled
+            this.$nextTick(() => {
+              console.log('[FILE AUTO-SWITCH] Setting isAutoSwitching = false AFTER all updates')
+              this.isAutoSwitching = false
+            })
+          })
+
+          // Show notification to user
+          this.$q?.notify({
+            type: 'info',
+            message: 'Multiple JSON objects detected in file - switched to Multiple Logs mode',
+            timeout: 3000,
+            icon: 'info'
+          })
+        } else {
+          this.SET_SAMPLE_DATA({
+            rawData: fileContent,
+            inputMethod: 'file',
+            uploadedFileName: file.name // Store file name for persistence
+          })
+        }
 
         await this.validateJsonData()
       } catch (error) {
