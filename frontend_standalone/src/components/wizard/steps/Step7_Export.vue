@@ -508,7 +508,8 @@ export default {
       'filterRules',
       'fieldMappings',
       'subTransforms',
-      'generatedPolicy'
+      'generatedPolicy',
+      'policyUpload'
     ]),
 
     completePolicy () {
@@ -604,9 +605,57 @@ export default {
           subTransformsCount: this.subTransforms.subTransformsList?.length || 0
         })
 
+        // DEBUG: Log policyUpload state
+        console.log('[Step 7] policyUpload state:', {
+          exists: !!this.policyUpload,
+          hasUploadedPolicyData: !!this.policyUpload?.uploadedPolicyData,
+          uploadedPolicyDataKeys: this.policyUpload?.uploadedPolicyData ? Object.keys(this.policyUpload.uploadedPolicyData) : null
+        })
+
         const policy = {
           name: this.projectConfig.name || 'Untitled Policy',
           description: this.projectConfig.description || ''
+        }
+
+        // Preserve group, grouporder, and lookup/Lookup from uploaded policy (if in update mode)
+        // These attributes should be copied as-is without any UI editing
+        if (this.policyUpload?.uploadedPolicyData) {
+          const uploadedPolicy = this.policyUpload.uploadedPolicyData
+
+          console.log('[Step 7] Uploaded policy has keys:', Object.keys(uploadedPolicy))
+
+          if (uploadedPolicy.group !== undefined) {
+            policy.group = uploadedPolicy.group
+            console.log('[Step 7] Preserving group attribute:', uploadedPolicy.group)
+          }
+
+          if (uploadedPolicy.grouporder !== undefined) {
+            policy.grouporder = uploadedPolicy.grouporder
+            console.log('[Step 7] Preserving grouporder attribute:', uploadedPolicy.grouporder)
+          }
+
+          // Handle both 'lookup' and 'Lookup' (case-insensitive)
+          const lookupValue = uploadedPolicy.lookup || uploadedPolicy.Lookup
+          console.log('[Step 7] Lookup check:', {
+            hasLookup: uploadedPolicy.lookup !== undefined,
+            hasCapitalLookup: uploadedPolicy.Lookup !== undefined,
+            lookupValue: lookupValue
+          })
+
+          if (lookupValue !== undefined) {
+            // Preserve with original casing (check which one exists)
+            if (uploadedPolicy.Lookup !== undefined) {
+              policy.Lookup = uploadedPolicy.Lookup
+              console.log('[Step 7] Preserving Lookup attribute (capital L) with', Object.keys(uploadedPolicy.Lookup).length, 'keys')
+            } else if (uploadedPolicy.lookup !== undefined) {
+              policy.lookup = uploadedPolicy.lookup
+              console.log('[Step 7] Preserving lookup attribute (lowercase l) with', Object.keys(uploadedPolicy.lookup).length, 'keys')
+            }
+          } else {
+            console.log('[Step 7] WARNING: No Lookup/lookup attribute found in uploaded policy!')
+          }
+        } else {
+          console.log('[Step 7] No uploaded policy data available - running in create mode or policy not uploaded')
         }
 
         // Add filter if present

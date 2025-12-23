@@ -36,12 +36,12 @@
             class="mode-selection"
           />
 
-          <!-- Policy Name Input (shown when creating a new policy) -->
-          <div v-if="projectConfig.mode === 'create'" class="policy-name-input q-mt-md">
+          <!-- Policy Name Input (shown when creating a new policy OR when policy is uploaded in update mode) -->
+          <div v-if="projectConfig.mode === 'create' || (projectConfig.mode === 'update' && existingPolicyPreview)" class="policy-name-input q-mt-md">
             <q-input
               v-model="projectName"
               label="Policy Name *"
-              hint="Enter a name for your new policy"
+              :hint="projectConfig.mode === 'create' ? 'Enter a name for your new policy' : 'Edit the policy name (will update the exported policy)'"
               outlined
               dense
               :error="errors.name.length > 0"
@@ -148,9 +148,17 @@
                       </div>
                       <div class="metadata-content q-mt-md">
                         <div class="metadata-row">
-                          <span class="metadata-label">Policy Name:</span>
+                          <span class="metadata-label">Original Policy Name:</span>
                           <span class="metadata-value">{{ policyUpload.metadata.policyName || 'N/A' }}</span>
                         </div>
+                        <q-banner v-if="projectConfig.name !== policyUpload.metadata.policyName" dense class="q-mt-sm" style="background: rgba(33, 150, 243, 0.1); border-left: 4px solid var(--q-primary);">
+                          <template v-slot:avatar>
+                            <q-icon name="info" color="primary" />
+                          </template>
+                          <div class="text-caption">
+                            Policy will be exported with updated name: <strong>{{ projectConfig.name }}</strong>
+                          </div>
+                        </q-banner>
                         <div class="metadata-row">
                           <span class="metadata-label">Complexity:</span>
                           <q-chip
@@ -406,11 +414,12 @@ export default {
       if (this.projectConfig.mode === 'create') {
         return Boolean(this.projectConfig.name?.trim())
       } else if (this.projectConfig.mode === 'update') {
-        // For update mode: Check if we have a valid uploaded policy
+        // For update mode: Check if we have a valid uploaded policy AND a policy name
         return Boolean(
           this.existingPolicyFile &&
           this.policyUpload.validationResult.valid &&
-          this.policyUpload.uploadedPolicyData
+          this.policyUpload.uploadedPolicyData &&
+          this.projectConfig.name?.trim()
         )
       }
       return false
@@ -468,8 +477,19 @@ export default {
       console.log('[Step1] mounted: Policy state restored successfully')
     }
 
-    // Validate on mount if fields have values (after restoring state)
-    this.validateAllFields()
+    // Clear name errors if the policy name is already populated (from uploaded file or previous input)
+    if (this.projectConfig.name && this.projectConfig.name.trim()) {
+      this.errors.name = []
+      console.log('[Step1] mounted: Cleared name errors - name is pre-populated:', this.projectConfig.name)
+    }
+
+    // Validate on mount only if fields are empty or in create mode
+    // In update mode with uploaded policy, skip validation to avoid red highlighting
+    if (this.projectConfig.mode === 'create' || !this.policyUpload.uploadedPolicyData) {
+      this.validateAllFields()
+    } else {
+      console.log('[Step1] mounted: Skipping validation - update mode with uploaded policy')
+    }
   },
 
   methods: {
@@ -540,6 +560,10 @@ export default {
         // Map validation errors to component error state
         this.errors.existingPolicy = validationResult.getErrorsByField('existingPolicy').map(e => e.message)
 
+        // Also validate the policy name in update mode
+        const nameValidation = Step1Validator.validateProjectName(this.projectConfig.name)
+        this.errors.name = nameValidation.errors.map(e => e.message)
+
         // Also check if file is selected
         if (!this.existingPolicyFile) {
           this.errors.existingPolicy = ['Please select a policy file']
@@ -601,6 +625,13 @@ export default {
         // Auto-populate policy name if empty
         if (!this.projectConfig.name && parsedPolicy.name) {
           this.UPDATE_PROJECT_CONFIG({ name: parsedPolicy.name })
+          // Clear name errors since we just auto-populated a valid name
+          this.errors.name = []
+          console.log('[Step1] onFileUpload: Auto-populated policy name and cleared errors:', parsedPolicy.name)
+        } else if (this.projectConfig.name && this.projectConfig.name.trim()) {
+          // If name already exists and is valid, clear any errors
+          this.errors.name = []
+          console.log('[Step1] onFileUpload: Cleared name errors - name already set:', this.projectConfig.name)
         }
 
         // If this is a different file, clear all downstream state
