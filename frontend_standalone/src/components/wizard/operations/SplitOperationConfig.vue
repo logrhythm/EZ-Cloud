@@ -17,8 +17,8 @@
       <div class="col-12 col-md-6">
         <q-input
           v-model="localParams.delimiter"
-          label="Delimiter *"
-          hint="Character(s) to split the string on"
+          label="Delimiter"
+          hint="Character(s) to split on (empty = split every character)"
           outlined
           dense
           bg-color="white"
@@ -30,7 +30,7 @@
             <q-icon name="help_outline" color="grey">
               <q-tooltip max-width="300px">
                 Enter the character or string that separates the values.
-                Examples: "," for CSV, "=" for key-value pairs
+                Examples: "," for CSV, "=" for key-value pairs, "" (empty) to split every character
               </q-tooltip>
             </q-icon>
           </template>
@@ -85,10 +85,64 @@
     <div class="preview-section">
       <div class="preview-header">
         <q-icon name="visibility" class="q-mr-xs" />
-        <span>Preview</span>
+        <span>Live Preview & Validation</span>
       </div>
 
-      <div class="preview-content">
+      <!-- Array Validation Results -->
+      <div v-if="isArrayInput" class="validation-results q-mt-md">
+        <div class="validation-header">
+          <q-icon name="fact_check" class="q-mr-xs" />
+          <span>Validation Results ({{ sampleValuesArray.length }} value{{ sampleValuesArray.length !== 1 ? 's' : '' }})</span>
+        </div>
+
+        <q-list bordered separator class="validation-list">
+          <q-item
+            v-for="(result, index) in validationResults"
+            :key="index"
+            :class="result.isValid ? 'valid-item' : 'invalid-item'"
+          >
+            <q-item-section avatar>
+              <q-icon
+                :name="result.isValid ? 'check_circle' : 'error'"
+                :color="result.isValid ? 'positive' : 'negative'"
+                size="sm"
+              />
+            </q-item-section>
+
+            <q-item-section>
+              <q-item-label>
+                <code class="input-value">{{ result.input }}</code>
+                <q-icon name="arrow_forward" size="xs" class="q-mx-xs" />
+                <code :class="result.isValid ? 'output-value-valid' : 'output-value-invalid'">
+                  {{ result.output }}
+                </code>
+              </q-item-label>
+              <q-item-label caption v-if="!result.isValid" class="error-caption">
+                {{ result.error }}
+              </q-item-label>
+            </q-item-section>
+
+            <q-item-section side>
+              <q-badge :color="result.isValid ? 'positive' : 'negative'">
+                {{ result.isValid ? 'Valid' : 'Invalid' }}
+              </q-badge>
+            </q-item-section>
+          </q-item>
+        </q-list>
+
+        <!-- Summary -->
+        <div class="validation-summary q-mt-sm">
+          <q-chip color="positive" text-color="white" icon="check_circle">
+            {{ validCount }} Valid
+          </q-chip>
+          <q-chip color="negative" text-color="white" icon="error">
+            {{ invalidCount }} Invalid
+          </q-chip>
+        </div>
+      </div>
+
+      <!-- Single Value Preview -->
+      <div v-else class="preview-content">
         <div class="preview-row">
           <div class="preview-label">Sample Input:</div>
           <div class="preview-value code">{{ sampleValue || 'key=value' }}</div>
@@ -109,7 +163,7 @@ export default {
   name: 'SplitOperationConfig',
 
   props: {
-    modelValue: {
+    value: { // Vue 2 uses 'value' prop, not 'modelValue'
       type: Object,
       default: () => ({
         delimiter: '',
@@ -121,17 +175,17 @@ export default {
       required: true
     },
     sampleValue: {
-      type: [String, Number, Object],
+      type: [String, Number, Object, Array],
       default: null
     }
   },
 
-  emits: ['update:modelValue'],
+  // Vue 2 emits 'input' event, not 'update:modelValue'
 
   setup (props, { emit }) {
     const localParams = ref({
-      delimiter: props.modelValue?.delimiter || '',
-      index: props.modelValue?.index !== undefined ? props.modelValue.index : 0
+      delimiter: props.value?.delimiter !== undefined ? props.value.delimiter : '',
+      index: props.value?.index !== undefined ? props.value.index : 0
     })
 
     const validationErrors = ref({})
@@ -150,11 +204,13 @@ export default {
     const validateParams = () => {
       const errors = {}
 
-      if (!localParams.value.delimiter) {
-        errors.delimiter = 'Delimiter is required'
+      // Note: Empty delimiter is VALID (splits every character)
+      // Only check if delimiter is null or undefined
+      if (localParams.value.delimiter === null || localParams.value.delimiter === undefined) {
+        errors.delimiter = 'Delimiter cannot be null or undefined'
       }
 
-      if (localParams.value.index < 0) {
+      if (localParams.value.index === null || localParams.value.index === undefined || localParams.value.index < 0) {
         errors.index = 'Index must be 0 or higher'
       }
 
@@ -165,7 +221,8 @@ export default {
     // Update params and emit change event
     const updateParams = () => {
       validateParams()
-      emit('update:modelValue', {
+      // Vue 2 uses 'input' event for v-model
+      emit('input', {
         delimiter: localParams.value.delimiter,
         index: localParams.value.index
       })
@@ -177,7 +234,90 @@ export default {
       updateParams()
     }
 
-    // Compute a preview of the operation result
+    // Check if sample value is an array
+    const isArrayInput = computed(() => {
+      return Array.isArray(props.sampleValue) && props.sampleValue.length > 0
+    })
+
+    // Get array of sample values
+    const sampleValuesArray = computed(() => {
+      if (Array.isArray(props.sampleValue)) {
+        return props.sampleValue
+      }
+      return props.sampleValue !== null && props.sampleValue !== undefined ? [props.sampleValue] : []
+    })
+
+    // Perform split operation on a single value
+    const performSplit = (input, delimiter, index) => {
+      if (!delimiter) {
+        return {
+          isValid: false,
+          output: 'N/A',
+          error: 'Delimiter is required'
+        }
+      }
+
+      if (typeof input !== 'string') {
+        return {
+          isValid: false,
+          output: 'N/A',
+          error: 'Input is not a string'
+        }
+      }
+
+      try {
+        const parts = input.split(delimiter)
+
+        if (index >= parts.length) {
+          return {
+            isValid: false,
+            output: `Index ${index} out of bounds`,
+            error: `Max index: ${parts.length - 1}`
+          }
+        }
+
+        return {
+          isValid: true,
+          output: parts[index] || '(empty string)',
+          error: null
+        }
+      } catch (error) {
+        return {
+          isValid: false,
+          output: 'Error',
+          error: error.message
+        }
+      }
+    }
+
+    // Validate all values in the array
+    const validationResults = computed(() => {
+      if (!isArrayInput.value) {
+        return []
+      }
+
+      return sampleValuesArray.value.map((value, idx) => {
+        const result = performSplit(value, localParams.value.delimiter, localParams.value.index)
+        return {
+          index: idx,
+          input: value,
+          isValid: result.isValid,
+          output: result.output,
+          error: result.error
+        }
+      })
+    })
+
+    // Count valid and invalid results
+    const validCount = computed(() => {
+      return validationResults.value.filter(r => r.isValid).length
+    })
+
+    const invalidCount = computed(() => {
+      return validationResults.value.filter(r => !r.isValid).length
+    })
+
+    // Compute a preview of the operation result (for single value)
     const previewOutput = computed(() => {
       const input = props.sampleValue || 'key=value'
 
@@ -202,12 +342,32 @@ export default {
       }
     })
 
-    // Watch for external prop changes
-    watch(() => props.modelValue, (newVal) => {
+    // Watch for user changes to localParams and emit to parent
+    // Use immediate: true to emit initial values when component mounts
+    // Vue 2 uses 'input' event for v-model
+    watch(localParams, (newVal, oldVal) => {
+      console.log('[SplitOperationConfig] localParams changed')
+      console.log('  Old:', JSON.stringify(oldVal))
+      console.log('  New:', JSON.stringify(newVal))
+      console.log('  Emitting input event (Vue 2 v-model)...')
+
+      emit('input', {
+        delimiter: newVal.delimiter,
+        index: newVal.index
+      })
+    }, { immediate: true, deep: true })
+
+    // Watch for external prop changes (from parent)
+    // Don't emit back to avoid infinite loop
+    watch(() => props.value, (newVal) => {
       if (newVal) {
-        localParams.value = {
-          delimiter: newVal.delimiter || '',
-          index: newVal.index !== undefined ? newVal.index : 0
+        // Only update if different to avoid triggering the localParams watcher unnecessarily
+        if (newVal.delimiter !== localParams.value.delimiter || newVal.index !== localParams.value.index) {
+          console.log('[SplitOperationConfig] props.value changed from parent, updating localParams')
+          localParams.value = {
+            delimiter: newVal.delimiter !== undefined ? newVal.delimiter : '',
+            index: newVal.index !== undefined ? newVal.index : 0
+          }
         }
       }
     }, { deep: true })
@@ -218,7 +378,13 @@ export default {
       commonDelimiters,
       selectDelimiter,
       updateParams,
-      previewOutput
+      previewOutput,
+      // Array validation
+      isArrayInput,
+      sampleValuesArray,
+      validationResults,
+      validCount,
+      invalidCount
     }
   }
 }
@@ -315,6 +481,84 @@ export default {
   background-color: rgba(0, 0, 0, 0.2);
   padding: 4px 8px;
   border-radius: 4px;
+}
+
+.code {
+  font-family: 'Courier New', monospace;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* Validation Results */
+.validation-results {
+  margin-top: 16px;
+}
+
+.validation-header {
+  font-weight: 500;
+  color: #2196f3;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.validation-list {
+  max-height: 300px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+.valid-item {
+  background: rgba(76, 175, 80, 0.05) !important;
+  border-left: 3px solid #4caf50 !important;
+}
+
+.invalid-item {
+  background: rgba(244, 67, 54, 0.05) !important;
+  border-left: 3px solid #f44336 !important;
+}
+
+.input-value {
+  font-family: 'Courier New', monospace;
+  background-color: rgba(33, 150, 243, 0.2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #64b5f6;
+  font-weight: 500;
+}
+
+.output-value-valid {
+  font-family: 'Courier New', monospace;
+  background-color: rgba(76, 175, 80, 0.2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #81c784;
+  font-weight: 500;
+}
+
+.output-value-invalid {
+  font-family: 'Courier New', monospace;
+  background-color: rgba(244, 67, 54, 0.2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #e57373;
+  font-weight: 500;
+}
+
+.error-caption {
+  color: #f44336 !important;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.validation-summary {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: flex-start;
 }
 
 @media (max-width: 768px) {

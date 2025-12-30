@@ -348,7 +348,6 @@ export const OPERATION_METADATA = {
     requiresParameters: ['delimiter', 'index'],
     category: 'String'
   },
-  // Array Operations
   [OPERATION_TYPES.CONCAT]: {
     label: 'Concat - Join string values',
     icon: 'add_link',
@@ -356,8 +355,9 @@ export const OPERATION_METADATA = {
     example: 'Join "Hello" + " " + "World" → "Hello World"',
     color: '#ff9800',
     requiresParameters: ['values'],
-    category: 'Array'
+    category: 'String'
   },
+  // Array Operations
   [OPERATION_TYPES.CONCATARRAY]: {
     label: 'ConcatArray - Join array elements',
     icon: 'merge_type',
@@ -370,16 +370,16 @@ export const OPERATION_METADATA = {
   // Type Conversion
   [OPERATION_TYPES.TOSTRING]: {
     label: 'ToString - Convert to String',
-    icon: 'text_fields',
+    icon: 'text_format',
     description: 'Converts a value to a String',
     example: 'Convert 123 to "123"',
     color: '#9c27b0',
     requiresParameters: [],
-    category: 'All Types'
+    category: 'String'
   },
   // Date/Time Operations
   [OPERATION_TYPES.EPOCHSECS_TO_DATETIME]: {
-    label: 'EpochSectoDateTime - Convert Unix seconds',
+    label: 'Epoch Seconds to DateTime - Convert Unix seconds',
     icon: 'schedule',
     description: 'Converts Unix timestamp (seconds) to DateTime',
     example: 'Convert 1634567890 to "2021-10-18 15:04:50"',
@@ -388,7 +388,7 @@ export const OPERATION_METADATA = {
     category: 'Date/Time'
   },
   [OPERATION_TYPES.EPOCHMILLIS_TO_DATETIME]: {
-    label: 'EpochMilliSectoDateTime - Convert Unix milliseconds',
+    label: 'Epoch MilliSeconds to DateTime - Convert Unix milliseconds',
     icon: 'schedule',
     description: 'Converts Unix timestamp (milliseconds) to DateTime',
     example: 'Convert 1634567890000 to "2021-10-18 15:04:50"',
@@ -397,7 +397,7 @@ export const OPERATION_METADATA = {
     category: 'Date/Time'
   },
   [OPERATION_TYPES.EPOCHMICROS_TO_DATETIME]: {
-    label: 'EpochMicroSectoDateTime - Convert Unix microseconds',
+    label: 'Epoch MicroSeconds to DateTime - Convert Unix microseconds',
     icon: 'schedule',
     description: 'Converts Unix timestamp (microseconds) to DateTime',
     example: 'Convert 1634567890000000 to "2021-10-18 15:04:50"',

@@ -64,13 +64,60 @@
 
       <!-- Operation Preview -->
       <operation-preview
-        v-if="localPrefix"
+        v-if="localPrefix && !isArrayInput"
         :original-value="sampleValue"
         :transformed-value="previewResult"
         :error="previewError"
         :loading="isTestingOperation"
         :operation="operationSyntax"
       />
+
+      <!-- Array Validation Results -->
+      <div v-if="localPrefix && isArrayInput" class="validation-results q-mt-md">
+        <div class="validation-header">
+          <q-icon name="fact_check" class="q-mr-xs" />
+          <span>Validation Results ({{ sampleValuesArray.length }} value{{ sampleValuesArray.length !== 1 ? 's' : '' }})</span>
+        </div>
+
+        <q-list bordered separator class="validation-list">
+          <q-item
+            v-for="(result, index) in validationResults"
+            :key="index"
+            class="valid-item"
+          >
+            <q-item-section avatar>
+              <q-icon
+                name="check_circle"
+                color="positive"
+                size="sm"
+              />
+            </q-item-section>
+
+            <q-item-section>
+              <q-item-label>
+                <code class="input-value">{{ result.input }}</code>
+                <q-icon name="arrow_forward" size="xs" class="q-mx-xs" />
+                <code class="output-value-valid">
+                  {{ result.output }}
+                </code>
+              </q-item-label>
+            </q-item-section>
+
+            <q-item-section side>
+              <q-badge color="positive">
+                Prefixed
+              </q-badge>
+            </q-item-section>
+          </q-item>
+        </q-list>
+
+        <!-- Summary -->
+        <div class="validation-summary q-mt-sm">
+          <q-chip color="positive" text-color="white" icon="check_circle">
+            {{ sampleValuesArray.length }} Prefixed
+          </q-chip>
+        </div>
+      </div>
 
       <!-- Test Button -->
       <div class="action-buttons">
@@ -113,7 +160,7 @@ export default {
       })
     },
     sampleValue: {
-      type: [String, Number],
+      type: [String, Number, Array],
       default: ''
     }
   },
@@ -135,6 +182,41 @@ export default {
       'REF-',
       'ALERT-'
     ])
+
+    // Check if sample value is an array
+    const isArrayInput = computed(() => {
+      return Array.isArray(props.sampleValue) && props.sampleValue.length > 0
+    })
+
+    // Get array of sample values
+    const sampleValuesArray = computed(() => {
+      if (Array.isArray(props.sampleValue)) {
+        return props.sampleValue
+      }
+      return props.sampleValue !== null && props.sampleValue !== undefined ? [props.sampleValue] : []
+    })
+
+    // Apply prefix to a single value
+    const applyPrefix = (input) => {
+      if (!localPrefix.value) return input
+      return localPrefix.value + String(input)
+    }
+
+    // Validate all values in the array
+    const validationResults = computed(() => {
+      if (!isArrayInput.value) {
+        return []
+      }
+
+      return sampleValuesArray.value.map((value, idx) => {
+        const output = applyPrefix(value)
+        return {
+          index: idx,
+          input: String(value),
+          output
+        }
+      })
+    })
 
     // Computed
     const operationSyntax = computed(() => {
@@ -223,7 +305,11 @@ export default {
       handlePrefixChange,
       insertPrefix,
       clearPrefix,
-      testOperation
+      testOperation,
+      // Array validation
+      isArrayInput,
+      sampleValuesArray,
+      validationResults
     }
   }
 }
@@ -302,6 +388,72 @@ export default {
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.5px;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.test-btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* Validation Results */
+.validation-results {
+  margin-top: 16px;
+}
+
+.validation-header {
+  font-weight: 500;
+  color: #2196f3;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.validation-list {
+  max-height: 300px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+.valid-item {
+  background: rgba(76, 175, 80, 0.05) !important;
+  border-left: 3px solid #4caf50 !important;
+}
+
+.input-value {
+  font-family: 'Courier New', monospace;
+  background-color: rgba(33, 150, 243, 0.2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #64b5f6;
+  font-weight: 500;
+}
+
+.output-value-valid {
+  font-family: 'Courier New', monospace;
+  background-color: rgba(76, 175, 80, 0.2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #81c784;
+  font-weight: 500;
+}
+
+.validation-summary {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: flex-start;
 }
 
 /* Mobile Responsive */

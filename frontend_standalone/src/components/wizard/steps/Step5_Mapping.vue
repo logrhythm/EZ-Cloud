@@ -495,6 +495,24 @@
                   />
                 </div>
 
+                <!-- Operation Syntax Preview -->
+                <div v-if="operationConfig.type" class="col-12">
+                  <q-banner class="operation-syntax-preview" dense>
+                    <template v-slot:avatar>
+                      <q-icon name="functions" color="primary" size="24px" />
+                    </template>
+                    <div>
+                      <div class="syntax-label">Generated Operation Syntax:</div>
+                      <div class="syntax-display">
+                        <code>{{ mappingForm.inputRule }}</code>
+                      </div>
+                      <div class="syntax-hint">
+                        This syntax will be saved to the policy file
+                      </div>
+                    </div>
+                  </q-banner>
+                </div>
+
                 <!-- LogRhythm Schema Field (with smart suggestions) -->
                 <div class="col-12 col-md-6">
                   <q-select
@@ -555,14 +573,14 @@
                 </div>
 
                 <!-- Sample Value Display -->
-                <div v-if="mappingForm.sampleValue" class="col-12">
+                <div v-if="mappingForm.sampleValueDisplay" class="col-12">
                   <q-banner dense class="sample-value-banner">
                     <template v-slot:avatar>
                       <q-icon name="preview" />
                     </template>
                     <div class="sample-value-content">
                       <strong>Sample Value:</strong>
-                      <code class="q-ml-sm">{{ mappingForm.sampleValue }}</code>
+                      <code class="q-ml-sm">{{ mappingForm.sampleValueDisplay }}</code>
                     </div>
                   </q-banner>
                 </div>
@@ -780,7 +798,8 @@ export default {
         default: null,
         alternativeFields: [],
         fanoutParentElement: null,
-        sampleValue: null
+        sampleValue: null,
+        sampleValueDisplay: null
       },
 
       // Operation state
@@ -1280,21 +1299,30 @@ export default {
       )
 
       // Format sample value from aggregated values
+      // Store ORIGINAL typed values for operations, and create display string for UI
       let sampleValue = null
+      let sampleValueDisplay = null
+
       if (aggregatedValues && aggregatedValues.length > 0) {
-        // Show first 3 values as sample
+        // ALWAYS keep as array for operation validation
+        // Operations will validate each value and show matching/non-matching results
+        sampleValue = aggregatedValues
+
+        // Create display string for UI (show first 3 values)
         const firstValues = aggregatedValues.slice(0, 3).map(v => {
           if (typeof v === 'string') {
             return v.length > 50 ? v.substring(0, 50) + '...' : v
           }
           return JSON.stringify(v)
         })
-        sampleValue = firstValues.join(', ')
+        sampleValueDisplay = firstValues.join(', ')
         if (aggregatedValues.length > 3) {
-          sampleValue += ` (+${aggregatedValues.length - 3} more)`
+          sampleValueDisplay += ` (+${aggregatedValues.length - 3} more)`
         }
-      } else if (value) {
-        sampleValue = String(value)
+      } else if (value !== null && value !== undefined) {
+        // Store original typed value as single-element array for consistency
+        sampleValue = [value]
+        sampleValueDisplay = String(value)
       }
 
       // Pre-fill form with resolved path and fanout parent
@@ -1307,7 +1335,8 @@ export default {
         default: null,
         alternativeFields: [],
         fanoutParentElement: resolved.fanoutParent || null, // Auto-populated fanout parent
-        sampleValue: sampleValue
+        sampleValue: sampleValue, // Typed values for operations
+        sampleValueDisplay: sampleValueDisplay // Display string for UI
       }
 
       // Open dialog
@@ -1339,24 +1368,43 @@ export default {
     },
 
     editMapping (mapping) {
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [Step 5] editMapping - CALLED')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ mapping.inputRule:', mapping.inputRule)
+      console.log('╚════════════════════════════════════════════════════════════════════════')
+
       this.editingMapping = mapping
       this.validationErrors = {}
 
       // Parse operation from inputRule if present
       const parsed = parseOperationFromInputRule(mapping.inputRule)
 
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [Step 5] editMapping - Parsed operation from inputRule')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ Input rule:', mapping.inputRule)
+      console.log('║ Parsed result:')
+      console.log('║   type:', parsed.type)
+      console.log('║   fieldPath:', parsed.fieldPath)
+      console.log('║   parameters:', JSON.stringify(parsed.parameters, null, 2))
+      console.log('╚════════════════════════════════════════════════════════════════════════')
+
       // Store original field path and operation config
       this.originalFieldPath = parsed.fieldPath || mapping.inputRule
-      this.operationConfig = {
+
+      // Use $set to ensure Vue reactivity (Vue 2)
+      this.$set(this, 'operationConfig', {
         type: parsed.type,
         parameters: parsed.parameters || {}
-      }
-
-      console.log('[Step 5] editMapping - Parsed operation:', {
-        type: parsed.type,
-        fieldPath: parsed.fieldPath,
-        parameters: parsed.parameters
       })
+
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [Step 5] editMapping - operationConfig SET')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ this.operationConfig:', JSON.stringify(this.operationConfig, null, 2))
+      console.log('║ this.originalFieldPath:', this.originalFieldPath)
+      console.log('╚════════════════════════════════════════════════════════════════════════')
 
       // Generate suggestions for editing
       const fieldName = MappingService.extractFieldName(this.originalFieldPath)
@@ -1374,6 +1422,40 @@ export default {
         const pathOption = this.availableJsonPaths.find(p => p.value === this.originalFieldPath)
         if (pathOption && pathOption.sampleValue) {
           this.mappingForm.sampleValue = pathOption.sampleValue
+
+          // Also create display value
+          if (Array.isArray(pathOption.sampleValue)) {
+            const firstValues = pathOption.sampleValue.slice(0, 3).map(v => {
+              if (typeof v === 'string') {
+                return v.length > 50 ? v.substring(0, 50) + '...' : v
+              }
+              return JSON.stringify(v)
+            })
+            this.mappingForm.sampleValueDisplay = firstValues.join(', ')
+            if (pathOption.sampleValue.length > 3) {
+              this.mappingForm.sampleValueDisplay += ` (+${pathOption.sampleValue.length - 3} more)`
+            }
+          } else {
+            this.mappingForm.sampleValueDisplay = String(pathOption.sampleValue)
+          }
+        }
+      }
+
+      // If sampleValue exists but sampleValueDisplay doesn't, create it
+      if (this.mappingForm.sampleValue && !this.mappingForm.sampleValueDisplay) {
+        if (Array.isArray(this.mappingForm.sampleValue)) {
+          const firstValues = this.mappingForm.sampleValue.slice(0, 3).map(v => {
+            if (typeof v === 'string') {
+              return v.length > 50 ? v.substring(0, 50) + '...' : v
+            }
+            return JSON.stringify(v)
+          })
+          this.mappingForm.sampleValueDisplay = firstValues.join(', ')
+          if (this.mappingForm.sampleValue.length > 3) {
+            this.mappingForm.sampleValueDisplay += ` (+${this.mappingForm.sampleValue.length - 3} more)`
+          }
+        } else {
+          this.mappingForm.sampleValueDisplay = String(this.mappingForm.sampleValue)
         }
       }
 
@@ -1385,26 +1467,90 @@ export default {
      * Rebuild inputRule with operation syntax
      */
     handleOperationChanged (newOperationConfig) {
-      console.log('[Step 5] handleOperationChanged:', newOperationConfig)
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ 🔧 [OPERATION] handleOperationChanged - START')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ Step: Operation selector @input event fired')
+      console.log('║ Received newOperationConfig:', JSON.stringify(newOperationConfig, null, 2))
+      console.log('║ newOperationConfig.type:', newOperationConfig.type)
+      console.log('║ newOperationConfig.parameters:', JSON.stringify(newOperationConfig.parameters, null, 2))
+      console.log('║ originalFieldPath (base field):', this.originalFieldPath)
+      console.log('║ Current mappingForm.inputRule BEFORE:', this.mappingForm.inputRule)
+      console.log('╚════════════════════════════════════════════════════════════════════════')
 
       // Update local operation config
       this.operationConfig = { ...newOperationConfig }
 
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ 🔧 [OPERATION] Updated this.operationConfig')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ this.operationConfig:', JSON.stringify(this.operationConfig, null, 2))
+      console.log('╚════════════════════════════════════════════════════════════════════════')
+
       // Rebuild inputRule with operation syntax
       if (newOperationConfig.type) {
-        const operationSyntax = buildOperationSyntax({
-          type: newOperationConfig.type,
-          fieldPath: this.originalFieldPath,
-          params: newOperationConfig.parameters
-        })
+        console.log('╔════════════════════════════════════════════════════════════════════════')
+        console.log('║ [Step 5] Operation type detected - Building syntax')
+        console.log('╠════════════════════════════════════════════════════════════════════════')
+        console.log('║ Calling buildOperationSyntax with:')
+        console.log('║   type:', newOperationConfig.type)
+        console.log('║   fieldPath:', this.originalFieldPath)
+        console.log('║   parameters:', JSON.stringify(newOperationConfig.parameters, null, 2))
+        console.log('╚════════════════════════════════════════════════════════════════════════')
 
-        this.mappingForm.inputRule = operationSyntax
-        console.log('[Step 5] Built operation syntax:', operationSyntax)
+        const operationSyntax = buildOperationSyntax(
+          newOperationConfig.type,
+          this.originalFieldPath,
+          newOperationConfig.parameters
+        )
+
+        console.log('╔════════════════════════════════════════════════════════════════════════')
+        console.log('║ [Step 5] buildOperationSyntax RETURNED:')
+        console.log('╠════════════════════════════════════════════════════════════════════════')
+        console.log('║ operationSyntax:', operationSyntax)
+        console.log('║ operationSyntax type:', typeof operationSyntax)
+        console.log('║ operationSyntax === null:', operationSyntax === null)
+        console.log('║ operationSyntax === undefined:', operationSyntax === undefined)
+        console.log('╚════════════════════════════════════════════════════════════════════════')
+
+        // If buildOperationSyntax returns null (incomplete params), fallback to original path
+        const finalInputRule = operationSyntax || this.originalFieldPath
+
+        console.log('╔════════════════════════════════════════════════════════════════════════')
+        console.log('║ [Step 5] Setting inputRule')
+        console.log('╠════════════════════════════════════════════════════════════════════════')
+        console.log('║ operationSyntax:', operationSyntax)
+        console.log('║ originalFieldPath (fallback):', this.originalFieldPath)
+        console.log('║ FINAL inputRule to set:', finalInputRule)
+        console.log('╚════════════════════════════════════════════════════════════════════════')
+
+        this.mappingForm.inputRule = finalInputRule
+
+        console.log('╔════════════════════════════════════════════════════════════════════════')
+        console.log('║ [Step 5] inputRule AFTER assignment:')
+        console.log('╠════════════════════════════════════════════════════════════════════════')
+        console.log('║ mappingForm.inputRule:', this.mappingForm.inputRule)
+        console.log('╚════════════════════════════════════════════════════════════════════════')
       } else {
         // No operation, use plain field path
+        console.log('╔════════════════════════════════════════════════════════════════════════')
+        console.log('║ [Step 5] NO operation type - Using plain path')
+        console.log('╠════════════════════════════════════════════════════════════════════════')
+        console.log('║ Setting inputRule to originalFieldPath:', this.originalFieldPath)
+        console.log('╚════════════════════════════════════════════════════════════════════════')
+
         this.mappingForm.inputRule = this.originalFieldPath
-        console.log('[Step 5] No operation, using plain path:', this.originalFieldPath)
+
+        console.log('[Step 5] inputRule set to plain path:', this.mappingForm.inputRule)
       }
+
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [Step 5] handleOperationChanged - END')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ FINAL STATE:')
+      console.log('║   operationConfig.type:', this.operationConfig.type)
+      console.log('║   mappingForm.inputRule:', this.mappingForm.inputRule)
+      console.log('╚════════════════════════════════════════════════════════════════════════')
     },
 
     async saveMapping () {
@@ -1488,17 +1634,54 @@ export default {
         }
 
         // Save mapping (exclude sampleValue - it's only for UI display)
+        console.log('╔════════════════════════════════════════════════════════════════════════')
+        console.log('║ [Step 5] saveMapping - Saving mapping')
+        console.log('╠════════════════════════════════════════════════════════════════════════')
+        console.log('║ BEFORE cleaning - Full mappingForm:')
+        console.log(JSON.stringify(this.mappingForm, null, 2))
+        console.log('║')
+        console.log('║ Key fields:')
+        console.log('║   mappingForm.inputRule:', this.mappingForm.inputRule)
+        console.log('║   mappingForm.lrSchemaField:', this.mappingForm.lrSchemaField)
+        console.log('║   mappingForm.type:', this.mappingForm.type)
+        console.log('║   operationConfig.type:', this.operationConfig.type)
+        console.log('║   operationConfig.parameters:', JSON.stringify(this.operationConfig.parameters, null, 2))
+        console.log('╚════════════════════════════════════════════════════════════════════════')
+
         const cleanMapping = { ...this.mappingForm }
         delete cleanMapping.sampleValue
+
+        console.log('╔════════════════════════════════════════════════════════════════════════')
+        console.log('║ [Step 5] saveMapping - After cleaning')
+        console.log('╠════════════════════════════════════════════════════════════════════════')
+        console.log('║ cleanMapping:')
+        console.log(JSON.stringify(cleanMapping, null, 2))
+        console.log('║')
+        console.log('║ cleanMapping.inputRule:', cleanMapping.inputRule)
+        console.log('╚════════════════════════════════════════════════════════════════════════')
 
         if (this.editingMapping) {
           const index = this.localMappings.findIndex(m => m.id === this.editingMapping.id)
           if (index !== -1) {
+            console.log('[Step 5] Updating existing mapping at index:', index)
             this.$set(this.localMappings, index, cleanMapping)
+            console.log('[Step 5] Updated mapping:', JSON.stringify(this.localMappings[index], null, 2))
           }
         } else {
+          console.log('[Step 5] Adding new mapping to localMappings')
           this.localMappings.push(cleanMapping)
+          console.log('[Step 5] Added mapping:', JSON.stringify(cleanMapping, null, 2))
         }
+
+        console.log('╔════════════════════════════════════════════════════════════════════════')
+        console.log('║ [Step 5] saveMapping - Current localMappings array')
+        console.log('╠════════════════════════════════════════════════════════════════════════')
+        console.log('║ Total mappings:', this.localMappings.length)
+        this.localMappings.forEach((m, idx) => {
+          console.log(`║ [${idx}] inputRule:`, m.inputRule)
+          console.log(`║ [${idx}] lrSchemaField:`, m.lrSchemaField)
+        })
+        console.log('╚════════════════════════════════════════════════════════════════════════')
 
         // Close dialog
         this.mappingDialog = false
@@ -1843,8 +2026,41 @@ export default {
 
     saveStateToStore () {
       try {
+        console.log('╔════════════════════════════════════════════════════════════════════════')
+        console.log('║ [Step 5] saveStateToStore - Saving to Vuex')
+        console.log('╠════════════════════════════════════════════════════════════════════════')
+        console.log('║ localMappings count:', this.localMappings.length)
+        console.log('║')
+        console.log('║ All mappings being saved:')
+        this.localMappings.forEach((m, idx) => {
+          console.log(`║ [${idx}]:`)
+          console.log(`║   id: ${m.id}`)
+          console.log(`║   inputRule: ${m.inputRule}`)
+          console.log(`║   lrSchemaField: ${m.lrSchemaField}`)
+          console.log(`║   type: ${m.type}`)
+          console.log(`║   format: ${m.format}`)
+          console.log(`║   default: ${m.default}`)
+          console.log(`║   fanoutParentElement: ${m.fanoutParentElement}`)
+          console.log('║')
+        })
+        console.log('╚════════════════════════════════════════════════════════════════════════')
+
         const mappings = JSON.parse(JSON.stringify(this.localMappings))
+
+        console.log('╔════════════════════════════════════════════════════════════════════════')
+        console.log('║ [Step 5] After JSON.parse(JSON.stringify):')
+        console.log('╠════════════════════════════════════════════════════════════════════════')
+        mappings.forEach((m, idx) => {
+          console.log(`║ [${idx}] inputRule:`, m.inputRule)
+        })
+        console.log('╚════════════════════════════════════════════════════════════════════════')
+
         this.UPDATE_FIELD_MAPPINGS({ mappings })
+
+        console.log('╔════════════════════════════════════════════════════════════════════════')
+        console.log('║ [Step 5] saveStateToStore - COMPLETED')
+        console.log('║ Called UPDATE_FIELD_MAPPINGS mutation')
+        console.log('╚════════════════════════════════════════════════════════════════════════')
       } catch (error) {
         console.error('[Step 5] Error saving state:', error)
         throw error
@@ -2091,6 +2307,7 @@ export default {
             alternativeFields: alternativeFields ? [...alternativeFields] : [],
             fanoutParentElement: fanoutParentElement,
             sampleValue: null, // Will be populated if field exists
+            sampleValueDisplay: null, // Display string for UI
             originalInputRule: inputRule // Keep original for reference
           }
 
@@ -2102,6 +2319,22 @@ export default {
             )
             if (pathOption && pathOption.sampleValue) {
               mapping.sampleValue = pathOption.sampleValue
+
+              // Create display value
+              if (Array.isArray(pathOption.sampleValue)) {
+                const firstValues = pathOption.sampleValue.slice(0, 3).map(v => {
+                  if (typeof v === 'string') {
+                    return v.length > 50 ? v.substring(0, 50) + '...' : v
+                  }
+                  return JSON.stringify(v)
+                })
+                mapping.sampleValueDisplay = firstValues.join(', ')
+                if (pathOption.sampleValue.length > 3) {
+                  mapping.sampleValueDisplay += ` (+${pathOption.sampleValue.length - 3} more)`
+                }
+              } else {
+                mapping.sampleValueDisplay = String(pathOption.sampleValue)
+              }
             }
           }
 
@@ -2669,6 +2902,64 @@ export default {
   display: block;
   width: 100%;
 }
+
+/* Operation Syntax Preview */
+.operation-syntax-preview {
+  background: linear-gradient(135deg, rgba(33, 150, 243, 0.08) 0%, rgba(33, 150, 243, 0.04) 100%);
+  border-left: 4px solid #2196F3;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+
+  .syntax-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #2196F3;
+    margin-bottom: 0.5rem;
+  }
+
+  .syntax-display {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(33, 150, 243, 0.2);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    overflow-x: auto;
+
+    code {
+      color: #1976D2;
+      font-size: 0.95rem;
+      font-weight: 500;
+      white-space: nowrap;
+      word-break: break-all;
+    }
+  }
+
+  .syntax-hint {
+    font-size: 0.8rem;
+    color: rgba(0, 0, 0, 0.5);
+    font-style: italic;
+  }
+}
+
+/* Dark theme variant for operation syntax preview */
+.body--dark .operation-syntax-preview {
+  background: linear-gradient(135deg, rgba(33, 150, 243, 0.15) 0%, rgba(33, 150, 243, 0.08) 100%);
+
+  .syntax-display {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(33, 150, 243, 0.3);
+
+    code {
+      color: #64B5F6;
+    }
+  }
+
+  .syntax-hint {
+    color: rgba(255, 255, 255, 0.5);
+  }
+}
+
 </style>
 
 <style lang="scss">

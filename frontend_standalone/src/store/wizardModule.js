@@ -1100,6 +1100,20 @@ const actions = {
       // This would integrate with the existing policy building functionality
       // (policyData is not used, so removed to fix lint error)
 
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [wizardModule] generatePolicy - Building policy from state')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ state.fieldMappings.mappings count:', state.fieldMappings.mappings?.length || 0)
+      console.log('║')
+      console.log('║ Field mappings from state:')
+      if (state.fieldMappings.mappings) {
+        state.fieldMappings.mappings.forEach((m, idx) => {
+          console.log(`║ [${idx}] inputRule:`, m.inputRule)
+          console.log(`║ [${idx}] lrSchemaField:`, m.lrSchemaField)
+        })
+      }
+      console.log('╚════════════════════════════════════════════════════════════════════════')
+
       // This would call the existing buildSmaPolicyTransformFromParams method
       // For now, create a basic policy structure
       const policy = {
@@ -1108,14 +1122,40 @@ const actions = {
         filter: state.filterRules.expression || null,
         schemarule: {},
         // Clean transforms - remove UI-only attributes like sampleValue and id
-        transforms: state.fieldMappings.mappings.map(mapping => {
+        transforms: state.fieldMappings.mappings.map((mapping, idx) => {
+          console.log('╔════════════════════════════════════════════════════════════════════════')
+          console.log(`║ [wizardModule] Processing mapping [${idx}]`)
+          console.log('╠════════════════════════════════════════════════════════════════════════')
+          console.log('║ BEFORE cleaning:')
+          console.log('║   inputRule:', mapping.inputRule)
+          console.log('║   lrSchemaField:', mapping.lrSchemaField)
+          console.log('║   type:', mapping.type)
+          console.log('╚════════════════════════════════════════════════════════════════════════')
+
           const cleanMapping = { ...mapping }
           delete cleanMapping.sampleValue
           delete cleanMapping.id
           delete cleanMapping.originalInputRule // Remove UI tracking field
+
+          console.log('╔════════════════════════════════════════════════════════════════════════')
+          console.log(`║ [wizardModule] After cleaning [${idx}]`)
+          console.log('╠════════════════════════════════════════════════════════════════════════')
+          console.log('║ cleanMapping.inputRule:', cleanMapping.inputRule)
+          console.log('║ cleanMapping.lrSchemaField:', cleanMapping.lrSchemaField)
+          console.log('╚════════════════════════════════════════════════════════════════════════')
+
           return cleanMapping
         })
       }
+
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [wizardModule] Final transforms array for policy:')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      policy.transforms.forEach((t, idx) => {
+        console.log(`║ [${idx}] inputRule:`, t.inputRule)
+        console.log(`║ [${idx}] lrSchemaField:`, t.lrSchemaField || t.LRSchemaField)
+      })
+      console.log('╚════════════════════════════════════════════════════════════════════════')
 
       // Build schema rule section
       if (state.schemaRules.convertToJson && state.schemaRules.convertToJson.length > 0) {

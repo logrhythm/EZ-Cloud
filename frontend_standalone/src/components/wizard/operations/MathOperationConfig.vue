@@ -16,7 +16,7 @@
       <!-- Value Input -->
       <div class="col-12 col-md-6">
         <q-input
-          v-model.number="localParams.value"
+          v-model.number="operationValue"
           type="number"
           :label="valueLabel"
           :hint="valueHint"
@@ -25,7 +25,7 @@
           bg-color="white"
           :error="!!validationErrors.value"
           :error-message="validationErrors.value"
-          @update:model-value="updateParams"
+          @update:model-value="handleValueChange"
         >
           <template v-slot:before>
             <q-chip
@@ -61,13 +61,68 @@
       </div>
     </div>
 
-    <div class="preview-section">
+    <!-- Live Preview & Validation - Only show after user interaction -->
+    <div v-if="showPreview" class="preview-section q-mt-md">
       <div class="preview-header">
         <q-icon name="visibility" class="q-mr-xs" />
-        <span>Preview</span>
+        <span>Live Preview & Validation</span>
       </div>
 
-      <div class="preview-content">
+      <!-- Array Validation Results -->
+      <div v-if="isArrayInput" class="validation-results q-mt-md">
+        <div class="validation-header">
+          <q-icon name="fact_check" class="q-mr-xs" />
+          <span>Validation Results ({{ sampleValuesArray.length }} value{{ sampleValuesArray.length !== 1 ? 's' : '' }})</span>
+        </div>
+
+        <q-list bordered separator class="validation-list">
+          <q-item
+            v-for="(result, index) in validationResults"
+            :key="index"
+            :class="result.isValid ? 'valid-item' : 'invalid-item'"
+          >
+            <q-item-section avatar>
+              <q-icon
+                :name="result.isValid ? 'check_circle' : 'error'"
+                :color="result.isValid ? 'positive' : 'negative'"
+                size="sm"
+              />
+            </q-item-section>
+
+            <q-item-section>
+              <q-item-label>
+                <code class="input-value">{{ result.input }}</code>
+                <q-icon name="arrow_forward" size="xs" class="q-mx-xs" />
+                <code :class="result.isValid ? 'output-value-valid' : 'output-value-invalid'">
+                  {{ result.output }}
+                </code>
+              </q-item-label>
+              <q-item-label caption v-if="!result.isValid" class="error-caption">
+                {{ result.error }}
+              </q-item-label>
+            </q-item-section>
+
+            <q-item-section side>
+              <q-badge :color="result.isValid ? 'positive' : 'negative'">
+                {{ result.isValid ? 'Valid' : 'Invalid' }}
+              </q-badge>
+            </q-item-section>
+          </q-item>
+        </q-list>
+
+        <!-- Summary -->
+        <div class="validation-summary q-mt-sm">
+          <q-chip color="positive" text-color="white" icon="check_circle">
+            {{ validCount }} Valid
+          </q-chip>
+          <q-chip color="negative" text-color="white" icon="error">
+            {{ invalidCount }} Invalid
+          </q-chip>
+        </div>
+      </div>
+
+      <!-- Single Value Preview -->
+      <div v-else class="preview-content">
         <div class="preview-row">
           <div class="preview-label">Sample Input:</div>
           <div class="preview-value code">{{ displayInput }}</div>
@@ -114,19 +169,31 @@ export default {
       required: true
     },
     sampleValue: {
-      type: [String, Number, Object],
+      type: [String, Number, Object, Array],
       default: null
     }
   },
 
-  emits: ['update:modelValue'],
-
+  emits: ['update:modelValue', 'input'],
   setup (props, { emit }) {
-    const localParams = ref({
-      value: props.modelValue?.value !== undefined ? props.modelValue.value : 0
-    })
+    console.log('╔════════════════════════════════════════════════════════════════════════')
+    console.log('║ [MathOperationConfig] SETUP/MOUNTED - Component Created!')
+    console.log('╠════════════════════════════════════════════════════════════════════════')
+    console.log('║ operationType:', props.operationType)
+    console.log('║ fieldPath:', props.fieldPath)
+    console.log('║ modelValue:', JSON.stringify(props.modelValue, null, 2))
+    console.log('║ sampleValue:', props.sampleValue)
+    console.log('╚════════════════════════════════════════════════════════════════════════')
+
+    // Use a simple numeric ref instead of nested object structure
+    const operationValue = ref(props.modelValue?.value !== undefined ? props.modelValue.value : 0)
 
     const validationErrors = ref({})
+    // Show preview if there's already a value configured (editing existing operation)
+    const showPreview = ref(props.modelValue?.value !== undefined && props.modelValue.value !== 0)
+
+    console.log('[MathOperationConfig] Initial operationValue:', operationValue.value)
+    console.log('[MathOperationConfig] Initial showPreview:', showPreview.value)
 
     const commonValues = [1, 5, 10, 100, 1000]
 
@@ -205,11 +272,11 @@ export default {
     const validateParams = () => {
       const errors = {}
 
-      if (localParams.value.value === undefined || localParams.value.value === null) {
+      if (operationValue.value === undefined || operationValue.value === null) {
         errors.value = 'Value is required'
       }
 
-      if (props.operationType === OPERATION_TYPES.DIVIDE && localParams.value.value === 0) {
+      if (props.operationType === OPERATION_TYPES.DIVIDE && operationValue.value === 0) {
         errors.value = 'Cannot divide by zero'
       }
 
@@ -220,16 +287,141 @@ export default {
     // Update params and emit change event
     const updateParams = () => {
       validateParams()
-      emit('update:modelValue', {
-        value: localParams.value.value
-      })
+      const payload = {
+        value: operationValue.value
+      }
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [MathOperationConfig] updateParams - EMITTING')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ operationValue.value:', operationValue.value)
+      console.log('║ Payload to emit:', JSON.stringify(payload, null, 2))
+      console.log('║ Emitting events: update:modelValue AND input (Vue 2/3 compatibility)')
+      console.log('╚════════════════════════════════════════════════════════════════════════')
+      emit('update:modelValue', payload)
+      emit('input', payload) // Vue 2 compatibility
+    }
+
+    // Handle value change - show preview after first interaction
+    const handleValueChange = () => {
+      console.log('[MathOperationConfig] handleValueChange called, setting showPreview to true')
+      console.log('[MathOperationConfig] operationValue.value:', operationValue.value)
+      showPreview.value = true
+      updateParams()
     }
 
     // Select a predefined value
     const selectValue = (value) => {
-      localParams.value.value = value
+      console.log('[MathOperationConfig] selectValue called with value:', value)
+      operationValue.value = value
+      showPreview.value = true // Show preview when quick selecting
       updateParams()
     }
+
+    // Check if sample value is an array
+    const isArrayInput = computed(() => {
+      return Array.isArray(props.sampleValue) && props.sampleValue.length > 0
+    })
+
+    // Extract array of sample values
+    const sampleValuesArray = computed(() => {
+      if (isArrayInput.value) {
+        return props.sampleValue
+      }
+      return []
+    })
+
+    // Perform math operation on a single value
+    const performMathOperation = (input, operationValue) => {
+      // Validate inputs
+      if (operationValue === undefined || operationValue === null) {
+        return {
+          isValid: false,
+          output: 'N/A',
+          error: 'Operation value is required'
+        }
+      }
+
+      if (props.operationType === OPERATION_TYPES.DIVIDE && operationValue === 0) {
+        return {
+          isValid: false,
+          output: 'N/A',
+          error: 'Cannot divide by zero'
+        }
+      }
+
+      // Convert input to number
+      const numInput = Number(input)
+      if (isNaN(numInput)) {
+        return {
+          isValid: false,
+          output: 'N/A',
+          error: 'Input is not a valid number'
+        }
+      }
+
+      try {
+        let result
+        switch (props.operationType) {
+          case OPERATION_TYPES.ADD:
+            result = numInput + operationValue
+            break
+          case OPERATION_TYPES.SUBTRACT:
+            result = numInput - operationValue
+            break
+          case OPERATION_TYPES.MULTIPLY:
+            result = numInput * operationValue
+            break
+          case OPERATION_TYPES.DIVIDE:
+            result = numInput / operationValue
+            break
+          default:
+            return {
+              isValid: false,
+              output: 'N/A',
+              error: 'Unknown operation type'
+            }
+        }
+
+        return {
+          isValid: true,
+          output: result,
+          error: null
+        }
+      } catch (error) {
+        return {
+          isValid: false,
+          output: 'Error',
+          error: error.message
+        }
+      }
+    }
+
+    // Validate all values in the array
+    const validationResults = computed(() => {
+      if (!isArrayInput.value) {
+        return []
+      }
+
+      return sampleValuesArray.value.map((value, idx) => {
+        const result = performMathOperation(value, operationValue.value)
+        return {
+          index: idx,
+          input: value,
+          isValid: result.isValid,
+          output: result.output,
+          error: result.error
+        }
+      })
+    })
+
+    // Count valid and invalid results
+    const validCount = computed(() => {
+      return validationResults.value.filter(r => r.isValid).length
+    })
+
+    const invalidCount = computed(() => {
+      return validationResults.value.filter(r => !r.isValid).length
+    })
 
     // Display values for preview
     const displayInput = computed(() => {
@@ -243,13 +435,13 @@ export default {
 
       switch (props.operationType) {
         case OPERATION_TYPES.ADD:
-          return `${input} + ${localParams.value.value}`
+          return `${input} + ${operationValue.value}`
         case OPERATION_TYPES.SUBTRACT:
-          return `${input} - ${localParams.value.value}`
+          return `${input} - ${operationValue.value}`
         case OPERATION_TYPES.MULTIPLY:
-          return `${input} × ${localParams.value.value}`
+          return `${input} × ${operationValue.value}`
         case OPERATION_TYPES.DIVIDE:
-          return `${input} ÷ ${localParams.value.value}`
+          return `${input} ÷ ${operationValue.value}`
         default:
           return 'N/A'
       }
@@ -266,16 +458,16 @@ export default {
       try {
         switch (props.operationType) {
           case OPERATION_TYPES.ADD:
-            return input + localParams.value.value
+            return input + operationValue.value
           case OPERATION_TYPES.SUBTRACT:
-            return input - localParams.value.value
+            return input - operationValue.value
           case OPERATION_TYPES.MULTIPLY:
-            return input * localParams.value.value
+            return input * operationValue.value
           case OPERATION_TYPES.DIVIDE:
-            if (localParams.value.value === 0) {
+            if (operationValue.value === 0) {
               return 'Error: Division by zero'
             }
-            return input / localParams.value.value
+            return input / operationValue.value
           default:
             return 'N/A'
         }
@@ -285,17 +477,47 @@ export default {
     })
 
     // Watch for external prop changes
-    watch(() => props.modelValue, (newVal) => {
-      if (newVal) {
-        localParams.value = {
-          value: newVal.value !== undefined ? newVal.value : 0
+    watch(() => props.modelValue, (newVal, oldVal) => {
+      console.log('[MathOperationConfig] modelValue watcher triggered')
+      console.log('[MathOperationConfig] oldVal:', oldVal)
+      console.log('[MathOperationConfig] newVal:', newVal)
+      console.log('[MathOperationConfig] current showPreview:', showPreview.value)
+
+      if (newVal && newVal.value !== undefined) {
+        // Only update if value actually changed
+        if (operationValue.value !== newVal.value) {
+          console.log('[MathOperationConfig] Updating operationValue from', operationValue.value, 'to', newVal.value)
+          operationValue.value = newVal.value
+          // If value is being set from parent, show preview
+          if (newVal.value !== 0) {
+            showPreview.value = true
+          }
         }
       }
     }, { deep: true })
 
+    // Debug watcher for showPreview
+    watch(showPreview, (newVal, oldVal) => {
+      console.log('[MathOperationConfig] showPreview changed from', oldVal, 'to', newVal)
+    })
+
+    // Watch operationValue to show preview when user types in the textbox
+    watch(operationValue, (newVal, oldVal) => {
+      console.log('[MathOperationConfig] operationValue watcher triggered from', oldVal, 'to', newVal)
+      // If user has entered a value, show preview
+      if (newVal !== undefined && newVal !== null && !showPreview.value) {
+        console.log('[MathOperationConfig] Setting showPreview to true because operationValue changed')
+        showPreview.value = true
+      }
+      // Always emit the updated value to parent
+      console.log('[MathOperationConfig] Calling updateParams to emit new value to parent')
+      updateParams()
+    })
+
     return {
-      localParams,
+      operationValue,
       validationErrors,
+      showPreview,
       commonValues,
       operationTitle,
       operationDescription,
@@ -306,6 +528,12 @@ export default {
       valueHint,
       selectValue,
       updateParams,
+      handleValueChange,
+      isArrayInput,
+      sampleValuesArray,
+      validationResults,
+      validCount,
+      invalidCount,
       displayInput,
       displayOperation,
       previewOutput
@@ -376,6 +604,73 @@ export default {
   margin-bottom: 16px;
   display: flex;
   align-items: center;
+}
+
+.validation-results {
+  margin-top: 12px;
+}
+
+.validation-header {
+  font-weight: 500;
+  color: #4caf50;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.validation-list {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.valid-item {
+  background: rgba(76, 175, 80, 0.05);
+}
+
+.invalid-item {
+  background: rgba(244, 67, 54, 0.05);
+}
+
+.input-value {
+  font-family: 'Courier New', monospace;
+  background-color: rgba(33, 150, 243, 0.15);
+  color: #64b5f6;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 13px;
+}
+
+.output-value-valid {
+  font-family: 'Courier New', monospace;
+  background-color: rgba(76, 175, 80, 0.15);
+  color: #81c784;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 13px;
+}
+
+.output-value-invalid {
+  font-family: 'Courier New', monospace;
+  background-color: rgba(244, 67, 54, 0.15);
+  color: #e57373;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 13px;
+}
+
+.error-caption {
+  color: #e57373 !important;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.validation-summary {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+  flex-wrap: wrap;
 }
 
 .preview-content {

@@ -102,7 +102,7 @@
     <div class="preview-section">
       <div class="preview-header">
         <q-icon name="visibility" class="q-mr-xs" />
-        <span>Preview</span>
+        <span>Live Preview & Validation</span>
       </div>
 
       <div class="preview-content">
@@ -156,7 +156,7 @@ export default {
     }
   },
 
-  emits: ['update:modelValue'],
+  emits: ['update:modelValue', 'input'],
 
   setup (props, { emit }) {
     // Initialize with proper defaults based on operation type
@@ -224,15 +224,13 @@ export default {
     const updateParams = () => {
       validateParams()
 
-      if (props.operationType === OPERATION_TYPES.CONCAT) {
-        emit('update:modelValue', {
-          values: localParams.value.values
-        })
-      } else {
-        emit('update:modelValue', {
-          delimiter: localParams.value.delimiter
-        })
-      }
+      const payload = props.operationType === OPERATION_TYPES.CONCAT
+        ? { values: localParams.value.values }
+        : { delimiter: localParams.value.delimiter }
+
+      // Emit both events for Vue 2/3 compatibility
+      emit('update:modelValue', payload)
+      emit('input', payload)
     }
 
     // Display values for preview
@@ -291,6 +289,19 @@ export default {
         }
       }
     }, { deep: true })
+
+    // Watch localParams and emit immediately on mount
+    watch(localParams, (newVal) => {
+      console.log('[ConcatOperationConfig] localParams changed:', JSON.stringify(newVal, null, 2))
+
+      const payload = props.operationType === OPERATION_TYPES.CONCAT
+        ? { values: newVal.values }
+        : { delimiter: newVal.delimiter }
+
+      // Emit both events for Vue 2/3 compatibility
+      emit('update:modelValue', payload)
+      emit('input', payload)
+    }, { immediate: true, deep: true })
 
     return {
       localParams,

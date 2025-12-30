@@ -12,95 +12,86 @@
       </div>
     </q-banner>
 
-    <div class="row q-col-gutter-md">
-      <!-- Format Input -->
-      <div class="col-12 col-md-6">
-        <q-input
-          v-model="localParams.format"
-          label="Date Format *"
-          hint="Format for the output date/time"
-          outlined
-          dense
-          bg-color="white"
-          @update:model-value="updateParams"
-        >
-          <template v-slot:append>
-            <q-icon name="help_outline" color="grey">
-              <q-tooltip max-width="300px">
-                <div>Common format patterns:</div>
-                <ul style="margin-top: 4px; margin-bottom: 0; padding-left: 16px;">
-                  <li>yyyy-MM-dd HH:mm:ss</li>
-                  <li>yyyy-MM-dd'T'HH:mm:ss</li>
-                  <li>MM/dd/yyyy HH:mm:ss</li>
-                  <li>dd/MM/yyyy HH:mm:ss</li>
-                </ul>
-              </q-tooltip>
-            </q-icon>
-          </template>
-        </q-input>
-      </div>
-
-      <!-- Time Zone Selection (Optional) -->
-      <div class="col-12 col-md-6">
-        <q-select
-          v-model="localParams.timezone"
-          :options="timezoneOptions"
-          label="Time Zone (Optional)"
-          hint="Time zone to use for the conversion"
-          outlined
-          dense
-          bg-color="white"
-          @update:model-value="updateParams"
-          emit-value
-          map-options
-        >
-          <template v-slot:append>
-            <q-icon name="help_outline" color="grey">
-              <q-tooltip>
-                Defaults to UTC if not specified
-              </q-tooltip>
-            </q-icon>
-          </template>
-        </q-select>
-      </div>
+    <div class="no-config-message">
+      <q-icon name="info" size="24px" color="primary" />
+      <span>This operation requires no additional configuration.</span>
     </div>
 
-    <!-- Format presets -->
-    <div class="format-presets q-mt-md">
-      <div class="section-label">Format Presets:</div>
-      <div class="format-chips">
-        <q-chip
-          v-for="format in formatPresets"
-          :key="format.pattern"
-          clickable
-          outline
-          color="deep-orange"
-          text-color="white"
-          @click="selectFormat(format.pattern)"
-        >
-          {{ format.name }}
-        </q-chip>
-      </div>
-    </div>
-
-    <div class="preview-section">
+    <!-- Live Preview & Validation -->
+    <div class="preview-section q-mt-md">
       <div class="preview-header">
         <q-icon name="visibility" class="q-mr-xs" />
-        <span>Preview</span>
+        <span>Live Preview & Validation</span>
       </div>
 
-      <div class="preview-content">
+      <!-- Array Validation Results -->
+      <div v-if="isArrayInput" class="validation-results q-mt-md">
+        <div class="validation-header">
+          <q-icon name="fact_check" class="q-mr-xs" />
+          <span>Validation Results ({{ sampleValuesArray.length }} value{{ sampleValuesArray.length !== 1 ? 's' : '' }})</span>
+        </div>
+
+        <q-list bordered separator class="validation-list">
+          <q-item
+            v-for="(result, index) in validationResults"
+            :key="index"
+            :class="result.isValid ? 'valid-item' : 'invalid-item'"
+          >
+            <q-item-section avatar>
+              <q-icon
+                :name="result.isValid ? 'check_circle' : 'error'"
+                :color="result.isValid ? 'positive' : 'negative'"
+                size="sm"
+              />
+            </q-item-section>
+
+            <q-item-section>
+              <q-item-label>
+                <code class="input-value">{{ result.input }}</code>
+                <q-icon name="arrow_forward" size="xs" class="q-mx-xs" />
+                <code :class="result.isValid ? 'output-value-valid' : 'output-value-invalid'">
+                  {{ result.output }}
+                </code>
+              </q-item-label>
+              <q-item-label caption v-if="!result.isValid" class="error-caption">
+                {{ result.error }}
+              </q-item-label>
+            </q-item-section>
+
+            <q-item-section side>
+              <q-badge :color="result.isValid ? 'positive' : 'negative'">
+                {{ result.isValid ? 'Valid' : 'Invalid' }}
+              </q-badge>
+            </q-item-section>
+          </q-item>
+        </q-list>
+
+        <!-- Summary -->
+        <div class="validation-summary q-mt-sm">
+          <q-chip color="positive" text-color="white" icon="check_circle">
+            {{ validCount }} Valid
+          </q-chip>
+          <q-chip color="negative" text-color="white" icon="error">
+            {{ invalidCount }} Invalid
+          </q-chip>
+        </div>
+      </div>
+
+      <!-- Single Value Preview -->
+      <div v-else class="preview-content">
         <div class="preview-row">
           <div class="preview-label">Sample Input:</div>
           <div class="preview-value code">{{ displayInput }}</div>
         </div>
         <div class="preview-row">
-          <div class="preview-label">Format:</div>
-          <div class="preview-value code">{{ localParams.format || 'yyyy-MM-dd HH:mm:ss' }}</div>
+          <div class="preview-label">Operation:</div>
+          <div class="preview-value code">{{ operationTitle }}</div>
         </div>
         <div class="preview-row">
           <div class="preview-label">Output:</div>
-          <div class="preview-value code">{{ previewOutput }}</div>
+          <div :class="['preview-value', 'code', previewError ? 'error-value' : 'success-value']">
+            {{ previewOutput }}
+          </div>
         </div>
       </div>
     </div>
@@ -108,8 +99,8 @@
 </template>
 
 <script>
-import { ref, computed, watch } from 'vue'
-import { OPERATION_TYPES, DATETIME_FORMAT_PRESETS } from '../../../constants/operations'
+import { computed, watch } from 'vue'
+import { OPERATION_TYPES } from '../../../constants/operations'
 
 export default {
   name: 'EpochDateTimeConfig',
@@ -117,10 +108,7 @@ export default {
   props: {
     modelValue: {
       type: Object,
-      default: () => ({
-        format: 'yyyy-MM-dd HH:mm:ss',
-        timezone: null
-      })
+      default: () => ({})
     },
     operationType: {
       type: String,
@@ -137,7 +125,7 @@ export default {
       required: true
     },
     sampleValue: {
-      type: [String, Number, Object],
+      type: [String, Number, Object, Array],
       default: null
     }
   },
@@ -145,33 +133,12 @@ export default {
   emits: ['update:modelValue'],
 
   setup (props, { emit }) {
-    const localParams = ref({
-      format: props.modelValue?.format || 'yyyy-MM-dd HH:mm:ss',
-      timezone: props.modelValue?.timezone || null
-    })
-
-    // Common timezone options
-    const timezoneOptions = [
-      { label: 'UTC', value: 'UTC' },
-      { label: 'Local', value: null },
-      { label: 'US Eastern (EST/EDT)', value: 'America/New_York' },
-      { label: 'US Central (CST/CDT)', value: 'America/Chicago' },
-      { label: 'US Mountain (MST/MDT)', value: 'America/Denver' },
-      { label: 'US Pacific (PST/PDT)', value: 'America/Los_Angeles' },
-      { label: 'London (GMT/BST)', value: 'Europe/London' },
-      { label: 'Paris (CET/CEST)', value: 'Europe/Paris' },
-      { label: 'Tokyo (JST)', value: 'Asia/Tokyo' }
-    ]
-
-    // Format presets from constants
-    const formatPresets = DATETIME_FORMAT_PRESETS.slice(0, 6)
-
     // Operation-specific metadata
     const operationTitle = computed(() => {
       switch (props.operationType) {
-        case OPERATION_TYPES.EPOCHSECS_TO_DATETIME: return 'EpochSectoDateTime'
-        case OPERATION_TYPES.EPOCHMILLIS_TO_DATETIME: return 'EpochMilliSectoDateTime'
-        case OPERATION_TYPES.EPOCHMICROS_TO_DATETIME: return 'EpochMicroSectoDateTime'
+        case OPERATION_TYPES.EPOCHSECS_TO_DATETIME: return 'Epoch Seconds to DateTime'
+        case OPERATION_TYPES.EPOCHMILLIS_TO_DATETIME: return 'Epoch MilliSeconds to DateTime'
+        case OPERATION_TYPES.EPOCHMICROS_TO_DATETIME: return 'Epoch MicroSeconds to DateTime'
         case OPERATION_TYPES.LOCAL_DATETIME: return 'LocalDateTime'
         default: return ''
       }
@@ -189,29 +156,28 @@ export default {
 
     const operationInstructions = computed(() => {
       switch (props.operationType) {
-        case OPERATION_TYPES.EPOCHSECS_TO_DATETIME: return 'Specify the format for converting Unix time (in seconds) to a formatted date string.'
-        case OPERATION_TYPES.EPOCHMILLIS_TO_DATETIME: return 'Specify the format for converting Unix time (in milliseconds) to a formatted date string.'
-        case OPERATION_TYPES.EPOCHMICROS_TO_DATETIME: return 'Specify the format for converting Unix time (in microseconds) to a formatted date string.'
-        case OPERATION_TYPES.LOCAL_DATETIME: return 'Specify the format for the current local date and time.'
+        case OPERATION_TYPES.EPOCHSECS_TO_DATETIME: return 'Converts Unix epoch time in seconds to a human-readable datetime format using system defaults.'
+        case OPERATION_TYPES.EPOCHMILLIS_TO_DATETIME: return 'Converts Unix epoch time in milliseconds to a human-readable datetime format using system defaults.'
+        case OPERATION_TYPES.EPOCHMICROS_TO_DATETIME: return 'Converts Unix epoch time in microseconds to a human-readable datetime format using system defaults.'
+        case OPERATION_TYPES.LOCAL_DATETIME: return 'Captures the current system date and time in a standard format.'
         default: return ''
       }
     })
 
-    // Update params and emit change event
-    const updateParams = () => {
-      emit('update:modelValue', {
-        format: localParams.value.format,
-        timezone: localParams.value.timezone
-      })
-    }
+    // Check if sample value is an array
+    const isArrayInput = computed(() => {
+      return Array.isArray(props.sampleValue)
+    })
 
-    // Select a predefined format
-    const selectFormat = (format) => {
-      localParams.value.format = format
-      updateParams()
-    }
+    // Get array of sample values
+    const sampleValuesArray = computed(() => {
+      if (Array.isArray(props.sampleValue)) {
+        return props.sampleValue
+      }
+      return []
+    })
 
-    // Display values for preview
+    // Display input for preview
     const displayInput = computed(() => {
       if (props.operationType === OPERATION_TYPES.LOCAL_DATETIME) {
         return 'Current time (now)'
@@ -221,128 +187,132 @@ export default {
       let defaultValue
       switch (props.operationType) {
         case OPERATION_TYPES.EPOCHSECS_TO_DATETIME:
-          defaultValue = 1637077622
+          defaultValue = 1634567890
           break
         case OPERATION_TYPES.EPOCHMILLIS_TO_DATETIME:
-          defaultValue = 1637077622000
+          defaultValue = 1634567890000
           break
         case OPERATION_TYPES.EPOCHMICROS_TO_DATETIME:
-          defaultValue = 1637077622000000
+          defaultValue = 1634567890000000
           break
         default:
           defaultValue = 0
       }
 
-      const input = props.sampleValue !== null ? props.sampleValue : defaultValue
-      return typeof input === 'number' ? input : 'Not a number'
+      const input = props.sampleValue !== null && props.sampleValue !== undefined ? props.sampleValue : defaultValue
+      return typeof input === 'number' ? input : input
     })
 
-    // Compute a preview of the operation result
-    const previewOutput = computed(() => {
+    // Convert timestamp to datetime string
+    const convertToDateTime = (value) => {
       try {
         if (props.operationType === OPERATION_TYPES.LOCAL_DATETIME) {
-          return formatDate(new Date(), localParams.value.format)
+          return formatDate(new Date())
         }
 
-        const input = props.sampleValue !== null ? props.sampleValue : getDefaultEpochValue()
-
-        if (typeof input !== 'number') {
-          return 'Not a numeric timestamp'
+        if (typeof value !== 'number') {
+          return { error: 'Not a numeric timestamp', isValid: false }
         }
 
         let timestamp
         switch (props.operationType) {
           case OPERATION_TYPES.EPOCHSECS_TO_DATETIME:
-            timestamp = input * 1000 // Convert seconds to milliseconds
+            timestamp = value * 1000 // Convert seconds to milliseconds
             break
           case OPERATION_TYPES.EPOCHMILLIS_TO_DATETIME:
-            timestamp = input // Already in milliseconds
+            timestamp = value // Already in milliseconds
             break
           case OPERATION_TYPES.EPOCHMICROS_TO_DATETIME:
-            timestamp = Math.floor(input / 1000) // Convert microseconds to milliseconds
+            timestamp = Math.floor(value / 1000) // Convert microseconds to milliseconds
             break
           default:
             timestamp = 0
         }
 
-        return formatDate(new Date(timestamp), localParams.value.format)
+        const date = new Date(timestamp)
+
+        // Check if date is valid
+        if (isNaN(date.getTime())) {
+          return { error: 'Invalid timestamp', isValid: false }
+        }
+
+        return { output: formatDate(date), isValid: true }
       } catch (error) {
-        return `Error: ${error.message}`
+        return { error: error.message, isValid: false }
       }
+    }
+
+    // Format date to string
+    const formatDate = (date) => {
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      const hours = String(date.getHours()).padStart(2, '0')
+      const minutes = String(date.getMinutes()).padStart(2, '0')
+      const seconds = String(date.getSeconds()).padStart(2, '0')
+      const milliseconds = String(date.getMilliseconds()).padStart(3, '0')
+
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`
+    }
+
+    // Compute preview output for single value
+    const previewOutput = computed(() => {
+      const result = convertToDateTime(displayInput.value)
+
+      if (result.isValid === false) {
+        return result.error
+      }
+
+      return result.output
     })
 
-    // Helper function to format a date
-    const formatDate = (date, format) => {
-      try {
-        if (!format) format = 'yyyy-MM-dd HH:mm:ss'
+    // Check if preview has error
+    const previewError = computed(() => {
+      const result = convertToDateTime(displayInput.value)
+      return result.isValid === false
+    })
 
-        // Simple formatter that handles common patterns
-        const year = date.getFullYear()
-        const month = date.getMonth() + 1
-        const day = date.getDate()
-        const hours = date.getHours()
-        const minutes = date.getMinutes()
-        const seconds = date.getSeconds()
-        const milliseconds = date.getMilliseconds()
+    // Validation results for array input
+    const validationResults = computed(() => {
+      if (!isArrayInput.value) return []
 
-        // Pad with zeros
-        const pad = (num, len = 2) => String(num).padStart(len, '0')
-
-        return format
-          .replace(/yyyy/g, year)
-          .replace(/yy/g, String(year).slice(-2))
-          .replace(/MM/g, pad(month))
-          .replace(/M/g, month)
-          .replace(/dd/g, pad(day))
-          .replace(/d/g, day)
-          .replace(/HH/g, pad(hours))
-          .replace(/H/g, hours)
-          .replace(/mm/g, pad(minutes))
-          .replace(/m/g, minutes)
-          .replace(/ss/g, pad(seconds))
-          .replace(/s/g, seconds)
-          .replace(/SSS/g, pad(milliseconds, 3))
-          .replace(/S/g, milliseconds)
-      } catch (e) {
-        return 'Error formatting date'
-      }
-    }
-
-    // Helper to get default epoch value based on operation
-    const getDefaultEpochValue = () => {
-      switch (props.operationType) {
-        case OPERATION_TYPES.EPOCHSECS_TO_DATETIME:
-          return 1637077622
-        case OPERATION_TYPES.EPOCHMILLIS_TO_DATETIME:
-          return 1637077622000
-        case OPERATION_TYPES.EPOCHMICROS_TO_DATETIME:
-          return 1637077622000000
-        default:
-          return 0
-      }
-    }
-
-    // Watch for external prop changes
-    watch(() => props.modelValue, (newVal) => {
-      if (newVal) {
-        localParams.value = {
-          format: newVal.format || 'yyyy-MM-dd HH:mm:ss',
-          timezone: newVal.timezone || null
+      return sampleValuesArray.value.map(value => {
+        const result = convertToDateTime(value)
+        return {
+          input: value,
+          output: result.output || result.error,
+          isValid: result.isValid !== false,
+          error: result.error
         }
-      }
-    }, { deep: true })
+      })
+    })
+
+    // Count valid/invalid results
+    const validCount = computed(() => {
+      return validationResults.value.filter(r => r.isValid).length
+    })
+
+    const invalidCount = computed(() => {
+      return validationResults.value.filter(r => !r.isValid).length
+    })
+
+    // Emit empty object on mount (no parameters needed)
+    watch(() => props.modelValue, () => {
+      emit('update:modelValue', {})
+    })
 
     return {
-      localParams,
-      timezoneOptions,
-      formatPresets,
       operationTitle,
       operationDescription,
       operationInstructions,
-      selectFormat,
-      updateParams,
+      isArrayInput,
+      sampleValuesArray,
       displayInput,
-      previewOutput
+      previewOutput,
+      previewError,
+      validationResults,
+      validCount,
+      invalidCount
     }
   }
 }
@@ -372,23 +342,21 @@ export default {
   }
 }
 
-.section-label {
-  font-size: 14px;
-  color: #ff5722;
-  font-weight: 500;
-  margin-bottom: 8px;
-}
-
-.format-presets {
-  margin: 16px 0;
-}
-
-.format-chips {
+.no-config-message {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(33, 150, 243, 0.05);
+  border: 1px dashed rgba(33, 150, 243, 0.3);
+  border-radius: 6px;
+  color: rgba(227, 242, 253, 0.7);
+  font-size: 14px;
+  font-style: italic;
+  margin-top: 8px;
 }
 
+/* Preview Section */
 .preview-section {
   margin-top: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -439,6 +407,86 @@ export default {
   background-color: rgba(0, 0, 0, 0.2);
   padding: 4px 8px;
   border-radius: 4px;
+}
+
+.success-value {
+  color: #4caf50 !important;
+  background-color: rgba(76, 175, 80, 0.1) !important;
+}
+
+.error-value {
+  color: #f44336 !important;
+  background-color: rgba(244, 67, 54, 0.1) !important;
+}
+
+/* Validation Results */
+.validation-results {
+  margin-top: 12px;
+}
+
+.validation-header {
+  font-weight: 500;
+  color: #ff5722;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.validation-list {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.valid-item {
+  background: rgba(76, 175, 80, 0.05);
+  border-left: 3px solid #4caf50;
+}
+
+.invalid-item {
+  background: rgba(244, 67, 54, 0.05);
+  border-left: 3px solid #f44336;
+}
+
+.input-value {
+  color: #90caf9;
+  background: rgba(33, 150, 243, 0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.output-value-valid {
+  color: #4caf50;
+  background: rgba(76, 175, 80, 0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.output-value-invalid {
+  color: #f44336;
+  background: rgba(244, 67, 54, 0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.error-caption {
+  color: #f44336 !important;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.validation-summary {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+  margin-top: 12px;
 }
 
 @media (max-width: 768px) {

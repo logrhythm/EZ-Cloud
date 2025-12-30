@@ -36,150 +36,27 @@
         <q-separator />
 
         <q-card-section class="operations-dialog-content">
-        <!-- 2x2 Table Layout -->
+        <!-- 2-Column Layout -->
         <div class="table-layout">
-          <!-- Row 1, Column 1: Search + Smart Recommendations -->
-          <div class="table-cell search-recommendations-cell">
-            <!-- Filter input for searching operations -->
-            <q-input
-              v-model="operationFilter"
-              dense
-              outlined
-              placeholder="Search operations..."
-              class="search-input"
-              clearable
-              bg-color="whitesmoke"
-              color="black"
-            >
-              <template v-slot:prepend>
-                <q-icon name="search" size="xs" color="black" />
-              </template>
-            </q-input>
-
-            <!-- Smart Recommendations -->
-            <smart-recommendations
-              v-if="viewMode === 'recommendations' && recommendations.length > 0"
-              :recommendations="recommendations"
-              @select-recommendation="handleRecommendationSelection"
-              @view-all="handleViewAll"
-            />
-
-            <!-- Show empty state if no recommendations -->
-            <div v-else-if="viewMode === 'recommendations'" class="no-recommendations">
-              <q-icon name="info_outline" size="32px" color="grey-6" />
-              <p>No recommendations available</p>
-              <q-btn flat dense color="primary" label="View All Operations" size="sm" @click="handleViewAll" />
-            </div>
-          </div>
-
-          <!-- Row 1, Column 2: Configuration Section -->
-          <div class="table-cell config-cell">
-            <div v-if="tempOperationType" class="config-section">
-              <div class="section-header">
-                <q-icon name="settings" size="20px" color="primary" />
-                <span class="section-title">Configuration</span>
-              </div>
-              <div class="config-forms-wrapper">
-                <!-- REGEX Configuration -->
-                <regex-operation-config
-                  v-if="tempOperationType === OPERATION_TYPES.REGEX"
-                  v-model="tempOperationParameters"
-                  :field-path="fieldPath"
-                  :sample-value="sampleValue"
-                  @update:model-value="handleParametersChange"
-                />
-
-                <!-- LookUp Configuration -->
-                <lookup-operation-config
-                  v-if="tempOperationType === OPERATION_TYPES.LOOKUP || tempOperationType === OPERATION_TYPES.LOOKUP_STARTS_WITH"
-                  v-model="tempOperationParameters"
-                  :field-path="fieldPath"
-                  :sample-value="sampleValue"
-                  :operation-type="tempOperationType"
-                  @update:model-value="handleParametersChange"
-                />
-
-                <!-- PREFIX Configuration -->
-                <prefix-operation-config
-                  v-if="tempOperationType === OPERATION_TYPES.PREFIX"
-                  v-model="tempOperationParameters"
-                  :sample-value="sampleValue"
-                  @update:model-value="handleParametersChange"
-                />
-
-                <!-- IsIP Configuration -->
-                <is-ip-operation-config
-                  v-if="tempOperationType === OPERATION_TYPES.ISIP"
-                  v-model="tempOperationParameters"
-                  :field-path="fieldPath"
-                  :sample-value="sampleValue"
-                  @update:model-value="handleParametersChange"
-                />
-
-                <!-- SPLIT Configuration -->
-                <split-operation-config
-                  v-if="tempOperationType === OPERATION_TYPES.SPLIT"
-                  v-model="tempOperationParameters"
-                  :field-path="fieldPath"
-                  :sample-value="sampleValue"
-                  @update:model-value="handleParametersChange"
-                />
-
-                <!-- Concat/ConcatArray Configuration -->
-                <concat-operation-config
-                  v-if="tempOperationType === OPERATION_TYPES.CONCAT || tempOperationType === OPERATION_TYPES.CONCATARRAY"
-                  v-model="tempOperationParameters"
-                  :field-path="fieldPath"
-                  :sample-value="sampleValue"
-                  :operation-type="tempOperationType"
-                  @update:model-value="handleParametersChange"
-                />
-
-                <!-- ToString Configuration -->
-                <to-string-operation-config
-                  v-if="tempOperationType === OPERATION_TYPES.TOSTRING"
-                  v-model="tempOperationParameters"
-                  :field-path="fieldPath"
-                  :sample-value="sampleValue"
-                  @update:model-value="handleParametersChange"
-                />
-
-                <!-- DateTime Operations Configuration -->
-                <epoch-date-time-config
-                  v-if="tempOperationType === OPERATION_TYPES.EPOCHSECS_TO_DATETIME ||
-                        tempOperationType === OPERATION_TYPES.EPOCHMILLIS_TO_DATETIME ||
-                        tempOperationType === OPERATION_TYPES.EPOCHMICROS_TO_DATETIME ||
-                        tempOperationType === OPERATION_TYPES.LOCAL_DATETIME"
-                  v-model="tempOperationParameters"
-                  :field-path="fieldPath"
-                  :sample-value="sampleValue"
-                  :operation-type="tempOperationType"
-                  @update:model-value="handleParametersChange"
-                />
-
-                <!-- Math Operations Configuration -->
-                <math-operation-config
-                  v-if="tempOperationType === OPERATION_TYPES.ADD ||
-                        tempOperationType === OPERATION_TYPES.SUBTRACT ||
-                        tempOperationType === OPERATION_TYPES.MULTIPLY ||
-                        tempOperationType === OPERATION_TYPES.DIVIDE"
-                  v-model="tempOperationParameters"
-                  :field-path="fieldPath"
-                  :sample-value="sampleValue"
-                  :operation-type="tempOperationType"
-                  @update:model-value="handleParametersChange"
-                />
-              </div>
-            </div>
-            <div v-else class="config-placeholder">
-              <q-icon name="tune" size="48px" color="grey-6" />
-              <p>Select an operation to configure</p>
-            </div>
-          </div>
-
-          <!-- Row 2, Column 1: Operations Selection List -->
+          <!-- Column 1: Search + Operations List -->
           <div class="table-cell operations-cell">
             <div class="operations-section">
+              <!-- Filter input for searching operations -->
+              <q-input
+                v-model="operationFilter"
+                dense
+                outlined
+                placeholder="Search operations..."
+                class="search-input"
+                clearable
+                bg-color="whitesmoke"
+                color="black"
+              >
+                <template v-slot:prepend>
+                  <q-icon name="search" size="xs" color="black" />
+                </template>
+              </q-input>
+
               <!-- Tabs for operation categories -->
               <q-tabs
                 v-model="operationCategory"
@@ -305,90 +182,6 @@
                 </template>
               </q-radio>
 
-              <!-- PREFIX Option -->
-              <q-radio
-                v-if="showOperation(OPERATION_TYPES.PREFIX)"
-                v-model="tempOperationType"
-                :val="OPERATION_TYPES.PREFIX"
-                class="operation-radio"
-                color="primary"
-                @update:model-value="handleOperationTypeChange"
-              >
-                <template #default>
-                  <div class="operation-option">
-                    <div class="option-header">
-                      <q-icon name="text_fields" size="24px" :color="getOperationColor(OPERATION_TYPES.PREFIX)" />
-                      <div class="option-text">
-                        <div class="option-label">PREFIX - Add prefix to value</div>
-                        <div class="option-description">
-                          Add a static prefix to field values
-                        </div>
-                        <div class="option-example">
-                          Example: Add "SERVER-" to ID → "SERVER-12345"
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </template>
-              </q-radio>
-
-              <!-- LookUp Option -->
-              <q-radio
-                v-if="showOperation(OPERATION_TYPES.LOOKUP)"
-                v-model="tempOperationType"
-                :val="OPERATION_TYPES.LOOKUP"
-                class="operation-radio"
-                color="primary"
-                @update:model-value="handleOperationTypeChange"
-              >
-                <template #default>
-                  <div class="operation-option">
-                    <div class="option-header">
-                      <q-icon name="table_chart" size="24px" :color="getOperationColor(OPERATION_TYPES.LOOKUP)" />
-                      <div class="option-text">
-                        <div class="option-label">LookUp - Lookup value from table</div>
-                        <div class="option-description">
-                          Look up and transform values using predefined tables
-                        </div>
-                        <div class="option-example">
-                          Example: Convert status code 200 to "OK"
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </template>
-              </q-radio>
-
-              <!-- LookUpStartsWith Option -->
-              <q-radio
-                v-if="showOperation(OPERATION_TYPES.LOOKUP_STARTS_WITH)"
-                v-model="tempOperationType"
-                :val="OPERATION_TYPES.LOOKUP_STARTS_WITH"
-                class="operation-radio"
-                color="primary"
-                @update:model-value="handleOperationTypeChange"
-              >
-                <template #default>
-                  <div class="operation-option">
-                    <div class="option-header">
-                      <q-icon name="search" size="24px" :color="getOperationColor(OPERATION_TYPES.LOOKUP_STARTS_WITH)" />
-                      <div class="option-text">
-                        <div class="option-label">LookUpStartsWith - Prefix-based lookup</div>
-                        <div class="option-description">
-                          Look up values using prefix matching
-                        </div>
-                        <div class="option-example">
-                          Example: Find entries starting with "ERR"
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </template>
-              </q-radio>
-            </template>
-
-            <!-- Array Operations Section -->
-            <template v-if="operationCategory === 'all' || operationCategory === 'Array'">
               <!-- Concat Option -->
               <q-radio
                 v-if="showOperation(OPERATION_TYPES.CONCAT)"
@@ -416,6 +209,36 @@
                 </template>
               </q-radio>
 
+              <!-- ToString Option -->
+              <q-radio
+                v-if="showOperation(OPERATION_TYPES.TOSTRING)"
+                v-model="tempOperationType"
+                :val="OPERATION_TYPES.TOSTRING"
+                class="operation-radio"
+                color="primary"
+                @update:model-value="handleOperationTypeChange"
+              >
+                <template #default>
+                  <div class="operation-option">
+                    <div class="option-header">
+                      <q-icon name="text_format" size="24px" :color="getOperationColor(OPERATION_TYPES.TOSTRING)" />
+                      <div class="option-text">
+                        <div class="option-label">ToString - Convert to String</div>
+                        <div class="option-description">
+                          Converts a value to a String
+                        </div>
+                        <div class="option-example">
+                          Example: Convert 123 to "123"
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </q-radio>
+            </template>
+
+            <!-- Array Operations Section -->
+            <template v-if="operationCategory === 'all' || operationCategory === 'Array'">
               <!-- ConcatArray Option -->
               <q-radio
                 v-if="showOperation(OPERATION_TYPES.CONCATARRAY)"
@@ -436,36 +259,6 @@
                         </div>
                         <div class="option-example">
                           Example: Join ["a", "b", "c"] with "," → "a,b,c"
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </template>
-              </q-radio>
-            </template>
-
-            <!-- Type Conversion Section -->
-            <template v-if="operationCategory === 'all'">
-              <!-- ToString Option -->
-              <q-radio
-                v-if="showOperation(OPERATION_TYPES.TOSTRING)"
-                v-model="tempOperationType"
-                :val="OPERATION_TYPES.TOSTRING"
-                class="operation-radio"
-                color="primary"
-                @update:model-value="handleOperationTypeChange"
-              >
-                <template #default>
-                  <div class="operation-option">
-                    <div class="option-header">
-                      <q-icon name="text_fields" size="24px" :color="getOperationColor(OPERATION_TYPES.TOSTRING)" />
-                      <div class="option-text">
-                        <div class="option-label">ToString - Convert to String</div>
-                        <div class="option-description">
-                          Converts a value to a String
-                        </div>
-                        <div class="option-example">
-                          Example: Convert 123 to "123"
                         </div>
                       </div>
                     </div>
@@ -700,19 +493,98 @@
             </div>
           </div>
 
-          <!-- Row 2, Column 2: Live Preview -->
-          <div class="table-cell preview-cell">
-            <div class="preview-section">
-              <live-preview
-                :operation-type="tempOperationType"
-                :parameters="tempOperationParameters"
-                :sample-value="sampleValue"
-                :field-path="fieldPath"
-              />
+          <!-- Column 2: Configuration -->
+          <div class="table-cell right-column-cell">
+            <!-- Configuration Section -->
+            <div class="config-section-container">
+              <div v-if="tempOperationType" class="config-section">
+                <div class="section-header">
+                  <q-icon name="settings" size="20px" color="primary" />
+                  <span class="section-title">Configuration</span>
+                </div>
+                <div class="config-forms-wrapper">
+                  <!-- REGEX Configuration -->
+                  <regex-operation-config
+                    v-if="tempOperationType === OPERATION_TYPES.REGEX"
+                    v-model="tempOperationParameters"
+                    :field-path="fieldPath"
+                    :sample-value="sampleValue"
+                    @update:model-value="handleParametersChange"
+                  />
+
+                  <!-- IsIP Configuration -->
+                  <is-ip-operation-config
+                    v-if="tempOperationType === OPERATION_TYPES.ISIP"
+                    v-model="tempOperationParameters"
+                    :field-path="fieldPath"
+                    :sample-value="sampleValue"
+                    @update:model-value="handleParametersChange"
+                  />
+
+                  <!-- SPLIT Configuration -->
+                  <split-operation-config
+                    v-if="tempOperationType === OPERATION_TYPES.SPLIT"
+                    :value="tempOperationParameters"
+                    :field-path="fieldPath"
+                    :sample-value="sampleValue"
+                    @input="handleParametersChange"
+                  />
+
+                  <!-- Concat/ConcatArray Configuration -->
+                  <concat-operation-config
+                    v-if="tempOperationType === OPERATION_TYPES.CONCAT || tempOperationType === OPERATION_TYPES.CONCATARRAY"
+                    v-model="tempOperationParameters"
+                    :field-path="fieldPath"
+                    :sample-value="sampleValue"
+                    :operation-type="tempOperationType"
+                    @update:model-value="handleParametersChange"
+                  />
+
+                  <!-- ToString Configuration -->
+                  <to-string-operation-config
+                    v-if="tempOperationType === OPERATION_TYPES.TOSTRING"
+                    v-model="tempOperationParameters"
+                    :field-path="fieldPath"
+                    :sample-value="sampleValue"
+                    @update:model-value="handleParametersChange"
+                  />
+
+                  <!-- DateTime Operations Configuration -->
+                  <epoch-date-time-config
+                    v-if="tempOperationType === OPERATION_TYPES.EPOCHSECS_TO_DATETIME ||
+                          tempOperationType === OPERATION_TYPES.EPOCHMILLIS_TO_DATETIME ||
+                          tempOperationType === OPERATION_TYPES.EPOCHMICROS_TO_DATETIME ||
+                          tempOperationType === OPERATION_TYPES.LOCAL_DATETIME"
+                    v-model="tempOperationParameters"
+                    :field-path="fieldPath"
+                    :sample-value="sampleValue"
+                    :operation-type="tempOperationType"
+                    @update:model-value="handleParametersChange"
+                  />
+
+                  <!-- Math Operations Configuration -->
+                  <math-operation-config
+                    v-if="tempOperationType === OPERATION_TYPES.ADD ||
+                          tempOperationType === OPERATION_TYPES.SUBTRACT ||
+                          tempOperationType === OPERATION_TYPES.MULTIPLY ||
+                          tempOperationType === OPERATION_TYPES.DIVIDE"
+                    :model-value="tempOperationParameters"
+                    :field-path="fieldPath"
+                    :sample-value="sampleValue"
+                    :operation-type="tempOperationType"
+                    @update:model-value="handleParametersChange"
+                    @input="handleParametersChange"
+                  />
+                </div>
+              </div>
+              <div v-else class="config-placeholder">
+                <q-icon name="tune" size="48px" color="grey-6" />
+                <p>Select an operation to configure</p>
+              </div>
             </div>
           </div>
         </div>
-        <!-- End 2x2 Table Layout -->
+        <!-- End 2-Column Layout -->
         </q-card-section>
 
         <q-separator />
@@ -753,12 +625,9 @@
 import { ref, computed, watch } from 'vue'
 import { OPERATION_TYPES, OPERATION_METADATA } from '../../../constants/operations'
 import { getOperationTypeLabel, getOperationTypeColor } from '../../../utils/operationParser'
-import { analyzeFieldAndRecommend, getFieldType } from '../../../utils/operationRecommendations'
-import SmartRecommendations from './SmartRecommendations.vue'
-import LivePreview from './LivePreview.vue'
 import RegexOperationConfig from './RegexOperationConfig.vue'
-import LookupOperationConfig from './LookupOperationConfig.vue'
-import PrefixOperationConfig from './PrefixOperationConfig.vue'
+// import LookupOperationConfig from './LookupOperationConfig.vue' // REMOVED - Lookup operations disabled
+// import PrefixOperationConfig from './PrefixOperationConfig.vue' // REMOVED - Prefix is a formatter, not an operation
 import IsIPOperationConfig from './IsIPOperationConfig.vue'
 import SplitOperationConfig from './SplitOperationConfig.vue'
 import ConcatOperationConfig from './ConcatOperationConfig.vue'
@@ -769,11 +638,9 @@ import MathOperationConfig from './MathOperationConfig.vue'
 export default {
   name: 'OperationSelector',
   components: {
-    SmartRecommendations,
-    LivePreview,
     'regex-operation-config': RegexOperationConfig,
-    'lookup-operation-config': LookupOperationConfig,
-    'prefix-operation-config': PrefixOperationConfig,
+    // 'lookup-operation-config': LookupOperationConfig, // REMOVED - Lookup operations disabled
+    // 'prefix-operation-config': PrefixOperationConfig, // REMOVED - Prefix is a formatter, not an operation
     // eslint-disable-next-line vue/no-unused-components
     'is-ip-operation-config': IsIPOperationConfig,
     'split-operation-config': SplitOperationConfig,
@@ -795,11 +662,11 @@ export default {
       required: true
     },
     sampleValue: {
-      type: [String, Number, Object],
+      type: [String, Number, Object, Array],
       default: null
     }
   },
-  emits: ['update:modelValue'],
+  emits: ['update:modelValue', 'input'],
   setup (props, { emit }) {
     const showOperationDialog = ref(false)
     const selectedOperationType = ref(props.modelValue?.type || null)
@@ -813,55 +680,31 @@ export default {
     const operationFilter = ref('')
     const operationCategory = ref('all')
 
-    // Smart Recommendations
-    const recommendations = ref([])
-    const viewMode = ref('recommendations') // 'recommendations' or 'all'
-
     // Computed
     const currentOperationType = computed(() => selectedOperationType.value)
 
     // Methods
     const openOperationDialog = () => {
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [OperationSelector] openOperationDialog - CALLED')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ props.modelValue:', JSON.stringify(props.modelValue, null, 2))
+      console.log('║ selectedOperationType.value:', selectedOperationType.value)
+      console.log('║ operationParameters.value:', JSON.stringify(operationParameters.value, null, 2))
+      console.log('╚════════════════════════════════════════════════════════════════════════')
+
       // Copy current values to temporary state
       tempOperationType.value = selectedOperationType.value
       tempOperationParameters.value = JSON.parse(JSON.stringify(operationParameters.value))
 
-      // Generate smart recommendations
-      generateRecommendations()
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [OperationSelector] openOperationDialog - Temp values SET')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ tempOperationType.value:', tempOperationType.value)
+      console.log('║ tempOperationParameters.value:', JSON.stringify(tempOperationParameters.value, null, 2))
+      console.log('╚════════════════════════════════════════════════════════════════════════')
 
       showOperationDialog.value = true
-    }
-
-    const generateRecommendations = () => {
-      try {
-        const fieldType = getFieldType(props.sampleValue)
-        recommendations.value = analyzeFieldAndRecommend(
-          props.fieldPath,
-          props.sampleValue,
-          fieldType
-        )
-        // Show recommendations view if we have recommendations
-        viewMode.value = recommendations.value.length > 0 ? 'recommendations' : 'all'
-      } catch (error) {
-        console.error('[OperationSelector] Error generating recommendations:', error)
-        recommendations.value = []
-        viewMode.value = 'all'
-      }
-    }
-
-    const handleRecommendationSelection = (recommendation) => {
-      // Set the operation type
-      tempOperationType.value = recommendation.operation
-
-      // Set suggested parameters
-      tempOperationParameters.value = recommendation.suggestedParams || {}
-
-      // Switch to all operations view to show the configuration panel
-      viewMode.value = 'all'
-    }
-
-    const handleViewAll = () => {
-      viewMode.value = 'all'
     }
 
     const cancelOperation = () => {
@@ -870,11 +713,39 @@ export default {
     }
 
     const applyOperation = () => {
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [OperationSelector] applyOperation - START')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ tempOperationType.value:', tempOperationType.value)
+      console.log('║ tempOperationParameters.value:', JSON.stringify(tempOperationParameters.value, null, 2))
+      console.log('║ About to copy to actual state and emit...')
+      console.log('╚════════════════════════════════════════════════════════════════════════')
+
+      // EXTRA DEBUG for math operations
+      if (tempOperationType.value === OPERATION_TYPES.ADD ||
+          tempOperationType.value === OPERATION_TYPES.SUBTRACT ||
+          tempOperationType.value === OPERATION_TYPES.MULTIPLY ||
+          tempOperationType.value === OPERATION_TYPES.DIVIDE) {
+        console.log('║ [OperationSelector] applyOperation - MATH OP DEBUG')
+        console.log('║   parameters.value:', tempOperationParameters.value && tempOperationParameters.value.value)
+      }
+
       // Apply temporary changes to actual state
       selectedOperationType.value = tempOperationType.value
       operationParameters.value = tempOperationParameters.value
+
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [OperationSelector] applyOperation - State copied')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ selectedOperationType.value:', selectedOperationType.value)
+      console.log('║ operationParameters.value:', JSON.stringify(operationParameters.value, null, 2))
+      console.log('║ Calling emitChange()...')
+      console.log('╚════════════════════════════════════════════════════════════════════════')
+
       emitChange()
       showOperationDialog.value = false
+
+      console.log('[OperationSelector] applyOperation - COMPLETED, dialog closed')
     }
 
     const getOperationColor = (type) => {
@@ -882,25 +753,38 @@ export default {
     }
 
     const handleOperationTypeChange = (newType) => {
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [OperationSelector] handleOperationTypeChange - CALLED')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ newType:', newType)
+      console.log('║ Previous tempOperationType:', tempOperationType.value)
+      console.log('║ Previous tempOperationParameters:', JSON.stringify(tempOperationParameters.value, null, 2))
+      console.log('╚════════════════════════════════════════════════════════════════════════')
+
+      // Check if operation type is actually changing
+      const isTypeChanging = tempOperationType.value !== newType
+
       // Update temporary state (dialog is open)
       tempOperationType.value = newType
 
-      // Reset parameters when operation type changes
-      tempOperationParameters.value = {}
+      // Only reset parameters if the operation type is actually changing
+      // If the type is the same (e.g., dialog opening with existing operation), keep the parameters
+      if (isTypeChanging) {
+        console.log('║ [OperationSelector] Operation type IS CHANGING - resetting parameters')
+        // Reset parameters when operation type changes
+        tempOperationParameters.value = {}
+      } else {
+        console.log('║ [OperationSelector] Operation type NOT CHANGING - keeping existing parameters')
+        console.log('║ Existing parameters:', JSON.stringify(tempOperationParameters.value, null, 2))
+        // Don't reset - keep existing parameters (for round-trip editing)
+        return
+      }
 
       // Set default parameters based on operation type
       if (newType === OPERATION_TYPES.REGEX) {
         tempOperationParameters.value = {
           pattern: '',
           captureGroup: 1
-        }
-      } else if (newType === OPERATION_TYPES.LOOKUP || newType === OPERATION_TYPES.LOOKUP_STARTS_WITH) {
-        tempOperationParameters.value = {
-          tableName: ''
-        }
-      } else if (newType === OPERATION_TYPES.PREFIX) {
-        tempOperationParameters.value = {
-          prefix: ''
         }
       } else if (newType === OPERATION_TYPES.ISIP) {
         // IsIP has no parameters
@@ -935,19 +819,68 @@ export default {
         tempOperationParameters.value = {
           value: 0
         }
+        console.debug('[OperationSelector] Set default value for math operation: 0')
       }
+
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [OperationSelector] handleOperationTypeChange - COMPLETED')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ New tempOperationType:', tempOperationType.value)
+      console.log('║ New tempOperationParameters:', JSON.stringify(tempOperationParameters.value, null, 2))
+      console.log('╚════════════════════════════════════════════════════════════════════════')
     }
 
     const handleParametersChange = (newParams) => {
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [OperationSelector] handleParametersChange - CALLED ✅✅✅')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ Current tempOperationType:', tempOperationType.value)
+      console.log('║ Received newParams:', JSON.stringify(newParams, null, 2))
+      console.log('║ newParams type:', typeof newParams)
+      console.log('║ newParams.value:', newParams?.value)
+      console.log('║ tempOperationParameters BEFORE update:', JSON.stringify(tempOperationParameters.value, null, 2))
+      console.log('║ 🔍 CALL STACK:', new Error().stack)
+      console.log('╚════════════════════════════════════════════════════════════════════════')
+
       // Update temporary parameters (dialog is open)
-      tempOperationParameters.value = newParams
+      tempOperationParameters.value = { ...newParams }
+
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [OperationSelector] handleParametersChange - COMPLETED')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ tempOperationParameters AFTER update:', JSON.stringify(tempOperationParameters.value, null, 2))
+      console.log('║ tempOperationParameters.value.value:', tempOperationParameters.value?.value)
+      console.log('╚════════════════════════════════════════════════════════════════════════')
     }
 
     const emitChange = () => {
-      emit('update:modelValue', {
+      const payload = {
         type: selectedOperationType.value,
         parameters: operationParameters.value
-      })
+      }
+
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [OperationSelector] emitChange - EMITTING operation change')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ 🔍 CALL STACK:', new Error().stack)
+      console.log('║')
+      console.log('║ selectedOperationType.value:', selectedOperationType.value)
+      console.log('║ operationParameters.value:', JSON.stringify(operationParameters.value, null, 2))
+      console.log('║')
+      console.log('║ FULL PAYLOAD being emitted:')
+      console.log('║', JSON.stringify(payload, null, 2))
+      console.log('║')
+      console.log('║ payload.type:', payload.type)
+      console.log('║ payload.parameters:', JSON.stringify(payload.parameters, null, 2))
+      console.log('║ payload.parameters.value:', payload.parameters?.value)
+      console.log('║ payload.parameters.value === undefined:', payload.parameters?.value === undefined)
+      console.log('╚════════════════════════════════════════════════════════════════════════')
+
+      // Emit both Vue 3 and Vue 2 style events for compatibility
+      emit('update:modelValue', payload)
+      emit('input', payload) // Vue 2 compatibility
+
+      console.log('[OperationSelector] ✅ Events emitted: update:modelValue and input')
     }
 
     const clearOperation = () => {
@@ -986,10 +919,37 @@ export default {
 
     // Watch for external changes to modelValue
     watch(() => props.modelValue, (newVal) => {
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [OperationSelector] props.modelValue WATCHER - TRIGGERED')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ newVal:', JSON.stringify(newVal, null, 2))
+      console.log('╚════════════════════════════════════════════════════════════════════════')
+
       if (newVal) {
         selectedOperationType.value = newVal.type || null
         operationParameters.value = newVal.parameters || {}
+
+        console.log('║ [OperationSelector] Updated from props:')
+        console.log('║   selectedOperationType.value:', selectedOperationType.value)
+        console.log('║   operationParameters.value:', JSON.stringify(operationParameters.value, null, 2))
+        console.log('╚════════════════════════════════════════════════════════════════════════')
       }
+    }, { deep: true, immediate: true }) // Added immediate: true
+
+    // Watch tempOperationParameters for changes (v-model updates)
+    watch(tempOperationParameters, (newVal, oldVal) => {
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [OperationSelector] tempOperationParameters WATCHER - TRIGGERED')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ Current tempOperationType:', tempOperationType.value)
+      console.log('║ OLD VALUE:', JSON.stringify(oldVal, null, 2))
+      console.log('║ NEW VALUE:', JSON.stringify(newVal, null, 2))
+      console.log('║ Has delimiter property?', 'delimiter' in newVal)
+      console.log('║ newVal.delimiter:', newVal?.delimiter)
+      console.log('║ newVal.index:', newVal?.index)
+      console.log('║ Has value property?', 'value' in newVal)
+      console.log('║ newVal.value:', newVal?.value)
+      console.log('╚════════════════════════════════════════════════════════════════════════')
     }, { deep: true })
 
     return {
@@ -1001,8 +961,6 @@ export default {
       tempOperationParameters,
       operationFilter,
       operationCategory,
-      recommendations,
-      viewMode,
       currentOperationType,
       openOperationDialog,
       cancelOperation,
@@ -1012,9 +970,7 @@ export default {
       handleOperationTypeChange,
       handleParametersChange,
       clearOperation,
-      showOperation,
-      handleRecommendationSelection,
-      handleViewAll
+      showOperation
     }
   }
 }
@@ -1083,11 +1039,11 @@ export default {
   background: rgba(255, 255, 255, 0.02);
 }
 
-/* 2x2 Table Layout */
+/* 2-Column Layout */
 .table-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: 1fr;
   gap: 16px;
   flex: 1;
   overflow: hidden;
@@ -1105,14 +1061,23 @@ export default {
   padding: 16px;
 }
 
-/* Row 1, Column 1: Search + Recommendations */
-.search-recommendations-cell {
+/* Column 1: Operations List with Search */
+.operations-cell {
   grid-column: 1;
   grid-row: 1;
 }
 
+/* Column 2: Configuration */
+.right-column-cell {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 .search-input {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
 
   /* Force whitesmoke background and black text - using :deep() with higher specificity */
   :deep(.q-field__control) {
@@ -1149,23 +1114,15 @@ export default {
   }
 }
 
-.no-recommendations {
+/* Configuration Section */
+.config-section-container {
+  flex: 1;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 32px;
-  color: rgba(227, 242, 253, 0.6);
-  text-align: center;
-
-  p {
-    margin: 0;
-    font-size: 14px;
-  }
+  min-height: 0;
 }
 
-/* Row 1, Column 2: Configuration */
 .config-cell {
   grid-column: 2;
   grid-row: 1;
@@ -1208,7 +1165,7 @@ export default {
   }
 
   &::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.05);
     border-radius: 4px;
   }
 
@@ -1238,10 +1195,10 @@ export default {
   }
 }
 
-/* Row 2, Column 1: Operations List */
+/* Operations List */
 .operations-cell {
   grid-column: 1;
-  grid-row: 2;
+  grid-row: 1;
 }
 
 .operations-section {
@@ -1296,25 +1253,6 @@ export default {
     &:hover {
       background: rgba(33, 150, 243, 0.7);
     }
-  }
-}
-
-/* Row 2, Column 2: Live Preview */
-.preview-cell {
-  grid-column: 2;
-  grid-row: 2;
-}
-
-.preview-section {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-
-  /* Remove the extra margin from LivePreview component */
-  ::v-deep .live-preview-panel {
-    margin-top: 0;
-    height: 100%;
   }
 }
 

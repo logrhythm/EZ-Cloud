@@ -109,13 +109,66 @@
 
       <!-- Operation Preview -->
       <operation-preview
-        v-if="localPattern"
+        v-if="localPattern && !isArrayInput"
         :original-value="sampleValue"
         :transformed-value="previewResult"
         :error="previewError"
         :loading="isTestingOperation"
         :operation="operationSyntax"
       />
+
+      <!-- Array Validation Results -->
+      <div v-if="localPattern && isPatternValid && isArrayInput" class="validation-results q-mt-md">
+        <div class="validation-header">
+          <q-icon name="fact_check" class="q-mr-xs" />
+          <span>Validation Results ({{ sampleValuesArray.length }} value{{ sampleValuesArray.length !== 1 ? 's' : '' }})</span>
+        </div>
+
+        <q-list bordered separator class="validation-list">
+          <q-item
+            v-for="(result, index) in validationResults"
+            :key="index"
+            :class="result.isValid ? 'valid-item' : 'invalid-item'"
+          >
+            <q-item-section avatar>
+              <q-icon
+                :name="result.isValid ? 'check_circle' : 'error'"
+                :color="result.isValid ? 'positive' : 'negative'"
+                size="sm"
+              />
+            </q-item-section>
+
+            <q-item-section>
+              <q-item-label>
+                <code class="input-value">{{ result.input }}</code>
+                <q-icon name="arrow_forward" size="xs" class="q-mx-xs" />
+                <code :class="result.isValid ? 'output-value-valid' : 'output-value-invalid'">
+                  {{ result.output }}
+                </code>
+              </q-item-label>
+              <q-item-label caption v-if="!result.isValid" class="error-caption">
+                {{ result.error }}
+              </q-item-label>
+            </q-item-section>
+
+            <q-item-section side>
+              <q-badge :color="result.isValid ? 'positive' : 'negative'">
+                {{ result.isValid ? 'Match' : 'No Match' }}
+              </q-badge>
+            </q-item-section>
+          </q-item>
+        </q-list>
+
+        <!-- Summary -->
+        <div class="validation-summary q-mt-sm">
+          <q-chip color="positive" text-color="white" icon="check_circle">
+            {{ validCount }} Matched
+          </q-chip>
+          <q-chip color="negative" text-color="white" icon="error">
+            {{ invalidCount }} No Match
+          </q-chip>
+        </div>
+      </div>
 
       <!-- Test Button -->
       <div class="action-buttons">
@@ -165,7 +218,7 @@ export default {
       required: true
     },
     sampleValue: {
-      type: [String, Number],
+      type: [String, Number, Array],
       default: ''
     }
   },
@@ -182,6 +235,108 @@ export default {
     const isTestingOperation = ref(false)
     const previewResult = ref(null)
     const previewError = ref(null)
+
+    // Check if sample value is an array
+    const isArrayInput = computed(() => {
+      return Array.isArray(props.sampleValue) && props.sampleValue.length > 0
+    })
+
+    // Get array of sample values
+    const sampleValuesArray = computed(() => {
+      if (Array.isArray(props.sampleValue)) {
+        return props.sampleValue
+      }
+      return props.sampleValue !== null && props.sampleValue !== undefined ? [props.sampleValue] : []
+    })
+
+    // Apply regex to a single value
+    const applyRegex = (input, pattern, captureGroup) => {
+      if (!pattern || typeof input !== 'string') {
+        return {
+          isValid: false,
+          output: 'N/A',
+          error: typeof input !== 'string' ? 'Input is not a string' : 'No pattern'
+        }
+      }
+
+      try {
+        // Remove leading/trailing slashes if present
+        let regexPattern = pattern
+        if (pattern.startsWith('/') && pattern.lastIndexOf('/') > 0) {
+          const lastSlash = pattern.lastIndexOf('/')
+          regexPattern = pattern.substring(1, lastSlash)
+        }
+
+        const regex = new RegExp(regexPattern)
+        const match = input.match(regex)
+
+        if (!match) {
+          return {
+            isValid: false,
+            output: 'No match',
+            error: 'Pattern did not match'
+          }
+        }
+
+        // Handle capture groups
+        let output
+        if (typeof captureGroup === 'number') {
+          output = match[captureGroup] !== undefined ? match[captureGroup] : match[0]
+        } else if (typeof captureGroup === 'string') {
+          // Named capture group
+          output = match.groups && match.groups[captureGroup]
+            ? match.groups[captureGroup]
+            : match[0]
+        } else {
+          output = match[0]
+        }
+
+        return {
+          isValid: true,
+          output: output || '(empty string)',
+          error: null
+        }
+      } catch (error) {
+        return {
+          isValid: false,
+          output: 'Error',
+          error: error.message
+        }
+      }
+    }
+
+    // Validate all values in the array
+    const validationResults = computed(() => {
+      if (!isArrayInput.value || !isPatternValid.value) {
+        return []
+      }
+
+      // Convert captureGroup to number if it's a numeric string
+      let captureGroupValue = localCaptureGroup.value
+      if (typeof captureGroupValue === 'string' && /^\d+$/.test(captureGroupValue)) {
+        captureGroupValue = parseInt(captureGroupValue, 10)
+      }
+
+      return sampleValuesArray.value.map((value, idx) => {
+        const result = applyRegex(String(value), localPattern.value, captureGroupValue)
+        return {
+          index: idx,
+          input: String(value),
+          isValid: result.isValid,
+          output: result.output,
+          error: result.error
+        }
+      })
+    })
+
+    // Count valid and invalid results
+    const validCount = computed(() => {
+      return validationResults.value.filter(r => r.isValid).length
+    })
+
+    const invalidCount = computed(() => {
+      return validationResults.value.filter(r => !r.isValid).length
+    })
 
     // Computed
     const patternOptions = computed(() => COMMON_REGEX_PATTERNS)
@@ -423,7 +578,13 @@ export default {
       onCaptureGroupChange,
       onDropdownInput,
       onDropdownChange,
-      onOptionClick
+      onOptionClick,
+      // Array validation
+      isArrayInput,
+      sampleValuesArray,
+      validationResults,
+      validCount,
+      invalidCount
     }
   }
 }
@@ -522,6 +683,92 @@ export default {
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.5px;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.test-btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* Validation Results */
+.validation-results {
+  margin-top: 16px;
+}
+
+.validation-header {
+  font-weight: 500;
+  color: #2196f3;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.validation-list {
+  max-height: 300px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+.valid-item {
+  background: rgba(76, 175, 80, 0.05) !important;
+  border-left: 3px solid #4caf50 !important;
+}
+
+.invalid-item {
+  background: rgba(244, 67, 54, 0.05) !important;
+  border-left: 3px solid #f44336 !important;
+}
+
+.input-value {
+  font-family: 'Courier New', monospace;
+  background-color: rgba(33, 150, 243, 0.2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #64b5f6;
+  font-weight: 500;
+}
+
+.output-value-valid {
+  font-family: 'Courier New', monospace;
+  background-color: rgba(76, 175, 80, 0.2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #81c784;
+  font-weight: 500;
+}
+
+.output-value-invalid {
+  font-family: 'Courier New', monospace;
+  background-color: rgba(244, 67, 54, 0.2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #e57373;
+  font-weight: 500;
+}
+
+.error-caption {
+  color: #f44336 !important;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.validation-summary {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: flex-start;
 }
 
 /* Mobile Responsive */

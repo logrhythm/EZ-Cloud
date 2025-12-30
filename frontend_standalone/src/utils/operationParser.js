@@ -106,13 +106,20 @@ export function parseOperationFromInputRule (inputRule) {
 
     // Check for SPLIT operation
     // Format: SPLIT($.field.path, 'delimiter', index)
-    const splitMatch = trimmed.match(/^SPLIT\((.*?),\s*['"](.+?)['"],\s*(\d+)\)$/)
+    // Updated regex to handle empty delimiters and be more specific about field path
+    const splitMatch = trimmed.match(/^SPLIT\(([$.\w[\]]+),\s*['"](.*)['"],\s*(\d+)\)$/)
     if (splitMatch) {
+      console.log('[OperationParser] Parsing SPLIT operation:')
+      console.log('  Full match:', splitMatch[0])
+      console.log('  Field path:', splitMatch[1])
+      console.log('  Delimiter:', splitMatch[2])
+      console.log('  Index:', splitMatch[3])
+
       return {
         type: OPERATION_TYPES.SPLIT,
         fieldPath: splitMatch[1].trim(),
         parameters: {
-          delimiter: splitMatch[2],
+          delimiter: splitMatch[2], // Can be empty string
           index: parseInt(splitMatch[3], 10)
         }
       }
@@ -148,7 +155,7 @@ export function parseOperationFromInputRule (inputRule) {
 
     // Check for ConcatArray operation
     // Format: ConcatArray($.field.path, 'delimiter')
-    const concatArrayMatch = trimmed.match(/^ConcatArray\((.*?),\s*['"](.+?)['"]?\)$/)
+    const concatArrayMatch = trimmed.match(/^ConcatArray\((.*?),\s*['"](.*?)['"]?\)$/)
     if (concatArrayMatch) {
       return {
         type: OPERATION_TYPES.CONCATARRAY,
@@ -160,8 +167,8 @@ export function parseOperationFromInputRule (inputRule) {
     }
 
     // Check for ToString operation
-    // Format: ToString($.field.path)
-    const toStringMatch = trimmed.match(/^ToString\((.*?)\)$/)
+    // Format: tostring($.field.path) or ToString($.field.path)
+    const toStringMatch = trimmed.match(/^tostring\((.*?)\)$/i)
     if (toStringMatch) {
       return {
         type: OPERATION_TYPES.TOSTRING,
@@ -220,8 +227,8 @@ export function parseOperationFromInputRule (inputRule) {
     }
 
     // Check for Math operations
-    // Format: Add($.field.path, value)
-    const addMatch = trimmed.match(/^Add\((.*?),\s*(-?\d+(?:\.\d+)?)\)$/)
+    // Format: add($.field.path, value)
+    const addMatch = trimmed.match(/^add\((.*?),\s*(-?\d+(?:\.\d+)?)\)$/i)
     if (addMatch) {
       return {
         type: OPERATION_TYPES.ADD,
@@ -232,8 +239,8 @@ export function parseOperationFromInputRule (inputRule) {
       }
     }
 
-    // Format: Subtract($.field.path, value)
-    const subtractMatch = trimmed.match(/^Subtract\((.*?),\s*(-?\d+(?:\.\d+)?)\)$/)
+    // Format: subtract($.field.path, value)
+    const subtractMatch = trimmed.match(/^subtract\((.*?),\s*(-?\d+(?:\.\d+)?)\)$/i)
     if (subtractMatch) {
       return {
         type: OPERATION_TYPES.SUBTRACT,
@@ -244,8 +251,8 @@ export function parseOperationFromInputRule (inputRule) {
       }
     }
 
-    // Format: Multiply($.field.path, value)
-    const multiplyMatch = trimmed.match(/^Multiply\((.*?),\s*(-?\d+(?:\.\d+)?)\)$/)
+    // Format: multiply($.field.path, value)
+    const multiplyMatch = trimmed.match(/^multiply\((.*?),\s*(-?\d+(?:\.\d+)?)\)$/i)
     if (multiplyMatch) {
       return {
         type: OPERATION_TYPES.MULTIPLY,
@@ -256,8 +263,8 @@ export function parseOperationFromInputRule (inputRule) {
       }
     }
 
-    // Format: Divide($.field.path, value)
-    const divideMatch = trimmed.match(/^Divide\((.*?),\s*(-?\d+(?:\.\d+)?)\)$/)
+    // Format: divide($.field.path, value)
+    const divideMatch = trimmed.match(/^divide\((.*?),\s*(-?\d+(?:\.\d+)?)\)$/i)
     if (divideMatch) {
       return {
         type: OPERATION_TYPES.DIVIDE,
@@ -285,6 +292,28 @@ export function parseOperationFromInputRule (inputRule) {
 }
 
 /**
+ * Normalize operation type to match OPERATION_TYPES constant (case-insensitive)
+ * @param {string} type - Operation type to normalize
+ * @returns {string|null} Normalized operation type or null if not found
+ */
+function normalizeOperationType (type) {
+  if (!type) return null
+
+  // Convert to string and get lowercase version for comparison
+  const typeLower = String(type).toLowerCase()
+
+  // Find matching OPERATION_TYPES constant (case-insensitive)
+  for (const value of Object.values(OPERATION_TYPES)) {
+    if (value && String(value).toLowerCase() === typeLower) {
+      return value // Return the canonical constant value
+    }
+  }
+
+  // If no match found, return original type (for backward compatibility)
+  return type
+}
+
+/**
  * Build operation syntax string from components
  * Constructs the inputRule string with proper operation syntax
  *
@@ -299,12 +328,28 @@ export function parseOperationFromInputRule (inputRule) {
  */
 export function buildOperationSyntax (type, fieldPath, parameters = {}) {
   try {
+    console.log('╔════════════════════════════════════════════════════════════════════════')
+    console.log('║ 🔨 [buildOperationSyntax] CALLED')
+    console.log('╠════════════════════════════════════════════════════════════════════════')
+    console.log('║ type:', type)
+    console.log('║ fieldPath:', fieldPath)
+    console.log('║ parameters:', JSON.stringify(parameters, null, 2))
+    if (type === 'SPLIT' || type === 'split') {
+      console.log('║ 🎯 SPLIT OPERATION DETECTED!')
+      console.log('║ parameters.delimiter:', parameters.delimiter, 'type:', typeof parameters.delimiter)
+      console.log('║ parameters.index:', parameters.index, 'type:', typeof parameters.index)
+    }
+    console.log('╚════════════════════════════════════════════════════════════════════════')
+
+    // Normalize operation type for case-insensitive comparison
+    const normalizedType = normalizeOperationType(type)
+
     // If no operation type, return field path as-is
-    if (!type || type === OPERATION_TYPES.NONE) {
+    if (!normalizedType || normalizedType === OPERATION_TYPES.NONE) {
       return fieldPath || ''
     }
 
-    switch (type) {
+    switch (normalizedType) {
       case OPERATION_TYPES.REGEX:
         // Gracefully handle incomplete configuration - return null instead of throwing
         if (!parameters.pattern) {
@@ -332,7 +377,7 @@ export function buildOperationSyntax (type, fieldPath, parameters = {}) {
         return `LookUpStartsWith(${parameters.tableName}, ${fieldPath})`
 
       case OPERATION_TYPES.PREFIX: {
-        if (!parameters.prefix && parameters.prefix !== '') {
+        if (parameters.prefix === undefined || parameters.prefix === null) {
           console.debug('[OperationParser] PREFIX prefix not configured yet, returning null')
           return null
         }
@@ -346,10 +391,12 @@ export function buildOperationSyntax (type, fieldPath, parameters = {}) {
         return `IsIP(${fieldPath})`
 
       case OPERATION_TYPES.SPLIT:
-        if (!parameters.delimiter || parameters.index === undefined) {
+        if (parameters.delimiter === undefined || parameters.delimiter === null || parameters.index === undefined || parameters.index === null) {
           console.debug('[OperationParser] SPLIT delimiter or index not configured yet, returning null')
+          console.debug('[OperationParser] SPLIT - delimiter:', parameters.delimiter, 'index:', parameters.index)
           return null
         }
+        console.log('✅ [buildOperationSyntax] Building SPLIT syntax:', `SPLIT(${fieldPath}, '${parameters.delimiter}', ${parameters.index})`)
         return `SPLIT(${fieldPath}, '${parameters.delimiter}', ${parameters.index})`
 
       // Array Operations
@@ -363,7 +410,7 @@ export function buildOperationSyntax (type, fieldPath, parameters = {}) {
       }
 
       case OPERATION_TYPES.CONCATARRAY: {
-        if (!parameters.delimiter && parameters.delimiter !== '') {
+        if (parameters.delimiter === undefined || parameters.delimiter === null) {
           console.debug('[OperationParser] ConcatArray delimiter not configured yet, returning null')
           return null
         }
@@ -372,77 +419,74 @@ export function buildOperationSyntax (type, fieldPath, parameters = {}) {
 
       // Type Conversion
       case OPERATION_TYPES.TOSTRING:
-        return `ToString(${fieldPath})`
+        return `tostring(${fieldPath})`
 
-      // DateTime Operations
+      // DateTime Operations (parameter-free)
       case OPERATION_TYPES.EPOCHSECS_TO_DATETIME:
-        if (!parameters.format) {
-          console.debug('[OperationParser] EpochSectoDateTime format not configured yet, returning null')
-          return null
-        }
-        return `EpochSectoDateTime(${fieldPath}, '${parameters.format}')`
+        return `EpochSectoDateTime(${fieldPath})`
 
       case OPERATION_TYPES.EPOCHMILLIS_TO_DATETIME:
-        if (!parameters.format) {
-          console.debug('[OperationParser] EpochMilliSectoDateTime format not configured yet, returning null')
-          return null
-        }
-        return `EpochMilliSectoDateTime(${fieldPath}, '${parameters.format}')`
+        return `EpochMilliSectoDateTime(${fieldPath})`
 
       case OPERATION_TYPES.EPOCHMICROS_TO_DATETIME:
-        if (!parameters.format) {
-          console.debug('[OperationParser] EpochMicroSectoDateTime format not configured yet, returning null')
-          return null
-        }
-        return `EpochMicroSectoDateTime(${fieldPath}, '${parameters.format}')`
+        return `EpochMicroSectoDateTime(${fieldPath})`
 
       case OPERATION_TYPES.LOCAL_DATETIME:
-        if (!parameters.format) {
-          console.debug('[OperationParser] LocalDateTime format not configured yet, returning null')
-          return null
-        }
-        return `LocalDateTime('${parameters.format}')`
+        return `LocalDateTime(${fieldPath})`
 
       // Math Operations
       case OPERATION_TYPES.ADD:
+        console.debug('[OperationParser] ADD operation - parameters.value:', parameters.value)
         if (parameters.value === undefined) {
-          console.debug('[OperationParser] Add value not configured yet, returning null')
+          console.debug('[OperationParser] add value not configured yet (undefined), returning null')
           return null
         }
-        return `Add(${fieldPath}, ${parameters.value})`
+        console.debug('[OperationParser] Generating ADD syntax with value:', parameters.value)
+        return `add(${fieldPath}, ${parameters.value})`
 
       case OPERATION_TYPES.SUBTRACT:
+        console.debug('[OperationParser] SUBTRACT operation - parameters.value:', parameters.value)
         if (parameters.value === undefined) {
-          console.debug('[OperationParser] Subtract value not configured yet, returning null')
+          console.debug('[OperationParser] subtract value not configured yet (undefined), returning null')
           return null
         }
-        return `Subtract(${fieldPath}, ${parameters.value})`
+        console.debug('[OperationParser] Generating SUBTRACT syntax with value:', parameters.value)
+        return `subtract(${fieldPath}, ${parameters.value})`
 
       case OPERATION_TYPES.MULTIPLY:
+        console.debug('[OperationParser] MULTIPLY operation - parameters.value:', parameters.value)
         if (parameters.value === undefined) {
-          console.debug('[OperationParser] Multiply value not configured yet, returning null')
+          console.debug('[OperationParser] multiply value not configured yet (undefined), returning null')
           return null
         }
-        return `Multiply(${fieldPath}, ${parameters.value})`
+        console.debug('[OperationParser] Generating MULTIPLY syntax with value:', parameters.value)
+        return `multiply(${fieldPath}, ${parameters.value})`
 
       case OPERATION_TYPES.DIVIDE:
+        console.debug('[OperationParser] DIVIDE operation - parameters.value:', parameters.value)
         if (parameters.value === undefined) {
-          console.debug('[OperationParser] Divide value not configured yet, returning null')
+          console.debug('[OperationParser] divide value not configured yet (undefined), returning null')
           return null
         }
         if (parameters.value === 0) {
-          console.warn('[OperationParser] Divide operation cannot have a value of 0 (division by zero)')
+          console.warn('[OperationParser] divide operation cannot have a value of 0 (division by zero)')
           return null
         }
-        return `Divide(${fieldPath}, ${parameters.value})`
+        console.debug('[OperationParser] Generating DIVIDE syntax with value:', parameters.value)
+        return `divide(${fieldPath}, ${parameters.value})`
 
       default:
-        console.warn(`[OperationParser] Unknown operation type: ${type}`)
+        console.warn(`[OperationParser] Unknown operation type: ${type} (normalized: ${normalizedType})`)
         return fieldPath || ''
     }
   } catch (error) {
     console.error('[OperationParser] Error building operation syntax:', error)
+    console.error('Error details:', error.stack)
     return fieldPath || ''
+  } finally {
+    console.log('╔════════════════════════════════════════════════════════════════════════')
+    console.log('║ 🔨 [buildOperationSyntax] FINISHED')
+    console.log('╚════════════════════════════════════════════════════════════════════════')
   }
 }
 

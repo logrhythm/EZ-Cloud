@@ -921,17 +921,21 @@ export default {
      */
     handleOperationChanged (newOperationConfig) {
       console.log('[TransformEditorModal] handleOperationChanged:', newOperationConfig)
+      console.log('[TransformEditorModal] newOperationConfig.type:', newOperationConfig.type)
+      console.log('[TransformEditorModal] newOperationConfig.parameters:', newOperationConfig.parameters)
+      console.log('[TransformEditorModal] originalFieldPath:', this.originalFieldPath)
 
       // Update local operation config
       this.operationConfig = { ...newOperationConfig }
 
       // Rebuild inputRule with operation syntax
       if (newOperationConfig.type) {
-        const operationSyntax = buildOperationSyntax({
-          type: newOperationConfig.type,
-          fieldPath: this.originalFieldPath,
-          params: newOperationConfig.parameters
-        })
+        // buildOperationSyntax expects: (type, fieldPath, parameters)
+        const operationSyntax = buildOperationSyntax(
+          newOperationConfig.type,
+          this.originalFieldPath,
+          newOperationConfig.parameters
+        )
 
         this.transformForm.inputRule = operationSyntax
         console.log('[TransformEditorModal] Built operation syntax:', operationSyntax)

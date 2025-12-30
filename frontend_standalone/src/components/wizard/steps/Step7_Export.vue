@@ -712,8 +712,28 @@ export default {
 
         // Add field mappings (transforms) - clean up any UI-only attributes
         if (this.fieldMappings.mappings && this.fieldMappings.mappings.length > 0) {
+          console.log('╔════════════════════════════════════════════════════════════════════════')
+          console.log('║ [Step 7] generatePolicyObject - Processing field mappings')
+          console.log('╠════════════════════════════════════════════════════════════════════════')
+          console.log('║ fieldMappings.mappings count:', this.fieldMappings.mappings.length)
+          console.log('║')
+          console.log('║ Mappings from store:')
+          this.fieldMappings.mappings.forEach((m, idx) => {
+            console.log(`║ [${idx}] inputRule:`, m.inputRule)
+            console.log(`║ [${idx}] lrSchemaField:`, m.lrSchemaField)
+          })
+          console.log('╚════════════════════════════════════════════════════════════════════════')
+
           // Remove sampleValue and other UI-only attributes from transforms
-          policy.transforms = this.fieldMappings.mappings.map(mapping => {
+          policy.transforms = this.fieldMappings.mappings.map((mapping, idx) => {
+            console.log('╔════════════════════════════════════════════════════════════════════════')
+            console.log(`║ [Step 7] Cleaning mapping [${idx}]`)
+            console.log('╠════════════════════════════════════════════════════════════════════════')
+            console.log('║ BEFORE:')
+            console.log('║   inputRule:', mapping.inputRule)
+            console.log('║   lrSchemaField:', mapping.lrSchemaField)
+            console.log('╚════════════════════════════════════════════════════════════════════════')
+
             const cleanMapping = { ...mapping }
             delete cleanMapping.sampleValue
             delete cleanMapping.id // Remove any internal IDs if present
@@ -722,8 +742,25 @@ export default {
             delete cleanMapping._originalInputRule // Remove UI tracking field
             delete cleanMapping.subtransforms // Remove subtransforms from individual transforms (invalid structure)
             delete cleanMapping.subTransforms // Remove alternative casing variant
+
+            console.log('╔════════════════════════════════════════════════════════════════════════')
+            console.log(`║ [Step 7] AFTER cleaning [${idx}]`)
+            console.log('╠════════════════════════════════════════════════════════════════════════')
+            console.log('║ cleanMapping.inputRule:', cleanMapping.inputRule)
+            console.log('║ cleanMapping.lrSchemaField:', cleanMapping.lrSchemaField)
+            console.log('╚════════════════════════════════════════════════════════════════════════')
+
             return cleanMapping
           })
+
+          console.log('╔════════════════════════════════════════════════════════════════════════')
+          console.log('║ [Step 7] Final policy.transforms:')
+          console.log('╠════════════════════════════════════════════════════════════════════════')
+          policy.transforms.forEach((t, idx) => {
+            console.log(`║ [${idx}] inputRule:`, t.inputRule)
+            console.log(`║ [${idx}] lrSchemaField:`, t.lrSchemaField)
+          })
+          console.log('╚════════════════════════════════════════════════════════════════════════')
         }
 
         // Add subtransforms if they exist - clean up any UI-only attributes
