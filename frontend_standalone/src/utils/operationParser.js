@@ -15,7 +15,7 @@ import { OPERATION_TYPES, OPERATION_METADATA } from '../constants/operations'
  * @returns {Object} Parsed operation { type, fieldPath, parameters }
  *
  * @example
- * parseOperationFromInputRule('REGEX($.message, /IP: (\d+\.\d+\.\d+\.\d+)/, 1)')
+ * parseOperationFromInputRule('Regex($.message, /IP: (\d+\.\d+\.\d+\.\d+)/, 1)')
  * // Returns: {
  * //   type: 'REGEX',
  * //   fieldPath: '$.message',
@@ -35,10 +35,10 @@ export function parseOperationFromInputRule (inputRule) {
 
     const trimmed = inputRule.trim()
 
-    // Check for REGEX operation
-    // Format: REGEX($.field.path, /pattern/, captureGroup)
+    // Check for REGEX operation (case-insensitive: REGEX or Regex)
+    // Format: Regex($.field.path, /pattern/, captureGroup)
     // captureGroup can be numeric (0, 1, 2, ...) or alphanumeric (named groups)
-    const regexMatch = trimmed.match(/^REGEX\((.*?),\s*(\/.*?\/),\s*([0-9a-zA-Z_]+)\)$/)
+    const regexMatch = trimmed.match(/^Regex\((.*?),\s*(\/.*?\/),\s*([0-9a-zA-Z_]+)\)$/i)
     if (regexMatch) {
       const captureGroupRaw = regexMatch[3].trim()
       // Convert to number if it's purely numeric, otherwise keep as string
@@ -54,9 +54,9 @@ export function parseOperationFromInputRule (inputRule) {
       }
     }
 
-    // Check for LookUp operation
+    // Check for LookUp operation (case-insensitive)
     // Format: LookUp(tableName, $.field.path)
-    const lookupMatch = trimmed.match(/^LookUp\((.*?),\s*(.*?)\)$/)
+    const lookupMatch = trimmed.match(/^LookUp\((.*?),\s*(.*?)\)$/i)
     if (lookupMatch) {
       return {
         type: OPERATION_TYPES.LOOKUP,
@@ -67,9 +67,9 @@ export function parseOperationFromInputRule (inputRule) {
       }
     }
 
-    // Check for LookUpStartsWith operation
+    // Check for LookUpStartsWith operation (case-insensitive)
     // Format: LookUpStartsWith(tableName, $.field.path)
-    const lookupStartsMatch = trimmed.match(/^LookUpStartsWith\((.*?),\s*(.*?)\)$/)
+    const lookupStartsMatch = trimmed.match(/^LookUpStartsWith\((.*?),\s*(.*?)\)$/i)
     if (lookupStartsMatch) {
       return {
         type: OPERATION_TYPES.LOOKUP_STARTS_WITH,
@@ -80,9 +80,9 @@ export function parseOperationFromInputRule (inputRule) {
       }
     }
 
-    // Check for PREFIX operation
+    // Check for PREFIX operation (case-insensitive)
     // Format: PREFIX('prefix_string')
-    const prefixMatch = trimmed.match(/^PREFIX\('(.*?)'\)$/)
+    const prefixMatch = trimmed.match(/^PREFIX\('(.*?)'\)$/i)
     if (prefixMatch) {
       return {
         type: OPERATION_TYPES.PREFIX,
@@ -93,9 +93,9 @@ export function parseOperationFromInputRule (inputRule) {
       }
     }
 
-    // Check for IsIP operation
+    // Check for IsIP operation (case-insensitive)
     // Format: IsIP($.field.path)
-    const isIpMatch = trimmed.match(/^IsIP\((.*?)\)$/)
+    const isIpMatch = trimmed.match(/^IsIP\((.*?)\)$/i)
     if (isIpMatch) {
       return {
         type: OPERATION_TYPES.ISIP,
@@ -104,10 +104,10 @@ export function parseOperationFromInputRule (inputRule) {
       }
     }
 
-    // Check for SPLIT operation
+    // Check for SPLIT operation (case-insensitive)
     // Format: SPLIT($.field.path, 'delimiter', index)
     // Updated regex to handle empty delimiters and be more specific about field path
-    const splitMatch = trimmed.match(/^SPLIT\(([$.\w[\]]+),\s*['"](.*)['"],\s*(\d+)\)$/)
+    const splitMatch = trimmed.match(/^SPLIT\(([$.\w[\]]+),\s*['"](.*)['"],\s*(\d+)\)$/i)
     if (splitMatch) {
       console.log('[OperationParser] Parsing SPLIT operation:')
       console.log('  Full match:', splitMatch[0])
@@ -125,9 +125,9 @@ export function parseOperationFromInputRule (inputRule) {
       }
     }
 
-    // Check for Concat operation
+    // Check for Concat operation (case-insensitive)
     // Format: Concat(['value1', 'value2', ...])
-    const concatMatch = trimmed.match(/^Concat\(\[(.*)\]\)$/)
+    const concatMatch = trimmed.match(/^Concat\(\[(.*)\]\)$/i)
     if (concatMatch) {
       try {
         // Parse the values inside the array (CSV of quoted strings)
@@ -153,9 +153,9 @@ export function parseOperationFromInputRule (inputRule) {
       }
     }
 
-    // Check for ConcatArray operation
+    // Check for ConcatArray operation (case-insensitive)
     // Format: ConcatArray($.field.path, 'delimiter')
-    const concatArrayMatch = trimmed.match(/^ConcatArray\((.*?),\s*['"](.*?)['"]?\)$/)
+    const concatArrayMatch = trimmed.match(/^ConcatArray\((.*?),\s*['"](.*?)['"]?\)$/i)
     if (concatArrayMatch) {
       return {
         type: OPERATION_TYPES.CONCATARRAY,
@@ -177,9 +177,9 @@ export function parseOperationFromInputRule (inputRule) {
       }
     }
 
-    // Check for DateTime operations
+    // Check for DateTime operations (case-insensitive)
     // Format: EpochSectoDateTime($.field.path, 'format')
-    const epochSecMatch = trimmed.match(/^EpochSectoDateTime\((.*?),\s*['"](.+?)['"]?\)$/)
+    const epochSecMatch = trimmed.match(/^EpochSectoDateTime\((.*?),\s*['"](.+?)['"]?\)$/i)
     if (epochSecMatch) {
       return {
         type: OPERATION_TYPES.EPOCHSECS_TO_DATETIME,
@@ -191,7 +191,7 @@ export function parseOperationFromInputRule (inputRule) {
     }
 
     // Format: EpochMilliSectoDateTime($.field.path, 'format')
-    const epochMilliSecMatch = trimmed.match(/^EpochMilliSectoDateTime\((.*?),\s*['"](.+?)['"]?\)$/)
+    const epochMilliSecMatch = trimmed.match(/^EpochMilliSectoDateTime\((.*?),\s*['"](.+?)['"]?\)$/i)
     if (epochMilliSecMatch) {
       return {
         type: OPERATION_TYPES.EPOCHMILLIS_TO_DATETIME,
@@ -203,7 +203,7 @@ export function parseOperationFromInputRule (inputRule) {
     }
 
     // Format: EpochMicroSectoDateTime($.field.path, 'format')
-    const epochMicroSecMatch = trimmed.match(/^EpochMicroSectoDateTime\((.*?),\s*['"](.+?)['"]?\)$/)
+    const epochMicroSecMatch = trimmed.match(/^EpochMicroSectoDateTime\((.*?),\s*['"](.+?)['"]?\)$/i)
     if (epochMicroSecMatch) {
       return {
         type: OPERATION_TYPES.EPOCHMICROS_TO_DATETIME,
@@ -215,7 +215,7 @@ export function parseOperationFromInputRule (inputRule) {
     }
 
     // Format: LocalDateTime('format')
-    const localDateTimeMatch = trimmed.match(/^LocalDateTime\(['"](.+?)['"]?\)$/)
+    const localDateTimeMatch = trimmed.match(/^LocalDateTime\(['"](.+?)['"]?\)$/i)
     if (localDateTimeMatch) {
       return {
         type: OPERATION_TYPES.LOCAL_DATETIME,
@@ -324,7 +324,7 @@ function normalizeOperationType (type) {
  *
  * @example
  * buildOperationSyntax('REGEX', '$.message', { pattern: '/IP: (\d+\.\d+\.\d+\.\d+)/', captureGroup: 1 })
- * // Returns: 'REGEX($.message, /IP: (\d+\.\d+\.\d+\.\d+)/, 1)'
+ * // Returns: 'Regex($.message, /IP: (\d+\.\d+\.\d+\.\d+)/, 1)'
  */
 export function buildOperationSyntax (type, fieldPath, parameters = {}) {
   try {
@@ -360,7 +360,9 @@ export function buildOperationSyntax (type, fieldPath, parameters = {}) {
           console.debug('[OperationParser] REGEX captureGroup not configured yet, returning null')
           return null
         }
-        return `REGEX(${fieldPath}, ${parameters.pattern}, ${parameters.captureGroup})`
+        // Format: Regex($.jsonPath, /pattern/, captureGroupName)
+        // Pattern already includes slashes, captureGroup can be string or number
+        return `Regex(${fieldPath}, ${parameters.pattern}, ${parameters.captureGroup})`
 
       case OPERATION_TYPES.LOOKUP:
         if (!parameters.tableName) {

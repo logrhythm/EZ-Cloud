@@ -520,6 +520,16 @@ export default {
     },
 
     validateField (fieldName) {
+      // Skip validation for policy name in update mode when a file is uploaded
+      if (fieldName === 'name' &&
+          this.projectConfig.mode === 'update' &&
+          this.existingPolicyFile &&
+          this.policyUpload.uploadedPolicyData) {
+        // Clear any existing errors
+        this.errors.name = []
+        return true
+      }
+
       // Delegate validation to centralized service
       let validationResult
 
@@ -560,9 +570,15 @@ export default {
         // Map validation errors to component error state
         this.errors.existingPolicy = validationResult.getErrorsByField('existingPolicy').map(e => e.message)
 
-        // Also validate the policy name in update mode
-        const nameValidation = Step1Validator.validateProjectName(this.projectConfig.name)
-        this.errors.name = nameValidation.errors.map(e => e.message)
+        // Only validate the policy name if no file has been uploaded yet
+        // Once a file is uploaded, skip name validation (policy name comes from uploaded file)
+        if (!this.existingPolicyFile || !this.policyUpload.uploadedPolicyData) {
+          const nameValidation = Step1Validator.validateProjectName(this.projectConfig.name)
+          this.errors.name = nameValidation.errors.map(e => e.message)
+        } else {
+          // Clear name errors when file is uploaded (name comes from file or user edited it)
+          this.errors.name = []
+        }
 
         // Also check if file is selected
         if (!this.existingPolicyFile) {
@@ -622,16 +638,12 @@ export default {
         // Create preview
         this.existingPolicyPreview = JSON.stringify(parsedPolicy, null, 2).substring(0, 500) + '...'
 
-        // Auto-populate policy name if empty
-        if (!this.projectConfig.name && parsedPolicy.name) {
+        // Always update policy name from uploaded file (overwrite any previous value)
+        if (parsedPolicy.name) {
           this.UPDATE_PROJECT_CONFIG({ name: parsedPolicy.name })
-          // Clear name errors since we just auto-populated a valid name
+          // Clear name errors since we just updated with a valid name from the file
           this.errors.name = []
-          console.log('[Step1] onFileUpload: Auto-populated policy name and cleared errors:', parsedPolicy.name)
-        } else if (this.projectConfig.name && this.projectConfig.name.trim()) {
-          // If name already exists and is valid, clear any errors
-          this.errors.name = []
-          console.log('[Step1] onFileUpload: Cleared name errors - name already set:', this.projectConfig.name)
+          console.log('[Step1] onFileUpload: Updated policy name from uploaded file:', parsedPolicy.name)
         }
 
         // If this is a different file, clear all downstream state

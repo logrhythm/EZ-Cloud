@@ -38,87 +38,99 @@ export const OPERATION_TYPES = {
 export const COMMON_REGEX_PATTERNS = [
   {
     name: 'IP Address (IPv4)',
-    pattern: '/(\\d+\\.\\d+\\.\\d+\\.\\d+)/',
-    captureGroup: 1,
+    pattern: '/(?<ipAddress>\\d+\\.\\d+\\.\\d+\\.\\d+)/',
+    captureGroup: 'ipAddress',
     example: 'Extracts "192.168.1.1" from "Connection from 192.168.1.1"',
-    description: 'IPv4 address in dotted-decimal notation'
+    description: 'IPv4 address in dotted-decimal notation',
+    sampleValue: 'Connection from 192.168.1.1 port 54321'
   },
   {
     name: 'IPv6 Address',
-    pattern: '/([0-9a-fA-F:]+)/',
-    captureGroup: 1,
+    pattern: '/(?<ipv6Address>[0-9a-fA-F:]+)/',
+    captureGroup: 'ipv6Address',
     example: 'Extracts "2001:0db8:85a3::8a2e:0370:7334"',
-    description: 'IPv6 address in colon-hexadecimal notation'
+    description: 'IPv6 address in colon-hexadecimal notation',
+    sampleValue: 'IPv6 address: 2001:0db8:85a3::8a2e:0370:7334'
   },
   {
     name: 'Email Address',
-    pattern: '/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})/',
-    captureGroup: 1,
+    pattern: '/(?<email>[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})/',
+    captureGroup: 'email',
     example: 'Extracts "user@example.com" from text',
-    description: 'Standard email address format'
+    description: 'Standard email address format',
+    sampleValue: 'Contact support at user.name@example.com for help'
   },
   {
     name: 'URL',
-    pattern: '/(https?:\\/\\/[^\\s]+)/',
-    captureGroup: 1,
+    pattern: '/(?<url>https?:\\/\\/[^\\s]+)/',
+    captureGroup: 'url',
     example: 'Extracts URLs starting with http:// or https://',
-    description: 'HTTP/HTTPS URL'
+    description: 'HTTP/HTTPS URL',
+    sampleValue: 'Visit our API at https://api.example.com/v1/users for more info'
   },
   {
     name: 'MAC Address',
-    pattern: '/([0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2})/',
-    captureGroup: 1,
+    pattern: '/(?<macAddress>[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2})/',
+    captureGroup: 'macAddress',
     example: 'Extracts MAC address like "00:1A:2B:3C:4D:5E"',
-    description: 'MAC address in colon notation'
+    description: 'MAC address in colon notation',
+    sampleValue: 'Device MAC address is 00:1A:2B:3C:4D:5E on network'
   },
   {
     name: 'Hostname/Domain',
-    pattern: '/([a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+)/',
-    captureGroup: 1,
+    pattern: '/(?<hostname>[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+)/',
+    captureGroup: 'hostname',
     example: 'Extracts "server.example.com"',
-    description: 'Fully qualified domain name'
+    description: 'Fully qualified domain name',
+    sampleValue: 'Connecting to server.example.com on port 443'
   },
   {
     name: 'Port Number',
-    pattern: '/:([0-9]{1,5})/',
-    captureGroup: 1,
-    example: 'Extracts port from "192.168.1.1:8080"',
-    description: 'Port number (1-65535)'
+    pattern: '/(?<port>\\b[0-9]{1,5}\\b)/',
+    captureGroup: 'port',
+    example: 'Extracts "8080" from text or "192.168.1.1:8080"',
+    description: 'Port number (1-65535)',
+    sampleValue: 'Server listening on port 8080'
   },
   {
     name: 'Windows File Path',
-    pattern: '/([A-Za-z]:\\\\[^\\s]+)/',
-    captureGroup: 1,
+    pattern: '/(?<windowsPath>[A-Za-z]:\\\\[^\\s]+)/',
+    captureGroup: 'windowsPath',
     example: 'Extracts "C:\\\\Users\\\\Admin\\\\file.txt"',
-    description: 'Windows absolute file path'
+    description: 'Windows absolute file path',
+    sampleValue: 'File saved to C:\\Users\\Admin\\Documents\\report.pdf successfully'
   },
   {
     name: 'Linux File Path',
-    pattern: '/(/[^\\s]+)/',
-    captureGroup: 1,
+    pattern: '/(?<linuxPath>/[^\\s]+)/',
+    captureGroup: 'linuxPath',
     example: 'Extracts "/var/log/syslog"',
-    description: 'Linux absolute file path'
+    description: 'Linux absolute file path',
+    sampleValue: 'Reading logs from /var/log/application/app.log'
   },
   {
     name: 'Username',
-    pattern: '/user[:\\s]+(\\w+)/',
-    captureGroup: 1,
+    pattern: '/user[:\\s]+(?<username>\\w+)/',
+    captureGroup: 'username',
     example: 'Extracts username from "user: admin" or "user admin"',
-    description: 'Username after "user:" or "user "'
+    description: 'Username after "user:" or "user "',
+    sampleValue: 'Login attempt from user: admin_user at 10:30 AM'
   },
   {
     name: 'UUID',
-    pattern: '/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/',
-    captureGroup: 1,
+    pattern: '/(?<uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/',
+    captureGroup: 'uuid',
     example: 'Extracts "550e8400-e29b-41d4-a716-446655440000"',
-    description: 'UUID/GUID in standard format'
+    description: 'UUID/GUID in standard format',
+    sampleValue: 'Transaction ID: 550e8400-e29b-41d4-a716-446655440000'
   },
   {
     name: 'Error/Exception',
-    pattern: '/(Error|Exception|Fault):\\s*(.+)/',
-    captureGroup: 2,
+    pattern: '/(?<errorType>Error|Exception|Fault):\\s*(?<errorMessage>.+)/',
+    captureGroup: 'errorMessage',
     example: 'Extracts error message after "Error:", "Exception:", or "Fault:"',
-    description: 'Error message extraction'
+    description: 'Error message extraction',
+    sampleValue: 'Error: File not found at specified path'
   }
 ]
 

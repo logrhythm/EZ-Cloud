@@ -498,6 +498,14 @@ export default {
     },
 
     /**
+     * Check if policy has already been prefilled for Step 4 filters
+     * @returns {boolean}
+     */
+    isPolicyPrefilled () {
+      return this.filterRules?.policyPrefilled === true
+    },
+
+    /**
      * Format field options for the select dropdown
      * @returns {Array<Object>} Formatted field options
      */
@@ -1065,9 +1073,11 @@ export default {
           throw new Error('Invalid condition index')
         }
 
-        // Update the operator value
-        const condition = this.localConditions[index]
-        condition.operator = value
+        // Create a new condition object to avoid any reference to Vuex state
+        const updatedCondition = Object.assign({}, this.localConditions[index], { operator: value })
+
+        // Replace the entire condition object in the array
+        this.$set(this.localConditions, index, updatedCondition)
 
         // Update expression
         this.debouncedUpdateExpression()
@@ -1110,12 +1120,13 @@ export default {
           throw new Error('Invalid condition index')
         }
 
-        // Update the value as user types
-        const condition = this.localConditions[index]
-
         // Only update if val is a string (to avoid null/undefined issues)
         if (typeof val === 'string') {
-          condition.value = val
+          // Create a new condition object to avoid any reference to Vuex state
+          const updatedCondition = Object.assign({}, this.localConditions[index], { value: val })
+
+          // Replace the entire condition object in the array
+          this.$set(this.localConditions, index, updatedCondition)
 
           // Validate the value based on field type
           this.validateConditionValue(index)
@@ -1172,9 +1183,11 @@ export default {
           throw new Error('Invalid condition index')
         }
 
-        // Update the value
-        const condition = this.localConditions[index]
-        condition.value = value
+        // Create a new condition object to avoid any reference to Vuex state
+        const updatedCondition = Object.assign({}, this.localConditions[index], { value: value })
+
+        // Replace the entire condition object in the array
+        this.$set(this.localConditions, index, updatedCondition)
 
         // Validate the value based on field type
         this.validateConditionValue(index)
@@ -1220,9 +1233,11 @@ export default {
         // Accept the custom value
         doneFn(trimmedValue, 'add-unique')
 
-        // Update the condition value
-        const condition = this.localConditions[index]
-        condition.value = trimmedValue
+        // Create a new condition object to avoid any reference to Vuex state
+        const updatedCondition = Object.assign({}, this.localConditions[index], { value: trimmedValue })
+
+        // Replace the entire condition object in the array
+        this.$set(this.localConditions, index, updatedCondition)
 
         // Validate the value based on field type
         this.validateConditionValue(index)
@@ -2171,14 +2186,18 @@ export default {
       // Restore previous state from store
       this.restoreStateFromStore()
 
-      // Check if in update mode and pre-fill from policy
-      if (this.isUpdateMode && this.policyUpload.uploadedPolicyData) {
-        console.log('[Step 4] Update mode detected - will pre-fill from policy')
+      // Check if in update mode and pre-fill from policy (only if not already prefilled)
+      if (this.isUpdateMode && this.policyUpload.uploadedPolicyData && !this.isPolicyPrefilled) {
+        console.log('[Step 4] Update mode detected and policy not yet prefilled - will pre-fill from policy')
 
         // Wait for field extraction to complete before prefilling
         this.$nextTick(async () => {
           await this.prefillFromPolicy(this.policyUpload.uploadedPolicyData)
+          // Mark policy as prefilled so it doesn't happen again
+          this.$store.commit('wizard/SET_POLICY_PREFILLED', { step: 'filterRules', prefilled: true })
         })
+      } else if (this.isPolicyPrefilled) {
+        console.log('[Step 4] Policy already prefilled - skipping prefill, using user changes from store')
       }
     } catch (error) {
       console.error('[Step 4] Error during initialization:', error)

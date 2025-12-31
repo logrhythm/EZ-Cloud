@@ -528,6 +528,20 @@ const mutations = {
     state.filterRules.expression = expression
   },
 
+  /**
+   * Mark policy as prefilled for a specific step
+   * @param {Object} state - Vuex state
+   * @param {Object} payload - { step: 'filterRules'|'schemaRules'|etc, prefilled: boolean }
+   */
+  SET_POLICY_PREFILLED (state, { step, prefilled }) {
+    if (state[step]) {
+      state[step].policyPrefilled = prefilled
+      console.log(`[Vuex] Set policyPrefilled=${prefilled} for ${step}`)
+    } else {
+      console.warn(`[Vuex] Cannot set policyPrefilled - step "${step}" not found in state`)
+    }
+  },
+
   // Field mapping mutations
   UPDATE_FIELD_MAPPINGS (state, mappings) {
     state.fieldMappings = { ...state.fieldMappings, ...mappings }

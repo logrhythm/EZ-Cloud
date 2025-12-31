@@ -101,6 +101,9 @@
                 <q-item-label caption class="preset-example">
                   {{ scope.opt.example }}
                 </q-item-label>
+                <q-item-label v-if="scope.opt.sampleValue" caption class="preset-sample">
+                  Sample: "{{ scope.opt.sampleValue }}"
+                </q-item-label>
               </q-item-section>
             </q-item>
           </template>
@@ -169,25 +172,6 @@
           </q-chip>
         </div>
       </div>
-
-      <!-- Test Button -->
-      <div class="action-buttons">
-        <q-btn
-          :loading="isTestingOperation"
-          :disable="!isPatternValid || !localPattern"
-          color="primary"
-          icon="play_arrow"
-          label="Test Operation"
-          @click="testOperation"
-          no-caps
-          unelevated
-          class="test-btn"
-        >
-          <template #loading>
-            <q-spinner-dots size="20px" />
-          </template>
-        </q-btn>
-      </div>
     </div>
   </div>
 </template>
@@ -197,7 +181,6 @@ import { ref, computed, watch } from 'vue'
 import { debounce } from 'quasar'
 import { COMMON_REGEX_PATTERNS } from '../../../constants/operations'
 import { validateRegexPattern, validateCaptureGroup, buildOperationSyntax } from '../../../utils/operationParser'
-import { MappingService } from '../../../services/wizard/mappingService'
 import OperationPreview from './OperationPreview.vue'
 
 export default {
@@ -222,7 +205,7 @@ export default {
       default: ''
     }
   },
-  emits: ['update:modelValue'],
+  emits: ['input'],
   setup (props, { emit }) {
     const localPattern = ref(props.modelValue?.pattern || '')
     // Support both numeric and alphanumeric capture groups
@@ -232,9 +215,9 @@ export default {
     const isPatternValid = ref(false)
     const patternError = ref(null)
     const captureGroupError = ref(null)
-    const isTestingOperation = ref(false)
     const previewResult = ref(null)
     const previewError = ref(null)
+    const isTestingOperation = ref(false)
 
     // Check if sample value is an array
     const isArrayInput = computed(() => {
@@ -419,6 +402,7 @@ export default {
       console.log('🔍 [DEBUG] patternObj is undefined?', patternObj === undefined)
       console.log('🔍 [DEBUG] patternObj has .pattern?', patternObj?.pattern)
       console.log('🔍 [DEBUG] patternObj has .captureGroup?', patternObj?.captureGroup)
+      console.log('🔍 [DEBUG] patternObj has .sampleValue?', patternObj?.sampleValue)
 
       console.log('🔍 [DEBUG] BEFORE UPDATE:')
       console.log('  - localPattern.value:', localPattern.value)
@@ -443,9 +427,25 @@ export default {
         // Emit changes to parent component
         emitChange()
 
-        console.log('🔍 [DEBUG] Calling testOperation()...')
-        // Test the operation with sample data
-        testOperation()
+        // If pattern has a sample value, test it immediately to show preview
+        if (patternObj.sampleValue) {
+          console.log('🔍 [DEBUG] Pattern has sampleValue, testing with:', patternObj.sampleValue)
+          // Test with the hardcoded sample value
+          const testResult = applyRegex(patternObj.sampleValue, patternObj.pattern, patternObj.captureGroup)
+          console.log('🔍 [DEBUG] Test result:', testResult)
+
+          if (testResult.isValid) {
+            previewResult.value = testResult.output
+            previewError.value = null
+            console.log('✅ [DEBUG] Sample test successful:', testResult.output)
+          } else {
+            previewError.value = testResult.error
+            previewResult.value = null
+            console.log('❌ [DEBUG] Sample test failed:', testResult.error)
+          }
+        } else {
+          console.log('🔍 [DEBUG] No sampleValue, pattern ready for use')
+        }
 
         console.log('🔍 [DEBUG] Setting up setTimeout to reset selectedPreset...')
         // Reset the dropdown selection so user can select the same pattern again
@@ -466,30 +466,6 @@ export default {
       console.log('='.repeat(60))
     }
 
-    const testOperation = async () => {
-      if (!isPatternValid.value || !localPattern.value) return
-
-      isTestingOperation.value = true
-      previewError.value = null
-
-      try {
-        const result = await MappingService.testOperation(operationSyntax.value, props.sampleValue)
-
-        if (result.success) {
-          previewResult.value = result.output
-          previewError.value = null
-        } else {
-          previewResult.value = null
-          previewError.value = result.error
-        }
-      } catch (error) {
-        previewError.value = error.message || 'Operation test failed'
-        previewResult.value = null
-      } finally {
-        isTestingOperation.value = false
-      }
-    }
-
     const emitChange = () => {
       // Convert to number if it's a numeric string, otherwise keep as string
       let captureGroupValue = localCaptureGroup.value
@@ -497,10 +473,24 @@ export default {
         captureGroupValue = parseInt(captureGroupValue, 10)
       }
 
-      emit('update:modelValue', {
+      const payload = {
         pattern: localPattern.value,
         captureGroup: captureGroupValue
-      })
+      }
+
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [RegexOperationConfig] emitChange - EMITTING')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ localPattern.value:', localPattern.value)
+      console.log('║ localCaptureGroup.value:', localCaptureGroup.value)
+      console.log('║ captureGroupValue (processed):', captureGroupValue)
+      console.log('║ PAYLOAD:', JSON.stringify(payload, null, 2))
+      console.log('║ 🔍 CALL STACK:', new Error().stack)
+      console.log('╚════════════════════════════════════════════════════════════════════════')
+
+      emit('input', payload)
+
+      console.log('✅ [RegexOperationConfig] emit() called with input event (Vue 2)')
     }
 
     // Handle capture group changes - allow alphanumeric values
@@ -546,17 +536,9 @@ export default {
     console.log('🔧 [SETUP] selectedPreset initial value:', selectedPreset.value)
     console.log('🔧 [SETUP] patternOptions:', patternOptions.value?.length, 'patterns')
 
-    // Auto-test when sample value changes
-    watch(() => props.sampleValue, () => {
-      if (isPatternValid.value && localPattern.value) {
-        testOperation()
-      }
-    })
-
     // Initial validation
     if (localPattern.value) {
       validatePattern()
-      testOperation()
     }
 
     return {
@@ -567,14 +549,13 @@ export default {
       isPatternValid,
       patternError,
       captureGroupError,
-      isTestingOperation,
       previewResult,
       previewError,
+      isTestingOperation,
       patternOptions,
       operationSyntax,
       debouncedValidate,
       insertPreset,
-      testOperation,
       onCaptureGroupChange,
       onDropdownInput,
       onDropdownChange,
@@ -670,34 +651,15 @@ export default {
   font-style: italic;
 }
 
-.action-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.test-btn {
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-}
-
-.action-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.test-btn {
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.5px;
+.preset-sample {
+  font-size: 10px;
+  color: rgba(33, 150, 243, 0.7);
+  font-family: 'Courier New', monospace;
+  margin-top: 2px;
+  background: rgba(33, 150, 243, 0.1);
+  padding: 2px 4px;
+  border-radius: 2px;
+  display: inline-block;
 }
 
 /* Validation Results */
@@ -775,14 +737,6 @@ export default {
 @media (max-width: 768px) {
   .config-header {
     font-size: 14px;
-  }
-
-  .action-buttons {
-    justify-content: stretch;
-
-    .test-btn {
-      flex: 1;
-    }
   }
 }
 </style>

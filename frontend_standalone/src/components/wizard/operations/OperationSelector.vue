@@ -509,7 +509,7 @@
                     v-model="tempOperationParameters"
                     :field-path="fieldPath"
                     :sample-value="sampleValue"
-                    @update:model-value="handleParametersChange"
+                    @input="handleParametersChange"
                   />
 
                   <!-- IsIP Configuration -->
@@ -518,7 +518,7 @@
                     v-model="tempOperationParameters"
                     :field-path="fieldPath"
                     :sample-value="sampleValue"
-                    @update:model-value="handleParametersChange"
+                    @input="handleParametersChange"
                   />
 
                   <!-- SPLIT Configuration -->
@@ -537,7 +537,7 @@
                     :field-path="fieldPath"
                     :sample-value="sampleValue"
                     :operation-type="tempOperationType"
-                    @update:model-value="handleParametersChange"
+                    @input="handleParametersChange"
                   />
 
                   <!-- ToString Configuration -->
@@ -546,7 +546,7 @@
                     v-model="tempOperationParameters"
                     :field-path="fieldPath"
                     :sample-value="sampleValue"
-                    @update:model-value="handleParametersChange"
+                    @input="handleParametersChange"
                   />
 
                   <!-- DateTime Operations Configuration -->
@@ -559,7 +559,7 @@
                     :field-path="fieldPath"
                     :sample-value="sampleValue"
                     :operation-type="tempOperationType"
-                    @update:model-value="handleParametersChange"
+                    @input="handleParametersChange"
                   />
 
                   <!-- Math Operations Configuration -->
@@ -572,7 +572,6 @@
                     :field-path="fieldPath"
                     :sample-value="sampleValue"
                     :operation-type="tempOperationType"
-                    @update:model-value="handleParametersChange"
                     @input="handleParametersChange"
                   />
                 </div>
