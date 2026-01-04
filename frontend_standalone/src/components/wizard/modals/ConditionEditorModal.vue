@@ -535,14 +535,19 @@ export default {
 
           console.log(`║ Field: ${absolutePath} → Resolved: ${resolved.jsonPath}, Fanout: ${resolved.fanoutParent || 'none'}`)
 
-          // Use the RESOLVED path (relative to fanout) as label and value
-          // This ensures fields within fanout arrays show as $.id instead of $.teamMembers[*].id
+          // CRITICAL: Convert $ prefix to @ prefix for filter expressions
+          // Fields in filter expressions use @ notation (e.g., @.name, @.id)
+          // while JSONPath uses $ notation (e.g., $.name, $.id)
+          const displayPath = resolved.jsonPath.replace(/^\$/, '@')
+
+          // Use the RESOLVED path (relative to fanout) with @ prefix as label and value
+          // This ensures fields within fanout arrays show as @.id instead of $.teamMembers[*].id
           return {
-            label: resolved.jsonPath, // Use resolved relative path (e.g., $.id for fanout fields)
-            value: resolved.jsonPath, // Use resolved relative path as value
+            label: displayPath, // Use @ prefix for filter expressions (e.g., @.id for fanout fields)
+            value: displayPath, // Use @ prefix as value
             type: pathObj.type || 'string',
             sampleValues: pathObj.sampleValue ? [pathObj.sampleValue] : [],
-            path: resolved.jsonPath, // Use resolved path
+            path: displayPath, // Use @ prefix path
             isJsonField: isFromJsonString,
             isFromJsonString: isFromJsonString,
             fanoutParent: resolved.fanoutParent // ADD fanout parent information (SAME as TransformEditorModal)

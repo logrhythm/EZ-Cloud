@@ -699,13 +699,77 @@ export default {
         console.log('[Step3] Checking field existence:', {
           originalPath: fieldPath,
           normalizedPath,
-          sampleDataKeys: Object.keys(sampleData)
+          sampleDataKeys: Object.keys(sampleData),
+          isMultiLineLog: this.isMultiLineLog,
+          sampleDataIsArray: Array.isArray(sampleData)
         })
 
         // Split path using PathNormalizer utility
         const pathParts = PathNormalizer.splitPath(normalizedPath)
 
-        // Traverse the object
+        // For multi-line logs (array of records), check if field exists in ANY record
+        if (Array.isArray(sampleData) && sampleData.length > 0) {
+          console.log('[Step3] Multi-line data detected, checking field in array records')
+
+          // Try to find the field in any of the records
+          for (let recordIndex = 0; recordIndex < sampleData.length; recordIndex++) {
+            const record = sampleData[recordIndex]
+
+            // Traverse this record with the path
+            let current = record
+            let found = true
+
+            for (let i = 0; i < pathParts.length; i++) {
+              const part = pathParts[i]
+
+              if (current && typeof current === 'object') {
+                // Handle nested arrays
+                if (Array.isArray(current)) {
+                  if (part === '*') {
+                    if (current.length === 0) {
+                      found = false
+                      break
+                    }
+                    current = current[0]
+                    continue
+                  } else if (!isNaN(part)) {
+                    const index = parseInt(part, 10)
+                    if (index >= current.length) {
+                      found = false
+                      break
+                    }
+                    current = current[index]
+                    continue
+                  }
+                }
+
+                // Check if property exists - CASE-INSENSITIVE
+                const value = getCaseInsensitiveProperty(current, part)
+                if (value !== undefined) {
+                  current = value
+                } else {
+                  found = false
+                  break
+                }
+              } else {
+                found = false
+                break
+              }
+            }
+
+            // If found in this record, return true
+            if (found) {
+              console.log(`[Step3] Field "${fieldPath}" EXISTS in sample data (found in record ${recordIndex})`)
+              return true
+            }
+          }
+
+          // Not found in any record
+          console.log(`[Step3] Field "${fieldPath}" NOT FOUND in any of ${sampleData.length} records`)
+          return false
+        }
+
+        // Single-line log - traverse the object directly
         let current = sampleData
         for (let i = 0; i < pathParts.length; i++) {
           const part = pathParts[i]
@@ -1478,20 +1542,33 @@ export default {
         // Determine if this is old or new implementation - USE CASE-INSENSITIVE ACCESS
         const fanout = getCaseInsensitiveProperty(schemaRule, 'fanout')
         const inputField = fanout ? getCaseInsensitiveProperty(fanout, 'inputField') : undefined
+        const datafanout = getCaseInsensitiveProperty(schemaRule, 'datafanout')
         const childfanouts = getCaseInsensitiveProperty(schemaRule, 'childfanouts')
 
+        // REFACTORED: Check for datafanout FIRST (primary indicator), then childfanouts
+        // This aligns with the new format where datafanout is the key attribute
+        const hasDataFanout = datafanout && datafanout !== null && datafanout !== ''
+        const hasChildFanouts = childfanouts && Array.isArray(childfanouts)
+        const hasNewImplementation = hasDataFanout || hasChildFanouts
         const hasOldImplementation = inputField && Array.isArray(inputField)
-        const hasNewImplementation = childfanouts && Array.isArray(childfanouts)
 
-        console.log('[Step 3] Implementation type detection:')
+        console.log('[Step 3] Implementation type detection (datafanout-first logic):')
+        console.log('  - Has datafanout attribute:', hasDataFanout)
+        if (hasDataFanout) {
+          console.log('    → datafanout value:', datafanout)
+        }
+        console.log('  - Has childfanouts array:', hasChildFanouts)
+        if (hasChildFanouts) {
+          console.log('    → childfanouts:', childfanouts)
+        }
+        console.log('  - Has new implementation (datafanout OR childfanouts):', hasNewImplementation)
         console.log('  - Has old implementation (fanout.inputField):', hasOldImplementation)
-        console.log('  - Has new implementation (childfanouts):', hasNewImplementation)
 
         // Process based on implementation type
         if (hasNewImplementation) {
-          // NEW IMPLEMENTATION: Process childfanouts with relative path resolution
-          console.log('[Step 3] === USING NEW IMPLEMENTATION (childfanouts) ===')
-          await this.processChildFanoutsNew(childfanouts, missingFields)
+          // NEW IMPLEMENTATION WITH DATAFANOUT: Process datafanout + childfanouts
+          console.log('[Step 3] === USING NEW IMPLEMENTATION (datafanout + childfanouts) ===')
+          await this.processDataFanoutWithChildren(datafanout, childfanouts, missingFields)
         } else if (hasOldImplementation) {
           // OLD IMPLEMENTATION: Process fanout.inputField
           console.log('[Step 3] === USING OLD IMPLEMENTATION (fanout.inputField) ===')
@@ -1507,17 +1584,17 @@ export default {
         this.selectedFanoutFields = this.removeDuplicateArrayPaths(this.selectedFanoutFields)
         console.log('[Step 3] selectedFanoutFields AFTER cleanup:', JSON.stringify(this.selectedFanoutFields))
 
-        // Store child fanouts in Vuex if present
+        // Store child fanouts in Vuex if present (either as array or null for new implementation)
         if (hasNewImplementation) {
-          this.$store.commit('wizard/SET_CHILD_FANOUTS', childfanouts)
-          console.log('[Step 3] Stored child fanouts in Vuex')
+          this.$store.commit('wizard/SET_CHILD_FANOUTS', childfanouts || [])
+          console.log('[Step 3] Stored child fanouts in Vuex:', childfanouts ? childfanouts.length : 0, 'items')
         }
 
         // Update missing policy fields
         this.missingPolicyFields = [...this.missingPolicyFields, ...missingFields]
 
         // Step 4: Update Vuex store with pre-filled data (using cleaned paths)
-        const childFanoutsForStore = childfanouts || []
+        const childFanoutsForStore = (hasNewImplementation && childfanouts) ? childfanouts : []
         this.UPDATE_SCHEMA_RULES({
           convertToJson: [...this.selectedConvertToJsonFields],
           fanout: [...this.selectedFanoutFields], // Now using cleaned paths
@@ -1688,146 +1765,120 @@ export default {
     },
 
     /**
-     * Process child fanouts using NEW implementation format (childfanouts array)
-     * This handles relative paths with parent-child relationships
+     * Process datafanout and childfanouts according to new schema rules
+     *
+     * Rules from datafanout.md:
+     * 1. Single array: datafanout = selected array, childfanouts = null
+     * 2. Multiple arrays with one top-level: datafanout = top-level array, childfanouts = child arrays
+     * 3. Multiple top-level arrays: datafanout = null, childfanouts = all arrays
+     *
+     * @param {string|null} datafanout - The top-level fanout array path (e.g., "$.Records[*]")
+     * @param {Array|null} childfanouts - Array of child fanout configurations with {field, parentpath}
+     * @param {Array} missingFields - Array to track missing fields for warnings
      */
-    async processChildFanoutsNew (childFanouts, missingFields) {
+    async processDataFanoutWithChildren (datafanout, childfanouts, missingFields) {
       console.log('╔══════════════════════════════════════════════════════════════════════════════')
-      console.log('║ [Step 3] Processing child fanouts (NEW FORMAT)')
+      console.log('║ [Step 3] Processing datafanout with childfanouts (NEW FORMAT)')
       console.log('╠══════════════════════════════════════════════════════════════════════════════')
-      console.log('║ Number of child fanouts:', childFanouts.length)
-      console.log('║ Child fanouts:', JSON.stringify(childFanouts, null, 2))
+      console.log('║ datafanout:', datafanout)
+      console.log('║ Number of childfanouts:', childfanouts ? childfanouts.length : 0)
+      if (childfanouts && childfanouts.length > 0) {
+        console.log('║ childfanouts:', JSON.stringify(childfanouts, null, 2))
+      }
       console.log('╚══════════════════════════════════════════════════════════════════════════════')
 
-      // Build a map of parent paths for absolute path resolution
-      // Key: field path, Value: absolute path
-      const pathResolutionMap = new Map()
+      // Step 1: Process datafanout if it exists (Rule 1 & Rule 2)
+      if (datafanout && datafanout !== null && datafanout !== '') {
+        console.log('[Step 3] === PROCESSING DATAFANOUT (Rule 1 or Rule 2) ===')
+        console.log('[Step 3] datafanout value:', datafanout)
 
-      // First pass: Process root-level arrays (parentpath === null) - USE CASE-INSENSITIVE ACCESS
-      const rootFanouts = childFanouts.filter(cf => {
-        const parentpath = getCaseInsensitiveProperty(cf, 'parentpath')
-        return parentpath === null || parentpath === undefined
-      })
-      const nestedFanouts = childFanouts.filter(cf => {
-        const parentpath = getCaseInsensitiveProperty(cf, 'parentpath')
-        return parentpath !== null && parentpath !== undefined
-      })
+        // Normalize the datafanout path
+        const normalizedDatafanout = this.normalizeFanoutPath(datafanout)
+        console.log('[Step 3] Normalized datafanout:', normalizedDatafanout)
 
-      console.log('[Step 3] Root-level fanouts:', rootFanouts.length)
-      console.log('[Step 3] Nested fanouts:', nestedFanouts.length)
-
-      // Process root-level arrays first
-      for (const cf of rootFanouts) {
-        const field = getCaseInsensitiveProperty(cf, 'field')
-        const parentpath = getCaseInsensitiveProperty(cf, 'parentpath')
-
-        console.log('╔══════════════════════════════════════════════════════════════════════════════')
-        console.log('║ [Step 3] Processing ROOT-LEVEL fanout')
-        console.log('╠══════════════════════════════════════════════════════════════════════════════')
-        console.log('║ Field:', field)
-        console.log('║ Parent path:', parentpath)
-        console.log('╚══════════════════════════════════════════════════════════════════════════════')
-
-        // For root arrays, field is already absolute
-        const absolutePath = field
-        const normalizedPath = this.normalizeFanoutPath(absolutePath)
-
-        // Store in resolution map
-        pathResolutionMap.set(field, normalizedPath)
-
-        // Try to find in candidates
-        const matched = this.findFanoutCandidate(absolutePath)
+        // Try to find datafanout in candidates (case-insensitive)
+        const matched = this.findFanoutCandidate(datafanout)
 
         if (matched) {
+          // Found in candidates - add to selections
           if (!this.selectedFanoutFields.includes(matched)) {
             this.selectedFanoutFields.push(matched)
-            console.log('[Step 3] ✅ Added root fanout to selections:', matched)
+            console.log('[Step 3] ✅ Added datafanout to selections:', matched)
+          } else {
+            console.log('[Step 3] ℹ️ datafanout already in selections:', matched)
           }
         } else {
-          console.warn('[Step 3] ⚠️ Root fanout not found in candidates')
-          this.injectMissingFanoutArray(absolutePath, null, missingFields)
-          pathResolutionMap.set(cf.field, normalizedPath)
+          // Not found - inject as missing array
+          console.warn('[Step 3] ⚠️ datafanout not found in candidates, injecting as missing')
+          this.injectMissingFanoutArray(datafanout, null, missingFields)
+          // After injection, add the normalized path to selections
+          if (!this.selectedFanoutFields.includes(normalizedDatafanout)) {
+            this.selectedFanoutFields.push(normalizedDatafanout)
+          }
         }
+      } else {
+        console.log('[Step 3] No datafanout specified (null or empty) - Rule 3 scenario')
       }
 
-      // Second pass: Process nested arrays using resolution map
-      // Keep trying until all are resolved or no progress is made
-      let unprocessed = [...nestedFanouts]
-      const maxIterations = 10 // Prevent infinite loops
-      let iteration = 0
+      // Step 2: Process childfanouts if they exist (Rule 2 & Rule 3)
+      if (childfanouts && Array.isArray(childfanouts) && childfanouts.length > 0) {
+        console.log('[Step 3] === PROCESSING CHILDFANOUTS ===')
+        console.log('[Step 3] Number of childfanouts:', childfanouts.length)
 
-      while (unprocessed.length > 0 && iteration < maxIterations) {
-        iteration++
-        console.log(`[Step 3] === Nested fanout resolution pass ${iteration} ===`)
-        console.log(`[Step 3] Unprocessed fanouts remaining: ${unprocessed.length}`)
-
-        const stillUnprocessed = []
-
-        for (const cf of unprocessed) {
-          const field = getCaseInsensitiveProperty(cf, 'field')
-          const parentpath = getCaseInsensitiveProperty(cf, 'parentpath')
+        // Process each child fanout configuration
+        for (let i = 0; i < childfanouts.length; i++) {
+          const childConfig = childfanouts[i]
+          const childField = getCaseInsensitiveProperty(childConfig, 'field')
+          const childParentPath = getCaseInsensitiveProperty(childConfig, 'parentpath')
 
           console.log('╔══════════════════════════════════════════════════════════════════════════════')
-          console.log('║ [Step 3] Processing NESTED fanout')
-          console.log('╠══════════════════════════════════════════════════════════════════════════════')
-          console.log('║ Field (relative):', field)
-          console.log('║ Parent path:', parentpath)
+          console.log(`║ [Step 3] Processing childfanout ${i + 1}/${childfanouts.length}`)
+          console.log('║   field:', childField)
+          console.log('║   parentpath:', childParentPath)
           console.log('╚══════════════════════════════════════════════════════════════════════════════')
 
-          // Check if parent has been resolved
-          const parentAbsolutePath = pathResolutionMap.get(parentpath)
-
-          if (!parentAbsolutePath) {
-            console.warn('[Step 3] ⚠️ Parent path not yet resolved, deferring:', parentpath)
-            stillUnprocessed.push(cf)
+          if (!childField) {
+            console.warn('[Step 3] ⚠️ Child fanout missing "field" property, skipping')
             continue
           }
 
-          console.log('[Step 3] Parent resolved to:', parentAbsolutePath)
+          // Normalize the child field path
+          const normalizedChildField = this.normalizeFanoutPath(childField)
+          console.log('[Step 3] Normalized child field:', normalizedChildField)
 
-          // Build absolute path using PathNormalizer utility
-          const absolutePath = PathNormalizer.toAbsolute(field, parentAbsolutePath)
-
-          console.log('[Step 3] Constructed absolute path:', absolutePath)
-
-          const normalizedPath = this.normalizeFanoutPath(absolutePath)
-
-          // Store in resolution map
-          pathResolutionMap.set(cf.field, normalizedPath)
-
-          // Try to find in candidates
-          const matched = this.findFanoutCandidate(absolutePath)
+          // Try to find child field in candidates (case-insensitive)
+          const matched = this.findFanoutCandidate(childField)
 
           if (matched) {
+            // Found in candidates - add to selections
             if (!this.selectedFanoutFields.includes(matched)) {
               this.selectedFanoutFields.push(matched)
-              console.log('[Step 3] ✅ Added nested fanout to selections:', matched)
+              console.log('[Step 3] ✅ Added child fanout to selections:', matched)
+            } else {
+              console.log('[Step 3] ℹ️ Child fanout already in selections:', matched)
             }
           } else {
-            console.warn('[Step 3] ⚠️ Nested fanout not found in candidates')
-            this.injectMissingFanoutArray(absolutePath, parentAbsolutePath, missingFields)
-            pathResolutionMap.set(cf.field, normalizedPath)
+            // Not found - inject as missing array with parent path
+            console.warn('[Step 3] ⚠️ Child fanout not found in candidates, injecting as missing')
+            console.log('[Step 3]   Child field:', childField)
+            console.log('[Step 3]   Parent path:', childParentPath)
+
+            this.injectMissingFanoutArray(childField, childParentPath, missingFields)
+            // After injection, add the normalized path to selections
+            if (!this.selectedFanoutFields.includes(normalizedChildField)) {
+              this.selectedFanoutFields.push(normalizedChildField)
+            }
           }
         }
-
-        unprocessed = stillUnprocessed
-      }
-
-      if (unprocessed.length > 0) {
-        console.error('[Step 3] ⚠️ Failed to resolve all nested fanouts after', iteration, 'iterations')
-        console.error('[Step 3] Unresolved fanouts:', unprocessed.map(cf => cf.field))
+      } else {
+        console.log('[Step 3] No childfanouts to process (Rule 1 scenario)')
       }
 
       console.log('╔══════════════════════════════════════════════════════════════════════════════')
-      console.log('║ [Step 3] Completed processing child fanouts (NEW FORMAT)')
+      console.log('║ [Step 3] Completed processing datafanout with childfanouts')
       console.log('║ Total selectedFanoutFields:', this.selectedFanoutFields.length)
-      console.log('║ selectedFanoutFields BEFORE cleanup:', JSON.stringify(this.selectedFanoutFields))
-      console.log('║ Path resolution map:', Array.from(pathResolutionMap.entries()))
+      console.log('║ selectedFanoutFields:', JSON.stringify(this.selectedFanoutFields))
       console.log('╚══════════════════════════════════════════════════════════════════════════════')
-
-      // Clean up duplicate/incomplete paths that may have been added during processing
-      this.selectedFanoutFields = this.removeDuplicateArrayPaths(this.selectedFanoutFields)
-      console.log('[Step 3] selectedFanoutFields AFTER cleanup:', JSON.stringify(this.selectedFanoutFields))
     },
 
     /**
@@ -2215,28 +2266,7 @@ export default {
 
       // CRITICAL: Deduplicate candidates using case-insensitive path matching
       // This prevents duplicate array paths when both $.Log and $.LOG are selected
-      console.log('╔═══════════════════════════════════════════════════════════════════════')
-      console.log('║ [DEBUG] Deduplicating candidates (case-insensitive)')
-      console.log('║   updatedCandidates BEFORE deduplication:', updatedCandidates.length)
-      console.log('╚═══════════════════════════════════════════════════════════════════════')
-
-      const deduplicatedCandidates = []
-      const seenPathsLowerCase = new Map() // Track seen paths (case-insensitive)
-
-      updatedCandidates.forEach((candidate, idx) => {
-        const pathLower = candidate.path.toLowerCase()
-
-        if (!seenPathsLowerCase.has(pathLower)) {
-          // First occurrence - keep it
-          seenPathsLowerCase.set(pathLower, candidate.path)
-          deduplicatedCandidates.push(candidate)
-          console.log(`║ [${idx}] ✓ Keeping: "${candidate.path}"`)
-        } else {
-          // Duplicate found (different case)
-          const existingPath = seenPathsLowerCase.get(pathLower)
-          console.log(`║ [${idx}] ✗ Skipping duplicate: "${candidate.path}" (already have "${existingPath}")`)
-        }
-      })
+      const deduplicatedCandidates = SchemaRuleService.deduplicateFanoutCandidates(updatedCandidates)
 
       console.log('╔═══════════════════════════════════════════════════════════════════════')
       console.log('║ [DEBUG] Deduplication complete')
@@ -2345,25 +2375,28 @@ export default {
           ? this.fanoutCandidates
           : []
 
-        // Build childfanouts structure with error handling
-        let childfanouts = []
+        // Build datafanout structure with error handling (new format)
+        let datafanoutStructure = { datafanout: null, childfanouts: [] }
         try {
-          childfanouts = SchemaRuleService.buildChildFanouts(
+          datafanoutStructure = SchemaRuleService.buildDataFanoutStructure(
             fieldsForFanout,
             availableFanoutCandidates
           )
-          console.log('=== Step 3 proceedToNext: Successfully built childfanouts ===', childfanouts.length)
+          console.log('=== Step 3 proceedToNext: Successfully built datafanout structure ===')
+          console.log('  datafanout:', datafanoutStructure.datafanout)
+          console.log('  childfanouts count:', datafanoutStructure.childfanouts?.length || 0)
         } catch (error) {
-          console.error('=== Step 3 proceedToNext: Error building childfanouts ===', error)
-          // Create empty childfanouts in case of error
-          childfanouts = []
+          console.error('=== Step 3 proceedToNext: Error building datafanout structure ===', error)
+          // Create empty structure in case of error
+          datafanoutStructure = { datafanout: null, childfanouts: [] }
         }
 
         // Update Vuex store with schema configuration
         this.UPDATE_SCHEMA_RULES({
           convertToJson: fieldsToConvertToJson,
           fanout: fieldsForFanout,
-          childfanouts // Store the built childfanouts for policy generation
+          datafanout: datafanoutStructure.datafanout, // New datafanout attribute
+          childfanouts: datafanoutStructure.childfanouts // Store the built childfanouts for policy generation
         })
 
         console.log('=== Step 3 proceedToNext: Schema rules updated in store ===')
@@ -2610,25 +2643,28 @@ export default {
           ? this.fanoutCandidates
           : []
 
-        // Build childfanouts structure with error handling
-        let childfanouts = []
+        // Build datafanout structure with error handling (new format)
+        let datafanoutStructure = { datafanout: null, childfanouts: [] }
         try {
-          childfanouts = SchemaRuleService.buildChildFanouts(
+          datafanoutStructure = SchemaRuleService.buildDataFanoutStructure(
             fieldsForFanout,
             availableFanoutCandidates
           )
-          console.log('=== Step 3 beforeDestroy: Successfully built childfanouts ===', childfanouts.length)
+          console.log('=== Step 3 beforeDestroy: Successfully built datafanout structure ===')
+          console.log('  datafanout:', datafanoutStructure.datafanout)
+          console.log('  childfanouts count:', datafanoutStructure.childfanouts?.length || 0)
         } catch (error) {
-          console.error('=== Step 3 beforeDestroy: Error building childfanouts ===', error)
-          // Create empty childfanouts in case of error
-          childfanouts = []
+          console.error('=== Step 3 beforeDestroy: Error building datafanout structure ===', error)
+          // Create empty structure in case of error
+          datafanoutStructure = { datafanout: null, childfanouts: [] }
         }
 
         // Update Vuex store with current selections
         this.UPDATE_SCHEMA_RULES({
           convertToJson: fieldsToConvertToJson,
           fanout: fieldsForFanout,
-          childfanouts // Store the built childfanouts for policy generation
+          datafanout: datafanoutStructure.datafanout, // New datafanout attribute
+          childfanouts: datafanoutStructure.childfanouts // Store the built childfanouts for policy generation
         })
 
         console.log('=== Step 3 beforeDestroy: Selections saved to store ===')

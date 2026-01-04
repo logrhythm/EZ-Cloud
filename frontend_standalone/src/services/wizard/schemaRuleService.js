@@ -361,19 +361,103 @@ export class SchemaRuleService {
   }
 
   /**
-   * Normalize an array path for policy generation
-   * Ensures path starts with $ and uses [*] notation for arrays
+   * Build datafanout structure according to the new schema rules
    *
-   * CRITICAL: The [*] notation MUST always be at the END of each attribute name as a SUFFIX
-   * Correct format: $.attributeName[*] or $.parent[*].child[*]
+   * Rules:
+   * 1. Single array: datafanout = that array, childfanouts = null
+   * 2. Multiple arrays with one top-level: datafanout = top array, childfanouts = children
+   * 3. Multiple top-level arrays: datafanout = null, childfanouts = all arrays
    *
-   * Examples:
-   *   Input: "tags[0]" or "tags" → Output: "$.tags[*]"
-   *   Input: "$.tags[0]" → Output: "$.tags[*]"
-   *   Input: "[0].tags" or "$[0].tags" → Output: "$.tags[*]"
-   *   Input: "outerArray[0].innerArray[0]" → Output: "$.outerArray[*].innerArray[*]"
-   *   Input: "$.outerArray[0].innerArray[0]" → Output: "$.outerArray[*].innerArray[*]"
-   *
+   * @param {Array} selectedArrayPaths - Array paths selected by user (e.g., ["Log.Records", "Log.Records[*].changes"])
+   * @param {Array} allArrayFields - All available array field metadata (with parentPath info)
+   * @returns {Object} Object with { datafanout: string|null, childfanouts: Array|null }
+   */
+  static buildDataFanoutStructure (selectedArrayPaths, allArrayFields) {
+    console.log('╔═══════════════════════════════════════════════════════════════════════')
+    console.log('║ [buildDataFanoutStructure] START')
+    console.log('╠═══════════════════════════════════════════════════════════════════════')
+    console.log('║ selectedArrayPaths:', JSON.stringify(selectedArrayPaths))
+    console.log('║ allArrayFields count:', allArrayFields?.length || 0)
+    console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+    // Handle empty or invalid input
+    if (!selectedArrayPaths || !Array.isArray(selectedArrayPaths) || selectedArrayPaths.length === 0) {
+      console.log('[buildDataFanoutStructure] No selectedArrayPaths provided')
+      return { datafanout: null, childfanouts: null }
+    }
+
+    // Normalize all paths
+    const normalizedPaths = selectedArrayPaths.map(path => this._normalizeArrayPathForPolicy(path))
+    console.log('[buildDataFanoutStructure] Normalized paths:', JSON.stringify(normalizedPaths))
+
+    // Rule 1: Single array selection
+    if (normalizedPaths.length === 1) {
+      console.log('[buildDataFanoutStructure] Rule 1: Single array selection')
+      return {
+        datafanout: normalizedPaths[0],
+        childfanouts: null
+      }
+    }
+
+    // Find top-level arrays (those with parentpath = null)
+    const topLevelArrays = []
+    const childArrays = []
+
+    normalizedPaths.forEach(path => {
+      // Find metadata for this path (case-insensitive)
+      const metadata = allArrayFields?.find(field =>
+        field.path && field.path.toLowerCase() === path.toLowerCase()
+      )
+
+      // Check if it's a top-level array
+      // A top-level array has no parent or its parent is null
+      const isTopLevel = !metadata?.parentPath || metadata.parentPath === null || metadata.parentPath === ''
+
+      if (isTopLevel) {
+        topLevelArrays.push(path)
+      } else {
+        childArrays.push({
+          path: path,
+          parentPath: metadata.parentPath
+        })
+      }
+    })
+
+    console.log('[buildDataFanoutStructure] Top-level arrays:', JSON.stringify(topLevelArrays))
+    console.log('[buildDataFanoutStructure] Child arrays:', JSON.stringify(childArrays))
+
+    // Rule 2: Multiple arrays with one top-level array
+    if (topLevelArrays.length === 1) {
+      console.log('[buildDataFanoutStructure] Rule 2: One top-level array with children')
+
+      // Build childfanouts using existing method
+      const childfanouts = this.buildChildFanouts(normalizedPaths, allArrayFields)
+
+      // Filter out the top-level array from childfanouts (it should only contain children)
+      const topLevelPath = topLevelArrays[0]
+      const filteredChildfanouts = childfanouts.filter(cf => {
+        // Case-insensitive comparison
+        return cf.field.toLowerCase() !== topLevelPath.toLowerCase()
+      })
+
+      return {
+        datafanout: topLevelPath,
+        childfanouts: filteredChildfanouts.length > 0 ? filteredChildfanouts : null
+      }
+    }
+
+    // Rule 3: Multiple top-level arrays
+    console.log('[buildDataFanoutStructure] Rule 3: Multiple top-level arrays')
+    const childfanouts = this.buildChildFanouts(normalizedPaths, allArrayFields)
+
+    return {
+      datafanout: null,
+      childfanouts: childfanouts
+    }
+  }
+
+  /**
+   * Helper method to normalize array path for policy export
    * @param {string} path - Array path to normalize
    * @returns {string} Normalized path
    * @private
@@ -413,6 +497,47 @@ export class SchemaRuleService {
     }
 
     return normalized
+  }
+
+  /**
+   * Deduplicate fanout candidates using case-insensitive path matching
+   * This prevents duplicate array paths when both $.Log and $.LOG are selected
+   *
+   * @param {Array} candidates - Array of fanout candidate objects with {path, ...}
+   * @returns {Array} Deduplicated array of fanout candidates
+   */
+  static deduplicateFanoutCandidates (candidates) {
+    if (!candidates || !Array.isArray(candidates) || candidates.length === 0) {
+      return []
+    }
+
+    console.log('[deduplicateFanoutCandidates] Input candidates:', candidates.length)
+
+    // Use a Map with lowercase path as key to detect duplicates
+    const uniqueCandidatesMap = new Map()
+
+    candidates.forEach(candidate => {
+      const path = candidate.path
+      if (!path) return
+
+      const lowerPath = path.toLowerCase()
+
+      // If we haven't seen this path (case-insensitive), add it
+      if (!uniqueCandidatesMap.has(lowerPath)) {
+        uniqueCandidatesMap.set(lowerPath, candidate)
+        console.log(`[deduplicateFanoutCandidates] ✓ Keeping: ${path}`)
+      } else {
+        // Duplicate found - keep the first occurrence
+        const existing = uniqueCandidatesMap.get(lowerPath)
+        console.log(`[deduplicateFanoutCandidates] ✗ Removing duplicate: ${path} (keeping: ${existing.path})`)
+      }
+    })
+
+    const deduplicated = Array.from(uniqueCandidatesMap.values())
+    console.log('[deduplicateFanoutCandidates] Output candidates:', deduplicated.length)
+    console.log('[deduplicateFanoutCandidates] Removed duplicates:', candidates.length - deduplicated.length)
+
+    return deduplicated
   }
 
   /**
@@ -1560,8 +1685,4 @@ export class SchemaRuleService {
     const lastPart = parts[parts.length - 1]
     current[lastPart] = value
   }
-}
-
-export default {
-  SchemaRuleService
 }

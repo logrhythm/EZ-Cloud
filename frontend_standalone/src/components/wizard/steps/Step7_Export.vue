@@ -567,6 +567,18 @@ export default {
       subTransformsCount: this.subTransforms.subTransformsList?.length || 0
     })
 
+    // DEBUG: Log schemaRules state on mount
+    console.log('╔═══════════════════════════════════════════════════════════════════════')
+    console.log('║ [Step 7 MOUNTED] schemaRules state from Vuex store')
+    console.log('╠═══════════════════════════════════════════════════════════════════════')
+    console.log('║ Full schemaRules object:', JSON.stringify(this.schemaRules, null, 2))
+    console.log('║ schemaRules.convertToJson:', this.schemaRules.convertToJson)
+    console.log('║ schemaRules.fanout:', this.schemaRules.fanout)
+    console.log('║ schemaRules.datafanout:', this.schemaRules.datafanout)
+    console.log('║ schemaRules.childfanouts:', this.schemaRules.childfanouts)
+    console.log('║ schemaRules.parsedStringifiedJsonFields:', this.schemaRules.parsedStringifiedJsonFields)
+    console.log('╚═══════════════════════════════════════════════════════════════════════')
+
     // ALWAYS regenerate policy when entering Step 7
     // This ensures any changes made in previous steps are reflected
     this.regeneratePolicy()
@@ -719,9 +731,23 @@ export default {
           policy.filter = this.filterRules.expression
         }
 
+        // DEBUG: Log schemaRules state
+        console.log('╔═══════════════════════════════════════════════════════════════════════')
+        console.log('║ [Step 7] Checking schemaRules state')
+        console.log('╠═══════════════════════════════════════════════════════════════════════')
+        console.log('║ schemaRules:', this.schemaRules)
+        console.log('║ schemaRules.convertToJson:', this.schemaRules.convertToJson)
+        console.log('║ schemaRules.datafanout:', this.schemaRules.datafanout)
+        console.log('║ schemaRules.childfanouts:', this.schemaRules.childfanouts)
+        console.log('║ schemaRules.fanout (legacy):', this.schemaRules.fanout)
+        console.log('╚═══════════════════════════════════════════════════════════════════════')
+
         // Add schema rules if present
         const hasSchemaRules = this.schemaRules.convertToJson.length > 0 ||
+                              this.schemaRules.datafanout ||
                               (this.schemaRules.childfanouts && this.schemaRules.childfanouts.length > 0)
+
+        console.log('[Step 7] hasSchemaRules:', hasSchemaRules)
 
         if (hasSchemaRules) {
           policy.schemarule = {}
@@ -731,10 +757,22 @@ export default {
             policy.schemarule.ConvertoJson = this.schemaRules.convertToJson
           }
 
-          // Add datafanout and childfanouts based on array structure rules
-          if (this.schemaRules.childfanouts && this.schemaRules.childfanouts.length > 0) {
+          // CRITICAL: Check if datafanout is already in schemaRules (from Step 3)
+          // If datafanout exists in store, use it directly along with childfanouts
+          if (this.schemaRules.datafanout !== undefined) {
             console.log('╔═══════════════════════════════════════════════════════════════════════')
-            console.log('║ [Step 7] Processing datafanout and childfanouts')
+            console.log('║ [Step 7] Using datafanout directly from store')
+            console.log('╠═══════════════════════════════════════════════════════════════════════')
+            console.log('║ datafanout from store:', this.schemaRules.datafanout)
+            console.log('║ childfanouts from store:', this.schemaRules.childfanouts)
+            console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+            policy.schemarule.datafanout = this.schemaRules.datafanout
+            policy.schemarule.childfanouts = this.schemaRules.childfanouts
+          } else if (this.schemaRules.childfanouts && this.schemaRules.childfanouts.length > 0) {
+            // Fallback: compute datafanout/childfanouts from legacy childfanouts array
+            console.log('╔═══════════════════════════════════════════════════════════════════════')
+            console.log('║ [Step 7] Computing datafanout from childfanouts array (legacy)')
             console.log('╠═══════════════════════════════════════════════════════════════════════')
             console.log('║ Total childfanouts from store:', this.schemaRules.childfanouts.length)
             console.log('╚═══════════════════════════════════════════════════════════════════════')
@@ -784,6 +822,16 @@ export default {
             // Set childfanouts (may be null or an array)
             policy.schemarule.childfanouts = childfanouts
           }
+
+          // DEBUG: Log the final schemarule that was built
+          console.log('╔═══════════════════════════════════════════════════════════════════════')
+          console.log('║ [Step 7] FINAL policy.schemarule built')
+          console.log('╠═══════════════════════════════════════════════════════════════════════')
+          console.log('║ policy.schemarule:', JSON.stringify(policy.schemarule, null, 2))
+          console.log('║ policy.schemarule.ConvertoJson:', policy.schemarule.ConvertoJson)
+          console.log('║ policy.schemarule.datafanout:', policy.schemarule.datafanout)
+          console.log('║ policy.schemarule.childfanouts:', policy.schemarule.childfanouts)
+          console.log('╚═══════════════════════════════════════════════════════════════════════')
         }
 
         // Add field mappings (transforms) - clean up any UI-only attributes
