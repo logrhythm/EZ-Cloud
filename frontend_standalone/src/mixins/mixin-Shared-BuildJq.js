@@ -9,7 +9,7 @@ export default {
 
   methods: {
     sanitisePathName (pathName) {
-      // This is now superceeded by the sanitisation done in `MappingEdit.vue` / `processLogKey`.
+      // Note: Legacy sanitization logic has been removed. Path sanitization is now handled in the wizard.
       return pathName
 
       // // Sanitise the Path Name

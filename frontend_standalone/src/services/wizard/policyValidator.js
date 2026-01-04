@@ -627,11 +627,6 @@ export class PolicyValidator {
     const validatePath = (path, context) => {
       if (typeof path !== 'string') return
 
-      // Basic JSONPath validation - must start with $ or @
-      if (!path.startsWith('$') && !path.startsWith('@')) {
-        result.addError(`${context}: Invalid JSONPath "${path}" (must start with $ or @)`)
-      }
-
       // Check for common syntax errors
       if (path.includes('..') && path.includes('[*]')) {
         result.addWarning(`${context}: Path "${path}" uses both recursive descent (..) and array wildcard ([*]) which may be inefficient`)

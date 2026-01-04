@@ -32,12 +32,15 @@ const CONSTANTS = {
   },
   // LogRhythm schema field categories for validation
   LR_FIELD_CATEGORIES: {
-    TEMPORAL: ['normal_msg_date', 'log_date'],
-    NETWORK: ['srcip', 'srcport', 'dstip', 'dstport', 'src_mac', 'dst_mac'],
-    IDENTITY: ['login', 'user', 'domain', 'sender', 'recipient'],
-    PROCESS: ['process_id', 'process_name', 'parent_process_id', 'parent_process_name', 'command'],
-    SECURITY: ['hash', 'subject', 'object', 'action', 'status', 'result_code'],
-    CONTENT: ['url', 'user_agent', 'session_id', 'vendor_msg_id', 'message']
+    TEMPORAL: ['normal_msg_date', 'log_date', 'time', 'minutes', 'seconds', 'milliseconds'],
+    NETWORK: ['srcip', 'srcport', 'dstip', 'dstport', 'src_mac', 'dst_mac', 'sip', 'dip', 'snatip', 'dnatip', 'smac', 'dmac', 'sinterface', 'dinterface', 'sname', 'dname', 'sport', 'dport', 'snatport', 'dnatport', 'protnum', 'protname', 'kilobytesin', 'kilobytesout', 'kilobytes', 'packetsin', 'packetsout'],
+    IDENTITY: ['login', 'user', 'domain', 'sender', 'recipient', 'account', 'group', 'domainimpacted', 'domainorigin'],
+    PROCESS: ['process_id', 'process_name', 'parent_process_id', 'parent_process_name', 'command', 'process', 'processid', 'parentprocessid', 'parentprocessname', 'parentprocesspath'],
+    SECURITY: ['hash', 'subject', 'object', 'action', 'status', 'result_code', 'objectname', 'objecttype', 'policy', 'result', 'reason', 'sessiontype', 'severity', 'threatname', 'threatid', 'cve', 'serialnumber'],
+    CONTENT: ['url', 'user_agent', 'session_id', 'vendor_msg_id', 'message', 'useragent', 'responsecode', 'version', 'session', 'vendorinfo', 'original_message'],
+    DEVICE: ['beatname', 'device_type', 'fullyqualifiedbeatname', 'vmid'],
+    METRICS: ['quantity', 'amount', 'size', 'rate'],
+    CUSTOM: ['augmented', 'tag1', 'tag2', 'tag3', 'tag4', 'tag5', 'tag6', 'tag7', 'tag8', 'tag9', 'tag10']
   }
 }
 

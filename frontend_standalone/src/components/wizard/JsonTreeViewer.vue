@@ -1,5 +1,5 @@
 <template>
-  <div class="json-tree-viewer q-pa-sm">
+  <div class="json-tree-viewer">
     <div v-if="!data || Object.keys(data).length === 0" class="text-grey q-pa-md">
       No data to display
     </div>
@@ -7,9 +7,8 @@
       <q-icon name="error" size="24px" class="q-mr-sm" />
       Error: Received metadata object instead of JSON data. Please check console for details.
     </div>
-    <div v-else-if="selectionMode === 'array' && arrayPaths.length === 0" class="text-grey q-pa-md text-center">
-      <q-icon name="info" size="48px" class="q-mb-md" />
-      <p>No array fields detected in the data structure.</p>
+    <div v-else-if="selectionMode === 'array' && arrayPaths.length === 0" class="text-grey q-pa-md">
+      No array fields detected in the data structure.
     </div>
     <div v-else class="tree-container">
       <div class="json-tree">
@@ -25,7 +24,6 @@
           @toggle-node="toggleNode"
           @select-field="selectField"
         />
-        <!-- No debug info needed here -->
       </div>
     </div>
   </div>
@@ -34,6 +32,7 @@
 <script>
 import { defineComponent, ref, computed, watch, provide } from 'vue'
 import JsonTreeNode from './JsonTreeNode.vue'
+import { PathNormalizer } from '../../services/wizard/pathNormalizer'
 
 export default defineComponent({
   name: 'JsonTreeViewer',
@@ -200,19 +199,30 @@ export default defineComponent({
       // If this is an array, we need to copy it and check if its elements contain nested arrays
       if (Array.isArray(value)) {
         // Build the prefix to check for nested arrays
-        // If targetPath is empty (root level), don't add a separator
-        const pathPrefix = targetPath ? `${targetPath}[` : '['
+        // IMPORTANT: Normalize the targetPath to use [*] wildcards for comparison
+        const normalizedTargetPath = PathNormalizer.normalize(targetPath)
+        const pathPrefix = normalizedTargetPath ? `${normalizedTargetPath}[` : '['
+
+        console.log(`[copyArrayPathsStructure] Array at '${targetPath}', normalized: '${normalizedTargetPath}', checking prefix: '${pathPrefix}'`)
 
         // Check if there are any nested arrays within this array's elements
         const hasNestedArrays = allArrayPaths.some(path => {
-          // Check if path starts with targetPath[ (for nested arrays in this array)
-          if (path.startsWith(pathPrefix)) return true
+          // Check if path starts with normalizedTargetPath[ (for nested arrays in this array)
+          if (path.startsWith(pathPrefix)) {
+            console.log(`[copyArrayPathsStructure]   ✓ Found nested array: ${path} starts with ${pathPrefix}`)
+            return true
+          }
 
-          // Also check for paths like targetPath. (for objects containing arrays)
-          if (targetPath && path.startsWith(targetPath + '.')) return true
+          // Also check for paths like normalizedTargetPath. (for objects containing arrays)
+          if (normalizedTargetPath && path.startsWith(normalizedTargetPath + '.')) {
+            console.log(`[copyArrayPathsStructure]   ✓ Found nested array: ${path} starts with ${normalizedTargetPath}.`)
+            return true
+          }
 
           return false
         })
+
+        console.log(`[copyArrayPathsStructure] Array at '${targetPath}' hasNestedArrays: ${hasNestedArrays}`)
 
         if (hasNestedArrays && value.length > 0) {
           // Copy the array and recursively process its first element if it's an object
@@ -228,29 +238,32 @@ export default defineComponent({
               // Build the child path correctly - this is the path to this property within the first array element
               const childPath = targetPath ? `${targetPath}[0].${key}` : `[0].${key}`
 
-              console.log(`[copyArrayPathsStructure] Checking property '${key}' at childPath: ${childPath}`)
+              // IMPORTANT: Normalize the childPath to use [*] wildcards for comparison
+              const normalizedChildPath = PathNormalizer.normalize(childPath)
+
+              console.log(`[copyArrayPathsStructure] Checking property '${key}' at childPath: ${childPath} (normalized: ${normalizedChildPath})`)
               console.log('[copyArrayPathsStructure] allArrayPaths:', allArrayPaths)
 
               // Check if this property or its descendants contain arrays
-              // We need to check multiple patterns because the array path might not include [0]
+              // Compare using normalized paths (with [*] wildcards)
               const leadsToArray = allArrayPaths.some(arrayPath => {
-                // Direct match (e.g., 'projects[0].teams' === 'projects[0].teams')
-                if (arrayPath === childPath) {
-                  console.log(`[copyArrayPathsStructure]   ✓ Direct match: ${arrayPath} === ${childPath}`)
+                // Direct match (e.g., 'projects[*].teams' === 'projects[*].teams')
+                if (arrayPath === normalizedChildPath) {
+                  console.log(`[copyArrayPathsStructure]   ✓ Direct match: ${arrayPath} === ${normalizedChildPath}`)
                   return true
                 }
 
                 // Check if array path starts with this child path followed by array index
-                // (e.g., 'projects[0].teams[0].members' starts with 'projects[0].teams[')
-                if (arrayPath.startsWith(childPath + '[')) {
-                  console.log(`[copyArrayPathsStructure]   ✓ Array index match: ${arrayPath} starts with ${childPath}[`)
+                // (e.g., 'projects[*].teams[*].members' starts with 'projects[*].teams[')
+                if (arrayPath.startsWith(normalizedChildPath + '[')) {
+                  console.log(`[copyArrayPathsStructure]   ✓ Array index match: ${arrayPath} starts with ${normalizedChildPath}[`)
                   return true
                 }
 
                 // Check if array path starts with this child path followed by a dot
-                // (e.g., 'projects[0].teams[0].members' starts with 'projects[0].teams.')
-                if (arrayPath.startsWith(childPath + '.')) {
-                  console.log(`[copyArrayPathsStructure]   ✓ Nested property match: ${arrayPath} starts with ${childPath}.`)
+                // (e.g., 'projects[*].teams[*].members' starts with 'projects[*].teams.')
+                if (arrayPath.startsWith(normalizedChildPath + '.')) {
+                  console.log(`[copyArrayPathsStructure]   ✓ Nested property match: ${arrayPath} starts with ${normalizedChildPath}.`)
                   return true
                 }
 
@@ -299,23 +312,27 @@ export default defineComponent({
         for (const key in value) {
           const childPath = targetPath ? `${targetPath}.${key}` : key
 
-          console.log(`[copyArrayPathsStructure] Checking object property '${key}' at childPath: ${childPath}`)
+          // IMPORTANT: Normalize the childPath to use [*] wildcards for comparison
+          const normalizedChildPath = PathNormalizer.normalize(childPath)
+
+          console.log(`[copyArrayPathsStructure] Checking object property '${key}' at childPath: ${childPath} (normalized: ${normalizedChildPath})`)
 
           // Check if this property or its descendants contain arrays
+          // Compare using normalized paths (with [*] wildcards)
           const leadsToArray = allArrayPaths.some(arrayPath => {
             // Direct match
-            if (arrayPath === childPath) {
-              console.log(`[copyArrayPathsStructure]   ✓ Object property direct match: ${arrayPath} === ${childPath}`)
+            if (arrayPath === normalizedChildPath) {
+              console.log(`[copyArrayPathsStructure]   ✓ Object property direct match: ${arrayPath} === ${normalizedChildPath}`)
               return true
             }
 
             // Check if array path starts with this child path
-            if (arrayPath.startsWith(childPath + '[')) {
-              console.log(`[copyArrayPathsStructure]   ✓ Object property array match: ${arrayPath} starts with ${childPath}[`)
+            if (arrayPath.startsWith(normalizedChildPath + '[')) {
+              console.log(`[copyArrayPathsStructure]   ✓ Object property array match: ${arrayPath} starts with ${normalizedChildPath}[`)
               return true
             }
-            if (arrayPath.startsWith(childPath + '.')) {
-              console.log(`[copyArrayPathsStructure]   ✓ Object property nested match: ${arrayPath} starts with ${childPath}.`)
+            if (arrayPath.startsWith(normalizedChildPath + '.')) {
+              console.log(`[copyArrayPathsStructure]   ✓ Object property nested match: ${arrayPath} starts with ${normalizedChildPath}.`)
               return true
             }
 
@@ -365,7 +382,7 @@ export default defineComponent({
 
       console.log('filterToArraysOnly - Source data (from first item):', sourceData)
 
-      // Normalize array paths - remove leading [0]. prefix for root arrays
+      // Normalize array paths using PathNormalizer - remove leading [0]. prefix for root arrays
       const normalizedPaths = arrayPaths.map(path => {
         if (path.startsWith('[')) {
           const normalized = path.replace(/^\[\d+\]\.?/, '')
@@ -505,9 +522,14 @@ export default defineComponent({
           // Only add the path if we haven't processed this structure yet
           // Make sure the path exists and isn't empty before adding it
           if (path && path.trim() !== '' && !processedPaths.has(pathForCheck)) {
-            // Add to paths array and mark as processed
-            console.log('Adding array path:', path)
-            paths.push(path)
+            // Normalize the path to use [*] wildcards instead of [0], [1], etc.
+            const normalizedArrayPath = PathNormalizer.normalize(path, {
+              removePrefix: true,
+              removeWildcards: false,
+              removeIndices: true
+            })
+            console.log('Adding array path (normalized):', normalizedArrayPath, 'from:', path)
+            paths.push(normalizedArrayPath)
             processedPaths.add(pathForCheck)
           }
 
@@ -675,6 +697,135 @@ export default defineComponent({
     // Provide selectionMode to child components
     provide('selectionMode', props.selectionMode)
 
+    /**
+     * Get all parent array paths for a given array path
+     * Example: "requestParameters.changeBatch.changes" -> ["requestParameters.changeBatch", "requestParameters"]
+     * Example: "$.LOG.events.data" -> ["$.LOG.events", "$.LOG"]
+     * @param {string} arrayPath - The full path to the array
+     * @returns {Array<string>} - Array of parent paths (from immediate parent to root)
+     */
+    const getParentArrayPaths = (arrayPath) => {
+      const parentPaths = []
+
+      if (!arrayPath || arrayPath === 'root') {
+        return parentPaths
+      }
+
+      console.log('[getParentArrayPaths] Finding parents for:', arrayPath)
+
+      // Normalize the input path to ensure we're working with [*] wildcards
+      const normalizedPath = PathNormalizer.normalize(arrayPath, {
+        removePrefix: true,
+        removeWildcards: false,
+        removeIndices: true
+      })
+
+      console.log('[getParentArrayPaths] Normalized path:', normalizedPath)
+
+      // Remove array brackets from the path for segmentation
+      // e.g., "arr1[*].childarr[*]" -> "arr1.childarr"
+      const pathWithoutBrackets = normalizedPath.replace(/\[\*\]/g, '')
+      const segments = pathWithoutBrackets.split('.')
+
+      console.log('[getParentArrayPaths] Segments:', segments)
+
+      // Build parent paths from most specific to least specific
+      // e.g., "a.b.c.d" -> ["a.b.c", "a.b", "a"]
+      for (let i = segments.length - 1; i > 0; i--) {
+        const parentPathBase = segments.slice(0, i).join('.')
+
+        // Check all array paths to see if any match this parent
+        const matchingParent = arrayPaths.value.find(ap => {
+          const normalizedAp = PathNormalizer.normalize(ap, {
+            removePrefix: true,
+            removeWildcards: false,
+            removeIndices: true
+          })
+
+          // Remove brackets for comparison
+          const apWithoutBrackets = normalizedAp.replace(/\[\*\]/g, '')
+
+          const matches = apWithoutBrackets === parentPathBase
+
+          if (matches) {
+            console.log('[getParentArrayPaths]   ✓ Found parent array:', normalizedAp)
+          }
+
+          return matches
+        })
+
+        if (matchingParent) {
+          // Store the normalized version with [*] wildcards
+          const normalizedParent = PathNormalizer.normalize(matchingParent, {
+            removePrefix: true,
+            removeWildcards: false,
+            removeIndices: true
+          })
+          parentPaths.push(normalizedParent)
+        }
+      }
+
+      console.log('[getParentArrayPaths] All parent arrays:', parentPaths)
+      return parentPaths
+    }
+
+    /**
+     * Get all child array paths for a given parent array path
+     * Example: "requestParameters" -> ["requestParameters.changeBatch", "requestParameters.changeBatch.changes"]
+     * Example: "$.LOG" -> ["$.LOG.events", "$.LOG.events.data"]
+     * @param {string} parentPath - The path to the parent array
+     * @returns {Array<string>} - Array of child paths (all nested arrays under this parent)
+     */
+    const getChildArrayPaths = (parentPath) => {
+      const childPaths = []
+
+      if (!parentPath) {
+        return childPaths
+      }
+
+      console.log('[getChildArrayPaths] Finding children for:', parentPath)
+
+      // Normalize the parent path to use [*] wildcards
+      const normalizedParent = PathNormalizer.normalize(parentPath, {
+        removePrefix: true,
+        removeWildcards: false,
+        removeIndices: true
+      })
+
+      console.log('[getChildArrayPaths] Normalized parent:', normalizedParent)
+
+      // Remove brackets from parent for prefix matching
+      const parentWithoutBrackets = normalizedParent.replace(/\[\*\]/g, '')
+
+      // Find all arrays that are children of this parent path
+      arrayPaths.value.forEach(arrayPath => {
+        const normalizedArrayPath = PathNormalizer.normalize(arrayPath, {
+          removePrefix: true,
+          removeWildcards: false,
+          removeIndices: true
+        })
+
+        // Skip if this is the parent itself
+        if (normalizedArrayPath === normalizedParent) {
+          return
+        }
+
+        // Remove brackets from child for comparison
+        const arrayPathWithoutBrackets = normalizedArrayPath.replace(/\[\*\]/g, '')
+
+        // Check if this is a child by seeing if it starts with the parent path
+        const isChild = arrayPathWithoutBrackets.startsWith(parentWithoutBrackets + '.')
+
+        if (isChild) {
+          console.log('[getChildArrayPaths]   ✓ Found child array:', normalizedArrayPath)
+          childPaths.push(normalizedArrayPath)
+        }
+      })
+
+      console.log('[getChildArrayPaths] All child arrays:', childPaths)
+      return childPaths
+    }
+
     // Select/deselect a field
     const selectField = (path, type) => {
       // Handle both formats - object with type property and direct type string
@@ -685,7 +836,18 @@ export default defineComponent({
       console.log('JsonTreeViewer.selectField called - Path:', nodePath, 'Type:', typeValue, 'NodeInfo:', nodeInfo)
       console.log('Current selectedPaths:', selectedPaths.value)
 
-      const index = selectedPaths.value.findIndex(p => p === nodePath)
+      // Normalize the path for array selections to use [*] wildcards
+      let normalizedPath = nodePath
+      if (typeValue === 'array') {
+        normalizedPath = PathNormalizer.normalize(nodePath, {
+          removePrefix: true,
+          removeWildcards: false,
+          removeIndices: true
+        })
+        console.log('Normalized array path:', normalizedPath, 'from:', nodePath)
+      }
+
+      const index = selectedPaths.value.findIndex(p => p === normalizedPath)
       let existingPathIndex = -1 // Initialize existingPathIndex with a default value
 
       // Check if the selection mode matches the field type
@@ -715,7 +877,7 @@ export default defineComponent({
           // If another instance is selected, use that one's path instead
           // This ensures we don't add duplicates but still track the selection
           console.log(`Using existing selection: ${selectedPaths.value[existingPathIndex]}`)
-          path = selectedPaths.value[existingPathIndex]
+          normalizedPath = selectedPaths.value[existingPathIndex]
         }
       }
 
@@ -724,12 +886,50 @@ export default defineComponent({
 
       if (effectiveIndex >= 0) {
         // Deselect
-        console.log(`Deselecting path: ${nodePath}`)
+        console.log(`Deselecting path: ${normalizedPath}`)
         selectedPaths.value.splice(effectiveIndex, 1)
+
+        // Auto-deselect all child arrays when deselecting a parent array (for fanout mode)
+        if (props.selectionMode === 'array' && typeValue === 'array') {
+          console.log('[Auto-deselect children] Checking for child arrays to auto-deselect...')
+          const childPaths = getChildArrayPaths(normalizedPath)
+          console.log('[Auto-deselect children] Found child paths:', childPaths)
+
+          for (const childPath of childPaths) {
+            // Check if child is currently selected
+            const childIndex = selectedPaths.value.findIndex(p => p === childPath)
+            if (childIndex >= 0) {
+              // Child is selected, auto-deselect it
+              console.log(`[Auto-deselect children] Auto-deselecting child array: ${childPath}`)
+              selectedPaths.value.splice(childIndex, 1)
+            } else {
+              console.log(`[Auto-deselect children] Child not selected: ${childPath}`)
+            }
+          }
+        }
       } else {
         // Select
-        console.log(`Selecting path: ${nodePath}`)
-        selectedPaths.value.push(nodePath)
+        console.log(`Selecting path: ${normalizedPath}`)
+        selectedPaths.value.push(normalizedPath)
+
+        // Auto-select all parent arrays when selecting a child array (for fanout mode)
+        if (props.selectionMode === 'array' && typeValue === 'array') {
+          console.log('[Auto-select parents] Checking for parent arrays to auto-select...')
+          const parentPaths = getParentArrayPaths(normalizedPath)
+          console.log('[Auto-select parents] Found parent paths:', parentPaths)
+
+          for (const parentPath of parentPaths) {
+            // Check if parent is already selected
+            const parentIndex = selectedPaths.value.findIndex(p => p === parentPath)
+            if (parentIndex < 0) {
+              // Parent not selected, auto-select it
+              console.log(`[Auto-select parents] Auto-selecting parent array: ${parentPath}`)
+              selectedPaths.value.push(parentPath)
+            } else {
+              console.log(`[Auto-select parents] Parent already selected: ${parentPath}`)
+            }
+          }
+        }
       }
 
       console.log('Updated selectedPaths:', selectedPaths.value)
@@ -738,11 +938,11 @@ export default defineComponent({
       console.log('Emitting events - update:selected, field-selected, select-field')
       emit('update:selected', [...selectedPaths.value])
       emit('field-selected', {
-        path: nodePath,
+        path: normalizedPath,
         selected: index < 0,
         type: typeValue
       })
-      emit('select-field', nodePath, nodeInfo)
+      emit('select-field', normalizedPath, nodeInfo)
     }
 
     // Watch for changes in initial selected paths
@@ -791,6 +991,7 @@ export default defineComponent({
     /**
      * Auto-expand nodes that contain nested arrays in array selection mode
      * This ensures all nested arrays are visible without manual expansion
+     * CRITICAL FIX: Expands actual numeric-indexed array items (e.g., [0], [1])
      */
     const autoExpandArrayContainers = () => {
       if (props.selectionMode !== 'array') return
@@ -798,70 +999,109 @@ export default defineComponent({
       console.log('[autoExpandArrayContainers] Starting auto-expansion for array mode...')
       console.log('[autoExpandArrayContainers] arrayPaths:', arrayPaths.value)
 
-      // Find all paths that need to be expanded to show arrays
       const pathsToExpand = new Set()
 
-      arrayPaths.value.forEach(arrayPath => {
-        console.log(`[autoExpandArrayContainers] Processing arrayPath: ${arrayPath}`)
+      /**
+       * Recursively expand all paths needed to reach an array
+       * Converts wildcard paths like log.Records[*].changes[*] to actual paths like log.Records[0].changes[0]
+       */
+      const expandPathWithIndices = (pathWithWildcards, currentData = props.data, currentPath = '') => {
+        console.log(`[expandPathWithIndices] Processing: ${pathWithWildcards}, currentPath: "${currentPath}"`)
 
-        // Build all parent paths that need to be expanded
-        // e.g., "projects[0].teams[0].members" -> ["projects", "projects[0]", "projects[0].teams", "projects[0].teams[0]"]
-        let currentPath = ''
-        const parts = []
+        // Split the path into segments
+        const segments = pathWithWildcards.split(/\.|\[/)
 
-        // Split by dots and brackets, keeping all tokens including dots
-        const tokens = arrayPath.split(/(\[\d+\]|\.)/g).filter(t => t && t.trim())
+        let data = currentData
+        let builtPath = currentPath
 
-        for (let i = 0; i < tokens.length; i++) {
-          const token = tokens[i]
+        for (let i = 0; i < segments.length; i++) {
+          let segment = segments[i]
 
-          if (token === '.') {
-            // Skip dot token, it will be added when we encounter the next property
-            continue
-          } else if (token.startsWith('[')) {
-            // Array index - append to current path
-            currentPath += token
-            parts.push(currentPath)
-          } else {
-            // Property name
-            if (currentPath) {
-              currentPath += '.'
+          // Skip empty segments
+          if (!segment) continue
+
+          // Handle array indices (both [*] and [0])
+          if (segment.includes(']')) {
+            segment = segment.replace(']', '')
+
+            // Check if this is a wildcard [*]
+            if (segment === '*') {
+              // We need to expand all items in the current array
+              if (Array.isArray(data)) {
+                console.log(`  → Found array at "${builtPath}" with ${data.length} items`)
+
+                // Expand each array item
+                for (let idx = 0; idx < data.length; idx++) {
+                  const itemPath = `${builtPath}[${idx}]`
+                  pathsToExpand.add(itemPath)
+                  console.log(`    ✓ Will expand array item: ${itemPath}`)
+
+                  // Recursively process the rest of the path for this item
+                  const remainingSegments = segments.slice(i + 1)
+                  if (remainingSegments.length > 0) {
+                    const remainingPath = remainingSegments.join('.')
+                      .replace(/\.\[/g, '[') // Fix array notation
+                      .replace(/^\./, '') // Remove leading dot
+
+                    if (remainingPath) {
+                      expandPathWithIndices(remainingPath, data[idx], itemPath)
+                    }
+                  }
+                }
+                return // We've processed all items, done with this branch
+              }
+            } else {
+              // Specific numeric index
+              const idx = parseInt(segment)
+              builtPath += `[${idx}]`
+
+              if (Array.isArray(data) && data[idx] !== undefined) {
+                data = data[idx]
+                pathsToExpand.add(builtPath)
+                console.log(`    ✓ Will expand: ${builtPath}`)
+              } else {
+                console.log(`    ✗ Array index ${idx} not found in data at ${builtPath}`)
+                return
+              }
             }
-            currentPath += token
-            parts.push(currentPath)
+          } else {
+            // Regular property
+            if (builtPath) {
+              builtPath += '.'
+            }
+            builtPath += segment
+
+            if (data && typeof data === 'object' && segment in data) {
+              data = data[segment]
+              pathsToExpand.add(builtPath)
+              console.log(`    ✓ Will expand: ${builtPath}`)
+            } else {
+              console.log(`    ✗ Property "${segment}" not found in data at ${builtPath}`)
+              return
+            }
           }
         }
+      }
 
-        // Add all parent paths (but not the array itself)
-        console.log(`  → Parts for ${arrayPath}:`, parts)
-        parts.forEach((part, idx) => {
-          const isLastPart = idx === parts.length - 1
-          const isArrayPath = part === arrayPath
-          console.log(`    Part[${idx}]: "${part}", isLastPart: ${isLastPart}, isArrayPath: ${isArrayPath}`)
+      // Process each array path
+      arrayPaths.value.forEach(arrayPath => {
+        console.log(`\n[autoExpandArrayContainers] Processing arrayPath: ${arrayPath}`)
 
-          // Don't expand the final array path itself, only its containers
-          if (idx < parts.length - 1 || part !== arrayPath) {
-            pathsToExpand.add(part)
-            console.log(`      ✓ Will expand: ${part}`)
-          } else {
-            console.log(`      ✗ Skip (is the array itself): ${part}`)
-          }
-        })
+        // Convert path with wildcards to actual indexed paths
+        expandPathWithIndices(arrayPath)
       })
 
-      console.log(`[autoExpandArrayContainers] Expanding ${pathsToExpand.size} paths:`, Array.from(pathsToExpand))
+      console.log(`\n[autoExpandArrayContainers] Total paths to expand: ${pathsToExpand.size}`)
+      console.log('[autoExpandArrayContainers] Paths:', Array.from(pathsToExpand))
 
       // Expand all the container paths
-      // Create a new Set to trigger reactivity
       const newExpandedNodes = new Set(expandedNodes.value)
       pathsToExpand.forEach(path => {
         if (!newExpandedNodes.has(path)) {
           newExpandedNodes.add(path)
-          console.log(`  [autoExpandArrayContainers] Adding to expanded nodes: ${path}`)
         }
       })
 
-      // Replace the ref to trigger reactivity
       expandedNodes.value = newExpandedNodes
 
       console.log('[autoExpandArrayContainers] Auto-expansion complete')
@@ -902,11 +1142,13 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .json-tree-viewer {
-  max-height: none;
-  overflow: visible;
+  max-height: 600px; /* Increased height for better visibility */
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden; /* Hide horizontal overflow */
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 4px;
   background-color: #fff;
+  padding: 0; /* Remove padding to maximize space */
 
   .body--dark & {
     background-color: var(--q-dark);
@@ -930,10 +1172,14 @@ export default defineComponent({
   font-family: monospace;
   font-size: 14px;
   line-height: 1.5;
+  min-height: 200px; /* Minimum height for better UX */
+  max-height: 600px; /* Match parent max-height */
+  overflow-y: auto; /* Enable scrolling */
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 .json-tree {
   padding: 0.5rem;
-  overflow-x: auto; /* Add horizontal scrolling for wide structures */
+  padding-right: 2rem; /* Extra right padding for checkboxes */
 }
 </style>

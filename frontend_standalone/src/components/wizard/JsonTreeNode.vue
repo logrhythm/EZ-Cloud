@@ -1,5 +1,5 @@
 <template>
-  <div v-if="shouldShowNode" class="json-tree-node" :style="{ paddingLeft: `${level * 20}px` }">
+  <div v-if="shouldShowNode" class="json-tree-node" :style="{ paddingLeft: `${level * 12}px` }">
     <div
       class="node-content"
       :class="{
@@ -21,14 +21,10 @@
       <!-- Node key and value display -->
       <template v-if="isRoot">
         <span class="node-key root-node">{{ getNodeType(node) }}</span>
-        <q-badge v-if="isArray" color="primary" class="q-ml-xs">Array ({{ node.length }} items)</q-badge>
-        <q-badge v-else-if="isObject && selectionMode !== 'array'" color="secondary" class="q-ml-xs">Object ({{ Object.keys(node).length }} properties)</q-badge>
-        <q-badge v-else-if="isObject && selectionMode === 'array'" color="secondary" class="q-ml-xs">Object ({{ filteredObjectChildren.length }} arrays)</q-badge>
       </template>
       <template v-else-if="isArrayItem">
         <span class="node-array-index">[{{ arrayIndex }}]</span>
         <span class="node-key" v-if="displayKey !== `[${arrayIndex}]`">{{ displayKey }}</span>
-        <q-badge v-if="isObject || isArray" color="info" class="q-ml-xs">{{ isArray ? 'Array' : 'Object' }}</q-badge>
       </template>
       <template v-else>
         <span class="node-key">{{ displayKey }}:</span>
@@ -45,9 +41,7 @@
           }"
         >{{ displayValue }}</span>
       </template>
-      <template v-else>
-        <span class="node-preview">{{ nodePreview }}</span>
-      </template>
+      <!-- Preview text removed for cleaner UI in array selection mode -->
 
       <!-- Selection indicators for arrays and potential JSON strings -->
       <div class="selection-controls" v-if="isSelectable">
@@ -58,9 +52,7 @@
           color="primary"
           @input="selectField('array')"
           @vue:mounted="() => console.log(`✓ Array checkbox rendered for path: ${path}`)"
-        >
-          <q-tooltip>Select for array fanout</q-tooltip>
-        </q-checkbox>
+        />
 
         <q-checkbox
           v-if="isPotentialJson && (selectionMode === 'json' || selectionMode === 'both')"
@@ -68,9 +60,7 @@
           dense
           color="secondary"
           @input="selectField('json')"
-        >
-          <q-tooltip>Select for JSON parsing</q-tooltip>
-        </q-checkbox>
+        />
 
         <!-- Warning badge for missing arrays -->
         <q-badge
@@ -81,16 +71,11 @@
         >
           <q-icon name="warning" size="xs" class="q-mr-xs" />
           Missing
-          <q-tooltip>
-            This array is defined in the policy but not found in the current sample data
-          </q-tooltip>
         </q-badge>
       </div>
 
       <!-- Debug indicator for array paths -->
-      <span v-if="isArray && arrayPaths.includes(path)" class="debug-indicator q-ml-sm">
-        <q-badge color="blue">Array Path</q-badge>
-      </span>
+      <!-- Removed debug indicator -->
     </div>
 
     <!-- Render children nodes when expanded -->
@@ -115,9 +100,8 @@
         <div v-if="node.length === 0" class="empty-array">[]</div>
         <template v-else>
           <div class="array-container">
-            <div v-if="node.length > 20" class="array-notice q-mb-sm">
-              <q-badge color="warning" outline>Showing first 20 of {{ node.length }} items</q-badge>
-            </div>
+            <!-- Debug: Log what we're about to render -->
+            <template v-if="false">{{ logArrayRender() }}</template>
             <json-tree-node
               v-for="(item, index) in filteredArrayChildren"
               :key="`${path}-${index}`"
@@ -132,7 +116,6 @@
               @toggle-node="(p) => $emit('toggle-node', p)"
               @select-field="(p, t) => $emit('select-field', p, t)"
             />
-            <div v-if="node.length > 20" class="array-ellipsis">...</div>
           </div>
         </template>
       </template>
@@ -142,6 +125,7 @@
 
 <script>
 import { defineComponent, computed, inject } from 'vue'
+import { PathNormalizer } from '../../services/wizard/pathNormalizer'
 
 export default defineComponent({
   name: 'JsonTreeNode',
@@ -226,51 +210,65 @@ export default defineComponent({
 
     /**
      * Helper function to check if a value contains any arrays (directly or nested)
-     */
-    const containsArrays = (value, childKey, currentPath) => {
+     */ const containsArrays = (value, childKey, currentPath) => {
       if (value === null || value === undefined) return false
 
       // Build the full path for this child
       const childPath = currentPath === 'root' ? childKey : `${currentPath}.${childKey}`
 
-      // Special logging for tags to debug the issue
-      if (childKey === 'tags') {
-        console.log('[containsArrays] ⚠️ CHECKING TAGS PROPERTY ⚠️')
-        console.log(`[containsArrays] childKey="${childKey}", currentPath="${currentPath}", childPath="${childPath}"`)
-        console.log('[containsArrays] Value:', value)
-        console.log(`[containsArrays] Value type: ${Array.isArray(value) ? 'Array' : typeof value}`)
-        console.log('[containsArrays] Value length:', Array.isArray(value) ? value.length : 'N/A')
-        console.log('[containsArrays] Available arrayPaths:', props.arrayPaths)
-        console.log(`[containsArrays] Checking if arrayPaths includes "${childPath}":`, props.arrayPaths.includes(childPath))
-      }
+      // Normalize the path for comparison (e.g., projects[0] -> projects[*])
+      const normalizedChildPath = PathNormalizer.normalize(childPath)
 
-      // Check if this specific path is in arrayPaths
-      if (props.arrayPaths.includes(childPath)) {
-        if (childKey === 'tags') console.log(`  ✓ Direct match found for tags: ${childPath}`)
+      // ENHANCED DEBUGGING: Log all properties being checked
+      console.log(`[containsArrays] 🔍 Checking property '${childKey}'`)
+      console.log(`  currentPath: "${currentPath}"`)
+      console.log(`  childPath: "${childPath}"`)
+      console.log(`  normalizedChildPath: "${normalizedChildPath}"`)
+      console.log(`  value type: ${Array.isArray(value) ? 'Array' : typeof value}`)
+      console.log('  arrayPaths:', props.arrayPaths)
+
+      // Check if this specific normalized path is in arrayPaths
+      if (props.arrayPaths.includes(normalizedChildPath)) {
+        console.log(`  ✅ DIRECT MATCH found: ${normalizedChildPath}`)
         return true
       }
 
       // If the value itself is an array, check if any nested path starts with this childPath
       if (Array.isArray(value)) {
-        const result = props.arrayPaths.some(arrayPath =>
-          arrayPath === childPath || arrayPath.startsWith(childPath + '.')
-        )
-        if (childKey === 'tags') console.log(`  Array check result for tags: ${result}`)
+        console.log('  📦 Value is an array, checking for nested arrays...')
+        const result = props.arrayPaths.some(arrayPath => {
+          const exactMatch = arrayPath === normalizedChildPath
+          const dotMatch = arrayPath.startsWith(normalizedChildPath + '.')
+          const bracketMatch = arrayPath.startsWith(normalizedChildPath + '[')
+
+          if (exactMatch || dotMatch || bracketMatch) {
+            console.log(`    ✓ Found match: ${arrayPath} (exact: ${exactMatch}, dot: ${dotMatch}, bracket: ${bracketMatch})`)
+          }
+
+          return exactMatch || dotMatch || bracketMatch
+        })
+        console.log(`  📦 Array check result: ${result}`)
         return result
       }
 
       // If it's an object, recursively check if it contains arrays
       if (typeof value === 'object') {
-        // Check if any array path is nested under this object path
+        console.log('  📄 Value is an object, checking for nested arrays...')
         const result = props.arrayPaths.some(arrayPath => {
-          const matchesDot = arrayPath.startsWith(childPath + '.')
-          const matchesBracket = arrayPath.startsWith(childPath + '[')
+          const matchesDot = arrayPath.startsWith(normalizedChildPath + '.')
+          const matchesBracket = arrayPath.startsWith(normalizedChildPath + '[')
+
+          if (matchesDot || matchesBracket) {
+            console.log(`    ✓ Found match: ${arrayPath} (dot: ${matchesDot}, bracket: ${matchesBracket})`)
+          }
+
           return matchesDot || matchesBracket
         })
+        console.log(`  📄 Object check result: ${result}`)
         return result
       }
 
-      if (childKey === 'tags') console.log('  ✗ No match found for tags')
+      console.log('  ❌ No match found (primitive value)')
       return false
     }
 
@@ -396,26 +394,39 @@ export default defineComponent({
     const isPotentialJson = computed(() => {
       if (!isString.value) return false
 
-      return props.potentialJsonPaths.includes(props.path)
+      // Case-insensitive comparison
+      const normalizedPath = PathNormalizer.normalize(props.path, {
+        removePrefix: true,
+        removeWildcards: false,
+        removeIndices: true
+      }).toLowerCase()
+
+      return props.potentialJsonPaths.some(jsonPath => {
+        const normalizedJsonPath = PathNormalizer.normalize(jsonPath, {
+          removePrefix: true,
+          removeWildcards: false,
+          removeIndices: true
+        }).toLowerCase()
+        return normalizedJsonPath === normalizedPath
+      })
     })
 
     // Check if this node is selected as array or JSON
     const isSelectedArray = computed(() => {
-      // Normalize path for comparison - remove $. prefix and [0] suffix
-      const normalizePath = (path) => {
-        if (!path) return ''
-        return path
-          .replace(/^\$\.?/, '') // Remove $. or $ prefix
-          .replace(/\[0\]$/, '') // Remove [0] suffix
-          .replace(/\[\*\]$/, '') // Remove [*] suffix
-          .replace(/\[\d+\]/g, '[0]') // Normalize all numeric indices to [0]
-      }
-
-      const normalizedCurrentPath = normalizePath(props.path)
+      // Normalize both current path and selected paths using PathNormalizer
+      const normalizedCurrentPath = PathNormalizer.normalize(props.path, {
+        removePrefix: true,
+        removeWildcards: false,
+        removeIndices: true
+      }).toLowerCase() // Case-insensitive comparison
 
       // Check if any selected path matches this path (after normalization)
       const pathIncluded = props.selectedPaths.some(selectedPath => {
-        const normalizedSelectedPath = normalizePath(selectedPath)
+        const normalizedSelectedPath = PathNormalizer.normalize(selectedPath, {
+          removePrefix: true,
+          removeWildcards: false,
+          removeIndices: true
+        }).toLowerCase() // Case-insensitive comparison
 
         // Exact match
         if (normalizedSelectedPath === normalizedCurrentPath) {
@@ -427,18 +438,27 @@ export default defineComponent({
         //   - currentPath: "log.Records[0].requestParameters.changeBatch.changes"
         //   - selectedPath: "$.requestParameters.changeBatch.changes" (relative to parent)
         // After normalization:
-        //   - currentPath: "log.Records[0].requestParameters.changeBatch.changes"
-        //   - selectedPath: "requestParameters.changeBatch.changes"
-        // The current path should end with ".requestParameters.changeBatch.changes"
+        //   - currentPath: "log.records[*].requestparameters.changebatch.changes"
+        //   - selectedPath: "requestparameters.changebatch.changes"
+        // The current path should end with ".requestparameters.changebatch.changes"
         if (normalizedCurrentPath.endsWith('.' + normalizedSelectedPath) ||
-            normalizedCurrentPath.endsWith('[0].' + normalizedSelectedPath)) {
+            normalizedCurrentPath.endsWith('[*].' + normalizedSelectedPath)) {
           return true
         }
 
         return false
       })
 
-      const isArrayPath = props.arrayPaths.includes(props.path)
+      // Check if this path is in arrayPaths (also normalize for comparison)
+      const isArrayPath = props.arrayPaths.some(arrayPath => {
+        const normalizedArrayPath = PathNormalizer.normalize(arrayPath, {
+          removePrefix: true,
+          removeWildcards: false,
+          removeIndices: true
+        }).toLowerCase() // Case-insensitive comparison
+        return normalizedArrayPath === normalizedCurrentPath
+      })
+
       const result = pathIncluded && isArrayPath
 
       // Only log for array nodes to reduce noise
@@ -461,44 +481,54 @@ export default defineComponent({
     const isMissingArray = computed(() => {
       if (!isArray.value) return false
 
-      // Normalize path for comparison
-      const normalizePath = (path) => {
-        if (!path) return ''
-        return path
-          .replace(/^\$\.?/, '') // Remove $. or $ prefix
-          .replace(/\[0\]$/, '') // Remove [0] suffix
-          .replace(/\[\*\]$/, '') // Remove [*] suffix
-      }
-
-      const normalizedCurrentPath = normalizePath(props.path)
+      // Normalize current path using PathNormalizer
+      const normalizedCurrentPath = PathNormalizer.normalize(props.path, {
+        removePrefix: true,
+        removeWildcards: false,
+        removeIndices: true
+      }).toLowerCase() // Case-insensitive comparison
 
       // Check if this path is in the missing arrays list
       return props.missingArrayPaths.some(missingPath => {
-        const normalizedMissingPath = normalizePath(missingPath)
+        const normalizedMissingPath = PathNormalizer.normalize(missingPath, {
+          removePrefix: true,
+          removeWildcards: false,
+          removeIndices: true
+        }).toLowerCase() // Case-insensitive comparison
         return normalizedMissingPath === normalizedCurrentPath ||
                normalizedCurrentPath.endsWith('.' + normalizedMissingPath)
       })
     })
 
     const isSelectedJson = computed(() => {
-      // Normalize path for comparison - remove $. prefix and [0] suffix
-      const normalizePath = (path) => {
-        if (!path) return ''
-        return path
-          .replace(/^\$\.?/, '') // Remove $. or $ prefix
-          .replace(/\[0\]$/, '') // Remove [0] suffix
-          .replace(/\[\*\]$/, '') // Remove [*] suffix
-      }
-
-      const normalizedCurrentPath = normalizePath(props.path)
+      // Normalize current path using PathNormalizer
+      const normalizedCurrentPath = PathNormalizer.normalize(props.path, {
+        removePrefix: true,
+        removeWildcards: false,
+        removeIndices: true
+      }).toLowerCase() // Case-insensitive comparison
 
       // Check if any selected path matches this path (after normalization)
       const pathIncluded = props.selectedPaths.some(selectedPath => {
-        const normalizedSelectedPath = normalizePath(selectedPath)
+        const normalizedSelectedPath = PathNormalizer.normalize(selectedPath, {
+          removePrefix: true,
+          removeWildcards: false,
+          removeIndices: true
+        }).toLowerCase() // Case-insensitive comparison
         return normalizedSelectedPath === normalizedCurrentPath
       })
 
-      return pathIncluded && props.potentialJsonPaths.includes(props.path)
+      // Case-insensitive check for potential JSON paths
+      const isPotentialJsonPath = props.potentialJsonPaths.some(jsonPath => {
+        const normalizedJsonPath = PathNormalizer.normalize(jsonPath, {
+          removePrefix: true,
+          removeWildcards: false,
+          removeIndices: true
+        }).toLowerCase()
+        return normalizedJsonPath === normalizedCurrentPath
+      })
+
+      return pathIncluded && isPotentialJsonPath
     })
 
     // Display helpers
@@ -667,7 +697,10 @@ export default defineComponent({
         console.log('[filteredArrayChildren] Available arrayPaths:', props.arrayPaths)
 
         // Check if this array itself is in the arrayPaths (it's selectable)
-        const isThisArraySelectable = props.arrayPaths.includes(props.path)
+        // CRITICAL FIX: Normalize the current path to use [*] wildcard before comparing
+        const normalizedPath = PathNormalizer.normalize(props.path)
+        const isThisArraySelectable = props.arrayPaths.includes(normalizedPath)
+        console.log('[filteredArrayChildren] Normalized path:', normalizedPath)
         console.log('[filteredArrayChildren] Is this array selectable?', isThisArraySelectable)
 
         // If this array itself is selectable (a leaf array or an array of primitives),
@@ -679,59 +712,86 @@ export default defineComponent({
 
         // If array items are objects, check if they contain nested arrays
         if (typeof firstItem === 'object' && firstItem !== null && !Array.isArray(firstItem)) {
-          console.log('[filteredArrayChildren] First item keys:', Object.keys(firstItem))
+          console.log('╔════════════════════════════════════════════════════════════════════════')
+          console.log('║ [filteredArrayChildren] DETAILED NESTED ARRAY CHECK')
+          console.log('╠════════════════════════════════════════════════════════════════════════')
+          console.log('║ Current array path:', props.path)
+          console.log('║ Normalized path:', normalizedPath)
+          console.log('║ First item keys:', Object.keys(firstItem))
+          console.log('║ All available arrayPaths:')
+          props.arrayPaths.forEach((ap, idx) => {
+            console.log(`║   [${idx}] "${ap}"`)
+          })
+          console.log('╚════════════════════════════════════════════════════════════════════════')
 
           // Check if any property in the first item leads to an array
-          // IMPORTANT: Check for ANY index [0], [1], [2], etc., not just [0]
+          // IMPORTANT: Normalized paths use [*] wildcards, current path has specific index like [0]
           const hasNestedArrays = Object.keys(firstItem).some(key => {
-            // Build path patterns that match any array index
-            const pathPattern = `${props.path}`
             const keyToCheck = key
 
-            console.log(`[filteredArrayChildren] Checking if property '${key}' leads to arrays`)
-            console.log(`  pathPattern: ${pathPattern}`)
-            console.log(`  keyToCheck: ${keyToCheck}`)
+            console.log('┌────────────────────────────────────────────────────────────────────────')
+            console.log(`│ [filteredArrayChildren] Checking property: "${key}"`)
+            console.log('├────────────────────────────────────────────────────────────────────────')
 
-            // Check if any arrayPath matches this structure
+            // Normalize the current path to use [*] wildcard for comparison
+            // e.g., "projects[0].teams" becomes "projects[*].teams"
+            const normalizedCurrentPath = PathNormalizer.normalize(props.path).toLowerCase() // Case-insensitive
+            console.log(`│   Current path: "${props.path}"`)
+            console.log(`│   Normalized current path: "${normalizedCurrentPath}"`)
+            console.log(`│   Property to check: "${keyToCheck}"`)
+
+            // CRITICAL FIX: When checking a property of an array element, the path should include [*]
+            // e.g., if we're at "projects[*].teams" and checking property "members",
+            // the expected path is "projects[*].teams[*].members" (not "projects[*].teams.members")
+            // because "members" is a property of each team in the teams array
+            const expectedPathPrefix = `${normalizedCurrentPath}[*].${keyToCheck.toLowerCase()}` // Case-insensitive
+            console.log(`│   Expected path prefix: "${expectedPathPrefix}"`)
+            console.log('│')
+            console.log('│   Checking against all arrayPaths:')
+
+            // Check if any arrayPath starts with this prefix
             const matches = props.arrayPaths.some(arrayPath => {
-              // Pattern 1: Direct child array like "projects[0].teams"
-              // arrayPath should match: pathPattern[<any_index>].keyToCheck
-              const directChildPattern = new RegExp(`^${pathPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\[\\d+\\]\\.${keyToCheck}$`)
-              if (directChildPattern.test(arrayPath)) {
-                console.log(`  ✓ Pattern 1 match: ${arrayPath} is direct child of ${pathPattern}[*].${keyToCheck}`)
+              const normalizedArrayPath = PathNormalizer.normalize(arrayPath).toLowerCase() // Case-insensitive
+              // Direct match: projects[*].teams[*].members
+              if (normalizedArrayPath === expectedPathPrefix) {
+                console.log(`│   ✓ EXACT MATCH: "${arrayPath}" === "${expectedPathPrefix}"`)
                 return true
               }
 
-              // Pattern 2: Nested array deeper in the structure like "projects[0].teams[0].members"
-              // arrayPath should match: pathPattern[<any_index>].keyToCheck[<any_index>]...
-              // This means the path starts with our pattern, has an array index, then our key, then continues
-              const nestedPattern = new RegExp(`^${pathPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\[\\d+\\]\\.${keyToCheck}\\[`)
-              if (nestedPattern.test(arrayPath)) {
-                console.log(`  ✓ Pattern 2 match: ${arrayPath} is nested under ${pathPattern}[*].${keyToCheck}[*]...`)
+              // Prefix match with array index: projects[*].teams[*].members[*]...
+              // or projects[*].teams[*].members[*].skills
+              if (normalizedArrayPath.startsWith(expectedPathPrefix + '[*]')) {
+                console.log(`│   ✓ BRACKET MATCH: "${arrayPath}" starts with "${expectedPathPrefix}[*]"`)
                 return true
               }
 
-              // Pattern 3: Even deeper nesting like "projects[0].teams[0].members[0].skills"
-              // Check if arrayPath contains our pathPattern, then [index], then .keyToCheck
-              const deepNestedRegex = new RegExp(`${pathPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\[\\d+\\]\\.${keyToCheck}\\[\\d+\\]\\.`)
-              if (deepNestedRegex.test(arrayPath)) {
-                console.log(`  ✓ Pattern 3 match: ${arrayPath} is deeply nested under ${pathPattern}[*].${keyToCheck}[*]...`)
+              // Also check for deeper nesting with dot notation
+              // e.g., projects[*].teams[*].members.someProperty
+              if (normalizedArrayPath.startsWith(expectedPathPrefix + '.')) {
+                console.log(`│   ✓ DOT MATCH: "${arrayPath}" starts with "${expectedPathPrefix}."`)
                 return true
               }
 
+              console.log(`│   ✗ No match: "${arrayPath}"`)
               return false
             })
 
+            console.log('├────────────────────────────────────────────────────────────────────────')
             if (matches) {
-              console.log(`  ✓ RESULT: Property '${key}' leads to arrays`)
+              console.log(`│ ✅ RESULT: Property '${key}' LEADS TO ARRAYS`)
             } else {
-              console.log(`  ✗ RESULT: Property '${key}' does NOT lead to arrays`)
+              console.log(`│ ❌ RESULT: Property '${key}' does NOT lead to arrays`)
             }
+            console.log('└────────────────────────────────────────────────────────────────────────')
 
             return matches
           })
 
-          console.log('[filteredArrayChildren] hasNestedArrays result:', hasNestedArrays)
+          console.log('╔════════════════════════════════════════════════════════════════════════')
+          console.log('║ [filteredArrayChildren] FINAL RESULT')
+          console.log('╠════════════════════════════════════════════════════════════════════════')
+          console.log('║ hasNestedArrays:', hasNestedArrays)
+          console.log('╚════════════════════════════════════════════════════════════════════════')
 
           // If there are nested arrays, show the items so users can navigate to them
           if (hasNestedArrays) {
@@ -753,6 +813,19 @@ export default defineComponent({
       // In other modes, show all items
       return items
     })
+
+    // Debug function to log what's about to be rendered
+    const logArrayRender = () => {
+      console.log('╔════════════════════════════════════════════════════════════════════════')
+      console.log('║ [RENDER] About to render array children')
+      console.log('╠════════════════════════════════════════════════════════════════════════')
+      console.log('║ Array path:', props.path)
+      console.log('║ Array length:', props.node.length)
+      console.log('║ filteredArrayChildren.length:', filteredArrayChildren.value.length)
+      console.log('║ Items to render:', filteredArrayChildren.value.length)
+      console.log('╚════════════════════════════════════════════════════════════════════════')
+      return ''
+    }
 
     return {
       isObject,
@@ -781,7 +854,8 @@ export default defineComponent({
       selectField,
       selectionMode,
       filteredObjectChildren,
-      filteredArrayChildren
+      filteredArrayChildren,
+      logArrayRender
     }
   }
 })
@@ -797,6 +871,8 @@ export default defineComponent({
   align-items: center;
   padding: 2px 0;
   cursor: default;
+  flex-wrap: nowrap; /* Prevent wrapping */
+  min-height: 28px; /* Ensure consistent height */
 
   &:hover {
     background-color: rgba(0, 0, 0, 0.03);
@@ -904,12 +980,13 @@ export default defineComponent({
 }
 
 .selection-controls {
-  margin-left: 8px;
+  margin-left: 8px; /* Small gap after label */
   display: flex;
   gap: 8px;
   opacity: 1;
   visibility: visible;
   z-index: 10;
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 /* Make array nodes more prominent */

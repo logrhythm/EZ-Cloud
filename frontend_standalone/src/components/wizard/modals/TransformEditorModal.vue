@@ -442,7 +442,11 @@ export default {
       // Use MappingService.resolvePathForFanout to properly transform paths based on fanout rules
       const allPaths = this.allAvailableFields.map(field => {
         // Handle both string and object formats
-        const absolutePath = typeof field === 'string' ? field : (field.path || field.value || field)
+        let absolutePath = typeof field === 'string' ? field : (field.path || field.value || field)
+
+        // CRITICAL: Normalize array indices [0], [1], [2] to [*] BEFORE resolving fanout
+        // This ensures paths like $.teamMembers[0].name become $.teamMembers[*].name
+        absolutePath = absolutePath.replace(/\[(\d+)\]/g, '[*]')
 
         console.log('╔════════════════════════════════════════════════════════════════════════')
         console.log('║ Processing field:', absolutePath)

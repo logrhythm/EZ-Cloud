@@ -6,6 +6,7 @@
  */
 
 import { DataProcessor } from './dataProcessingService.js'
+import { PathNormalizer } from './pathNormalizer.js'
 
 /**
  * Phase 3: Case-insensitive property access helper
@@ -74,15 +75,17 @@ export class SchemaRuleService {
       const arrayInfo = this._analyzeArrayField(path, dataStructure)
       console.log('[findFanoutCandidates] arrayInfo for', path, ':', arrayInfo)
       if (arrayInfo) {
-        // Convert path to JsonTreeViewer format (remove $ prefix)
-        const viewerPath = arrayInfo.path.replace(/^\$\.?/, '')
+        // Normalize path using PathNormalizer to show array hierarchy with [*]
+        // This converts paths like "$.arr1[0].childarr[1]" to "arr1[*].childarr[*]"
+        const normalizedPath = PathNormalizer.normalize(arrayInfo.path)
+        const normalizedParentPath = arrayInfo.parentPath ? PathNormalizer.normalize(arrayInfo.parentPath) : null
+
         arrayFields.push({
           ...arrayInfo,
-          path: viewerPath,
-          // Also convert parentPath if it exists
-          parentPath: arrayInfo.parentPath ? arrayInfo.parentPath.replace(/^\$\.?/, '') : null
+          path: normalizedPath,
+          parentPath: normalizedParentPath
         })
-        console.log('[findFanoutCandidates] Converted path for viewer:', viewerPath)
+        console.log('[findFanoutCandidates] Normalized path:', normalizedPath, '| Parent:', normalizedParentPath)
       }
     }
 
@@ -904,15 +907,16 @@ export class SchemaRuleService {
       // isHomogeneous is true only if ALL instances were homogeneous
       metadata.isHomogeneous = metadata.homogeneousCount === metadata.sampleSize
 
-      // Convert path to JsonTreeViewer format (remove $ prefix)
-      const viewerPath = metadata.path.replace(/^\$\.?/, '')
+      // Normalize path using PathNormalizer to show array hierarchy with [*]
+      const normalizedPath = PathNormalizer.normalize(metadata.path)
+      const normalizedParentPath = metadata.parentPath ? PathNormalizer.normalize(metadata.parentPath) : null
 
       arrayFields.push({
-        path: viewerPath,
+        path: normalizedPath,
         isHomogeneous: metadata.isHomogeneous,
         elementType: metadata.elementType || 'unknown',
         sampleSize: Math.min(metadata.sampleSize, 25), // Cap at 25 as per spec
-        parentPath: metadata.parentPath ? metadata.parentPath.replace(/^\$\.?/, '') : null
+        parentPath: normalizedParentPath
       })
     }
 
@@ -1120,22 +1124,37 @@ export class SchemaRuleService {
    * Find all array paths within a parsed JSON structure
    * Supports nested fanout arrays where child arrays are relative to parent array context
    * @param {*} data - The parsed JSON data
-   * @param {string} parentPath - The parent field path (e.g., "$.log")
+   * @param {string} parentPath - The parent field path (e.g., "$.log" or "log")
    * @param {string} currentPath - Current path within the parsed structure
    * @returns {Array} Array of array path objects
    * @private
    */
   static _findArrayPathsInParsedJson (data, parentPath, currentPath = '') {
+    console.log('╔═══════════════════════════════════════════════════════════════════════')
+    console.log('║ [_findArrayPathsInParsedJson] CALLED')
+    console.log('║   data type:', typeof data, ', is array:', Array.isArray(data))
+    console.log('║   parentPath:', JSON.stringify(parentPath))
+    console.log('║   currentPath:', JSON.stringify(currentPath))
+    console.log('╚═══════════════════════════════════════════════════════════════════════')
+
     const arrayPaths = []
 
-    // Helper to build the full path
+    // Normalize parentPath: Remove $.  prefix to ensure consistent path format
+    // This ensures all generated fanout array paths are without the $. prefix
+    const normalizedParentPath = parentPath.startsWith('$.') ? parentPath.substring(2) : parentPath
+    console.log('[_findArrayPathsInParsedJson] normalizedParentPath:', JSON.stringify(normalizedParentPath))
+
+    // Helper to build the full path (without $. prefix)
     const buildFullPath = (subPath) => {
-      if (!subPath) return parentPath
-      return `${parentPath}.${subPath}`
+      const fullPath = !subPath ? normalizedParentPath : `${normalizedParentPath}.${subPath}`
+      console.log(`[_findArrayPathsInParsedJson] buildFullPath('${subPath}') => '${fullPath}'`)
+      return fullPath
     }
 
     // Recursive traversal with parent array tracking
     const traverse = (obj, path = '', insideArrayContext = null) => {
+      console.log(`[_findArrayPathsInParsedJson.traverse] path='${path}', insideArrayContext='${insideArrayContext}'`)
+
       if (obj === null || obj === undefined) return
 
       if (Array.isArray(obj)) {
@@ -1149,13 +1168,23 @@ export class SchemaRuleService {
           ? path.replace(/^\$\./, '') // Remove $. prefix for relative paths
           : path || '(root)'
 
+        console.log('╔═══════════════════════════════════════════════════════════════════════')
+        console.log('║ [traverse] FOUND ARRAY')
+        console.log('║   path:', JSON.stringify(path))
+        console.log('║   fullPath:', JSON.stringify(fullPath))
+        console.log('║   relativePath:', JSON.stringify(relativePath))
+        console.log('║   isNestedArray:', isNestedArray)
+        console.log('║   insideArrayContext:', JSON.stringify(insideArrayContext))
+        console.log('║   parentPath will be:', JSON.stringify(isNestedArray ? insideArrayContext : normalizedParentPath))
+        console.log('╚═══════════════════════════════════════════════════════════════════════')
+
         arrayPaths.push({
           path: fullPath,
           relativePath: relativePath,
           isHomogeneous: arrayInfo.isHomogeneous,
           elementType: arrayInfo.elementType,
           sampleSize: obj.length,
-          parentPath: isNestedArray ? insideArrayContext : parentPath,
+          parentPath: isNestedArray ? insideArrayContext : normalizedParentPath,
           isParsedField: true, // Mark as coming from a parsed field
           isNestedFanout: isNestedArray // Flag to indicate this is a nested fanout array
         })
@@ -1164,6 +1193,8 @@ export class SchemaRuleService {
         // Pass the current array's full path as the parent context for nested arrays
         if (obj.length > 0 && typeof obj[0] === 'object' && obj[0] !== null) {
           // Continue traversal inside the array element, marking we're in an array context
+          // Start with empty string so fieldPath builds correctly from root
+          console.log(`[traverse] Calling traverseObject for array element at '${fullPath}'`)
           traverseObject(obj[0], '', fullPath)
         }
       } else if (typeof obj === 'object') {
@@ -1181,16 +1212,19 @@ export class SchemaRuleService {
 
       for (const key in obj) {
         const value = obj[key]
-        const fieldPath = pathPrefix ? `${pathPrefix}.${key}` : `$.${key}`
+        const fieldPath = pathPrefix ? `${pathPrefix}.${key}` : key
 
         if (Array.isArray(value)) {
           // Found a nested array inside a parent array element
           const arrayInfo = this._analyzeArrayStructure(value)
-          const relativePath = fieldPath // This is relative to parent array context
+
+          // Build the absolute path by combining parent + child
+          // The fieldPath is already relative to the array element, so just append it
+          const absolutePath = `${parentArrayPath}[*].${fieldPath}`
 
           arrayPaths.push({
-            path: relativePath, // Store as relative path (e.g., $.requestParameters.changeBatch.changes[*])
-            relativePath: relativePath,
+            path: absolutePath, // Store fully-qualified absolute path
+            relativePath: `$.${fieldPath}`, // Relative path with $. prefix for reference
             isHomogeneous: arrayInfo.isHomogeneous,
             elementType: arrayInfo.elementType,
             sampleSize: value.length,
@@ -1200,8 +1234,10 @@ export class SchemaRuleService {
           })
 
           // Continue traversing deeper into nested array elements
+          // CRITICAL FIX: Reset pathPrefix to empty string when entering a new array context
+          // This prevents path duplication in deeply nested arrays
           if (value.length > 0 && typeof value[0] === 'object' && value[0] !== null) {
-            traverseObject(value[0], fieldPath, relativePath)
+            traverseObject(value[0], '', absolutePath)
           }
         } else if (value && typeof value === 'object') {
           // Continue traversing nested objects
@@ -1211,7 +1247,42 @@ export class SchemaRuleService {
     }
 
     traverse(data)
-    return arrayPaths
+
+    // CRITICAL: Normalize all paths using PathNormalizer to ensure consistent format
+    // This prevents duplicates caused by different path formats
+    console.log('╔═══════════════════════════════════════════════════════════════════════')
+    console.log('║ [_findArrayPathsInParsedJson] Normalizing paths')
+    console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+    const normalizedArrayPaths = arrayPaths.map(arrayPath => {
+      const originalPath = arrayPath.path
+      const originalParentPath = arrayPath.parentPath
+
+      // Normalize both path and parentPath using PathNormalizer
+      const normalizedPath = PathNormalizer.normalize(arrayPath.path)
+      const normalizedParentPath = arrayPath.parentPath ? PathNormalizer.normalize(arrayPath.parentPath) : null
+
+      console.log(`  Original path: "${originalPath}" → Normalized: "${normalizedPath}"`)
+      if (arrayPath.parentPath) {
+        console.log(`  Original parentPath: "${originalParentPath}" → Normalized: "${normalizedParentPath}"`)
+      }
+
+      return {
+        ...arrayPath,
+        path: normalizedPath,
+        parentPath: normalizedParentPath
+      }
+    })
+
+    console.log('╔═══════════════════════════════════════════════════════════════════════')
+    console.log('║ [_findArrayPathsInParsedJson] Final result after normalization')
+    console.log('║   arrayPaths.length:', normalizedArrayPaths.length)
+    normalizedArrayPaths.forEach((arr, idx) => {
+      console.log(`║     [${idx}] path: "${arr.path}", parentPath: "${arr.parentPath || 'N/A'}"`)
+    })
+    console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+    return normalizedArrayPaths
   }
 
   /**
@@ -1299,22 +1370,73 @@ export class SchemaRuleService {
    * @returns {Array} Combined fanout candidates
    */
   static mergeParsedArraysIntoFanoutCandidates (existingCandidates, parsedArrays) {
-    // Create a map of existing candidates by path for deduplication
+    console.log('╔═══════════════════════════════════════════════════════════════════════')
+    console.log('║ [DEBUG mergeParsedArraysIntoFanoutCandidates] Called')
+    console.log('║   existingCandidates.length:', existingCandidates.length)
+    console.log('║   parsedArrays.length:', parsedArrays.length)
+    console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+    // Create a map of existing candidates by NORMALIZED path for proper deduplication
+    // Normalize paths to avoid duplicates due to different formats (with/without $. prefix)
     const candidateMap = new Map()
 
-    // Add existing candidates
-    for (const candidate of existingCandidates) {
-      candidateMap.set(candidate.path, candidate)
+    // Helper to normalize path for deduplication
+    const normalizePath = (path) => {
+      // Remove $. prefix if present
+      let normalized = path.startsWith('$.') ? path.substring(2) : path
+      // Replace numeric indices with [*] for consistency
+      normalized = normalized.replace(/\[\d+\]/g, '[*]')
+      return normalized
     }
 
-    // Add parsed arrays
-    for (const parsedArray of parsedArrays) {
-      if (!candidateMap.has(parsedArray.path)) {
-        candidateMap.set(parsedArray.path, parsedArray)
+    // Add existing candidates
+    console.log('[DEBUG] Adding existing candidates:')
+    for (const candidate of existingCandidates) {
+      const normalizedPath = normalizePath(candidate.path)
+      console.log(`  "${candidate.path}" → normalized: "${normalizedPath}"`)
+
+      // Only add if not already present (first wins in case of duplicates)
+      if (!candidateMap.has(normalizedPath)) {
+        candidateMap.set(normalizedPath, {
+          ...candidate,
+          path: candidate.path // Keep original path format
+        })
+        console.log('    ✓ Added to map')
+      } else {
+        console.log('    ✗ Duplicate detected, skipping')
       }
     }
 
-    return Array.from(candidateMap.values())
+    // Add parsed arrays
+    console.log('[DEBUG] Adding parsed arrays:')
+    for (const parsedArray of parsedArrays) {
+      const normalizedPath = normalizePath(parsedArray.path)
+      console.log(`  "${parsedArray.path}" → normalized: "${normalizedPath}"`)
+
+      // Only add if not already present
+      if (!candidateMap.has(normalizedPath)) {
+        candidateMap.set(normalizedPath, {
+          ...parsedArray,
+          path: parsedArray.path // Keep original path format
+        })
+        console.log('    ✓ Added to map')
+      } else {
+        console.log('    ✗ Duplicate detected, skipping')
+      }
+    }
+
+    const result = Array.from(candidateMap.values())
+
+    console.log('╔═══════════════════════════════════════════════════════════════════════')
+    console.log('║ [DEBUG mergeParsedArraysIntoFanoutCandidates] Result')
+    console.log('║   result.length:', result.length)
+    console.log('║   Final merged candidates:')
+    result.forEach((c, idx) => {
+      console.log(`║     [${idx}] path: "${c.path}", isParsedField: ${c.isParsedField}, parentPath: "${c.parentPath || 'N/A'}"`)
+    })
+    console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+    return result
   }
 
   /**

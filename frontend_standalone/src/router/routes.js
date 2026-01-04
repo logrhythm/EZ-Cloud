@@ -25,11 +25,7 @@ function updateTitle (to, from, next) {
 const routes = [
   {
     path: '/',
-    meta: { title: 'Field Mapping' },
-    component: () => import('layouts/MainLayout.vue'),
-    children: [
-      { path: '', component: () => import('pages/Pipelines/MappingEdit.vue') }
-    ]
+    redirect: '/Wizard'
   },
 
   {

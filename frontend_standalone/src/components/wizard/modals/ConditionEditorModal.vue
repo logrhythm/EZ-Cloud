@@ -134,10 +134,21 @@
                                 <q-icon name="data_object" color="info" size="xs" />
                               </span>
                               {{ scope.opt.label }}
+                              <q-badge
+                                v-if="scope.opt.fanoutParent"
+                                color="blue"
+                                text-color="white"
+                                class="q-ml-xs"
+                              >
+                                Has Fanout
+                              </q-badge>
                             </q-item-label>
                             <q-item-label caption>
                               <span>{{ scope.opt.type }}</span>
                               <span v-if="scope.opt.isJsonField" class="json-field-tag">JSON</span>
+                            </q-item-label>
+                            <q-item-label v-if="scope.opt.fanoutParent" caption>
+                              Fanout: {{ scope.opt.fanoutParent }}
                             </q-item-label>
                           </q-item-section>
                         </q-item>
@@ -351,6 +362,11 @@ export default {
   computed: {
     ...mapState('wizard', ['sampleData']),
 
+    // Get fanout arrays from Vuex (same as TransformEditorModal)
+    fanoutArrays () {
+      return this.$store.getters['wizard/getFanoutArrays']
+    },
+
     fieldOptions () {
       try {
         if (!Array.isArray(this.availableFields)) {
@@ -377,6 +393,7 @@ export default {
           const value = field.label || ''
           const path = field.path || ''
           const isJsonField = field.isFromJsonString || false
+          const fanoutParent = field.fanoutParent || null
 
           if (value && !seenValues.has(value)) {
             seenValues.add(value)
@@ -386,22 +403,24 @@ export default {
               type: field.type || 'unknown',
               sampleValues: field.sampleValues || [],
               path: path,
-              isJsonField: isJsonField
+              isJsonField: isJsonField,
+              fanoutParent: fanoutParent // ADD fanout parent to field options (SAME as TransformEditorModal)
             })
           }
         }
 
         console.log(`║ Unique field options: ${uniqueFields.length}`)
+        console.log(`║ Field options with fanout: ${uniqueFields.filter(f => f.fanoutParent).length}`)
 
         // Log sample fields for verification
         if (uniqueFields.length > 0) {
           console.log('║ Sample normal fields:')
           uniqueFields.filter(f => !f.isJsonField).slice(0, 3)
-            .forEach(f => console.log(`║   - ${f.label} (${f.type})`))
+            .forEach(f => console.log(`║   - ${f.label} (${f.type})${f.fanoutParent ? ` [Fanout: ${f.fanoutParent}]` : ''}`))
 
           console.log('║ Sample JSON string fields:')
           uniqueFields.filter(f => f.isJsonField).slice(0, 3)
-            .forEach(f => console.log(`║   - ${f.label} (${f.type})`))
+            .forEach(f => console.log(`║   - ${f.label} (${f.type})${f.fanoutParent ? ` [Fanout: ${f.fanoutParent}]` : ''}`))
         }
 
         console.log('╚════════════════════════════════════════════════════════════════════════')
@@ -480,37 +499,57 @@ export default {
         console.log('╔════════════════════════════════════════════════════════════════════════')
         console.log('║ [ConditionEditorModal] extractFieldsFromSampleData - START')
         console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log('║ Checking for JSON-to-String fields to include in field extraction')
+        console.log('║ Using MappingService.extractJsonPaths (same as Step 5 Source Field dropdown)')
 
-        // Get JSON-to-String fields and their parsed data from store
-        const jsonToStringFields = schemaRules?.convertToJson || []
-        const parsedStringifiedFields = schemaRules?.parsedStringifiedJsonFields || {}
+        // Import MappingService to use the same field extraction as Step 5
+        const MappingService = require('../../../services/wizard/mappingService').MappingService
 
-        console.log('║ Found jsonToStringFields count:', jsonToStringFields.length)
-        console.log('║ jsonToStringFields:', jsonToStringFields)
-        console.log('║ Found parsedStringifiedFields keys:', Object.keys(parsedStringifiedFields))
-
-        if (Object.keys(parsedStringifiedFields).length > 0) {
-          console.log('║ parsedStringifiedFields sample:')
-          const firstKey = Object.keys(parsedStringifiedFields)[0]
-          const parsedData = parsedStringifiedFields[firstKey]
-          console.log(`║   ${firstKey}: ${typeof parsedData}, isArray=${Array.isArray(parsedData)}`)
-          if (typeof parsedData === 'object' && parsedData !== null) {
-            console.log(`║   Keys: ${Object.keys(parsedData).slice(0, 5).join(', ')}...`)
-          }
-        }
-
-        // Use FilterRuleService to extract fields with JSON-to-String field handling
-        this.availableFields = FilterRuleService.extractFieldCandidates(
+        // Use MappingService.extractJsonPaths - SAME as Step 5's Source Field dropdown
+        const jsonPaths = MappingService.extractJsonPaths(
           data.parsedData,
           data.dataStructure,
           {
-            jsonToStringFields,
-            parsedStringifiedFields
+            jsonToStringFields: schemaRules?.convertToJson || [],
+            parsedStringifiedFields: schemaRules?.parsedStringifiedJsonFields || {}
           }
         )
 
-        console.log('║ Total extracted fields:', this.availableFields.length)
+        console.log('║ Total JSON paths extracted:', jsonPaths.length)
+        console.log('║ Fanout arrays:', JSON.stringify(this.fanoutArrays))
+        console.log('║ Fanout arrays count:', this.fanoutArrays.length)
+
+        // Convert to the format expected by ConditionEditorModal
+        // MappingService returns: { label, value, type, sampleValue }
+        // We need: { label, value, type, sampleValues, path, isJsonField, fanoutParent }
+        this.availableFields = jsonPaths.map(pathObj => {
+          // Determine if this is from a JSON string field by checking if it contains parsed field markers
+          const isFromJsonString = pathObj.label?.includes('(parsed)') || false
+
+          // Get the absolute path and NORMALIZE array indices [0], [1], [2] to [*]
+          // This ensures paths like $.teamMembers[0].name become $.teamMembers[*].name
+          let absolutePath = pathObj.value || ''
+          absolutePath = absolutePath.replace(/\[(\d+)\]/g, '[*]')
+
+          // Use MappingService.resolvePathForFanout to get fanout information (SAME as TransformEditorModal)
+          const resolved = MappingService.resolvePathForFanout(absolutePath, this.fanoutArrays)
+
+          console.log(`║ Field: ${absolutePath} → Resolved: ${resolved.jsonPath}, Fanout: ${resolved.fanoutParent || 'none'}`)
+
+          // Use the RESOLVED path (relative to fanout) as label and value
+          // This ensures fields within fanout arrays show as $.id instead of $.teamMembers[*].id
+          return {
+            label: resolved.jsonPath, // Use resolved relative path (e.g., $.id for fanout fields)
+            value: resolved.jsonPath, // Use resolved relative path as value
+            type: pathObj.type || 'string',
+            sampleValues: pathObj.sampleValue ? [pathObj.sampleValue] : [],
+            path: resolved.jsonPath, // Use resolved path
+            isJsonField: isFromJsonString,
+            isFromJsonString: isFromJsonString,
+            fanoutParent: resolved.fanoutParent // ADD fanout parent information (SAME as TransformEditorModal)
+          }
+        })
+
+        console.log('║ Total available fields:', this.availableFields.length)
         console.log('║ Fields from JSON-to-String fields:',
           this.availableFields.filter(f => f.isFromJsonString).length)
 
@@ -522,8 +561,10 @@ export default {
           console.log('║ Sample normal fields:')
           normalFields.forEach(f => console.log(`║   - ${f.path} (${f.type})`))
 
-          console.log('║ Sample JSON string fields:')
-          jsonStringFields.forEach(f => console.log(`║   - ${f.path} (${f.type})`))
+          if (jsonStringFields.length > 0) {
+            console.log('║ Sample JSON string fields:')
+            jsonStringFields.forEach(f => console.log(`║   - ${f.path} (${f.type})`))
+          }
         }
 
         console.log('╚════════════════════════════════════════════════════════════════════════')

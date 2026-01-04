@@ -7,7 +7,7 @@
       <div class="step-title-section">
         <h2 class="step-title">Field Mapping</h2>
         <p class="step-subtitle">
-          Click on any JSON field to create a mapping to LogRhythm schema fields.
+          Click on a specific JSON attribute in the tree to create its mapping to LogRhythm schema fields.
         </p>
       </div>
     </div>
@@ -18,8 +18,8 @@
       <div class="instructions-content">
         <strong>How to map fields:</strong>
         <span class="q-ml-sm">
-          Click on any field in the JSON tree to create or edit a mapping.
-          Mapped fields show a green checkmark (✓).
+          Click on a specific JSON attribute in the tree to create or edit its mapping.
+          Mapped attributes show a green checkmark (✓).
         </span>
       </div>
       <q-space />
@@ -160,6 +160,20 @@
                 </q-input>
 
                 <q-btn
+                  unelevated
+                  dense
+                  color="primary"
+                  icon="add"
+                  label="Add Mapping"
+                  @click="createNewMapping"
+                  size="sm"
+                  no-caps
+                  class="q-ml-sm"
+                >
+                  <q-tooltip>Create a new field mapping manually</q-tooltip>
+                </q-btn>
+
+                <q-btn
                   flat
                   dense
                   icon="refresh"
@@ -176,7 +190,7 @@
               <div v-if="localMappings.length === 0" class="empty-mappings">
                 <q-icon name="touch_app" size="64px" color="grey-5" />
                 <p class="empty-message">No mappings defined yet</p>
-                <p class="empty-hint">Click on any field in the JSON tree to create a mapping</p>
+                <p class="empty-hint">Click on a specific JSON attribute in the tree on the left to define its mapping, or use the "Add Mapping" button above to create a mapping manually</p>
               </div>
 
               <!-- No Results After Filter -->
@@ -201,7 +215,6 @@
                 <template v-slot:body="props">
                   <q-tr
                     :props="props"
-                    :class="{ 'missing-field-row': isMissingField(props.row) }"
                     class="clickable-row"
                     @click="editMapping(props.row)"
                     style="cursor: pointer;"
@@ -211,19 +224,6 @@
                       <div class="json-path-cell">
                         <q-icon :name="getTypeIcon(props.row.type)" :color="getTypeIconColor(props.row.type)" size="xs" class="q-mr-xs" />
                         <span class="path-text">{{ props.row.inputRule }}</span>
-                        <!-- Missing Field Warning Badge -->
-                        <q-badge
-                          v-if="isMissingField(props.row)"
-                          color="orange"
-                          text-color="white"
-                          class="missing-field-badge q-ml-sm"
-                        >
-                          <q-icon name="warning" size="12px" class="q-mr-xs" />
-                          missing
-                          <q-tooltip>
-                            {{ getFieldWarningMessage(props.row) }}
-                          </q-tooltip>
-                        </q-badge>
                       </div>
                     </q-td>
 
@@ -362,11 +362,26 @@
 
             <!-- Mappings Tab -->
             <q-tab-panel name="mappings" class="mappings-tab-panel">
+              <!-- Add Mapping Button (Mobile) -->
+              <div class="q-mb-md">
+                <q-btn
+                  unelevated
+                  color="primary"
+                  icon="add"
+                  label="Add New Mapping"
+                  @click="createNewMapping"
+                  no-caps
+                  class="full-width"
+                >
+                  <q-tooltip>Create a new field mapping manually</q-tooltip>
+                </q-btn>
+              </div>
+
               <!-- Empty State -->
               <div v-if="localMappings.length === 0" class="empty-mappings-mobile">
                 <q-icon name="touch_app" size="48px" color="grey-5" />
                 <p class="empty-message">No mappings defined yet</p>
-                <p class="empty-hint">Switch to JSON Tree tab and click on fields to map</p>
+                <p class="empty-hint">Switch to JSON Tree tab and click on a specific attribute to define its mapping, or use the "Add New Mapping" button above</p>
               </div>
 
               <!-- Mappings List (Mobile) -->
@@ -377,22 +392,11 @@
                   clickable
                   @click="editMapping(mapping)"
                   class="mapping-item-mobile"
-                  :class="{ 'missing-field-item': isMissingField(mapping) }"
                 >
                   <q-item-section>
                     <q-item-label class="json-path-mobile">
                       <q-icon :name="getTypeIcon(mapping.type)" :color="getTypeIconColor(mapping.type)" size="xs" class="q-mr-xs" />
                       {{ mapping.inputRule }}
-                      <!-- Missing Field Badge (Mobile) -->
-                      <q-badge
-                        v-if="isMissingField(mapping)"
-                        color="orange"
-                        text-color="white"
-                        class="missing-field-badge q-ml-sm"
-                      >
-                        <q-icon name="warning" size="12px" class="q-mr-xs" />
-                        missing
-                      </q-badge>
                     </q-item-label>
                     <q-item-label caption>
                       <q-icon name="arrow_forward" size="xs" class="q-mr-xs" />
@@ -450,37 +454,35 @@
 
           <q-separator />
 
-          <!-- Missing Field Warning Banner (Update Mode) -->
-          <q-banner
-            v-if="editingMapping && isMissingField(editingMapping)"
-            class="bg-orange text-white missing-field-warning-banner"
-            dense
-          >
-            <template v-slot:avatar>
-              <q-icon name="warning" color="white" />
-            </template>
-            <div>
-              <strong>Warning:</strong> This field path does not exist in the current sample data.
-              Verify the path or update the sample data.
-            </div>
-          </q-banner>
-
           <q-card-section class="mapping-form-section">
             <div class="mapping-form">
               <div class="row q-col-gutter-md">
-                <!-- Source Field (Read-only, Pre-filled) -->
+                <!-- Source Field (Editable JSON Path) -->
                 <div class="col-12">
                   <q-input
                     v-model="mappingForm.inputRule"
                     label="Source Field (JSON Path) *"
-                    hint="Auto-filled from the field you clicked"
+                    hint="You can edit the JSON path or use the auto-filled value from the tree"
                     outlined
                     dense
-                    readonly
                     class="full-width"
+                    :error="!!validationErrors.inputRule"
+                    :error-message="validationErrors.inputRule"
                   >
                     <template v-slot:prepend>
                       <q-icon name="code" />
+                    </template>
+                    <template v-slot:append>
+                      <q-icon name="help_outline" color="grey-6">
+                        <q-tooltip max-width="300px">
+                          Enter the JSON path to the field you want to map.<br>
+                          Examples:<br>
+                          - $.fieldName<br>
+                          - $.parent.child<br>
+                          - $.array[*].field<br>
+                          - Relative: fieldName (when using fanout parent)
+                        </q-tooltip>
+                      </q-icon>
                     </template>
                   </q-input>
                 </div>
@@ -823,7 +825,6 @@ export default {
       isDestroyed: false,
 
       // Update mode state
-      missingPolicyFields: [], // Track fields from policy that are missing in sample data
       isLoadingFromPolicy: false, // Loading state for policy prefill
 
       // Table columns
@@ -1367,6 +1368,55 @@ export default {
       }
     },
 
+    /**
+     * Create a new mapping manually (without clicking a tree node)
+     * Opens the mapping dialog with blank/default values
+     */
+    createNewMapping () {
+      // Reset form
+      this.editingMapping = null
+      this.validationErrors = {}
+
+      // Reset operation config
+      this.operationConfig = {
+        type: null,
+        parameters: {}
+      }
+
+      // Store original field path as empty
+      this.originalFieldPath = ''
+
+      // Clear smart suggestions
+      this.smartSuggestions = []
+
+      // Initialize form with blank values
+      this.mappingForm = {
+        id: `mapping-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        inputRule: '', // Blank - user must enter manually
+        lrSchemaField: '',
+        type: 'String',
+        format: null,
+        default: null,
+        alternativeFields: [],
+        fanoutParentElement: null,
+        sampleValue: null,
+        sampleValueDisplay: null
+      }
+
+      // Open dialog
+      this.mappingDialog = true
+
+      // Show info notification
+      this.$q.notify({
+        type: 'info',
+        message: 'Create New Mapping',
+        caption: 'Enter the JSON path and configure the mapping manually',
+        position: 'top',
+        timeout: 3000,
+        icon: 'add_circle'
+      })
+    },
+
     editMapping (mapping) {
       console.log('╔════════════════════════════════════════════════════════════════════════')
       console.log('║ [Step 5] editMapping - CALLED')
@@ -1557,6 +1607,20 @@ export default {
       try {
         this.isValidatingMapping = true
         this.validationErrors = {}
+
+        // Validate that JSON Path is not blank
+        if (!this.mappingForm.inputRule || this.mappingForm.inputRule.trim() === '') {
+          this.validationErrors.inputRule = 'JSON Path is required and cannot be blank'
+          this.$q.notify({
+            type: 'warning',
+            message: 'JSON Path is required',
+            caption: 'Please enter a valid JSON path for the source field',
+            position: 'top',
+            timeout: 4000
+          })
+          this.isValidatingMapping = false
+          return
+        }
 
         // Validate operation syntax if operation is present
         if (this.operationConfig.type) {
@@ -1950,44 +2014,6 @@ export default {
           return
         }
 
-        // Check for missing fields (Update Mode) and confirm with user
-        if (this.missingPolicyFields && this.missingPolicyFields.length > 0) {
-          const missingCount = this.missingPolicyFields.length
-
-          // Show confirmation dialog
-          this.$q.dialog({
-            title: 'Missing Fields Detected',
-            message: `${missingCount} mapping${missingCount !== 1 ? 's' : ''} reference field${missingCount !== 1 ? 's' : ''} not found in the current sample data. Do you want to continue anyway?`,
-            persistent: true,
-            ok: {
-              label: 'Continue',
-              color: 'primary'
-            },
-            cancel: {
-              label: 'Review Mappings',
-              color: 'grey'
-            }
-          }).onOk(() => {
-            // User confirmed, proceed
-            this.saveStateToStore()
-            this.$emit('step-valid')
-            this.$emit('next-step')
-          }).onCancel(() => {
-            // User wants to review
-            this.$q.notify({
-              type: 'info',
-              message: 'Review the mappings with "missing" badges',
-              caption: 'You can edit or delete mappings with missing fields',
-              position: 'top',
-              timeout: 4000
-            })
-          }).finally(() => {
-            this.isSaving = false
-          })
-
-          return
-        }
-
         // Save to store
         this.saveStateToStore()
 
@@ -2072,142 +2098,6 @@ export default {
     // ========================================
 
     /**
-     * Check if a field path exists in the current sample data
-     * @param {string} fieldPath - The field path to check (inputRule)
-     * @returns {boolean}
-     */
-    checkFieldExistsInSampleData (fieldPath) {
-      if (!fieldPath || !this.availableJsonPaths) {
-        console.log('[Step 5] checkFieldExistsInSampleData - early return:', { fieldPath, hasAvailablePaths: !!this.availableJsonPaths })
-        return false
-      }
-
-      // Normalize path: ensure it starts with $. and convert to lowercase
-      const normalizePath = (path) => {
-        if (!path) return ''
-        let normalized = path.trim()
-
-        // Convert @. to $.
-        if (normalized.startsWith('@.')) {
-          normalized = '$.' + normalized.substring(2)
-        }
-
-        // Ensure it starts with $.
-        if (!normalized.startsWith('$.')) {
-          normalized = '$.' + normalized
-        }
-
-        // Replace all @ symbols with _ (underscore)
-        // This handles cases like $.@metadata.beat -> $._metadata.beat
-        // because JavaScript uses underscore for properties that start with @
-        normalized = normalized.replace(/@/g, '_')
-
-        // Remove array indices [0], [1], etc. for comparison (but keep [*])
-        // This handles cases like $.response.user.groups[0] matching $.response.user.groups
-        normalized = normalized.replace(/\[\d+\]/g, '')
-
-        return normalized.toLowerCase()
-      }
-
-      const normalizedFieldPath = normalizePath(fieldPath)
-
-      // Check if field exists in available paths - CASE-INSENSITIVE
-      // First, try direct match
-      const directMatch = this.availableJsonPaths.some(pathObj => {
-        const pathValue = pathObj.value || pathObj.label || ''
-        const normalizedAvailablePath = normalizePath(pathValue)
-        return normalizedAvailablePath === normalizedFieldPath
-      })
-
-      if (directMatch) {
-        console.log(`✓ [Step 5] Field FOUND (direct match): ${fieldPath}`)
-        return true
-      }
-
-      // If no direct match and fanout arrays exist, try matching with fanout parents
-      // This handles cases where policy has $.eventName but tree has $.Log.Records[*].eventName
-      if (this.fanoutArrays && this.fanoutArrays.length > 0) {
-        console.log(`[Step 5] No direct match for ${fieldPath}, trying fanout-based matching...`)
-        console.log('[Step 5] Available fanout arrays:', this.fanoutArrays)
-
-        // For each fanout parent, try to reconstruct what the full path would be
-        for (const fanoutParent of this.fanoutArrays) {
-          // Build potential full path by combining fanout parent with the field path
-          // Strip $. from fieldPath for concatenation
-          let relativePath = fieldPath
-          if (relativePath.startsWith('$.')) {
-            relativePath = relativePath.substring(2)
-          } else if (relativePath.startsWith('$')) {
-            relativePath = relativePath.substring(1)
-          }
-
-          // Build full path: fanoutParent + [*] + relativePath
-          let reconstructedPath = fanoutParent
-          if (!reconstructedPath.endsWith('[*]')) {
-            reconstructedPath += '[*]'
-          }
-          reconstructedPath += '.' + relativePath
-
-          const normalizedReconstructedPath = normalizePath(reconstructedPath)
-
-          console.log(`[Step 5] Trying reconstructed path: ${reconstructedPath} (normalized: ${normalizedReconstructedPath})`)
-
-          // Check if this reconstructed path exists in availableJsonPaths
-          const fanoutMatch = this.availableJsonPaths.some(pathObj => {
-            const pathValue = pathObj.value || pathObj.label || ''
-            const normalizedAvailablePath = normalizePath(pathValue)
-            return normalizedAvailablePath === normalizedReconstructedPath
-          })
-
-          if (fanoutMatch) {
-            console.log(`✓ [Step 5] Field FOUND (fanout match): ${fieldPath} -> ${reconstructedPath}`)
-            return true
-          }
-        }
-
-        console.log(`⚠️  [Step 5] Field NOT FOUND even with fanout matching: ${fieldPath}`)
-      } else {
-        console.log(`⚠️  [Step 5] Field NOT FOUND: ${fieldPath} (normalized: ${normalizedFieldPath})`)
-      }
-
-      return false
-    },
-
-    /**
-     * Check if a mapping has a missing field
-     * @param {Object} mapping - The mapping object to check
-     * @returns {boolean}
-     */
-    isMissingField (mapping) {
-      if (!mapping || !mapping.inputRule) {
-        return false
-      }
-
-      return this.missingPolicyFields.some(m =>
-        m.path === mapping.inputRule ||
-        m.path === mapping.originalInputRule
-      )
-    },
-
-    /**
-     * Get warning message for a missing field
-     * @param {Object} mapping - The mapping object
-     * @returns {string}
-     */
-    getFieldWarningMessage (mapping) {
-      if (!this.isMissingField(mapping)) {
-        return ''
-      }
-
-      const missingField = this.missingPolicyFields.find(m =>
-        m.path === mapping.inputRule ||
-        m.path === mapping.originalInputRule
-      )
-
-      return missingField?.message || 'Field defined in policy but not found in current sample data'
-    },
-
-    /**
      * Pre-fill Step 5 from uploaded policy data (Update mode)
      * Extracts transforms from policy and populates the mappings grid
      * @param {Object} policyData - The uploaded policy data
@@ -2236,8 +2126,6 @@ export default {
 
         console.log('[Step 5] Found', transforms.length, 'transforms in policy')
 
-        // Track missing fields
-        const missingFields = []
         const mappingsToAdd = []
 
         // Process each transform
@@ -2278,24 +2166,6 @@ export default {
             lrSchemaField
           })
 
-          // Check if field exists in sample data
-          const fieldExists = this.checkFieldExistsInSampleData(originalFieldPath)
-
-          if (!fieldExists) {
-            console.warn('[Step 5] Field from policy NOT FOUND in sample data:', originalFieldPath)
-
-            // Track as missing field
-            missingFields.push({
-              type: 'mapping',
-              path: inputRule,
-              originalPath: originalFieldPath,
-              message: 'Field defined in policy but not found in current sample data',
-              reason: 'missing'
-            })
-          } else {
-            console.log('[Step 5] Field from policy FOUND in sample data:', originalFieldPath)
-          }
-
           // Create mapping object with case-insensitive property values
           const mapping = {
             id: `mapping-policy-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`,
@@ -2311,38 +2181,33 @@ export default {
             originalInputRule: inputRule // Keep original for reference
           }
 
-          // Try to get sample value if field exists
-          if (fieldExists) {
-            const pathOption = this.availableJsonPaths.find(p =>
-              p.value === originalFieldPath ||
-              p.value === inputRule
-            )
-            if (pathOption && pathOption.sampleValue) {
-              mapping.sampleValue = pathOption.sampleValue
+          // Try to get sample value from available paths
+          const pathOption = this.availableJsonPaths.find(p =>
+            p.value === originalFieldPath ||
+            p.value === inputRule
+          )
+          if (pathOption && pathOption.sampleValue) {
+            mapping.sampleValue = pathOption.sampleValue
 
-              // Create display value
-              if (Array.isArray(pathOption.sampleValue)) {
-                const firstValues = pathOption.sampleValue.slice(0, 3).map(v => {
-                  if (typeof v === 'string') {
-                    return v.length > 50 ? v.substring(0, 50) + '...' : v
-                  }
-                  return JSON.stringify(v)
-                })
-                mapping.sampleValueDisplay = firstValues.join(', ')
-                if (pathOption.sampleValue.length > 3) {
-                  mapping.sampleValueDisplay += ` (+${pathOption.sampleValue.length - 3} more)`
+            // Create display value
+            if (Array.isArray(pathOption.sampleValue)) {
+              const firstValues = pathOption.sampleValue.slice(0, 3).map(v => {
+                if (typeof v === 'string') {
+                  return v.length > 50 ? v.substring(0, 50) + '...' : v
                 }
-              } else {
-                mapping.sampleValueDisplay = String(pathOption.sampleValue)
+                return JSON.stringify(v)
+              })
+              mapping.sampleValueDisplay = firstValues.join(', ')
+              if (pathOption.sampleValue.length > 3) {
+                mapping.sampleValueDisplay += ` (+${pathOption.sampleValue.length - 3} more)`
               }
+            } else {
+              mapping.sampleValueDisplay = String(pathOption.sampleValue)
             }
           }
 
           mappingsToAdd.push(mapping)
         }
-
-        // Store missing fields
-        this.missingPolicyFields = missingFields
 
         // Set local mappings
         this.localMappings = mappingsToAdd
@@ -2353,13 +2218,6 @@ export default {
         console.log('============================================================')
         console.log('[Step 5] Pre-fill completed successfully')
         console.log('  Total mappings loaded:', mappingsToAdd.length)
-        console.log('  Missing fields:', missingFields.length)
-        if (missingFields.length > 0) {
-          console.log('  Missing field details:')
-          missingFields.forEach((field, idx) => {
-            console.log(`    [${idx}] ${field.originalPath} (from: ${field.path})`)
-          })
-        }
         console.log('============================================================')
 
         // Force UI update
@@ -2367,21 +2225,13 @@ export default {
         this.$forceUpdate()
 
         // Show success notification
-        const missingCount = missingFields.length
-        const notificationType = missingCount > 0 ? 'warning' : 'positive'
-        const baseMessage = 'Field mappings loaded from policy'
-        const caption = `${mappingsToAdd.length} mapping${mappingsToAdd.length !== 1 ? 's' : ''} loaded`
-        const missingCaption = missingCount > 0
-          ? ` (${missingCount} field${missingCount !== 1 ? 's' : ''} not found in sample data)`
-          : ''
-
         this.$q.notify({
-          type: notificationType,
-          message: baseMessage,
-          caption: caption + missingCaption,
-          timeout: missingCount > 0 ? 5000 : 3000,
+          type: 'positive',
+          message: 'Field mappings loaded from policy',
+          caption: `${mappingsToAdd.length} mapping${mappingsToAdd.length !== 1 ? 's' : ''} loaded`,
+          timeout: 3000,
           position: 'top',
-          icon: missingCount > 0 ? 'warning' : 'check_circle'
+          icon: 'check_circle'
         })
       } catch (error) {
         console.error('============================================================')
@@ -2552,6 +2402,17 @@ export default {
 
 .step-content {
   margin-bottom: 3rem;
+}
+
+.step-actions {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 2rem;
+  border-top: 1px solid var(--q-color-grey-3);
+
+  .dark-theme & {
+    border-color: var(--q-color-grey-8);
+  }
 }
 
 /* Loading & Warning States */
@@ -2830,33 +2691,6 @@ export default {
   &:active {
     background-color: rgba(33, 150, 243, 0.15) !important;
   }
-}
-
-/* Missing Field Styles (Update Mode) */
-.missing-field-row {
-  background-color: rgba(255, 152, 0, 0.1) !important;
-   border-left: 3px solid #FF9800 !important;
-
-  &:hover {
-    background-color: rgba(255, 152, 0, 0.2) !important;
-  }
-}
-
-.missing-field-badge {
-  font-size: 11px;
-  padding: 2px 6px;
-  animation: pulse-warning 2s ease-in-out infinite;
-}
-
-.missing-field-warning-banner {
-  margin: 0;
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-@keyframes pulse-warning {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
 }
 
 .fanout-parent-cell {
@@ -3195,5 +3029,42 @@ body.body--dark .mapping-popup .q-select__dropdown-icon,
 body.body--dark .mapping-popup .q-field__native > span:not(.q-chip),
 .body--dark .mapping-popup .q-field__native > span:not(.q-chip) {
   color: #000000 !important;
+}
+
+/* Fix hint text visibility in mapping dialog - Make hints visible with darker color */
+.mapping-popup .q-field__bottom,
+body.body--dark .mapping-popup .q-field__bottom,
+.body--dark .mapping-popup .q-field__bottom {
+  color: rgba(0, 0, 0, 0.87) !important;
+}
+
+.mapping-popup .q-field__messages,
+body.body--dark .mapping-popup .q-field__messages,
+.body--dark .mapping-popup .q-field__messages {
+  color: rgba(0, 0, 0, 0.87) !important;
+}
+
+/* Hint text specifically - Darker for better readability */
+.mapping-popup .q-field__hint,
+body.body--dark .mapping-popup .q-field__hint,
+.body--dark .mapping-popup .q-field__hint {
+  color: rgba(0, 0, 0, 0.87) !important;
+  font-weight: 500 !important;
+}
+
+/* Error messages should be visible */
+.mapping-popup .q-field__messages > div,
+body.body--dark .mapping-popup .q-field__messages > div,
+.body--dark .mapping-popup .q-field__messages > div {
+  color: rgba(0, 0, 0, 0.87) !important;
+}
+
+.mapping-popup .q-field--error .q-field__bottom,
+.mapping-popup .q-field--error .q-field__messages,
+body.body--dark .mapping-popup .q-field--error .q-field__bottom,
+body.body--dark .mapping-popup .q-field--error .q-field__messages,
+.body--dark .mapping-popup .q-field--error .q-field__bottom,
+.body--dark .mapping-popup .q-field--error .q-field__messages {
+  color: var(--q-color-negative) !important;
 }
 </style>

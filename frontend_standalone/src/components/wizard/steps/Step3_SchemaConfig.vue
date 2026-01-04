@@ -339,6 +339,7 @@
 import { mapGetters, mapState, mapMutations } from 'vuex'
 import { SchemaRuleService } from '../../../services/wizard/schemaRuleService'
 import JsonTreeViewer from '../JsonTreeViewer.vue'
+import { PathNormalizer } from '../../../services/wizard/pathNormalizer'
 
 /**
  * Helper function to get a property value from an object in a case-insensitive manner
@@ -432,9 +433,25 @@ export default {
 
       // Apply parsed JSON fields to the data for tree view
       if (this.selectedConvertToJsonFields.length > 0) {
+        // Deduplicate selected JSON fields case-insensitively
+        // If both $.Log and $.LOG are selected, only use one to avoid duplicate tree branches
+        const deduplicatedFields = []
+        const seenFields = new Set()
+
+        for (const field of this.selectedConvertToJsonFields) {
+          const normalizedField = field.toLowerCase()
+          if (!seenFields.has(normalizedField)) {
+            seenFields.add(normalizedField)
+            deduplicatedFields.push(field)
+            console.log('[DEBUG] fanoutArrayTreeData - including field:', field)
+          } else {
+            console.log('[DEBUG] fanoutArrayTreeData - skipping duplicate field:', field, '(already have case variant)')
+          }
+        }
+
         data = SchemaRuleService.updateRepresentativeDataWithParsedFields(
           data,
-          this.selectedConvertToJsonFields
+          deduplicatedFields
         )
       }
 
@@ -544,8 +561,15 @@ export default {
 
         if (currentSelections !== newSelections) {
           console.log('[DEBUG] Updating selectedFanoutFields from store')
-          this.selectedFanoutFields = [...newVal]
-          console.log('[DEBUG] Updated selectedFanoutFields:', JSON.stringify(this.selectedFanoutFields))
+
+          // Clean up duplicate/incomplete paths from store before applying
+          // This handles the case where the store contains both:
+          // - "requestParameters.changeBatch.changes" (incomplete)
+          // - "Log.Records[*].requestParameters.changeBatch.changes" (complete)
+          const cleanedPaths = this.removeDuplicateArrayPaths(newVal)
+
+          this.selectedFanoutFields = cleanedPaths
+          console.log('[DEBUG] Updated selectedFanoutFields (cleaned):', JSON.stringify(this.selectedFanoutFields))
         } else {
           console.log('[DEBUG] No change needed for selectedFanoutFields')
         }
@@ -669,8 +693,8 @@ export default {
           return false
         }
 
-        // Normalize the path (remove leading $.)
-        const normalizedPath = fieldPath.replace(/^\$\./, '')
+        // Normalize the path using PathNormalizer utility
+        const normalizedPath = PathNormalizer.normalize(fieldPath, { removePrefix: true, removeWildcards: false, removeIndices: false })
 
         console.log('[Step3] Checking field existence:', {
           originalPath: fieldPath,
@@ -678,8 +702,8 @@ export default {
           sampleDataKeys: Object.keys(sampleData)
         })
 
-        // Split path by dots and brackets, filtering out empty strings
-        const pathParts = normalizedPath.split(/[.[\]]+/).filter(Boolean)
+        // Split path using PathNormalizer utility
+        const pathParts = PathNormalizer.splitPath(normalizedPath)
 
         // Traverse the object
         let current = sampleData
@@ -748,8 +772,8 @@ export default {
         }
 
         // Get the field value using the same logic as checkFieldExistsInSampleData
-        const normalizedPath = fieldPath.replace(/^\$\./, '')
-        const pathParts = normalizedPath.split(/[.[\]]+/).filter(Boolean)
+        const normalizedPath = PathNormalizer.normalize(fieldPath, { removePrefix: true, removeWildcards: false, removeIndices: false })
+        const pathParts = PathNormalizer.splitPath(normalizedPath)
 
         let current = sampleData
         for (const part of pathParts) {
@@ -863,12 +887,11 @@ export default {
           console.log('Previous selections:', this.selectedConvertToJsonFields)
           console.log('New candidates (before adjustment):', this.convertToJsonCandidates)
 
-          // Replace candidates with policy/store versions (case-insensitive match)
+          // Replace candidates with policy/store versions using PathNormalizer for case-insensitive match
           // This ensures the UI shows the correct casing from the policy/store
           const adjustedCandidates = this.convertToJsonCandidates.map(candidate => {
-            const candidateLower = candidate.toLowerCase()
             const matchingSelection = this.selectedConvertToJsonFields.find(
-              selected => selected.toLowerCase() === candidateLower
+              selected => PathNormalizer.match(selected, candidate, false)
             )
             return matchingSelection || candidate
           })
@@ -887,11 +910,10 @@ export default {
           this.convertToJsonCandidates = adjustedCandidates
           console.log('New candidates (after adjustment):', this.convertToJsonCandidates)
 
-          // Filter to only keep valid selections that still exist in new candidates (case-insensitive)
+          // Filter to only keep valid selections that still exist in new candidates using PathNormalizer
           const validSelections = this.selectedConvertToJsonFields.filter(field => {
-            const normalizedField = field.toLowerCase()
             return this.convertToJsonCandidates.some(candidate =>
-              candidate.toLowerCase() === normalizedField
+              PathNormalizer.match(field, candidate, false)
             )
           })
 
@@ -1016,12 +1038,127 @@ export default {
       console.log('║ Current selectedFanoutFields BEFORE update:', JSON.stringify(this.selectedFanoutFields))
       console.log('╚══════════════════════════════════════════════════════════════════════════════')
 
-      this.selectedFanoutFields = [...selectedPaths]
+      // Clean up duplicate/incomplete paths before storing
+      // For child arrays, we should only keep the fully-qualified absolute path
+      // Example: If we have both "requestParameters.changeBatch.changes" and "Log.Records[*].requestParameters.changeBatch.changes",
+      // we should only keep "Log.Records[*].requestParameters.changeBatch.changes"
+      const cleanedPaths = this.removeDuplicateArrayPaths(selectedPaths)
+
+      this.selectedFanoutFields = cleanedPaths
 
       console.log('╔══════════════════════════════════════════════════════════════════════════════')
-      console.log('║ [DEBUG] handleSelectedUpdate - selectedFanoutFields AFTER update')
+      console.log('║ [DEBUG] handleSelectedUpdate - selectedFanoutFields AFTER cleanup')
       console.log('║ selectedFanoutFields:', JSON.stringify(this.selectedFanoutFields))
       console.log('╚══════════════════════════════════════════════════════════════════════════════')
+    },
+
+    /**
+     * Remove duplicate/incomplete array paths from selection
+     * If a path has both incomplete (e.g., "requestParameters.changeBatch.changes") and
+     * complete (e.g., "Log.Records[*].requestParameters.changeBatch.changes") versions,
+     * only keep the complete version
+     */
+    removeDuplicateArrayPaths (paths) {
+      console.log('╔══════════════════════════════════════════════════════════════════════════════')
+      console.log('║ [DEBUG] removeDuplicateArrayPaths - START')
+      console.log('║ Input paths:', JSON.stringify(paths))
+      console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+      // CRITICAL FIX: First, do case-insensitive deduplication to prevent $.Log and $.LOG from both being kept
+      // Group paths by their lowercase version to detect case-insensitive duplicates
+      const caseInsensitiveMap = new Map()
+      paths.forEach(path => {
+        const lowerPath = path.toLowerCase()
+        if (!caseInsensitiveMap.has(lowerPath)) {
+          caseInsensitiveMap.set(lowerPath, [])
+        }
+        caseInsensitiveMap.get(lowerPath).push(path)
+      })
+
+      // For each case-insensitive group, keep only the first occurrence
+      const caseCleanedPaths = []
+      caseInsensitiveMap.forEach((pathList, lowerPath) => {
+        if (pathList.length === 1) {
+          caseCleanedPaths.push(pathList[0])
+          console.log(`║ ✓ Keeping single path: ${pathList[0]}`)
+        } else {
+          // Multiple case variants - keep the first one
+          const firstPath = pathList[0]
+          caseCleanedPaths.push(firstPath)
+          console.log('║ ⚠️  Case-insensitive duplicates found:')
+          pathList.forEach((p, idx) => {
+            if (idx === 0) {
+              console.log(`║     ✓ KEEPING: ${p} (first occurrence)`)
+            } else {
+              console.log(`║     ✗ REMOVING: ${p} (case duplicate)`)
+            }
+          })
+        }
+      })
+
+      console.log('║')
+      console.log('║ After case-insensitive deduplication:', JSON.stringify(caseCleanedPaths))
+      console.log('║')
+
+      // Group paths by their suffix (the part after the last [*])
+      // For example:
+      // "Log.Records" -> suffix: "Records"
+      // "Log.Records[*].requestParameters.changeBatch.changes" -> suffix: "requestParameters.changeBatch.changes"
+      // "requestParameters.changeBatch.changes" -> suffix: "requestParameters.changeBatch.changes"
+
+      const pathsBySuffix = new Map()
+
+      caseCleanedPaths.forEach(path => {
+        // Extract the suffix (part after last [*])
+        let suffix = path
+        const lastWildcardIndex = path.lastIndexOf('[*].')
+        if (lastWildcardIndex !== -1) {
+          suffix = path.substring(lastWildcardIndex + 4) // +4 to skip "[*]."
+        }
+
+        console.log(`║ Path: "${path}" -> suffix: "${suffix}"`)
+
+        if (!pathsBySuffix.has(suffix)) {
+          pathsBySuffix.set(suffix, [])
+        }
+        pathsBySuffix.get(suffix).push(path)
+      })
+
+      console.log('║')
+      console.log('║ Grouped paths by suffix:')
+      pathsBySuffix.forEach((pathList, suffix) => {
+        console.log(`║   Suffix "${suffix}": ${JSON.stringify(pathList)}`)
+      })
+
+      // For each suffix group, keep only the longest path (most complete)
+      const cleanedPaths = []
+      pathsBySuffix.forEach((pathList, suffix) => {
+        if (pathList.length === 1) {
+          // Only one path for this suffix, keep it
+          cleanedPaths.push(pathList[0])
+          console.log(`║ ✓ Keeping single path for suffix "${suffix}": ${pathList[0]}`)
+        } else {
+          // Multiple paths for this suffix - keep the longest one (most complete)
+          const longestPath = pathList.reduce((longest, current) =>
+            current.length > longest.length ? current : longest
+          )
+          cleanedPaths.push(longestPath)
+          console.log(`║ ⚠️  Multiple paths for suffix "${suffix}":`)
+          pathList.forEach(p => {
+            if (p === longestPath) {
+              console.log(`║     ✓ KEEPING: ${p} (longest)`)
+            } else {
+              console.log(`║     ✗ REMOVING: ${p} (shorter)`)
+            }
+          })
+        }
+      })
+
+      console.log('║')
+      console.log('║ Final cleaned paths:', JSON.stringify(cleanedPaths))
+      console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+      return cleanedPaths
     },
 
     removeFieldSelection (field, type) {
@@ -1234,10 +1371,9 @@ export default {
             // Check for EXACT match first
             const exactMatchIndex = this.convertToJsonCandidates.indexOf(fieldPath)
 
-            // Check for CASE-INSENSITIVE match (to handle duplicates like $.LOG vs $.Log)
-            const normalizedFieldPath = fieldPath.toLowerCase()
+            // Check for CASE-INSENSITIVE match using PathNormalizer (to handle duplicates like $.LOG vs $.Log)
             const caseInsensitiveMatchIndex = this.convertToJsonCandidates.findIndex(
-              candidate => candidate.toLowerCase() === normalizedFieldPath
+              candidate => PathNormalizer.match(fieldPath, candidate, false)
             )
 
             if (exactMatchIndex !== -1) {
@@ -1364,6 +1500,13 @@ export default {
           console.log('[Step 3] No fanout configuration found in policy')
         }
 
+        // CRITICAL: Clean up duplicate/incomplete paths after processing
+        // This ensures only fully-qualified absolute paths are stored
+        console.log('[Step 3] === CLEANING UP FANOUT SELECTIONS ===')
+        console.log('[Step 3] selectedFanoutFields BEFORE cleanup:', JSON.stringify(this.selectedFanoutFields))
+        this.selectedFanoutFields = this.removeDuplicateArrayPaths(this.selectedFanoutFields)
+        console.log('[Step 3] selectedFanoutFields AFTER cleanup:', JSON.stringify(this.selectedFanoutFields))
+
         // Store child fanouts in Vuex if present
         if (hasNewImplementation) {
           this.$store.commit('wizard/SET_CHILD_FANOUTS', childfanouts)
@@ -1373,11 +1516,11 @@ export default {
         // Update missing policy fields
         this.missingPolicyFields = [...this.missingPolicyFields, ...missingFields]
 
-        // Step 4: Update Vuex store with pre-filled data
+        // Step 4: Update Vuex store with pre-filled data (using cleaned paths)
         const childFanoutsForStore = childfanouts || []
         this.UPDATE_SCHEMA_RULES({
           convertToJson: [...this.selectedConvertToJsonFields],
-          fanout: [...this.selectedFanoutFields],
+          fanout: [...this.selectedFanoutFields], // Now using cleaned paths
           childfanouts: childFanoutsForStore
         })
 
@@ -1430,6 +1573,7 @@ export default {
     /**
      * Process child fanouts using OLD implementation format (fanout.inputField array)
      * This handles absolute paths in a flat array structure
+     * REFACTORED: Now detects parent-child relationships and resolves nested paths to absolute paths
      */
     async processChildFanoutsOld (fanoutPaths, missingFields) {
       console.log('╔══════════════════════════════════════════════════════════════════════════════')
@@ -1440,82 +1584,107 @@ export default {
       console.log('║ Current fanoutCandidates.length:', this.fanoutCandidates.length)
       console.log('╚══════════════════════════════════════════════════════════════════════════════')
 
+      // Build a map to track resolved absolute paths
+      // Key: original policy path, Value: resolved normalized absolute path
+      const resolvedPaths = new Map()
+
+      // Sort paths by length (shorter paths first) to ensure parent arrays are processed before children
+      const sortedPaths = [...fanoutPaths].sort((a, b) => a.length - b.length)
+
+      console.log('║ [Step 3] Processing order (sorted by path length):')
+      sortedPaths.forEach((path, idx) => {
+        console.log(`║   ${idx + 1}. ${path}`)
+      })
+
       // Process each fanout path from the policy
-      for (let i = 0; i < fanoutPaths.length; i++) {
-        const fanoutPath = fanoutPaths[i]
+      for (let i = 0; i < sortedPaths.length; i++) {
+        const fanoutPath = sortedPaths[i]
 
         console.log('╔══════════════════════════════════════════════════════════════════════════════')
-        console.log(`║ [Step 3] Processing fanout path [${i + 1}/${fanoutPaths.length}]`)
+        console.log(`║ [Step 3] Processing fanout path [${i + 1}/${sortedPaths.length}]`)
         console.log('╠══════════════════════════════════════════════════════════════════════════════')
         console.log('║ Original path:', fanoutPath)
-        console.log('╚══════════════════════════════════════════════════════════════════════════════')
 
-        // Try multiple path format variations to find a match
-        const pathVariations = [
-          fanoutPath, // Original with $. prefix
-          fanoutPath.replace(/^\$\./, ''), // Without $. prefix
-          fanoutPath.replace(/\[\*\]/g, ''), // Without [*] wildcards
-          fanoutPath.replace(/^\$\./, '').replace(/\[\*\]/g, ''), // Without both
-          fanoutPath.replace(/\[0\]/g, ''), // Without [0] indices
-          fanoutPath.replace(/^\$\./, '').replace(/\[0\]/g, '') // Without $. and [0]
-        ]
+        // Remove $. and [*] to get the base path for matching
+        const fanoutPathBase = fanoutPath.replace(/^\$\./, '').replace(/\[\*\]/g, '')
 
-        console.log('[Step 3] Trying path variations:', pathVariations)
+        // Try to find this path directly in candidates first
+        let matchedPath = this.findFanoutCandidate(fanoutPath)
+        let normalizedAbsolutePath = null
 
-        // Find matching candidate using CASE-INSENSITIVE comparison
-        let matchedPath = null
-        for (const variation of pathVariations) {
-          const variationLower = variation.toLowerCase().trim()
+        if (matchedPath) {
+          // Found as root-level array - normalize it (remove $. prefix)
+          normalizedAbsolutePath = this.normalizeFanoutPath(matchedPath)
+          console.log('║ ✅ Found as root-level array')
+          console.log('║   Matched candidate:', matchedPath)
+          console.log('║   Normalized path:', normalizedAbsolutePath)
+        } else {
+          // Not found as root-level - try as child of previously resolved parents
+          console.log('║ Not found as root-level, trying as child path under known parents')
 
-          const candidate = this.fanoutCandidates.find(c => {
-            const candidatePathLower = (c.path || '').toLowerCase().trim()
-            const variationNoWildcards = variation.replace(/\[\*\]/g, '').toLowerCase().trim()
-            const variationNoIndices = variation.replace(/\[0\]/g, '').toLowerCase().trim()
+          let foundAsChild = false
+          for (const [, prevNormalizedPath] of resolvedPaths.entries()) {
+            // Try building absolute path by combining parent + current path
+            // Example: Log.Records[*].requestParameters.changeBatch.changes
+            const testAbsolutePath = `${prevNormalizedPath}[*].${fanoutPathBase}`
 
-            // Try exact match (case-insensitive)
-            if (candidatePathLower === variationLower) {
-              return true
+            console.log(`║   Testing: ${testAbsolutePath} (under parent: ${prevNormalizedPath})`)
+
+            const testMatched = this.findFanoutCandidate(testAbsolutePath)
+            if (testMatched) {
+              matchedPath = testMatched
+              normalizedAbsolutePath = this.normalizeFanoutPath(testMatched)
+              console.log('║ ✅ Found match as nested path!')
+              console.log('║   Matched candidate:', matchedPath)
+              console.log('║   Normalized absolute path:', normalizedAbsolutePath)
+              console.log('║   Parent:', prevNormalizedPath)
+              foundAsChild = true
+              break
             }
+          }
 
-            // Try without wildcards
-            if (candidatePathLower === variationNoWildcards) {
-              return true
+          if (!foundAsChild) {
+            console.warn('║ ⚠️ Fanout path not found in candidates')
+            // Inject as missing - if we have parents, try to nest under first parent
+            if (resolvedPaths.size > 0) {
+              const firstParent = Array.from(resolvedPaths.values())[0]
+              const injectedPath = `${firstParent}[*].${fanoutPathBase}`
+              normalizedAbsolutePath = this.normalizeFanoutPath(injectedPath)
+              this.injectMissingFanoutArray(injectedPath, firstParent, missingFields)
+              console.log('║   Injected as nested under first parent:', injectedPath)
+            } else {
+              // No parents yet, inject as root-level
+              normalizedAbsolutePath = this.normalizeFanoutPath(fanoutPath)
+              this.injectMissingFanoutArray(fanoutPath, null, missingFields)
+              console.log('║   Injected as root-level:', fanoutPath)
             }
-
-            // Try without indices
-            if (candidatePathLower === variationNoIndices) {
-              return true
-            }
-
-            return false
-          })
-
-          if (candidate) {
-            matchedPath = candidate.path
-            console.log('[Step 3] ✅ FOUND matching candidate for variation:', variation, '→', matchedPath)
-            break
           }
         }
 
-        if (matchedPath) {
-          // Add to selectedFanoutFields if not already present
-          if (!this.selectedFanoutFields.includes(matchedPath)) {
-            this.selectedFanoutFields.push(matchedPath)
-            console.log('[Step 3] ✅ Added fanout path to selections:', matchedPath)
+        // Store the resolved normalized path
+        if (normalizedAbsolutePath) {
+          resolvedPaths.set(fanoutPath, normalizedAbsolutePath)
+
+          // Add to selectedFanoutFields using the NORMALIZED path (no $. prefix)
+          if (!this.selectedFanoutFields.includes(normalizedAbsolutePath)) {
+            this.selectedFanoutFields.push(normalizedAbsolutePath)
+            console.log('[Step 3] ✅ Added normalized fanout path to selections:', normalizedAbsolutePath)
           } else {
-            console.log('[Step 3] Fanout path already in selections:', matchedPath)
+            console.log('[Step 3] Fanout path already in selections:', normalizedAbsolutePath)
           }
-        } else {
-          console.warn('[Step 3] ⚠️ Fanout path not found in candidates')
-          this.injectMissingFanoutArray(fanoutPath, null, missingFields)
         }
       }
 
       console.log('╔══════════════════════════════════════════════════════════════════════════════')
       console.log('║ [Step 3] Completed processing fanout paths (OLD FORMAT)')
       console.log('║ Total selectedFanoutFields:', this.selectedFanoutFields.length)
-      console.log('║ selectedFanoutFields:', JSON.stringify(this.selectedFanoutFields))
+      console.log('║ selectedFanoutFields BEFORE cleanup:', JSON.stringify(this.selectedFanoutFields))
+      console.log('║ Resolution map:', Array.from(resolvedPaths.entries()))
       console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+      // Clean up duplicate/incomplete paths that may have been added during processing
+      this.selectedFanoutFields = this.removeDuplicateArrayPaths(this.selectedFanoutFields)
+      console.log('[Step 3] selectedFanoutFields AFTER cleanup:', JSON.stringify(this.selectedFanoutFields))
     },
 
     /**
@@ -1616,10 +1785,8 @@ export default {
 
           console.log('[Step 3] Parent resolved to:', parentAbsolutePath)
 
-          // Build absolute path by combining parent + relative field
-          // field is relative to parent, so we need to strip $. and append
-          const relativeField = field.replace(/^\$\./, '')
-          const absolutePath = `${parentAbsolutePath}.${relativeField}`
+          // Build absolute path using PathNormalizer utility
+          const absolutePath = PathNormalizer.toAbsolute(field, parentAbsolutePath)
 
           console.log('[Step 3] Constructed absolute path:', absolutePath)
 
@@ -1654,130 +1821,51 @@ export default {
       console.log('╔══════════════════════════════════════════════════════════════════════════════')
       console.log('║ [Step 3] Completed processing child fanouts (NEW FORMAT)')
       console.log('║ Total selectedFanoutFields:', this.selectedFanoutFields.length)
-      console.log('║ selectedFanoutFields:', JSON.stringify(this.selectedFanoutFields))
+      console.log('║ selectedFanoutFields BEFORE cleanup:', JSON.stringify(this.selectedFanoutFields))
       console.log('║ Path resolution map:', Array.from(pathResolutionMap.entries()))
       console.log('╚══════════════════════════════════════════════════════════════════════════════')
+
+      // Clean up duplicate/incomplete paths that may have been added during processing
+      this.selectedFanoutFields = this.removeDuplicateArrayPaths(this.selectedFanoutFields)
+      console.log('[Step 3] selectedFanoutFields AFTER cleanup:', JSON.stringify(this.selectedFanoutFields))
     },
 
     /**
-     * Normalize fanout path by removing $. prefix and [*] wildcards
+     * Normalize fanout path using centralized PathNormalizer utility
+     *
+     * For fanout arrays, we preserve [*] wildcards to show parent-child array hierarchy:
+     * Example: "$.arr1[0].childarr[1].childarr2[*]" → "arr1[*].childarr[*].childarr2[*]"
+     *
+     * This helps visualize:
+     * - arr1[*] is the parent array
+     * - childarr[*] is a child of arr1
+     * - childarr2[*] is a child of childarr
+     *
+     * @param {string} path - The path to normalize
+     * @returns {string} - Normalized path with [*] wildcards preserved
      */
     normalizeFanoutPath (path) {
-      return path.replace(/^\$\./, '').replace(/\[\*\]/g, '')
+      // Use default behavior: removes $. and numeric indices, keeps [*]
+      const normalized = PathNormalizer.normalize(path)
+
+      // Debug logging to track normalization
+      if (path !== normalized) {
+        console.log(`[normalizeFanoutPath] "${path}" → "${normalized}"`)
+      }
+
+      return normalized
     },
 
     /**
-     * Find a fanout candidate using various path format variations with case-insensitive matching
+     * Find a fanout candidate using centralized PathNormalizer utility
      */
     findFanoutCandidate (fanoutPath) {
-      console.group('🔍 [findFanoutCandidate] Searching for fanout:', fanoutPath)
-
-      if (!fanoutPath || !this.fanoutCandidates || this.fanoutCandidates.length === 0) {
-        console.log('❌ Early exit - fanoutPath:', fanoutPath, 'candidates:', this.fanoutCandidates?.length || 0)
-        console.groupEnd()
-        return null
-      }
-
-      // Log all available candidates
-      console.log('📋 Available candidates (' + this.fanoutCandidates.length + '):')
-      this.fanoutCandidates.forEach((c, idx) => {
-        console.log(`  [${idx}] path: "${c.path}", parentPath: "${c.parentPath || 'N/A'}", isHomogeneous: ${c.isHomogeneous}`)
-      })
-
-      const pathVariations = [
-        fanoutPath, // Original
-        fanoutPath.replace(/^\$\./, ''), // Without $. prefix
-        fanoutPath.replace(/\[\*\]/g, ''), // Without [*] wildcards
-        fanoutPath.replace(/^\$\./, '').replace(/\[\*\]/g, ''), // Without both
-        fanoutPath.replace(/\[0\]/g, ''), // Without [0] indices
-        fanoutPath.replace(/^\$\./, '').replace(/\[0\]/g, '') // Without $. and [0]
-      ]
-
-      console.log('🔄 Path variations to try:', pathVariations)
-
-      // Try each variation with case-insensitive matching
-      for (let varIdx = 0; varIdx < pathVariations.length; varIdx++) {
-        const variation = pathVariations[varIdx]
-        const variationLower = variation.toLowerCase().trim()
-
-        console.log(`\n  🔸 Variation [${varIdx}]: "${variation}" (lowercase: "${variationLower}")`)
-
-        // Search through all candidates
-        let matchedCandidate = null
-        for (let candIdx = 0; candIdx < this.fanoutCandidates.length; candIdx++) {
-          const c = this.fanoutCandidates[candIdx]
-
-          // Ensure we're working with strings and normalize them
-          const candidatePath = String(c.path || '').trim()
-          const candidatePathLower = candidatePath.toLowerCase()
-
-          console.log(`    🔹 Checking candidate [${candIdx}]: "${c.path}"`)
-          console.log(`       Candidate normalized: "${candidatePath}" → lowercase: "${candidatePathLower}" (length: ${candidatePathLower.length})`)
-          console.log(`       Variation normalized: "${variation}" → lowercase: "${variationLower}" (length: ${variationLower.length})`)
-          console.log(`       Comparing: "${candidatePathLower}" === "${variationLower}" ? ${candidatePathLower === variationLower}`)
-
-          // Debug: character-by-character comparison for exact match
-          if (candidatePathLower.length === variationLower.length) {
-            let charMismatch = false
-            for (let i = 0; i < candidatePathLower.length; i++) {
-              if (candidatePathLower.charCodeAt(i) !== variationLower.charCodeAt(i)) {
-                console.log(`       ⚠️ Character mismatch at position ${i}: candidate[${i}]='${candidatePathLower[i]}' (code ${candidatePathLower.charCodeAt(i)}) vs variation[${i}]='${variationLower[i]}' (code ${variationLower.charCodeAt(i)})`)
-                charMismatch = true
-                break
-              }
-            }
-            if (!charMismatch) {
-              console.log(`       ✓ All characters match! But === returned ${candidatePathLower === variationLower}`)
-            }
-          } else {
-            console.log(`       ⚠️ Length mismatch: candidate has ${candidatePathLower.length} chars, variation has ${variationLower.length} chars`)
-          }
-
-          // Try exact match (case-insensitive)
-          if (candidatePathLower === variationLower) {
-            console.log('      ✅ EXACT MATCH (case-insensitive)!')
-            matchedCandidate = c
-            break
-          }
-
-          // Try without [*] wildcards from variation
-          const withoutWildcards = variation.replace(/\[\*\]/g, '').trim()
-          const withoutWildcardsLower = withoutWildcards.toLowerCase()
-          console.log(`       Comparing without wildcards: "${candidatePathLower}" === "${withoutWildcardsLower}" (length: ${withoutWildcardsLower.length}) ? ${candidatePathLower === withoutWildcardsLower}`)
-          if (candidatePathLower === withoutWildcardsLower) {
-            console.log('      ✅ MATCH without wildcards!')
-            matchedCandidate = c
-            break
-          }
-
-          // Try without [0] indices from variation
-          const withoutIndices = variation.replace(/\[0\]/g, '').trim()
-          const withoutIndicesLower = withoutIndices.toLowerCase()
-          console.log(`       Comparing without indices: "${candidatePathLower}" === "${withoutIndicesLower}" (length: ${withoutIndicesLower.length}) ? ${candidatePathLower === withoutIndicesLower}`)
-          if (candidatePathLower === withoutIndicesLower) {
-            console.log('      ✅ MATCH without indices!')
-            matchedCandidate = c
-            break
-          }
-
-          console.log(`      ❌ No match for candidate [${candIdx}]`)
-        }
-
-        if (matchedCandidate) {
-          console.log(`\n✅ SUCCESS! Found matching candidate for variation "${variation}":`)
-          console.log('   Matched candidate path:', matchedCandidate.path)
-          console.log('   Parent path:', matchedCandidate.parentPath || 'N/A')
-          console.log('   Is homogeneous:', matchedCandidate.isHomogeneous)
-          console.groupEnd()
-          return matchedCandidate.path
-        } else {
-          console.log(`  ❌ No match found for variation [${varIdx}]: "${variation}"`)
-        }
-      }
-
-      console.log('\n❌ FINAL RESULT: No matching candidate found for any variation of path:', fanoutPath)
-      console.groupEnd()
-      return null
+      return PathNormalizer.findMatch(
+        fanoutPath,
+        this.fanoutCandidates,
+        'path',
+        true // Enable debug logging
+      )?.path || null
     },
 
     /**
@@ -1785,6 +1873,16 @@ export default {
      */
     injectMissingFanoutArray (fanoutPath, parentPath, missingFields) {
       console.log('[Step 3] 📌 Injecting missing fanout array as synthetic candidate')
+
+      // CRITICAL: Ensure candidate arrays are initialized before pushing
+      if (!Array.isArray(this.baseFanoutCandidates)) {
+        console.warn('[Step 3] ⚠️ baseFanoutCandidates was not initialized, initializing as empty array')
+        this.baseFanoutCandidates = []
+      }
+      if (!Array.isArray(this.fanoutCandidates)) {
+        console.warn('[Step 3] ⚠️ fanoutCandidates was not initialized, initializing from baseFanoutCandidates')
+        this.fanoutCandidates = [...this.baseFanoutCandidates]
+      }
 
       // Normalize the path
       const normalizedPath = this.normalizeFanoutPath(fanoutPath)
@@ -1804,8 +1902,10 @@ export default {
 
       console.log('[Step 3] Created synthetic candidate:', JSON.stringify(syntheticCandidate))
 
-      // Add to fanoutCandidates
+      // CRITICAL: Add to BOTH fanoutCandidates AND baseFanoutCandidates
+      // This ensures missing arrays persist across JSON field selection changes
       this.fanoutCandidates.push(syntheticCandidate)
+      this.baseFanoutCandidates.push(syntheticCandidate)
 
       // Add to selectedFanoutFields
       if (!this.selectedFanoutFields.includes(normalizedPath)) {
@@ -1825,6 +1925,7 @@ export default {
       })
 
       console.log('[Step 3] ✅ Injected and selected missing fanout array:', normalizedPath)
+      console.log('[Step 3] ✅ Added to baseFanoutCandidates to persist across updates')
     },
 
     updateFanoutCandidatesFromParsedJson (newFields, oldFields) {
@@ -2112,13 +2213,46 @@ export default {
         console.log('[DEBUG] updatedCandidates AFTER merge:', updatedCandidates.length)
       }
 
-      // Update fanout candidates
-      this.fanoutCandidates = updatedCandidates
+      // CRITICAL: Deduplicate candidates using case-insensitive path matching
+      // This prevents duplicate array paths when both $.Log and $.LOG are selected
+      console.log('╔═══════════════════════════════════════════════════════════════════════')
+      console.log('║ [DEBUG] Deduplicating candidates (case-insensitive)')
+      console.log('║   updatedCandidates BEFORE deduplication:', updatedCandidates.length)
+      console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+      const deduplicatedCandidates = []
+      const seenPathsLowerCase = new Map() // Track seen paths (case-insensitive)
+
+      updatedCandidates.forEach((candidate, idx) => {
+        const pathLower = candidate.path.toLowerCase()
+
+        if (!seenPathsLowerCase.has(pathLower)) {
+          // First occurrence - keep it
+          seenPathsLowerCase.set(pathLower, candidate.path)
+          deduplicatedCandidates.push(candidate)
+          console.log(`║ [${idx}] ✓ Keeping: "${candidate.path}"`)
+        } else {
+          // Duplicate found (different case)
+          const existingPath = seenPathsLowerCase.get(pathLower)
+          console.log(`║ [${idx}] ✗ Skipping duplicate: "${candidate.path}" (already have "${existingPath}")`)
+        }
+      })
+
+      console.log('╔═══════════════════════════════════════════════════════════════════════')
+      console.log('║ [DEBUG] Deduplication complete')
+      console.log('║   updatedCandidates AFTER deduplication:', deduplicatedCandidates.length)
+      console.log('║   Removed:', updatedCandidates.length - deduplicatedCandidates.length, 'duplicates')
+      console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+      // Update fanout candidates with deduplicated list
+      this.fanoutCandidates = deduplicatedCandidates
       this.parsedJsonArrays = allParsedArrays
 
       // Create a comprehensive path mapping between all possible formats
       // This ensures robust selection restoration regardless of path format
+      // CRITICAL: Use case-insensitive matching to handle policy/data case mismatches
       const pathMapping = new Map()
+      const pathMappingLowerCase = new Map() // Case-insensitive lookup map
 
       // For each fanout candidate, create mappings for all possible path formats
       this.fanoutCandidates.forEach(candidate => {
@@ -2130,6 +2264,11 @@ export default {
         pathMapping.set(fullPath, fullPath)
         pathMapping.set(withoutPrefix, fullPath)
         pathMapping.set(withPrefix, fullPath)
+
+        // CRITICAL: Also create lowercase versions for case-insensitive matching
+        pathMappingLowerCase.set(fullPath.toLowerCase(), fullPath)
+        pathMappingLowerCase.set(withoutPrefix.toLowerCase(), fullPath)
+        pathMappingLowerCase.set(withPrefix.toLowerCase(), fullPath)
       })
 
       console.log('╔═══════════════════════════════════════════════════════════════════════')
@@ -2144,12 +2283,24 @@ export default {
 
       // Process each path from the selectedPathsMap backup
       selectedPathsMap.forEach((originalPath, normalizedPath) => {
-        // Check if this path exists in any format in the new candidates
-        const mappedPath = pathMapping.get(originalPath) || pathMapping.get(normalizedPath) ||
+        // CRITICAL: First try exact match, then fall back to case-insensitive match
+        let mappedPath = pathMapping.get(originalPath) || pathMapping.get(normalizedPath) ||
                          pathMapping.get(`$.${normalizedPath}`)
 
-        if (mappedPath) {
+        // If no exact match, try case-insensitive matching
+        if (!mappedPath) {
+          mappedPath = pathMappingLowerCase.get(originalPath.toLowerCase()) ||
+                      pathMappingLowerCase.get(normalizedPath.toLowerCase()) ||
+                      pathMappingLowerCase.get(`$.${normalizedPath}`.toLowerCase())
+
+          if (mappedPath) {
+            console.log(`[DEBUG] Restoring selection (case-insensitive match): "${originalPath}" → "${mappedPath}"`)
+          }
+        } else {
           console.log(`[DEBUG] Restoring selection: "${originalPath}" → "${mappedPath}"`)
+        }
+
+        if (mappedPath) {
           restoredSelections.push(mappedPath)
         } else {
           console.log(`[DEBUG] Path no longer exists, dropping: "${originalPath}"`)
@@ -2229,6 +2380,9 @@ export default {
   async created () {
     console.log('=== Step 3 Created: Initializing component ===')
 
+    // Analyze sample data FIRST to populate baseFanoutCandidates
+    this.analyzeSampleData()
+
     // Initialize from store state if available
     const storeSchemaRules = this.$store.state.wizard?.schemaRules
     console.log('Store schemaRules:', storeSchemaRules)
@@ -2240,28 +2394,76 @@ export default {
       if (storedConvertToJson.length > 0 || storedFanout.length > 0) {
         console.log('=== Step 3: Restoring previous selections from Vuex store ===')
         console.log('Restoring Convert to JSON fields:', storedConvertToJson)
-        console.log('Restoring Fanout fields:', storedFanout)
+        console.log('Restoring Fanout fields (raw from store):', storedFanout)
 
-        this.selectedConvertToJsonFields = [...storedConvertToJson]
+        // CRITICAL FIX: Set fanout selections FIRST before parsing JSON fields
+        // This ensures the backup/restore logic in updateFanoutCandidatesFromParsedJson has selections to preserve
+        const cleanedFanoutPaths = this.removeDuplicateArrayPaths(storedFanout)
+        console.log('Restoring Fanout fields (cleaned):', cleanedFanoutPaths)
 
-        // Handle different path formats for fanout fields
-        // Some paths may have '$.' prefix, others may not
-        const normalizedFanout = storedFanout.map(path => {
-          // Preserve the path format as-is, we'll handle both formats in updateFanoutCandidatesFromParsedJson
-          // and in JsonTreeViewer's handling of selected paths
-          return path
+        // Set the selections BEFORE calling updateFanoutCandidatesFromParsedJson
+        this.selectedFanoutFields = [...cleanedFanoutPaths]
+        console.log('=== Step 3: Set selectedFanoutFields BEFORE parsing JSON ===', this.selectedFanoutFields)
+
+        // CRITICAL FIX: Deduplicate Convert to JSON fields in a case-insensitive manner
+        // This prevents duplicate entries like $.Log and $.LOG from being treated as separate fields
+        const cleanedConvertToJsonPaths = this.removeDuplicateArrayPaths(storedConvertToJson)
+        console.log('Restoring Convert to JSON fields (cleaned):', cleanedConvertToJsonPaths)
+
+        // CRITICAL FIX: Normalize restored selections to match the case of actual candidates
+        // This ensures the checkbox binding works correctly even when case differs ($.Log vs $.LOG)
+        const normalizedConvertToJsonPaths = cleanedConvertToJsonPaths.map(restoredPath => {
+          // Find the matching candidate with case-insensitive comparison
+          const matchingCandidate = this.convertToJsonCandidates.find(candidate =>
+            candidate.toLowerCase() === restoredPath.toLowerCase()
+          )
+          // Use the candidate's actual case if found, otherwise use the restored path
+          const normalizedPath = matchingCandidate || restoredPath
+          if (matchingCandidate && matchingCandidate !== restoredPath) {
+            console.log(`[Case Normalization] Restored path "${restoredPath}" matched candidate "${matchingCandidate}"`)
+          }
+          return normalizedPath
         })
+        console.log('Restoring Convert to JSON fields (normalized to match candidates):', normalizedConvertToJsonPaths)
 
-        // Explicitly set the selectedFanoutFields and force an update
+        // Now restore Convert to JSON selections and rebuild fanoutCandidates
+        // The updateFanoutCandidatesFromParsedJson will preserve the fanout selections we just set
+        this.selectedConvertToJsonFields = [...normalizedConvertToJsonPaths]
+
+        // If we have Convert to JSON fields, rebuild fanoutCandidates by re-parsing those JSON fields
+        if (normalizedConvertToJsonPaths.length > 0) {
+          console.log('=== Step 3: Re-parsing Convert to JSON fields to rebuild fanout candidates ===')
+          // Manually trigger the update to ensure fanoutCandidates includes parsed arrays
+          // This will preserve selectedFanoutFields because we set them above
+          await this.updateFanoutCandidatesFromParsedJson(normalizedConvertToJsonPaths, [])
+        }
+
+        // CRITICAL FIX: After parsing JSON and rebuilding fanoutCandidates,
+        // normalize fanout selections to match the case of actual candidates
+        // Wait for next tick to ensure fanoutCandidates have been updated
+        await this.$nextTick()
+
+        const normalizedFanoutPaths = this.selectedFanoutFields.map(restoredPath => {
+          // Find the matching candidate with case-insensitive comparison
+          const matchingCandidate = this.fanoutCandidates.find(candidate =>
+            candidate.path && candidate.path.toLowerCase() === restoredPath.toLowerCase()
+          )
+          // Use the candidate's actual path if found, otherwise use the restored path
+          const normalizedPath = matchingCandidate ? matchingCandidate.path : restoredPath
+          if (matchingCandidate && matchingCandidate.path !== restoredPath) {
+            console.log(`[Case Normalization] Restored fanout path "${restoredPath}" matched candidate "${matchingCandidate.path}"`)
+          }
+          return normalizedPath
+        })
+        console.log('Fanout fields (normalized to match candidates):', normalizedFanoutPaths)
+
+        // Update with normalized paths
+        this.selectedFanoutFields = [...normalizedFanoutPaths]
+
+        // Force update to ensure reactivity
         this.$nextTick(() => {
-          console.log('[DEBUG] Setting selectedFanoutFields in nextTick:', normalizedFanout)
-          this.selectedFanoutFields = [...normalizedFanout]
-
-          // Add a small delay to ensure the value is available when JsonTreeViewer is created
-          setTimeout(() => {
-            console.log('[DEBUG] Verifying selectedFanoutFields after delay:', this.selectedFanoutFields)
-            this.$forceUpdate()
-          }, 100)
+          console.log('[DEBUG] Verifying selectedFanoutFields after parsing:', this.selectedFanoutFields)
+          this.$forceUpdate()
         })
       } else {
         console.log('=== Step 3: No previous selections found in store ===')
@@ -2270,8 +2472,80 @@ export default {
       console.log('=== Step 3: Store schemaRules not available ===')
     }
 
-    // Analyze sample data if available
-    this.analyzeSampleData()
+    // CRITICAL: Ensure candidate arrays are initialized before attempting re-injection
+    // This must happen BEFORE the $nextTick to prevent crashes
+    if (!Array.isArray(this.baseFanoutCandidates)) {
+      console.log('[Step 3] ⚠️  Pre-initializing baseFanoutCandidates as empty array')
+      this.baseFanoutCandidates = []
+    }
+    if (!Array.isArray(this.fanoutCandidates)) {
+      console.log('[Step 3] ⚠️  Pre-initializing fanoutCandidates from baseFanoutCandidates')
+      this.fanoutCandidates = [...this.baseFanoutCandidates]
+    }
+
+    // After analyzeSampleData, ensure any selected fanout fields that are missing from
+    // baseFanoutCandidates (synthetic/policy-injected arrays) are re-injected
+    // This handles the case where user selected a stringified JSON field and navigated away/back
+    this.$nextTick(() => {
+      console.log('╔══════════════════════════════════════════════════════════════════════════════')
+      console.log('║ [Step 3] Post-analyzeSampleData: Re-injecting missing fanout arrays')
+      console.log('╠══════════════════════════════════════════════════════════════════════════════')
+      console.log('║ selectedFanoutFields.length:', this.selectedFanoutFields.length)
+      console.log('║ selectedFanoutFields:', JSON.stringify(this.selectedFanoutFields))
+      console.log('║ baseFanoutCandidates.length:', this.baseFanoutCandidates.length)
+      console.log('║ baseFanoutCandidates paths:', JSON.stringify(this.baseFanoutCandidates.map(c => c.path)))
+
+      // CRITICAL: Initialize arrays BEFORE attempting re-injection
+      // This prevents "Cannot read properties of undefined" errors when injectMissingFanoutArray is called
+      if (!Array.isArray(this.baseFanoutCandidates)) {
+        console.log('║ ⚠️  baseFanoutCandidates is not initialized, initializing as empty array')
+        this.baseFanoutCandidates = []
+      }
+      if (!Array.isArray(this.fanoutCandidates)) {
+        console.log('║ ⚠️  fanoutCandidates is not initialized, initializing from baseFanoutCandidates')
+        this.fanoutCandidates = [...this.baseFanoutCandidates]
+      }
+
+      if (this.selectedFanoutFields.length > 0) {
+        // CRITICAL FIX: Check against fanoutCandidates (not baseFanoutCandidates)
+        // because parsed JSON arrays are merged into fanoutCandidates directly
+        const existingPaths = new Set(this.fanoutCandidates.map(c => c.path))
+        console.log('║ Existing paths in fanoutCandidates:', Array.from(existingPaths))
+        console.log('║ fanoutCandidates.length:', this.fanoutCandidates.length)
+
+        // Find any selected fanout fields that are missing from fanoutCandidates
+        const missingPaths = this.selectedFanoutFields.filter(path => !existingPaths.has(path))
+
+        if (missingPaths.length > 0) {
+          console.log('╠══════════════════════════════════════════════════════════════════════════════')
+          console.log('║ ⚠️  Found', missingPaths.length, 'selected fanout fields missing from fanoutCandidates')
+          console.log('║ Missing paths:', JSON.stringify(missingPaths))
+          console.log('║ These are synthetic/policy-injected arrays that need to be re-injected')
+          console.log('╠══════════════════════════════════════════════════════════════════════════════')
+
+          // Re-inject each missing path as a synthetic candidate
+          // Use a shared array to collect all missing fields from re-injection
+          const reinjectionMissingFields = []
+          missingPaths.forEach(missingPath => {
+            console.log('║ Re-injecting missing fanout array:', missingPath)
+            // Call with all 3 required params: fanoutPath, parentPath (null for top-level), missingFields array
+            this.injectMissingFanoutArray(missingPath, null, reinjectionMissingFields)
+          })
+
+          console.log('╠══════════════════════════════════════════════════════════════════════════════')
+          console.log('║ ✅ After re-injection:')
+          console.log('║   baseFanoutCandidates.length:', this.baseFanoutCandidates.length)
+          console.log('║   fanoutCandidates.length:', this.fanoutCandidates.length)
+          console.log('║   fanoutCandidates paths:', JSON.stringify(this.fanoutCandidates.map(c => c.path)))
+        } else {
+          console.log('║ ✅ All selected fanout fields are present in fanoutCandidates - no re-injection needed')
+        }
+      } else {
+        console.log('║ No selectedFanoutFields to check')
+      }
+
+      console.log('╚══════════════════════════════════════════════════════════════════════════════')
+    })
   },
 
   async mounted () {

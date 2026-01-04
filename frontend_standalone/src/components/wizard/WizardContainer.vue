@@ -12,33 +12,6 @@
             </p>
           </div>
         </div>
-
-        <div class="header-actions">
-          <!-- Help Toggle -->
-          <q-btn
-            flat
-            dense
-            round
-            icon="help_outline"
-            color="grey-7"
-            @click="toggleHelp"
-            class="q-mr-sm"
-          >
-            <q-tooltip>Show Help</q-tooltip>
-          </q-btn>
-
-          <!-- Exit Wizard -->
-          <q-btn
-            flat
-            dense
-            round
-            icon="close"
-            color="grey-7"
-            @click="showExitDialog = true"
-          >
-            <q-tooltip>Exit Wizard</q-tooltip>
-          </q-btn>
-        </div>
       </div>
 
       <!-- Progress Bar -->

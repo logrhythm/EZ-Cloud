@@ -577,25 +577,81 @@ export default {
 
   methods: {
     /**
-     * Helper function to get a property from an object in a case-insensitive manner
-     * @param {Object} obj - The object to search
-     * @param {string} key - The property name to find (case-insensitive)
-     * @returns {*} - The value of the property, or undefined if not found
+     * Compute datafanout and childfanouts structure based on array hierarchy rules
+     *
+     * Rules:
+     * 1. Single array: datafanout = selected array, childfanouts = null
+     * 2. Multiple arrays with one top-level: datafanout = top array, childfanouts = children
+     * 3. Multiple top-level arrays: datafanout = null, childfanouts = all arrays
+     *
+     * @param {Array} childfanoutsArray - Cleaned childfanouts array from store
+     * @returns {Object} { datafanout, childfanouts }
      */
-    getCaseInsensitiveProperty (obj, key) {
-      if (!obj || typeof obj !== 'object') {
-        return undefined
+    computeDataFanoutStructure (childfanoutsArray) {
+      console.log('╔═══════════════════════════════════════════════════════════════════════')
+      console.log('║ [computeDataFanoutStructure] START')
+      console.log('╠═══════════════════════════════════════════════════════════════════════')
+      console.log('║ Input childfanouts count:', childfanoutsArray.length)
+
+      if (!childfanoutsArray || childfanoutsArray.length === 0) {
+        console.log('║ No childfanouts, returning null for both')
+        console.log('╚═══════════════════════════════════════════════════════════════════════')
+        return { datafanout: null, childfanouts: null }
       }
 
-      // First try exact match
-      if (key in obj) {
-        return obj[key]
+      // Rule 1: Single array selection
+      if (childfanoutsArray.length === 1) {
+        console.log('║ RULE 1: Single array detected')
+        console.log('║ datafanout:', childfanoutsArray[0].field)
+        console.log('║ childfanouts: null')
+        console.log('╚═══════════════════════════════════════════════════════════════════════')
+        return {
+          datafanout: childfanoutsArray[0].field,
+          childfanouts: null
+        }
       }
 
-      // Try case-insensitive match
-      const lowerKey = key.toLowerCase()
-      const foundKey = Object.keys(obj).find(k => k.toLowerCase() === lowerKey)
-      return foundKey ? obj[foundKey] : undefined
+      // Find all top-level arrays (those with parentpath = null)
+      const topLevelArrays = childfanoutsArray.filter(item => item.parentpath === null)
+
+      console.log('║ Top-level arrays found:', topLevelArrays.length)
+      topLevelArrays.forEach((item, idx) => {
+        console.log(`║   [${idx}] ${item.field}`)
+      })
+
+      // Rule 2: Multiple arrays with only ONE top-level array
+      if (topLevelArrays.length === 1) {
+        console.log('║ RULE 2: One top-level array with children')
+        console.log('║ datafanout:', topLevelArrays[0].field)
+
+        // Get all child arrays (those with parentpath !== null)
+        const childArrays = childfanoutsArray.filter(item => item.parentpath !== null)
+
+        console.log('║ childfanouts count:', childArrays.length)
+        childArrays.forEach((item, idx) => {
+          console.log(`║   [${idx}] field: "${item.field}", parentpath: "${item.parentpath}"`)
+        })
+        console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+        return {
+          datafanout: topLevelArrays[0].field,
+          childfanouts: childArrays.length > 0 ? childArrays : null
+        }
+      }
+
+      // Rule 3: Multiple top-level arrays
+      console.log('║ RULE 3: Multiple top-level arrays')
+      console.log('║ datafanout: null')
+      console.log('║ childfanouts: all arrays (' + childfanoutsArray.length + ' items)')
+      childfanoutsArray.forEach((item, idx) => {
+        console.log(`║   [${idx}] field: "${item.field}", parentpath: ${item.parentpath || 'null'}`)
+      })
+      console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+      return {
+        datafanout: null,
+        childfanouts: childfanoutsArray
+      }
     },
 
     generatePolicyObject () {
@@ -675,8 +731,14 @@ export default {
             policy.schemarule.ConvertoJson = this.schemaRules.convertToJson
           }
 
-          // Add childfanouts if present (new hierarchical structure)
+          // Add datafanout and childfanouts based on array structure rules
           if (this.schemaRules.childfanouts && this.schemaRules.childfanouts.length > 0) {
+            console.log('╔═══════════════════════════════════════════════════════════════════════')
+            console.log('║ [Step 7] Processing datafanout and childfanouts')
+            console.log('╠═══════════════════════════════════════════════════════════════════════')
+            console.log('║ Total childfanouts from store:', this.schemaRules.childfanouts.length)
+            console.log('╚═══════════════════════════════════════════════════════════════════════')
+
             // Clean childfanouts to remove UI-only metadata
             const cleanChildFanouts = (fanouts) => {
               if (!Array.isArray(fanouts)) return fanouts
@@ -706,7 +768,21 @@ export default {
                 return cleanFanout
               })
             }
-            policy.schemarule.childfanouts = cleanChildFanouts(this.schemaRules.childfanouts)
+
+            const cleanedChildFanouts = cleanChildFanouts(this.schemaRules.childfanouts)
+
+            // Compute datafanout and childfanouts based on the three rules
+            const { datafanout, childfanouts } = this.computeDataFanoutStructure(cleanedChildFanouts)
+
+            console.log('║ Computed datafanout:', datafanout || 'null')
+            console.log('║ Computed childfanouts count:', childfanouts ? childfanouts.length : 0)
+            console.log('╚═══════════════════════════════════════════════════════════════════════')
+
+            // Set datafanout attribute
+            policy.schemarule.datafanout = datafanout
+
+            // Set childfanouts (may be null or an array)
+            policy.schemarule.childfanouts = childfanouts
           }
         }
 
@@ -736,6 +812,7 @@ export default {
 
             const cleanMapping = { ...mapping }
             delete cleanMapping.sampleValue
+            delete cleanMapping.sampleValueDisplay // Remove UI-only sample value display
             delete cleanMapping.id // Remove any internal IDs if present
             delete cleanMapping.originalInputRule // Remove UI tracking field
             delete cleanMapping._isMissingField // Remove missing field flag
@@ -785,6 +862,7 @@ export default {
                 cleanSubtransform.transforms = cleanSubtransform.transforms.map(transform => {
                   const cleanTransform = { ...transform }
                   delete cleanTransform.sampleValue
+                  delete cleanTransform.sampleValueDisplay // Remove UI-only sample value display
                   delete cleanTransform.id
                   delete cleanTransform.originalInputRule // Remove UI tracking field
                   delete cleanTransform._originalInputRule // Remove UI tracking field (subtransform variant)

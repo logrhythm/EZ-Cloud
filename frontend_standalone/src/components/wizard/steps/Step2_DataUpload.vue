@@ -551,11 +551,8 @@ export default {
         insights.push({
           icon: 'auto_fix_high',
           color: 'green',
-          message: `Found ${stringifiedJsonFields.length} field(s) containing stringified JSON that can be parsed.`,
-          action: {
-            label: 'Auto-select',
-            type: 'select-json-strings'
-          }
+          message: `Found ${stringifiedJsonFields.length} field(s) containing stringified JSON that can be parsed.`
+          // Removed action button
         })
       }
 
@@ -1307,14 +1304,6 @@ export default {
           this.UPDATE_SCHEMA_RULES({ fanout: arrayFields })
           break
         }
-        case 'select-json-strings': {
-          // Auto-select stringified JSON fields
-          if (this.sampleData.parsedData) {
-            const jsonFields = DataProcessor.findStringifiedJsonFields(this.sampleData.parsedData)
-            this.UPDATE_SCHEMA_RULES({ convertToJson: jsonFields })
-          }
-          break
-        }
       }
     },
 
@@ -1494,6 +1483,17 @@ export default {
   flex-direction: column;
   gap: 2rem;
   margin-bottom: 3rem;
+}
+
+.step-actions {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 2rem;
+  border-top: 1px solid var(--q-color-grey-3);
+
+  .dark-theme & {
+    border-color: var(--q-color-grey-8);
+  }
 }
 
 .wizard-card {
