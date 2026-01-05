@@ -646,8 +646,6 @@ export default {
     // Watch Vuex state change and sync to local state
     'sampleData.inputMethod': {
       handler (newValue, oldValue) {
-        console.log('[WATCHER] sampleData.inputMethod changed:', { oldValue, newValue, isAutoSwitching: this.isAutoSwitching })
-
         // Only clear data and update local state if the value has actually changed
         if (newValue !== oldValue) {
           // Update local state to match Vuex state
@@ -659,17 +657,8 @@ export default {
             // Only clear data if switching away from the current method
             // Don't clear if we're just initializing or switching back to a method with existing data
             // Also, don't clear if we're auto-switching (multiline detection)
-            console.log('[WATCHER $nextTick] About to check if should clear data:', {
-              oldValue,
-              isAutoSwitching: this.isAutoSwitching,
-              willClear: oldValue && !this.isAutoSwitching
-            })
-
             if (oldValue && !this.isAutoSwitching) {
-              console.log('[WATCHER] Clearing data because manual tab switch detected')
               this.clearDataPreserveInputMethod()
-            } else {
-              console.log('[WATCHER] NOT clearing data - auto-switching or initial load')
             }
           })
         }
@@ -708,11 +697,8 @@ export default {
     // Initialize localRawData from Vuex state
     this.localRawData = this.sampleData.rawData || ''
 
-    // Restore uploaded file if user is returning to this step with file input method
+    //  Restore uploaded file if user is returning to this step with file input method
     if (this.sampleData.inputMethod === 'file' && this.sampleData.uploadedFileName) {
-      console.log('=== Step 2 Mounted: Restoring uploaded file ===')
-      console.log('File name:', this.sampleData.uploadedFileName)
-
       // Create a mock File object to display in the UI
       // We can't recreate the actual File object, but we can create a representation
       this.uploadedFile = new File([], this.sampleData.uploadedFileName, { type: 'application/json' })
@@ -724,7 +710,6 @@ export default {
       // Also initialize lastProceededRawData when returning to this step
       // This assumes if user is coming back, they've already proceeded before
       this.lastProceededRawData = this.sampleData.rawData
-      console.log('=== Step 2 Mounted: Initialized lastProcessedRawData and lastProceededRawData ===')
 
       // Only validate on mount if we have data (user is returning to this step)
       // Don't validate empty state to allow navigation back without errors
@@ -732,7 +717,6 @@ export default {
         this.validateJsonData()
       })
     } else {
-      console.log('=== Step 2 Mounted: No data present, skipping validation ===')
       // Clear any existing validation errors when mounted with no data
       this.validationErrorMessage = ''
     }
@@ -799,7 +783,6 @@ export default {
 
         // If at least 2 lines are valid JSON objects and majority are valid, it's multiline
         if (validJsonLinesCount >= 2 && validJsonLinesCount > invalidJsonLinesCount) {
-          console.log(`[detectInputMethod] Detected multiline: ${validJsonLinesCount} valid JSON objects`)
           return 'multiple'
         }
       }
@@ -807,11 +790,9 @@ export default {
       // Try to parse as single JSON (manual input)
       try {
         JSON.parse(trimmedData)
-        console.log('[detectInputMethod] Detected single JSON object/array')
         return 'manual'
       } catch (e) {
         // If it's not valid single JSON and not multiline, keep current method
-        console.log('[detectInputMethod] Unable to detect format, keeping current method')
         return this.sampleData.inputMethod || 'manual'
       }
     },
@@ -850,34 +831,21 @@ export default {
         const currentRawData = this.localRawData
         const hasDataChanged = this.lastProcessedRawData !== currentRawData
 
-        console.log('=== Step 2: Validating JSON data ===')
-        console.log('Current raw data length:', currentRawData?.length)
-        console.log('Last processed data length:', this.lastProcessedRawData?.length)
-        console.log('Has data changed?', hasDataChanged)
-
         // Auto-detect if data is multiline when user is in manual input mode
         // This detects if user pasted multiline data into the manual input field
         if (this.sampleData.inputMethod === 'manual' || this.sampleData.inputMethod === 'file') {
           const detectedInputMethod = this.detectInputMethod(this.localRawData)
-          console.log('=== Step 2: Auto-detection ===')
-          console.log('Current input method:', this.sampleData.inputMethod)
-          console.log('Detected input method:', detectedInputMethod)
 
           // If multiline data detected and user is not already in multiple mode, switch to it
           if (detectedInputMethod === 'multiple' && this.sampleData.inputMethod !== 'multiple') {
-            console.log('=== Step 2: Switching to multiple input method (multiline detected) ===')
-
             // Store the current data before switching tabs
             const currentData = this.localRawData
-            console.log('[AUTO-SWITCH] Stored data length:', currentData?.length)
 
             // Set flag to prevent clearing data in the watcher
-            console.log('[AUTO-SWITCH] Setting isAutoSwitching = true BEFORE tab switch')
             this.isAutoSwitching = true
 
             // Switch to multiple mode
             this.localInputMethod = 'multiple'
-            console.log('[AUTO-SWITCH] Called SET_SAMPLE_DATA with inputMethod=multiple')
             this.SET_SAMPLE_DATA({
               inputMethod: 'multiple',
               rawData: currentData // Ensure data is preserved in Vuex
@@ -885,18 +853,11 @@ export default {
 
             // Use nextTick to ensure the tab panel is rendered before setting data
             this.$nextTick(() => {
-              console.log('[AUTO-SWITCH $nextTick] Re-assigning data to localRawData')
-              console.log('[AUTO-SWITCH $nextTick] Data length before assignment:', this.localRawData?.length)
-
               // Re-assign the data to ensure it's visible in the new tab
               this.localRawData = currentData
 
-              console.log('[AUTO-SWITCH $nextTick] Data length after assignment:', this.localRawData?.length)
-              console.log('=== Step 2: Data set in Multiple Logs tab ===', currentData.substring(0, 100))
-
               // Use another nextTick to reset the flag after everything is settled
               this.$nextTick(() => {
-                console.log('[AUTO-SWITCH] Setting isAutoSwitching = false AFTER all updates')
                 this.isAutoSwitching = false
               })
             })
@@ -913,11 +874,6 @@ export default {
 
         // Use the DataProcessor service directly with the current/detected input method
         const result = await DataProcessor.processSampleData(this.localRawData, this.sampleData.inputMethod)
-
-        console.log('=== Step 2: Data processing result ===')
-        console.log('Detected logType:', result.logType)
-        console.log('Input method:', this.sampleData.inputMethod)
-        console.log('Record count:', result.dataStats.recordCount)
 
         // Update the store with results
         this.SET_SAMPLE_DATA({
@@ -936,9 +892,6 @@ export default {
 
         // Handle schema rules based on data change
         if (hasDataChanged && result.validationResult.isValid) {
-          console.log('=== Step 2: Raw data has changed ===')
-          console.log('Data will be checked against step configurations when user proceeds to next step')
-
           // Update last processed data (for validation tracking)
           this.lastProcessedRawData = currentRawData
 
@@ -946,8 +899,6 @@ export default {
           // Steps will be reset in proceedToNext() when user clicks "Next" button
           // This allows users to edit data without losing their Step 3+ configurations
           // until they actually proceed forward
-        } else if (!hasDataChanged) {
-          console.log('=== Step 2: Raw data unchanged - preserving all steps ===')
         }
 
         // Emit step validation status
@@ -970,9 +921,7 @@ export default {
               this.clipboardPermissionState === 'prompt' ||
               this.clipboardPermissionState === 'unknown') {
             try {
-              console.log('Attempting to read from clipboard with Clipboard API...')
               const text = await navigator.clipboard.readText()
-              console.log('Successfully read from clipboard with Clipboard API')
 
               this.localRawData = text
               this.SET_SAMPLE_DATA({
@@ -982,22 +931,16 @@ export default {
               this.validateJsonData()
               return
             } catch (clipboardError) {
-              console.warn('Clipboard API access failed, falling back to execCommand:', clipboardError)
               // If permission was previously unknown, update it
               if (this.clipboardPermissionState === 'unknown') {
                 this.clipboardPermissionState = 'denied'
               }
               // Fall through to the document.execCommand fallback
             }
-          } else {
-            console.log('Clipboard permission is denied, using fallback method')
           }
-        } else {
-          console.log('Clipboard API not available, using fallback method')
         }
 
         // Fallback to document.execCommand (deprecated but still works in most browsers)
-        console.log('Attempting fallback paste method with execCommand...')
         const textArea = document.createElement('textarea')
         textArea.setAttribute('style', 'position: absolute; top: -9999px; left: -9999px')
         document.body.appendChild(textArea)
@@ -1009,7 +952,6 @@ export default {
         if (successful) {
           const text = textArea.value
           document.body.removeChild(textArea)
-          console.log('Successfully pasted using execCommand fallback')
 
           this.localRawData = text
           this.SET_SAMPLE_DATA({
@@ -1057,8 +999,6 @@ export default {
     },
 
     clearData () {
-      console.log('=== Step 2: Clearing data - resetting Step 3, 4, 5, and 6 ===')
-
       this.localRawData = ''
 
       this.SET_SAMPLE_DATA({
@@ -1102,8 +1042,6 @@ export default {
     },
 
     clearDataPreserveInputMethod () {
-      console.log('=== Step 2: Clearing data but preserving input method ===')
-
       // Store current input method so we don't overwrite it
       const currentInputMethod = this.sampleData.inputMethod
 
@@ -1204,24 +1142,16 @@ export default {
 
         // Auto-detect if file contains multiline JSON
         const detectedInputMethod = this.detectInputMethod(fileContent)
-        console.log('=== Step 2: File Upload - Auto-detection ===')
-        console.log('Detected input method:', detectedInputMethod)
-
         // Set local data first
         this.localRawData = fileContent
 
         // Use detected input method instead of always 'file'
         if (detectedInputMethod === 'multiple') {
-          console.log('=== Step 2: File contains multiple JSON objects - switching to multiple mode ===')
-          console.log('[FILE AUTO-SWITCH] File content length:', fileContent?.length)
-
           // Set flag to prevent clearing data in the watcher
-          console.log('[FILE AUTO-SWITCH] Setting isAutoSwitching = true BEFORE tab switch')
           this.isAutoSwitching = true
 
           // Switch to multiple mode
           this.localInputMethod = 'multiple'
-          console.log('[FILE AUTO-SWITCH] Called SET_SAMPLE_DATA with inputMethod=multiple')
           this.SET_SAMPLE_DATA({
             rawData: fileContent,
             inputMethod: 'multiple',
@@ -1230,18 +1160,11 @@ export default {
 
           // Use nextTick to ensure the tab panel is rendered before setting data
           this.$nextTick(() => {
-            console.log('[FILE AUTO-SWITCH $nextTick] Re-assigning data to localRawData')
-            console.log('[FILE AUTO-SWITCH $nextTick] Data length before assignment:', this.localRawData?.length)
-
             // Re-assign the data to ensure it's visible in the new tab
             this.localRawData = fileContent
 
-            console.log('[FILE AUTO-SWITCH $nextTick] Data length after assignment:', this.localRawData?.length)
-            console.log('=== Step 2: File data set in Multiple Logs tab ===', fileContent.substring(0, 100))
-
             // Use another nextTick to reset the flag after everything is settled
             this.$nextTick(() => {
-              console.log('[FILE AUTO-SWITCH] Setting isAutoSwitching = false AFTER all updates')
               this.isAutoSwitching = false
             })
           })
@@ -1318,10 +1241,6 @@ export default {
       const hasDataChangedSinceLastProceed = this.lastProceededRawData !== currentRawData
 
       if (hasDataChangedSinceLastProceed) {
-        console.log('=== Step 2: Data changed since last proceed - Resetting Steps 3, 4, 5, and 6 ===')
-        console.log('Last proceeded data length:', this.lastProceededRawData?.length)
-        console.log('Current data length:', currentRawData?.length)
-
         // Reset Step 3 (Schema Rules)
         this.UPDATE_SCHEMA_RULES({
           convertToJson: [],
@@ -1349,10 +1268,8 @@ export default {
 
         // Update the last proceeded data to current data
         this.lastProceededRawData = currentRawData
-
-        console.log('=== Step 2: All subsequent steps have been reset ===')
       } else {
-        console.log('=== Step 2: Data unchanged since last proceed - Preserving all steps ===')
+        // Data unchanged since last proceed - preserving all steps
       }
 
       // Mark step as valid and proceed
@@ -1362,17 +1279,13 @@ export default {
 
     handleTextareaKeydown (e) {
       // Handle Ctrl+V or Cmd+V (for macOS) manually if needed
-      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
-        // Let the default paste behavior work, but log for debugging
-        console.log('Paste keyboard shortcut detected')
-      }
+      // No action required - default paste behavior will work
     },
 
     async checkClipboardPermission () {
       // Check if Clipboard API is available
       if (!navigator.clipboard) {
         this.clipboardPermissionState = 'unavailable'
-        console.log('Clipboard API not available, will use fallback methods')
         return
       }
 
@@ -1384,15 +1297,11 @@ export default {
 
           // Add listener for permission changes
           permission.addEventListener('change', this.onPermissionChange)
-
-          console.log('Clipboard permission state:', permission.state)
         } else {
           // If permissions API isn't available, we'll just try using the clipboard
           this.clipboardPermissionState = 'unknown'
-          console.log('Permissions API not available, clipboard permission unknown')
         }
       } catch (error) {
-        console.warn('Error checking clipboard permission:', error)
         this.clipboardPermissionState = 'error'
       }
     },
@@ -1400,7 +1309,6 @@ export default {
     onPermissionChange (event) {
       // Update permission state when it changes
       this.clipboardPermissionState = event.target.state
-      console.log('Clipboard permission state changed to:', event.target.state)
     }
   },
 
@@ -1421,7 +1329,9 @@ export default {
         .then(permission => {
           permission.removeEventListener('change', this.onPermissionChange)
         })
-        .catch(error => console.warn('Failed to clean up permission listener:', error))
+        .catch(() => {
+          // Silently handle permission listener cleanup failure
+        })
     }
   }
 }

@@ -156,9 +156,6 @@ export class PolicyValidator {
         return result
       }
 
-      // DEBUG: Log parsed policy structure
-      console.log('[PolicyValidator] Parsed policy:', JSON.stringify(parsedPolicy, null, 2))
-
       // Step 4: Validate policy structure
       const structureValidation = this.validatePolicyStructure(parsedPolicy)
       if (!structureValidation.valid) {
@@ -360,14 +357,8 @@ export class PolicyValidator {
       let sanitized = content.replace(/^\uFEFF/, '').trim()
 
       // Log original content length for debugging
-      console.log('[PolicyValidator] Original file length:', content.length, 'chars')
-
       // Strip comments from JSON content
       sanitized = this.stripJsonComments(sanitized)
-
-      // Log cleaned content length for debugging
-      console.log('[PolicyValidator] Cleaned file length:', sanitized.length, 'chars')
-      console.log('[PolicyValidator] Stripped comments:', content.length - sanitized.length, 'chars')
 
       // Try to parse JSON
       const parsed = JSON.parse(sanitized)
@@ -440,23 +431,6 @@ export class PolicyValidator {
         const convertoJson = getCaseInsensitiveProperty(schemaRule, 'convertoJson')
         const fanout = getCaseInsensitiveProperty(schemaRule, 'fanout')
         const childfanouts = getCaseInsensitiveProperty(schemaRule, 'childfanouts')
-
-        // DEBUG: Log schemaRule validation
-        console.log('[PolicyValidator] Validating schemaRule:', {
-          hasSchemaRule: !!schemaRule,
-          convertoJson: convertoJson,
-          convertoJsonType: typeof convertoJson,
-          convertoJsonIsNull: convertoJson === null,
-          convertoJsonIsArray: Array.isArray(convertoJson),
-          fanout: fanout,
-          fanoutType: typeof fanout,
-          fanoutIsNull: fanout === null,
-          fanoutIsObject: typeof fanout === 'object',
-          childfanouts: childfanouts,
-          childfanoutsType: typeof childfanouts,
-          childfanoutsIsNull: childfanouts === null,
-          childfanoutsIsArray: Array.isArray(childfanouts)
-        })
 
         // Allow null/undefined for convertoJson - only validate if it's not null/undefined
         if (convertoJson !== undefined && convertoJson !== null && !Array.isArray(convertoJson)) {

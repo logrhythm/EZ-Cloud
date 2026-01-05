@@ -188,25 +188,12 @@ export class PathNormalizer {
       return null
     }
 
-    if (debug) {
-      console.group('🔍 [PathNormalizer.findMatch] Searching for:', targetPath)
-      console.log('📋 Candidates:', candidates.length)
-    }
-
     const targetVariations = this.getAllVariations(targetPath)
-
-    if (debug) {
-      console.log('🔄 Target variations:', targetVariations)
-    }
 
     // Try each variation of the target path
     for (let varIdx = 0; varIdx < targetVariations.length; varIdx++) {
       const variation = targetVariations[varIdx]
       const variationLower = variation.toLowerCase().trim()
-
-      if (debug) {
-        console.log(`\n  🔸 Trying variation [${varIdx}]: "${variation}"`)
-      }
 
       // Search through candidates
       for (let candIdx = 0; candIdx < candidates.length; candIdx++) {
@@ -221,30 +208,18 @@ export class PathNormalizer {
 
         // Try exact match
         if (candidatePathLower === variationLower) {
-          if (debug) {
-            console.log(`      ✅ EXACT MATCH found at candidate [${candIdx}]: "${candidatePath}"`)
-            console.groupEnd()
-          }
           return candidate
         }
 
         // Try without wildcards
         const withoutWildcards = variation.replace(/\[\*\]/g, '').toLowerCase().trim()
         if (candidatePathLower === withoutWildcards) {
-          if (debug) {
-            console.log(`      ✅ MATCH without wildcards at candidate [${candIdx}]: "${candidatePath}"`)
-            console.groupEnd()
-          }
           return candidate
         }
 
         // Try without indices
         const withoutIndices = variation.replace(/\[\d+\]/g, '').toLowerCase().trim()
         if (candidatePathLower === withoutIndices) {
-          if (debug) {
-            console.log(`      ✅ MATCH without indices at candidate [${candIdx}]: "${candidatePath}"`)
-            console.groupEnd()
-          }
           return candidate
         }
 
@@ -259,35 +234,16 @@ export class PathNormalizer {
         const targetNormalized = this.normalize(variation, { removePrefix: true, removeWildcards: true, removeIndices: true })
         const candidateNormalized = this.normalize(candidatePath, { removePrefix: true, removeWildcards: true, removeIndices: true })
 
-        if (debug) {
-          console.log(`      🔄 Suffix check: target="${targetNormalized}" vs candidate="${candidateNormalized}"`)
-        }
-
         // Check if candidate ends with the target (suffix match)
         if (candidateNormalized.toLowerCase().endsWith('.' + targetNormalized.toLowerCase())) {
-          if (debug) {
-            console.log(`      ✅ SUFFIX MATCH found at candidate [${candIdx}]: "${candidatePath}"`)
-            console.log(`         Target suffix: "${targetNormalized}"`)
-            console.log(`         Candidate:     "${candidateNormalized}"`)
-            console.groupEnd()
-          }
           return candidate
         }
 
         // Also check exact suffix match (without leading dot)
         if (candidateNormalized.toLowerCase() === targetNormalized.toLowerCase()) {
-          if (debug) {
-            console.log(`      ✅ EXACT NORMALIZED MATCH found at candidate [${candIdx}]: "${candidatePath}"`)
-            console.groupEnd()
-          }
           return candidate
         }
       }
-    }
-
-    if (debug) {
-      console.log('\n❌ No matching candidate found')
-      console.groupEnd()
     }
 
     return null

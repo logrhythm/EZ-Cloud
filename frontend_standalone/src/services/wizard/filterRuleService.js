@@ -95,19 +95,6 @@ export class FilterRuleService {
       const jsonToStringFields = options?.jsonToStringFields || []
       const parsedStringifiedFields = options?.parsedStringifiedFields || {}
 
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [FilterRuleService] extractFieldCandidates called with JSON-to-String options')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ jsonToStringFields count:', jsonToStringFields.length)
-      console.log('║ jsonToStringFields:', jsonToStringFields)
-      console.log('║ parsedStringifiedFields keys:', Object.keys(parsedStringifiedFields))
-      console.log('║ parsedData type:', Array.isArray(parsedData) ? 'array' : typeof parsedData)
-      console.log('║ parsedData isArray:', Array.isArray(parsedData))
-      if (Array.isArray(parsedData)) {
-        console.log('║ parsedData array length:', parsedData.length)
-      }
-      console.log('╚════════════════════════════════════════════════════════════════════════')
-
       const fields = []
       const visited = new Set()
 
@@ -212,8 +199,6 @@ export class FilterRuleService {
       if (Array.isArray(parsedData) && parsedData.length > 0) {
         dataForTraversal = parsedData[0]
         isMultilineNdjson = true
-        console.log('[FilterRuleService] Detected multiline NDJSON array, using first element for structure traversal')
-        console.log('[FilterRuleService] Keeping original array for sample value extraction')
       }
 
       // For multiline NDJSON, we need to adjust the dataStructure to use $. notation instead of $[*].
@@ -223,7 +208,6 @@ export class FilterRuleService {
         // Take the first child's structure and adjust its path to start with $ instead of $[0]
         const firstChild = dataStructure.children[0]
         if (firstChild && firstChild.path && firstChild.path.startsWith('$[0]')) {
-          console.log('[FilterRuleService] Adjusting paths for multiline NDJSON: converting $[0]. to $.')
           adjustedDataStructure = this._adjustPathsForNdjson(firstChild)
         }
       }
@@ -232,34 +216,16 @@ export class FilterRuleService {
 
       // Process each JSON-to-String field to add nested paths
       if (jsonToStringFields && jsonToStringFields.length > 0) {
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [FilterRuleService] Processing JSON-to-String fields for nested paths')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log(`║ Total JSON-to-String fields to process: ${jsonToStringFields.length}`)
-        console.log(`║ Fields: ${jsonToStringFields.join(', ')}`)
-        console.log(`║ parsedStringifiedFields keys: ${Object.keys(parsedStringifiedFields).join(', ')}`)
-
         for (const fieldPath of jsonToStringFields) {
-          console.log(`║ Processing field: ${fieldPath}`)
-
           // Check if we have parsed data for this field
           if (!parsedStringifiedFields[fieldPath]) {
-            console.log(`║ No parsed data available for: ${fieldPath}`)
             continue
           }
 
           const parsedJsonData = parsedStringifiedFields[fieldPath]
-          console.log(`║ Found parsed data for ${fieldPath}: type=${typeof parsedJsonData}, isArray=${Array.isArray(parsedJsonData)}`)
-
-          if (Array.isArray(parsedJsonData)) {
-            console.log(`║ Array data with length: ${parsedJsonData.length}`)
-          } else if (typeof parsedJsonData === 'object' && parsedJsonData !== null) {
-            console.log(`║ Object data with keys: ${Object.keys(parsedJsonData).join(', ')}`)
-          }
 
           // Process JSON-to-String fields
           try {
-            console.log(`║ Extracting nested fields from ${fieldPath}...`)
             this._extractNestedFieldsFromJsonString(
               parsedJsonData,
               fieldPath,
@@ -268,36 +234,10 @@ export class FilterRuleService {
               parsedData, // Pass the root data for sample value extraction
               fieldPath // Pass the parent field path
             )
-            console.log(`║ Extraction complete for ${fieldPath}`)
           } catch (error) {
             console.error(`[FilterRuleService] Error processing JSON-string field ${fieldPath}:`, error)
           }
         }
-
-        // Log the fields that were extracted from JSON strings
-        const jsonStringFields = fields.filter(f => f.isFromJsonString)
-        console.log(`║ Total fields extracted from JSON strings: ${jsonStringFields.length}`)
-        if (jsonStringFields.length > 0) {
-          console.log('║ Sample fields extracted from JSON strings:')
-          jsonStringFields.slice(0, 5).forEach(field => {
-            console.log(`║   - ${field.path} (${field.type})`)
-          })
-        }
-
-        console.log('╚════════════════════════════════════════════════════════════════════════')
-      }
-
-      console.log(`[FilterRuleService] Extracted ${fields.length} field candidates`)
-
-      // Debug: Log the extracted fields for troubleshooting
-      if (fields.length > 0) {
-        console.log('[FilterRuleService] Extracted fields sample:', fields.slice(0, 5).map(f => ({
-          path: f.path,
-          label: f.label,
-          type: f.type,
-          sampleCount: f.sampleValues?.length || 0,
-          isFromJsonString: f.isFromJsonString || false
-        })))
       }
 
       return fields
@@ -361,11 +301,6 @@ export class FilterRuleService {
     if (parsedJson === null || parsedJson === undefined) {
       return
     }
-
-    console.log('╔════════════════════════════════════════════════════════════════════════')
-    console.log(`║ [FilterRuleService] _extractNestedFieldsFromJsonString - Processing path: ${parentPath}`)
-    console.log(`║ Data type: ${Array.isArray(parsedJson) ? 'array' : typeof parsedJson}`)
-    console.log('╚════════════════════════════════════════════════════════════════════════')
 
     // Process based on data type
     if (Array.isArray(parsedJson)) {
@@ -494,13 +429,6 @@ export class FilterRuleService {
     const values = new Set()
 
     try {
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [FilterRuleService] _getSampleValuesFromJsonStringField')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ jsonStringFieldPath:', jsonStringFieldPath)
-      console.log('║ nestedFieldPath:', nestedFieldPath)
-      console.log('╚════════════════════════════════════════════════════════════════════════')
-
       if (!rootData || !jsonStringFieldPath || !nestedFieldPath) {
         return []
       }
@@ -518,8 +446,6 @@ export class FilterRuleService {
           relativePath = '[' + relativePath
         }
       }
-
-      console.log('║ relativePath within JSON string:', relativePath)
 
       // Get all records (handle both single object and array of objects)
       const records = Array.isArray(rootData) ? rootData : [rootData]
@@ -569,16 +495,7 @@ export class FilterRuleService {
         }
       }
 
-      const result = Array.from(values).slice(0, limit)
-
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [FilterRuleService] _getSampleValuesFromJsonStringField - Result')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ Found', result.length, 'unique sample values')
-      console.log('║ Sample values:', result.slice(0, 3))
-      console.log('╚════════════════════════════════════════════════════════════════════════')
-
-      return result
+      return Array.from(values).slice(0, limit)
     } catch (error) {
       console.error('[FilterRuleService] Error in _getSampleValuesFromJsonStringField:', error)
       return []
@@ -692,10 +609,7 @@ export class FilterRuleService {
 
     const result = Array.from(values).slice(0, limit)
 
-    // Debug logging
-    if (result.length > 0) {
-      console.log(`[FilterRuleService] Found ${result.length} sample values for field '${fieldPath}':`, result)
-    } else {
+    if (result.length === 0) {
       console.warn(`[FilterRuleService] No sample values found for field '${fieldPath}'`)
     }
 
@@ -1686,8 +1600,6 @@ export class FilterRuleService {
         }
       }
 
-      console.log('[FilterRuleService] Parsing filter expression:', filterExpression)
-
       const conditions = []
 
       // Operator patterns for parsing (order matters - more specific patterns first)
@@ -1732,8 +1644,6 @@ export class FilterRuleService {
         })
       }
 
-      console.log('[FilterRuleService] Split into parts:', parts.length, parts)
-
       // Parse each condition part
       for (let i = 0; i < parts.length; i++) {
         const part = parts[i]
@@ -1743,8 +1653,6 @@ export class FilterRuleService {
         if (conditionStr.startsWith('(') && conditionStr.endsWith(')')) {
           conditionStr = conditionStr.substring(1, conditionStr.length - 1).trim()
         }
-
-        console.log(`[FilterRuleService] Parsing condition ${i + 1}:`, conditionStr)
 
         // Try to match each operator pattern
         let parsed = null
@@ -1779,7 +1687,6 @@ export class FilterRuleService {
             caseInsensitive: caseInsensitive,
             logicalOperator: part.logicalOperator
           }
-          console.log('[FilterRuleService] Matched contains operator (=~):', parsed)
         } else {
           // Try standard operators
           for (const opPattern of operatorPatterns) {
@@ -1797,7 +1704,6 @@ export class FilterRuleService {
                   value: '', // No value for exists
                   logicalOperator: part.logicalOperator
                 }
-                console.log('[FilterRuleService] Matched exists operator (standalone field):', parsed)
                 break
               }
             } else if (opPattern.value === 'contains') {
@@ -1827,7 +1733,6 @@ export class FilterRuleService {
                   value: value,
                   logicalOperator: part.logicalOperator
                 }
-                console.log(`[FilterRuleService] Matched ${opPattern.value} operator:`, parsed)
                 break
               }
             }
@@ -1868,8 +1773,6 @@ export class FilterRuleService {
           console.warn('[FilterRuleService] Could not parse condition:', conditionStr)
         }
       }
-
-      console.log('[FilterRuleService] Successfully parsed', conditions.length, 'conditions')
 
       return {
         success: true,

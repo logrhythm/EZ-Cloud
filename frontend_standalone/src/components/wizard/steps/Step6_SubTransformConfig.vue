@@ -227,10 +227,6 @@ import SubTransformCard from '../SubTransformCard.vue'
 import ConditionEditorModal from '../modals/ConditionEditorModal.vue'
 import TransformEditorModal from '../modals/TransformEditorModal.vue'
 
-// Debug: Verify SubTransformCard is imported correctly
-console.log('[Step6] SubTransformCard import:', SubTransformCard)
-console.log('[Step6] SubTransformCard.name:', SubTransformCard?.name)
-
 export default {
   name: 'Step6SubTransformConfig',
 
@@ -301,7 +297,7 @@ export default {
           }
         )
       } catch (error) {
-        console.error('[Step 6] Error extracting JSON paths:', error)
+        console.error('[Step6_SubTransformConfig] Error extracting JSON paths in availableJsonPaths computed:', error)
         return []
       }
     }
@@ -319,7 +315,6 @@ export default {
     // This ensures component reacts when store is reset
     subTransformsList: {
       handler (newList) {
-        console.log('[Step 6] Detected subTransformsList change in store:', newList?.length || 0)
         // The component already reads from Vuex directly via computed property
         // So we just need to validate the step when the list changes
         this.validateStep()
@@ -339,14 +334,10 @@ export default {
       const hasExistingSubTransforms = this.subTransformsList && this.subTransformsList.length > 0
 
       if (!hasExistingSubTransforms) {
-        console.log('[Step 6] Update mode detected - will pre-fill from policy')
-
         // Wait for component to be fully mounted before prefilling
         this.$nextTick(async () => {
           await this.prefillFromPolicy(this.policyUpload.uploadedPolicyData)
         })
-      } else {
-        console.log('[Step 6] Update mode detected but sub-transforms already loaded from store - skipping prefill')
       }
     }
 
@@ -407,7 +398,6 @@ export default {
 
     addNestedSubTransform (parentId) {
       // This will be handled by the card component
-      console.log('Add nested to:', parentId)
     },
 
     updateSkipSubTransforms (value) {
@@ -424,13 +414,11 @@ export default {
     },
 
     editCondition (subtransformId) {
-      console.log('[Step 6] Edit condition for SubTransform:', subtransformId)
-
       // Find the SubTransform recursively
       const subtransform = this.findSubTransform(subtransformId, this.subTransformsList)
 
       if (!subtransform) {
-        console.error('[Step 6] SubTransform not found:', subtransformId)
+        console.error('[Step6_SubTransformConfig] SubTransform not found in editCondition:', subtransformId)
         this.$q.notify({
           type: 'negative',
           message: 'SubTransform not found',
@@ -443,28 +431,21 @@ export default {
       this.editingSubTransformId = subtransformId
       this.currentCondition = subtransform.condition || ''
 
-      console.log('[Step 6] Setting currentCondition:', this.currentCondition)
-
       // Use $nextTick to ensure the condition prop is updated before opening the modal
       this.$nextTick(() => {
         // Open condition editor modal
         this.conditionDialog = true
-
-        console.log('[Step 6] conditionDialog is now:', this.conditionDialog)
-        console.log('[Step 6] currentCondition prop should be set to:', this.currentCondition)
       })
     },
 
     editTransform (payload) {
-      console.log('[Step 6] Edit transform:', payload)
-
       const { subtransformId, transformIndex, mode } = payload
 
       // Find the SubTransform recursively
       const subtransform = this.findSubTransform(subtransformId, this.subTransformsList)
 
       if (!subtransform) {
-        console.error('[Step 6] SubTransform not found:', subtransformId)
+        console.error('[Step6_SubTransformConfig] SubTransform not found in editTransform:', subtransformId)
         this.$q.notify({
           type: 'negative',
           message: 'SubTransform not found',
@@ -481,17 +462,11 @@ export default {
 
       // Open transform editor modal
       this.transformDialog = true
-
-      console.log('[Step 6] transformDialog is now:', this.transformDialog)
-      console.log('[Step 6] editingTransformMode:', this.editingTransformMode)
-      console.log('[Step 6] currentTransforms:', this.currentTransforms)
     },
 
     saveCondition (conditionExpression) {
-      console.log('[Step 6] Save condition:', conditionExpression)
-
       if (!this.editingSubTransformId) {
-        console.error('[Step 6] No SubTransform ID set for editing')
+        console.error('[Step6_SubTransformConfig] No subtransform ID set in saveCondition')
         return
       }
 
@@ -516,10 +491,8 @@ export default {
     },
 
     saveTransform (transformData) {
-      console.log('[Step 6] Save transform:', transformData)
-
       if (!this.editingSubTransformId) {
-        console.error('[Step 6] No SubTransform ID set for editing')
+        console.error('[Step6_SubTransformConfig] No subtransform ID set in saveTransform')
         return
       }
 
@@ -527,7 +500,7 @@ export default {
       const subtransform = this.findSubTransform(this.editingSubTransformId, this.subTransformsList)
 
       if (!subtransform) {
-        console.error('[Step 6] SubTransform not found:', this.editingSubTransformId)
+        console.error('[Step6_SubTransformConfig] SubTransform not found in saveTransform:', this.editingSubTransformId)
         return
       }
 
@@ -617,7 +590,6 @@ export default {
      */
     checkFieldExistsInSampleData (fieldPath, fanoutParent = null) {
       if (!fieldPath || !this.availableJsonPaths) {
-        console.log('[Step 6] checkFieldExistsInSampleData - early return:', { fieldPath, hasAvailablePaths: !!this.availableJsonPaths })
         return false
       }
 
@@ -657,12 +629,6 @@ export default {
 
       const normalizedFieldPath = normalizePath(fieldPath)
 
-      console.log('[Step 6] Checking field existence:', {
-        originalPath: fieldPath,
-        normalizedPath: normalizedFieldPath,
-        availablePathsCount: this.availableJsonPaths.length
-      })
-
       // Check if field exists in available paths - CASE-INSENSITIVE
       const found = this.availableJsonPaths.some(pathObj => {
         const pathValue = pathObj.value || pathObj.label || ''
@@ -670,26 +636,11 @@ export default {
 
         // Try exact normalized match
         if (normalizedAvailablePath === normalizedFieldPath) {
-          console.log('[Step 6] ✓ FOUND match:', {
-            fieldPath,
-            matchedAgainst: pathValue
-          })
           return true
         }
 
         return false
       })
-
-      if (!found) {
-        console.log('[Step 6] ⚠️  NOT FOUND:', {
-          fieldPath,
-          normalizedPath: normalizedFieldPath,
-          sampleAvailablePaths: this.availableJsonPaths.slice(0, 5).map(p => ({
-            original: p.value || p.label,
-            normalized: normalizePath(p.value || p.label)
-          }))
-        })
-      }
 
       return found
     },
@@ -711,11 +662,6 @@ export default {
       // - Nested paths like @.response.events[*].type
       const fieldPattern = /@\.[a-zA-Z_@][\w.@[\]'"*]*/g
       const matches = condition.match(fieldPattern) || []
-
-      console.log('[Step 6] Extracting fields from condition:', {
-        condition,
-        rawMatches: matches
-      })
 
       // Clean up the matches - extract just the field path part
       const cleanedFields = matches.map(match => {
@@ -745,8 +691,6 @@ export default {
 
       // Remove duplicates
       const uniqueFields = [...new Set(cleanedFields)]
-
-      console.log('[Step 6] Extracted field paths:', uniqueFields)
 
       return uniqueFields
     },
@@ -858,10 +802,6 @@ export default {
      */
     async prefillFromPolicy (policyData) {
       try {
-        console.log('============================================================')
-        console.log('[Step 6] prefillFromPolicy: Starting pre-fill process')
-        console.log('============================================================')
-
         this.isLoadingFromPolicy = true
 
         // Wait for component to be fully ready
@@ -872,12 +812,9 @@ export default {
         const subtransforms = this.getCaseInsensitiveProperty(policyData, 'subtransforms') || []
 
         if (!Array.isArray(subtransforms) || subtransforms.length === 0) {
-          console.log('[Step 6] No subtransforms found in policy')
           this.isLoadingFromPolicy = false
           return
         }
-
-        console.log('[Step 6] Found', subtransforms.length, 'subtransforms in policy')
 
         // Track missing fields globally
         const allMissingFields = []
@@ -885,12 +822,6 @@ export default {
         // Process each subtransform
         for (let index = 0; index < subtransforms.length; index++) {
           const subtransform = subtransforms[index]
-
-          console.log('------------------------------------------------------------')
-          console.log('[Step 6] Processing subtransform', index + 1)
-          console.log('  condition:', subtransform.condition)
-          console.log('  exitonmatch:', subtransform.exitonmatch)
-          console.log('  transforms count:', subtransform.transforms?.length || 0)
 
           // Extract properties with case-insensitive access
           const condition = this.getCaseInsensitiveProperty(subtransform, 'condition') || ''
@@ -905,7 +836,6 @@ export default {
           )
 
           if (!conditionValidation.isValid) {
-            console.warn('[Step 6] Condition references missing fields:', conditionValidation.missingFields)
             conditionValidation.missingFields.forEach(field => {
               allMissingFields.push({
                 subtransformIndex: index,
@@ -923,7 +853,6 @@ export default {
           )
 
           if (!mappingValidation.isValid) {
-            console.warn('[Step 6] Transform mappings reference missing fields:', mappingValidation.missingFields)
             mappingValidation.missingFields.forEach(missingField => {
               allMissingFields.push({
                 subtransformIndex: index,
@@ -974,18 +903,10 @@ export default {
 
           // Add subtransform to store
           this.addSubTransformAction(newSubTransform)
-
-          console.log('[Step 6] Added subtransform to store:', newSubTransform.name)
         }
 
         // Store missing fields globally
         this.missingPolicyFields = allMissingFields
-
-        console.log('============================================================')
-        console.log('[Step 6] Pre-fill completed successfully')
-        console.log('  Total subtransforms loaded:', subtransforms.length)
-        console.log('  Missing fields:', allMissingFields.length)
-        console.log('============================================================')
 
         // Force UI update
         await this.$nextTick()
@@ -1012,9 +933,7 @@ export default {
           icon: missingCount > 0 ? 'warning' : 'check_circle'
         })
       } catch (error) {
-        console.error('============================================================')
-        console.error('[Step 6] Error in prefillFromPolicy:', error)
-        console.error('============================================================')
+        console.error('[Step6_SubTransformConfig] Error in prefillFromPolicy:', error, 'PolicyData keys:', policyData ? Object.keys(policyData) : 'null')
 
         this.$q.notify({
           type: 'negative',
@@ -1056,7 +975,7 @@ export default {
         // Navigate to the next step (using the action from Vuex)
         this.$emit('next-step')
       } catch (error) {
-        console.error('[Step 6] Error proceeding to next step:', error)
+        console.error('[Step6_SubTransformConfig] Error in proceedToNext:', error)
         this.$q.notify({
           type: 'negative',
           message: 'Failed to proceed to next step',

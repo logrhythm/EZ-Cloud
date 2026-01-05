@@ -346,11 +346,6 @@ export default {
     // Use immediate: true to emit initial values when component mounts
     // Vue 2 uses 'input' event for v-model
     watch(localParams, (newVal, oldVal) => {
-      console.log('[SplitOperationConfig] localParams changed')
-      console.log('  Old:', JSON.stringify(oldVal))
-      console.log('  New:', JSON.stringify(newVal))
-      console.log('  Emitting input event (Vue 2 v-model)...')
-
       emit('input', {
         delimiter: newVal.delimiter,
         index: newVal.index
@@ -363,7 +358,6 @@ export default {
       if (newVal) {
         // Only update if different to avoid triggering the localParams watcher unnecessarily
         if (newVal.delimiter !== localParams.value.delimiter || newVal.index !== localParams.value.index) {
-          console.log('[SplitOperationConfig] props.value changed from parent, updating localParams')
           localParams.value = {
             delimiter: newVal.delimiter !== undefined ? newVal.delimiter : '',
             index: newVal.index !== undefined ? newVal.index : 0

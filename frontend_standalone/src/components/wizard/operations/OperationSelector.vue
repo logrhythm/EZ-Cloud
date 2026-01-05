@@ -684,24 +684,9 @@ export default {
 
     // Methods
     const openOperationDialog = () => {
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [OperationSelector] openOperationDialog - CALLED')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ props.modelValue:', JSON.stringify(props.modelValue, null, 2))
-      console.log('║ selectedOperationType.value:', selectedOperationType.value)
-      console.log('║ operationParameters.value:', JSON.stringify(operationParameters.value, null, 2))
-      console.log('╚════════════════════════════════════════════════════════════════════════')
-
       // Copy current values to temporary state
       tempOperationType.value = selectedOperationType.value
       tempOperationParameters.value = JSON.parse(JSON.stringify(operationParameters.value))
-
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [OperationSelector] openOperationDialog - Temp values SET')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ tempOperationType.value:', tempOperationType.value)
-      console.log('║ tempOperationParameters.value:', JSON.stringify(tempOperationParameters.value, null, 2))
-      console.log('╚════════════════════════════════════════════════════════════════════════')
 
       showOperationDialog.value = true
     }
@@ -712,39 +697,12 @@ export default {
     }
 
     const applyOperation = () => {
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [OperationSelector] applyOperation - START')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ tempOperationType.value:', tempOperationType.value)
-      console.log('║ tempOperationParameters.value:', JSON.stringify(tempOperationParameters.value, null, 2))
-      console.log('║ About to copy to actual state and emit...')
-      console.log('╚════════════════════════════════════════════════════════════════════════')
-
-      // EXTRA DEBUG for math operations
-      if (tempOperationType.value === OPERATION_TYPES.ADD ||
-          tempOperationType.value === OPERATION_TYPES.SUBTRACT ||
-          tempOperationType.value === OPERATION_TYPES.MULTIPLY ||
-          tempOperationType.value === OPERATION_TYPES.DIVIDE) {
-        console.log('║ [OperationSelector] applyOperation - MATH OP DEBUG')
-        console.log('║   parameters.value:', tempOperationParameters.value && tempOperationParameters.value.value)
-      }
-
       // Apply temporary changes to actual state
       selectedOperationType.value = tempOperationType.value
       operationParameters.value = tempOperationParameters.value
 
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [OperationSelector] applyOperation - State copied')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ selectedOperationType.value:', selectedOperationType.value)
-      console.log('║ operationParameters.value:', JSON.stringify(operationParameters.value, null, 2))
-      console.log('║ Calling emitChange()...')
-      console.log('╚════════════════════════════════════════════════════════════════════════')
-
       emitChange()
       showOperationDialog.value = false
-
-      console.log('[OperationSelector] applyOperation - COMPLETED, dialog closed')
     }
 
     const getOperationColor = (type) => {
@@ -752,14 +710,6 @@ export default {
     }
 
     const handleOperationTypeChange = (newType) => {
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [OperationSelector] handleOperationTypeChange - CALLED')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ newType:', newType)
-      console.log('║ Previous tempOperationType:', tempOperationType.value)
-      console.log('║ Previous tempOperationParameters:', JSON.stringify(tempOperationParameters.value, null, 2))
-      console.log('╚════════════════════════════════════════════════════════════════════════')
-
       // Check if operation type is actually changing
       const isTypeChanging = tempOperationType.value !== newType
 
@@ -769,12 +719,9 @@ export default {
       // Only reset parameters if the operation type is actually changing
       // If the type is the same (e.g., dialog opening with existing operation), keep the parameters
       if (isTypeChanging) {
-        console.log('║ [OperationSelector] Operation type IS CHANGING - resetting parameters')
         // Reset parameters when operation type changes
         tempOperationParameters.value = {}
       } else {
-        console.log('║ [OperationSelector] Operation type NOT CHANGING - keeping existing parameters')
-        console.log('║ Existing parameters:', JSON.stringify(tempOperationParameters.value, null, 2))
         // Don't reset - keep existing parameters (for round-trip editing)
         return
       }
@@ -818,38 +765,12 @@ export default {
         tempOperationParameters.value = {
           value: 0
         }
-        console.debug('[OperationSelector] Set default value for math operation: 0')
       }
-
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [OperationSelector] handleOperationTypeChange - COMPLETED')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ New tempOperationType:', tempOperationType.value)
-      console.log('║ New tempOperationParameters:', JSON.stringify(tempOperationParameters.value, null, 2))
-      console.log('╚════════════════════════════════════════════════════════════════════════')
     }
 
     const handleParametersChange = (newParams) => {
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [OperationSelector] handleParametersChange - CALLED ✅✅✅')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ Current tempOperationType:', tempOperationType.value)
-      console.log('║ Received newParams:', JSON.stringify(newParams, null, 2))
-      console.log('║ newParams type:', typeof newParams)
-      console.log('║ newParams.value:', newParams?.value)
-      console.log('║ tempOperationParameters BEFORE update:', JSON.stringify(tempOperationParameters.value, null, 2))
-      console.log('║ 🔍 CALL STACK:', new Error().stack)
-      console.log('╚════════════════════════════════════════════════════════════════════════')
-
       // Update temporary parameters (dialog is open)
       tempOperationParameters.value = { ...newParams }
-
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [OperationSelector] handleParametersChange - COMPLETED')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ tempOperationParameters AFTER update:', JSON.stringify(tempOperationParameters.value, null, 2))
-      console.log('║ tempOperationParameters.value.value:', tempOperationParameters.value?.value)
-      console.log('╚════════════════════════════════════════════════════════════════════════')
     }
 
     const emitChange = () => {
@@ -858,28 +779,9 @@ export default {
         parameters: operationParameters.value
       }
 
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [OperationSelector] emitChange - EMITTING operation change')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ 🔍 CALL STACK:', new Error().stack)
-      console.log('║')
-      console.log('║ selectedOperationType.value:', selectedOperationType.value)
-      console.log('║ operationParameters.value:', JSON.stringify(operationParameters.value, null, 2))
-      console.log('║')
-      console.log('║ FULL PAYLOAD being emitted:')
-      console.log('║', JSON.stringify(payload, null, 2))
-      console.log('║')
-      console.log('║ payload.type:', payload.type)
-      console.log('║ payload.parameters:', JSON.stringify(payload.parameters, null, 2))
-      console.log('║ payload.parameters.value:', payload.parameters?.value)
-      console.log('║ payload.parameters.value === undefined:', payload.parameters?.value === undefined)
-      console.log('╚════════════════════════════════════════════════════════════════════════')
-
       // Emit both Vue 3 and Vue 2 style events for compatibility
       emit('update:modelValue', payload)
       emit('input', payload) // Vue 2 compatibility
-
-      console.log('[OperationSelector] ✅ Events emitted: update:modelValue and input')
     }
 
     const clearOperation = () => {
@@ -918,37 +820,14 @@ export default {
 
     // Watch for external changes to modelValue
     watch(() => props.modelValue, (newVal) => {
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [OperationSelector] props.modelValue WATCHER - TRIGGERED')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ newVal:', JSON.stringify(newVal, null, 2))
-      console.log('╚════════════════════════════════════════════════════════════════════════')
-
       if (newVal) {
         selectedOperationType.value = newVal.type || null
         operationParameters.value = newVal.parameters || {}
-
-        console.log('║ [OperationSelector] Updated from props:')
-        console.log('║   selectedOperationType.value:', selectedOperationType.value)
-        console.log('║   operationParameters.value:', JSON.stringify(operationParameters.value, null, 2))
-        console.log('╚════════════════════════════════════════════════════════════════════════')
       }
     }, { deep: true, immediate: true }) // Added immediate: true
 
     // Watch tempOperationParameters for changes (v-model updates)
     watch(tempOperationParameters, (newVal, oldVal) => {
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [OperationSelector] tempOperationParameters WATCHER - TRIGGERED')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ Current tempOperationType:', tempOperationType.value)
-      console.log('║ OLD VALUE:', JSON.stringify(oldVal, null, 2))
-      console.log('║ NEW VALUE:', JSON.stringify(newVal, null, 2))
-      console.log('║ Has delimiter property?', 'delimiter' in newVal)
-      console.log('║ newVal.delimiter:', newVal?.delimiter)
-      console.log('║ newVal.index:', newVal?.index)
-      console.log('║ Has value property?', 'value' in newVal)
-      console.log('║ newVal.value:', newVal?.value)
-      console.log('╚════════════════════════════════════════════════════════════════════════')
     }, { deep: true })
 
     return {

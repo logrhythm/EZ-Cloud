@@ -897,12 +897,10 @@ export default {
         const localJson = JSON.stringify(this.localMappings || [])
 
         if (storeJson !== localJson) {
-          console.log('[Step 5] Detected mappings change in store, updating local state')
           this.restoreStateFromStore()
 
           // If mappings were cleared (reset), also rebuild the tree
           if (!newMappings || newMappings.length === 0) {
-            console.log('[Step 5] Mappings were reset, rebuilding tree')
             this.buildJsonTree()
           }
         }
@@ -1032,13 +1030,6 @@ export default {
             // The tree always uses [*] notation for array children
             const treePath = `${fanoutParent}[*].${basePath}`
             paths.add(treePath)
-
-            console.log('[Step 5] Reconstructed tree path for fanout field:', {
-              originalInputRule: m.inputRule,
-              fanoutParent: m.fanoutParentElement,
-              basePath,
-              treePath
-            })
           }
         }
       })
@@ -1118,34 +1109,13 @@ export default {
         )
 
         // Merge parsed stringified JSON fields into the tree
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [Step 5] Checking for parsed stringified JSON fields')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log('║ $store.state.wizard exists:', !!this.$store.state.wizard)
-        console.log('║ schemaRules exists:', !!this.$store.state.wizard?.schemaRules)
-        console.log('║ parsedStringifiedJsonFields exists:', !!this.$store.state.wizard?.schemaRules?.parsedStringifiedJsonFields)
-        console.log('╚════════════════════════════════════════════════════════════════════════')
-
         const schemaRules = this.$store.state.wizard?.schemaRules
         if (schemaRules && schemaRules.parsedStringifiedJsonFields) {
-          console.log('╔════════════════════════════════════════════════════════════════════════')
-          console.log('║ [Step 5] Merging parsed stringified JSON fields into tree')
-          console.log('╠════════════════════════════════════════════════════════════════════════')
-          console.log('║ Parsed field keys:', Object.keys(schemaRules.parsedStringifiedJsonFields))
-          console.log('║ Parsed field count:', Object.keys(schemaRules.parsedStringifiedJsonFields).length)
-          console.log('║ Full parsedStringifiedJsonFields:', JSON.stringify(schemaRules.parsedStringifiedJsonFields, null, 2))
-          console.log('╚════════════════════════════════════════════════════════════════════════')
-
           this.jsonTreeData = MappingService.mergeStringifiedJsonIntoTree(
             this.jsonTreeData,
             schemaRules.parsedStringifiedJsonFields,
             dataForTree
           )
-        } else {
-          console.log('╔════════════════════════════════════════════════════════════════════════')
-          console.log('║ [Step 5] WARNING: No parsed stringified JSON fields found!')
-          console.log('║ This is why the parsed attributes are not appearing!')
-          console.log('╚════════════════════════════════════════════════════════════════════════')
         }
 
         // Extract JSON paths for alternative fields (using the new normalized paths)
@@ -1156,10 +1126,8 @@ export default {
 
         // Expand all nodes by default for better visibility
         this.expandAll()
-
-        console.log('[Step 5] JSON tree built successfully with', this.availableJsonPaths.length, 'paths')
       } catch (error) {
-        console.error('[Step 5] Error building JSON tree:', error)
+        console.error('[Step5_Mapping] Error building JSON tree:', error)
         this.$q.notify({
           type: 'negative',
           message: 'Failed to build JSON tree',
@@ -1188,7 +1156,7 @@ export default {
               const parsed = JSON.parse(line.trim())
               parsedLogs.push(parsed)
             } catch (e) {
-              console.warn('[Step 5] Failed to parse log line:', line)
+              console.error('[Step5_Mapping] Failed to parse JSON line in parseMultiLineLogsForTree:', e.message, 'Line:', line.substring(0, 100))
             }
           }
 
@@ -1202,7 +1170,7 @@ export default {
 
         return rawData
       } catch (error) {
-        console.error('[Step 5] Error parsing multi-line logs:', error)
+        console.error('[Step5_Mapping] Error parsing multi-line logs for tree:', error)
         return rawData
       }
     },
@@ -1264,21 +1232,8 @@ export default {
       this.validationErrors = {}
 
       // Resolve path based on fanout selections
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [Step 5] createMappingFromNode - Resolving path for fanout')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ Original path:', path)
-      console.log('║ Fanout arrays:', JSON.stringify(this.fanoutArrays))
-      console.log('╚════════════════════════════════════════════════════════════════════════')
 
       const resolved = MappingService.resolvePathForFanout(path, this.fanoutArrays)
-
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [Step 5] Path resolution result:')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ jsonPath:', resolved.jsonPath)
-      console.log('║ fanoutParent:', resolved.fanoutParent)
-      console.log('╚════════════════════════════════════════════════════════════════════════')
 
       // Store original field path (without operation)
       this.originalFieldPath = resolved.jsonPath
@@ -1418,98 +1373,85 @@ export default {
     },
 
     editMapping (mapping) {
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [Step 5] editMapping - CALLED')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ mapping.inputRule:', mapping.inputRule)
-      console.log('╚════════════════════════════════════════════════════════════════════════')
+      try {
+        this.editingMapping = mapping
+        this.validationErrors = {}
 
-      this.editingMapping = mapping
-      this.validationErrors = {}
+        // Parse operation from inputRule if present
+        const parsed = parseOperationFromInputRule(mapping.inputRule)
 
-      // Parse operation from inputRule if present
-      const parsed = parseOperationFromInputRule(mapping.inputRule)
+        // Store original field path and operation config
+        this.originalFieldPath = parsed.fieldPath || mapping.inputRule
 
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [Step 5] editMapping - Parsed operation from inputRule')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ Input rule:', mapping.inputRule)
-      console.log('║ Parsed result:')
-      console.log('║   type:', parsed.type)
-      console.log('║   fieldPath:', parsed.fieldPath)
-      console.log('║   parameters:', JSON.stringify(parsed.parameters, null, 2))
-      console.log('╚════════════════════════════════════════════════════════════════════════')
+        // Use $set to ensure Vue reactivity (Vue 2)
+        this.$set(this, 'operationConfig', {
+          type: parsed.type,
+          parameters: parsed.parameters || {}
+        })
 
-      // Store original field path and operation config
-      this.originalFieldPath = parsed.fieldPath || mapping.inputRule
+        // Generate suggestions for editing
+        const fieldName = MappingService.extractFieldName(this.originalFieldPath)
+        this.smartSuggestions = MappingService.generateSmartSuggestions(
+          fieldName,
+          this.originalFieldPath,
+          mapping.type
+        )
 
-      // Use $set to ensure Vue reactivity (Vue 2)
-      this.$set(this, 'operationConfig', {
-        type: parsed.type,
-        parameters: parsed.parameters || {}
-      })
+        // Deep clone mapping
+        this.mappingForm = JSON.parse(JSON.stringify(mapping))
 
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [Step 5] editMapping - operationConfig SET')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ this.operationConfig:', JSON.stringify(this.operationConfig, null, 2))
-      console.log('║ this.originalFieldPath:', this.originalFieldPath)
-      console.log('╚════════════════════════════════════════════════════════════════════════')
+        // Get sample value if not present
+        if (!this.mappingForm.sampleValue && this.sampleData && this.sampleData.parsedData) {
+          const pathOption = this.availableJsonPaths.find(p => p.value === this.originalFieldPath)
+          if (pathOption && pathOption.sampleValue) {
+            this.mappingForm.sampleValue = pathOption.sampleValue
 
-      // Generate suggestions for editing
-      const fieldName = MappingService.extractFieldName(this.originalFieldPath)
-      this.smartSuggestions = MappingService.generateSmartSuggestions(
-        fieldName,
-        this.originalFieldPath,
-        mapping.type
-      )
+            // Also create display value
+            if (Array.isArray(pathOption.sampleValue)) {
+              const firstValues = pathOption.sampleValue.slice(0, 3).map(v => {
+                if (typeof v === 'string') {
+                  return v.length > 50 ? v.substring(0, 50) + '...' : v
+                }
+                return JSON.stringify(v)
+              })
+              this.mappingForm.sampleValueDisplay = firstValues.join(', ')
+              if (pathOption.sampleValue.length > 3) {
+                this.mappingForm.sampleValueDisplay += ` (+${pathOption.sampleValue.length - 3} more)`
+              }
+            } else {
+              this.mappingForm.sampleValueDisplay = String(pathOption.sampleValue)
+            }
+          }
+        }
 
-      // Deep clone mapping
-      this.mappingForm = JSON.parse(JSON.stringify(mapping))
-
-      // Get sample value if not present
-      if (!this.mappingForm.sampleValue && this.sampleData && this.sampleData.parsedData) {
-        const pathOption = this.availableJsonPaths.find(p => p.value === this.originalFieldPath)
-        if (pathOption && pathOption.sampleValue) {
-          this.mappingForm.sampleValue = pathOption.sampleValue
-
-          // Also create display value
-          if (Array.isArray(pathOption.sampleValue)) {
-            const firstValues = pathOption.sampleValue.slice(0, 3).map(v => {
+        // If sampleValue exists but sampleValueDisplay doesn't, create it
+        if (this.mappingForm.sampleValue && !this.mappingForm.sampleValueDisplay) {
+          if (Array.isArray(this.mappingForm.sampleValue)) {
+            const firstValues = this.mappingForm.sampleValue.slice(0, 3).map(v => {
               if (typeof v === 'string') {
                 return v.length > 50 ? v.substring(0, 50) + '...' : v
               }
               return JSON.stringify(v)
             })
             this.mappingForm.sampleValueDisplay = firstValues.join(', ')
-            if (pathOption.sampleValue.length > 3) {
-              this.mappingForm.sampleValueDisplay += ` (+${pathOption.sampleValue.length - 3} more)`
+            if (this.mappingForm.sampleValue.length > 3) {
+              this.mappingForm.sampleValueDisplay += ` (+${this.mappingForm.sampleValue.length - 3} more)`
             }
           } else {
-            this.mappingForm.sampleValueDisplay = String(pathOption.sampleValue)
+            this.mappingForm.sampleValueDisplay = String(this.mappingForm.sampleValue)
           }
         }
-      }
 
-      // If sampleValue exists but sampleValueDisplay doesn't, create it
-      if (this.mappingForm.sampleValue && !this.mappingForm.sampleValueDisplay) {
-        if (Array.isArray(this.mappingForm.sampleValue)) {
-          const firstValues = this.mappingForm.sampleValue.slice(0, 3).map(v => {
-            if (typeof v === 'string') {
-              return v.length > 50 ? v.substring(0, 50) + '...' : v
-            }
-            return JSON.stringify(v)
-          })
-          this.mappingForm.sampleValueDisplay = firstValues.join(', ')
-          if (this.mappingForm.sampleValue.length > 3) {
-            this.mappingForm.sampleValueDisplay += ` (+${this.mappingForm.sampleValue.length - 3} more)`
-          }
-        } else {
-          this.mappingForm.sampleValueDisplay = String(this.mappingForm.sampleValue)
-        }
+        this.mappingDialog = true
+      } catch (error) {
+        console.error('[Step5_Mapping] Error editing mapping:', error, 'Mapping:', mapping)
+        this.$q.notify({
+          type: 'negative',
+          message: 'Failed to edit mapping',
+          caption: error.message || 'An unexpected error occurred',
+          position: 'top'
+        })
       }
-
-      this.mappingDialog = true
     },
 
     /**
@@ -1517,90 +1459,31 @@ export default {
      * Rebuild inputRule with operation syntax
      */
     handleOperationChanged (newOperationConfig) {
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ 🔧 [OPERATION] handleOperationChanged - START')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ Step: Operation selector @input event fired')
-      console.log('║ Received newOperationConfig:', JSON.stringify(newOperationConfig, null, 2))
-      console.log('║ newOperationConfig.type:', newOperationConfig.type)
-      console.log('║ newOperationConfig.parameters:', JSON.stringify(newOperationConfig.parameters, null, 2))
-      console.log('║ originalFieldPath (base field):', this.originalFieldPath)
-      console.log('║ Current mappingForm.inputRule BEFORE:', this.mappingForm.inputRule)
-      console.log('╚════════════════════════════════════════════════════════════════════════')
+      try {
+        // Update local operation config
+        this.operationConfig = { ...newOperationConfig }
 
-      // Update local operation config
-      this.operationConfig = { ...newOperationConfig }
+        // Rebuild inputRule with operation syntax
+        if (newOperationConfig.type) {
+          const operationSyntax = buildOperationSyntax(
+            newOperationConfig.type,
+            this.originalFieldPath,
+            newOperationConfig.parameters
+          )
 
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ 🔧 [OPERATION] Updated this.operationConfig')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ this.operationConfig:', JSON.stringify(this.operationConfig, null, 2))
-      console.log('╚════════════════════════════════════════════════════════════════════════')
+          // If buildOperationSyntax returns null (incomplete params), fallback to original path
+          const finalInputRule = operationSyntax || this.originalFieldPath
 
-      // Rebuild inputRule with operation syntax
-      if (newOperationConfig.type) {
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [Step 5] Operation type detected - Building syntax')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log('║ Calling buildOperationSyntax with:')
-        console.log('║   type:', newOperationConfig.type)
-        console.log('║   fieldPath:', this.originalFieldPath)
-        console.log('║   parameters:', JSON.stringify(newOperationConfig.parameters, null, 2))
-        console.log('╚════════════════════════════════════════════════════════════════════════')
-
-        const operationSyntax = buildOperationSyntax(
-          newOperationConfig.type,
-          this.originalFieldPath,
-          newOperationConfig.parameters
-        )
-
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [Step 5] buildOperationSyntax RETURNED:')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log('║ operationSyntax:', operationSyntax)
-        console.log('║ operationSyntax type:', typeof operationSyntax)
-        console.log('║ operationSyntax === null:', operationSyntax === null)
-        console.log('║ operationSyntax === undefined:', operationSyntax === undefined)
-        console.log('╚════════════════════════════════════════════════════════════════════════')
-
-        // If buildOperationSyntax returns null (incomplete params), fallback to original path
-        const finalInputRule = operationSyntax || this.originalFieldPath
-
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [Step 5] Setting inputRule')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log('║ operationSyntax:', operationSyntax)
-        console.log('║ originalFieldPath (fallback):', this.originalFieldPath)
-        console.log('║ FINAL inputRule to set:', finalInputRule)
-        console.log('╚════════════════════════════════════════════════════════════════════════')
-
-        this.mappingForm.inputRule = finalInputRule
-
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [Step 5] inputRule AFTER assignment:')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log('║ mappingForm.inputRule:', this.mappingForm.inputRule)
-        console.log('╚════════════════════════════════════════════════════════════════════════')
-      } else {
-        // No operation, use plain field path
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [Step 5] NO operation type - Using plain path')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log('║ Setting inputRule to originalFieldPath:', this.originalFieldPath)
-        console.log('╚════════════════════════════════════════════════════════════════════════')
-
+          this.mappingForm.inputRule = finalInputRule
+        } else {
+          // No operation, use plain field path
+          this.mappingForm.inputRule = this.originalFieldPath
+        }
+      } catch (error) {
+        console.error('[Step5_Mapping] Error handling operation change:', error, 'OperationConfig:', newOperationConfig)
+        // Fallback to original field path on error
         this.mappingForm.inputRule = this.originalFieldPath
-
-        console.log('[Step 5] inputRule set to plain path:', this.mappingForm.inputRule)
       }
-
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [Step 5] handleOperationChanged - END')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ FINAL STATE:')
-      console.log('║   operationConfig.type:', this.operationConfig.type)
-      console.log('║   mappingForm.inputRule:', this.mappingForm.inputRule)
-      console.log('╚════════════════════════════════════════════════════════════════════════')
     },
 
     async saveMapping () {
@@ -1698,54 +1581,21 @@ export default {
         }
 
         // Save mapping (exclude sampleValue - it's only for UI display)
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [Step 5] saveMapping - Saving mapping')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log('║ BEFORE cleaning - Full mappingForm:')
-        console.log(JSON.stringify(this.mappingForm, null, 2))
-        console.log('║')
-        console.log('║ Key fields:')
-        console.log('║   mappingForm.inputRule:', this.mappingForm.inputRule)
-        console.log('║   mappingForm.lrSchemaField:', this.mappingForm.lrSchemaField)
-        console.log('║   mappingForm.type:', this.mappingForm.type)
-        console.log('║   operationConfig.type:', this.operationConfig.type)
-        console.log('║   operationConfig.parameters:', JSON.stringify(this.operationConfig.parameters, null, 2))
-        console.log('╚════════════════════════════════════════════════════════════════════════')
 
         const cleanMapping = { ...this.mappingForm }
         delete cleanMapping.sampleValue
 
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [Step 5] saveMapping - After cleaning')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log('║ cleanMapping:')
-        console.log(JSON.stringify(cleanMapping, null, 2))
-        console.log('║')
-        console.log('║ cleanMapping.inputRule:', cleanMapping.inputRule)
-        console.log('╚════════════════════════════════════════════════════════════════════════')
-
         if (this.editingMapping) {
           const index = this.localMappings.findIndex(m => m.id === this.editingMapping.id)
           if (index !== -1) {
-            console.log('[Step 5] Updating existing mapping at index:', index)
             this.$set(this.localMappings, index, cleanMapping)
-            console.log('[Step 5] Updated mapping:', JSON.stringify(this.localMappings[index], null, 2))
           }
         } else {
-          console.log('[Step 5] Adding new mapping to localMappings')
           this.localMappings.push(cleanMapping)
-          console.log('[Step 5] Added mapping:', JSON.stringify(cleanMapping, null, 2))
         }
 
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [Step 5] saveMapping - Current localMappings array')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log('║ Total mappings:', this.localMappings.length)
         this.localMappings.forEach((m, idx) => {
-          console.log(`║ [${idx}] inputRule:`, m.inputRule)
-          console.log(`║ [${idx}] lrSchemaField:`, m.lrSchemaField)
         })
-        console.log('╚════════════════════════════════════════════════════════════════════════')
 
         // Close dialog
         this.mappingDialog = false
@@ -1764,7 +1614,7 @@ export default {
           this.activeTab = 'mappings'
         }
       } catch (error) {
-        console.error('[Step 5] Error saving mapping:', error)
+        console.error('[Step5_Mapping] Error saving mapping:', error, 'MappingForm:', this.mappingForm)
         this.$q.notify({
           type: 'negative',
           message: 'Failed to save mapping',
@@ -1833,13 +1683,6 @@ export default {
 
         // Construct tree path: $.parent[*].field
         treePathToHighlight = `${fanoutParent}[*].${basePath}`
-
-        console.log('[Step 5] highlightInTree - Reconstructed path for fanout field:', {
-          originalJsonPath: jsonPath,
-          fanoutParent: mapping.fanoutParentElement,
-          basePath,
-          treePathToHighlight
-        })
       }
 
       // Set highlighted path (use reconstructed path for fanout fields)
@@ -1966,7 +1809,7 @@ export default {
       try {
         this.lrSchemaFields = MappingService.getLRSchemaFields()
       } catch (error) {
-        console.error('[Step 5] Error loading LR schema fields:', error)
+        console.error('[Step5_Mapping] Error loading LR schema fields:', error)
         this.lrSchemaFields = []
       }
     },
@@ -1975,7 +1818,7 @@ export default {
       try {
         this.dataTypeOptions = MappingService.getDataTypeOptions()
       } catch (error) {
-        console.error('[Step 5] Error loading data type options:', error)
+        console.error('[Step5_Mapping] Error loading data type options:', error)
         this.dataTypeOptions = []
       }
     },
@@ -2021,7 +1864,7 @@ export default {
         this.$emit('step-valid')
         this.$emit('next-step')
       } catch (error) {
-        console.error('[Step 5] Error proceeding:', error)
+        console.error('[Step5_Mapping] Error proceeding to next step:', error)
         this.$q.notify({
           type: 'negative',
           message: 'Failed to proceed',
@@ -2046,49 +1889,17 @@ export default {
           })
         }
       } catch (error) {
-        console.error('[Step 5] Error restoring state:', error)
+        console.error('[Step5_Mapping] Error restoring state from store:', error)
       }
     },
 
     saveStateToStore () {
       try {
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [Step 5] saveStateToStore - Saving to Vuex')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log('║ localMappings count:', this.localMappings.length)
-        console.log('║')
-        console.log('║ All mappings being saved:')
-        this.localMappings.forEach((m, idx) => {
-          console.log(`║ [${idx}]:`)
-          console.log(`║   id: ${m.id}`)
-          console.log(`║   inputRule: ${m.inputRule}`)
-          console.log(`║   lrSchemaField: ${m.lrSchemaField}`)
-          console.log(`║   type: ${m.type}`)
-          console.log(`║   format: ${m.format}`)
-          console.log(`║   default: ${m.default}`)
-          console.log(`║   fanoutParentElement: ${m.fanoutParentElement}`)
-          console.log('║')
-        })
-        console.log('╚════════════════════════════════════════════════════════════════════════')
-
         const mappings = JSON.parse(JSON.stringify(this.localMappings))
 
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [Step 5] After JSON.parse(JSON.stringify):')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        mappings.forEach((m, idx) => {
-          console.log(`║ [${idx}] inputRule:`, m.inputRule)
-        })
-        console.log('╚════════════════════════════════════════════════════════════════════════')
-
         this.UPDATE_FIELD_MAPPINGS({ mappings })
-
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [Step 5] saveStateToStore - COMPLETED')
-        console.log('║ Called UPDATE_FIELD_MAPPINGS mutation')
-        console.log('╚════════════════════════════════════════════════════════════════════════')
       } catch (error) {
-        console.error('[Step 5] Error saving state:', error)
+        console.error('[Step5_Mapping] Error saving state to store:', error, 'LocalMappings:', this.localMappings)
         throw error
       }
     },
@@ -2105,10 +1916,6 @@ export default {
      */
     async prefillFromPolicy (policyData) {
       try {
-        console.log('============================================================')
-        console.log('[Step 5] prefillFromPolicy: Starting pre-fill process')
-        console.log('============================================================')
-
         this.isLoadingFromPolicy = true
 
         // Wait for tree building to complete
@@ -2119,25 +1926,15 @@ export default {
         const transforms = this.getCaseInsensitiveProperty(policyData, 'transforms') || []
 
         if (!Array.isArray(transforms) || transforms.length === 0) {
-          console.log('[Step 5] No transforms found in policy')
           this.isLoadingFromPolicy = false
           return
         }
-
-        console.log('[Step 5] Found', transforms.length, 'transforms in policy')
 
         const mappingsToAdd = []
 
         // Process each transform
         for (let index = 0; index < transforms.length; index++) {
           const transform = transforms[index]
-
-          console.log('------------------------------------------------------------')
-          console.log('[Step 5] Processing transform', index + 1)
-          console.log('  inputRule:', transform.inputRule)
-          console.log('  LRSchemaField:', transform.LRSchemaField)
-          console.log('  type:', transform.type)
-          console.log('------------------------------------------------------------')
 
           // Extract properties with case-insensitive access
           const inputRule = this.getCaseInsensitiveProperty(transform, 'inputRule') || ''
@@ -2150,21 +1947,12 @@ export default {
 
           // Skip invalid transforms
           if (!inputRule && !lrSchemaField) {
-            console.warn('[Step 5] Skipping invalid transform at index', index)
             continue
           }
 
           // Parse operation from inputRule if present
           const parsed = parseOperationFromInputRule(inputRule)
           const originalFieldPath = parsed.fieldPath || inputRule
-
-          console.log(`[Step 5] Processing transform #${index}:`, {
-            inputRule,
-            parsedFieldPath: parsed.fieldPath,
-            parsedOperation: parsed.operation,
-            originalFieldPath,
-            lrSchemaField
-          })
 
           // Create mapping object with case-insensitive property values
           const mapping = {
@@ -2215,11 +2003,6 @@ export default {
         // Update Vuex store
         this.saveStateToStore()
 
-        console.log('============================================================')
-        console.log('[Step 5] Pre-fill completed successfully')
-        console.log('  Total mappings loaded:', mappingsToAdd.length)
-        console.log('============================================================')
-
         // Force UI update
         await this.$nextTick()
         this.$forceUpdate()
@@ -2234,9 +2017,7 @@ export default {
           icon: 'check_circle'
         })
       } catch (error) {
-        console.error('============================================================')
-        console.error('[Step 5] Error in prefillFromPolicy:', error)
-        console.error('============================================================')
+        console.error('[Step5_Mapping] Error in prefillFromPolicy:', error, 'PolicyData:', policyData)
 
         this.$q.notify({
           type: 'negative',
@@ -2317,18 +2098,14 @@ export default {
         const hasExistingMappings = this.localMappings && this.localMappings.length > 0
 
         if (!hasExistingMappings) {
-          console.log('[Step 5] Update mode detected - will pre-fill from policy')
-
           // Wait for tree building to complete before prefilling
           this.$nextTick(async () => {
             await this.prefillFromPolicy(this.policyUpload.uploadedPolicyData)
           })
-        } else {
-          console.log('[Step 5] Update mode detected but mappings already loaded from store - skipping prefill')
         }
       }
     } catch (error) {
-      console.error('[Step 5] Error during initialization:', error)
+      console.error('[Step5_Mapping] Error during component initialization:', error)
     }
   },
 
@@ -2337,7 +2114,7 @@ export default {
     try {
       this.saveStateToStore()
     } catch (error) {
-      console.error('[Step 5] Error saving state on destroy:', error)
+      console.error('[Step5_Mapping] Error saving state on component destroy:', error)
     }
   }
 }

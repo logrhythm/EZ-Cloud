@@ -78,9 +78,7 @@ export class DataProcessor {
         if (result.logType === this.LogTypes.MULTILINE && Array.isArray(result.parsedData)) {
           // For multiline logs, build a representative structure by merging all objects
           // This allows us to detect all possible fields and arrays across all log entries
-          console.log('[processSampleData] Multiline mode: Building representative structure from', result.parsedData.length, 'records')
           dataToAnalyze = this._buildRepresentativeObject(result.parsedData)
-          console.log('[processSampleData] Representative structure:', dataToAnalyze)
         }
 
         result.dataStructure = this.analyzeDataStructure(dataToAnalyze)
@@ -771,7 +769,6 @@ export class DataProcessor {
    * @returns {Array} List of paths to array fields
    */
   static findArrayFields (structure) {
-    console.log('[findArrayFields] Called with structure:', structure)
     const arrayFields = []
     const normalizedPaths = new Set()
 
@@ -780,30 +777,17 @@ export class DataProcessor {
       // Skip traversal for invalid nodes
       if (!node || !node.type) return
 
-      console.log('[findArrayFields.traverse] Visiting node:', {
-        path: node.path,
-        type: node.type,
-        isRoot: isRoot
-      })
-
       // If this node is an array (but not the root), add its path
       if (node.type === 'array' && !isRoot) {
-        console.log('[findArrayFields.traverse] Found array at path:', node.path)
-
         // Normalize path for deduplication check (but keep original for return)
         // e.g., both $.projects[0].teams and $.projects[1].teams normalize to $.projects[0].teams
         const normalizedPath = node.path.replace(/\[(\d+)\]/g, '[0]')
-
-        console.log('[findArrayFields.traverse] Normalized path for dedup:', normalizedPath)
 
         // Only add if we haven't seen this normalized path before
         if (!normalizedPaths.has(normalizedPath)) {
           normalizedPaths.add(normalizedPath)
           // Push the normalized path so all arrays have consistent [0] indices
           arrayFields.push(normalizedPath)
-          console.log('[findArrayFields.traverse] Added to arrayFields:', normalizedPath)
-        } else {
-          console.log('[findArrayFields.traverse] Skipped (duplicate)')
         }
       }
 
@@ -819,7 +803,6 @@ export class DataProcessor {
 
     // Start traversal
     traverse(structure, true)
-    console.log('[findArrayFields] Returning arrayFields:', arrayFields)
     return arrayFields
   }
 

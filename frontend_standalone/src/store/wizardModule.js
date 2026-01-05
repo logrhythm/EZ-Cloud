@@ -438,28 +438,10 @@ const mutations = {
   },
 
   SET_PARSED_STRINGIFIED_JSON (state, { fieldPath, parsedData }) {
-    console.log('╔════════════════════════════════════════════════════════════════════════')
-    console.log('║ [Vuex] SET_PARSED_STRINGIFIED_JSON mutation called')
-    console.log('╠════════════════════════════════════════════════════════════════════════')
-    console.log('║ fieldPath:', fieldPath)
-    console.log('║ parsedData type:', typeof parsedData)
-    console.log('║ parsedData:', JSON.stringify(parsedData, null, 2))
-    console.log('║ Before mutation - parsedStringifiedJsonFields exists:', !!state.schemaRules.parsedStringifiedJsonFields)
-    console.log('║ Before mutation - keys:', state.schemaRules.parsedStringifiedJsonFields ? Object.keys(state.schemaRules.parsedStringifiedJsonFields) : 'N/A')
-    console.log('╚════════════════════════════════════════════════════════════════════════')
-
     if (!state.schemaRules.parsedStringifiedJsonFields) {
       state.schemaRules.parsedStringifiedJsonFields = {}
-      console.log('[Vuex] Initialized parsedStringifiedJsonFields object')
     }
     state.schemaRules.parsedStringifiedJsonFields[fieldPath] = parsedData
-
-    console.log('╔════════════════════════════════════════════════════════════════════════')
-    console.log('║ [Vuex] After mutation - state updated')
-    console.log('╠════════════════════════════════════════════════════════════════════════')
-    console.log('║ parsedStringifiedJsonFields keys:', Object.keys(state.schemaRules.parsedStringifiedJsonFields))
-    console.log('║ parsedStringifiedJsonFields[', fieldPath, ']:', state.schemaRules.parsedStringifiedJsonFields[fieldPath])
-    console.log('╚════════════════════════════════════════════════════════════════════════')
   },
 
   REMOVE_PARSED_STRINGIFIED_JSON (state, fieldPath) {
@@ -469,17 +451,14 @@ const mutations = {
   },
 
   SET_CHILD_FANOUTS (state, childFanouts) {
-    console.log('[Vuex] SET_CHILD_FANOUTS mutation called with:', childFanouts)
     state.schemaRules.childfanouts = childFanouts || []
   },
 
   SET_CONVERT_TO_JSON_FIELDS (state, fields) {
-    console.log('[Vuex] SET_CONVERT_TO_JSON_FIELDS mutation called with:', fields)
     state.schemaRules.convertToJson = fields || []
   },
 
   SET_SCHEMA_TYPE (state, schemaType) {
-    console.log('[Vuex] SET_SCHEMA_TYPE mutation called with:', schemaType)
     // Store schema type if needed (multiline vs singleline)
     // Currently not used in state structure, but adding for future extensibility
     state.schemaRules.schemaType = schemaType
@@ -536,7 +515,6 @@ const mutations = {
   SET_POLICY_PREFILLED (state, { step, prefilled }) {
     if (state[step]) {
       state[step].policyPrefilled = prefilled
-      console.log(`[Vuex] Set policyPrefilled=${prefilled} for ${step}`)
     } else {
       console.warn(`[Vuex] Cannot set policyPrefilled - step "${step}" not found in state`)
     }
@@ -564,7 +542,6 @@ const mutations = {
   },
 
   RESET_FIELD_MAPPINGS (state) {
-    console.log('[Vuex] RESET_FIELD_MAPPINGS mutation called')
     state.fieldMappings = {
       mappings: [],
       unmappedFields: [],
@@ -632,7 +609,6 @@ const mutations = {
   },
 
   RESET_SUBTRANSFORMS (state) {
-    console.log('[Vuex] RESET_SUBTRANSFORMS mutation called')
     state.subTransforms = {
       skipSubTransforms: false,
       subTransformsList: [],
@@ -994,8 +970,6 @@ const actions = {
    */
   async clearState ({ commit, state }) {
     try {
-      console.log('[Vuex] clearState action called - resetting all wizard state')
-
       // Remove saved state from storage
       storage.remove(STORAGE_KEY)
 
@@ -1015,8 +989,6 @@ const actions = {
         commit('RESET_STEP_STATUS', i)
       }
 
-      console.log('[Vuex] clearState completed - all state reset')
-
       return true
     } catch (error) {
       console.error('Failed to clear wizard state:', error)
@@ -1033,16 +1005,8 @@ const actions = {
     commit('SET_POLICY_UPLOAD_ERROR', null)
 
     try {
-      console.log('[Vuex] uploadPolicyFile: Starting validation for file:', file?.name)
-
       // Validate the policy file
       const validationResult = await PolicyValidator.validatePolicyFile(file)
-
-      console.log('[Vuex] uploadPolicyFile: Validation result:', {
-        valid: validationResult.valid,
-        errorCount: validationResult.errors.length,
-        warningCount: validationResult.warnings.length
-      })
 
       // Store the file object
       commit('SET_UPLOADED_POLICY_FILE', file)
@@ -1063,8 +1027,6 @@ const actions = {
         commit('UPDATE_PROJECT_CONFIG', {
           existingPolicy: validationResult.policy
         })
-
-        console.log('[Vuex] uploadPolicyFile: Policy successfully uploaded and stored')
       } else {
         console.warn('[Vuex] uploadPolicyFile: Validation failed with errors:', validationResult.errors)
       }
@@ -1097,7 +1059,6 @@ const actions = {
   },
 
   clearPolicyFile ({ commit }) {
-    console.log('[Vuex] clearPolicyFile: Clearing uploaded policy')
     commit('CLEAR_UPLOADED_POLICY')
     commit('UPDATE_PROJECT_CONFIG', {
       existingPolicy: null,
@@ -1114,20 +1075,6 @@ const actions = {
       // This would integrate with the existing policy building functionality
       // (policyData is not used, so removed to fix lint error)
 
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [wizardModule] generatePolicy - Building policy from state')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ state.fieldMappings.mappings count:', state.fieldMappings.mappings?.length || 0)
-      console.log('║')
-      console.log('║ Field mappings from state:')
-      if (state.fieldMappings.mappings) {
-        state.fieldMappings.mappings.forEach((m, idx) => {
-          console.log(`║ [${idx}] inputRule:`, m.inputRule)
-          console.log(`║ [${idx}] lrSchemaField:`, m.lrSchemaField)
-        })
-      }
-      console.log('╚════════════════════════════════════════════════════════════════════════')
-
       // This would call the existing buildSmaPolicyTransformFromParams method
       // For now, create a basic policy structure
       const policy = {
@@ -1136,40 +1083,15 @@ const actions = {
         filter: state.filterRules.expression || null,
         schemarule: {},
         // Clean transforms - remove UI-only attributes like sampleValue and id
-        transforms: state.fieldMappings.mappings.map((mapping, idx) => {
-          console.log('╔════════════════════════════════════════════════════════════════════════')
-          console.log(`║ [wizardModule] Processing mapping [${idx}]`)
-          console.log('╠════════════════════════════════════════════════════════════════════════')
-          console.log('║ BEFORE cleaning:')
-          console.log('║   inputRule:', mapping.inputRule)
-          console.log('║   lrSchemaField:', mapping.lrSchemaField)
-          console.log('║   type:', mapping.type)
-          console.log('╚════════════════════════════════════════════════════════════════════════')
-
+        transforms: state.fieldMappings.mappings.map((mapping) => {
           const cleanMapping = { ...mapping }
           delete cleanMapping.sampleValue
           delete cleanMapping.id
           delete cleanMapping.originalInputRule // Remove UI tracking field
 
-          console.log('╔════════════════════════════════════════════════════════════════════════')
-          console.log(`║ [wizardModule] After cleaning [${idx}]`)
-          console.log('╠════════════════════════════════════════════════════════════════════════')
-          console.log('║ cleanMapping.inputRule:', cleanMapping.inputRule)
-          console.log('║ cleanMapping.lrSchemaField:', cleanMapping.lrSchemaField)
-          console.log('╚════════════════════════════════════════════════════════════════════════')
-
           return cleanMapping
         })
       }
-
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [wizardModule] Final transforms array for policy:')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      policy.transforms.forEach((t, idx) => {
-        console.log(`║ [${idx}] inputRule:`, t.inputRule)
-        console.log(`║ [${idx}] lrSchemaField:`, t.lrSchemaField || t.LRSchemaField)
-      })
-      console.log('╚════════════════════════════════════════════════════════════════════════')
 
       // Build schema rule section
       if (state.schemaRules.convertToJson && state.schemaRules.convertToJson.length > 0) {

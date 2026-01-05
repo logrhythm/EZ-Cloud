@@ -57,23 +57,15 @@ export class SchemaRuleService {
    */
   static findFanoutCandidates (parsedData, dataStructure) {
     if (!dataStructure) {
-      console.log('[findFanoutCandidates] No dataStructure provided')
       return []
     }
-
-    console.log('[findFanoutCandidates] dataStructure:', dataStructure)
-
     // Find all array fields in the structure
     const arrayPaths = DataProcessor.findArrayFields(dataStructure)
-    console.log('[findFanoutCandidates] arrayPaths returned:', arrayPaths)
-
     // Build array field objects with metadata
     const arrayFields = []
 
     for (const path of arrayPaths) {
-      console.log('[findFanoutCandidates] Analyzing path:', path)
       const arrayInfo = this._analyzeArrayField(path, dataStructure)
-      console.log('[findFanoutCandidates] arrayInfo for', path, ':', arrayInfo)
       if (arrayInfo) {
         // Normalize path using PathNormalizer to show array hierarchy with [*]
         // This converts paths like "$.arr1[0].childarr[1]" to "arr1[*].childarr[*]"
@@ -85,11 +77,8 @@ export class SchemaRuleService {
           path: normalizedPath,
           parentPath: normalizedParentPath
         })
-        console.log('[findFanoutCandidates] Normalized path:', normalizedPath, '| Parent:', normalizedParentPath)
       }
     }
-
-    console.log('[findFanoutCandidates] Final arrayFields:', arrayFields)
     return arrayFields
   }
 
@@ -126,7 +115,6 @@ export class SchemaRuleService {
    */
   static _findNodeByPath (targetPath, structure) {
     if (!structure || !targetPath) {
-      console.log('[_findNodeByPath] Invalid input - targetPath:', targetPath, 'structure:', structure)
       return null
     }
 
@@ -136,7 +124,6 @@ export class SchemaRuleService {
 
     // If this is the target node (compare normalized paths)
     if (normalizedStructure === normalizedTarget) {
-      console.log('[_findNodeByPath] Found match! targetPath:', targetPath, '-> structure.path:', structure.path)
       return structure
     }
 
@@ -201,21 +188,12 @@ export class SchemaRuleService {
    * @returns {Array} Childfanouts array structure for policy
    */
   static buildChildFanouts (selectedArrayPaths, allArrayFields) {
-    console.log('╔═══════════════════════════════════════════════════════════════════════')
-    console.log('║ [buildChildFanouts] START')
-    console.log('╠═══════════════════════════════════════════════════════════════════════')
-    console.log('║ selectedArrayPaths:', JSON.stringify(selectedArrayPaths))
-    console.log('║ allArrayFields count:', allArrayFields?.length || 0)
-    console.log('╚═══════════════════════════════════════════════════════════════════════')
-
     // Handle empty or invalid input
     if (!selectedArrayPaths || !Array.isArray(selectedArrayPaths) || selectedArrayPaths.length === 0) {
-      console.log('[buildChildFanouts] No selectedArrayPaths provided, returning empty array')
       return []
     }
 
     if (!allArrayFields || !Array.isArray(allArrayFields) || allArrayFields.length === 0) {
-      console.log('[buildChildFanouts] No allArrayFields metadata provided, using synthetic metadata')
       // If no metadata is provided, construct synthetic metadata for the selected paths
       const syntheticFields = selectedArrayPaths.map(path => ({
         path: path,
@@ -230,7 +208,6 @@ export class SchemaRuleService {
 
     // Normalize all paths to ensure they start with $ and have [*] notation
     const normalizedPaths = selectedArrayPaths.map(path => this._normalizeArrayPathForPolicy(path))
-    console.log('[buildChildFanouts] Normalized paths:', JSON.stringify(normalizedPaths))
 
     // Build parent-child relationships
     // Sort paths by depth (root arrays first, then nested arrays)
@@ -240,18 +217,12 @@ export class SchemaRuleService {
       return depthA - depthB
     })
 
-    console.log('[buildChildFanouts] Sorted paths by depth:', JSON.stringify(sortedPaths))
-
     const childfanouts = []
     // Map to track full path -> field value mapping
     const pathToFieldMap = new Map()
 
     // Process each path to determine its parent
     for (const currentPath of sortedPaths) {
-      console.log('╔═══════════════════════════════════════════════════════════════════════')
-      console.log('║ Processing path:', currentPath)
-      console.log('╚═══════════════════════════════════════════════════════════════════════')
-
       // Find the immediate parent (longest matching path that's not the current path)
       let parentFullPath = null
       let longestMatch = 0
@@ -277,8 +248,6 @@ export class SchemaRuleService {
           }
         }
       }
-
-      console.log('║ Found parent full path:', parentFullPath || 'null (root level)')
 
       // Determine the field path
       let fieldPath = currentPath
@@ -323,11 +292,8 @@ export class SchemaRuleService {
         if (currentPath.endsWith('[*]') && !fieldPath.endsWith('[*]')) {
           fieldPath += '[*]'
         }
-
-        console.log('║ Relative field path:', fieldPath)
       } else {
         // Root-level array - use absolute path as-is (already starts with $)
-        console.log('║ Absolute field path (root level):', fieldPath)
       }
 
       // Store the mapping of full path to field value
@@ -337,26 +303,14 @@ export class SchemaRuleService {
       // This ensures parentpath references the parent entry's field value
       const parentpathValue = parentFullPath ? pathToFieldMap.get(parentFullPath) : null
 
-      console.log('║ Parent field value (parentpath):', parentpathValue || 'null')
-
       // Add to childfanouts array
       childfanouts.push({
         field: fieldPath,
         parentpath: parentpathValue
       })
-
-      console.log('║ Added to childfanouts:', JSON.stringify({ field: fieldPath, parentpath: parentpathValue }))
     }
-
-    console.log('╔═══════════════════════════════════════════════════════════════════════')
-    console.log('║ [buildChildFanouts] COMPLETE')
-    console.log('╠═══════════════════════════════════════════════════════════════════════')
-    console.log('║ Total childfanouts:', childfanouts.length)
     childfanouts.forEach((cf, idx) => {
-      console.log(`║   [${idx}] field: "${cf.field}", parentpath: ${cf.parentpath ? '"' + cf.parentpath + '"' : 'null'}`)
     })
-    console.log('╚═══════════════════════════════════════════════════════════════════════')
-
     return childfanouts
   }
 
@@ -373,26 +327,16 @@ export class SchemaRuleService {
    * @returns {Object} Object with { datafanout: string|null, childfanouts: Array|null }
    */
   static buildDataFanoutStructure (selectedArrayPaths, allArrayFields) {
-    console.log('╔═══════════════════════════════════════════════════════════════════════')
-    console.log('║ [buildDataFanoutStructure] START')
-    console.log('╠═══════════════════════════════════════════════════════════════════════')
-    console.log('║ selectedArrayPaths:', JSON.stringify(selectedArrayPaths))
-    console.log('║ allArrayFields count:', allArrayFields?.length || 0)
-    console.log('╚═══════════════════════════════════════════════════════════════════════')
-
     // Handle empty or invalid input
     if (!selectedArrayPaths || !Array.isArray(selectedArrayPaths) || selectedArrayPaths.length === 0) {
-      console.log('[buildDataFanoutStructure] No selectedArrayPaths provided')
       return { datafanout: null, childfanouts: null }
     }
 
     // Normalize all paths
     const normalizedPaths = selectedArrayPaths.map(path => this._normalizeArrayPathForPolicy(path))
-    console.log('[buildDataFanoutStructure] Normalized paths:', JSON.stringify(normalizedPaths))
 
     // Rule 1: Single array selection
     if (normalizedPaths.length === 1) {
-      console.log('[buildDataFanoutStructure] Rule 1: Single array selection')
       return {
         datafanout: normalizedPaths[0],
         childfanouts: null
@@ -423,13 +367,8 @@ export class SchemaRuleService {
       }
     })
 
-    console.log('[buildDataFanoutStructure] Top-level arrays:', JSON.stringify(topLevelArrays))
-    console.log('[buildDataFanoutStructure] Child arrays:', JSON.stringify(childArrays))
-
     // Rule 2: Multiple arrays with one top-level array
     if (topLevelArrays.length === 1) {
-      console.log('[buildDataFanoutStructure] Rule 2: One top-level array with children')
-
       // Build childfanouts using existing method
       const childfanouts = this.buildChildFanouts(normalizedPaths, allArrayFields)
 
@@ -447,7 +386,6 @@ export class SchemaRuleService {
     }
 
     // Rule 3: Multiple top-level arrays
-    console.log('[buildDataFanoutStructure] Rule 3: Multiple top-level arrays')
     const childfanouts = this.buildChildFanouts(normalizedPaths, allArrayFields)
 
     return {
@@ -510,9 +448,6 @@ export class SchemaRuleService {
     if (!candidates || !Array.isArray(candidates) || candidates.length === 0) {
       return []
     }
-
-    console.log('[deduplicateFanoutCandidates] Input candidates:', candidates.length)
-
     // Use a Map with lowercase path as key to detect duplicates
     const uniqueCandidatesMap = new Map()
 
@@ -525,18 +460,10 @@ export class SchemaRuleService {
       // If we haven't seen this path (case-insensitive), add it
       if (!uniqueCandidatesMap.has(lowerPath)) {
         uniqueCandidatesMap.set(lowerPath, candidate)
-        console.log(`[deduplicateFanoutCandidates] ✓ Keeping: ${path}`)
-      } else {
-        // Duplicate found - keep the first occurrence
-        const existing = uniqueCandidatesMap.get(lowerPath)
-        console.log(`[deduplicateFanoutCandidates] ✗ Removing duplicate: ${path} (keeping: ${existing.path})`)
       }
     })
 
     const deduplicated = Array.from(uniqueCandidatesMap.values())
-    console.log('[deduplicateFanoutCandidates] Output candidates:', deduplicated.length)
-    console.log('[deduplicateFanoutCandidates] Removed duplicates:', candidates.length - deduplicated.length)
-
     return deduplicated
   }
 
@@ -1194,11 +1121,6 @@ export class SchemaRuleService {
    * @returns {Object} Parsing result with arrays and parsed structure
    */
   static parseJsonFieldForArrays (data, fieldPath) {
-    console.log('╔═══════════════════════════════════════════════════════════════════════')
-    console.log('║ [DEBUG SchemaRuleService.parseJsonFieldForArrays] Called')
-    console.log('║   fieldPath:', JSON.stringify(fieldPath))
-    console.log('╚═══════════════════════════════════════════════════════════════════════')
-
     const result = {
       success: false,
       parsedData: null,
@@ -1209,12 +1131,8 @@ export class SchemaRuleService {
     try {
       // Get the field value from the data
       const fieldValue = this._getValueByPath(data, fieldPath)
-      console.log('[DEBUG] Field value type:', typeof fieldValue)
-      console.log('[DEBUG] Field value length:', fieldValue?.length)
-
       if (!fieldValue || typeof fieldValue !== 'string') {
         result.error = 'Field is not a string'
-        console.log('[DEBUG] Error:', result.error)
         return result
       }
 
@@ -1222,25 +1140,13 @@ export class SchemaRuleService {
       const parsedValue = JSON.parse(fieldValue)
       result.parsedData = parsedValue
       result.success = true
-      console.log('[DEBUG] Successfully parsed JSON, type:', typeof parsedValue)
-
       // Find all array paths within the parsed structure
       result.arrayPaths = this._findArrayPathsInParsedJson(parsedValue, fieldPath)
-
-      console.log('╔═══════════════════════════════════════════════════════════════════════')
-      console.log('║ [DEBUG SchemaRuleService.parseJsonFieldForArrays] Result')
-      console.log('║   success:', result.success)
-      console.log('║   arrayPaths.length:', result.arrayPaths.length)
-      console.log('║   arrayPaths:')
       result.arrayPaths.forEach((arr, idx) => {
-        console.log(`║     [${idx}] path: "${arr.path}", parentPath: "${arr.parentPath}", isParsedField: ${arr.isParsedField}`)
       })
-      console.log('╚═══════════════════════════════════════════════════════════════════════')
-
       return result
     } catch (error) {
       result.error = `Failed to parse JSON: ${error.message}`
-      console.log('[DEBUG] Exception:', result.error)
       return result
     }
   }
@@ -1255,31 +1161,19 @@ export class SchemaRuleService {
    * @private
    */
   static _findArrayPathsInParsedJson (data, parentPath, currentPath = '') {
-    console.log('╔═══════════════════════════════════════════════════════════════════════')
-    console.log('║ [_findArrayPathsInParsedJson] CALLED')
-    console.log('║   data type:', typeof data, ', is array:', Array.isArray(data))
-    console.log('║   parentPath:', JSON.stringify(parentPath))
-    console.log('║   currentPath:', JSON.stringify(currentPath))
-    console.log('╚═══════════════════════════════════════════════════════════════════════')
-
     const arrayPaths = []
 
     // Normalize parentPath: Remove $.  prefix to ensure consistent path format
     // This ensures all generated fanout array paths are without the $. prefix
     const normalizedParentPath = parentPath.startsWith('$.') ? parentPath.substring(2) : parentPath
-    console.log('[_findArrayPathsInParsedJson] normalizedParentPath:', JSON.stringify(normalizedParentPath))
 
     // Helper to build the full path (without $. prefix)
     const buildFullPath = (subPath) => {
-      const fullPath = !subPath ? normalizedParentPath : `${normalizedParentPath}.${subPath}`
-      console.log(`[_findArrayPathsInParsedJson] buildFullPath('${subPath}') => '${fullPath}'`)
-      return fullPath
+      return !subPath ? normalizedParentPath : `${normalizedParentPath}.${subPath}`
     }
 
     // Recursive traversal with parent array tracking
     const traverse = (obj, path = '', insideArrayContext = null) => {
-      console.log(`[_findArrayPathsInParsedJson.traverse] path='${path}', insideArrayContext='${insideArrayContext}'`)
-
       if (obj === null || obj === undefined) return
 
       if (Array.isArray(obj)) {
@@ -1292,17 +1186,6 @@ export class SchemaRuleService {
         const relativePath = isNestedArray
           ? path.replace(/^\$\./, '') // Remove $. prefix for relative paths
           : path || '(root)'
-
-        console.log('╔═══════════════════════════════════════════════════════════════════════')
-        console.log('║ [traverse] FOUND ARRAY')
-        console.log('║   path:', JSON.stringify(path))
-        console.log('║   fullPath:', JSON.stringify(fullPath))
-        console.log('║   relativePath:', JSON.stringify(relativePath))
-        console.log('║   isNestedArray:', isNestedArray)
-        console.log('║   insideArrayContext:', JSON.stringify(insideArrayContext))
-        console.log('║   parentPath will be:', JSON.stringify(isNestedArray ? insideArrayContext : normalizedParentPath))
-        console.log('╚═══════════════════════════════════════════════════════════════════════')
-
         arrayPaths.push({
           path: fullPath,
           relativePath: relativePath,
@@ -1319,7 +1202,6 @@ export class SchemaRuleService {
         if (obj.length > 0 && typeof obj[0] === 'object' && obj[0] !== null) {
           // Continue traversal inside the array element, marking we're in an array context
           // Start with empty string so fieldPath builds correctly from root
-          console.log(`[traverse] Calling traverseObject for array element at '${fullPath}'`)
           traverseObject(obj[0], '', fullPath)
         }
       } else if (typeof obj === 'object') {
@@ -1375,22 +1257,10 @@ export class SchemaRuleService {
 
     // CRITICAL: Normalize all paths using PathNormalizer to ensure consistent format
     // This prevents duplicates caused by different path formats
-    console.log('╔═══════════════════════════════════════════════════════════════════════')
-    console.log('║ [_findArrayPathsInParsedJson] Normalizing paths')
-    console.log('╚═══════════════════════════════════════════════════════════════════════')
-
     const normalizedArrayPaths = arrayPaths.map(arrayPath => {
-      const originalPath = arrayPath.path
-      const originalParentPath = arrayPath.parentPath
-
       // Normalize both path and parentPath using PathNormalizer
       const normalizedPath = PathNormalizer.normalize(arrayPath.path)
       const normalizedParentPath = arrayPath.parentPath ? PathNormalizer.normalize(arrayPath.parentPath) : null
-
-      console.log(`  Original path: "${originalPath}" → Normalized: "${normalizedPath}"`)
-      if (arrayPath.parentPath) {
-        console.log(`  Original parentPath: "${originalParentPath}" → Normalized: "${normalizedParentPath}"`)
-      }
 
       return {
         ...arrayPath,
@@ -1398,15 +1268,6 @@ export class SchemaRuleService {
         parentPath: normalizedParentPath
       }
     })
-
-    console.log('╔═══════════════════════════════════════════════════════════════════════')
-    console.log('║ [_findArrayPathsInParsedJson] Final result after normalization')
-    console.log('║   arrayPaths.length:', normalizedArrayPaths.length)
-    normalizedArrayPaths.forEach((arr, idx) => {
-      console.log(`║     [${idx}] path: "${arr.path}", parentPath: "${arr.parentPath || 'N/A'}"`)
-    })
-    console.log('╚═══════════════════════════════════════════════════════════════════════')
-
     return normalizedArrayPaths
   }
 
@@ -1495,12 +1356,6 @@ export class SchemaRuleService {
    * @returns {Array} Combined fanout candidates
    */
   static mergeParsedArraysIntoFanoutCandidates (existingCandidates, parsedArrays) {
-    console.log('╔═══════════════════════════════════════════════════════════════════════')
-    console.log('║ [DEBUG mergeParsedArraysIntoFanoutCandidates] Called')
-    console.log('║   existingCandidates.length:', existingCandidates.length)
-    console.log('║   parsedArrays.length:', parsedArrays.length)
-    console.log('╚═══════════════════════════════════════════════════════════════════════')
-
     // Create a map of existing candidates by NORMALIZED path for proper deduplication
     // Normalize paths to avoid duplicates due to different formats (with/without $. prefix)
     const candidateMap = new Map()
@@ -1515,52 +1370,30 @@ export class SchemaRuleService {
     }
 
     // Add existing candidates
-    console.log('[DEBUG] Adding existing candidates:')
     for (const candidate of existingCandidates) {
       const normalizedPath = normalizePath(candidate.path)
-      console.log(`  "${candidate.path}" → normalized: "${normalizedPath}"`)
-
       // Only add if not already present (first wins in case of duplicates)
       if (!candidateMap.has(normalizedPath)) {
         candidateMap.set(normalizedPath, {
           ...candidate,
           path: candidate.path // Keep original path format
         })
-        console.log('    ✓ Added to map')
-      } else {
-        console.log('    ✗ Duplicate detected, skipping')
       }
     }
 
     // Add parsed arrays
-    console.log('[DEBUG] Adding parsed arrays:')
     for (const parsedArray of parsedArrays) {
       const normalizedPath = normalizePath(parsedArray.path)
-      console.log(`  "${parsedArray.path}" → normalized: "${normalizedPath}"`)
-
       // Only add if not already present
       if (!candidateMap.has(normalizedPath)) {
         candidateMap.set(normalizedPath, {
           ...parsedArray,
           path: parsedArray.path // Keep original path format
         })
-        console.log('    ✓ Added to map')
-      } else {
-        console.log('    ✗ Duplicate detected, skipping')
       }
     }
 
     const result = Array.from(candidateMap.values())
-
-    console.log('╔═══════════════════════════════════════════════════════════════════════')
-    console.log('║ [DEBUG mergeParsedArraysIntoFanoutCandidates] Result')
-    console.log('║   result.length:', result.length)
-    console.log('║   Final merged candidates:')
-    result.forEach((c, idx) => {
-      console.log(`║     [${idx}] path: "${c.path}", isParsedField: ${c.isParsedField}, parentPath: "${c.parentPath || 'N/A'}"`)
-    })
-    console.log('╚═══════════════════════════════════════════════════════════════════════')
-
     return result
   }
 
@@ -1571,44 +1404,12 @@ export class SchemaRuleService {
    * @returns {Array} Updated fanout candidates
    */
   static removeParsedArraysFromField (candidates, jsonFieldPath) {
-    console.log('╔═══════════════════════════════════════════════════════════════════════')
-    console.log('║ [DEBUG SchemaRuleService.removeParsedArraysFromField] Called')
-    console.log('╠═══════════════════════════════════════════════════════════════════════')
-    console.log('║ Input jsonFieldPath:', JSON.stringify(jsonFieldPath))
-    console.log('║ Input candidates.length:', candidates.length)
-    console.log('║ Input candidates:')
-    candidates.forEach((c, idx) => {
-      console.log(`║   [${idx}] path: "${c.path}", isParsedField: ${c.isParsedField}, parentPath: "${c.parentPath || 'N/A'}"`)
-    })
-    console.log('╠═══════════════════════════════════════════════════════════════════════')
-    console.log('║ Filtering Logic:')
-    console.log('║   Remove if: (isParsedField === true) AND (parentPath === "' + jsonFieldPath + '")')
-    console.log('╚═══════════════════════════════════════════════════════════════════════')
-
     // Filter out candidates that came from this parsed field
     const filtered = candidates.filter(candidate => {
       // Check if this candidate is from the parsed field
       const shouldRemove = candidate.isParsedField && candidate.parentPath === jsonFieldPath
-
-      if (shouldRemove) {
-        console.log(`║   [REMOVING] path: "${candidate.path}", isParsedField: ${candidate.isParsedField}, parentPath: "${candidate.parentPath}"`)
-      } else {
-        console.log(`║   [KEEPING] path: "${candidate.path}", isParsedField: ${candidate.isParsedField}, parentPath: "${candidate.parentPath || 'N/A'}"`)
-      }
-
       return !shouldRemove
     })
-
-    console.log('╔═══════════════════════════════════════════════════════════════════════')
-    console.log('║ [DEBUG SchemaRuleService.removeParsedArraysFromField] Result')
-    console.log('║ Original count:', candidates.length, '→ Filtered count:', filtered.length)
-    console.log('║ Removed:', candidates.length - filtered.length, 'candidates')
-    console.log('║ Filtered candidates:')
-    filtered.forEach((c, idx) => {
-      console.log(`║   [${idx}] path: "${c.path}", isParsedField: ${c.isParsedField}, parentPath: "${c.parentPath || 'N/A'}"`)
-    })
-    console.log('╚═══════════════════════════════════════════════════════════════════════')
-
     return filtered
   }
 

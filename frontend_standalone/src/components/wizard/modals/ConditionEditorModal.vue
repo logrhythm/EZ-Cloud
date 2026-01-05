@@ -360,11 +360,20 @@ export default {
   },
 
   computed: {
-    ...mapState('wizard', ['sampleData']),
+    ...mapState('wizard', ['sampleData', 'filterRules']),
 
     // Get fanout arrays from Vuex (same as TransformEditorModal)
     fanoutArrays () {
       return this.$store.getters['wizard/getFanoutArrays']
+    },
+
+    // CRITICAL FIX: Use filterRules.availableFields (SAME as TransformEditorModal)
+    // This ensures parsed JSON fields from Step 3 are included
+    allAvailableFields () {
+      if (!this.filterRules || !this.filterRules.availableFields || !Array.isArray(this.filterRules.availableFields)) {
+        return []
+      }
+      return this.filterRules.availableFields
     },
 
     fieldOptions () {
@@ -372,19 +381,6 @@ export default {
         if (!Array.isArray(this.availableFields)) {
           return []
         }
-
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [ConditionEditorModal] Computing fieldOptions')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log(`║ Total available fields: ${this.availableFields.length}`)
-
-        // Count fields from JSON strings
-        const jsonStringFields = this.availableFields.filter(f => f.isFromJsonString)
-        console.log(`║ Fields from JSON strings: ${jsonStringFields.length}`)
-
-        // Count normal fields
-        const normalFields = this.availableFields.filter(f => !f.isFromJsonString)
-        console.log(`║ Normal fields: ${normalFields.length}`)
 
         const uniqueFields = []
         const seenValues = new Set()
@@ -409,25 +405,9 @@ export default {
           }
         }
 
-        console.log(`║ Unique field options: ${uniqueFields.length}`)
-        console.log(`║ Field options with fanout: ${uniqueFields.filter(f => f.fanoutParent).length}`)
-
-        // Log sample fields for verification
-        if (uniqueFields.length > 0) {
-          console.log('║ Sample normal fields:')
-          uniqueFields.filter(f => !f.isJsonField).slice(0, 3)
-            .forEach(f => console.log(`║   - ${f.label} (${f.type})${f.fanoutParent ? ` [Fanout: ${f.fanoutParent}]` : ''}`))
-
-          console.log('║ Sample JSON string fields:')
-          uniqueFields.filter(f => f.isJsonField).slice(0, 3)
-            .forEach(f => console.log(`║   - ${f.label} (${f.type})${f.fanoutParent ? ` [Fanout: ${f.fanoutParent}]` : ''}`))
-        }
-
-        console.log('╚════════════════════════════════════════════════════════════════════════')
-
         return uniqueFields
       } catch (error) {
-        console.error('[ConditionEditorModal] Error formatting field options:', error)
+        console.error('[ConditionEditorModal] Error building field options:', error)
         return []
       }
     }
@@ -437,9 +417,7 @@ export default {
     value: {
       immediate: true,
       handler (newVal) {
-        console.log('[ConditionEditorModal] value changed to:', newVal)
         if (newVal) {
-          console.log('[ConditionEditorModal] Initializing modal...')
           this.initializeModal()
         }
       }
@@ -447,14 +425,8 @@ export default {
     condition: {
       immediate: false,
       handler (newVal, oldVal) {
-        console.log('[ConditionEditorModal] condition prop changed:', {
-          old: oldVal,
-          new: newVal,
-          dialogOpen: this.value
-        })
         // Re-initialize if dialog is already open and condition changes
         if (this.value && newVal !== oldVal) {
-          console.log('[ConditionEditorModal] Re-initializing with new condition...')
           this.initializeModal()
         }
       }
@@ -463,90 +435,63 @@ export default {
 
   methods: {
     initializeModal () {
-      console.log('[ConditionEditorModal] ========== INITIALIZE MODAL ==========')
-      console.log('[ConditionEditorModal] Existing condition prop:', this.condition)
-
       // Extract fields from sample data
       this.extractFieldsFromSampleData()
 
-      console.log('[ConditionEditorModal] Available fields extracted:', this.availableFields.length)
-      console.log('[ConditionEditorModal] Field options:', JSON.parse(JSON.stringify(this.fieldOptions)))
-
       // Parse existing condition
       if (this.condition) {
-        console.log('[ConditionEditorModal] Parsing existing condition...')
         this.parseExistingCondition(this.condition)
       } else {
-        console.log('[ConditionEditorModal] No existing condition, starting fresh')
         this.localConditions = []
         this.generatedExpression = ''
       }
-
-      console.log('[ConditionEditorModal] Initialization complete, localConditions:', JSON.parse(JSON.stringify(this.localConditions)))
-      console.log('[ConditionEditorModal] ========== INITIALIZE MODAL END ==========')
     },
 
     extractFieldsFromSampleData () {
       try {
-        const data = this.sampleData
-        const schemaRules = this.$store.state.wizard.schemaRules
-
-        if (!data || !data.parsedData || !data.dataStructure) {
+        // CRITICAL FIX: Use allAvailableFields from filterRules (SAME as TransformEditorModal)
+        // This ensures all fields from Step 4, including parsed JSON fields from Step 3, are included
+        if (!this.allAvailableFields || this.allAvailableFields.length === 0) {
+          console.warn('[ConditionEditorModal] No available fields from filterRules')
           this.availableFields = []
           return
         }
 
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [ConditionEditorModal] extractFieldsFromSampleData - START')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log('║ Using MappingService.extractJsonPaths (same as Step 5 Source Field dropdown)')
-
-        // Import MappingService to use the same field extraction as Step 5
+        // Import MappingService for fanout resolution
         const MappingService = require('../../../services/wizard/mappingService').MappingService
 
-        // Use MappingService.extractJsonPaths - SAME as Step 5's Source Field dropdown
-        const jsonPaths = MappingService.extractJsonPaths(
-          data.parsedData,
-          data.dataStructure,
-          {
-            jsonToStringFields: schemaRules?.convertToJson || [],
-            parsedStringifiedFields: schemaRules?.parsedStringifiedJsonFields || {}
-          }
-        )
-
-        console.log('║ Total JSON paths extracted:', jsonPaths.length)
-        console.log('║ Fanout arrays:', JSON.stringify(this.fanoutArrays))
-        console.log('║ Fanout arrays count:', this.fanoutArrays.length)
-
         // Convert to the format expected by ConditionEditorModal
-        // MappingService returns: { label, value, type, sampleValue }
-        // We need: { label, value, type, sampleValues, path, isJsonField, fanoutParent }
-        this.availableFields = jsonPaths.map(pathObj => {
-          // Determine if this is from a JSON string field by checking if it contains parsed field markers
-          const isFromJsonString = pathObj.label?.includes('(parsed)') || false
+        // Transform each field from filterRules.availableFields (same source as TransformEditorModal)
+        this.availableFields = this.allAvailableFields.map(field => {
+          // Handle both string and object formats
+          let absolutePath = typeof field === 'string' ? field : (field.path || field.value || field)
 
-          // Get the absolute path and NORMALIZE array indices [0], [1], [2] to [*]
+          // CRITICAL: Normalize array indices [0], [1], [2] to [*] BEFORE resolving fanout
           // This ensures paths like $.teamMembers[0].name become $.teamMembers[*].name
-          let absolutePath = pathObj.value || ''
           absolutePath = absolutePath.replace(/\[(\d+)\]/g, '[*]')
 
           // Use MappingService.resolvePathForFanout to get fanout information (SAME as TransformEditorModal)
           const resolved = MappingService.resolvePathForFanout(absolutePath, this.fanoutArrays)
-
-          console.log(`║ Field: ${absolutePath} → Resolved: ${resolved.jsonPath}, Fanout: ${resolved.fanoutParent || 'none'}`)
 
           // CRITICAL: Convert $ prefix to @ prefix for filter expressions
           // Fields in filter expressions use @ notation (e.g., @.name, @.id)
           // while JSONPath uses $ notation (e.g., $.name, $.id)
           const displayPath = resolved.jsonPath.replace(/^\$/, '@')
 
+          // Determine if this is from a JSON string field
+          const isFromJsonString = (typeof field === 'object' && field.isFromJsonString) ||
+                                   (typeof field === 'string' && field.includes('(parsed)'))
+
+          // Get sample value
+          const sampleValue = typeof field === 'object' ? field.sampleValue : null
+
           // Use the RESOLVED path (relative to fanout) with @ prefix as label and value
           // This ensures fields within fanout arrays show as @.id instead of $.teamMembers[*].id
           return {
             label: displayPath, // Use @ prefix for filter expressions (e.g., @.id for fanout fields)
             value: displayPath, // Use @ prefix as value
-            type: pathObj.type || 'string',
-            sampleValues: pathObj.sampleValue ? [pathObj.sampleValue] : [],
+            type: (typeof field === 'object' ? field.type : null) || 'string',
+            sampleValues: sampleValue ? [sampleValue] : [],
             path: displayPath, // Use @ prefix path
             isJsonField: isFromJsonString,
             isFromJsonString: isFromJsonString,
@@ -554,42 +499,23 @@ export default {
           }
         })
 
-        console.log('║ Total available fields:', this.availableFields.length)
-        console.log('║ Fields from JSON-to-String fields:',
-          this.availableFields.filter(f => f.isFromJsonString).length)
-
-        // Log sample fields for debugging
-        if (this.availableFields.length > 0) {
-          const normalFields = this.availableFields.filter(f => !f.isFromJsonString).slice(0, 3)
-          const jsonStringFields = this.availableFields.filter(f => f.isFromJsonString).slice(0, 3)
-
-          console.log('║ Sample normal fields:')
-          normalFields.forEach(f => console.log(`║   - ${f.path} (${f.type})`))
-
-          if (jsonStringFields.length > 0) {
-            console.log('║ Sample JSON string fields:')
-            jsonStringFields.forEach(f => console.log(`║   - ${f.path} (${f.type})`))
-          }
-        }
-
-        console.log('╚════════════════════════════════════════════════════════════════════════')
+        console.log('[ConditionEditorModal] Extracted fields from filterRules:', {
+          totalFields: this.availableFields.length,
+          jsonFields: this.availableFields.filter(f => f.isJsonField).length,
+          fanoutFields: this.availableFields.filter(f => f.fanoutParent).length
+        })
       } catch (error) {
-        console.error('[ConditionEditorModal] Error extracting fields:', error)
+        console.error('[ConditionEditorModal] Error extracting fields from sample data:', error)
         this.availableFields = []
       }
     },
 
     parseExistingCondition (conditionString) {
       try {
-        console.log('[ConditionEditorModal] parseExistingCondition called with:', conditionString)
-
         // Use FilterRuleService's robust parser instead of custom parsing
         const parseResult = FilterRuleService.parseFilterExpression(conditionString)
 
-        console.log('[ConditionEditorModal] Parse result:', JSON.parse(JSON.stringify(parseResult)))
-
         if (!parseResult.success || !parseResult.conditions || parseResult.conditions.length === 0) {
-          console.warn('[ConditionEditorModal] Failed to parse condition or no conditions found')
           this.localConditions = []
           this.updateFilterExpression()
           return
@@ -610,22 +536,17 @@ export default {
           }
         })
 
-        console.log('[ConditionEditorModal] Mapped conditions with field types:', JSON.parse(JSON.stringify(conditions)))
-
         this.localConditions = conditions
         this.updateFilterExpression()
       } catch (error) {
-        console.error('[ConditionEditorModal] Error parsing condition:', error)
+        console.error('[ConditionEditorModal] Error parsing existing condition:', { conditionString, error })
         this.localConditions = []
       }
     },
 
     addCondition () {
-      console.log('[ConditionEditorModal] ========== ADD CONDITION ==========')
-      console.log('[ConditionEditorModal] Available fields:', this.availableFields.length)
-
       if (!Array.isArray(this.availableFields) || this.availableFields.length === 0) {
-        console.error('[ConditionEditorModal] No fields available for new condition')
+        console.error('[ConditionEditorModal] Cannot add condition: No fields available')
         this.$q.notify({
           type: 'warning',
           message: 'No fields available',
@@ -635,7 +556,6 @@ export default {
       }
 
       const newIndex = this.localConditions.length
-      console.log('[ConditionEditorModal] New condition will be at index:', newIndex)
 
       const newCondition = {
         id: `condition-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -646,11 +566,7 @@ export default {
         logicalOperator: 'AND'
       }
 
-      console.log('[ConditionEditorModal] New condition object:', JSON.parse(JSON.stringify(newCondition)))
-
       this.localConditions.push(newCondition)
-
-      console.log('[ConditionEditorModal] localConditions after push:', JSON.parse(JSON.stringify(this.localConditions)))
 
       this.$set(this.conditionValidation, newIndex, {
         isValid: true,
@@ -658,8 +574,6 @@ export default {
       })
 
       this.debouncedUpdateExpression()
-
-      console.log('[ConditionEditorModal] ========== ADD CONDITION END ==========')
     },
 
     removeCondition (index) {
@@ -704,27 +618,15 @@ export default {
     },
 
     onFieldChange (index, value) {
-      console.log('[ConditionEditorModal] ========== FIELD CHANGE START ==========')
-      console.log('[ConditionEditorModal] onFieldChange called with:', {
-        index,
-        value,
-        valueType: typeof value
-      })
-      console.log('[ConditionEditorModal] localConditions array length:', this.localConditions.length)
-      console.log('[ConditionEditorModal] localConditions BEFORE:', JSON.parse(JSON.stringify(this.localConditions)))
-
       if (typeof index !== 'number' || index < 0 || index >= this.localConditions.length) {
-        console.error('[ConditionEditorModal] Invalid index, returning:', { index, arrayLength: this.localConditions.length })
+        console.error('[ConditionEditorModal] Invalid index in onFieldChange:', { index, value })
         return
       }
 
       const condition = this.localConditions[index]
-      console.log('[ConditionEditorModal] Current condition object:', JSON.parse(JSON.stringify(condition)))
-      console.log('[ConditionEditorModal] Current condition.field:', condition.field)
 
       // Create updated condition with new field value
       const conditionWithNewField = { ...condition, field: value }
-      console.log('[ConditionEditorModal] Condition with new field:', JSON.parse(JSON.stringify(conditionWithNewField)))
 
       // Update field type based on selected field
       const updatedCondition = FilterRuleService.updateConditionFieldType(
@@ -732,20 +634,12 @@ export default {
         this.availableFields
       )
 
-      console.log('[ConditionEditorModal] After FilterRuleService.updateConditionFieldType:', JSON.parse(JSON.stringify(updatedCondition)))
-      console.log('[ConditionEditorModal] Updated fieldType:', updatedCondition.fieldType)
-
       // Reset operator and value when field changes
       updatedCondition.operator = '=='
       updatedCondition.value = ''
 
-      console.log('[ConditionEditorModal] Final updatedCondition (with reset operator/value):', JSON.parse(JSON.stringify(updatedCondition)))
-
       // Use $set to ensure Vue 2 reactivity for array element replacement
       this.$set(this.localConditions, index, updatedCondition)
-
-      console.log('[ConditionEditorModal] localConditions AFTER $set:', JSON.parse(JSON.stringify(this.localConditions)))
-      console.log('[ConditionEditorModal] Verify field was set:', this.localConditions[index].field)
 
       // Reset validation for this condition
       this.$set(this.conditionValidation, index, {
@@ -753,33 +647,23 @@ export default {
         errorMessage: ''
       })
 
-      console.log('[ConditionEditorModal] Validation reset for index:', index)
-
       // Update the generated expression
       this.debouncedUpdateExpression()
-
-      console.log('[ConditionEditorModal] ========== FIELD CHANGE END ==========')
     },
 
     onOperatorChange (index, value) {
-      console.log('[ConditionEditorModal] onOperatorChange called:', { index, value })
-
       if (typeof index !== 'number' || index < 0 || index >= this.localConditions.length) {
-        console.error('[ConditionEditorModal] Invalid index in onOperatorChange')
+        console.error('[ConditionEditorModal] Invalid index in onOperatorChange:', { index, value })
         return
       }
 
       const condition = this.localConditions[index]
-      console.log('[ConditionEditorModal] Current condition before operator change:', JSON.parse(JSON.stringify(condition)))
 
       // Create updated condition with new operator
       const updatedCondition = { ...condition, operator: value }
-      console.log('[ConditionEditorModal] Updated condition with new operator:', JSON.parse(JSON.stringify(updatedCondition)))
 
       // Use $set for Vue 2 reactivity
       this.$set(this.localConditions, index, updatedCondition)
-
-      console.log('[ConditionEditorModal] Operator change complete, condition:', JSON.parse(JSON.stringify(this.localConditions[index])))
 
       this.debouncedUpdateExpression()
     },
@@ -838,7 +722,7 @@ export default {
         const fieldType = condition.fieldType || 'string'
         return FilterRuleService.getOperatorsForFieldType(fieldType)
       } catch (error) {
-        console.error('[ConditionEditorModal] Error getting operators:', error)
+        console.error('[ConditionEditorModal] Error getting operators for condition:', { condition, error })
         return []
       }
     },
@@ -856,7 +740,7 @@ export default {
         const field = this.availableFields.find(f => f && f.label === fieldLabel)
         return field && Array.isArray(field.sampleValues) ? field.sampleValues : []
       } catch (error) {
-        console.error('[ConditionEditorModal] Error getting sample values:', error)
+        console.error('[ConditionEditorModal] Error getting sample values for field:', { fieldLabel, error })
         return []
       }
     },
@@ -883,7 +767,7 @@ export default {
 
         return validation
       } catch (error) {
-        console.error('[ConditionEditorModal] Error validating condition value:', error)
+        console.error('[ConditionEditorModal] Error validating condition value:', { index, error })
         this.$set(this.conditionValidation, index, {
           isValid: true,
           errorMessage: ''
@@ -949,7 +833,7 @@ export default {
 
         this.generatedExpression = expression || ''
       } catch (error) {
-        console.error('[ConditionEditorModal] Error building filter expression:', error)
+        console.error('[ConditionEditorModal] Error updating filter expression:', { conditions: this.localConditions, error })
         this.generatedExpression = ''
       }
     },

@@ -100,9 +100,6 @@ class ThemeService {
       // Setup transitions after initial theme is applied
       this._setupThemeTransitions()
 
-      // Log successful initialization
-      console.info('Theme service initialized with dark theme')
-
       // Notify listeners after setup is complete
       setTimeout(() => {
         this._notifyListeners(true)
@@ -166,8 +163,6 @@ class ThemeService {
   cleanup () {
     // Clear all theme change listeners
     this._listeners = []
-
-    console.info('Theme service cleanup completed')
   }
 
   // Private methods
@@ -204,8 +199,6 @@ class ThemeService {
 
       // Notify via theme event bus
       themeEventBus.emit(THEME_EVENTS.THEME_CHANGED, { isDarkMode: true })
-
-      console.info('Applied dark theme successfully')
     } catch (error) {
       console.error('Error applying theme:', error)
     } finally {
@@ -232,8 +225,6 @@ class ThemeService {
         // Now it's safe to enable transitions
         document.documentElement.classList.remove('theme-transition-disabled')
         document.documentElement.classList.add('theme-transitions-enabled')
-
-        console.info('Theme transitions enabled')
       })
     })
   }

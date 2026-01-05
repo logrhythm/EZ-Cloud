@@ -431,14 +431,6 @@ export default {
 
     // Build JSON path options from ALL available fields, with fanout info from Step 5
     jsonPathOptions () {
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [TransformEditorModal] jsonPathOptions - Computing options with fanout resolution')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ allAvailableFields count:', this.allAvailableFields.length)
-      console.log('║ fanoutArrays:', JSON.stringify(this.fanoutArrays))
-      console.log('║ fanoutArrays count:', this.fanoutArrays.length)
-      console.log('╚════════════════════════════════════════════════════════════════════════')
-
       // Use MappingService.resolvePathForFanout to properly transform paths based on fanout rules
       const allPaths = this.allAvailableFields.map(field => {
         // Handle both string and object formats
@@ -448,16 +440,8 @@ export default {
         // This ensures paths like $.teamMembers[0].name become $.teamMembers[*].name
         absolutePath = absolutePath.replace(/\[(\d+)\]/g, '[*]')
 
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ Processing field:', absolutePath)
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-
         // Use MappingService to resolve path based on fanout arrays (implements all 5 rules)
         const resolved = MappingService.resolvePathForFanout(absolutePath, this.fanoutArrays)
-
-        console.log('║ Resolved path:', resolved.jsonPath)
-        console.log('║ Fanout parent:', resolved.fanoutParent)
-        console.log('╚════════════════════════════════════════════════════════════════════════')
 
         // Return the RESOLVED path (relative to fanout) as the display value
         // But keep the absolute path as metadata for reference
@@ -491,20 +475,6 @@ export default {
       })
 
       const result = Array.from(uniqueMap.values())
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [TransformEditorModal] jsonPathOptions - Final result')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ Total options:', result.length)
-      console.log('║ Options with fanout:', result.filter(r => r.fanoutParent).length)
-      console.log('║ Sample options with fanout:')
-      result.filter(r => r.fanoutParent).slice(0, 5).forEach(opt => {
-        console.log('║   - Label:', opt.label, '→ Fanout:', opt.fanoutParent)
-      })
-      console.log('║ Sample options without fanout:')
-      result.filter(r => !r.fanoutParent).slice(0, 5).forEach(opt => {
-        console.log('║   - Label:', opt.label)
-      })
-      console.log('╚════════════════════════════════════════════════════════════════════════')
 
       return result
     },
@@ -520,9 +490,7 @@ export default {
     value: {
       immediate: true,
       handler (newVal) {
-        console.log('[TransformEditorModal] value changed to:', newVal)
         if (newVal) {
-          console.log('[TransformEditorModal] Initializing modal...')
           this.initializeModal()
         }
       }
@@ -538,13 +506,11 @@ export default {
 
     'transformForm.lrSchemaField': {
       handler (newVal) {
-        console.log('[TransformEditorModal] lrSchemaField changed to:', newVal)
       }
     },
 
     'transformForm.type': {
       handler (newVal) {
-        console.log('[TransformEditorModal] type changed to:', newVal)
       }
     }
   },
@@ -573,12 +539,6 @@ export default {
           type: parsed.type,
           parameters: parsed.parameters || {}
         }
-
-        console.log('[TransformEditorModal] Edit mode - Parsed operation:', {
-          type: parsed.type,
-          fieldPath: parsed.fieldPath,
-          parameters: parsed.parameters
-        })
 
         this.transformForm = {
           inputRule: inputRuleValue,
@@ -628,18 +588,10 @@ export default {
     },
 
     onJsonPathSelected (value) {
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [TransformEditorModal] onJsonPathSelected - START')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ Raw value:', value)
-      console.log('║ Type:', typeof value)
-      console.log('╚════════════════════════════════════════════════════════════════════════')
-
       // Handle both object and string values from q-select
       let selectedValue = value
       if (typeof value === 'object' && value !== null) {
         selectedValue = value.value
-        console.log('║ Extracted value from object:', selectedValue)
       }
 
       // Store the original field path (without operation syntax)
@@ -649,33 +601,10 @@ export default {
       this.transformForm.inputRule = selectedValue
 
       // Find the selected path with fanout info and sample value
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [TransformEditorModal] Searching for selected path in jsonPathOptions')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ Looking for:', selectedValue)
-      console.log('║ Total options:', this.jsonPathOptions.length)
-      console.log('╚════════════════════════════════════════════════════════════════════════')
 
       const selectedPath = this.jsonPathOptions.find(opt =>
         opt.value === selectedValue
       )
-
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [TransformEditorModal] Search result:')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      if (selectedPath) {
-        console.log('║ ✓ FOUND selected path object')
-        console.log('║   value:', selectedPath.value)
-        console.log('║   label:', selectedPath.label)
-        console.log('║   fanoutParent:', selectedPath.fanoutParent)
-      } else {
-        console.log('║ ✗ NOT FOUND - selectedPath is null/undefined')
-        console.log('║ Available options (first 5):')
-        this.jsonPathOptions.slice(0, 5).forEach((opt, idx) => {
-          console.log(`║   [${idx}] value: ${opt.value}, fanoutParent: ${opt.fanoutParent}`)
-        })
-      }
-      console.log('╚════════════════════════════════════════════════════════════════════════')
 
       // Get sample value from available fields
       if (!this.transformForm.sampleValue && this.allAvailableFields.length > 0) {
@@ -685,24 +614,12 @@ export default {
         })
         if (fieldOption && typeof fieldOption === 'object' && fieldOption.sampleValue) {
           this.transformForm.sampleValue = fieldOption.sampleValue
-          console.log('║ Found sample value:', this.transformForm.sampleValue)
         }
       }
 
       // Auto-populate fanout parent if available
       if (selectedPath && selectedPath.fanoutParent) {
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [TransformEditorModal] ✓ AUTO-POPULATING FANOUT PARENT')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log('║ Fanout parent value:', selectedPath.fanoutParent)
-        console.log('║ Before update - transformForm.fanoutParentElement:', this.transformForm.fanoutParentElement)
-        console.log('╚════════════════════════════════════════════════════════════════════════')
-
         this.transformForm.fanoutParentElement = selectedPath.fanoutParent
-
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ After update - transformForm.fanoutParentElement:', this.transformForm.fanoutParentElement)
-        console.log('╚════════════════════════════════════════════════════════════════════════')
 
         // Show notification
         this.$q.notify({
@@ -714,25 +631,12 @@ export default {
           icon: 'info'
         })
       } else {
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [TransformEditorModal] ✗ NO FANOUT PARENT FOUND')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log('║ selectedPath exists?', !!selectedPath)
-        console.log('║ selectedPath.fanoutParent:', selectedPath?.fanoutParent)
-        console.log('║ Reason: ', !selectedPath ? 'Path not found in jsonPathOptions' : 'Path has no fanoutParent property')
-        console.log('╚════════════════════════════════════════════════════════════════════════')
-
         // Clear fanout parent if switching to a non-fanout field
         this.transformForm.fanoutParentElement = null
       }
 
       // Trigger smart suggestions for the new path
       this.generateSmartSuggestions()
-
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [TransformEditorModal] onJsonPathSelected - END')
-      console.log('║ Final transformForm.fanoutParentElement:', this.transformForm.fanoutParentElement)
-      console.log('╚════════════════════════════════════════════════════════════════════════')
     },
 
     filterLRSchemaFields (val, update, abort) {
@@ -822,18 +726,9 @@ export default {
           return
         }
 
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [TransformEditorModal] extractAvailableJsonPaths - START')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log('║ Checking for JSON-to-String fields to include in JSON path extraction')
-
         // Get JSON-to-String fields and their parsed data from store
         const jsonToStringFields = schemaRules?.convertToJson || []
         const parsedStringifiedFields = schemaRules?.parsedStringifiedJsonFields || {}
-
-        console.log('║ Found jsonToStringFields count:', jsonToStringFields.length)
-        console.log('║ Found parsedStringifiedFields keys:', Object.keys(parsedStringifiedFields))
-        console.log('╚════════════════════════════════════════════════════════════════════════')
 
         // Use MappingService to extract JSON paths with JSON-to-String field handling
         this.availableJsonPaths = MappingService.extractJsonPaths(
@@ -845,28 +740,8 @@ export default {
           }
         )
         this.alternativeFieldOptionsFiltered = this.alternativeFieldOptions
-
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [TransformEditorModal] extractAvailableJsonPaths - COMPLETE')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log('║ Total extracted paths:', this.availableJsonPaths.length)
-        const normalPaths = this.availableJsonPaths.filter(p => !p.isFromJsonString)
-        const jsonStringPaths = this.availableJsonPaths.filter(p => p.isFromJsonString)
-        console.log('║ Normal JSON field paths:', normalPaths.length)
-        console.log('║ JSON-to-String field paths:', jsonStringPaths.length)
-
-        // Log sample fields for debugging
-        if (normalPaths.length > 0) {
-          console.log('║ Sample normal JSON fields:')
-          normalPaths.slice(0, 3).forEach(p => console.log(`║   - ${p.value} (${p.type})`))
-        }
-        if (jsonStringPaths.length > 0) {
-          console.log('║ Sample JSON-to-String fields:')
-          jsonStringPaths.slice(0, 3).forEach(p => console.log(`║   - ${p.value} (${p.type})`))
-        }
-        console.log('╚════════════════════════════════════════════════════════════════════════')
       } catch (error) {
-        console.error('[TransformEditorModal] Error extracting JSON paths:', error)
+        console.error('[TransformEditorModal] Error extracting JSON paths:', { error, hasData: !!this.sampleData })
         this.availableJsonPaths = []
         this.alternativeFieldOptionsFiltered = []
       }
@@ -900,7 +775,7 @@ export default {
           this.transformForm.lrSchemaField = this.smartSuggestions[0]
         }
       } catch (error) {
-        console.error('[TransformEditorModal] Error generating suggestions:', error)
+        console.error('[TransformEditorModal] Error generating smart suggestions:', { inputRule: this.transformForm.inputRule, error })
         this.smartSuggestions = []
       }
     },
@@ -924,11 +799,6 @@ export default {
      * Rebuild inputRule with operation syntax
      */
     handleOperationChanged (newOperationConfig) {
-      console.log('[TransformEditorModal] handleOperationChanged:', newOperationConfig)
-      console.log('[TransformEditorModal] newOperationConfig.type:', newOperationConfig.type)
-      console.log('[TransformEditorModal] newOperationConfig.parameters:', newOperationConfig.parameters)
-      console.log('[TransformEditorModal] originalFieldPath:', this.originalFieldPath)
-
       // Update local operation config
       this.operationConfig = { ...newOperationConfig }
 
@@ -942,11 +812,9 @@ export default {
         )
 
         this.transformForm.inputRule = operationSyntax
-        console.log('[TransformEditorModal] Built operation syntax:', operationSyntax)
       } else {
         // No operation, use plain field path
         this.transformForm.inputRule = this.originalFieldPath
-        console.log('[TransformEditorModal] No operation, using plain path:', this.originalFieldPath)
       }
     },
 
@@ -1040,7 +908,12 @@ export default {
 
         this.closeModal()
       } catch (error) {
-        console.error('[TransformEditorModal] Error saving transform:', error)
+        console.error('[TransformEditorModal] Error saving transform:', {
+          mode: this.mode,
+          inputRule: this.transformForm.inputRule,
+          lrSchemaField: this.transformForm.lrSchemaField,
+          error
+        })
         this.$q.notify({
           type: 'negative',
           message: 'Failed to save transform',

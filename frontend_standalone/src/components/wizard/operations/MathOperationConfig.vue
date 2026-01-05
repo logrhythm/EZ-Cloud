@@ -176,24 +176,12 @@ export default {
 
   emits: ['update:modelValue', 'input'],
   setup (props, { emit }) {
-    console.log('╔════════════════════════════════════════════════════════════════════════')
-    console.log('║ [MathOperationConfig] SETUP/MOUNTED - Component Created!')
-    console.log('╠════════════════════════════════════════════════════════════════════════')
-    console.log('║ operationType:', props.operationType)
-    console.log('║ fieldPath:', props.fieldPath)
-    console.log('║ modelValue:', JSON.stringify(props.modelValue, null, 2))
-    console.log('║ sampleValue:', props.sampleValue)
-    console.log('╚════════════════════════════════════════════════════════════════════════')
-
     // Use a simple numeric ref instead of nested object structure
     const operationValue = ref(props.modelValue?.value !== undefined ? props.modelValue.value : 0)
 
     const validationErrors = ref({})
     // Show preview if there's already a value configured (editing existing operation)
     const showPreview = ref(props.modelValue?.value !== undefined && props.modelValue.value !== 0)
-
-    console.log('[MathOperationConfig] Initial operationValue:', operationValue.value)
-    console.log('[MathOperationConfig] Initial showPreview:', showPreview.value)
 
     const commonValues = [1, 5, 10, 100, 1000]
 
@@ -290,28 +278,18 @@ export default {
       const payload = {
         value: operationValue.value
       }
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [MathOperationConfig] updateParams - EMITTING')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ operationValue.value:', operationValue.value)
-      console.log('║ Payload to emit:', JSON.stringify(payload, null, 2))
-      console.log('║ Emitting events: update:modelValue AND input (Vue 2/3 compatibility)')
-      console.log('╚════════════════════════════════════════════════════════════════════════')
       emit('update:modelValue', payload)
       emit('input', payload) // Vue 2 compatibility
     }
 
     // Handle value change - show preview after first interaction
     const handleValueChange = () => {
-      console.log('[MathOperationConfig] handleValueChange called, setting showPreview to true')
-      console.log('[MathOperationConfig] operationValue.value:', operationValue.value)
       showPreview.value = true
       updateParams()
     }
 
     // Select a predefined value
     const selectValue = (value) => {
-      console.log('[MathOperationConfig] selectValue called with value:', value)
       operationValue.value = value
       showPreview.value = true // Show preview when quick selecting
       updateParams()
@@ -388,6 +366,12 @@ export default {
           error: null
         }
       } catch (error) {
+        console.error('[MathOperationConfig] Error performing math operation:', {
+          operationType: props.operationType,
+          input,
+          operationValue,
+          error: error.message
+        })
         return {
           isValid: false,
           output: 'Error',
@@ -472,21 +456,21 @@ export default {
             return 'N/A'
         }
       } catch (error) {
+        console.error('[MathOperationConfig] Error computing preview output:', {
+          operationType: props.operationType,
+          sampleValue: props.sampleValue,
+          operationValue: operationValue.value,
+          error: error.message
+        })
         return `Error: ${error.message}`
       }
     })
 
     // Watch for external prop changes
     watch(() => props.modelValue, (newVal, oldVal) => {
-      console.log('[MathOperationConfig] modelValue watcher triggered')
-      console.log('[MathOperationConfig] oldVal:', oldVal)
-      console.log('[MathOperationConfig] newVal:', newVal)
-      console.log('[MathOperationConfig] current showPreview:', showPreview.value)
-
       if (newVal && newVal.value !== undefined) {
         // Only update if value actually changed
         if (operationValue.value !== newVal.value) {
-          console.log('[MathOperationConfig] Updating operationValue from', operationValue.value, 'to', newVal.value)
           operationValue.value = newVal.value
           // If value is being set from parent, show preview
           if (newVal.value !== 0) {
@@ -498,19 +482,15 @@ export default {
 
     // Debug watcher for showPreview
     watch(showPreview, (newVal, oldVal) => {
-      console.log('[MathOperationConfig] showPreview changed from', oldVal, 'to', newVal)
     })
 
     // Watch operationValue to show preview when user types in the textbox
     watch(operationValue, (newVal, oldVal) => {
-      console.log('[MathOperationConfig] operationValue watcher triggered from', oldVal, 'to', newVal)
       // If user has entered a value, show preview
       if (newVal !== undefined && newVal !== null && !showPreview.value) {
-        console.log('[MathOperationConfig] Setting showPreview to true because operationValue changed')
         showPreview.value = true
       }
       // Always emit the updated value to parent
-      console.log('[MathOperationConfig] Calling updateParams to emit new value to parent')
       updateParams()
     })
 

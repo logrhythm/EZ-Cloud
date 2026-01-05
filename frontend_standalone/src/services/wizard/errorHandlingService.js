@@ -269,12 +269,10 @@ export class ErrorHandlerService {
 
     recovery.addAction('Review Field', () => {
       // Handler would focus the problematic field
-      console.log('Focusing field:', error.field)
     }, { field: error.field })
 
     recovery.addAction('Clear Field', () => {
       // Handler would clear the field
-      console.log('Clearing field:', error.field)
     }, { field: error.field })
 
     return recovery
@@ -291,16 +289,16 @@ export class ErrorHandlerService {
     })
 
     recovery.addAction('Try Different File', () => {
-      console.log('Prompting for new file')
+      // Handler would prompt for new file
     })
 
     recovery.addAction('Check File Format', () => {
-      console.log('Showing file format requirements')
+      // Handler would show file format requirements
     })
 
     if ((error && (error.message || '').toLowerCase().includes('size')) || String(error).toLowerCase().includes('size')) {
       recovery.addAction('Reduce File Size', () => {
-        console.log('Showing file size tips')
+        // Handler would show file size tips
       })
     }
 
@@ -319,15 +317,15 @@ export class ErrorHandlerService {
 
     // Do not capture the full error in the handler closure; store minimal metadata instead
     recovery.addAction('Validate JSON', () => {
-      console.log('Opening JSON validator')
+      // Handler would open JSON validator
     }, { message: (error && error.message) ? String(error.message).slice(0, 200) : '' })
 
     recovery.addAction('View Error Details', () => {
-      console.log('Showing parsing error details')
+      // Handler would show parsing error details
     }, { message: (error && error.message) ? String(error.message).slice(0, 200) : '' })
 
     recovery.addAction('Use Different File', () => {
-      console.log('Prompting for new file')
+      // Handler would prompt for new file
     })
 
     return recovery
@@ -345,11 +343,11 @@ export class ErrorHandlerService {
     })
 
     recovery.addAction('Retry', () => {
-      console.log('Retrying operation')
+      // Handler would retry operation
     }, { autoRetry: true })
 
     recovery.addAction('Work Offline', () => {
-      console.log('Switching to offline mode')
+      // Handler would switch to offline mode
     })
 
     return recovery
@@ -369,15 +367,15 @@ export class ErrorHandlerService {
     const snippet = (error && error.message) ? String(error.message).slice(0, 200) : ''
 
     recovery.addAction('Reset Step', () => {
-      console.log('Resetting current step')
+      // Handler would reset current step
     }, { message: snippet })
 
     recovery.addAction('Reset Wizard', () => {
-      console.log('Resetting entire wizard')
+      // Handler would reset entire wizard
     }, { message: snippet })
 
     recovery.addAction('Save Progress', () => {
-      console.log('Saving current progress')
+      // Handler would save current progress
     }, { message: snippet })
 
     return recovery
@@ -394,11 +392,11 @@ export class ErrorHandlerService {
     })
 
     recovery.addAction('Retry', () => {
-      console.log('Retrying operation')
+      // Handler would retry operation
     })
 
     recovery.addAction('Contact Support', () => {
-      console.log('Opening support dialog')
+      // Handler would open support dialog
     }, { errorDetails: (error && typeof error.toJSON === 'function') ? error.toJSON() : { message: String(error) } })
 
     return recovery

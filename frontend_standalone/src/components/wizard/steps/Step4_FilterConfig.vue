@@ -512,7 +512,7 @@ export default {
     fieldOptions () {
       try {
         if (!Array.isArray(this.availableFields)) {
-          console.warn('[Step 4] availableFields is not an array:', this.availableFields)
+          console.warn('availableFields is not an array:', this.availableFields)
           return []
         }
 
@@ -537,7 +537,7 @@ export default {
 
         return uniqueFields
       } catch (error) {
-        console.error('[Step 4] Error formatting field options:', error)
+        console.error('Error formatting field options:', error)
         return []
       }
     }
@@ -555,7 +555,6 @@ export default {
         // 2. We have previously processed data
         // 3. Component is not destroyed
         if (newData !== oldData && newData !== this.lastProcessedRawData && this.lastProcessedRawData !== null && !this.isDestroyed) {
-          console.log('[Step 4] Sample data changed - resetting filter state')
           this.resetFilterState()
           this.lastProcessedRawData = newData
         }
@@ -569,7 +568,6 @@ export default {
     'sampleData.parsedData': {
       handler (newData) {
         if (newData && !this.isDestroyed) {
-          console.log('[Step 4] Parsed data changed - re-extracting fields')
           this.extractFieldsFromSampleData()
         }
       },
@@ -588,12 +586,7 @@ export default {
           const oldFieldsStr = JSON.stringify(oldFields || [])
 
           if (newFieldsStr !== oldFieldsStr) {
-            console.log('╔════════════════════════════════════════════════════════════════════════')
-            console.log('║ [Step 4] JSON-to-String selections changed - re-extracting fields')
-            console.log('╠════════════════════════════════════════════════════════════════════════')
-            console.log('║ Old fields:', oldFields || [])
-            console.log('║ New fields:', newFields || [])
-            console.log('╚════════════════════════════════════════════════════════════════════════')
+            // JSON-to-String selections changed - re-extracting fields
 
             this.extractFieldsFromSampleData()
           }
@@ -615,12 +608,7 @@ export default {
           const oldKeys = Object.keys(oldParsed || {}).sort().join(',')
 
           if (newKeys !== oldKeys) {
-            console.log('╔════════════════════════════════════════════════════════════════════════')
-            console.log('║ [Step 4] Parsed stringified JSON fields updated - re-extracting fields')
-            console.log('╠════════════════════════════════════════════════════════════════════════')
-            console.log('║ Old keys:', oldKeys || '(none)')
-            console.log('║ New keys:', newKeys || '(none)')
-            console.log('╚════════════════════════════════════════════════════════════════════════')
+            // Parsed stringified JSON fields updated - re-extracting fields
 
             this.extractFieldsFromSampleData()
           }
@@ -696,13 +684,6 @@ export default {
           parsedStringifiedFields: this.schemaRules?.parsedStringifiedJsonFields || {}
         }
 
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [Step 4] Extracting fields with JSON-to-String support')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log('║ convertToJson fields:', options.jsonToStringFields)
-        console.log('║ parsedStringifiedJsonFields keys:', Object.keys(options.parsedStringifiedFields))
-        console.log('╚════════════════════════════════════════════════════════════════════════')
-
         // Use FilterRuleService to extract field candidates with error handling
         const fields = FilterRuleService.extractFieldCandidates(
           this.sampleData.parsedData,
@@ -730,7 +711,7 @@ export default {
           })
         }
       } catch (error) {
-        console.error('[Step 4] Error extracting fields:', error)
+        console.error('[Step4_FilterConfig] Error extracting fields from sample data:', error)
         this.availableFields = []
 
         this.$q.notify({
@@ -751,8 +732,6 @@ export default {
      * Clears all conditions, expression, and test results
      */
     resetFilterState () {
-      console.log('[Step 4] Resetting filter state due to data change')
-
       try {
         // Clear local conditions
         this.localConditions = []
@@ -775,10 +754,8 @@ export default {
           timeout: 3000,
           icon: 'info'
         })
-
-        console.log('[Step 4] Filter state reset complete')
       } catch (error) {
-        console.error('[Step 4] Error resetting filter state:', error)
+        console.error('[Step4_FilterConfig] Error resetting filter state:', error)
         this.$q.notify({
           type: 'negative',
           message: 'Failed to reset filter state',
@@ -824,8 +801,6 @@ export default {
      * Add a new empty condition with per-condition operator
      */
     addCondition () {
-      console.log('[Step 4] addCondition called')
-
       try {
         // Validate available fields
         if (!Array.isArray(this.availableFields) || this.availableFields.length === 0) {
@@ -864,8 +839,6 @@ export default {
         // Update expression
         this.debouncedUpdateExpression()
 
-        console.log(`[Step 4] Condition ${this.localConditions.length} added`)
-
         // Provide feedback
         this.$q.notify({
           type: 'info',
@@ -875,7 +848,7 @@ export default {
           timeout: 1500
         })
       } catch (error) {
-        console.error('[Step 4] Error adding condition:', error)
+        console.error('[Step4_FilterConfig] Error adding condition:', error)
         this.$q.notify({
           type: 'negative',
           message: 'Failed to add condition',
@@ -893,16 +866,16 @@ export default {
       try {
         const condition = this.localConditions[index]
         if (!condition) {
-          console.warn('[Step 4] Condition not found at index:', index)
+          console.warn('Condition not found at index:', index)
           return
         }
 
-        console.log(`[Step 4] Logical operator changed to ${condition.logicalOperator} between conditions ${index + 1} and ${index + 2}`)
+        // Logical operator changed to ${condition.logicalOperator} between conditions ${index + 1} and ${index + 2}`)
 
         // Update expression
         this.debouncedUpdateExpression()
       } catch (error) {
-        console.error('[Step 4] Error handling logical operator change:', error)
+        console.error('Error handling logical operator change:', error)
       }
     },
 
@@ -956,7 +929,7 @@ export default {
           timeout: 1500
         })
       } catch (error) {
-        console.error('[Step 4] Error removing condition:', error)
+        console.error('Error removing condition:', error)
         this.$q.notify({
           type: 'negative',
           message: 'Failed to remove condition',
@@ -972,7 +945,7 @@ export default {
      * @param {number} index - Condition index
      */
     onDropdownOpen (type, index) {
-      console.log(`[Step 4] Dropdown opened - Type: ${type}, Condition Index: ${index}`)
+      // Dropdown opened - Type: ${type}, Condition Index: ${index}`)
     },
 
     /**
@@ -981,24 +954,38 @@ export default {
      * @param {string} value - Selected field value
      */
     handleFieldItemClick (index, value) {
-      console.log(`[Step 4] Field selected - Index: ${index}, Value: ${value}`)
-
-      // Manually update v-model
-      this.localConditions[index].field = value
-
-      // Call the regular field change handler
-      this.onFieldChange(index, value)
-
-      // Close the dropdown manually
-      this.$nextTick(() => {
-        const selectRef = this.$refs[`fieldSelect_${index}`]
-        if (selectRef && selectRef.hidePopup) {
-          selectRef.hidePopup()
-        } else if (selectRef && Array.isArray(selectRef) && selectRef[0] && selectRef[0].hidePopup) {
-          // Handle case where ref is an array
-          selectRef[0].hidePopup()
+      try {
+        // Validate index
+        if (typeof index !== 'number' || index < 0 || index >= this.localConditions.length) {
+          console.error('[Step4_FilterConfig] Invalid index in handleFieldItemClick:', index, 'totalConditions:', this.localConditions.length)
+          return
         }
-      })
+
+        // Validate value
+        if (!value || typeof value !== 'string') {
+          console.warn('[Step4_FilterConfig] Invalid field value in handleFieldItemClick:', value)
+          return
+        }
+
+        // Manually update v-model
+        this.localConditions[index].field = value
+
+        // Call the regular field change handler
+        this.onFieldChange(index, value)
+
+        // Close the dropdown manually
+        this.$nextTick(() => {
+          const selectRef = this.$refs[`fieldSelect_${index}`]
+          if (selectRef && selectRef.hidePopup) {
+            selectRef.hidePopup()
+          } else if (selectRef && Array.isArray(selectRef) && selectRef[0] && selectRef[0].hidePopup) {
+            // Handle case where ref is an array
+            selectRef[0].hidePopup()
+          }
+        })
+      } catch (error) {
+        console.error('[Step4_FilterConfig] Error in handleFieldItemClick:', error, 'index:', index, 'value:', value)
+      }
     },
 
     /**
@@ -1007,7 +994,7 @@ export default {
      * @param {string} value - The selected field value
      */
     onFieldChange (index, value) {
-      console.log(`[Step 4] Field change - Index: ${index}, Value: ${value}`)
+      // Field change - Index: ${index}, Value: ${value}`)
 
       try {
         // Validate index
@@ -1044,12 +1031,10 @@ export default {
           errorMessage: ''
         })
 
-        console.log('[Step 4] Field updated with reset operator and value:', this.localConditions[index])
-
         // Update expression
         this.debouncedUpdateExpression()
       } catch (error) {
-        console.error('[Step 4] Error handling field change:', error)
+        console.error('Error handling field change:', error)
         this.$q.notify({
           type: 'negative',
           message: 'Failed to update field',
@@ -1065,7 +1050,7 @@ export default {
      * @param {string} value - The selected operator value
      */
     onOperatorChange (index, value) {
-      console.log(`[Step 4] Operator change - Index: ${index}, Value: ${value}`)
+      // Operator change - Index: ${index}, Value: ${value}`)
 
       try {
         // Validate index
@@ -1082,7 +1067,7 @@ export default {
         // Update expression
         this.debouncedUpdateExpression()
       } catch (error) {
-        console.error('[Step 4] Error handling operator change:', error)
+        console.error('Error handling operator change:', error)
       }
     },
 
@@ -1091,7 +1076,7 @@ export default {
      * @param {number} index - Index of condition being updated
      */
     onCaseInsensitiveChange (index) {
-      console.log(`[Step 4] Case insensitive change - Index: ${index}`)
+      // Case insensitive change - Index: ${index}`)
 
       try {
         // Validate index
@@ -1102,7 +1087,7 @@ export default {
         // Update expression
         this.debouncedUpdateExpression()
       } catch (error) {
-        console.error('[Step 4] Error handling case-insensitive change:', error)
+        console.error('Error handling case-insensitive change:', error)
       }
     },
 
@@ -1112,7 +1097,7 @@ export default {
      * @param {string} val - The input value being typed
      */
     onValueInputChange (index, val) {
-      console.log(`[Step 4] Value input change - Index: ${index}, Input: ${val}`)
+      // Value input change - Index: ${index}, Input: ${val}`)
 
       try {
         // Validate index
@@ -1135,7 +1120,7 @@ export default {
           this.debouncedUpdateExpression()
         }
       } catch (error) {
-        console.error('[Step 4] Error handling value input change:', error)
+        console.error('Error handling value input change:', error)
       }
     },
 
@@ -1164,7 +1149,7 @@ export default {
           return sampleValues.filter(v => v && v.toLowerCase().indexOf(needle) > -1)
         })
       } catch (error) {
-        console.error('[Step 4] Error filtering values:', error)
+        console.error('Error filtering values:', error)
         update(() => [])
       }
     },
@@ -1175,7 +1160,7 @@ export default {
      * @param {string} value - The entered/selected value
      */
     onValueChange (index, value) {
-      console.log(`[Step 4] Value change - Index: ${index}, Value: ${value}`)
+      // Value change - Index: ${index}, Value: ${value}`)
 
       try {
         // Validate index
@@ -1195,7 +1180,7 @@ export default {
         // Update expression
         this.debouncedUpdateExpression()
       } catch (error) {
-        console.error('[Step 4] Error handling value change:', error)
+        console.error('Error handling value change:', error)
       }
     },
 
@@ -1206,7 +1191,7 @@ export default {
      * @param {Function} doneFn - Callback to finalize the value
      */
     onValueNew (index, inputValue, doneFn) {
-      console.log(`[Step 4] New value created - Index: ${index}, Value: ${inputValue}`)
+      // New value created - Index: ${index}, Value: ${inputValue}`)
 
       try {
         // Validate index
@@ -1216,7 +1201,7 @@ export default {
 
         // Validate input value
         if (!inputValue || typeof inputValue !== 'string') {
-          console.warn('[Step 4] Invalid input value')
+          console.warn('Invalid input value')
           doneFn(null, 'add-unique')
           return
         }
@@ -1225,7 +1210,7 @@ export default {
         const trimmedValue = inputValue.trim()
 
         if (trimmedValue === '') {
-          console.warn('[Step 4] Empty input value')
+          console.warn('Empty input value')
           doneFn(null, 'add-unique')
           return
         }
@@ -1245,9 +1230,9 @@ export default {
         // Update expression
         this.debouncedUpdateExpression()
 
-        console.log(`[Step 4] Custom value accepted: ${trimmedValue}`)
+        // Custom value accepted: ${trimmedValue}`)
       } catch (error) {
-        console.error('[Step 4] Error handling new value:', error)
+        console.error('Error handling new value:', error)
         doneFn(null, 'add-unique')
       }
     },
@@ -1266,7 +1251,7 @@ export default {
         const fieldType = condition.fieldType || 'string'
         return FilterRuleService.getOperatorsForFieldType(fieldType)
       } catch (error) {
-        console.error('[Step 4] Error getting operators:', error)
+        console.error('Error getting operators:', error)
         return []
       }
     },
@@ -1289,7 +1274,7 @@ export default {
         const field = this.availableFields.find(f => f && f.label === fieldLabel)
         return field && Array.isArray(field.sampleValues) ? field.sampleValues : []
       } catch (error) {
-        console.error('[Step 4] Error getting sample values:', error)
+        console.error('Error getting sample values:', error)
         return []
       }
     },
@@ -1302,14 +1287,14 @@ export default {
       try {
         // Validate index
         if (typeof index !== 'number' || index < 0 || index >= this.localConditions.length) {
-          console.warn('[Step 4] Invalid condition index for validation:', index)
+          console.warn('Invalid condition index for validation:', index)
           return
         }
 
         const condition = this.localConditions[index]
 
         if (!condition) {
-          console.warn('[Step 4] Condition not found at index:', index)
+          console.warn('Condition not found at index:', index)
           return
         }
 
@@ -1325,11 +1310,11 @@ export default {
           errorMessage: validation.errorMessage || ''
         })
 
-        console.log(`[Step 4] Condition ${index} validation:`, validation)
+        // Condition ${index} validation:`, validation)
 
         return validation
       } catch (error) {
-        console.error('[Step 4] Error validating condition value:', error)
+        console.error('Error validating condition value:', error)
         // Set as valid on error to avoid blocking user
         this.$set(this.conditionValidation, index, {
           isValid: true,
@@ -1346,7 +1331,7 @@ export default {
       try {
         // Validate inputs
         if (!Array.isArray(this.localConditions)) {
-          console.warn('[Step 4] Invalid localConditions array')
+          console.warn('[Step4_FilterConfig] Invalid localConditions array in updateFilterExpression')
           this.generatedExpression = ''
           return
         }
@@ -1385,17 +1370,15 @@ export default {
               expression = conditionExpr
             }
           } catch (error) {
-            console.error(`[Step 4] Error building condition ${index}:`, error)
+            console.error(`[Step4_FilterConfig] Error building condition ${index}:`, error, 'Condition:', condition)
           }
         })
 
         // Update local and store state
         this.generatedExpression = expression || ''
         this.SET_FILTER_EXPRESSION(this.generatedExpression)
-
-        console.log('[Step 4] Expression updated:', this.generatedExpression)
       } catch (error) {
-        console.error('[Step 4] Error building filter expression:', error)
+        console.error('[Step4_FilterConfig] Error building filter expression:', error)
         this.generatedExpression = ''
 
         this.$q.notify({
@@ -1432,7 +1415,7 @@ export default {
           timeout: 2000
         })
       } catch (error) {
-        console.error('[Step 4] Failed to copy:', error)
+        console.error('Failed to copy:', error)
 
         // Fallback method
         try {
@@ -1453,7 +1436,7 @@ export default {
             timeout: 2000
           })
         } catch (fallbackError) {
-          console.error('[Step 4] Fallback copy failed:', fallbackError)
+          console.error('Fallback copy failed:', fallbackError)
           this.$q.notify({
             type: 'negative',
             message: 'Failed to copy to clipboard',
@@ -1557,12 +1540,12 @@ export default {
 
         // Show warnings if any
         if (validation.warnings && validation.warnings.length > 0) {
-          console.warn('[Step 4] Validation warnings:', validation.warnings)
+          console.warn('Validation warnings:', validation.warnings)
         }
 
         // Check for errors (but allow proceeding since filter is optional)
         if (!validation.isValid) {
-          console.warn('[Step 4] Validation errors:', validation.errors)
+          console.warn('Validation errors:', validation.errors)
 
           this.$q.notify({
             type: 'warning',
@@ -1581,7 +1564,7 @@ export default {
         this.$emit('step-valid')
         this.$emit('next-step')
       } catch (error) {
-        console.error('[Step 4] Error saving filter rules:', error)
+        console.error('Error saving filter rules:', error)
 
         this.$q.notify({
           type: 'negative',
@@ -1602,7 +1585,7 @@ export default {
      * @param {number} index - Index of the condition being dragged
      */
     onDragStart (event, index) {
-      console.log(`[Step 4] Drag start - Index: ${index}`)
+      // Drag start - Index: ${index}`)
       this.draggedIndex = index
       event.dataTransfer.effectAllowed = 'move'
       event.dataTransfer.setData('text/html', event.target.innerHTML)
@@ -1659,7 +1642,7 @@ export default {
       event.preventDefault()
       event.stopPropagation()
 
-      console.log(`[Step 4] Drop - From: ${this.draggedIndex}, To: ${dropIndex}`)
+      // Drop - From: ${this.draggedIndex}, To: ${dropIndex}`)
 
       if (this.draggedIndex !== null && this.draggedIndex !== dropIndex) {
         this.reorderCondition(this.draggedIndex, dropIndex)
@@ -1673,7 +1656,6 @@ export default {
      * @param {DragEvent} event - The drag event
      */
     onDragEnd (event) {
-      console.log('[Step 4] Drag end')
       this.draggedIndex = null
       this.dragOverIndex = null
       event.target.classList.remove('dragging')
@@ -1686,8 +1668,6 @@ export default {
      */
     reorderCondition (fromIndex, toIndex) {
       try {
-        console.log(`[Step 4] Reordering condition from ${fromIndex} to ${toIndex}`)
-
         // Validate indices
         if (
           typeof fromIndex !== 'number' ||
@@ -1698,12 +1678,17 @@ export default {
           toIndex >= this.localConditions.length ||
           fromIndex === toIndex
         ) {
-          console.warn('[Step 4] Invalid reorder indices')
+          console.warn('[Step4_FilterConfig] Invalid reorder indices - fromIndex:', fromIndex, 'toIndex:', toIndex, 'totalConditions:', this.localConditions.length)
           return
         }
 
         // Remove the condition from its current position
         const movedCondition = this.localConditions.splice(fromIndex, 1)[0]
+
+        if (!movedCondition) {
+          console.error('[Step4_FilterConfig] Failed to extract condition at index:', fromIndex)
+          return
+        }
 
         // Insert it at the new position
         this.localConditions.splice(toIndex, 0, movedCondition)
@@ -1731,10 +1716,8 @@ export default {
           position: 'top',
           timeout: 1500
         })
-
-        console.log('[Step 4] Condition reordered successfully')
       } catch (error) {
-        console.error('[Step 4] Error reordering condition:', error)
+        console.error('[Step4_FilterConfig] Error reordering condition:', error, 'fromIndex:', fromIndex, 'toIndex:', toIndex)
         this.$q.notify({
           type: 'negative',
           message: 'Failed to reorder condition',
@@ -1801,8 +1784,6 @@ export default {
               this.validateConditionValue(index)
             }
           })
-
-          console.log('[Step 4] Restored and migrated conditions:', this.localConditions.length)
         }
 
         // Restore expression
@@ -1815,7 +1796,7 @@ export default {
           this.availableFields = JSON.parse(JSON.stringify(this.filterRules.availableFields))
         }
       } catch (error) {
-        console.error('[Step 4] Error restoring state:', error)
+        console.error('Error restoring state:', error)
         // Don't notify user - this is not critical
       }
     },
@@ -1839,7 +1820,7 @@ export default {
         )
 
         if (exactMatch) {
-          console.log(`[Step 4] Field existence check: "${fieldPath}" → EXACT MATCH`)
+          // Field existence check: "${fieldPath}" → EXACT MATCH`)
           return {
             exists: true,
             exactMatch: true,
@@ -1863,7 +1844,7 @@ export default {
         })
 
         if (caseInsensitiveMatch) {
-          console.log(`[Step 4] Field existence check: "${fieldPath}" → CASE-INSENSITIVE MATCH with "${caseInsensitiveMatch.label || caseInsensitiveMatch.path}"`)
+          // Field existence check: "${fieldPath}" → CASE-INSENSITIVE MATCH with "${caseInsensitiveMatch.label || caseInsensitiveMatch.path}"`)
           return {
             exists: true,
             exactMatch: false,
@@ -1871,14 +1852,14 @@ export default {
           }
         }
 
-        console.log(`[Step 4] Field existence check: "${fieldPath}" → NOT FOUND`)
+        // Field existence check: "${fieldPath}" → NOT FOUND`)
         return {
           exists: false,
           exactMatch: false,
           matchedField: null
         }
       } catch (error) {
-        console.error('[Step 4] Error checking field existence:', error)
+        console.error('Error checking field existence:', error)
         return {
           exists: false,
           exactMatch: false,
@@ -1945,11 +1926,7 @@ export default {
      */
     async prefillFromPolicy (policyData) {
       try {
-        console.log('╔══════════════════════════════════════════════════════════════════════════════')
-        console.log('║ [Step 4] prefillFromPolicy: Starting pre-fill process')
-        console.log('╠══════════════════════════════════════════════════════════════════════════════')
-        console.log('║ policyData:', JSON.stringify(policyData, null, 2))
-        console.log('╚══════════════════════════════════════════════════════════════════════════════')
+        // prefillFromPolicy: Starting pre-fill process
 
         // Wait for field extraction to complete
         await this.$nextTick()
@@ -1959,17 +1936,14 @@ export default {
         const filterExpression = this.getCaseInsensitiveProperty(policyData, 'filter') || ''
 
         if (!filterExpression || typeof filterExpression !== 'string') {
-          console.log('[Step 4] No filter expression found in policy')
           return
         }
-
-        console.log('[Step 4] Found filter expression in policy:', filterExpression)
 
         // Parse the filter expression
         const parseResult = FilterRuleService.parseFilterExpression(filterExpression)
 
         if (!parseResult.success || !parseResult.conditions || parseResult.conditions.length === 0) {
-          console.error('[Step 4] Failed to parse filter expression:', parseResult.error)
+          console.error('[Step4_FilterConfig] Failed to parse filter expression from policy:', parseResult.error, 'Expression:', filterExpression)
           this.$q.notify({
             type: 'warning',
             message: 'Could not parse filter expression from policy',
@@ -1980,8 +1954,6 @@ export default {
           return
         }
 
-        console.log('[Step 4] Successfully parsed', parseResult.conditions.length, 'conditions')
-
         // Track missing fields
         const missingFields = []
 
@@ -1989,21 +1961,14 @@ export default {
         const conditionsToAdd = []
 
         for (const condition of parseResult.conditions) {
-          console.log('╔══════════════════════════════════════════════════════════════════════════════')
-          console.log('║ [Step 4] Processing condition from policy')
-          console.log('╠══════════════════════════════════════════════════════════════════════════════')
-          console.log('║ Field:', condition.field)
-          console.log('║ Operator:', condition.operator)
-          console.log('║ Value:', condition.value)
-          console.log('║ Logical Operator:', condition.logicalOperator)
-          console.log('╚══════════════════════════════════════════════════════════════════════════════')
+          // Processing condition from policy
 
           // Check if field exists in sample data (with case sensitivity check)
           const fieldCheck = this.checkFieldExistsInSampleData(condition.field)
 
           if (!fieldCheck.exists) {
             // Field not found at all - mark as missing
-            console.warn('║ ❌ Field from policy NOT FOUND in sample data:', condition.field)
+            console.warn('[Step4_FilterConfig] Field from policy NOT FOUND in sample data:', condition.field)
 
             // Inject missing field into availableFields
             const normalizedPath = condition.field.replace(/^@\./, '')
@@ -2027,10 +1992,10 @@ export default {
               reason: 'missing'
             })
 
-            console.log('║ ✓ Injected missing field into availableFields:', condition.field)
+            // Injected missing field into availableFields
           } else if (!fieldCheck.exactMatch) {
             // Field found but with different casing - mark as case mismatch
-            console.warn('║ ⚠️  Field from policy has CASE MISMATCH:', condition.field, '→', fieldCheck.matchedField)
+            console.warn('[Step4_FilterConfig] Field from policy has case mismatch - Policy:', condition.field, 'Sample:', fieldCheck.matchedField)
 
             // Track as case mismatch
             missingFields.push({
@@ -2041,7 +2006,7 @@ export default {
               reason: 'case-mismatch'
             })
 
-            console.log('║ ✓ Tracked case mismatch - Policy:', condition.field, 'Sample:', fieldCheck.matchedField)
+            // Tracked case mismatch
 
             // Update field type from availableFields (using the matched field)
             const matchingField = this.availableFields.find(f =>
@@ -2055,7 +2020,7 @@ export default {
             }
           } else {
             // Exact match found
-            console.log('║ ✅ Field from policy FOUND in sample data (exact match):', condition.field)
+            // Field from policy found in sample data (exact match)
 
             // Update field type from availableFields
             const matchingField = this.availableFields.find(f =>
@@ -2096,13 +2061,7 @@ export default {
           availableFields: [...this.availableFields]
         })
 
-        console.log('╔══════════════════════════════════════════════════════════════════════════════')
-        console.log('║ [Step 4] Pre-fill completed successfully')
-        console.log('╠══════════════════════════════════════════════════════════════════════════════')
-        console.log('║ Total conditions loaded:', this.localConditions.length)
-        console.log('║ Missing fields:', missingFields.filter(f => f.reason === 'missing').length)
-        console.log('║ Case mismatch fields:', missingFields.filter(f => f.reason === 'case-mismatch').length)
-        console.log('╚══════════════════════════════════════════════════════════════════════════════')
+        // Pre-fill completed successfully
 
         // Force UI update
         await this.$nextTick()
@@ -2135,9 +2094,7 @@ export default {
           icon: totalIssues > 0 ? 'warning' : undefined
         })
       } catch (error) {
-        console.error('╔══════════════════════════════════════════════════════════════════════════════')
-        console.error('║ [Step 4] Error in prefillFromPolicy:', error)
-        console.error('╚══════════════════════════════════════════════════════════════════════════════')
+        console.error('[Step4_FilterConfig] Error in prefillFromPolicy:', error, 'PolicyData:', policyData)
 
         this.$q.notify({
           type: 'negative',
@@ -2177,7 +2134,6 @@ export default {
       // Initialize last processed data tracking
       if (this.sampleData && this.sampleData.rawData) {
         this.lastProcessedRawData = this.sampleData.rawData
-        console.log('[Step 4] Initialized lastProcessedRawData tracking')
       }
 
       // Extract fields from sample data
@@ -2188,16 +2144,12 @@ export default {
 
       // Check if in update mode and pre-fill from policy (only if not already prefilled)
       if (this.isUpdateMode && this.policyUpload.uploadedPolicyData && !this.isPolicyPrefilled) {
-        console.log('[Step 4] Update mode detected and policy not yet prefilled - will pre-fill from policy')
-
         // Wait for field extraction to complete before prefilling
         this.$nextTick(async () => {
           await this.prefillFromPolicy(this.policyUpload.uploadedPolicyData)
           // Mark policy as prefilled so it doesn't happen again
           this.$store.commit('wizard/SET_POLICY_PREFILLED', { step: 'filterRules', prefilled: true })
         })
-      } else if (this.isPolicyPrefilled) {
-        console.log('[Step 4] Policy already prefilled - skipping prefill, using user changes from store')
       }
     } catch (error) {
       console.error('[Step 4] Error during initialization:', error)
@@ -2402,7 +2354,7 @@ export default {
   position: relative;
 
   &.dragging {
-    opacity: 0.5;
+       opacity: 0.5;
     transform: scale(0.95);
   }
 

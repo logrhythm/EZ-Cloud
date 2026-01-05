@@ -330,11 +330,11 @@
             <div>
               <div class="text-h6">Edit Policy JSON</div>
               <div class="text-caption text-grey-6">
-                Make changes to your policy JSON. Ensure valid JSON format before saving.
+                Make changes to your policy JSON and copy or download the result. Ensure valid JSON format.
               </div>
             </div>
             <q-space />
-            <q-btn icon="close" flat round dense @click="cancelEdit" />
+            <q-btn icon="close" flat round dense @click="closeEditDialog" />
           </div>
         </q-card-section>
 
@@ -368,7 +368,7 @@
             </template>
             <div class="validation-success-content">
               <strong>Valid JSON Format</strong>
-              <div class="text-caption">Your JSON is properly formatted and ready to save.</div>
+              <div class="text-caption">Your JSON is properly formatted and ready to copy or download.</div>
             </div>
           </q-banner>
 
@@ -426,25 +426,35 @@
         <q-card-actions align="right" class="dialog-actions">
           <q-btn
             flat
-            label="Cancel"
+            label="Close"
             icon="close"
-            @click="cancelEdit"
+            @click="closeEditDialog"
             class="action-btn"
           />
           <q-btn
             unelevated
             color="primary"
-            label="Save Changes"
-            icon="save"
-            @click="applyPolicyEdits"
-            :disable="hasJsonError || !hasChanges"
+            label="Copy to Clipboard"
+            icon="content_copy"
+            @click="copyEditedPolicyToClipboard"
+            :disable="hasJsonError"
             class="action-btn"
           >
             <q-tooltip v-if="hasJsonError">
-              Fix JSON errors before saving
+              Fix JSON errors before copying
             </q-tooltip>
-            <q-tooltip v-else-if="!hasChanges">
-              No changes to save
+          </q-btn>
+          <q-btn
+            unelevated
+            color="positive"
+            label="Download Policy"
+            icon="file_download"
+            @click="downloadEditedPolicy"
+            :disable="hasJsonError"
+            class="action-btn"
+          >
+            <q-tooltip v-if="hasJsonError">
+              Fix JSON errors before downloading
             </q-tooltip>
           </q-btn>
         </q-card-actions>
@@ -513,8 +523,9 @@ export default {
     ]),
 
     completePolicy () {
-      // ALWAYS generate a clean policy object to ensure all UI-only metadata is removed
-      // This ensures _isMissingField and other flags are never included in exports
+      // Always generate a fresh, clean policy object from current wizard state
+      // This ensures all UI-only metadata (_isMissingField, etc.) is removed
+      // and that the policy reflects any changes made by going back to previous steps
       return this.generatePolicyObject()
     },
 
@@ -522,7 +533,7 @@ export default {
       try {
         return JSON.stringify(this.completePolicy, null, 2)
       } catch (error) {
-        console.error('Error formatting policy JSON:', error)
+        console.error('[Step7_Export] Error formatting policy JSON in formattedPolicyJson computed:', error)
         return '{}'
       }
     },
@@ -562,29 +573,21 @@ export default {
   },
 
   mounted () {
-    console.log('[Step 7] Component mounted - subTransforms state:', {
-      skipSubTransforms: this.subTransforms.skipSubTransforms,
-      subTransformsCount: this.subTransforms.subTransformsList?.length || 0
-    })
-
-    // DEBUG: Log schemaRules state on mount
-    console.log('╔═══════════════════════════════════════════════════════════════════════')
-    console.log('║ [Step 7 MOUNTED] schemaRules state from Vuex store')
-    console.log('╠═══════════════════════════════════════════════════════════════════════')
-    console.log('║ Full schemaRules object:', JSON.stringify(this.schemaRules, null, 2))
-    console.log('║ schemaRules.convertToJson:', this.schemaRules.convertToJson)
-    console.log('║ schemaRules.fanout:', this.schemaRules.fanout)
-    console.log('║ schemaRules.datafanout:', this.schemaRules.datafanout)
-    console.log('║ schemaRules.childfanouts:', this.schemaRules.childfanouts)
-    console.log('║ schemaRules.parsedStringifiedJsonFields:', this.schemaRules.parsedStringifiedJsonFields)
-    console.log('╚═══════════════════════════════════════════════════════════════════════')
-
-    // ALWAYS regenerate policy when entering Step 7
-    // This ensures any changes made in previous steps are reflected
+    // ALWAYS regenerate policy when entering Step 7 to ensure latest changes are reflected
+    // This is critical because users may go back to previous steps, make changes, then return to Step 7
     this.regeneratePolicy()
 
     // Notify parent that step is valid
     this.$emit('step-valid')
+  },
+
+  beforeDestroy () {
+    // Clear generated policy when leaving Step 7 to ensure fresh generation on next visit
+    // This prevents stale policy data from being used when user goes back and makes changes
+    this.$store.commit('wizard/SET_GENERATED_POLICY', {
+      policy: null,
+      policyJson: null
+    })
   },
 
   methods: {
@@ -600,23 +603,12 @@ export default {
      * @returns {Object} { datafanout, childfanouts }
      */
     computeDataFanoutStructure (childfanoutsArray) {
-      console.log('╔═══════════════════════════════════════════════════════════════════════')
-      console.log('║ [computeDataFanoutStructure] START')
-      console.log('╠═══════════════════════════════════════════════════════════════════════')
-      console.log('║ Input childfanouts count:', childfanoutsArray.length)
-
       if (!childfanoutsArray || childfanoutsArray.length === 0) {
-        console.log('║ No childfanouts, returning null for both')
-        console.log('╚═══════════════════════════════════════════════════════════════════════')
         return { datafanout: null, childfanouts: null }
       }
 
       // Rule 1: Single array selection
       if (childfanoutsArray.length === 1) {
-        console.log('║ RULE 1: Single array detected')
-        console.log('║ datafanout:', childfanoutsArray[0].field)
-        console.log('║ childfanouts: null')
-        console.log('╚═══════════════════════════════════════════════════════════════════════')
         return {
           datafanout: childfanoutsArray[0].field,
           childfanouts: null
@@ -626,24 +618,10 @@ export default {
       // Find all top-level arrays (those with parentpath = null)
       const topLevelArrays = childfanoutsArray.filter(item => item.parentpath === null)
 
-      console.log('║ Top-level arrays found:', topLevelArrays.length)
-      topLevelArrays.forEach((item, idx) => {
-        console.log(`║   [${idx}] ${item.field}`)
-      })
-
       // Rule 2: Multiple arrays with only ONE top-level array
       if (topLevelArrays.length === 1) {
-        console.log('║ RULE 2: One top-level array with children')
-        console.log('║ datafanout:', topLevelArrays[0].field)
-
         // Get all child arrays (those with parentpath !== null)
         const childArrays = childfanoutsArray.filter(item => item.parentpath !== null)
-
-        console.log('║ childfanouts count:', childArrays.length)
-        childArrays.forEach((item, idx) => {
-          console.log(`║   [${idx}] field: "${item.field}", parentpath: "${item.parentpath}"`)
-        })
-        console.log('╚═══════════════════════════════════════════════════════════════════════')
 
         return {
           datafanout: topLevelArrays[0].field,
@@ -652,14 +630,6 @@ export default {
       }
 
       // Rule 3: Multiple top-level arrays
-      console.log('║ RULE 3: Multiple top-level arrays')
-      console.log('║ datafanout: null')
-      console.log('║ childfanouts: all arrays (' + childfanoutsArray.length + ' items)')
-      childfanoutsArray.forEach((item, idx) => {
-        console.log(`║   [${idx}] field: "${item.field}", parentpath: ${item.parentpath || 'null'}`)
-      })
-      console.log('╚═══════════════════════════════════════════════════════════════════════')
-
       return {
         datafanout: null,
         childfanouts: childfanoutsArray
@@ -668,18 +638,6 @@ export default {
 
     generatePolicyObject () {
       try {
-        console.log('[Step 7] generatePolicyObject called - subTransforms:', {
-          skipSubTransforms: this.subTransforms.skipSubTransforms,
-          subTransformsCount: this.subTransforms.subTransformsList?.length || 0
-        })
-
-        // DEBUG: Log policyUpload state
-        console.log('[Step 7] policyUpload state:', {
-          exists: !!this.policyUpload,
-          hasUploadedPolicyData: !!this.policyUpload?.uploadedPolicyData,
-          uploadedPolicyDataKeys: this.policyUpload?.uploadedPolicyData ? Object.keys(this.policyUpload.uploadedPolicyData) : null
-        })
-
         const policy = {
           name: this.projectConfig.name || 'Untitled Policy',
           description: this.projectConfig.description || ''
@@ -690,40 +648,26 @@ export default {
         if (this.policyUpload?.uploadedPolicyData) {
           const uploadedPolicy = this.policyUpload.uploadedPolicyData
 
-          console.log('[Step 7] Uploaded policy has keys:', Object.keys(uploadedPolicy))
-
           if (uploadedPolicy.group !== undefined) {
             policy.group = uploadedPolicy.group
-            console.log('[Step 7] Preserving group attribute:', uploadedPolicy.group)
           }
 
           if (uploadedPolicy.grouporder !== undefined) {
             policy.grouporder = uploadedPolicy.grouporder
-            console.log('[Step 7] Preserving grouporder attribute:', uploadedPolicy.grouporder)
           }
 
           // Handle both 'lookup' and 'Lookup' (case-insensitive)
           const lookupValue = uploadedPolicy.lookup || uploadedPolicy.Lookup
-          console.log('[Step 7] Lookup check:', {
-            hasLookup: uploadedPolicy.lookup !== undefined,
-            hasCapitalLookup: uploadedPolicy.Lookup !== undefined,
-            lookupValue: lookupValue
-          })
 
           if (lookupValue !== undefined) {
             // Preserve with original casing (check which one exists)
             if (uploadedPolicy.Lookup !== undefined) {
               policy.Lookup = uploadedPolicy.Lookup
-              console.log('[Step 7] Preserving Lookup attribute (capital L) with', Object.keys(uploadedPolicy.Lookup).length, 'keys')
             } else if (uploadedPolicy.lookup !== undefined) {
               policy.lookup = uploadedPolicy.lookup
-              console.log('[Step 7] Preserving lookup attribute (lowercase l) with', Object.keys(uploadedPolicy.lookup).length, 'keys')
             }
-          } else {
-            console.log('[Step 7] WARNING: No Lookup/lookup attribute found in uploaded policy!')
           }
-        } else {
-          console.log('[Step 7] No uploaded policy data available - running in create mode or policy not uploaded')
+          // If no Lookup/lookup attribute found, we'll continue without it
         }
 
         // Add filter if present
@@ -731,23 +675,10 @@ export default {
           policy.filter = this.filterRules.expression
         }
 
-        // DEBUG: Log schemaRules state
-        console.log('╔═══════════════════════════════════════════════════════════════════════')
-        console.log('║ [Step 7] Checking schemaRules state')
-        console.log('╠═══════════════════════════════════════════════════════════════════════')
-        console.log('║ schemaRules:', this.schemaRules)
-        console.log('║ schemaRules.convertToJson:', this.schemaRules.convertToJson)
-        console.log('║ schemaRules.datafanout:', this.schemaRules.datafanout)
-        console.log('║ schemaRules.childfanouts:', this.schemaRules.childfanouts)
-        console.log('║ schemaRules.fanout (legacy):', this.schemaRules.fanout)
-        console.log('╚═══════════════════════════════════════════════════════════════════════')
-
         // Add schema rules if present
         const hasSchemaRules = this.schemaRules.convertToJson.length > 0 ||
                               this.schemaRules.datafanout ||
                               (this.schemaRules.childfanouts && this.schemaRules.childfanouts.length > 0)
-
-        console.log('[Step 7] hasSchemaRules:', hasSchemaRules)
 
         if (hasSchemaRules) {
           policy.schemarule = {}
@@ -760,22 +691,10 @@ export default {
           // CRITICAL: Check if datafanout is already in schemaRules (from Step 3)
           // If datafanout exists in store, use it directly along with childfanouts
           if (this.schemaRules.datafanout !== undefined) {
-            console.log('╔═══════════════════════════════════════════════════════════════════════')
-            console.log('║ [Step 7] Using datafanout directly from store')
-            console.log('╠═══════════════════════════════════════════════════════════════════════')
-            console.log('║ datafanout from store:', this.schemaRules.datafanout)
-            console.log('║ childfanouts from store:', this.schemaRules.childfanouts)
-            console.log('╚═══════════════════════════════════════════════════════════════════════')
-
             policy.schemarule.datafanout = this.schemaRules.datafanout
             policy.schemarule.childfanouts = this.schemaRules.childfanouts
           } else if (this.schemaRules.childfanouts && this.schemaRules.childfanouts.length > 0) {
             // Fallback: compute datafanout/childfanouts from legacy childfanouts array
-            console.log('╔═══════════════════════════════════════════════════════════════════════')
-            console.log('║ [Step 7] Computing datafanout from childfanouts array (legacy)')
-            console.log('╠═══════════════════════════════════════════════════════════════════════')
-            console.log('║ Total childfanouts from store:', this.schemaRules.childfanouts.length)
-            console.log('╚═══════════════════════════════════════════════════════════════════════')
 
             // Clean childfanouts to remove UI-only metadata
             const cleanChildFanouts = (fanouts) => {
@@ -812,52 +731,18 @@ export default {
             // Compute datafanout and childfanouts based on the three rules
             const { datafanout, childfanouts } = this.computeDataFanoutStructure(cleanedChildFanouts)
 
-            console.log('║ Computed datafanout:', datafanout || 'null')
-            console.log('║ Computed childfanouts count:', childfanouts ? childfanouts.length : 0)
-            console.log('╚═══════════════════════════════════════════════════════════════════════')
-
             // Set datafanout attribute
             policy.schemarule.datafanout = datafanout
 
             // Set childfanouts (may be null or an array)
             policy.schemarule.childfanouts = childfanouts
           }
-
-          // DEBUG: Log the final schemarule that was built
-          console.log('╔═══════════════════════════════════════════════════════════════════════')
-          console.log('║ [Step 7] FINAL policy.schemarule built')
-          console.log('╠═══════════════════════════════════════════════════════════════════════')
-          console.log('║ policy.schemarule:', JSON.stringify(policy.schemarule, null, 2))
-          console.log('║ policy.schemarule.ConvertoJson:', policy.schemarule.ConvertoJson)
-          console.log('║ policy.schemarule.datafanout:', policy.schemarule.datafanout)
-          console.log('║ policy.schemarule.childfanouts:', policy.schemarule.childfanouts)
-          console.log('╚═══════════════════════════════════════════════════════════════════════')
         }
 
         // Add field mappings (transforms) - clean up any UI-only attributes
         if (this.fieldMappings.mappings && this.fieldMappings.mappings.length > 0) {
-          console.log('╔════════════════════════════════════════════════════════════════════════')
-          console.log('║ [Step 7] generatePolicyObject - Processing field mappings')
-          console.log('╠════════════════════════════════════════════════════════════════════════')
-          console.log('║ fieldMappings.mappings count:', this.fieldMappings.mappings.length)
-          console.log('║')
-          console.log('║ Mappings from store:')
-          this.fieldMappings.mappings.forEach((m, idx) => {
-            console.log(`║ [${idx}] inputRule:`, m.inputRule)
-            console.log(`║ [${idx}] lrSchemaField:`, m.lrSchemaField)
-          })
-          console.log('╚════════════════════════════════════════════════════════════════════════')
-
           // Remove sampleValue and other UI-only attributes from transforms
-          policy.transforms = this.fieldMappings.mappings.map((mapping, idx) => {
-            console.log('╔════════════════════════════════════════════════════════════════════════')
-            console.log(`║ [Step 7] Cleaning mapping [${idx}]`)
-            console.log('╠════════════════════════════════════════════════════════════════════════')
-            console.log('║ BEFORE:')
-            console.log('║   inputRule:', mapping.inputRule)
-            console.log('║   lrSchemaField:', mapping.lrSchemaField)
-            console.log('╚════════════════════════════════════════════════════════════════════════')
-
+          policy.transforms = this.fieldMappings.mappings.map((mapping) => {
             const cleanMapping = { ...mapping }
             delete cleanMapping.sampleValue
             delete cleanMapping.sampleValueDisplay // Remove UI-only sample value display
@@ -868,24 +753,8 @@ export default {
             delete cleanMapping.subtransforms // Remove subtransforms from individual transforms (invalid structure)
             delete cleanMapping.subTransforms // Remove alternative casing variant
 
-            console.log('╔════════════════════════════════════════════════════════════════════════')
-            console.log(`║ [Step 7] AFTER cleaning [${idx}]`)
-            console.log('╠════════════════════════════════════════════════════════════════════════')
-            console.log('║ cleanMapping.inputRule:', cleanMapping.inputRule)
-            console.log('║ cleanMapping.lrSchemaField:', cleanMapping.lrSchemaField)
-            console.log('╚════════════════════════════════════════════════════════════════════════')
-
             return cleanMapping
           })
-
-          console.log('╔════════════════════════════════════════════════════════════════════════')
-          console.log('║ [Step 7] Final policy.transforms:')
-          console.log('╠════════════════════════════════════════════════════════════════════════')
-          policy.transforms.forEach((t, idx) => {
-            console.log(`║ [${idx}] inputRule:`, t.inputRule)
-            console.log(`║ [${idx}] lrSchemaField:`, t.lrSchemaField)
-          })
-          console.log('╚════════════════════════════════════════════════════════════════════════')
         }
 
         // Add subtransforms if they exist - clean up any UI-only attributes
@@ -893,7 +762,6 @@ export default {
         // This handles the case where user initially skips, then goes back to add them
         if (this.subTransforms.subTransformsList &&
             this.subTransforms.subTransformsList.length > 0) {
-          console.log('[Step 7] Adding subtransforms to policy:', this.subTransforms.subTransformsList.length)
           // Recursively clean subtransforms and their nested transforms
           const cleanSubTransforms = (subtransformsList) => {
             return subtransformsList.map(subtransform => {
@@ -935,7 +803,7 @@ export default {
 
         return policy
       } catch (error) {
-        console.error('Error generating policy object:', error)
+        console.error('[Step7_Export] Error generating policy object in generatePolicyObject:', error)
         return {}
       }
     },
@@ -945,6 +813,16 @@ export default {
       this.loadingMessage = 'Generating policy from configuration...'
 
       try {
+        // Clear any manually edited policy from store to force regeneration from wizard steps
+        this.$store.commit('wizard/SET_GENERATED_POLICY', {
+          policy: null,
+          policyJson: null
+        })
+
+        // Force re-render to regenerate policy
+        await this.$nextTick()
+        this.$forceUpdate()
+
         // Generate policy using store action
         await this.$store.dispatch('wizard/generatePolicy')
 
@@ -954,7 +832,7 @@ export default {
           position: 'top'
         })
       } catch (error) {
-        console.error('Error generating policy:', error)
+        console.error('[Step7_Export] Error in regeneratePolicy:', error)
         this.$q.notify({
           type: 'negative',
           message: 'Failed to generate policy. Please check your configuration.',
@@ -987,7 +865,7 @@ export default {
           position: 'top'
         })
       } catch (error) {
-        console.error('Error downloading policy:', error)
+        console.error('[Step7_Export] Error in downloadPolicy:', error)
         this.$q.notify({
           type: 'negative',
           message: 'Failed to download policy',
@@ -1007,7 +885,7 @@ export default {
           icon: 'content_copy'
         })
       } catch (error) {
-        console.error('Error copying to clipboard:', error)
+        console.error('[Step7_Export] Error in copyPolicyToClipboard:', error)
         this.$q.notify({
           type: 'negative',
           message: 'Failed to copy to clipboard',
@@ -1070,72 +948,66 @@ export default {
       }
     },
 
-    cancelEdit () {
-      if (this.hasChanges) {
-        this.$q.dialog({
-          title: 'Discard Changes?',
-          message: 'You have unsaved changes. Are you sure you want to discard them?',
-          cancel: true,
-          persistent: true
-        }).onOk(() => {
-          this.showEditDialog = false
-          this.editablePolicyJson = ''
-          this.originalPolicyJson = ''
-          this.hasJsonError = false
-          this.jsonErrorMessage = ''
+    closeEditDialog () {
+      this.showEditDialog = false
+      this.editablePolicyJson = ''
+      this.originalPolicyJson = ''
+      this.hasJsonError = false
+      this.jsonErrorMessage = ''
+    },
+
+    async copyEditedPolicyToClipboard () {
+      try {
+        await copyToClipboard(this.editablePolicyJson)
+
+        this.$q.notify({
+          type: 'positive',
+          message: 'Edited policy copied to clipboard',
+          position: 'top',
+          icon: 'content_copy',
+          timeout: 2000
         })
-      } else {
-        this.showEditDialog = false
-        this.editablePolicyJson = ''
-        this.originalPolicyJson = ''
-        this.hasJsonError = false
-        this.jsonErrorMessage = ''
+      } catch (error) {
+        console.error('[Step7_Export] Error in copyEditedPolicyToClipboard:', error)
+        this.$q.notify({
+          type: 'negative',
+          message: 'Failed to copy to clipboard',
+          position: 'top'
+        })
       }
     },
 
-    applyPolicyEdits () {
+    async downloadEditedPolicy () {
       try {
-        // Validate one more time before applying
-        const editedPolicy = JSON.parse(this.editablePolicyJson)
+        // Parse to validate JSON one more time
+        const parsed = JSON.parse(this.editablePolicyJson)
+        const fileName = `${parsed.name || this.projectConfig.name || 'policy'}.json`
 
-        // Validate that it's an object
-        if (typeof editedPolicy !== 'object' || editedPolicy === null) {
-          throw new Error('Policy must be a valid JSON object')
-        }
+        const blob = new Blob([this.editablePolicyJson], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
 
-        // Update the store with the edited policy
-        this.$store.commit('wizard/SET_GENERATED_POLICY', {
-          policy: editedPolicy,
-          policyJson: this.editablePolicyJson
-        })
+        const link = document.createElement('a')
+        link.href = url
+        link.download = fileName
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
 
-        // Close the dialog
-        this.showEditDialog = false
-
-        // Reset edit state
-        this.editablePolicyJson = ''
-        this.originalPolicyJson = ''
-        this.hasJsonError = false
-        this.jsonErrorMessage = ''
-
-        // Show success notification
         this.$q.notify({
           type: 'positive',
-          message: 'Policy updated successfully',
-          caption: 'All changes have been saved and will be reflected in downloads and clipboard copies',
+          message: `Edited policy downloaded as ${fileName}`,
           position: 'top',
-          icon: 'check_circle',
-          timeout: 3000
+          icon: 'file_download',
+          timeout: 2000
         })
       } catch (error) {
-        console.error('Error applying policy edits:', error)
+        console.error('[Step7_Export] Error in downloadEditedPolicy:', error)
         this.$q.notify({
           type: 'negative',
-          message: 'Failed to save policy changes',
-          caption: error.message || 'Please check your JSON format and try again',
-          position: 'top',
-          icon: 'error',
-          timeout: 3000
+          message: 'Failed to download policy',
+          caption: error.message || 'Please check your JSON format',
+          position: 'top'
         })
       }
     },
@@ -1202,12 +1074,7 @@ export default {
     // Watch for changes in subTransforms to ensure policy is updated
     subTransforms: {
       handler (newVal) {
-        console.log('[Step 7] subTransforms changed:', {
-          skipSubTransforms: newVal.skipSubTransforms,
-          subTransformsCount: newVal.subTransformsList?.length || 0
-        })
-        // Computed property 'completePolicy' should auto-update, but we can
-        // log this to verify reactivity is working
+        // Computed property 'completePolicy' will auto-update when subTransforms change
       },
       deep: true
     },

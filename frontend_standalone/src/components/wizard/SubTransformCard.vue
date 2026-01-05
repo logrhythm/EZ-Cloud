@@ -588,7 +588,7 @@ export default {
 
     startDrag (event) {
       // TODO: Implement drag-and-drop in Phase 5
-      console.log('Drag started', event)
+      // Drag started event
     },
 
     editCondition () {

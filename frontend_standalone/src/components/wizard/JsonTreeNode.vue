@@ -51,7 +51,6 @@
           dense
           color="primary"
           @input="selectField('array')"
-          @vue:mounted="() => console.log(`✓ Array checkbox rendered for path: ${path}`)"
         />
 
         <q-checkbox
@@ -211,65 +210,48 @@ export default defineComponent({
     /**
      * Helper function to check if a value contains any arrays (directly or nested)
      */ const containsArrays = (value, childKey, currentPath) => {
-      if (value === null || value === undefined) return false
+      try {
+        if (value === null || value === undefined) return false
 
-      // Build the full path for this child
-      const childPath = currentPath === 'root' ? childKey : `${currentPath}.${childKey}`
+        // Build the full path for this child
+        const childPath = currentPath === 'root' ? childKey : `${currentPath}.${childKey}`
 
-      // Normalize the path for comparison (e.g., projects[0] -> projects[*])
-      const normalizedChildPath = PathNormalizer.normalize(childPath)
+        // Normalize the path for comparison (e.g., projects[0] -> projects[*])
+        const normalizedChildPath = PathNormalizer.normalize(childPath)
 
-      // ENHANCED DEBUGGING: Log all properties being checked
-      console.log(`[containsArrays] 🔍 Checking property '${childKey}'`)
-      console.log(`  currentPath: "${currentPath}"`)
-      console.log(`  childPath: "${childPath}"`)
-      console.log(`  normalizedChildPath: "${normalizedChildPath}"`)
-      console.log(`  value type: ${Array.isArray(value) ? 'Array' : typeof value}`)
-      console.log('  arrayPaths:', props.arrayPaths)
+        // Check if this specific normalized path is in arrayPaths
+        if (props.arrayPaths.includes(normalizedChildPath)) {
+          return true
+        }
 
-      // Check if this specific normalized path is in arrayPaths
-      if (props.arrayPaths.includes(normalizedChildPath)) {
-        console.log(`  ✅ DIRECT MATCH found: ${normalizedChildPath}`)
-        return true
+        // If the value itself is an array, check if any nested path starts with this childPath
+        if (Array.isArray(value)) {
+          const result = props.arrayPaths.some(arrayPath => {
+            const exactMatch = arrayPath === normalizedChildPath
+            const dotMatch = arrayPath.startsWith(normalizedChildPath + '.')
+            const bracketMatch = arrayPath.startsWith(normalizedChildPath + '[')
+
+            return exactMatch || dotMatch || bracketMatch
+          })
+          return result
+        }
+
+        // If it's an object, recursively check if it contains arrays
+        if (typeof value === 'object') {
+          const result = props.arrayPaths.some(arrayPath => {
+            const matchesDot = arrayPath.startsWith(normalizedChildPath + '.')
+            const matchesBracket = arrayPath.startsWith(normalizedChildPath + '[')
+
+            return matchesDot || matchesBracket
+          })
+          return result
+        }
+
+        return false
+      } catch (error) {
+        console.error('[JsonTreeNode] Error in containsArrays', { childKey, currentPath, error: error.message })
+        return false
       }
-
-      // If the value itself is an array, check if any nested path starts with this childPath
-      if (Array.isArray(value)) {
-        console.log('  📦 Value is an array, checking for nested arrays...')
-        const result = props.arrayPaths.some(arrayPath => {
-          const exactMatch = arrayPath === normalizedChildPath
-          const dotMatch = arrayPath.startsWith(normalizedChildPath + '.')
-          const bracketMatch = arrayPath.startsWith(normalizedChildPath + '[')
-
-          if (exactMatch || dotMatch || bracketMatch) {
-            console.log(`    ✓ Found match: ${arrayPath} (exact: ${exactMatch}, dot: ${dotMatch}, bracket: ${bracketMatch})`)
-          }
-
-          return exactMatch || dotMatch || bracketMatch
-        })
-        console.log(`  📦 Array check result: ${result}`)
-        return result
-      }
-
-      // If it's an object, recursively check if it contains arrays
-      if (typeof value === 'object') {
-        console.log('  📄 Value is an object, checking for nested arrays...')
-        const result = props.arrayPaths.some(arrayPath => {
-          const matchesDot = arrayPath.startsWith(normalizedChildPath + '.')
-          const matchesBracket = arrayPath.startsWith(normalizedChildPath + '[')
-
-          if (matchesDot || matchesBracket) {
-            console.log(`    ✓ Found match: ${arrayPath} (dot: ${matchesDot}, bracket: ${matchesBracket})`)
-          }
-
-          return matchesDot || matchesBracket
-        })
-        console.log(`  📄 Object check result: ${result}`)
-        return result
-      }
-
-      console.log('  ❌ No match found (primitive value)')
-      return false
     }
 
     // Computed properties for node type detection
@@ -281,7 +263,6 @@ export default defineComponent({
       // Check if this is a metadata object with type/children/path structure
       if (props.node && typeof props.node === 'object' && !Array.isArray(props.node) &&
           props.node.type && props.node.children && (props.node.path || props.node.key)) {
-        console.warn('Detected metadata object in JsonTreeNode', props.node)
         // This is likely a metadata object, not the actual data
         return false
       }
@@ -302,34 +283,16 @@ export default defineComponent({
     const isNull = computed(() => props.node === null)
 
     const isExpandable = computed(() => {
-      const result = (isObject.value && Object.keys(props.node).length > 0) ||
+      return (isObject.value && Object.keys(props.node).length > 0) ||
         (isArray.value && props.node.length > 0)
-
-      // Debug logging for items[0] node
-      if (props.path === 'data.users[0].orders[0].items[0]') {
-        console.log(`[isExpandable] Path: ${props.path}`)
-        console.log(`  - isObject: ${isObject.value}`)
-        console.log(`  - isArray: ${isArray.value}`)
-        console.log('  - Object keys:', isObject.value ? Object.keys(props.node) : 'N/A')
-        console.log('  - Object keys length:', isObject.value ? Object.keys(props.node).length : 0)
-        console.log(`  - result: ${result}`)
-      }
-
-      return result
     })
 
     const isExpanded = computed(() => {
-      const result = expandedNodes.value.has(props.path)
-
-      // Debug logging for items[0] node
-      if (props.path === 'data.users[0].orders[0].items[0]') {
-        console.log(`[isExpanded] Path: ${props.path}`)
-        console.log(`  - expandedNodes has this path: ${result}`)
-        console.log(`  - expandedNodes size: ${expandedNodes.value.size}`)
-        console.log('  - expandedNodes contents:', Array.from(expandedNodes.value))
+      if (!expandedNodes || !expandedNodes.value) {
+        console.error('[JsonTreeNode] expandedNodes is undefined - tree expansion will not work', { path: props.path })
+        return false
       }
-
-      return result
+      return expandedNodes.value.has(props.path)
     })
 
     /**
@@ -339,7 +302,6 @@ export default defineComponent({
     const shouldShowNode = computed(() => {
       // Always show root node
       if (props.isRoot) {
-        console.log('[shouldShowNode] ROOT node - always showing')
         return true
       }
 
@@ -348,16 +310,9 @@ export default defineComponent({
         return true
       }
 
-      console.log(`[shouldShowNode] Checking node at path: ${props.path}`)
-      console.log(`  - isArray: ${isArray.value}`)
-      console.log(`  - isObject: ${isObject.value}`)
-      console.log(`  - node keys: ${isObject.value ? Object.keys(props.node).join(', ') : 'N/A'}`)
-      console.log(`  - arrayPaths available: ${props.arrayPaths.length}`, props.arrayPaths)
-
       // In array selection mode:
       // 1. Show if this is an array
       if (isArray.value) {
-        console.log('  → SHOW (is array)')
         return true
       }
 
@@ -365,29 +320,18 @@ export default defineComponent({
       if (isObject.value) {
         // Check if this object has any children that contain arrays
         const hasArrayChildren = Object.entries(props.node).some(([childKey, childValue]) => {
-          const result = containsArrays(childValue, childKey, props.path)
-          if (result) {
-            console.log(`  → Child '${childKey}' contains arrays`)
-          }
-          return result
+          return containsArrays(childValue, childKey, props.path)
         })
-        console.log(`  → ${hasArrayChildren ? 'SHOW' : 'HIDE'} (object ${hasArrayChildren ? 'has' : 'has no'} array children)`)
         return hasArrayChildren
       }
 
       // 3. Don't show primitive values in array selection mode
-      console.log('  → HIDE (primitive value)')
       return false
     })
 
     // Determine if this node is selectable (array or potential JSON)
     const isSelectable = computed(() => {
-      const result = isArray.value || isPotentialJson.value
-      // Log selectable nodes to help with debugging
-      if (isArray.value) {
-        console.log(`[isSelectable] Array node at path: ${props.path}, selectable: ${result}, shouldShowNode: ${shouldShowNode.value}`)
-      }
-      return result
+      return isArray.value || isPotentialJson.value
     })
 
     // Check if this node is a potential JSON string
@@ -459,20 +403,7 @@ export default defineComponent({
         return normalizedArrayPath === normalizedCurrentPath
       })
 
-      const result = pathIncluded && isArrayPath
-
-      // Only log for array nodes to reduce noise
-      if (isArray.value) {
-        console.log(`isSelectedArray computed - Path: ${props.path}`)
-        console.log('  - normalizedCurrentPath:', normalizedCurrentPath)
-        console.log('  - pathIncluded:', pathIncluded)
-        console.log('  - isArrayPath:', isArrayPath)
-        console.log('  - result:', result)
-        console.log('  - props.selectedPaths:', props.selectedPaths)
-        console.log('  - props.arrayPaths:', props.arrayPaths)
-      }
-
-      return result
+      return pathIncluded && isArrayPath
     })
 
     /**
@@ -596,6 +527,12 @@ export default defineComponent({
     const getChildPath = (childKey) => {
       if (props.path === 'root') return childKey
 
+      // Validate inputs
+      if (childKey === undefined || childKey === null) {
+        console.error('[JsonTreeNode] Invalid childKey in getChildPath', { path: props.path, childKey })
+        return props.path
+      }
+
       // Special handling for array items to create better paths
       if (Array.isArray(props.node)) {
         // For array items, return path with array index notation
@@ -607,10 +544,20 @@ export default defineComponent({
 
     const toggleNode = () => {
       if (!isExpandable.value) return
+      if (!expandedNodes || !expandedNodes.value) {
+        console.error('[JsonTreeNode] Cannot toggle node - expandedNodes is undefined', { path: props.path })
+        return
+      }
       emit('toggle-node', props.path)
     }
 
     const selectField = (type) => {
+      // Validate field selection
+      if (!props.path) {
+        console.error('[JsonTreeNode] Cannot select field - path is undefined', { type })
+        return
+      }
+
       // Create a node type object to provide more context for selection
       const nodeInfo = {
         type: type,
@@ -618,28 +565,14 @@ export default defineComponent({
         isPotentialJson: isPotentialJson.value,
         path: props.path
       }
-      console.log(`JsonTreeNode.selectField called - Path: ${props.path}, type: ${type}`, nodeInfo)
-      console.log('Emitting select-field event with:', props.path, nodeInfo)
 
-      // Emit both events for compatibility
+      // Emit event for selection
       emit('select-field', props.path, nodeInfo)
     }
 
-    // Debug computed to check if children should be rendered
+    // Computed to check if children should be rendered
     const shouldRenderChildren = computed(() => {
-      const result = isExpanded.value && isExpandable.value
-
-      // Debug logging for items[0] node
-      if (props.path === 'data.users[0].orders[0].items[0]') {
-        console.log(`[shouldRenderChildren] Path: ${props.path}`)
-        console.log(`  - isExpanded: ${isExpanded.value}`)
-        console.log(`  - isExpandable: ${isExpandable.value}`)
-        console.log(`  - result: ${result}`)
-        console.log(`  - isObject: ${isObject.value}`)
-        console.log(`  - selectionMode: ${selectionMode}`)
-      }
-
-      return result
+      return isExpanded.value && isExpandable.value
     })
 
     /**
@@ -647,29 +580,17 @@ export default defineComponent({
      */
     const filteredObjectChildren = computed(() => {
       if (!isObject.value) {
-        console.log(`[filteredObjectChildren] Not an object at path: ${props.path}`)
         return []
       }
 
       // When in array selection mode, only show children that contain arrays
       if (selectionMode === 'array') {
-        console.log(`[filteredObjectChildren] 🔍 START Filtering object at path: ${props.path}`)
-        console.log(`[filteredObjectChildren] isExpanded: ${isExpanded.value}, isExpandable: ${isExpandable.value}`)
-        console.log('[filteredObjectChildren] Object keys:', Object.keys(props.node))
-        console.log('[filteredObjectChildren] About to call Object.entries...')
-
         const entries = Object.entries(props.node)
-        console.log(`[filteredObjectChildren] Object.entries returned ${entries.length} entries`)
 
         const filtered = entries.filter(([childKey, childValue]) => {
-          console.log(`[filteredObjectChildren] 🔎 Filtering childKey: '${childKey}'`)
-          const result = containsArrays(childValue, childKey, props.path)
-          console.log(`[filteredObjectChildren] ✓ Key '${childKey}' contains arrays? ${result}`)
-          return result
+          return containsArrays(childValue, childKey, props.path)
         })
 
-        console.log('[filteredObjectChildren] 🎯 Final filtered result:', filtered.map(([k]) => k))
-        console.log(`[filteredObjectChildren] ✅ DONE - Returning ${filtered.length} entries`)
         return filtered
       }
 
@@ -683,147 +604,86 @@ export default defineComponent({
     const filteredArrayChildren = computed(() => {
       if (!isArray.value) return []
 
-      const items = props.node.slice(0, 20)
+      try {
+        const items = props.node.slice(0, 20)
 
-      // When in array selection mode, check if array items contain nested arrays
-      if (selectionMode === 'array') {
-        // Get the first item to check structure
-        if (items.length === 0) return []
+        // When in array selection mode, check if array items contain nested arrays
+        if (selectionMode === 'array') {
+          // Get the first item to check structure
+          if (items.length === 0) return []
 
-        const firstItem = items[0]
+          const firstItem = items[0]
 
-        console.log(`[filteredArrayChildren] Checking array at path: ${props.path}`)
-        console.log('[filteredArrayChildren] First item type:', typeof firstItem, Array.isArray(firstItem) ? 'Array' : '')
-        console.log('[filteredArrayChildren] Available arrayPaths:', props.arrayPaths)
+          // Check if this array itself is in the arrayPaths (it's selectable)
+          const normalizedPath = PathNormalizer.normalize(props.path)
+          const isThisArraySelectable = props.arrayPaths.includes(normalizedPath)
 
-        // Check if this array itself is in the arrayPaths (it's selectable)
-        // CRITICAL FIX: Normalize the current path to use [*] wildcard before comparing
-        const normalizedPath = PathNormalizer.normalize(props.path)
-        const isThisArraySelectable = props.arrayPaths.includes(normalizedPath)
-        console.log('[filteredArrayChildren] Normalized path:', normalizedPath)
-        console.log('[filteredArrayChildren] Is this array selectable?', isThisArraySelectable)
-
-        // If this array itself is selectable (a leaf array or an array of primitives),
-        // show its items for preview purposes (limited to first 20)
-        if (isThisArraySelectable) {
-          console.log(`[filteredArrayChildren] Array is selectable, returning ${items.length} items for preview`)
-          return items
-        }
-
-        // If array items are objects, check if they contain nested arrays
-        if (typeof firstItem === 'object' && firstItem !== null && !Array.isArray(firstItem)) {
-          console.log('╔════════════════════════════════════════════════════════════════════════')
-          console.log('║ [filteredArrayChildren] DETAILED NESTED ARRAY CHECK')
-          console.log('╠════════════════════════════════════════════════════════════════════════')
-          console.log('║ Current array path:', props.path)
-          console.log('║ Normalized path:', normalizedPath)
-          console.log('║ First item keys:', Object.keys(firstItem))
-          console.log('║ All available arrayPaths:')
-          props.arrayPaths.forEach((ap, idx) => {
-            console.log(`║   [${idx}] "${ap}"`)
-          })
-          console.log('╚════════════════════════════════════════════════════════════════════════')
-
-          // Check if any property in the first item leads to an array
-          // IMPORTANT: Normalized paths use [*] wildcards, current path has specific index like [0]
-          const hasNestedArrays = Object.keys(firstItem).some(key => {
-            const keyToCheck = key
-
-            console.log('┌────────────────────────────────────────────────────────────────────────')
-            console.log(`│ [filteredArrayChildren] Checking property: "${key}"`)
-            console.log('├────────────────────────────────────────────────────────────────────────')
-
-            // Normalize the current path to use [*] wildcard for comparison
-            // e.g., "projects[0].teams" becomes "projects[*].teams"
-            const normalizedCurrentPath = PathNormalizer.normalize(props.path).toLowerCase() // Case-insensitive
-            console.log(`│   Current path: "${props.path}"`)
-            console.log(`│   Normalized current path: "${normalizedCurrentPath}"`)
-            console.log(`│   Property to check: "${keyToCheck}"`)
-
-            // CRITICAL FIX: When checking a property of an array element, the path should include [*]
-            // e.g., if we're at "projects[*].teams" and checking property "members",
-            // the expected path is "projects[*].teams[*].members" (not "projects[*].teams.members")
-            // because "members" is a property of each team in the teams array
-            const expectedPathPrefix = `${normalizedCurrentPath}[*].${keyToCheck.toLowerCase()}` // Case-insensitive
-            console.log(`│   Expected path prefix: "${expectedPathPrefix}"`)
-            console.log('│')
-            console.log('│   Checking against all arrayPaths:')
-
-            // Check if any arrayPath starts with this prefix
-            const matches = props.arrayPaths.some(arrayPath => {
-              const normalizedArrayPath = PathNormalizer.normalize(arrayPath).toLowerCase() // Case-insensitive
-              // Direct match: projects[*].teams[*].members
-              if (normalizedArrayPath === expectedPathPrefix) {
-                console.log(`│   ✓ EXACT MATCH: "${arrayPath}" === "${expectedPathPrefix}"`)
-                return true
-              }
-
-              // Prefix match with array index: projects[*].teams[*].members[*]...
-              // or projects[*].teams[*].members[*].skills
-              if (normalizedArrayPath.startsWith(expectedPathPrefix + '[*]')) {
-                console.log(`│   ✓ BRACKET MATCH: "${arrayPath}" starts with "${expectedPathPrefix}[*]"`)
-                return true
-              }
-
-              // Also check for deeper nesting with dot notation
-              // e.g., projects[*].teams[*].members.someProperty
-              if (normalizedArrayPath.startsWith(expectedPathPrefix + '.')) {
-                console.log(`│   ✓ DOT MATCH: "${arrayPath}" starts with "${expectedPathPrefix}."`)
-                return true
-              }
-
-              console.log(`│   ✗ No match: "${arrayPath}"`)
-              return false
-            })
-
-            console.log('├────────────────────────────────────────────────────────────────────────')
-            if (matches) {
-              console.log(`│ ✅ RESULT: Property '${key}' LEADS TO ARRAYS`)
-            } else {
-              console.log(`│ ❌ RESULT: Property '${key}' does NOT lead to arrays`)
-            }
-            console.log('└────────────────────────────────────────────────────────────────────────')
-
-            return matches
-          })
-
-          console.log('╔════════════════════════════════════════════════════════════════════════')
-          console.log('║ [filteredArrayChildren] FINAL RESULT')
-          console.log('╠════════════════════════════════════════════════════════════════════════')
-          console.log('║ hasNestedArrays:', hasNestedArrays)
-          console.log('╚════════════════════════════════════════════════════════════════════════')
-
-          // If there are nested arrays, show the items so users can navigate to them
-          if (hasNestedArrays) {
-            console.log(`[filteredArrayChildren] Returning ${items.length} items`)
+          // If this array itself is selectable (a leaf array or an array of primitives),
+          // show its items for preview purposes (limited to first 20)
+          if (isThisArraySelectable) {
             return items
           }
 
-          // Otherwise, don't show the items since they don't contain arrays
-          console.log('[filteredArrayChildren] No nested arrays found, returning empty')
+          // If array items are objects, check if they contain nested arrays
+          if (typeof firstItem === 'object' && firstItem !== null && !Array.isArray(firstItem)) {
+            // Check if any property in the first item leads to an array
+            const hasNestedArrays = Object.keys(firstItem).some(key => {
+              const keyToCheck = key
+
+              // Normalize the current path to use [*] wildcard for comparison
+              const normalizedCurrentPath = PathNormalizer.normalize(props.path).toLowerCase() // Case-insensitive
+
+              // When checking a property of an array element, the path should include [*]
+              const expectedPathPrefix = `${normalizedCurrentPath}[*].${keyToCheck.toLowerCase()}` // Case-insensitive
+
+              // Check if any arrayPath starts with this prefix
+              const matches = props.arrayPaths.some(arrayPath => {
+                const normalizedArrayPath = PathNormalizer.normalize(arrayPath).toLowerCase() // Case-insensitive
+                // Direct match: projects[*].teams[*].members
+                if (normalizedArrayPath === expectedPathPrefix) {
+                  return true
+                }
+
+                // Prefix match with array index: projects[*].teams[*].members[*]...
+                if (normalizedArrayPath.startsWith(expectedPathPrefix + '[*]')) {
+                  return true
+                }
+
+                // Also check for deeper nesting with dot notation
+                if (normalizedArrayPath.startsWith(expectedPathPrefix + '.')) {
+                  return true
+                }
+
+                return false
+              })
+
+              return matches
+            })
+
+            // If there are nested arrays, show the items so users can navigate to them
+            if (hasNestedArrays) {
+              return items
+            }
+
+            // Otherwise, don't show the items since they don't contain arrays
+            return []
+          }
+
+          // For non-object array items (primitives or arrays), don't show them in array mode
+          // unless this array itself is selectable (which we already checked above)
           return []
         }
 
-        // For non-object array items (primitives or arrays), don't show them in array mode
-        // unless this array itself is selectable (which we already checked above)
-        console.log('[filteredArrayChildren] Non-object items, returning empty')
+        // In other modes, show all items
+        return items
+      } catch (error) {
+        console.error('[JsonTreeNode] Error filtering array children', { path: props.path, error: error.message })
         return []
       }
-
-      // In other modes, show all items
-      return items
     })
 
-    // Debug function to log what's about to be rendered
+    // Function to log what's about to be rendered (empty for production)
     const logArrayRender = () => {
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [RENDER] About to render array children')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ Array path:', props.path)
-      console.log('║ Array length:', props.node.length)
-      console.log('║ filteredArrayChildren.length:', filteredArrayChildren.value.length)
-      console.log('║ Items to render:', filteredArrayChildren.value.length)
-      console.log('╚════════════════════════════════════════════════════════════════════════')
       return ''
     }
 

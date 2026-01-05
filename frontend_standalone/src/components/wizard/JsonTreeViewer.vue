@@ -91,11 +91,9 @@ export default defineComponent({
     const expandedNodes = ref(new Set(['root']))
 
     // Track selected field paths
-    console.log('JsonTreeViewer initialSelectedPaths:', props.initialSelectedPaths)
     const selectedPaths = ref(Array.isArray(props.initialSelectedPaths) ? [...props.initialSelectedPaths] : [])
 
     // Log selected paths after initialization
-    console.log('JsonTreeViewer selectedPaths after initialization:', selectedPaths.value)
 
     // Track parsed JSON strings
     const parsedJsonFields = ref(new Map())
@@ -109,27 +107,21 @@ export default defineComponent({
       try {
         // Handle array indices in path
         const parts = path.replace(/\[(\d+)\]/g, '.$1').split('.')
-        console.log(`[getFieldValueByPath] Getting value at path '${path}', parts:`, parts)
         let current = obj
 
         for (const part of parts) {
           if (current === undefined || current === null) {
-            console.log(`[getFieldValueByPath] Current is null/undefined at part '${part}'`)
             return undefined
           }
           if (typeof current !== 'object') {
-            console.log(`[getFieldValueByPath] Current is not an object at part '${part}', type:`, typeof current)
             return undefined
           }
 
           // Handle numeric indices properly
           const index = /^\d+$/.test(part) ? parseInt(part) : part
-          console.log(`[getFieldValueByPath] Accessing part '${part}' (index: ${index})`)
           current = current[index]
-          console.log('[getFieldValueByPath] Current value:', current)
         }
 
-        console.log(`[getFieldValueByPath] Final value at '${path}':`, current)
         return current
       } catch (e) {
         console.error(`Error getting value at path '${path}':`, e)
@@ -183,16 +175,10 @@ export default defineComponent({
      * This preserves the complete structure of array elements that contain nested arrays
      */
     const copyArrayPathsStructure = (source, targetPath, allArrayPaths) => {
-      console.log(`[copyArrayPathsStructure] Called with targetPath: '${targetPath}'`)
-      console.log('[copyArrayPathsStructure] allArrayPaths:', allArrayPaths)
-
       // Get the value at the target path
       const value = getFieldValueByPath(source, targetPath)
 
-      console.log(`[copyArrayPathsStructure] value at '${targetPath}':`, value)
-
       if (!value) {
-        console.log('[copyArrayPathsStructure] No value found, returning null')
         return null
       }
 
@@ -203,26 +189,20 @@ export default defineComponent({
         const normalizedTargetPath = PathNormalizer.normalize(targetPath)
         const pathPrefix = normalizedTargetPath ? `${normalizedTargetPath}[` : '['
 
-        console.log(`[copyArrayPathsStructure] Array at '${targetPath}', normalized: '${normalizedTargetPath}', checking prefix: '${pathPrefix}'`)
-
         // Check if there are any nested arrays within this array's elements
         const hasNestedArrays = allArrayPaths.some(path => {
           // Check if path starts with normalizedTargetPath[ (for nested arrays in this array)
           if (path.startsWith(pathPrefix)) {
-            console.log(`[copyArrayPathsStructure]   ✓ Found nested array: ${path} starts with ${pathPrefix}`)
             return true
           }
 
           // Also check for paths like normalizedTargetPath. (for objects containing arrays)
           if (normalizedTargetPath && path.startsWith(normalizedTargetPath + '.')) {
-            console.log(`[copyArrayPathsStructure]   ✓ Found nested array: ${path} starts with ${normalizedTargetPath}.`)
             return true
           }
 
           return false
         })
-
-        console.log(`[copyArrayPathsStructure] Array at '${targetPath}' hasNestedArrays: ${hasNestedArrays}`)
 
         if (hasNestedArrays && value.length > 0) {
           // Copy the array and recursively process its first element if it's an object
@@ -241,47 +221,34 @@ export default defineComponent({
               // IMPORTANT: Normalize the childPath to use [*] wildcards for comparison
               const normalizedChildPath = PathNormalizer.normalize(childPath)
 
-              console.log(`[copyArrayPathsStructure] Checking property '${key}' at childPath: ${childPath} (normalized: ${normalizedChildPath})`)
-              console.log('[copyArrayPathsStructure] allArrayPaths:', allArrayPaths)
-
               // Check if this property or its descendants contain arrays
               // Compare using normalized paths (with [*] wildcards)
               const leadsToArray = allArrayPaths.some(arrayPath => {
                 // Direct match (e.g., 'projects[*].teams' === 'projects[*].teams')
                 if (arrayPath === normalizedChildPath) {
-                  console.log(`[copyArrayPathsStructure]   ✓ Direct match: ${arrayPath} === ${normalizedChildPath}`)
                   return true
                 }
 
                 // Check if array path starts with this child path followed by array index
                 // (e.g., 'projects[*].teams[*].members' starts with 'projects[*].teams[')
                 if (arrayPath.startsWith(normalizedChildPath + '[')) {
-                  console.log(`[copyArrayPathsStructure]   ✓ Array index match: ${arrayPath} starts with ${normalizedChildPath}[`)
                   return true
                 }
 
                 // Check if array path starts with this child path followed by a dot
                 // (e.g., 'projects[*].teams[*].members' starts with 'projects[*].teams.')
                 if (arrayPath.startsWith(normalizedChildPath + '.')) {
-                  console.log(`[copyArrayPathsStructure]   ✓ Nested property match: ${arrayPath} starts with ${normalizedChildPath}.`)
                   return true
                 }
 
                 return false
               })
 
-              console.log(`[copyArrayPathsStructure] Property '${key}' leadsToArray: ${leadsToArray}`)
-
               if (leadsToArray) {
                 // Recursively copy this branch
-                console.log(`[copyArrayPathsStructure] Recursively processing: ${childPath}`)
                 const childValue = copyArrayPathsStructure(source, childPath, allArrayPaths)
-                console.log('[copyArrayPathsStructure] Recursive call returned:', childValue)
                 if (childValue !== null && childValue !== undefined) {
                   processedElement[key] = childValue
-                  console.log(`[copyArrayPathsStructure] Added '${key}' to processedElement, value:`, processedElement[key])
-                } else {
-                  console.log(`[copyArrayPathsStructure] ✗ childValue is null/undefined, not adding '${key}'`)
                 }
               }
             }
@@ -289,24 +256,17 @@ export default defineComponent({
             // Only add the processed element if it has properties
             if (Object.keys(processedElement).length > 0) {
               arrayCopy.push(processedElement)
-              console.log('[copyArrayPathsStructure] Added processedElement to arrayCopy:', processedElement)
-            } else {
-              console.log('[copyArrayPathsStructure] ✗ processedElement is empty, not adding to arrayCopy')
             }
           }
 
-          console.log(`[copyArrayPathsStructure] Returning arrayCopy (length: ${arrayCopy.length}):`, arrayCopy)
           const result = arrayCopy.length > 0 ? arrayCopy : value
-          console.log('[copyArrayPathsStructure] Final array result:', result)
           return result
         }
 
         // Return the array as-is if it has no nested arrays
-        console.log('[copyArrayPathsStructure] Array has no nested arrays, returning as-is:', value)
         return value
       } else if (typeof value === 'object' && value !== null) {
         // For objects, recursively process properties that lead to arrays
-        console.log(`[copyArrayPathsStructure] Processing object at '${targetPath}'`)
         const result = {}
 
         for (const key in value) {
@@ -315,52 +275,37 @@ export default defineComponent({
           // IMPORTANT: Normalize the childPath to use [*] wildcards for comparison
           const normalizedChildPath = PathNormalizer.normalize(childPath)
 
-          console.log(`[copyArrayPathsStructure] Checking object property '${key}' at childPath: ${childPath} (normalized: ${normalizedChildPath})`)
-
           // Check if this property or its descendants contain arrays
           // Compare using normalized paths (with [*] wildcards)
           const leadsToArray = allArrayPaths.some(arrayPath => {
             // Direct match
             if (arrayPath === normalizedChildPath) {
-              console.log(`[copyArrayPathsStructure]   ✓ Object property direct match: ${arrayPath} === ${normalizedChildPath}`)
               return true
             }
 
             // Check if array path starts with this child path
             if (arrayPath.startsWith(normalizedChildPath + '[')) {
-              console.log(`[copyArrayPathsStructure]   ✓ Object property array match: ${arrayPath} starts with ${normalizedChildPath}[`)
               return true
             }
             if (arrayPath.startsWith(normalizedChildPath + '.')) {
-              console.log(`[copyArrayPathsStructure]   ✓ Object property nested match: ${arrayPath} starts with ${normalizedChildPath}.`)
               return true
             }
 
             return false
           })
 
-          console.log(`[copyArrayPathsStructure] Object property '${key}' leadsToArray: ${leadsToArray}`)
-
           if (leadsToArray) {
-            console.log(`[copyArrayPathsStructure] Recursively processing object property: ${childPath}`)
             const childValue = copyArrayPathsStructure(source, childPath, allArrayPaths)
-            console.log('[copyArrayPathsStructure] Object property recursive call returned:', childValue)
             if (childValue !== null && childValue !== undefined) {
               result[key] = childValue
-              console.log(`[copyArrayPathsStructure] Added object property '${key}' to result`)
-            } else {
-              console.log(`[copyArrayPathsStructure] ✗ Object property childValue is null/undefined, not adding '${key}'`)
             }
           }
         }
 
-        console.log('[copyArrayPathsStructure] Object processing complete, result:', result)
         const finalResult = Object.keys(result).length > 0 ? result : null
-        console.log('[copyArrayPathsStructure] Returning object result:', finalResult)
         return finalResult
       }
 
-      console.log('[copyArrayPathsStructure] Value is not array or object, returning null')
       return null
     }
 
@@ -373,34 +318,24 @@ export default defineComponent({
         return data
       }
 
-      console.log('filterToArraysOnly - Input data:', data)
-      console.log('filterToArraysOnly - Array paths:', arrayPaths)
-
       // Special handling: if root is an array, start from first item
       const isRootArray = Array.isArray(data)
       const sourceData = isRootArray && data.length > 0 ? data[0] : data
-
-      console.log('filterToArraysOnly - Source data (from first item):', sourceData)
 
       // Normalize array paths using PathNormalizer - remove leading [0]. prefix for root arrays
       const normalizedPaths = arrayPaths.map(path => {
         if (path.startsWith('[')) {
           const normalized = path.replace(/^\[\d+\]\.?/, '')
-          console.log(`  Normalized path: ${path} -> ${normalized}`)
           return normalized
         }
         return path
       }).filter(p => p && p.trim() !== '') // Remove empty paths
 
-      console.log('filterToArraysOnly - Normalized paths:', normalizedPaths)
-
       // Use the new recursive approach to build the filtered structure
       // Start from the root and recursively copy only paths that lead to arrays
       const filtered = copyArrayPathsStructure(sourceData, '', normalizedPaths)
 
-      console.log('filterToArraysOnly - Output:', filtered)
       const result = filtered || sourceData
-      console.log('filterToArraysOnly - Final result:', result)
       return result
     }
 
@@ -410,7 +345,7 @@ export default defineComponent({
       try {
         return filterToArraysOnly(data, arrayPaths.value)
       } catch (e) {
-        console.error('pruneToArraysOnly error:', e)
+        console.error('Error in pruneToArraysOnly', e)
         return data
       }
     }
@@ -428,10 +363,6 @@ export default defineComponent({
                                  data.children &&
                                  (data.path || data.key)
 
-      if (hasMetadataStructure) {
-        console.error('JsonTreeViewer received metadata object instead of raw JSON', data)
-      }
-
       return hasMetadataStructure
     })
 
@@ -439,7 +370,6 @@ export default defineComponent({
     const processedData = computed(() => {
       // Check if the input data is valid
       if (!props.data) {
-        console.warn('Empty data provided to JsonTreeViewer')
         return {}
       }
 
@@ -448,15 +378,12 @@ export default defineComponent({
 
       // Check if we got a metadata object instead of raw JSON
       if (isMetadataObject.value) {
-        console.warn('Received metadata object instead of raw JSON in JsonTreeViewer', props.data)
-
         // Return a simple structure rather than trying to process the metadata
         return { error: 'Invalid data format. Please check the console for details.' }
       }
 
       // Handle primitive types (convert to object representation)
       if (typeof dataToProcess !== 'object' || dataToProcess === null) {
-        console.warn('Non-object data provided to JsonTreeViewer:', dataToProcess)
         return { value: dataToProcess }
       }
 
@@ -467,8 +394,6 @@ export default defineComponent({
       } catch (e) {
         return { error: 'Could not process data structure' }
       }
-
-      console.log('JsonTreeViewer processedData input:', dataToProcess)
 
       // Apply all JSON parsing based on selected fields
       selectedPaths.value.forEach(path => {
@@ -483,7 +408,7 @@ export default defineComponent({
               // Update the processed data
               processed = setFieldValueByPath(processed, path, parsedValue)
             } catch (error) {
-              console.error(`Error parsing JSON at ${path}:`, error)
+              console.error('Error parsing JSON', error)
             }
           }
         }
@@ -496,7 +421,6 @@ export default defineComponent({
         processed = filterToArraysOnly(processed, arrayPaths.value)
       }
 
-      console.log('JsonTreeViewer processedData output:', processed)
       return processed
     })
 
@@ -511,7 +435,6 @@ export default defineComponent({
         // Skip metadata objects with type/children structure
         if (typeof obj === 'object' && obj !== null && !Array.isArray(obj) &&
             obj.type && obj.children && (obj.path || obj.key)) {
-          console.warn('Skipping metadata object in arrayPaths:', obj)
           return
         }
 
@@ -528,7 +451,6 @@ export default defineComponent({
               removeWildcards: false,
               removeIndices: true
             })
-            console.log('Adding array path (normalized):', normalizedArrayPath, 'from:', path)
             paths.push(normalizedArrayPath)
             processedPaths.add(pathForCheck)
           }
@@ -578,7 +500,6 @@ export default defineComponent({
 
       // Start traversal with props.data
       traverse(props.data)
-      console.log('Detected array paths:', paths)
       return paths
     })
 
@@ -599,7 +520,6 @@ export default defineComponent({
         return path
       }).filter(p => p && p.trim() !== '')
 
-      console.log('Normalized array paths:', normalized)
       return normalized
     })
 
@@ -613,7 +533,6 @@ export default defineComponent({
         // Skip metadata objects with type/children structure
         if (typeof obj === 'object' && obj !== null && !Array.isArray(obj) &&
             obj.type && obj.children && (obj.path || obj.key)) {
-          console.warn('Skipping metadata object in potentialJsonPaths:', obj)
           return
         }
 
@@ -711,8 +630,6 @@ export default defineComponent({
         return parentPaths
       }
 
-      console.log('[getParentArrayPaths] Finding parents for:', arrayPath)
-
       // Normalize the input path to ensure we're working with [*] wildcards
       const normalizedPath = PathNormalizer.normalize(arrayPath, {
         removePrefix: true,
@@ -720,14 +637,10 @@ export default defineComponent({
         removeIndices: true
       })
 
-      console.log('[getParentArrayPaths] Normalized path:', normalizedPath)
-
       // Remove array brackets from the path for segmentation
       // e.g., "arr1[*].childarr[*]" -> "arr1.childarr"
       const pathWithoutBrackets = normalizedPath.replace(/\[\*\]/g, '')
       const segments = pathWithoutBrackets.split('.')
-
-      console.log('[getParentArrayPaths] Segments:', segments)
 
       // Build parent paths from most specific to least specific
       // e.g., "a.b.c.d" -> ["a.b.c", "a.b", "a"]
@@ -747,10 +660,6 @@ export default defineComponent({
 
           const matches = apWithoutBrackets === parentPathBase
 
-          if (matches) {
-            console.log('[getParentArrayPaths]   ✓ Found parent array:', normalizedAp)
-          }
-
           return matches
         })
 
@@ -765,7 +674,6 @@ export default defineComponent({
         }
       }
 
-      console.log('[getParentArrayPaths] All parent arrays:', parentPaths)
       return parentPaths
     }
 
@@ -783,16 +691,12 @@ export default defineComponent({
         return childPaths
       }
 
-      console.log('[getChildArrayPaths] Finding children for:', parentPath)
-
       // Normalize the parent path to use [*] wildcards
       const normalizedParent = PathNormalizer.normalize(parentPath, {
         removePrefix: true,
         removeWildcards: false,
         removeIndices: true
       })
-
-      console.log('[getChildArrayPaths] Normalized parent:', normalizedParent)
 
       // Remove brackets from parent for prefix matching
       const parentWithoutBrackets = normalizedParent.replace(/\[\*\]/g, '')
@@ -817,12 +721,10 @@ export default defineComponent({
         const isChild = arrayPathWithoutBrackets.startsWith(parentWithoutBrackets + '.')
 
         if (isChild) {
-          console.log('[getChildArrayPaths]   ✓ Found child array:', normalizedArrayPath)
           childPaths.push(normalizedArrayPath)
         }
       })
 
-      console.log('[getChildArrayPaths] All child arrays:', childPaths)
       return childPaths
     }
 
@@ -833,9 +735,6 @@ export default defineComponent({
       const nodePath = typeof type === 'object' ? path : path
       const nodeInfo = typeof type === 'object' ? type : { type: type }
 
-      console.log('JsonTreeViewer.selectField called - Path:', nodePath, 'Type:', typeValue, 'NodeInfo:', nodeInfo)
-      console.log('Current selectedPaths:', selectedPaths.value)
-
       // Normalize the path for array selections to use [*] wildcards
       let normalizedPath = nodePath
       if (typeValue === 'array') {
@@ -844,7 +743,6 @@ export default defineComponent({
           removeWildcards: false,
           removeIndices: true
         })
-        console.log('Normalized array path:', normalizedPath, 'from:', nodePath)
       }
 
       const index = selectedPaths.value.findIndex(p => p === normalizedPath)
@@ -864,7 +762,6 @@ export default defineComponent({
       // Check if we're dealing with an array item path like [0].field_name
       if (nodePath && nodePath.match(/^\[\d+\]\.\w+/)) {
         const fieldName = nodePath.split('.')[1]
-        console.log(`Selected array item field: ${nodePath}, field name: ${fieldName}`)
 
         // Check if another array item with the same field is already selected
         // and use that existing selection rather than adding a duplicate
@@ -876,7 +773,6 @@ export default defineComponent({
         if (existingPathIndex >= 0 && index < 0) {
           // If another instance is selected, use that one's path instead
           // This ensures we don't add duplicates but still track the selection
-          console.log(`Using existing selection: ${selectedPaths.value[existingPathIndex]}`)
           normalizedPath = selectedPaths.value[existingPathIndex]
         }
       }
@@ -886,56 +782,41 @@ export default defineComponent({
 
       if (effectiveIndex >= 0) {
         // Deselect
-        console.log(`Deselecting path: ${normalizedPath}`)
         selectedPaths.value.splice(effectiveIndex, 1)
 
         // Auto-deselect all child arrays when deselecting a parent array (for fanout mode)
         if (props.selectionMode === 'array' && typeValue === 'array') {
-          console.log('[Auto-deselect children] Checking for child arrays to auto-deselect...')
           const childPaths = getChildArrayPaths(normalizedPath)
-          console.log('[Auto-deselect children] Found child paths:', childPaths)
 
           for (const childPath of childPaths) {
             // Check if child is currently selected
             const childIndex = selectedPaths.value.findIndex(p => p === childPath)
             if (childIndex >= 0) {
               // Child is selected, auto-deselect it
-              console.log(`[Auto-deselect children] Auto-deselecting child array: ${childPath}`)
               selectedPaths.value.splice(childIndex, 1)
-            } else {
-              console.log(`[Auto-deselect children] Child not selected: ${childPath}`)
             }
           }
         }
       } else {
         // Select
-        console.log(`Selecting path: ${normalizedPath}`)
         selectedPaths.value.push(normalizedPath)
 
         // Auto-select all parent arrays when selecting a child array (for fanout mode)
         if (props.selectionMode === 'array' && typeValue === 'array') {
-          console.log('[Auto-select parents] Checking for parent arrays to auto-select...')
           const parentPaths = getParentArrayPaths(normalizedPath)
-          console.log('[Auto-select parents] Found parent paths:', parentPaths)
 
           for (const parentPath of parentPaths) {
             // Check if parent is already selected
             const parentIndex = selectedPaths.value.findIndex(p => p === parentPath)
             if (parentIndex < 0) {
               // Parent not selected, auto-select it
-              console.log(`[Auto-select parents] Auto-selecting parent array: ${parentPath}`)
               selectedPaths.value.push(parentPath)
-            } else {
-              console.log(`[Auto-select parents] Parent already selected: ${parentPath}`)
             }
           }
         }
       }
 
-      console.log('Updated selectedPaths:', selectedPaths.value)
-
       // Emit events for different handlers
-      console.log('Emitting events - update:selected, field-selected, select-field')
       emit('update:selected', [...selectedPaths.value])
       emit('field-selected', {
         path: normalizedPath,
@@ -947,20 +828,14 @@ export default defineComponent({
 
     // Watch for changes in initial selected paths
     watch(() => props.initialSelectedPaths, (newPaths) => {
-      console.log('JsonTreeViewer: initialSelectedPaths changed:', newPaths)
-
       // Ensure we have valid array to spread
       if (Array.isArray(newPaths)) {
-        console.log('JsonTreeViewer: Updating selectedPaths with new values:', newPaths)
         // Always set selectedPaths to a fresh copy of newPaths, even if empty
         selectedPaths.value = [...newPaths]
       } else {
-        console.log('JsonTreeViewer: initialSelectedPaths is invalid (not an array):', newPaths)
         // Initialize as empty array if not an array
         selectedPaths.value = []
       }
-
-      console.log('JsonTreeViewer: selectedPaths after update:', selectedPaths.value)
     }, { deep: true, immediate: true })
 
     // Auto-expand nodes to show the structure on mount
@@ -996,9 +871,6 @@ export default defineComponent({
     const autoExpandArrayContainers = () => {
       if (props.selectionMode !== 'array') return
 
-      console.log('[autoExpandArrayContainers] Starting auto-expansion for array mode...')
-      console.log('[autoExpandArrayContainers] arrayPaths:', arrayPaths.value)
-
       const pathsToExpand = new Set()
 
       /**
@@ -1006,8 +878,6 @@ export default defineComponent({
        * Converts wildcard paths like log.Records[*].changes[*] to actual paths like log.Records[0].changes[0]
        */
       const expandPathWithIndices = (pathWithWildcards, currentData = props.data, currentPath = '') => {
-        console.log(`[expandPathWithIndices] Processing: ${pathWithWildcards}, currentPath: "${currentPath}"`)
-
         // Split the path into segments
         const segments = pathWithWildcards.split(/\.|\[/)
 
@@ -1028,13 +898,10 @@ export default defineComponent({
             if (segment === '*') {
               // We need to expand all items in the current array
               if (Array.isArray(data)) {
-                console.log(`  → Found array at "${builtPath}" with ${data.length} items`)
-
                 // Expand each array item
                 for (let idx = 0; idx < data.length; idx++) {
                   const itemPath = `${builtPath}[${idx}]`
                   pathsToExpand.add(itemPath)
-                  console.log(`    ✓ Will expand array item: ${itemPath}`)
 
                   // Recursively process the rest of the path for this item
                   const remainingSegments = segments.slice(i + 1)
@@ -1058,9 +925,7 @@ export default defineComponent({
               if (Array.isArray(data) && data[idx] !== undefined) {
                 data = data[idx]
                 pathsToExpand.add(builtPath)
-                console.log(`    ✓ Will expand: ${builtPath}`)
               } else {
-                console.log(`    ✗ Array index ${idx} not found in data at ${builtPath}`)
                 return
               }
             }
@@ -1074,9 +939,7 @@ export default defineComponent({
             if (data && typeof data === 'object' && segment in data) {
               data = data[segment]
               pathsToExpand.add(builtPath)
-              console.log(`    ✓ Will expand: ${builtPath}`)
             } else {
-              console.log(`    ✗ Property "${segment}" not found in data at ${builtPath}`)
               return
             }
           }
@@ -1085,14 +948,9 @@ export default defineComponent({
 
       // Process each array path
       arrayPaths.value.forEach(arrayPath => {
-        console.log(`\n[autoExpandArrayContainers] Processing arrayPath: ${arrayPath}`)
-
         // Convert path with wildcards to actual indexed paths
         expandPathWithIndices(arrayPath)
       })
-
-      console.log(`\n[autoExpandArrayContainers] Total paths to expand: ${pathsToExpand.size}`)
-      console.log('[autoExpandArrayContainers] Paths:', Array.from(pathsToExpand))
 
       // Expand all the container paths
       const newExpandedNodes = new Set(expandedNodes.value)
@@ -1103,10 +961,6 @@ export default defineComponent({
       })
 
       expandedNodes.value = newExpandedNodes
-
-      console.log('[autoExpandArrayContainers] Auto-expansion complete')
-      console.log('[autoExpandArrayContainers] Total expanded nodes:', expandedNodes.value.size)
-      console.log('[autoExpandArrayContainers] Final expanded nodes:', Array.from(expandedNodes.value))
     }
 
     // Auto-expand on data change

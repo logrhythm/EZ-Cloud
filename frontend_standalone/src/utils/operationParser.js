@@ -109,12 +109,6 @@ export function parseOperationFromInputRule (inputRule) {
     // Updated regex to handle empty delimiters and be more specific about field path
     const splitMatch = trimmed.match(/^SPLIT\(([$.\w[\]]+),\s*['"](.*)['"],\s*(\d+)\)$/i)
     if (splitMatch) {
-      console.log('[OperationParser] Parsing SPLIT operation:')
-      console.log('  Full match:', splitMatch[0])
-      console.log('  Field path:', splitMatch[1])
-      console.log('  Delimiter:', splitMatch[2])
-      console.log('  Index:', splitMatch[3])
-
       return {
         type: OPERATION_TYPES.SPLIT,
         fieldPath: splitMatch[1].trim(),
@@ -328,19 +322,6 @@ function normalizeOperationType (type) {
  */
 export function buildOperationSyntax (type, fieldPath, parameters = {}) {
   try {
-    console.log('╔════════════════════════════════════════════════════════════════════════')
-    console.log('║ 🔨 [buildOperationSyntax] CALLED')
-    console.log('╠════════════════════════════════════════════════════════════════════════')
-    console.log('║ type:', type)
-    console.log('║ fieldPath:', fieldPath)
-    console.log('║ parameters:', JSON.stringify(parameters, null, 2))
-    if (type === 'SPLIT' || type === 'split') {
-      console.log('║ 🎯 SPLIT OPERATION DETECTED!')
-      console.log('║ parameters.delimiter:', parameters.delimiter, 'type:', typeof parameters.delimiter)
-      console.log('║ parameters.index:', parameters.index, 'type:', typeof parameters.index)
-    }
-    console.log('╚════════════════════════════════════════════════════════════════════════')
-
     // Normalize operation type for case-insensitive comparison
     const normalizedType = normalizeOperationType(type)
 
@@ -353,11 +334,9 @@ export function buildOperationSyntax (type, fieldPath, parameters = {}) {
       case OPERATION_TYPES.REGEX:
         // Gracefully handle incomplete configuration - return null instead of throwing
         if (!parameters.pattern) {
-          console.debug('[OperationParser] REGEX pattern not configured yet, returning null')
           return null
         }
         if (parameters.captureGroup === undefined || parameters.captureGroup === null) {
-          console.debug('[OperationParser] REGEX captureGroup not configured yet, returning null')
           return null
         }
         // Format: Regex($.jsonPath, /pattern/, captureGroupName)
@@ -366,21 +345,18 @@ export function buildOperationSyntax (type, fieldPath, parameters = {}) {
 
       case OPERATION_TYPES.LOOKUP:
         if (!parameters.tableName) {
-          console.debug('[OperationParser] LookUp tableName not configured yet, returning null')
           return null
         }
         return `LookUp(${parameters.tableName}, ${fieldPath})`
 
       case OPERATION_TYPES.LOOKUP_STARTS_WITH:
         if (!parameters.tableName) {
-          console.debug('[OperationParser] LookUpStartsWith tableName not configured yet, returning null')
           return null
         }
         return `LookUpStartsWith(${parameters.tableName}, ${fieldPath})`
 
       case OPERATION_TYPES.PREFIX: {
         if (parameters.prefix === undefined || parameters.prefix === null) {
-          console.debug('[OperationParser] PREFIX prefix not configured yet, returning null')
           return null
         }
         // Escape single quotes in prefix
@@ -394,17 +370,13 @@ export function buildOperationSyntax (type, fieldPath, parameters = {}) {
 
       case OPERATION_TYPES.SPLIT:
         if (parameters.delimiter === undefined || parameters.delimiter === null || parameters.index === undefined || parameters.index === null) {
-          console.debug('[OperationParser] SPLIT delimiter or index not configured yet, returning null')
-          console.debug('[OperationParser] SPLIT - delimiter:', parameters.delimiter, 'index:', parameters.index)
           return null
         }
-        console.log('✅ [buildOperationSyntax] Building SPLIT syntax:', `SPLIT(${fieldPath}, '${parameters.delimiter}', ${parameters.index})`)
         return `SPLIT(${fieldPath}, '${parameters.delimiter}', ${parameters.index})`
 
       // Array Operations
       case OPERATION_TYPES.CONCAT: {
         if (!parameters.values || !Array.isArray(parameters.values)) {
-          console.debug('[OperationParser] Concat values not configured yet, returning null')
           return null
         }
         const quotedValues = parameters.values.map(v => `'${v.replace(/'/g, "\\'")}'`)
@@ -413,7 +385,6 @@ export function buildOperationSyntax (type, fieldPath, parameters = {}) {
 
       case OPERATION_TYPES.CONCATARRAY: {
         if (parameters.delimiter === undefined || parameters.delimiter === null) {
-          console.debug('[OperationParser] ConcatArray delimiter not configured yet, returning null')
           return null
         }
         return `ConcatArray(${fieldPath}, '${parameters.delimiter}')`
@@ -438,43 +409,31 @@ export function buildOperationSyntax (type, fieldPath, parameters = {}) {
 
       // Math Operations
       case OPERATION_TYPES.ADD:
-        console.debug('[OperationParser] ADD operation - parameters.value:', parameters.value)
         if (parameters.value === undefined) {
-          console.debug('[OperationParser] add value not configured yet (undefined), returning null')
           return null
         }
-        console.debug('[OperationParser] Generating ADD syntax with value:', parameters.value)
         return `add(${fieldPath}, ${parameters.value})`
 
       case OPERATION_TYPES.SUBTRACT:
-        console.debug('[OperationParser] SUBTRACT operation - parameters.value:', parameters.value)
         if (parameters.value === undefined) {
-          console.debug('[OperationParser] subtract value not configured yet (undefined), returning null')
           return null
         }
-        console.debug('[OperationParser] Generating SUBTRACT syntax with value:', parameters.value)
         return `subtract(${fieldPath}, ${parameters.value})`
 
       case OPERATION_TYPES.MULTIPLY:
-        console.debug('[OperationParser] MULTIPLY operation - parameters.value:', parameters.value)
         if (parameters.value === undefined) {
-          console.debug('[OperationParser] multiply value not configured yet (undefined), returning null')
           return null
         }
-        console.debug('[OperationParser] Generating MULTIPLY syntax with value:', parameters.value)
         return `multiply(${fieldPath}, ${parameters.value})`
 
       case OPERATION_TYPES.DIVIDE:
-        console.debug('[OperationParser] DIVIDE operation - parameters.value:', parameters.value)
         if (parameters.value === undefined) {
-          console.debug('[OperationParser] divide value not configured yet (undefined), returning null')
           return null
         }
         if (parameters.value === 0) {
           console.warn('[OperationParser] divide operation cannot have a value of 0 (division by zero)')
           return null
         }
-        console.debug('[OperationParser] Generating DIVIDE syntax with value:', parameters.value)
         return `divide(${fieldPath}, ${parameters.value})`
 
       default:
@@ -485,10 +444,6 @@ export function buildOperationSyntax (type, fieldPath, parameters = {}) {
     console.error('[OperationParser] Error building operation syntax:', error)
     console.error('Error details:', error.stack)
     return fieldPath || ''
-  } finally {
-    console.log('╔════════════════════════════════════════════════════════════════════════')
-    console.log('║ 🔨 [buildOperationSyntax] FINISHED')
-    console.log('╚════════════════════════════════════════════════════════════════════════')
   }
 }
 

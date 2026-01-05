@@ -430,14 +430,11 @@ export default {
     // Watch for mode changes to clear file-related state
     'projectConfig.mode' (newMode, oldMode) {
       if (oldMode && newMode !== oldMode) {
-        console.log('[Step1] Mode changed from', oldMode, 'to', newMode)
-
         // Clear file-related errors when switching modes
         this.errors.existingPolicy = []
 
         // Only clear file data when switching FROM update mode
         if (oldMode === 'update') {
-          console.log('[Step1] Clearing file data from update mode')
           this.existingPolicyFile = null
           this.existingPolicyPreview = null
           this.clearPolicyFile()
@@ -445,7 +442,6 @@ export default {
           // Clear project name when switching to create mode
           // (prevent auto-population from uploaded policy)
           if (newMode === 'create') {
-            console.log('[Step1] Clearing project name when switching to create mode')
             this.UPDATE_PROJECT_CONFIG({ name: '' })
           }
         }
@@ -460,8 +456,6 @@ export default {
     // Restore file upload state if policy is already uploaded in update mode
     // Do this BEFORE validation to ensure file state is correct
     if (this.projectConfig.mode === 'update' && this.policyUpload.uploadedPolicyData) {
-      console.log('[Step1] mounted: Restoring uploaded policy state')
-
       // Restore the file object if it exists in Vuex
       if (this.policyUpload.uploadedFile) {
         this.existingPolicyFile = this.policyUpload.uploadedFile
@@ -473,22 +467,17 @@ export default {
 
       // Clear any existing policy errors since we have a valid file
       this.errors.existingPolicy = []
-
-      console.log('[Step1] mounted: Policy state restored successfully')
     }
 
     // Clear name errors if the policy name is already populated (from uploaded file or previous input)
     if (this.projectConfig.name && this.projectConfig.name.trim()) {
       this.errors.name = []
-      console.log('[Step1] mounted: Cleared name errors - name is pre-populated:', this.projectConfig.name)
     }
 
     // Validate on mount only if fields are empty or in create mode
     // In update mode with uploaded policy, skip validation to avoid red highlighting
     if (this.projectConfig.mode === 'create' || !this.policyUpload.uploadedPolicyData) {
       this.validateAllFields()
-    } else {
-      console.log('[Step1] mounted: Skipping validation - update mode with uploaded policy')
     }
   },
 
@@ -599,8 +588,6 @@ export default {
       }
 
       try {
-        console.log('[Step1] onFileUpload: Processing file:', file.name)
-
         // Check if this is a different file than the currently uploaded one
         const previousFile = this.policyUpload.uploadedFile
         const isDifferentFile = !previousFile ||
@@ -608,20 +595,8 @@ export default {
                                 previousFile.size !== file.size ||
                                 previousFile.lastModified !== file.lastModified
 
-        if (isDifferentFile) {
-          console.log('[Step1] onFileUpload: New/different file detected - will clear state on next step')
-        } else {
-          console.log('[Step1] onFileUpload: Same file detected - state will be preserved')
-        }
-
         // Use the new Vuex action to upload and validate the policy file
         const validationResult = await this.uploadPolicyFile(file)
-
-        console.log('[Step1] onFileUpload: Validation result:', {
-          valid: validationResult.valid,
-          errorCount: validationResult.errors?.length || 0,
-          warningCount: validationResult.warnings?.length || 0
-        })
 
         // Handle validation errors
         if (!validationResult.valid || validationResult.errors?.length > 0) {
@@ -643,18 +618,16 @@ export default {
           this.UPDATE_PROJECT_CONFIG({ name: parsedPolicy.name })
           // Clear name errors since we just updated with a valid name from the file
           this.errors.name = []
-          console.log('[Step1] onFileUpload: Updated policy name from uploaded file:', parsedPolicy.name)
         }
 
         // If this is a different file, clear all downstream state
         if (isDifferentFile) {
-          console.log('[Step1] onFileUpload: Clearing downstream state due to file change')
           this.clearDownstreamState()
         }
 
         // Display warnings if any
         if (validationResult.warnings && validationResult.warnings.length > 0) {
-          console.warn('[Step1] onFileUpload: Validation warnings:', validationResult.warnings)
+          // Validation warnings found during upload
           // Optionally display warnings to the user
           const warningCount = validationResult.warnings?.length || 0
           this.$q?.notify({
@@ -672,12 +645,10 @@ export default {
           timeout: 2000
         })
 
-        console.log('[Step1] onFileUpload: Policy successfully uploaded and validated')
-
         // Emit validation status
         this.$emit('step-valid')
       } catch (error) {
-        console.error('[Step1] onFileUpload: Error processing file:', error)
+        console.error('Error processing file:', error)
         this.errors.existingPolicy = [error.message || 'An error occurred while processing the file']
         this.existingPolicyFile = null
         this.existingPolicyPreview = null
@@ -686,8 +657,6 @@ export default {
     },
 
     clearDownstreamState () {
-      console.log('[Step1] clearDownstreamState: Clearing all downstream step state')
-
       // Clear sample data
       this.SET_SAMPLE_DATA({
         inputMethod: 'manual',
@@ -741,8 +710,6 @@ export default {
 
       // Clear subtransforms
       this.RESET_SUBTRANSFORMS()
-
-      console.log('[Step1] clearDownstreamState: Downstream state cleared successfully')
     },
 
     readFileAsText (file) {
@@ -778,22 +745,14 @@ export default {
         return
       }
 
-      console.log('[Step1] proceedToNext: Mode:', this.projectConfig.mode)
-
       // Only clear state when in CREATE mode
       // In UPDATE mode, preserve all changes made in subsequent steps
       if (this.projectConfig.mode === 'create') {
-        console.log('[Step1] proceedToNext: Clearing state for create mode')
-
         // Clear uploaded policy data (in case user switched from update to create)
         this.CLEAR_UPLOADED_POLICY()
 
         // Clear all downstream state
         this.clearDownstreamState()
-
-        console.log('[Step1] proceedToNext: Create mode state cleared successfully')
-      } else {
-        console.log('[Step1] proceedToNext: Update mode - preserving existing changes')
       }
 
       // Mark step as valid and proceed
@@ -802,7 +761,6 @@ export default {
     },
 
     clearUploadedPolicy () {
-      console.log('[Step1] clearUploadedPolicy: Clearing policy')
       this.clearPolicyFile()
       this.existingPolicyFile = null
       this.existingPolicyPreview = null

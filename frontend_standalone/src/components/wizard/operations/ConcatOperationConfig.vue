@@ -292,8 +292,6 @@ export default {
 
     // Watch localParams and emit immediately on mount
     watch(localParams, (newVal) => {
-      console.log('[ConcatOperationConfig] localParams changed:', JSON.stringify(newVal, null, 2))
-
       const payload = props.operationType === OPERATION_TYPES.CONCAT
         ? { values: newVal.values }
         : { delimiter: newVal.delimiter }

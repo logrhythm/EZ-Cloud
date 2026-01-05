@@ -280,6 +280,7 @@ export default {
           error: null
         }
       } catch (error) {
+        console.error('[RegexOperationConfig] Error applying regex pattern:', { input, pattern, captureGroup, error: error.message })
         return {
           isValid: false,
           output: 'Error',
@@ -363,134 +364,81 @@ export default {
 
     // Debug handlers to see which events fire
     const onDropdownInput = (value) => {
-      console.log('🎯 [@input event] FIRED! Value:', value)
-      console.log('  Type:', typeof value)
-      console.log('  Value:', JSON.stringify(value, null, 2))
+      // No-op - kept for compatibility
     }
 
     const onDropdownChange = (value) => {
-      console.log('🎯 [@change event] FIRED! Value:', value)
-      console.log('  Type:', typeof value)
-      console.log('  Value:', JSON.stringify(value, null, 2))
+      // No-op - kept for compatibility
     }
 
     // Direct click handler on option items
     const onOptionClick = (option) => {
-      console.log('🎯🎯🎯 [DIRECT @click] Option clicked!')
-      console.log('  Option:', option)
-      console.log('  Option.name:', option.name)
-      console.log('  Option.pattern:', option.pattern)
-
       // Directly call insertPreset
       insertPreset(option)
 
       // Close the dropdown manually
       if (selectRef.value) {
-        console.log('📦 Closing dropdown via hidePopup()')
         selectRef.value.hidePopup()
       }
-
-      console.log('✅ [CLICK] Option handling completed')
     }
 
     const insertPreset = (patternObj) => {
-      console.log('='.repeat(60))
-      console.log('🔍 [DEBUG] insertPreset TRIGGERED')
-      console.log('🔍 [DEBUG] Type of patternObj:', typeof patternObj)
-      console.log('🔍 [DEBUG] patternObj value:', JSON.stringify(patternObj, null, 2))
-      console.log('🔍 [DEBUG] patternObj is null?', patternObj === null)
-      console.log('🔍 [DEBUG] patternObj is undefined?', patternObj === undefined)
-      console.log('🔍 [DEBUG] patternObj has .pattern?', patternObj?.pattern)
-      console.log('🔍 [DEBUG] patternObj has .captureGroup?', patternObj?.captureGroup)
-      console.log('🔍 [DEBUG] patternObj has .sampleValue?', patternObj?.sampleValue)
+      try {
+        if (patternObj && patternObj.pattern) {
+          // Update local refs with pattern data
+          localPattern.value = patternObj.pattern
+          localCaptureGroup.value = String(patternObj.captureGroup) // Convert to string for consistency
 
-      console.log('🔍 [DEBUG] BEFORE UPDATE:')
-      console.log('  - localPattern.value:', localPattern.value)
-      console.log('  - localCaptureGroup.value:', localCaptureGroup.value)
+          // Validate the new pattern
+          validatePattern()
 
-      if (patternObj && patternObj.pattern) {
-        console.log('✅ [DEBUG] Condition passed, updating values...')
+          // Emit changes to parent component
+          emitChange()
 
-        // Update local refs with pattern data
-        localPattern.value = patternObj.pattern
-        localCaptureGroup.value = String(patternObj.captureGroup) // Convert to string for consistency
+          // If pattern has a sample value, test it immediately to show preview
+          if (patternObj.sampleValue) {
+            // Test with the hardcoded sample value
+            const testResult = applyRegex(patternObj.sampleValue, patternObj.pattern, patternObj.captureGroup)
 
-        console.log('🔍 [DEBUG] AFTER UPDATE:')
-        console.log('  - localPattern.value:', localPattern.value)
-        console.log('  - localCaptureGroup.value:', localCaptureGroup.value)
-
-        console.log('🔍 [DEBUG] Calling validatePattern()...')
-        // Validate the new pattern
-        validatePattern()
-
-        console.log('🔍 [DEBUG] Calling emitChange()...')
-        // Emit changes to parent component
-        emitChange()
-
-        // If pattern has a sample value, test it immediately to show preview
-        if (patternObj.sampleValue) {
-          console.log('🔍 [DEBUG] Pattern has sampleValue, testing with:', patternObj.sampleValue)
-          // Test with the hardcoded sample value
-          const testResult = applyRegex(patternObj.sampleValue, patternObj.pattern, patternObj.captureGroup)
-          console.log('🔍 [DEBUG] Test result:', testResult)
-
-          if (testResult.isValid) {
-            previewResult.value = testResult.output
-            previewError.value = null
-            console.log('✅ [DEBUG] Sample test successful:', testResult.output)
-          } else {
-            previewError.value = testResult.error
-            previewResult.value = null
-            console.log('❌ [DEBUG] Sample test failed:', testResult.error)
+            if (testResult.isValid) {
+              previewResult.value = testResult.output
+              previewError.value = null
+            } else {
+              previewError.value = testResult.error
+              previewResult.value = null
+            }
           }
+
+          // Reset the dropdown selection so user can select the same pattern again
+          // Using nextTick to ensure the value updates have been processed
+          setTimeout(() => {
+            selectedPreset.value = null
+          }, 100)
         } else {
-          console.log('🔍 [DEBUG] No sampleValue, pattern ready for use')
+          console.error('[RegexOperationConfig] Invalid pattern object provided to insertPreset:', patternObj)
         }
-
-        console.log('🔍 [DEBUG] Setting up setTimeout to reset selectedPreset...')
-        // Reset the dropdown selection so user can select the same pattern again
-        // Using nextTick to ensure the value updates have been processed
-        setTimeout(() => {
-          console.log('🔍 [DEBUG] Timeout fired, resetting selectedPreset to null')
-          selectedPreset.value = null
-          console.log('🔍 [DEBUG] selectedPreset.value is now:', selectedPreset.value)
-        }, 100)
-
-        console.log('✅ [DEBUG] Preset insertion completed successfully')
-      } else {
-        console.error('❌ [DEBUG] Condition FAILED!')
-        console.error('  - patternObj:', patternObj)
-        console.error('  - patternObj?.pattern:', patternObj?.pattern)
-        console.error('  - patternObj?.captureGroup:', patternObj?.captureGroup)
+      } catch (error) {
+        console.error('[RegexOperationConfig] Error inserting preset pattern:', error)
       }
-      console.log('='.repeat(60))
     }
 
     const emitChange = () => {
-      // Convert to number if it's a numeric string, otherwise keep as string
-      let captureGroupValue = localCaptureGroup.value
-      if (typeof captureGroupValue === 'string' && /^\d+$/.test(captureGroupValue)) {
-        captureGroupValue = parseInt(captureGroupValue, 10)
+      try {
+        // Convert to number if it's a numeric string, otherwise keep as string
+        let captureGroupValue = localCaptureGroup.value
+        if (typeof captureGroupValue === 'string' && /^\d+$/.test(captureGroupValue)) {
+          captureGroupValue = parseInt(captureGroupValue, 10)
+        }
+
+        const payload = {
+          pattern: localPattern.value,
+          captureGroup: captureGroupValue
+        }
+
+        emit('input', payload)
+      } catch (error) {
+        console.error('[RegexOperationConfig] Error emitting change:', error)
       }
-
-      const payload = {
-        pattern: localPattern.value,
-        captureGroup: captureGroupValue
-      }
-
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [RegexOperationConfig] emitChange - EMITTING')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ localPattern.value:', localPattern.value)
-      console.log('║ localCaptureGroup.value:', localCaptureGroup.value)
-      console.log('║ captureGroupValue (processed):', captureGroupValue)
-      console.log('║ PAYLOAD:', JSON.stringify(payload, null, 2))
-      console.log('║ 🔍 CALL STACK:', new Error().stack)
-      console.log('╚════════════════════════════════════════════════════════════════════════')
-
-      emit('input', payload)
-
-      console.log('✅ [RegexOperationConfig] emit() called with input event (Vue 2)')
     }
 
     // Handle capture group changes - allow alphanumeric values
@@ -512,29 +460,11 @@ export default {
     }, { deep: true })
 
     // Watch for preset selection changes
-    watch(selectedPreset, (newPreset, oldPreset) => {
-      console.log('='.repeat(80))
-      console.log('👀 [WATCH] selectedPreset WATCHER TRIGGERED!')
-      console.log('  - OLD value:', oldPreset)
-      console.log('  - NEW value:', newPreset)
-      console.log('  - Type of NEW:', typeof newPreset)
-      console.log('  - Is null?', newPreset === null)
-      console.log('  - Is undefined?', newPreset === undefined)
-      console.log('  - Truthy?', !!newPreset)
-      console.log('='.repeat(80))
-
+    watch(selectedPreset, (newPreset) => {
       if (newPreset) {
-        console.log('✅ Calling insertPreset with:', newPreset)
         insertPreset(newPreset)
-      } else {
-        console.log('⚠️ newPreset is falsy, NOT calling insertPreset')
       }
     })
-
-    // Additional debugging: Log whenever selectedPreset ref is accessed
-    console.log('🔧 [SETUP] RegexOperationConfig component setup() called')
-    console.log('🔧 [SETUP] selectedPreset initial value:', selectedPreset.value)
-    console.log('🔧 [SETUP] patternOptions:', patternOptions.value?.length, 'patterns')
 
     // Initial validation
     if (localPattern.value) {

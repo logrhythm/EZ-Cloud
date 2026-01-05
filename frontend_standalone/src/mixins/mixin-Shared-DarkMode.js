@@ -19,13 +19,11 @@ export default {
     setCssVariables (isDarkModeOn) {
       // This is a no-op as the theme service now handles CSS variables
       // Kept for API compatibility only
-      console.debug('setCssVariables called from legacy mixin - handled by theme service')
     },
 
     // Legacy method maintained for backward compatibility but delegates to the theme service
     switchModeOnKeyDownEvent (event) {
       // No longer handling keyboard events here
-      console.debug('switchModeOnKeyDownEvent called from legacy mixin - now handled by theme service')
     }
   },
   mounted () {

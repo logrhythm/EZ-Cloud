@@ -87,19 +87,6 @@ export class MappingService {
       const jsonToStringFields = options?.jsonToStringFields || []
       const parsedStringifiedFields = options?.parsedStringifiedFields || {}
 
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [MappingService] extractJsonPaths called with JSON-to-String options')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ jsonToStringFields count:', jsonToStringFields.length)
-      console.log('║ jsonToStringFields:', jsonToStringFields)
-      console.log('║ parsedStringifiedFields keys:', Object.keys(parsedStringifiedFields))
-      console.log('║ parsedData type:', Array.isArray(parsedData) ? 'array' : typeof parsedData)
-      console.log('║ parsedData isArray:', Array.isArray(parsedData))
-      if (Array.isArray(parsedData)) {
-        console.log('║ parsedData array length:', parsedData.length)
-      }
-      console.log('╚════════════════════════════════════════════════════════════════════════')
-
       const paths = []
       const visited = new Set()
 
@@ -154,7 +141,6 @@ export class MappingService {
             let dataForSample = parsedData
             if (Array.isArray(parsedData) && parsedData.length > 0) {
               dataForSample = parsedData[0]
-              console.log('[MappingService] Using first array element for sample extraction:', node.path)
             }
             const sampleValue = this._getSampleValueForPath(dataForSample, node.path)
 
@@ -200,27 +186,18 @@ export class MappingService {
       let dataForTraversal = parsedData
       if (Array.isArray(parsedData) && parsedData.length > 0) {
         dataForTraversal = parsedData[0]
-        console.log('[MappingService] Detected multiline NDJSON array, using first element for structure traversal')
       }
       traverse(dataStructure, dataForTraversal, 0)
 
       // Process each JSON-to-String field to add nested paths
       if (jsonToStringFields && jsonToStringFields.length > 0) {
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log('║ [MappingService] Processing JSON-to-String fields for nested paths')
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-
         for (const fieldPath of jsonToStringFields) {
-          console.log(`║ Processing field: ${fieldPath}`)
-
           // Check if we have parsed data for this field
           if (!parsedStringifiedFields[fieldPath]) {
-            console.log(`║ No parsed data available for: ${fieldPath}`)
             continue
           }
 
           const parsedData = parsedStringifiedFields[fieldPath]
-          console.log(`║ Found parsed data: ${typeof parsedData}`)
 
           // Create a temporary structure for traversal
           // If it's an object, create a structure with the object as the root
@@ -272,7 +249,6 @@ export class MappingService {
           }
 
           if (tempStructure) {
-            console.log(`║ Created temp structure with ${tempStructure.children?.length || 0} children`)
             // Traverse the temp structure to extract paths
             try {
               // Create a new set to track visited paths for this specific field
@@ -315,7 +291,6 @@ export class MappingService {
                     let dataForNestedSample = parsedData
                     if (Array.isArray(parsedData) && parsedData.length > 0) {
                       dataForNestedSample = parsedData[0]
-                      console.log('[MappingService] Using first array element for nested JSON string sample extraction:', node.path)
                     }
 
                     const sampleValue = this._getNestedValueByPath(
@@ -364,23 +339,8 @@ export class MappingService {
             } catch (traverseError) {
               console.error(`[MappingService] Error traversing JSON-string field ${fieldPath}:`, traverseError)
             }
-          } else {
-            console.log(`║ Could not create temp structure for ${fieldPath}, data is not a valid object or array`)
           }
         }
-        console.log('╚════════════════════════════════════════════════════════════════════════')
-      }
-
-      console.log(`[MappingService] Extracted ${paths.length} JSON paths`)
-
-      // Debug: Log the extracted paths for troubleshooting
-      if (paths.length > 0) {
-        console.log('[MappingService] Sample paths:', paths.slice(0, 5).map(p => ({
-          path: p.value,
-          type: p.type,
-          sample: p.sampleValue,
-          isFromJsonString: p.isFromJsonString || false
-        })))
       }
 
       return paths
@@ -2110,74 +2070,25 @@ export class MappingService {
    */
   static mergeStringifiedJsonIntoTree (tree, parsedFieldsMap, originalData) {
     try {
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [MappingService] mergeStringifiedJsonIntoTree - START')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      console.log('║ parsedFieldsMap keys:', Object.keys(parsedFieldsMap || {}))
-      console.log('║ parsedFieldsMap:', JSON.stringify(parsedFieldsMap, null, 2))
-      console.log('║ tree exists:', !!tree)
-      console.log('║ tree.path:', tree?.path)
-      console.log('║ tree.children count:', tree?.children?.length || 0)
-      console.log('╚════════════════════════════════════════════════════════════════════════')
-
       if (!tree || !parsedFieldsMap || Object.keys(parsedFieldsMap).length === 0) {
-        console.log('[MappingService] No parsed fields to merge, returning original tree')
         return tree
       }
-
-      // Log the entire tree structure for debugging
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [MappingService] TREE STRUCTURE BEFORE MERGE:')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      this._logTreeStructure(tree, 0)
-      console.log('╚════════════════════════════════════════════════════════════════════════')
 
       // Clone the tree to avoid mutation
       const enhancedTree = JSON.parse(JSON.stringify(tree))
 
       // For each parsed field, find its node in the tree and expand it
       for (const [fieldPath, parsedData] of Object.entries(parsedFieldsMap)) {
-        console.log('╔════════════════════════════════════════════════════════════════════════')
-        console.log(`║ [MappingService] Processing parsed field: "${fieldPath}"`)
-        console.log('╠════════════════════════════════════════════════════════════════════════')
-        console.log('║ parsedData type:', typeof parsedData)
-        console.log('║ parsedData:', JSON.stringify(parsedData, null, 2))
-        console.log('╚════════════════════════════════════════════════════════════════════════')
-
         // Find the node in the tree
-        console.log(`[MappingService] Calling _findNodeByPathInTree for "${fieldPath}"...`)
         const node = this._findNodeByPathInTree(enhancedTree, fieldPath)
 
         if (node) {
-          console.log('╔════════════════════════════════════════════════════════════════════════')
-          console.log(`║ [MappingService] ✓ FOUND NODE for ${fieldPath}`)
-          console.log('╠════════════════════════════════════════════════════════════════════════')
-          console.log('║ node.path:', node.path)
-          console.log('║ node.type:', node.type)
-          console.log('║ node.children count:', node.children?.length || 0)
-          console.log('╚════════════════════════════════════════════════════════════════════════')
-
           // Build a subtree from the parsed data
-          console.log('[MappingService] Building subtree from parsed data...')
           const parsedSubtree = this._buildSchemaTree(parsedData, fieldPath, 0, {
             schemaOnly: true,
             aggregateValues: true,
             multiLine: false
           })
-
-          console.log('╔════════════════════════════════════════════════════════════════════════')
-          console.log('║ [MappingService] Built Parsed Subtree:')
-          console.log('╠════════════════════════════════════════════════════════════════════════')
-          console.log('║ parsedSubtree exists:', !!parsedSubtree)
-          console.log('║ parsedSubtree.type:', parsedSubtree?.type)
-          console.log('║ parsedSubtree.children count:', parsedSubtree?.children?.length || 0)
-          if (parsedSubtree && parsedSubtree.children) {
-            console.log('║ parsedSubtree.children paths:')
-            parsedSubtree.children.forEach((child, idx) => {
-              console.log(`║   [${idx}] ${child.path} (${child.type})`)
-            })
-          }
-          console.log('╚════════════════════════════════════════════════════════════════════════')
 
           // Replace the string node with the parsed subtree
           if (parsedSubtree && parsedSubtree.children) {
@@ -2191,49 +2102,14 @@ export class MappingService {
 
             // Mark as expanded from stringified JSON
             node.isExpandedStringifiedJson = true
-
-            console.log('╔════════════════════════════════════════════════════════════════════════')
-            console.log(`║ [MappingService] ✓ Successfully expanded ${fieldPath}`)
-            console.log('║ New children count:', node.children.length)
-            console.log('║ New type:', node.type)
-            console.log('╚════════════════════════════════════════════════════════════════════════')
-          } else {
-            console.log('╔════════════════════════════════════════════════════════════════════════')
-            console.log(`║ [MappingService] ✗ Failed to build subtree for ${fieldPath}`)
-            console.log('║ parsedSubtree is null or has no children')
-            console.log('╚════════════════════════════════════════════════════════════════════════')
           }
-        } else {
-          console.log('╔════════════════════════════════════════════════════════════════════════')
-          console.log(`║ [MappingService] ✗ Could not find node for path: ${fieldPath}`)
-          console.log('║ This is the ROOT CAUSE of the issue!')
-          console.log('╚════════════════════════════════════════════════════════════════════════')
         }
       }
-
-      console.log('╔════════════════════════════════════════════════════════════════════════')
-      console.log('║ [MappingService] TREE STRUCTURE AFTER MERGE:')
-      console.log('╠════════════════════════════════════════════════════════════════════════')
-      this._logTreeStructure(enhancedTree, 0)
-      console.log('╚════════════════════════════════════════════════════════════════════════')
 
       return enhancedTree
     } catch (error) {
       console.error('[MappingService] Error merging stringified JSON into tree:', error)
       return tree
-    }
-  }
-
-  /**
-   * Helper method to log tree structure recursively
-   * @private
-   */
-  static _logTreeStructure (node, depth = 0) {
-    if (!node) return
-    const indent = '  '.repeat(depth)
-    console.log(`${indent}${node.path} (${node.type}) [children: ${node.children?.length || 0}]`)
-    if (node.children && Array.isArray(node.children) && depth < 3) {
-      node.children.forEach(child => this._logTreeStructure(child, depth + 1))
     }
   }
 
@@ -2260,16 +2136,8 @@ export class MappingService {
    */
   static resolvePathForFanout (absolutePath, fanoutArrays) {
     try {
-      console.log('╔═══════════════════════════════════════════════════════════════════════')
-      console.log('║ [MappingService] resolvePathForFanout - START')
-      console.log('╠═══════════════════════════════════════════════════════════════════════')
-      console.log('║ absolutePath:', absolutePath)
-      console.log('║ fanoutArrays:', JSON.stringify(fanoutArrays))
-      console.log('╚═══════════════════════════════════════════════════════════════════════')
-
       // If no fanout arrays, return absolute path
       if (!fanoutArrays || fanoutArrays.length === 0) {
-        console.log('[MappingService] No fanout arrays - returning absolute path')
         return {
           jsonPath: absolutePath,
           fanoutParent: null
@@ -2294,7 +2162,6 @@ export class MappingService {
       }
 
       const normalizedPath = normalizePath(absolutePath)
-      console.log('[MappingService] normalizedPath:', normalizedPath)
 
       // Sort fanout arrays by depth (deepest first) to find nearest parent
       const sortedFanouts = [...fanoutArrays]
@@ -2306,8 +2173,6 @@ export class MappingService {
           const depthB = (b.match(/\./g) || []).length + (b.match(/\[/g) || []).length
           return depthB - depthA // Deepest first
         })
-
-      console.log('[MappingService] sortedFanouts:', JSON.stringify(sortedFanouts))
 
       // Find the nearest fanout parent that contains this path
       let nearestFanout = null
@@ -2325,9 +2190,6 @@ export class MappingService {
           fanoutPrefix = fanoutPrefix.substring(0, fanoutPrefix.length - 3)
         }
 
-        console.log(`[MappingService] Checking fanout: "${normalizedFanout}", prefix: "${fanoutPrefix}"`)
-        console.log(`[MappingService] Does "${normalizedPath}" start with "${fanoutPrefix}"?`)
-
         // Check if path is within this fanout
         // Path must start with fanout prefix followed by . or [
         if (normalizedPath === fanoutPrefix ||
@@ -2335,14 +2197,12 @@ export class MappingService {
             normalizedPath.startsWith(fanoutPrefix + '.') ||
             normalizedPath.startsWith(fanoutPrefix + '[')) {
           nearestFanout = normalizedFanout // Use the normalized version with [*]
-          console.log(`[MappingService] ✓ MATCH FOUND! fanout: "${normalizedFanout}" matches path: "${normalizedPath}"`)
           break
         }
       }
 
       // If no fanout parent found, return absolute path
       if (!nearestFanout) {
-        console.log('[MappingService] No matching fanout parent - returning absolute path')
         return {
           jsonPath: absolutePath,
           fanoutParent: null
@@ -2359,16 +2219,11 @@ export class MappingService {
         fanoutPrefix = fanoutPrefix.substring(0, fanoutPrefix.length - 3)
       }
 
-      console.log('[MappingService] Making path relative')
-      console.log('[MappingService] fanoutPrefix for removal:', fanoutPrefix)
-      console.log('[MappingService] normalizedPath:', normalizedPath)
-
       if (normalizedPath.startsWith(fanoutPrefix + '.')) {
         // Path is deeper than fanout - make it relative
         // e.g., "$.teamMembers[*].contact.tasks[*].title" with fanout "$.teamMembers[*]"
         // becomes "$.contact.tasks[*].title"
         relativePath = '$' + normalizedPath.substring(fanoutPrefix.length)
-        console.log('[MappingService] Relative path (deeper):', relativePath)
       } else if (normalizedPath.startsWith(fanoutPrefix + '[')) {
         // Path continues with array notation after fanout
         // e.g., "$.teamMembers[*].tasks" with fanout "$.teamMembers"
@@ -2381,33 +2236,21 @@ export class MappingService {
         } else {
           relativePath = '$' + afterPrefix
         }
-        console.log('[MappingService] Relative path (array notation):', relativePath)
       } else if (normalizedPath === fanoutPrefix || normalizedPath === fanoutPrefix + '[*]') {
         // Path is exactly the fanout array itself
         relativePath = '$'
-        console.log('[MappingService] Relative path (exact match):', relativePath)
       }
 
       // Clean up path
       relativePath = relativePath.replace(/^\$\.\./, '$.') // Fix $.. to $.
       relativePath = relativePath.replace(/\.\[/g, '[') // Fix .[*] to [*]
 
-      console.log('[MappingService] Final relative path after cleanup:', relativePath)
-
       // Ensure fanout parent has [*] notation at the end
       let fanoutParentResult = nearestFanout
       if (!fanoutParentResult.endsWith('[*]') && !fanoutParentResult.endsWith(']')) {
         // If fanout doesn't end with array notation, add it
         fanoutParentResult = fanoutParentResult + '[*]'
-        console.log('[MappingService] Added [*] to fanout parent:', fanoutParentResult)
       }
-
-      console.log('╔═══════════════════════════════════════════════════════════════════════')
-      console.log('║ [MappingService] resolvePathForFanout - RESULT')
-      console.log('╠═══════════════════════════════════════════════════════════════════════')
-      console.log('║ jsonPath:', relativePath)
-      console.log('║ fanoutParent:', fanoutParentResult)
-      console.log('╚═══════════════════════════════════════════════════════════════════════')
 
       return {
         jsonPath: relativePath,
@@ -2442,10 +2285,6 @@ export class MappingService {
         return false
       }
 
-      console.log('[MappingService] validateFanoutParentElement - START')
-      console.log('  fanoutParent:', fanoutParent)
-      console.log('  fanoutArrays:', fanoutArrays)
-
       // Normalize both for comparison
       const normalizePath = (path) => {
         if (!path) return ''
@@ -2457,16 +2296,13 @@ export class MappingService {
       }
 
       const normalized = normalizePath(fanoutParent)
-      console.log('  normalizedParent:', normalized)
 
       // Check if this fanout parent exists in the fanout arrays
       const isValid = fanoutArrays.some(f => {
         const normalizedFanout = normalizePath(f)
-        console.log(`    Comparing: "${normalized}" === "${normalizedFanout}"?`, normalized === normalizedFanout)
         return normalizedFanout === normalized
       })
 
-      console.log('[MappingService] validateFanoutParentElement - RESULT:', isValid)
       return isValid
     } catch (error) {
       console.error('[MappingService] Error validating fanout parent:', error)
@@ -2484,12 +2320,8 @@ export class MappingService {
    */
   static _findNodeByPathInTree (tree, targetPath) {
     if (!tree || !targetPath) {
-      console.log('[MappingService] _findNodeByPathInTree: Invalid parameters', { tree: !!tree, targetPath })
       return null
     }
-
-    console.log(`[MappingService] _findNodeByPathInTree: Searching for "${targetPath}"`)
-    console.log(`[MappingService] _findNodeByPathInTree: Current node path: "${tree.path}"`)
 
     // Try multiple normalization strategies to find matches
     const normalizeForComparison = (path) => {
@@ -2506,48 +2338,37 @@ export class MappingService {
     const normalizedTarget = normalizeForComparison(targetPath)
     const normalizedNodePath = normalizeForComparison(tree.path)
 
-    console.log(`[MappingService] _findNodeByPathInTree: Normalized target: "${normalizedTarget}"`)
-    console.log(`[MappingService] _findNodeByPathInTree: Normalized node: "${normalizedNodePath}"`)
-
     // Try exact match first (case-insensitive)
     if (tree.path.toLowerCase() === targetPath.toLowerCase()) {
-      console.log('[MappingService] _findNodeByPathInTree: ✓ EXACT MATCH FOUND (case-insensitive)!')
       return tree
     }
 
     // Try normalized match (already case-insensitive due to toLowerCase in normalization)
     if (normalizedNodePath === normalizedTarget) {
-      console.log('[MappingService] _findNodeByPathInTree: ✓ NORMALIZED MATCH FOUND (case-insensitive)!')
       return tree
     }
 
     // Try with $ prefix added to target (case-insensitive)
     if (tree.path.toLowerCase() === `$.${normalizedTarget}`.toLowerCase()) {
-      console.log('[MappingService] _findNodeByPathInTree: ✓ MATCH WITH $ PREFIX (case-insensitive)!')
       return tree
     }
 
     // Try without $ prefix on both (case-insensitive)
     if (tree.path.replace(/^\$\.?/, '').toLowerCase() === normalizedTarget) {
-      console.log('[MappingService] _findNodeByPathInTree: ✓ MATCH WITHOUT $ PREFIX (case-insensitive)!')
       return tree
     }
 
     // Recursively search children
     if (tree.children && Array.isArray(tree.children)) {
-      console.log(`[MappingService] _findNodeByPathInTree: Searching ${tree.children.length} children...`)
       for (let i = 0; i < tree.children.length; i++) {
         const child = tree.children[i]
-        console.log(`[MappingService] _findNodeByPathInTree: Checking child ${i}: "${child.path}"`)
         const found = this._findNodeByPathInTree(child, targetPath)
         if (found) {
-          console.log(`[MappingService] _findNodeByPathInTree: ✓ FOUND IN CHILD ${i}!`)
           return found
         }
       }
     }
 
-    console.log('[MappingService] _findNodeByPathInTree: ✗ Not found in this branch')
     return null
   }
 

@@ -581,7 +581,7 @@ export default {
           })
         }
       } catch (error) {
-        console.error('[Step 5] Error extracting JSON paths:', error)
+        console.error('[Step5_Mapping_OLD] extractJsonPathsFromSampleData - Error extracting JSON paths:', error)
         this.availableJsonPaths = []
 
         this.$q.notify({
@@ -604,7 +604,7 @@ export default {
       try {
         this.lrSchemaFields = MappingService.getLRSchemaFields()
       } catch (error) {
-        console.error('[Step 5] Error loading LR schema fields:', error)
+        console.error('[Step5_Mapping_OLD] loadLRSchemaFields - Error loading LR schema fields:', error)
         this.lrSchemaFields = []
       }
     },
@@ -616,7 +616,7 @@ export default {
       try {
         this.dataTypeOptions = MappingService.getDataTypeOptions()
       } catch (error) {
-        console.error('[Step 5] Error loading data type options:', error)
+        console.error('[Step5_Mapping_OLD] loadDataTypeOptions - Error loading data type options:', error)
         this.dataTypeOptions = []
       }
     },
@@ -651,7 +651,7 @@ export default {
 
         this.mappingDialog = true
       } catch (error) {
-        console.error('[Step 5] Error opening add mapping dialog:', error)
+        console.error('[Step5_Mapping_OLD] openAddMapping - Error opening add mapping dialog:', error)
         this.$q.notify({
           type: 'negative',
           message: 'Failed to open mapping dialog',
@@ -675,7 +675,7 @@ export default {
 
         this.mappingDialog = true
       } catch (error) {
-        console.error('[Step 5] Error editing mapping:', error)
+        console.error('[Step5_Mapping_OLD] editMapping - Error editing mapping:', error)
         this.$q.notify({
           type: 'negative',
           message: 'Failed to edit mapping',
@@ -716,7 +716,7 @@ export default {
           }
         }
       } catch (error) {
-        console.error('[Step 5] Error handling input rule change:', error)
+        console.error('[Step5_Mapping_OLD] onInputRuleChange - Error handling input rule change:', error)
       }
     },
 
@@ -807,7 +807,7 @@ export default {
           timeout: 2000
         })
       } catch (error) {
-        console.error('[Step 5] Error saving mapping:', error)
+        console.error('[Step5_Mapping_OLD] saveMapping - Error saving mapping:', error)
         this.$q.notify({
           type: 'negative',
           message: 'Failed to save mapping',
@@ -845,7 +845,7 @@ export default {
           }
         })
       } catch (error) {
-        console.error('[Step 5] Error deleting mapping:', error)
+        console.error('[Step5_Mapping_OLD] deleteMapping - Error deleting mapping:', error)
         this.$q.notify({
           type: 'negative',
           message: 'Failed to delete mapping',
@@ -877,7 +877,7 @@ export default {
           })
         })
       } catch (error) {
-        console.error('[Step 5] Error clearing mappings:', error)
+        console.error('[Step5_Mapping_OLD] clearAllMappings - Error clearing mappings:', error)
         this.$q.notify({
           type: 'negative',
           message: 'Failed to clear mappings',
@@ -953,7 +953,7 @@ export default {
         this.$emit('step-valid')
         this.$emit('next-step')
       } catch (error) {
-        console.error('[Step 5] Error proceeding to next step:', error)
+        console.error('[Step5_Mapping_OLD] proceedToNext - Error proceeding to next step:', error)
 
         this.$q.notify({
           type: 'negative',
@@ -986,11 +986,9 @@ export default {
               mapping.id = `mapping-${Date.now()}-${index}`
             }
           })
-
-          console.log('[Step 5] Restored mappings:', this.localMappings.length)
         }
       } catch (error) {
-        console.error('[Step 5] Error restoring state:', error)
+        console.error('[Step5_Mapping_OLD] restoreStateFromStore - Error restoring state:', error)
         // Don't notify user - this is not critical
       }
     },
@@ -999,16 +997,13 @@ export default {
      * Save state to store before leaving
      */
     saveStateToStore () {
-      try {
-        // Deep clone mappings
+      try { // Deep clone mappings
         const mappings = JSON.parse(JSON.stringify(this.localMappings))
 
         // Update store
         this.UPDATE_FIELD_MAPPINGS({ mappings })
-
-        console.log('[Step 5] Saved mappings to store:', mappings.length)
       } catch (error) {
-        console.error('[Step 5] Error saving state to store:', error)
+        console.error('[Step5_Mapping_OLD] saveStateToStore - Error saving state to store:', error)
         this.$q.notify({
           type: 'negative',
           message: 'Failed to save mappings',
@@ -1031,7 +1026,7 @@ export default {
       // Restore previous state from store
       this.restoreStateFromStore()
     } catch (error) {
-      console.error('[Step 5] Error during initialization:', error)
+      console.error('[Step5_Mapping_OLD] created - Error during initialization:', error)
     }
   },
 
@@ -1043,7 +1038,7 @@ export default {
       // Save current state before component is destroyed
       this.saveStateToStore()
     } catch (error) {
-      console.error('[Step 5] Error saving state on destroy:', error)
+      console.error('[Step5_Mapping_OLD] beforeDestroy - Error saving state on destroy:', error)
     }
   }
 }
