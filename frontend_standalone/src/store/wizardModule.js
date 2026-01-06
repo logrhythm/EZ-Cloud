@@ -357,6 +357,24 @@ const mutations = {
   },
 
   SET_UPLOADED_POLICY_DATA (state, { policyData, validationResult, metadata }) {
+    // CRITICAL BUG FIX: Do NOT normalize uploaded policy data
+    // The normalization logic was OVERWRITING correct datafanout values from uploaded files
+    //
+    // The old logic applied "fanout rules" that would:
+    // - Replace datafanout with a childfanout field (Rule 2)
+    // - This destroyed the correct datafanout from the uploaded file
+    //
+    // SOLUTION: Store uploaded policies EXACTLY as they are
+    // Only normalize legacy string format to object format for backward compatibility
+
+    if (policyData && policyData.schemarule && policyData.schemarule.datafanout) {
+      // Only normalize legacy string datafanout to object format
+      // This is safe because it preserves the field value
+      if (typeof policyData.schemarule.datafanout === 'string') {
+        policyData.schemarule.datafanout = { field: policyData.schemarule.datafanout }
+      }
+    }
+
     state.policyUpload.uploadedPolicyData = policyData
     state.policyUpload.validationResult = validationResult || { valid: false, errors: [], warnings: [] }
     state.policyUpload.metadata = metadata || null
@@ -1011,9 +1029,15 @@ const actions = {
       // Store the file object
       commit('SET_UPLOADED_POLICY_FILE', file)
 
+      // CRITICAL: Deep clone the policy object to prevent shared references
+      // Without cloning, mutations to one reference affect all references
+      const clonedPolicy = validationResult.policy
+        ? JSON.parse(JSON.stringify(validationResult.policy))
+        : null
+
       // Store the validation result and parsed policy data
       commit('SET_UPLOADED_POLICY_DATA', {
-        policyData: validationResult.policy,
+        policyData: clonedPolicy,
         validationResult: {
           valid: validationResult.valid,
           errors: validationResult.errors,
@@ -1023,15 +1047,23 @@ const actions = {
       })
 
       // If validation succeeded, also update projectConfig.existingPolicy
-      if (validationResult.valid && validationResult.policy) {
+      // Use another clone to ensure complete isolation
+      if (validationResult.valid && clonedPolicy) {
         commit('UPDATE_PROJECT_CONFIG', {
-          existingPolicy: validationResult.policy
+          existingPolicy: JSON.parse(JSON.stringify(clonedPolicy))
         })
       } else {
         console.warn('[Vuex] uploadPolicyFile: Validation failed with errors:', validationResult.errors)
       }
 
-      return validationResult
+      // Return a result with the cloned policy to maintain consistency
+      return {
+        valid: validationResult.valid,
+        errors: validationResult.errors,
+        warnings: validationResult.warnings,
+        policy: clonedPolicy,
+        metadata: validationResult.metadata
+      }
     } catch (error) {
       console.error('[Vuex] uploadPolicyFile: Unexpected error:', error)
       const errorMessage = error.message || 'Unexpected error during file upload'

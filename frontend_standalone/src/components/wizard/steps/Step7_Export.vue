@@ -595,12 +595,14 @@ export default {
      * Compute datafanout and childfanouts structure based on array hierarchy rules
      *
      * Rules:
-     * 1. Single array: datafanout = selected array, childfanouts = null
-     * 2. Multiple arrays with one top-level: datafanout = top array, childfanouts = children
+     * 1. Single array: datafanout = {field: "selected array"}, childfanouts = null
+     * 2. Multiple arrays with one top-level: datafanout = {field: "top array"}, childfanouts = children
      * 3. Multiple top-level arrays: datafanout = null, childfanouts = all arrays
      *
      * @param {Array} childfanoutsArray - Cleaned childfanouts array from store
      * @returns {Object} { datafanout, childfanouts }
+     *
+     * NOTE: datafanout is now an object with "field" property: {"field": "$.path[*]"}
      */
     computeDataFanoutStructure (childfanoutsArray) {
       if (!childfanoutsArray || childfanoutsArray.length === 0) {
@@ -610,7 +612,7 @@ export default {
       // Rule 1: Single array selection
       if (childfanoutsArray.length === 1) {
         return {
-          datafanout: childfanoutsArray[0].field,
+          datafanout: { field: childfanoutsArray[0].field },
           childfanouts: null
         }
       }
@@ -624,7 +626,7 @@ export default {
         const childArrays = childfanoutsArray.filter(item => item.parentpath !== null)
 
         return {
-          datafanout: topLevelArrays[0].field,
+          datafanout: { field: topLevelArrays[0].field },
           childfanouts: childArrays.length > 0 ? childArrays : null
         }
       }
@@ -676,26 +678,28 @@ export default {
         }
 
         // Add schema rules if present
+        // Note: datafanout can be null, object {"field": "path"}, or (legacy) string
+        const hasDatafanout = this.schemaRules.datafanout &&
+                             (typeof this.schemaRules.datafanout === 'object'
+                               ? this.schemaRules.datafanout.field
+                               : this.schemaRules.datafanout)
         const hasSchemaRules = this.schemaRules.convertToJson.length > 0 ||
-                              this.schemaRules.datafanout ||
+                              hasDatafanout ||
                               (this.schemaRules.childfanouts && this.schemaRules.childfanouts.length > 0)
 
-        if (hasSchemaRules) {
-          policy.schemarule = {}
+        // ALWAYS include schemaRule section, even if empty
+        // If no actual rules, add default structure: { "fanout": { "inputField": null } }
+        policy.schemarule = {}
 
+        if (hasSchemaRules) {
           // Add ConvertoJson if present
           if (this.schemaRules.convertToJson.length > 0) {
             policy.schemarule.ConvertoJson = this.schemaRules.convertToJson
           }
 
-          // CRITICAL: Check if datafanout is already in schemaRules (from Step 3)
-          // If datafanout exists in store, use it directly along with childfanouts
-          if (this.schemaRules.datafanout !== undefined) {
-            policy.schemarule.datafanout = this.schemaRules.datafanout
-            policy.schemarule.childfanouts = this.schemaRules.childfanouts
-          } else if (this.schemaRules.childfanouts && this.schemaRules.childfanouts.length > 0) {
-            // Fallback: compute datafanout/childfanouts from legacy childfanouts array
-
+          // CRITICAL: Always normalize fanout structure to ensure correctness
+          // This handles both new policies and uploaded policies with incorrect structure
+          if (this.schemaRules.childfanouts && this.schemaRules.childfanouts.length > 0) {
             // Clean childfanouts to remove UI-only metadata
             const cleanChildFanouts = (fanouts) => {
               if (!Array.isArray(fanouts)) return fanouts
@@ -728,14 +732,70 @@ export default {
 
             const cleanedChildFanouts = cleanChildFanouts(this.schemaRules.childfanouts)
 
-            // Compute datafanout and childfanouts based on the three rules
+            // ALWAYS compute datafanout and childfanouts based on the three rules
+            // This ensures correct structure even if store has datafanout=null with childfanouts
+            // (which can happen with incorrectly structured uploaded policies)
             const { datafanout, childfanouts } = this.computeDataFanoutStructure(cleanedChildFanouts)
 
-            // Set datafanout attribute
-            policy.schemarule.datafanout = datafanout
+            // Special case: If only one array selected and no child fanouts, use legacy format
+            // Legacy format: "fanout": { "InputField": ["$.path[*]"] }
+            // New format: "datafanout": {"field": "$.path[*]"}, "childfanouts": null
+            if (cleanedChildFanouts.length === 1 && !childfanouts) {
+              // Export in legacy format for backward compatibility
+              policy.schemarule.fanout = {
+                InputField: [cleanedChildFanouts[0].field]
+              }
+              // Do NOT set datafanout or childfanouts in legacy format
+            } else {
+              // Use new format for all other cases
+              // Set datafanout attribute (may be null or an object {"field": "path"})
+              policy.schemarule.datafanout = datafanout
 
-            // Set childfanouts (may be null or an array)
-            policy.schemarule.childfanouts = childfanouts
+              // Only set childfanouts if it has actual data (not null or empty array)
+              if (childfanouts && Array.isArray(childfanouts) && childfanouts.length > 0) {
+                policy.schemarule.childfanouts = childfanouts
+              }
+              // If childfanouts is null or empty, do not add it to the policy
+            }
+          } else if (this.schemaRules.datafanout !== undefined && this.schemaRules.datafanout !== null) {
+            // Only use store's datafanout if there are no childfanouts to compute from
+            // This handles the case where datafanout exists without childfanouts array
+
+            // Check if this should be exported in legacy format (single array, no children)
+            const hasChildFanouts = this.schemaRules.childfanouts &&
+                                   Array.isArray(this.schemaRules.childfanouts) &&
+                                   this.schemaRules.childfanouts.length > 0
+
+            if (!hasChildFanouts) {
+              // Single datafanout with no children → use legacy format
+              const fanoutField = typeof this.schemaRules.datafanout === 'string'
+                ? this.schemaRules.datafanout
+                : this.schemaRules.datafanout.field
+
+              policy.schemarule.fanout = {
+                InputField: [fanoutField]
+              }
+              // Do NOT set datafanout or childfanouts in legacy format
+            } else {
+              // Has children → use new format
+              // Normalize to object format if it's a legacy string
+              if (typeof this.schemaRules.datafanout === 'string') {
+                policy.schemarule.datafanout = { field: this.schemaRules.datafanout }
+              } else {
+                policy.schemarule.datafanout = this.schemaRules.datafanout
+              }
+
+              // Only set childfanouts if it has actual data (not null or empty array)
+              if (hasChildFanouts) {
+                policy.schemarule.childfanouts = this.schemaRules.childfanouts
+              }
+            }
+          }
+        } else {
+          // No schema rules present - add default structure
+          // "schemaRule": { "fanout": { "inputField": null } }
+          policy.schemarule.fanout = {
+            inputField: null
           }
         }
 

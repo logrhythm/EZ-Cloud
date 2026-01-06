@@ -862,24 +862,10 @@ export default {
           return
         }
 
-        // Validate fanout parent if present
-        if (this.transformForm.fanoutParentElement) {
-          const isValidFanout = MappingService.validateFanoutParentElement(
-            this.transformForm.fanoutParentElement,
-            this.fanoutArrays
-          )
-
-          if (!isValidFanout) {
-            this.validationErrors.fanoutParentElement = 'Invalid fanout parent element'
-            this.$q.notify({
-              type: 'negative',
-              message: 'Invalid fanout parent element',
-              caption: 'The fanout parent must be one of the arrays selected in Step 3',
-              position: 'top'
-            })
-            return
-          }
-        }
+        // REMOVED: Fanout parent validation
+        // The fanout parent is automatically assigned by the application based on tree structure
+        // and is not user-editable, so validation is not needed.
+        // The resolvePathForFanout() method ensures correct fanout parent assignment.
 
         // Format transform for saving (use uppercase LRSchemaField for consistency)
         const transformToSave = {

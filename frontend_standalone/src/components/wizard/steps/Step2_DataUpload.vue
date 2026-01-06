@@ -123,6 +123,7 @@
               <div class="file-upload-area">
                 <q-file
                   v-model="uploadedFile"
+                  :key="fileInputKey"
                   accept=".json"
                   outlined
                   dense
@@ -441,6 +442,7 @@ export default {
       // Local copy of rawData to avoid direct Vuex state mutation
       localRawData: '',
       uploadedFile: null,
+      fileInputKey: 0, // Used to force re-render of file input to prevent caching
       isDragOver: false,
       fileErrorMessage: '',
       validationErrorMessage: '',
@@ -1036,6 +1038,8 @@ export default {
       this.lastProceededRawData = null
 
       this.uploadedFile = null
+      // Increment key to reset file input (clear cache)
+      this.fileInputKey++
       this.validationErrorMessage = ''
       this.fileErrorMessage = ''
       this.$emit('step-invalid')
@@ -1083,6 +1087,8 @@ export default {
       this.lastProceededRawData = null
 
       this.uploadedFile = null
+      // Increment key to reset file input (clear cache)
+      this.fileInputKey++
       this.validationErrorMessage = ''
       this.fileErrorMessage = ''
       this.$emit('step-invalid')
@@ -1108,14 +1114,16 @@ export default {
       try {
         // Validate file
         if (!file.name.toLowerCase().endsWith('.json')) {
+          this.fileInputKey++ // Reset file input on error
           throw new Error('Please select a JSON file')
         }
 
         if (file.size > 10 * 1024 * 1024) { // 10MB limit
+          this.fileInputKey++ // Reset file input on error
           throw new Error('File size must be less than 10MB')
         }
 
-        // Read file content
+        // Read file content to ensure we're getting the actual current file
         const fileContent = await this.readFileAsText(file)
 
         // Check if file content is empty or contains only whitespace
@@ -1136,6 +1144,8 @@ export default {
 
           // Also show an immediate error on the file upload field
           this.fileErrorMessage = 'The uploaded file is empty or contains only whitespace'
+          // Increment key to reset file input
+          this.fileInputKey++
           this.$emit('step-invalid')
           return
         }
@@ -1188,6 +1198,8 @@ export default {
       } catch (error) {
         this.fileErrorMessage = error.message
         this.uploadedFile = null
+        // Increment key to reset file input on error
+        this.fileInputKey++
       }
     },
 

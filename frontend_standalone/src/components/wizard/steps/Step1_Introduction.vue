@@ -108,7 +108,9 @@
               </div>
 
               <q-file
+                ref="policyFileInput"
                 v-model="existingPolicyFile"
+                :key="fileInputKey"
                 accept=".json"
                 outlined
                 dense
@@ -335,6 +337,8 @@ export default {
     return {
       existingPolicyFile: null,
       existingPolicyPreview: null,
+      fileInputKey: 0, // Used to force re-render of file input to prevent caching
+      lastFileContentHash: null, // Hash of the last uploaded file content to detect changes
       errors: {
         name: [],
         description: [],
@@ -415,8 +419,9 @@ export default {
         return Boolean(this.projectConfig.name?.trim())
       } else if (this.projectConfig.mode === 'update') {
         // For update mode: Check if we have a valid uploaded policy AND a policy name
+        // Note: We check uploadedPolicyData instead of existingPolicyFile because
+        // File objects cannot be persisted in Vuex
         return Boolean(
-          this.existingPolicyFile &&
           this.policyUpload.validationResult.valid &&
           this.policyUpload.uploadedPolicyData &&
           this.projectConfig.name?.trim()
@@ -438,6 +443,8 @@ export default {
           this.existingPolicyFile = null
           this.existingPolicyPreview = null
           this.clearPolicyFile()
+          // Increment key to force re-render of file input (clear cache)
+          this.fileInputKey++
 
           // Clear project name when switching to create mode
           // (prevent auto-population from uploaded policy)
@@ -456,10 +463,9 @@ export default {
     // Restore file upload state if policy is already uploaded in update mode
     // Do this BEFORE validation to ensure file state is correct
     if (this.projectConfig.mode === 'update' && this.policyUpload.uploadedPolicyData) {
-      // Restore the file object if it exists in Vuex
-      if (this.policyUpload.uploadedFile) {
-        this.existingPolicyFile = this.policyUpload.uploadedFile
-      }
+      // Note: We cannot restore the actual File object from Vuex as File objects
+      // cannot be serialized. Instead, we just restore the preview and metadata.
+      // The q-file component will show as empty, but the policy data is preserved.
 
       // Restore the preview from the uploaded policy data
       const policy = this.policyUpload.uploadedPolicyData
@@ -509,10 +515,9 @@ export default {
     },
 
     validateField (fieldName) {
-      // Skip validation for policy name in update mode when a file is uploaded
+      // Skip validation for policy name in update mode when policy data is uploaded
       if (fieldName === 'name' &&
           this.projectConfig.mode === 'update' &&
-          this.existingPolicyFile &&
           this.policyUpload.uploadedPolicyData) {
         // Clear any existing errors
         this.errors.name = []
@@ -561,7 +566,7 @@ export default {
 
         // Only validate the policy name if no file has been uploaded yet
         // Once a file is uploaded, skip name validation (policy name comes from uploaded file)
-        if (!this.existingPolicyFile || !this.policyUpload.uploadedPolicyData) {
+        if (!this.policyUpload.uploadedPolicyData) {
           const nameValidation = Step1Validator.validateProjectName(this.projectConfig.name)
           this.errors.name = nameValidation.errors.map(e => e.message)
         } else {
@@ -569,8 +574,8 @@ export default {
           this.errors.name = []
         }
 
-        // Also check if file is selected
-        if (!this.existingPolicyFile) {
+        // Also check if policy data exists (not just the file object)
+        if (!this.policyUpload.uploadedPolicyData) {
           this.errors.existingPolicy = ['Please select a policy file']
           return false
         }
@@ -587,13 +592,35 @@ export default {
         return
       }
 
+      // Store file metadata for later use
+      const fileName = file.name
+
       try {
-        // Check if this is a different file than the currently uploaded one
-        const previousFile = this.policyUpload.uploadedFile
-        const isDifferentFile = !previousFile ||
-                                previousFile.name !== file.name ||
-                                previousFile.size !== file.size ||
-                                previousFile.lastModified !== file.lastModified
+        // Force read the actual file content from disk to avoid browser caching
+        const fileContent = await this.readFileAsText(file)
+
+        // Calculate hash of the file content
+        const currentHash = this.simpleHash(fileContent)
+
+        // Strip JavaScript-style comments from the JSON before parsing
+        // This allows policy files to contain // and /* */ comments for documentation
+        const fileContentWithoutComments = this.stripCommentsFromJson(fileContent)
+
+        // Parse the JSON to verify we're reading the actual current file
+        let parsedContent
+        try {
+          parsedContent = JSON.parse(fileContentWithoutComments)
+        } catch (parseError) {
+          throw new Error('Invalid JSON file: ' + parseError.message)
+        }
+
+        // Check if this is a different file than the currently uploaded one by comparing content
+        const previousPolicyData = this.policyUpload.uploadedPolicyData
+        const isDifferentFile = !previousPolicyData ||
+                                JSON.stringify(parsedContent) !== JSON.stringify(previousPolicyData)
+
+        // Store the hash for next comparison
+        this.lastFileContentHash = currentHash
 
         // Use the new Vuex action to upload and validate the policy file
         const validationResult = await this.uploadPolicyFile(file)
@@ -601,16 +628,22 @@ export default {
         // Handle validation errors
         if (!validationResult.valid || validationResult.errors?.length > 0) {
           this.errors.existingPolicy = validationResult.errors || ['Unknown validation error']
-          this.existingPolicyFile = null
           this.existingPolicyPreview = null
           this.$emit('step-invalid', 'Policy file validation failed')
+
+          // Clear file input after error
+          this.$nextTick(() => {
+            this.existingPolicyFile = null
+            this.fileInputKey++
+          })
+
           return
         }
 
         // Success: Policy is valid and stored in Vuex
         const parsedPolicy = validationResult.policy
 
-        // Create preview
+        // Create preview using the freshly read content
         this.existingPolicyPreview = JSON.stringify(parsedPolicy, null, 2).substring(0, 500) + '...'
 
         // Always update policy name from uploaded file (overwrite any previous value)
@@ -627,8 +660,6 @@ export default {
 
         // Display warnings if any
         if (validationResult.warnings && validationResult.warnings.length > 0) {
-          // Validation warnings found during upload
-          // Optionally display warnings to the user
           const warningCount = validationResult.warnings?.length || 0
           this.$q?.notify({
             type: 'warning',
@@ -637,22 +668,34 @@ export default {
           })
         }
 
-        // Display success message
-        const policyName = parsedPolicy.name || file.name
+        // Display success message with file info to confirm correct file was loaded
+        const policyName = parsedPolicy.name || fileName
         this.$q?.notify({
           type: 'positive',
           message: 'Policy "' + policyName + '" uploaded successfully!',
-          timeout: 2000
+          timeout: 3000
         })
 
         // Emit validation status
         this.$emit('step-valid')
+
+        // Clear the file input AFTER successful processing to allow re-upload
+        this.$nextTick(() => {
+          this.existingPolicyFile = null
+          this.fileInputKey++
+        })
       } catch (error) {
-        console.error('Error processing file:', error)
+        console.error('File upload failed:', error)
+
         this.errors.existingPolicy = [error.message || 'An error occurred while processing the file']
-        this.existingPolicyFile = null
         this.existingPolicyPreview = null
         this.$emit('step-invalid', error.message)
+
+        // Clear file input after error
+        this.$nextTick(() => {
+          this.existingPolicyFile = null
+          this.fileInputKey++
+        })
       }
     },
 
@@ -712,6 +755,74 @@ export default {
       this.RESET_SUBTRANSFORMS()
     },
 
+    // Simple hash function for string comparison
+    simpleHash (str) {
+      let hash = 0
+      if (str.length === 0) return hash
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i)
+        hash = ((hash << 5) - hash) + char
+        hash = hash & hash // Convert to 32bit integer
+      }
+      return hash.toString(16)
+    },
+
+    // Strip JavaScript-style comments from JSON text while preserving strings
+    // Supports both single-line and multi-line comments
+    // Comments inside quoted strings are preserved
+    stripCommentsFromJson (text) {
+      if (!text || typeof text !== 'string') return text
+
+      let out = ''
+      let inString = false
+      let escape = false
+
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i]
+
+        if (escape) {
+          out += ch
+          escape = false
+          continue
+        }
+
+        if (ch === '\\') {
+          // Start escape sequence inside string
+          escape = true
+          out += ch
+          continue
+        }
+
+        if (ch === '"') {
+          inString = !inString
+          out += ch
+          continue
+        }
+
+        if (!inString) {
+          // Detect single-line comment
+          if (ch === '/' && text[i + 1] === '/') {
+            // Skip until end of line
+            i += 2
+            while (i < text.length && text[i] !== '\n') i++
+            continue
+          }
+
+          // Detect multi-line comment
+          if (ch === '/' && text[i + 1] === '*') {
+            i += 2
+            while (i < text.length && !(text[i] === '*' && text[i + 1] === '/')) i++
+            i += 1 // Will be incremented by loop
+            continue
+          }
+        }
+
+        out += ch
+      }
+
+      return out
+    },
+
     readFileAsText (file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader()
@@ -765,6 +876,19 @@ export default {
       this.existingPolicyFile = null
       this.existingPolicyPreview = null
       this.errors.existingPolicy = []
+      this.lastFileContentHash = null // Clear the hash
+
+      // Increment key to force re-render of file input (clear cache)
+      this.fileInputKey++
+
+      // Also clear the actual file input element value to prevent caching
+      this.$nextTick(() => {
+        const fileInput = this.$el.querySelector('input[type="file"]')
+        if (fileInput) {
+          fileInput.value = ''
+        }
+      })
+
       this.$emit('step-invalid')
 
       this.$q?.notify({

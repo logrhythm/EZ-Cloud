@@ -1544,25 +1544,10 @@ export default {
           return
         }
 
-        // Validate fanout parent if present
-        if (this.mappingForm.fanoutParentElement) {
-          const isValidFanout = MappingService.validateFanoutParentElement(
-            this.mappingForm.fanoutParentElement,
-            this.fanoutArrays
-          )
-
-          if (!isValidFanout) {
-            this.validationErrors.fanoutParentElement = 'Invalid fanout parent element. Must match a fanout array from Step 3.'
-            this.$q.notify({
-              type: 'negative',
-              message: 'Invalid fanout parent element',
-              caption: 'The fanout parent must be one of the arrays selected in Step 3 (Schema Rules)',
-              position: 'top',
-              timeout: 5000
-            })
-            return
-          }
-        }
+        // REMOVED: Fanout parent validation
+        // The fanout parent is automatically assigned by the application based on tree structure
+        // and is not user-editable, so validation is not needed.
+        // The resolvePathForFanout() method ensures correct fanout parent assignment.
 
         // Check for duplicates
         const duplicateCheck = MappingService.checkDuplicateMapping(

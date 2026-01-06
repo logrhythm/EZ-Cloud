@@ -318,13 +318,15 @@ export class SchemaRuleService {
    * Build datafanout structure according to the new schema rules
    *
    * Rules:
-   * 1. Single array: datafanout = that array, childfanouts = null
-   * 2. Multiple arrays with one top-level: datafanout = top array, childfanouts = children
+   * 1. Single array: datafanout = {field: "that array"}, childfanouts = null
+   * 2. Multiple arrays with one top-level: datafanout = {field: "top array"}, childfanouts = children
    * 3. Multiple top-level arrays: datafanout = null, childfanouts = all arrays
    *
    * @param {Array} selectedArrayPaths - Array paths selected by user (e.g., ["Log.Records", "Log.Records[*].changes"])
    * @param {Array} allArrayFields - All available array field metadata (with parentPath info)
-   * @returns {Object} Object with { datafanout: string|null, childfanouts: Array|null }
+   * @returns {Object} Object with { datafanout: Object|null, childfanouts: Array|null }
+   *
+   * NOTE: datafanout is now an object with "field" property: {"field": "$.path[*]"}
    */
   static buildDataFanoutStructure (selectedArrayPaths, allArrayFields) {
     // Handle empty or invalid input
@@ -338,7 +340,7 @@ export class SchemaRuleService {
     // Rule 1: Single array selection
     if (normalizedPaths.length === 1) {
       return {
-        datafanout: normalizedPaths[0],
+        datafanout: { field: normalizedPaths[0] },
         childfanouts: null
       }
     }
@@ -380,7 +382,7 @@ export class SchemaRuleService {
       })
 
       return {
-        datafanout: topLevelPath,
+        datafanout: { field: topLevelPath },
         childfanouts: filteredChildfanouts.length > 0 ? filteredChildfanouts : null
       }
     }

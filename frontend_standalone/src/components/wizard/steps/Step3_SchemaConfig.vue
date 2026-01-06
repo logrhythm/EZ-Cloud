@@ -1308,7 +1308,11 @@ export default {
 
         // REFACTORED: Check for datafanout FIRST (primary indicator), then childfanouts
         // This aligns with the new format where datafanout is the key attribute
-        const hasDataFanout = datafanout && datafanout !== null && datafanout !== ''
+        // UPDATED: Handle both object format {field: "path"} and legacy string format
+        const datafanoutField = datafanout && datafanout !== null
+          ? (typeof datafanout === 'object' ? datafanout.field : datafanout)
+          : null
+        const hasDataFanout = datafanoutField && datafanoutField !== ''
         const hasChildFanouts = childfanouts && Array.isArray(childfanouts)
         const hasNewImplementation = hasDataFanout || hasChildFanouts
         const hasOldImplementation = inputField && Array.isArray(inputField)
@@ -1484,16 +1488,23 @@ export default {
      */
     async processDataFanoutWithChildren (datafanout, childfanouts, missingFields) {
       // Step 1: Process datafanout if it exists (Rule 1 & Rule 2)
-      if (datafanout && datafanout !== null && datafanout !== '') {
+      // CRITICAL: Handle both object format {field: "path"} and legacy string format
+      let datafanoutPath = null
+      if (datafanout && datafanout !== null) {
+        // Extract field value from object format or use string directly
+        datafanoutPath = typeof datafanout === 'object' ? datafanout.field : datafanout
+      }
+
+      if (datafanoutPath && datafanoutPath !== '') {
         // Step 3 debug log removed
         // Step 3 debug log removed
 
         // Normalize the datafanout path
-        const normalizedDatafanout = this.normalizeFanoutPath(datafanout)
+        const normalizedDatafanout = this.normalizeFanoutPath(datafanoutPath)
         // Step 3 debug log removed
 
         // Try to find datafanout in candidates (case-insensitive)
-        const matched = this.findFanoutCandidate(datafanout)
+        const matched = this.findFanoutCandidate(datafanoutPath)
 
         if (matched) {
           // Found in candidates - add to selections
@@ -1506,7 +1517,7 @@ export default {
         } else {
           // Not found - inject as missing array
           console.warn('[Step 3] ⚠️ datafanout not found in candidates, injecting as missing')
-          this.injectMissingFanoutArray(datafanout, null, missingFields)
+          this.injectMissingFanoutArray(datafanoutPath, null, missingFields)
           // After injection, add the normalized path to selections
           if (!this.selectedFanoutFields.includes(normalizedDatafanout)) {
             this.selectedFanoutFields.push(normalizedDatafanout)
