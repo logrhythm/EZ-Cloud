@@ -2380,7 +2380,7 @@ export default {
 
   ::v-deep .q-table th:nth-child(4),
   ::v-deep .q-table td:nth-child(4) {
-    width: 12%; /* Type */
+    width:  12%; /* Type */
     min-width: 100px;
   }
 
@@ -2556,6 +2556,76 @@ export default {
   }
 }
 
+/* Sample value banner styles - Transparent background with light blue text */
+.mapping-popup .q-banner,
+.mapping-popup .sample-value-banner,
+body.body--dark .mapping-popup .q-banner,
+body.body--dark .mapping-popup .sample-value-banner,
+.body--dark .mapping-popup .q-banner,
+.body--dark .mapping-popup .sample-value-banner,
+[dir] body.body--dark .mapping-popup .q-banner,
+[dir] body.body--dark .mapping-popup .sample-value-banner,
+[dir] .body--dark .mapping-popup .q-banner,
+[dir] .body--dark .mapping-popup .sample-value-banner {
+  background: transparent !important;
+  background-color: transparent !important;
+  border-left: 4px solid #02b7fe !important;
+  padding: 12px 16px !important;
+}
+
+.mapping-popup .sample-value-content,
+.mapping-popup .sample-value-content *,
+body.body--dark .mapping-popup .sample-value-content,
+body.body--dark .mapping-popup .sample-value-content *,
+.body--dark .mapping-popup .sample-value-content,
+.body--dark .mapping-popup .sample-value-content *,
+[dir] body.body--dark .mapping-popup .sample-value-content,
+[dir] body.body--dark .mapping-popup .sample-value-content *,
+[dir] .body--dark .mapping-popup .sample-value-content,
+[dir] .body--dark .mapping-popup .sample-value-content * {
+  color: #02b7fe !important;
+  -webkit-text-fill-color: #02b7fe !important;
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+.mapping-popup .sample-label,
+.mapping-popup strong.sample-label,
+body.body--dark .mapping-popup .sample-label,
+body.body--dark .mapping-popup strong.sample-label,
+.body--dark .mapping-popup .sample-label,
+.body--dark .mapping-popup strong.sample-label,
+[dir] body.body--dark .mapping-popup .sample-label,
+[dir] body.body--dark .mapping-popup strong.sample-label,
+[dir] .body--dark .mapping-popup .sample-label,
+[dir] .body--dark .mapping-popup strong.sample-label {
+  color: #02b7fe !important;
+  -webkit-text-fill-color: #02b7fe !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+.mapping-popup code.sample-code,
+.mapping-popup .sample-code,
+body.body--dark .mapping-popup code.sample-code,
+body.body--dark .mapping-popup .sample-code,
+.body--dark .mapping-popup code.sample-code,
+.body--dark .mapping-popup .sample-code,
+[dir] body.body--dark .mapping-popup code.sample-code,
+[dir] body.body--dark .mapping-popup .sample-code,
+[dir] .body--dark .mapping-popup code.sample-code,
+[dir] .body--dark .mapping-popup .sample-code {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: #02b7fe !important;
+  -webkit-text-fill-color: #02b7fe !important;
+  padding: 6px 14px !important;
+  border-radius: 4px !important;
+  border: 1px solid #02b7fe !important;
+  font-family: 'Courier New', monospace !important;
+}
 </style>
 
 <style lang="scss">
@@ -2793,32 +2863,58 @@ body.body--dark .mapping-popup .q-field__native > span:not(.q-chip),
   color: #000000 !important;
 }
 
-/* Fix hint text visibility in mapping dialog - Make hints visible with darker color */
+/* Fix hint text visibility in mapping dialog - Transparent background with light blue text */
 .mapping-popup .q-field__bottom,
 body.body--dark .mapping-popup .q-field__bottom,
-.body--dark .mapping-popup .q-field__bottom {
-  color: rgba(0, 0, 0, 0.87) !important;
+.body--dark .mapping-popup .q-field__bottom,
+[dir] body.body--dark .mapping-popup .q-field__bottom,
+[dir] .body--dark .mapping-popup .q-field__bottom {
+  color: #02b7fe !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  padding: 4px 0 !important;
 }
 
 .mapping-popup .q-field__messages,
 body.body--dark .mapping-popup .q-field__messages,
-.body--dark .mapping-popup .q-field__messages {
-  color: rgba(0, 0, 0, 0.87) !important;
+.body--dark .mapping-popup .q-field__messages,
+[dir] body.body--dark .mapping-popup .q-field__messages,
+[dir] .body--dark .mapping-popup .q-field__messages {
+  color: #02b7fe !important;
+  -webkit-text-fill-color: #02b7fe !important;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
-/* Hint text specifically - Darker for better readability */
+/* Hint text specifically - Light blue color for better readability */
 .mapping-popup .q-field__hint,
 body.body--dark .mapping-popup .q-field__hint,
-.body--dark .mapping-popup .q-field__hint {
-  color: rgba(0, 0, 0, 0.87) !important;
+.body--dark .mapping-popup .q-field__hint,
+[dir] body.body--dark .mapping-popup .q-field__hint,
+[dir] .body--dark .mapping-popup .q-field__hint {
+  color: #02b7fe !important;
+  -webkit-text-fill-color: #02b7fe !important;
   font-weight: 500 !important;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
-/* Error messages should be visible */
+/* All child elements of hint messages */
 .mapping-popup .q-field__messages > div,
 body.body--dark .mapping-popup .q-field__messages > div,
-.body--dark .mapping-popup .q-field__messages > div {
-  color: rgba(0, 0, 0, 0.87) !important;
+.body--dark .mapping-popup .q-field__messages > div,
+[dir] body.body--dark .mapping-popup .q-field__messages > div,
+[dir] .body--dark .mapping-popup .q-field__messages > div,
+.mapping-popup .q-field__messages *,
+body.body--dark .mapping-popup .q-field__messages *,
+.body--dark .mapping-popup .q-field__messages *,
+[dir] body.body--dark .mapping-popup .q-field__messages *,
+[dir] .body--dark .mapping-popup .q-field__messages * {
+  color: #02b7fe !important;
+  -webkit-text-fill-color: #02b7fe !important;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 .mapping-popup .q-field--error .q-field__bottom,

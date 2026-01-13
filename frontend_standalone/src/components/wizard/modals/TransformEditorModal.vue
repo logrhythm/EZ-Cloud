@@ -7,7 +7,7 @@
     transition-show="scale"
     transition-hide="scale"
   >
-    <q-card class="transform-editor-modal" style="max-width: 700px; width: 90vw; max-height: 90vh;">
+    <q-card ref="modalCard" class="transform-editor-modal" style="max-width: 700px; width: 90vw; max-height: 90vh;">
       <!-- Header -->
       <q-card-section class="modal-header row items-center">
         <div class="text-h6">{{ mode === 'add' ? 'Add' : 'Edit' }} Field Mapping</div>
@@ -99,6 +99,8 @@
                   v-model="operationConfig"
                   :field-path="originalFieldPath"
                   :sample-value="transformForm.sampleValue"
+                  :available-fields="allAvailableFields"
+                  :sample-data="sampleData"
                   @input="handleOperationChanged"
                 />
               </div>
@@ -174,13 +176,30 @@
 
               <!-- Sample Value Display -->
               <div v-if="transformForm.sampleValue" class="col-12">
-                <q-banner dense class="sample-value-banner">
+                <q-banner
+                  dense
+                  class="sample-value-banner"
+                  style="background: transparent !important; border-left: 4px solid #02b7fe !important; padding: 12px 16px !important;"
+                >
                   <template v-slot:avatar>
-                    <q-icon name="preview" />
+                    <q-icon name="preview" color="primary" />
                   </template>
-                  <div class="sample-value-content">
-                    <strong>Sample Value:</strong>
-                    <code class="q-ml-sm">{{ transformForm.sampleValue }}</code>
+                  <div
+                    class="sample-value-content"
+                    style="color: #02b7fe !important; background: transparent !important;"
+                  >
+                    <strong
+                      class="sample-label"
+                      style="color: #02b7fe !important; font-weight: 600 !important; font-size: 14px !important; margin-right: 8px !important;"
+                    >
+                      Sample Value:
+                    </strong>
+                    <code
+                      class="sample-code q-ml-sm"
+                      style="background: transparent !important; color: #02b7fe !important; padding: 6px 14px !important; border-radius: 4px !important; border: 1px solid #02b7fe !important; font-family: 'Courier New', monospace !important;"
+                    >
+                      {{ transformForm.sampleValue }}
+                    </code>
                   </div>
                 </q-banner>
               </div>
@@ -416,8 +435,14 @@ export default {
     // Get ALL available JSON paths from filterRules (populated in Step 4)
     allAvailableFields () {
       if (!this.filterRules || !this.filterRules.availableFields || !Array.isArray(this.filterRules.availableFields)) {
+        console.log('[TransformEditorModal] allAvailableFields - no fields available', {
+          hasFilterRules: !!this.filterRules,
+          hasAvailableFields: !!(this.filterRules?.availableFields),
+          isArray: Array.isArray(this.filterRules?.availableFields)
+        })
         return []
       }
+      console.log('[TransformEditorModal] allAvailableFields:', this.filterRules.availableFields.length, 'fields')
       return this.filterRules.availableFields
     },
 
@@ -490,8 +515,16 @@ export default {
     value: {
       immediate: true,
       handler (newVal) {
+        console.log('[TransformEditorModal] Modal visibility changed:', newVal)
         if (newVal) {
           this.initializeModal()
+          // Force styles when modal opens
+          this.$nextTick(() => {
+            setTimeout(() => {
+              console.log('[TransformEditorModal] Forcing styles after modal open')
+              this.forceStyleVisibility()
+            }, 100)
+          })
         }
       }
     },
@@ -913,7 +946,126 @@ export default {
 
     closeModal () {
       this.$emit('input', false)
+    },
+
+    /**
+     * Force style visibility using JavaScript DOM manipulation
+     * This is necessary because Quasar's runtime styles override all CSS
+     */
+    forceStyleVisibility () {
+      console.log('[TransformEditorModal] forceStyleVisibility called')
+
+      this.$nextTick(() => {
+        try {
+          // Use $refs.modalCard instead of $el to access the actual DOM element
+          const modalRoot = this.$refs.modalCard
+          if (!modalRoot || !modalRoot.$el) {
+            console.warn('[TransformEditorModal] modalCard ref is not available yet')
+            return
+          }
+
+          // Get the actual DOM element from the Quasar component
+          const rootEl = modalRoot.$el
+          console.log('[TransformEditorModal] Starting style forcing on:', rootEl)
+
+          // Force sample value banner styles
+          const sampleBanner = rootEl.querySelector('.sample-value-banner')
+          if (sampleBanner) {
+            console.log('[TransformEditorModal] Found sample banner, applying styles')
+            sampleBanner.style.setProperty('background', 'transparent', 'important')
+            sampleBanner.style.setProperty('border-left', '4px solid #02b7fe', 'important')
+            sampleBanner.style.setProperty('padding', '12px 16px', 'important')
+          } else {
+            console.log('[TransformEditorModal] Sample banner not found')
+          }
+
+          // Force sample value content styles
+          const sampleContent = rootEl.querySelector('.sample-value-content')
+          if (sampleContent) {
+            console.log('[TransformEditorModal] Found sample content, applying styles')
+            sampleContent.style.setProperty('color', '#02b7fe', 'important')
+            sampleContent.style.setProperty('background', 'transparent', 'important')
+          }
+
+          // Force sample label styles
+          const sampleLabel = rootEl.querySelector('.sample-label')
+          if (sampleLabel) {
+            console.log('[TransformEditorModal] Found sample label, applying styles')
+            sampleLabel.style.setProperty('color', '#02b7fe', 'important')
+            sampleLabel.style.setProperty('-webkit-text-fill-color', '#02b7fe', 'important')
+            sampleLabel.style.setProperty('font-weight', '600', 'important')
+            sampleLabel.style.setProperty('font-size', '14px', 'important')
+          }
+
+          // Force sample code styles
+          const sampleCode = rootEl.querySelector('.sample-code')
+          if (sampleCode) {
+            console.log('[TransformEditorModal] Found sample code, applying styles')
+            sampleCode.style.setProperty('background', 'transparent', 'important')
+            sampleCode.style.setProperty('color', '#02b7fe', 'important')
+            sampleCode.style.setProperty('-webkit-text-fill-color', '#02b7fe', 'important')
+            sampleCode.style.setProperty('padding', '6px 14px', 'important')
+            sampleCode.style.setProperty('border', '1px solid #02b7fe', 'important')
+            sampleCode.style.setProperty('border-radius', '4px', 'important')
+            sampleCode.style.setProperty('font-family', "'Courier New', monospace", 'important')
+          } // Force hint text styles for all fields
+          const hintBottoms = rootEl.querySelectorAll('.q-field__bottom')
+          console.log(`[TransformEditorModal] Found ${hintBottoms.length} hint bottom elements`)
+          hintBottoms.forEach((bottom, index) => {
+            bottom.style.setProperty('display', 'block', 'important')
+            bottom.style.setProperty('visibility', 'visible', 'important')
+            bottom.style.setProperty('opacity', '1', 'important')
+            bottom.style.setProperty('background', 'transparent', 'important')
+            bottom.style.setProperty('background-color', 'transparent', 'important')
+            bottom.style.setProperty('border', 'none', 'important')
+            bottom.style.setProperty('border-radius', '0', 'important')
+            bottom.style.setProperty('padding', '4px 0', 'important')
+            bottom.style.setProperty('margin-top', '4px', 'important')
+
+            // Force background on ALL children too
+            const children = bottom.querySelectorAll('*')
+            children.forEach(child => {
+              child.style.setProperty('background', 'transparent', 'important')
+              child.style.setProperty('background-color', 'transparent', 'important')
+            })
+          })
+
+          // Force hint text message styles
+          const hintMessages = rootEl.querySelectorAll('.q-field__messages, .q-field__messages div, .q-field__messages span, .custom-hint-text')
+          console.log(`[TransformEditorModal] Found ${hintMessages.length} hint message elements`)
+          hintMessages.forEach((msg, index) => {
+            msg.style.setProperty('color', '#02b7fe', 'important')
+            msg.style.setProperty('-webkit-text-fill-color', '#02b7fe', 'important')
+            msg.style.setProperty('background', 'transparent', 'important')
+            msg.style.setProperty('background-color', 'transparent', 'important')
+            msg.style.setProperty('display', 'block', 'important')
+            msg.style.setProperty('visibility', 'visible', 'important')
+            msg.style.setProperty('opacity', '1', 'important')
+            msg.style.setProperty('font-size', '12px', 'important')
+          })
+
+          console.log('[TransformEditorModal] ✅ Forced style visibility applied successfully')
+        } catch (error) {
+          console.error('[TransformEditorModal] ❌ Error forcing style visibility:', error)
+        }
+      })
     }
+  },
+
+  mounted () {
+    console.log('[TransformEditorModal] Component mounted', {
+      hasSampleData: !!this.sampleData,
+      sampleData: this.sampleData,
+      allAvailableFieldsCount: this.allAvailableFields?.length || 0
+    })
+    // Force styles on mount
+    this.forceStyleVisibility()
+  },
+
+  updated () {
+    console.log('[TransformEditorModal] Component updated')
+    // Re-apply forced styles after any update (Quasar may re-render)
+    this.forceStyleVisibility()
   }
 }
 </script>
@@ -948,13 +1100,16 @@ export default {
 
   // Custom hint text styling
   .custom-hint-text {
-    color: #42A5F5 !important;
+    color: #02b7fe !important; /* Light blue for high contrast */
     font-size: 12px !important;
-    line-height: 1.4 !important;
+    line-height: 1.5 !important;
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
     padding-top: 2px !important;
+    font-weight: 500 !important;
+    -webkit-text-fill-color: #02b7fe !important;
+    text-shadow: none !important;
   }
 }
 
@@ -964,21 +1119,35 @@ export default {
 }
 
 .sample-value-banner {
-  background: rgba(33, 150, 243, 0.1);
-  border-left: 3px solid #2196F3;
+  background: #E3F2FD !important; /* Light blue background */
+  border-left: 4px solid #2196F3 !important;
+  padding: 12px 16px !important;
 }
 
 .sample-value-content {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  color: #000000 !important; /* Force black text */
+  background: transparent !important;
 
-  code {
-    background: rgba(0, 0, 0, 0.2);
-    padding: 2px 8px;
-    border-radius: 4px;
-    color: #A5D6A7;
-    font-size: 0.9rem;
+  .sample-label {
+    color: #1565C0 !important; /* Dark blue for label */
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    margin-right: 8px !important;
+  }
+
+  code.sample-code {
+    background: #FFFFFF !important; /* White background for code */
+    padding: 6px 14px !important;
+    border-radius: 4px !important;
+    color: #0D47A1 !important; /* Dark blue for code text */
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+    border: 1px solid #90CAF9 !important; /* Light blue border */
+    font-family: 'Courier New', monospace !important;
+    letter-spacing: 0.5px !important;
   }
 }
 
@@ -1013,32 +1182,48 @@ export default {
       color: rgba(0, 0, 0, 0.54) !important;
     }
 
-    // Hint text - FORCE VISIBILITY
+    // Hint text - FORCE VISIBILITY WITH HIGH CONTRAST
     .q-field__bottom {
       display: block !important;
       visibility: visible !important;
       opacity: 1 !important;
-      min-height: 20px !important;
+      min-height: 18px !important;
       margin-top: 4px !important;
-      padding-top: 4px !important;
+      padding: 4px 0 !important;
       overflow: visible !important;
+      background-color: transparent !important;
+      border-radius: 0 !important;
+      border: none !important;
     }
 
     .q-field__messages {
-      color: #42A5F5 !important;
+      color: #02b7fe !important; /* Light blue text for maximum contrast */
       font-size: 12px !important;
       display: block !important;
       visibility: visible !important;
       opacity: 1 !important;
-      line-height: 1.4 !important;
+      line-height: 1.5 !important;
       min-height: 18px !important;
+      font-weight: 500 !important;
+      text-shadow: none !important;
+      background: transparent !important;
     }
 
     .q-field__messages div {
-      color: #42A5F5 !important;
+      color: #02b7fe !important; /* Light blue text */
       display: block !important;
       visibility: visible !important;
       opacity: 1 !important;
+    }
+
+    // Target all hint text content with light blue color
+    .q-field__messages > div,
+    .q-field__messages span,
+    .q-field__messages .custom-hint-text {
+      color: #02b7fe !important; /* Light blue for high contrast */
+      -webkit-text-fill-color: #02b7fe !important;
+      background: transparent !important;
+      text-shadow: none !important;
     }
   }
 
@@ -1105,34 +1290,50 @@ export default {
     color: rgba(0, 0, 0, 0.54) !important;
   }
 
-  // FORCE HINT TEXT VISIBILITY - GLOBAL STYLES
+  // FORCE HINT TEXT VISIBILITY - GLOBAL STYLES WITH HIGH CONTRAST
   .q-field__bottom {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
-    min-height: 20px !important;
+    min-height: 18px !important;
     margin-top: 4px !important;
-    padding-top: 4px !important;
+    padding: 4px 0 !important;
     overflow: visible !important;
     max-height: none !important;
+    background-color: transparent !important;
+    border-radius: 0 !important;
+    border: none !important;
   }
 
   .q-field__messages {
-    color: #42A5F5 !important;
+    color: #02b7fe !important; /* Light blue text for maximum contrast */
     font-size: 12px !important;
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
-    line-height: 1.4 !important;
+    line-height: 1.5 !important;
     min-height: 18px !important;
     max-height: none !important;
+    font-weight: 500 !important;
+    text-shadow: none !important;
+    background: transparent !important;
   }
 
   .q-field__messages div {
-    color: #42A5F5 !important;
+    color: #02b7fe !important; /* Light blue text */
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
+  }
+
+  // Target all hint text elements with light blue color
+  .q-field__bottom .q-field__messages > div,
+  .q-field__bottom .q-field__messages span,
+  .q-field__bottom .q-field__messages .custom-hint-text {
+    color: #02b7fe !important; /* Light blue for high contrast */
+    -webkit-text-fill-color: #02b7fe !important;
+    background: transparent !important;
+    text-shadow: none !important;
   }
 
   // For textarea and multiline inputs
@@ -1155,14 +1356,176 @@ export default {
 
   // Custom hint text - global styles
   .custom-hint-text {
-    color: #42A5F5 !important;
+    color: #02b7fe !important; /* Light blue for high contrast */
     font-size: 12px !important;
-    line-height: 1.4 !important;
+    line-height: 1.5 !important;
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
     padding-top: 2px !important;
-    font-weight: normal !important;
+    font-weight: 500 !important;
+    -webkit-text-fill-color: #02b7fe !important;
+    text-shadow: none !important;
   }
+}
+
+/* Dark mode overrides */
+body.body--dark {
+  .sample-value-banner {
+    background: transparent !important; /* Transparent background */
+    border-left: 4px solid #02b7fe !important;
+  }
+
+  .sample-value-content {
+    color: #02b7fe !important; /* Light blue text in dark mode */
+
+    .sample-label {
+      color: #02b7fe !important; /* Light blue for label */
+    }
+
+    code.sample-code {
+      background: transparent !important; /* Transparent background for code */
+      color: #02b7fe !important; /* Light blue text */
+      border: 1px solid #02b7fe !important; /* Light blue border */
+    }
+  }
+
+  .transform-editor-modal {
+    .q-field__bottom {
+      background-color: transparent !important; /* Transparent background */
+      border: none !important;
+    }
+
+    .q-field__messages,
+    .q-field__messages div,
+    .custom-hint-text {
+      color: #02b7fe !important; /* Light blue text for dark mode */
+      -webkit-text-fill-color: #02b7fe !important;
+      text-shadow: none !important;
+    }
+  }
+}
+
+/* ULTRA-AGGRESSIVE OVERRIDES - Penetrate all component encapsulation */
+.transform-editor-modal ::v-deep .q-banner,
+.transform-editor-modal .q-banner,
+::v-deep .transform-editor-modal .q-banner {
+  background: transparent !important;
+  border-left: 4px solid #02b7fe !important;
+  padding: 12px 16px !important;
+}
+
+.transform-editor-modal ::v-deep .sample-value-banner,
+.transform-editor-modal .sample-value-banner,
+::v-deep .transform-editor-modal .sample-value-banner {
+  background: transparent !important;
+  border-left: 4px solid #02b7fe !important;
+  padding: 12px 16px !important;
+}
+
+.transform-editor-modal ::v-deep .sample-value-content,
+.transform-editor-modal .sample-value-content,
+::v-deep .transform-editor-modal .sample-value-content,
+.transform-editor-modal ::v-deep .sample-value-content *,
+.transform-editor-modal .sample-value-content * {
+  color: #02b7fe !important;
+  background: transparent !important;
+}
+
+.transform-editor-modal ::v-deep .sample-label,
+.transform-editor-modal .sample-label,
+::v-deep .transform-editor-modal .sample-label {
+  color: #02b7fe !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+.transform-editor-modal ::v-deep code.sample-code,
+.transform-editor-modal code.sample-code,
+::v-deep .transform-editor-modal code.sample-code {
+  background: transparent !important;
+  color: #02b7fe !important;
+  padding: 6px 14px !important;
+  border-radius: 4px !important;
+  border: 1px solid #02b7fe !important;
+  font-family: 'Courier New', monospace !important;
+}
+
+/* Force hint text visibility with maximum specificity */
+.transform-editor-modal ::v-deep .q-field__bottom,
+.transform-editor-modal .q-field__bottom,
+::v-deep .transform-editor-modal .q-field__bottom,
+.q-dialog .transform-editor-modal .q-field__bottom {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-height: 18px !important;
+  margin-top: 4px !important;
+  padding: 4px 0 !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+.transform-editor-modal ::v-deep .q-field__messages,
+.transform-editor-modal .q-field__messages,
+::v-deep .transform-editor-modal .q-field__messages,
+.q-dialog .transform-editor-modal .q-field__messages,
+.transform-editor-modal ::v-deep .q-field__messages *,
+.transform-editor-modal .q-field__messages * {
+  color: #02b7fe !important;
+  -webkit-text-fill-color: #02b7fe !important;
+  font-size: 12px !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+  background: transparent !important;
+}
+
+.transform-editor-modal ::v-deep .custom-hint-text,
+.transform-editor-modal .custom-hint-text,
+::v-deep .transform-editor-modal .custom-hint-text {
+  color: #02b7fe !important;
+  -webkit-text-fill-color: #02b7fe !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Dark mode with maximum specificity */
+body.body--dark .transform-editor-modal ::v-deep .sample-value-banner,
+body.body--dark .transform-editor-modal .sample-value-banner {
+  background: transparent !important;
+  border-left: 4px solid #02b7fe !important;
+}
+
+body.body--dark .transform-editor-modal ::v-deep .sample-value-content *,
+body.body--dark .transform-editor-modal .sample-value-content * {
+  color: #02b7fe !important;
+}
+
+body.body--dark .transform-editor-modal ::v-deep code.sample-code,
+body.body--dark .transform-editor-modal code.sample-code {
+  background: transparent !important;
+  color: #02b7fe !important;
+  border: 1px solid #02b7fe !important;
+}
+
+body.body--dark .transform-editor-modal ::v-deep .q-field__bottom,
+body.body--dark .transform-editor-modal .q-field__bottom {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+body.body--dark .transform-editor-modal ::v-deep .q-field__messages,
+body.body--dark .transform-editor-modal .q-field__messages,
+body.body--dark .transform-editor-modal ::v-deep .q-field__messages *,
+body.body--dark .transform-editor-modal .q-field__messages *,
+body.body--dark .transform-editor-modal ::v-deep .custom-hint-text,
+body.body--dark .transform-editor-modal .custom-hint-text {
+  color: #02b7fe !important;
+  -webkit-text-fill-color: #02b7fe !important;
+  background: transparent !important;
 }
 </style>

@@ -24,7 +24,7 @@ export const OPERATION_TYPES = {
   EPOCHSECS_TO_DATETIME: 'EpochSectoDateTime',
   EPOCHMILLIS_TO_DATETIME: 'EpochMilliSectoDateTime',
   EPOCHMICROS_TO_DATETIME: 'EpochMicroSectoDateTime',
-  LOCAL_DATETIME: 'LocalDateTime',
+  CONVERT_DATETIME: 'convertdatetime',
   ADD: 'Add',
   SUBTRACT: 'Subtract',
   MULTIPLY: 'Multiply',
@@ -54,7 +54,7 @@ export const COMMON_REGEX_PATTERNS = [
   },
   {
     name: 'Email Address',
-    pattern: '/(?<email>[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})/',
+    pattern: '/(?<email>[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2}[a-zA-Z]*)/',
     captureGroup: 'email',
     example: 'Extracts "user@example.com" from text',
     description: 'Standard email address format',
@@ -78,7 +78,7 @@ export const COMMON_REGEX_PATTERNS = [
   },
   {
     name: 'Hostname/Domain',
-    pattern: '/(?<hostname>[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+)/',
+    pattern: '/(?<hostname>[a-zA-Z0-9\\-]+\\.[a-zA-Z0-9.\\-]+)/',
     captureGroup: 'hostname',
     example: 'Extracts "server.example.com"',
     description: 'Fully qualified domain name',
@@ -86,7 +86,7 @@ export const COMMON_REGEX_PATTERNS = [
   },
   {
     name: 'Port Number',
-    pattern: '/(?<port>\\b[0-9]{1,5}\\b)/',
+    pattern: '/(?<port>\\b[0-9]{1}[0-9]{0}[0-9]{0}[0-9]{0}[0-9]{0}\\b)/',
     captureGroup: 'port',
     example: 'Extracts "8080" from text or "192.168.1.1:8080"',
     description: 'Port number (1-65535)',
@@ -102,7 +102,7 @@ export const COMMON_REGEX_PATTERNS = [
   },
   {
     name: 'Linux File Path',
-    pattern: '/(?<linuxPath>/[^\\s]+)/',
+    pattern: '/(?<linuxPath>\\/[^\\s]+)/',
     captureGroup: 'linuxPath',
     example: 'Extracts "/var/log/syslog"',
     description: 'Linux absolute file path',
@@ -118,7 +118,7 @@ export const COMMON_REGEX_PATTERNS = [
   },
   {
     name: 'UUID',
-    pattern: '/(?<uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/',
+    pattern: '/(?<uuid>[0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12})/',
     captureGroup: 'uuid',
     example: 'Extracts "550e8400-e29b-41d4-a716-446655440000"',
     description: 'UUID/GUID in standard format',
@@ -128,7 +128,7 @@ export const COMMON_REGEX_PATTERNS = [
     name: 'Error/Exception',
     pattern: '/(?<errorType>Error|Exception|Fault):\\s*(?<errorMessage>.+)/',
     captureGroup: 'errorMessage',
-    example: 'Extracts error message after "Error:", "Exception:", or "Fault:"',
+    example: 'Extracts error message after "Error:" "Exception:" or "Fault:"',
     description: 'Error message extraction',
     sampleValue: 'Error: File not found at specified path'
   }
@@ -417,13 +417,13 @@ export const OPERATION_METADATA = {
     requiresParameters: ['format'],
     category: 'Date/Time'
   },
-  [OPERATION_TYPES.LOCAL_DATETIME]: {
-    label: 'LocalDateTime - Get local date-time',
+  [OPERATION_TYPES.CONVERT_DATETIME]: {
+    label: 'Convert To DateTime Format - Convert to date-time from string',
     icon: 'today',
-    description: 'Gets the local date-time',
-    example: 'Current time → "2023-11-20 10:30:45"',
+    description: 'Converts to date-time from string',
+    example: '"2023-11-20T10:30:45Z" → 2023-11-20 10:30:45',
     color: '#ff5722',
-    requiresParameters: ['format'],
+    requiresParameters: [],
     category: 'Date/Time'
   },
   // Number Operations

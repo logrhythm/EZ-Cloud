@@ -117,7 +117,7 @@ export default {
         OPERATION_TYPES.EPOCHSECS_TO_DATETIME,
         OPERATION_TYPES.EPOCHMILLIS_TO_DATETIME,
         OPERATION_TYPES.EPOCHMICROS_TO_DATETIME,
-        OPERATION_TYPES.LOCAL_DATETIME
+        OPERATION_TYPES.CONVERT_DATETIME
       ].includes(value)
     },
     fieldPath: {
@@ -139,7 +139,7 @@ export default {
         case OPERATION_TYPES.EPOCHSECS_TO_DATETIME: return 'Epoch Seconds to DateTime'
         case OPERATION_TYPES.EPOCHMILLIS_TO_DATETIME: return 'Epoch MilliSeconds to DateTime'
         case OPERATION_TYPES.EPOCHMICROS_TO_DATETIME: return 'Epoch MicroSeconds to DateTime'
-        case OPERATION_TYPES.LOCAL_DATETIME: return 'LocalDateTime'
+        case OPERATION_TYPES.CONVERT_DATETIME: return 'Convert To DateTime Format'
         default: return ''
       }
     })
@@ -149,7 +149,7 @@ export default {
         case OPERATION_TYPES.EPOCHSECS_TO_DATETIME: return 'Converts Unix timestamp (seconds) to DateTime'
         case OPERATION_TYPES.EPOCHMILLIS_TO_DATETIME: return 'Converts Unix timestamp (milliseconds) to DateTime'
         case OPERATION_TYPES.EPOCHMICROS_TO_DATETIME: return 'Converts Unix timestamp (microseconds) to DateTime'
-        case OPERATION_TYPES.LOCAL_DATETIME: return 'Gets the local date-time'
+        case OPERATION_TYPES.CONVERT_DATETIME: return 'Converts date-time from one format to another'
         default: return ''
       }
     })
@@ -159,7 +159,7 @@ export default {
         case OPERATION_TYPES.EPOCHSECS_TO_DATETIME: return 'Converts Unix epoch time in seconds to a human-readable datetime format using system defaults.'
         case OPERATION_TYPES.EPOCHMILLIS_TO_DATETIME: return 'Converts Unix epoch time in milliseconds to a human-readable datetime format using system defaults.'
         case OPERATION_TYPES.EPOCHMICROS_TO_DATETIME: return 'Converts Unix epoch time in microseconds to a human-readable datetime format using system defaults.'
-        case OPERATION_TYPES.LOCAL_DATETIME: return 'Captures the current system date and time in a standard format.'
+        case OPERATION_TYPES.CONVERT_DATETIME: return 'Converts date-time from one format to another with the specified output format.'
         default: return ''
       }
     })
@@ -179,7 +179,7 @@ export default {
 
     // Display input for preview
     const displayInput = computed(() => {
-      if (props.operationType === OPERATION_TYPES.LOCAL_DATETIME) {
+      if (props.operationType === OPERATION_TYPES.CONVERT_DATETIME) {
         return 'Current time (now)'
       }
 
@@ -206,7 +206,7 @@ export default {
     // Convert timestamp to datetime string
     const convertToDateTime = (value) => {
       try {
-        if (props.operationType === OPERATION_TYPES.LOCAL_DATETIME) {
+        if (props.operationType === OPERATION_TYPES.CONVERT_DATETIME) {
           return formatDate(new Date())
         }
 

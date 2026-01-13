@@ -350,11 +350,11 @@
                 </template>
               </q-radio>
 
-              <!-- LocalDateTime Option -->
+              <!-- convertdatetime Option -->
               <q-radio
-                v-if="showOperation(OPERATION_TYPES.LOCAL_DATETIME)"
+                v-if="showOperation(OPERATION_TYPES.CONVERT_DATETIME)"
                 v-model="tempOperationType"
-                :val="OPERATION_TYPES.LOCAL_DATETIME"
+                :val="OPERATION_TYPES.CONVERT_DATETIME"
                 class="operation-radio"
                 color="primary"
                 @update:model-value="handleOperationTypeChange"
@@ -362,14 +362,14 @@
                 <template #default>
                   <div class="operation-option">
                     <div class="option-header">
-                      <q-icon name="today" size="24px" :color="getOperationColor(OPERATION_TYPES.LOCAL_DATETIME)" />
+                      <q-icon name="today" size="24px" :color="getOperationColor(OPERATION_TYPES.CONVERT_DATETIME)" />
                       <div class="option-text">
-                        <div class="option-label">LocalDateTime - Get local date-time</div>
+                        <div class="option-label">convertdatetime - Convert date-time format</div>
                         <div class="option-description">
-                          Gets the local date-time
+                          Converts date-time from one format to another
                         </div>
                         <div class="option-example">
-                          Example: Current time → "2023-11-20 10:30:45"
+                          Example: "2023-11-20T10:30:45Z" → "2023-11-20 10:30:45"
                         </div>
                       </div>
                     </div>
@@ -537,6 +537,8 @@
                     :field-path="fieldPath"
                     :sample-value="sampleValue"
                     :operation-type="tempOperationType"
+                    :available-fields="availableFields"
+                    :sample-data="sampleData"
                     @input="handleParametersChange"
                   />
 
@@ -554,7 +556,7 @@
                     v-if="tempOperationType === OPERATION_TYPES.EPOCHSECS_TO_DATETIME ||
                           tempOperationType === OPERATION_TYPES.EPOCHMILLIS_TO_DATETIME ||
                           tempOperationType === OPERATION_TYPES.EPOCHMICROS_TO_DATETIME ||
-                          tempOperationType === OPERATION_TYPES.LOCAL_DATETIME"
+                          tempOperationType === OPERATION_TYPES.CONVERT_DATETIME"
                     v-model="tempOperationParameters"
                     :field-path="fieldPath"
                     :sample-value="sampleValue"
@@ -663,10 +665,26 @@ export default {
     sampleValue: {
       type: [String, Number, Object, Array],
       default: null
+    },
+    availableFields: {
+      type: Array,
+      default: () => []
+    },
+    sampleData: {
+      type: Object,
+      default: null
     }
   },
   emits: ['update:modelValue', 'input'],
   setup (props, { emit }) {
+    console.log('[OperationSelector] Setup called with props:', {
+      fieldPath: props.fieldPath,
+      availableFieldsLength: props.availableFields?.length,
+      availableFields: props.availableFields,
+      hasSampleData: !!props.sampleData,
+      sampleData: props.sampleData
+    })
+
     const showOperationDialog = ref(false)
     const selectedOperationType = ref(props.modelValue?.type || null)
     const operationParameters = ref(props.modelValue?.parameters || {})
@@ -742,7 +760,9 @@ export default {
         }
       } else if (newType === OPERATION_TYPES.CONCAT) {
         tempOperationParameters.value = {
-          values: ['', '']
+          pairs: [
+            { value: props.fieldPath || '', delimiter: '' }
+          ]
         }
       } else if (newType === OPERATION_TYPES.CONCATARRAY) {
         tempOperationParameters.value = {
@@ -754,10 +774,9 @@ export default {
       } else if (newType === OPERATION_TYPES.EPOCHSECS_TO_DATETIME ||
                  newType === OPERATION_TYPES.EPOCHMILLIS_TO_DATETIME ||
                  newType === OPERATION_TYPES.EPOCHMICROS_TO_DATETIME ||
-                 newType === OPERATION_TYPES.LOCAL_DATETIME) {
-        tempOperationParameters.value = {
-          format: 'yyyy-MM-dd HH:mm:ss.SSS'
-        }
+                 newType === OPERATION_TYPES.CONVERT_DATETIME) {
+        // DateTime operations have no parameters
+        tempOperationParameters.value = {}
       } else if (newType === OPERATION_TYPES.ADD ||
                  newType === OPERATION_TYPES.SUBTRACT ||
                  newType === OPERATION_TYPES.MULTIPLY ||

@@ -30,14 +30,14 @@ const CONSTANTS = {
     "'": '&#039;',
     '/': '&#x2F;'
   },
-  // LogRhythm schema field categories for validation
+  // LogRhythm schema field categories for validation - WHITELIST ONLY
   LR_FIELD_CATEGORIES: {
-    TEMPORAL: ['normal_msg_date', 'log_date', 'time', 'minutes', 'seconds', 'milliseconds'],
-    NETWORK: ['srcip', 'srcport', 'dstip', 'dstport', 'src_mac', 'dst_mac', 'sip', 'dip', 'snatip', 'dnatip', 'smac', 'dmac', 'sinterface', 'dinterface', 'sname', 'dname', 'sport', 'dport', 'snatport', 'dnatport', 'protnum', 'protname', 'kilobytesin', 'kilobytesout', 'kilobytes', 'packetsin', 'packetsout'],
-    IDENTITY: ['login', 'user', 'domain', 'sender', 'recipient', 'account', 'group', 'domainimpacted', 'domainorigin'],
-    PROCESS: ['process_id', 'process_name', 'parent_process_id', 'parent_process_name', 'command', 'process', 'processid', 'parentprocessid', 'parentprocessname', 'parentprocesspath'],
-    SECURITY: ['hash', 'subject', 'object', 'action', 'status', 'result_code', 'objectname', 'objecttype', 'policy', 'result', 'reason', 'sessiontype', 'severity', 'threatname', 'threatid', 'cve', 'serialnumber'],
-    CONTENT: ['url', 'user_agent', 'session_id', 'vendor_msg_id', 'message', 'useragent', 'responsecode', 'version', 'session', 'vendorinfo', 'original_message'],
+    TEMPORAL: ['normal_msg_date', 'time', 'minutes', 'seconds', 'milliseconds'],
+    NETWORK: ['sip', 'dip', 'snatip', 'dnatip', 'smac', 'dmac', 'sinterface', 'dinterface', 'sname', 'dname', 'sport', 'dport', 'snatport', 'dnatport', 'protnum', 'protname', 'kilobytesin', 'kilobytesout', 'kilobytes', 'packetsin', 'packetsout'],
+    IDENTITY: ['login', 'sender', 'recipient', 'account', 'group', 'domainimpacted', 'domainorigin'],
+    PROCESS: ['command', 'process', 'processid', 'parentprocessid', 'parentprocessname', 'parentprocesspath'],
+    SECURITY: ['hash', 'subject', 'object', 'action', 'status', 'objectname', 'objecttype', 'policy', 'result', 'reason', 'sessiontype', 'severity', 'threatname', 'threatid', 'cve', 'serialnumber'],
+    CONTENT: ['url', 'useragent', 'responsecode', 'version', 'session', 'vendorinfo'],
     DEVICE: ['beatname', 'device_type', 'fullyqualifiedbeatname', 'vmid'],
     METRICS: ['quantity', 'amount', 'size', 'rate'],
     CUSTOM: ['augmented', 'tag1', 'tag2', 'tag3', 'tag4', 'tag5', 'tag6', 'tag7', 'tag8', 'tag9', 'tag10']
@@ -766,6 +766,7 @@ export class MappingService {
 
   /**
    * Get recommended LogRhythm field based on JSON path and data type
+   * ONLY recommends fields from the approved whitelist
    *
    * @param {string} jsonPath - The JSON path
    * @param {string} dataType - The data type
@@ -780,67 +781,185 @@ export class MappingService {
 
       const lowerPath = jsonPath.toLowerCase()
 
-      // DateTime field recommendations
+      // DateTime field recommendations (WHITELIST)
       if (dataType === 'DateTime' || lowerPath.includes('time') || lowerPath.includes('date')) {
-        return 'normal_msg_date'
+        return 'normal_msg_date' // time also available but normal_msg_date is primary
       }
 
-      // Network field recommendations
-      if (lowerPath.includes('sourceip') || lowerPath.includes('src_ip') || lowerPath.includes('source.ip')) {
-        return 'srcip'
+      // Network field recommendations - IP (WHITELIST)
+      if (lowerPath.includes('sourceip') || lowerPath.includes('src_ip') || lowerPath.includes('source.ip') || lowerPath.includes('sip')) {
+        return 'sip'
       }
-      if (lowerPath.includes('destip') || lowerPath.includes('dst_ip') || lowerPath.includes('destination.ip')) {
-        return 'dstip'
-      }
-      if (lowerPath.includes('sourceport') || lowerPath.includes('src_port') || lowerPath.includes('source.port')) {
-        return 'srcport'
-      }
-      if (lowerPath.includes('destport') || lowerPath.includes('dst_port') || lowerPath.includes('destination.port')) {
-        return 'dstport'
+      if (lowerPath.includes('destip') || lowerPath.includes('dst_ip') || lowerPath.includes('destination.ip') || lowerPath.includes('dip')) {
+        return 'dip'
       }
 
-      // Identity field recommendations
+      // Network field recommendations - Ports (WHITELIST)
+      if (lowerPath.includes('sourceport') || lowerPath.includes('src_port') || lowerPath.includes('source.port') || lowerPath.includes('sport')) {
+        return 'sport'
+      }
+      if (lowerPath.includes('destport') || lowerPath.includes('dst_port') || lowerPath.includes('destination.port') || lowerPath.includes('dport')) {
+        return 'dport'
+      }
+
+      // Network field recommendations - MAC (WHITELIST)
+      if (lowerPath.includes('src_mac') || lowerPath.includes('srcmac') || lowerPath.includes('smac')) {
+        return 'smac'
+      }
+      if (lowerPath.includes('dst_mac') || lowerPath.includes('dstmac') || lowerPath.includes('dmac')) {
+        return 'dmac'
+      }
+
+      // Identity field recommendations (WHITELIST)
       if (lowerPath.includes('user') || lowerPath.includes('username') || lowerPath.includes('login')) {
         return 'login'
       }
-      if (lowerPath.includes('domain')) {
-        return 'domain'
+      if (lowerPath.includes('account')) {
+        return 'account'
+      }
+      if (lowerPath.includes('sender') || lowerPath.includes('from')) {
+        return 'sender'
+      }
+      if (lowerPath.includes('recipient') || lowerPath.includes('to')) {
+        return 'recipient'
+      }
+      if (lowerPath.includes('group')) {
+        return 'group'
       }
 
-      // Process field recommendations
+      // Process field recommendations (WHITELIST)
       if (lowerPath.includes('processid') || lowerPath.includes('pid')) {
-        return 'process_id'
+        return 'processid'
+      }
+      if (lowerPath.includes('parentprocessid') || lowerPath.includes('ppid')) {
+        return 'parentprocessid'
+      }
+      if (lowerPath.includes('parentprocessname')) {
+        return 'parentprocessname'
+      }
+      if (lowerPath.includes('parentprocesspath')) {
+        return 'parentprocesspath'
       }
       if (lowerPath.includes('processname') || lowerPath.includes('process.name')) {
-        return 'process_name'
+        return 'process'
       }
       if (lowerPath.includes('command') || lowerPath.includes('cmdline')) {
         return 'command'
       }
 
-      // Security field recommendations
+      // Security field recommendations (WHITELIST)
       if (lowerPath.includes('hash') || lowerPath.includes('md5') || lowerPath.includes('sha')) {
         return 'hash'
+      }
+      if (lowerPath.includes('subject')) {
+        return 'subject'
+      }
+      if (lowerPath.includes('object') && !lowerPath.includes('name') && !lowerPath.includes('type')) {
+        return 'object'
+      }
+      if (lowerPath.includes('objectname')) {
+        return 'objectname'
+      }
+      if (lowerPath.includes('objecttype')) {
+        return 'objecttype'
       }
       if (lowerPath.includes('action')) {
         return 'action'
       }
-      if (lowerPath.includes('status') || lowerPath.includes('result')) {
+      if (lowerPath.includes('status')) {
         return 'status'
       }
+      if (lowerPath.includes('result') && !lowerPath.includes('code')) {
+        return 'result'
+      }
+      if (lowerPath.includes('reason')) {
+        return 'reason'
+      }
+      if (lowerPath.includes('policy')) {
+        return 'policy'
+      }
+      if (lowerPath.includes('sessiontype')) {
+        return 'sessiontype'
+      }
+      if (lowerPath.includes('severity')) {
+        return 'severity'
+      }
+      if (lowerPath.includes('threatname')) {
+        return 'threatname'
+      }
+      if (lowerPath.includes('threatid')) {
+        return 'threatid'
+      }
+      if (lowerPath.includes('cve')) {
+        return 'cve'
+      }
+      if (lowerPath.includes('serialnumber') || lowerPath.includes('serial')) {
+        return 'serialnumber'
+      }
 
-      // Content field recommendations
+      // Content field recommendations (WHITELIST)
       if (lowerPath.includes('url')) {
         return 'url'
       }
       if (lowerPath.includes('useragent') || lowerPath.includes('user_agent')) {
-        return 'user_agent'
+        return 'useragent'
       }
-      if (lowerPath.includes('session') || lowerPath.includes('sessionid')) {
-        return 'session_id'
+      if (lowerPath.includes('responsecode') || lowerPath.includes('response_code')) {
+        return 'responsecode'
       }
-      if (lowerPath.includes('message') || lowerPath.includes('msg')) {
-        return 'message'
+      if (lowerPath.includes('version')) {
+        return 'version'
+      }
+      if (lowerPath.includes('session') && !lowerPath.includes('type')) {
+        return 'session'
+      }
+      if (lowerPath.includes('vendorinfo') || lowerPath.includes('vendor')) {
+        return 'vendorinfo'
+      }
+
+      // Device field recommendations (WHITELIST)
+      if (lowerPath.includes('beatname')) {
+        return 'beatname'
+      }
+      if (lowerPath.includes('device_type') || lowerPath.includes('devicetype')) {
+        return 'device_type'
+      }
+      if (lowerPath.includes('fullyqualifiedbeatname')) {
+        return 'fullyqualifiedbeatname'
+      }
+      if (lowerPath.includes('vmid')) {
+        return 'vmid'
+      }
+
+      // Metrics field recommendations (WHITELIST)
+      if (lowerPath.includes('quantity')) {
+        return 'quantity'
+      }
+      if (lowerPath.includes('amount')) {
+        return 'amount'
+      }
+      if (lowerPath.includes('size')) {
+        return 'size'
+      }
+      if (lowerPath.includes('rate')) {
+        return 'rate'
+      }
+
+      // Network metrics (WHITELIST)
+      if (lowerPath.includes('kilobytesin') || lowerPath.includes('bytes_in')) {
+        return 'kilobytesin'
+      }
+      if (lowerPath.includes('kilobytesout') || lowerPath.includes('bytes_out')) {
+        return 'kilobytesout'
+      }
+      if (lowerPath.includes('kilobytes') && !lowerPath.includes('in') && !lowerPath.includes('out')) {
+        return 'kilobytes'
+      }
+      if (lowerPath.includes('packetsin') || lowerPath.includes('packets_in')) {
+        return 'packetsin'
+      }
+      if (lowerPath.includes('packetsout') || lowerPath.includes('packets_out')) {
+        return 'packetsout'
       }
 
       return null

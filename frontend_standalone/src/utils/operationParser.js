@@ -8,6 +8,62 @@
 import { OPERATION_TYPES, OPERATION_METADATA } from '../constants/operations'
 
 /**
+ * Helper function to parse comma-separated arguments from a function call
+ * Handles quoted strings correctly
+ * @param {string} argsStr - The arguments string (e.g., "$.path, ',', $.path2, '-'")
+ * @returns {Array<string>} Array of parsed arguments
+ */
+function parseArgumentList (argsStr) {
+  const args = []
+  let current = ''
+  let inQuotes = false
+  let quoteChar = null
+  let escapeNext = false
+
+  for (let i = 0; i < argsStr.length; i++) {
+    const char = argsStr[i]
+
+    if (escapeNext) {
+      current += char
+      escapeNext = false
+      continue
+    }
+
+    if (char === '\\') {
+      escapeNext = true
+      current += char
+      continue
+    }
+
+    if ((char === '"' || char === "'") && !inQuotes) {
+      inQuotes = true
+      quoteChar = char
+      continue
+    }
+
+    if (char === quoteChar && inQuotes) {
+      inQuotes = false
+      quoteChar = null
+      continue
+    }
+
+    if (char === ',' && !inQuotes) {
+      args.push(current.trim())
+      current = ''
+      continue
+    }
+
+    current += char
+  }
+
+  if (current.trim()) {
+    args.push(current.trim())
+  }
+
+  return args
+}
+
+/**
  * Parse operation syntax from inputRule string
  * Extracts operation type, field path, and parameters
  *
@@ -120,28 +176,59 @@ export function parseOperationFromInputRule (inputRule) {
     }
 
     // Check for Concat operation (case-insensitive)
-    // Format: Concat(['value1', 'value2', ...])
-    const concatMatch = trimmed.match(/^Concat\(\[(.*)\]\)$/i)
-    if (concatMatch) {
+    // NEW FORMAT: concat(value1, delimiter1, value2, delimiter2, ...)
+    // OLD FORMAT: Concat(['value1', 'value2', ...]) - for backward compatibility
+
+    // Try new format first
+    const concatNewMatch = trimmed.match(/^concat\((.*)\)$/i)
+    if (concatNewMatch) {
       try {
-        // Parse the values inside the array (CSV of quoted strings)
-        const valuesStr = concatMatch[1].trim()
-        const valueMatches = valuesStr.match(/(['"])(.*?)\1(?:,\s*)?/g) || []
-        const values = valueMatches.map(v => v.replace(/^['"]|['"],?$/g, ''))
-        return {
-          type: OPERATION_TYPES.CONCAT,
-          fieldPath: null,
-          parameters: {
-            values: values
+        const argsStr = concatNewMatch[1].trim()
+
+        // Check if it's the old array format
+        if (argsStr.startsWith('[') && argsStr.endsWith(']')) {
+          // Old format - migrate to new format
+          const arrayContent = argsStr.slice(1, -1).trim()
+          const valueMatches = arrayContent.match(/(['"])(.*?)\1(?:,\s*)?/g) || []
+          const values = valueMatches.map(v => v.replace(/^['"]|['"],?$/g, ''))
+
+          // Convert to pairs with empty delimiters
+          const pairs = values.map(value => ({
+            value: value,
+            delimiter: ''
+          }))
+
+          return {
+            type: OPERATION_TYPES.CONCAT,
+            fieldPath: null,
+            parameters: { pairs }
           }
         }
+
+        // New format - parse alternating value/delimiter pattern
+        const args = parseArgumentList(argsStr)
+
+        // Split into value-delimiter pairs
+        const pairs = []
+        for (let i = 0; i < args.length; i += 2) {
+          pairs.push({
+            value: args[i],
+            delimiter: args[i + 1] || '' // Delimiter optional for last item
+          })
+        }
+
+        return {
+          type: OPERATION_TYPES.CONCAT,
+          fieldPath: null,
+          parameters: { pairs }
+        }
       } catch (e) {
-        console.error('[OperationParser] Error parsing Concat values:', e)
+        console.error('[OperationParser] Error parsing Concat arguments:', e)
         return {
           type: OPERATION_TYPES.CONCAT,
           fieldPath: null,
           parameters: {
-            values: []
+            pairs: [{ value: '', delimiter: '' }]
           }
         }
       }
@@ -208,15 +295,13 @@ export function parseOperationFromInputRule (inputRule) {
       }
     }
 
-    // Format: LocalDateTime('format')
-    const localDateTimeMatch = trimmed.match(/^LocalDateTime\(['"](.+?)['"]?\)$/i)
-    if (localDateTimeMatch) {
+    // Format: convertdatetime($.path)
+    const convertDateTimeMatch = trimmed.match(/^convertdatetime\((.*?)\)$/i)
+    if (convertDateTimeMatch) {
       return {
-        type: OPERATION_TYPES.LOCAL_DATETIME,
-        fieldPath: null,
-        parameters: {
-          format: localDateTimeMatch[1]
-        }
+        type: OPERATION_TYPES.CONVERT_DATETIME,
+        fieldPath: convertDateTimeMatch[1].trim(),
+        parameters: {}
       }
     }
 
@@ -341,19 +426,19 @@ export function buildOperationSyntax (type, fieldPath, parameters = {}) {
         }
         // Format: Regex($.jsonPath, /pattern/, captureGroupName)
         // Pattern already includes slashes, captureGroup can be string or number
-        return `Regex(${fieldPath}, ${parameters.pattern}, ${parameters.captureGroup})`
+        return `Regex(${fieldPath},${parameters.pattern},${parameters.captureGroup})`
 
       case OPERATION_TYPES.LOOKUP:
         if (!parameters.tableName) {
           return null
         }
-        return `LookUp(${parameters.tableName}, ${fieldPath})`
+        return `LookUp(${parameters.tableName},${fieldPath})`
 
       case OPERATION_TYPES.LOOKUP_STARTS_WITH:
         if (!parameters.tableName) {
           return null
         }
-        return `LookUpStartsWith(${parameters.tableName}, ${fieldPath})`
+        return `LookUpStartsWith(${parameters.tableName},${fieldPath})`
 
       case OPERATION_TYPES.PREFIX: {
         if (parameters.prefix === undefined || parameters.prefix === null) {
@@ -366,28 +451,46 @@ export function buildOperationSyntax (type, fieldPath, parameters = {}) {
 
       // String Operations
       case OPERATION_TYPES.ISIP:
-        return `IsIP(${fieldPath})`
+        return `IsIP(${fieldPath},true)`
 
       case OPERATION_TYPES.SPLIT:
         if (parameters.delimiter === undefined || parameters.delimiter === null || parameters.index === undefined || parameters.index === null) {
           return null
         }
-        return `SPLIT(${fieldPath}, '${parameters.delimiter}', ${parameters.index})`
+        return `SPLIT(${fieldPath},'${parameters.delimiter}',${parameters.index})`
 
       // Array Operations
       case OPERATION_TYPES.CONCAT: {
-        if (!parameters.values || !Array.isArray(parameters.values)) {
+        // New format: concat(value1, delimiter1, value2, delimiter2, ...)
+        if (!parameters.pairs || !Array.isArray(parameters.pairs) || parameters.pairs.length === 0) {
           return null
         }
-        const quotedValues = parameters.values.map(v => `'${v.replace(/'/g, "\\'")}'`)
-        return `Concat([${quotedValues.join(', ')}])`
+
+        const args = []
+        parameters.pairs.forEach((pair, index) => {
+          // Add value (quote if static text, don't quote if JSON path)
+          const value = pair.value.startsWith('$.')
+            ? pair.value
+            : `'${pair.value.replace(/'/g, "\\'")}'`
+          args.push(value)
+
+          // Add delimiter (always quote it, even if empty)
+          // Always add delimiter argument for all pairs, including the last one
+          // If delimiter is empty, output '' as an explicit argument
+          const delimiter = pair.delimiter !== undefined && pair.delimiter !== null
+            ? pair.delimiter
+            : ''
+          args.push(`'${delimiter.replace(/'/g, "\\'")}'`)
+        })
+
+        return `concat(${args.join(',')})`
       }
 
       case OPERATION_TYPES.CONCATARRAY: {
         if (parameters.delimiter === undefined || parameters.delimiter === null) {
           return null
         }
-        return `ConcatArray(${fieldPath}, '${parameters.delimiter}')`
+        return `ConcatArray(${fieldPath},'${parameters.delimiter}')`
       }
 
       // Type Conversion
@@ -396,35 +499,35 @@ export function buildOperationSyntax (type, fieldPath, parameters = {}) {
 
       // DateTime Operations (parameter-free)
       case OPERATION_TYPES.EPOCHSECS_TO_DATETIME:
-        return `EpochSectoDateTime(${fieldPath})`
+        return `epochsectodatetime(${fieldPath})`
 
       case OPERATION_TYPES.EPOCHMILLIS_TO_DATETIME:
-        return `EpochMilliSectoDateTime(${fieldPath})`
+        return `epochmillitodatetime(${fieldPath})`
 
       case OPERATION_TYPES.EPOCHMICROS_TO_DATETIME:
-        return `EpochMicroSectoDateTime(${fieldPath})`
+        return `epochmicrotodatetime(${fieldPath})`
 
-      case OPERATION_TYPES.LOCAL_DATETIME:
-        return `LocalDateTime(${fieldPath})`
+      case OPERATION_TYPES.CONVERT_DATETIME:
+        return `convertdatetime(${fieldPath})`
 
       // Math Operations
       case OPERATION_TYPES.ADD:
         if (parameters.value === undefined) {
           return null
         }
-        return `add(${fieldPath}, ${parameters.value})`
+        return `add(${fieldPath},${parameters.value})`
 
       case OPERATION_TYPES.SUBTRACT:
         if (parameters.value === undefined) {
           return null
         }
-        return `subtract(${fieldPath}, ${parameters.value})`
+        return `subtract(${fieldPath},${parameters.value})`
 
       case OPERATION_TYPES.MULTIPLY:
         if (parameters.value === undefined) {
           return null
         }
-        return `multiply(${fieldPath}, ${parameters.value})`
+        return `multiply(${fieldPath},${parameters.value})`
 
       case OPERATION_TYPES.DIVIDE:
         if (parameters.value === undefined) {
@@ -434,7 +537,7 @@ export function buildOperationSyntax (type, fieldPath, parameters = {}) {
           console.warn('[OperationParser] divide operation cannot have a value of 0 (division by zero)')
           return null
         }
-        return `divide(${fieldPath}, ${parameters.value})`
+        return `divide(${fieldPath},${parameters.value})`
 
       default:
         console.warn(`[OperationParser] Unknown operation type: ${type} (normalized: ${normalizedType})`)
