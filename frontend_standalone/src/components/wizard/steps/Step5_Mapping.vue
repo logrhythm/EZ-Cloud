@@ -566,7 +566,10 @@
                             </q-chip>
                           </q-item-label>
                           <q-item-label caption>
-                            Category: {{ scope.opt.category }}
+                            {{ scope.opt.description || 'Category: ' + scope.opt.category }}
+                          </q-item-label>
+                          <q-item-label caption class="text-blue-grey-6">
+                            Tag: &lt;{{ scope.opt.tag }}&gt;
                           </q-item-label>
                         </q-item-section>
                       </q-item>
@@ -1460,23 +1463,34 @@ export default {
      */
     handleOperationChanged (newOperationConfig) {
       try {
+        console.log('[Step5_Mapping] handleOperationChanged called with newOperationConfig:', JSON.parse(JSON.stringify(newOperationConfig)))
+        console.log('[Step5_Mapping] originalFieldPath:', this.originalFieldPath)
+
         // Update local operation config
         this.operationConfig = { ...newOperationConfig }
 
         // Rebuild inputRule with operation syntax
         if (newOperationConfig.type) {
+          console.log('[Step5_Mapping] Building operation syntax with type:', newOperationConfig.type)
+          console.log('[Step5_Mapping] Building operation syntax with fieldPath:', this.originalFieldPath)
+          console.log('[Step5_Mapping] Building operation syntax with parameters:', JSON.parse(JSON.stringify(newOperationConfig.parameters)))
+
           const operationSyntax = buildOperationSyntax(
             newOperationConfig.type,
             this.originalFieldPath,
             newOperationConfig.parameters
           )
 
+          console.log('[Step5_Mapping] Built operation syntax:', operationSyntax)
+
           // If buildOperationSyntax returns null (incomplete params), fallback to original path
           const finalInputRule = operationSyntax || this.originalFieldPath
 
+          console.log('[Step5_Mapping] Setting inputRule to:', finalInputRule)
           this.mappingForm.inputRule = finalInputRule
         } else {
           // No operation, use plain field path
+          console.log('[Step5_Mapping] No operation type, using original field path')
           this.mappingForm.inputRule = this.originalFieldPath
         }
       } catch (error) {

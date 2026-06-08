@@ -562,15 +562,28 @@ export default {
     },
 
     validateStep () {
-      // Step 6 is optional, so always valid
-      // But we can add validation for individual SubTransforms
-      const isValid = this.localSkipSubTransforms || this.subTransformsList.length > 0
+      const errors = []
 
-      // Emit step-valid without arguments - WizardContainer will use currentStep by default
-      if (isValid) {
+      // If not skipped, validate subtransforms
+      if (!this.localSkipSubTransforms) {
+        // Check if at least one subtransform exists
+        if (this.subTransformsList.length === 0) {
+          errors.push('At least one SubTransform is required, or enable "Skip SubTransforms"')
+        } else {
+          // Check each subtransform has at least one transform
+          this.subTransformsList.forEach((subtransform, index) => {
+            if (!subtransform.transforms || subtransform.transforms.length === 0) {
+              errors.push(`SubTransform "${subtransform.name || `#${index + 1}`}" must have at least one transform`)
+            }
+          })
+        }
+      }
+
+      // Emit step validation result
+      if (errors.length === 0) {
         this.$emit('step-valid')
       } else {
-        this.$emit('step-invalid', ['At least one SubTransform is required, or enable "Skip SubTransforms"'])
+        this.$emit('step-invalid', errors)
       }
     },
 
@@ -955,15 +968,30 @@ export default {
       try {
         this.isSaving = true
 
-        // Validate step (Step 6 is optional - valid if skipped or has at least one SubTransform)
-        const isValid = this.localSkipSubTransforms || this.subTransformsList.length > 0
+        const errors = []
 
-        if (!isValid) {
+        // Validate step
+        if (!this.localSkipSubTransforms) {
+          // Check if at least one subtransform exists
+          if (this.subTransformsList.length === 0) {
+            errors.push('At least one SubTransform is required, or enable "Skip SubTransforms"')
+          } else {
+            // Check each subtransform has at least one transform
+            this.subTransformsList.forEach((subtransform, index) => {
+              if (!subtransform.transforms || subtransform.transforms.length === 0) {
+                errors.push(`SubTransform "${subtransform.name || `#${index + 1}`}" must have at least one transform`)
+              }
+            })
+          }
+        }
+
+        if (errors.length > 0) {
           this.$q.notify({
             type: 'warning',
-            message: 'Please add at least one SubTransform or enable "Skip SubTransforms"',
+            message: 'Validation failed',
+            caption: errors.join('; '),
             position: 'top',
-            timeout: 3000
+            timeout: 5000
           })
           this.isSaving = false
           return

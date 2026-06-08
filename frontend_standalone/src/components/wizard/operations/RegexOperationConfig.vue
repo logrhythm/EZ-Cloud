@@ -22,6 +22,7 @@
           :error="!isPatternValid && localPattern !== ''"
           :error-message="patternError"
           @update:model-value="debouncedValidate"
+          @blur="validatePattern"
         >
           <template #prepend>
             <q-icon name="code" size="xs" />
@@ -49,26 +50,27 @@
       <!-- Capture Group Input -->
       <div class="form-group">
         <label class="field-label">
-          Capture Group *
-          <q-tooltip>Which group to extract (0 = entire match, 1+ = numeric groups, or named group)</q-tooltip>
+          Capture Group Name *
+          <q-tooltip>Enter the name of the capture group to extract</q-tooltip>
         </label>
         <q-input
           v-model="localCaptureGroup"
           outlined
           dense
           type="text"
-          placeholder="1"
+          placeholder="Enter group name (e.g., username, ipAddress)"
           class="capture-input"
           :error="captureGroupError !== null"
           :error-message="captureGroupError"
           @update:model-value="onCaptureGroupChange"
+          @blur="validatePattern"
         >
           <template #prepend>
-            <q-icon name="filter_1" size="xs" />
+            <q-icon name="label" size="xs" />
           </template>
         </q-input>
         <div class="field-hint">
-          Enter group number (e.g., 0, 1, 2) or named group (e.g., 'username', 'groupName')
+          Enter named capture group (e.g., 'username', 'ipAddress', 'errorMessage')
         </div>
       </div>
 
@@ -193,7 +195,7 @@ export default {
       type: Object,
       default: () => ({
         pattern: '',
-        captureGroup: 1
+        captureGroup: ''
       })
     },
     fieldPath: {
@@ -209,7 +211,7 @@ export default {
   setup (props, { emit }) {
     const localPattern = ref(props.modelValue?.pattern || '')
     // Support both numeric and alphanumeric capture groups
-    const localCaptureGroup = ref(props.modelValue?.captureGroup !== undefined ? String(props.modelValue.captureGroup) : '1')
+    const localCaptureGroup = ref(props.modelValue?.captureGroup !== undefined ? String(props.modelValue.captureGroup) : '')
     const selectedPreset = ref(null)
     const selectRef = ref(null) // Reference to the q-select component
     const isPatternValid = ref(false)
@@ -261,17 +263,25 @@ export default {
           }
         }
 
-        // Handle capture groups
+        // Handle named capture groups only
         let output
-        if (typeof captureGroup === 'number') {
-          output = match[captureGroup] !== undefined ? match[captureGroup] : match[0]
-        } else if (typeof captureGroup === 'string') {
+        if (typeof captureGroup === 'string' && captureGroup !== '') {
           // Named capture group
-          output = match.groups && match.groups[captureGroup]
-            ? match.groups[captureGroup]
-            : match[0]
+          if (match.groups && match.groups[captureGroup]) {
+            output = match.groups[captureGroup]
+          } else {
+            return {
+              isValid: false,
+              output: 'No match',
+              error: `Named capture group '${captureGroup}' not found in match result`
+            }
+          }
         } else {
-          output = match[0]
+          return {
+            isValid: false,
+            output: 'N/A',
+            error: 'Capture group name is required'
+          }
         }
 
         return {
@@ -295,11 +305,8 @@ export default {
         return []
       }
 
-      // Convert captureGroup to number if it's a numeric string
-      let captureGroupValue = localCaptureGroup.value
-      if (typeof captureGroupValue === 'string' && /^\d+$/.test(captureGroupValue)) {
-        captureGroupValue = parseInt(captureGroupValue, 10)
-      }
+      // Use capture group as-is (named group string)
+      const captureGroupValue = localCaptureGroup.value
 
       return sampleValuesArray.value.map((value, idx) => {
         const result = applyRegex(String(value), localPattern.value, captureGroupValue)
@@ -326,20 +333,49 @@ export default {
     const patternOptions = computed(() => COMMON_REGEX_PATTERNS)
 
     const operationSyntax = computed(() => {
-      if (!localPattern.value || !isPatternValid.value) return ''
+      console.log('[RegexOperationConfig] Computing operation syntax:', {
+        localPattern: localPattern.value,
+        isPatternValid: isPatternValid.value,
+        localCaptureGroup: localCaptureGroup.value,
+        fieldPath: props.fieldPath
+      })
+
+      if (!localPattern.value) {
+        console.log('[RegexOperationConfig] No pattern - returning empty')
+        return ''
+      }
+
+      if (!isPatternValid.value) {
+        console.log('[RegexOperationConfig] Pattern invalid - returning empty')
+        return ''
+      }
+
       // Ensure captureGroup is a valid number before building syntax
-      if (localCaptureGroup.value === undefined || localCaptureGroup.value === null) return ''
-      return buildOperationSyntax('REGEX', props.fieldPath, {
+      if (localCaptureGroup.value === undefined || localCaptureGroup.value === null) {
+        console.log('[RegexOperationConfig] CaptureGroup is undefined/null - returning empty')
+        return ''
+      }
+
+      const syntax = buildOperationSyntax('REGEX', props.fieldPath, {
         pattern: localPattern.value,
         captureGroup: localCaptureGroup.value
       })
+
+      console.log('[RegexOperationConfig] Built syntax:', syntax)
+      return syntax || ''
     })
 
     // Methods
     const validatePattern = () => {
+      console.log('[RegexOperationConfig] validatePattern called:', {
+        localPattern: localPattern.value,
+        localCaptureGroup: localCaptureGroup.value
+      })
+
       if (!localPattern.value) {
         isPatternValid.value = false
         patternError.value = null
+        console.log('[RegexOperationConfig] Pattern is empty')
         return
       }
 
@@ -347,9 +383,19 @@ export default {
       isPatternValid.value = validation.isValid
       patternError.value = validation.error
 
+      console.log('[RegexOperationConfig] Pattern validation result:', {
+        isValid: validation.isValid,
+        error: validation.error
+      })
+
       // Also validate capture group if pattern is valid
       if (isPatternValid.value) {
         const captureValidation = validateCaptureGroup(localPattern.value, localCaptureGroup.value)
+        console.log('[RegexOperationConfig] Capture group validation:', {
+          isValid: captureValidation.isValid,
+          error: captureValidation.error
+        })
+
         if (!captureValidation.isValid) {
           captureGroupError.value = captureValidation.error
         } else {
@@ -424,27 +470,33 @@ export default {
 
     const emitChange = () => {
       try {
-        // Convert to number if it's a numeric string, otherwise keep as string
-        let captureGroupValue = localCaptureGroup.value
-        if (typeof captureGroupValue === 'string' && /^\d+$/.test(captureGroupValue)) {
-          captureGroupValue = parseInt(captureGroupValue, 10)
-        }
+        console.log('[RegexOperationConfig] emitChange called - current state:', {
+          localPattern: localPattern.value,
+          localCaptureGroup: localCaptureGroup.value,
+          isPatternValid: isPatternValid.value
+        })
 
+        // Always keep capture group as string (named group only)
         const payload = {
           pattern: localPattern.value,
-          captureGroup: captureGroupValue
+          captureGroup: localCaptureGroup.value
         }
 
+        console.log('[RegexOperationConfig] Emitting change payload:', {
+          pattern: payload.pattern,
+          captureGroup: payload.captureGroup,
+          patternLength: payload.pattern ? payload.pattern.length : 0
+        })
         emit('input', payload)
       } catch (error) {
         console.error('[RegexOperationConfig] Error emitting change:', error)
       }
     }
 
-    // Handle capture group changes - allow alphanumeric values
+    // Handle capture group changes - only allow alphanumeric named groups
     const onCaptureGroupChange = (value) => {
       if (value !== null && value !== undefined) {
-        // Trim whitespace but allow alphanumeric values
+        // Trim whitespace and keep as string (named group)
         localCaptureGroup.value = String(value).trim()
       }
       debouncedValidate()
@@ -452,9 +504,10 @@ export default {
 
     // Watch for external changes
     watch(() => props.modelValue, (newVal) => {
+      console.log('[RegexOperationConfig] modelValue changed:', newVal)
       if (newVal) {
         localPattern.value = newVal.pattern || ''
-        localCaptureGroup.value = newVal.captureGroup !== undefined ? String(newVal.captureGroup) : '1'
+        localCaptureGroup.value = newVal.captureGroup !== undefined ? String(newVal.captureGroup) : ''
         validatePattern()
       }
     }, { deep: true })
@@ -464,6 +517,30 @@ export default {
       if (newPreset) {
         insertPreset(newPreset)
       }
+    })
+
+    // Watch localPattern changes
+    watch(localPattern, (newVal, oldVal) => {
+      console.log('[RegexOperationConfig] localPattern changed:', {
+        old: oldVal,
+        new: newVal
+      })
+    })
+
+    // Watch localCaptureGroup changes
+    watch(localCaptureGroup, (newVal, oldVal) => {
+      console.log('[RegexOperationConfig] localCaptureGroup changed:', {
+        old: oldVal,
+        new: newVal
+      })
+    })
+
+    // Watch isPatternValid changes
+    watch(isPatternValid, (newVal, oldVal) => {
+      console.log('[RegexOperationConfig] isPatternValid changed:', {
+        old: oldVal,
+        new: newVal
+      })
     })
 
     // Initial validation
@@ -484,6 +561,7 @@ export default {
       isTestingOperation,
       patternOptions,
       operationSyntax,
+      validatePattern,
       debouncedValidate,
       insertPreset,
       onCaptureGroupChange,

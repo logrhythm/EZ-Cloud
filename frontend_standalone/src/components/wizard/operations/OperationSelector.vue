@@ -623,9 +623,9 @@
 </template>
 
 <script>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, getCurrentInstance } from 'vue'
 import { OPERATION_TYPES, OPERATION_METADATA } from '../../../constants/operations'
-import { getOperationTypeLabel, getOperationTypeColor } from '../../../utils/operationParser'
+import { getOperationTypeLabel, getOperationTypeColor, validateCaptureGroup, validateRegexPattern } from '../../../utils/operationParser'
 import RegexOperationConfig from './RegexOperationConfig.vue'
 // import LookupOperationConfig from './LookupOperationConfig.vue' // REMOVED - Lookup operations disabled
 // import PrefixOperationConfig from './PrefixOperationConfig.vue' // REMOVED - Prefix is a formatter, not an operation
@@ -677,6 +677,9 @@ export default {
   },
   emits: ['update:modelValue', 'input'],
   setup (props, { emit }) {
+    const { proxy } = getCurrentInstance()
+    const $q = proxy.$q
+
     console.log('[OperationSelector] Setup called with props:', {
       fieldPath: props.fieldPath,
       availableFieldsLength: props.availableFields?.length,
@@ -715,9 +718,94 @@ export default {
     }
 
     const applyOperation = () => {
+      console.log('[OperationSelector] applyOperation called')
+      console.log('[OperationSelector] tempOperationType:', tempOperationType.value)
+      console.log('[OperationSelector] tempOperationParameters:', JSON.parse(JSON.stringify(tempOperationParameters.value)))
+
+      // Validation: Check if regex operation has required fields
+      if (tempOperationType.value === OPERATION_TYPES.REGEX) {
+        const pattern = tempOperationParameters.value.pattern
+        const captureGroup = tempOperationParameters.value.captureGroup
+
+        // Check if pattern is empty or whitespace only
+        if (!pattern || pattern.trim() === '') {
+          $q.notify({
+            type: 'negative',
+            message: 'Regex pattern is required',
+            caption: 'Please enter a valid regex pattern before saving.',
+            position: 'top',
+            timeout: 3000
+          })
+          console.log('[OperationSelector] Validation failed: pattern is empty')
+          return
+        }
+
+        // Validate the regex pattern syntax
+        const patternValidation = validateRegexPattern(pattern)
+        if (!patternValidation.isValid) {
+          $q.notify({
+            type: 'negative',
+            message: 'Invalid regex pattern',
+            caption: patternValidation.error || 'Please enter a valid regex pattern.',
+            position: 'top',
+            timeout: 3000
+          })
+          console.log('[OperationSelector] Validation failed: invalid pattern:', patternValidation.error)
+          return
+        }
+
+        // Check if capture group is empty or whitespace only
+        if (captureGroup === undefined || captureGroup === null || String(captureGroup).trim() === '') {
+          $q.notify({
+            type: 'negative',
+            message: 'Capture group is required',
+            caption: 'Please enter a capture group (e.g., 1, 2, or a named group) before saving.',
+            position: 'top',
+            timeout: 3000
+          })
+          console.log('[OperationSelector] Validation failed: captureGroup is empty')
+          return
+        }
+
+        // Validate that the capture group exists in the pattern
+        const captureGroupValidation = validateCaptureGroup(pattern, captureGroup)
+        if (!captureGroupValidation.isValid) {
+          $q.notify({
+            type: 'negative',
+            message: 'Invalid capture group',
+            caption: captureGroupValidation.error || 'The specified capture group does not exist in the pattern.',
+            position: 'top',
+            timeout: 4000
+          })
+          console.log('[OperationSelector] Validation failed: invalid capture group:', captureGroupValidation.error)
+          return
+        }
+      }
+
+      // Validation: Check if split operation has required delimiter
+      if (tempOperationType.value === OPERATION_TYPES.SPLIT) {
+        const delimiter = tempOperationParameters.value.delimiter
+
+        // Check if delimiter is empty or whitespace only
+        if (!delimiter || delimiter.trim() === '') {
+          $q.notify({
+            type: 'negative',
+            message: 'Split delimiter is required',
+            caption: 'Please enter a delimiter (e.g., comma, space, pipe) before saving.',
+            position: 'top',
+            timeout: 3000
+          })
+          console.log('[OperationSelector] Validation failed: delimiter is empty')
+          return
+        }
+      }
+
       // Apply temporary changes to actual state
       selectedOperationType.value = tempOperationType.value
       operationParameters.value = tempOperationParameters.value
+
+      console.log('[OperationSelector] Applied - selectedOperationType:', selectedOperationType.value)
+      console.log('[OperationSelector] Applied - operationParameters:', JSON.parse(JSON.stringify(operationParameters.value)))
 
       emitChange()
       showOperationDialog.value = false
@@ -748,7 +836,7 @@ export default {
       if (newType === OPERATION_TYPES.REGEX) {
         tempOperationParameters.value = {
           pattern: '',
-          captureGroup: 1
+          captureGroup: ''
         }
       } else if (newType === OPERATION_TYPES.ISIP) {
         // IsIP has no parameters
@@ -788,8 +876,10 @@ export default {
     }
 
     const handleParametersChange = (newParams) => {
+      console.log('[OperationSelector] handleParametersChange called with:', JSON.parse(JSON.stringify(newParams)))
       // Update temporary parameters (dialog is open)
       tempOperationParameters.value = { ...newParams }
+      console.log('[OperationSelector] tempOperationParameters updated to:', JSON.parse(JSON.stringify(tempOperationParameters.value)))
     }
 
     const emitChange = () => {

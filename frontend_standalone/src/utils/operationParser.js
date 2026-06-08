@@ -407,26 +407,40 @@ function normalizeOperationType (type) {
  */
 export function buildOperationSyntax (type, fieldPath, parameters = {}) {
   try {
+    console.log('[OperationParser] buildOperationSyntax called:', {
+      type,
+      fieldPath,
+      parameters
+    })
+
     // Normalize operation type for case-insensitive comparison
     const normalizedType = normalizeOperationType(type)
 
+    console.log('[OperationParser] Normalized type:', normalizedType)
+
     // If no operation type, return field path as-is
     if (!normalizedType || normalizedType === OPERATION_TYPES.NONE) {
+      console.log('[OperationParser] No type or NONE type - returning fieldPath')
       return fieldPath || ''
     }
 
     switch (normalizedType) {
-      case OPERATION_TYPES.REGEX:
+      case OPERATION_TYPES.REGEX: {
         // Gracefully handle incomplete configuration - return null instead of throwing
         if (!parameters.pattern) {
+          console.log('[OperationParser] REGEX: No pattern - returning null')
           return null
         }
         if (parameters.captureGroup === undefined || parameters.captureGroup === null) {
+          console.log('[OperationParser] REGEX: No captureGroup - returning null')
           return null
         }
         // Format: Regex($.jsonPath, /pattern/, captureGroupName)
         // Pattern already includes slashes, captureGroup can be string or number
-        return `Regex(${fieldPath},${parameters.pattern},${parameters.captureGroup})`
+        const syntax = `Regex(${fieldPath},${parameters.pattern},${parameters.captureGroup})`
+        console.log('[OperationParser] REGEX: Built syntax:', syntax)
+        return syntax
+      }
 
       case OPERATION_TYPES.LOOKUP:
         if (!parameters.tableName) {
@@ -603,7 +617,10 @@ export function getOperationTypeColor (type) {
  */
 export function validateRegexPattern (pattern) {
   try {
+    console.log('[OperationParser] validateRegexPattern called:', pattern)
+
     if (!pattern || typeof pattern !== 'string') {
+      console.log('[OperationParser] Pattern is empty or not a string')
       return {
         isValid: false,
         error: 'Pattern is required'
@@ -612,6 +629,7 @@ export function validateRegexPattern (pattern) {
 
     // Check for proper regex format with slashes
     if (!pattern.startsWith('/') || !pattern.endsWith('/')) {
+      console.log('[OperationParser] Pattern does not start/end with /')
       return {
         isValid: false,
         error: 'Pattern must be enclosed in forward slashes (e.g., /pattern/)'
@@ -620,8 +638,10 @@ export function validateRegexPattern (pattern) {
 
     // Extract pattern without slashes
     const patternContent = pattern.slice(1, -1)
+    console.log('[OperationParser] Pattern content:', patternContent)
 
     if (!patternContent) {
+      console.log('[OperationParser] Pattern content is empty')
       return {
         isValid: false,
         error: 'Pattern cannot be empty'
@@ -633,11 +653,13 @@ export function validateRegexPattern (pattern) {
     // eslint-disable-next-line no-new
     new RegExp(patternContent)
 
+    console.log('[OperationParser] Pattern is valid')
     return {
       isValid: true,
       error: null
     }
   } catch (error) {
+    console.log('[OperationParser] Pattern validation error:', error.message)
     return {
       isValid: false,
       error: `Invalid regex syntax: ${error.message}`
@@ -655,78 +677,68 @@ export function validateRegexPattern (pattern) {
  */
 export function validateCaptureGroup (pattern, captureGroup) {
   try {
+    console.log('[OperationParser] validateCaptureGroup called:', {
+      pattern,
+      captureGroup,
+      captureGroupType: typeof captureGroup
+    })
+
     if (captureGroup === undefined || captureGroup === null || captureGroup === '') {
+      console.log('[OperationParser] Capture group is empty/undefined/null')
       return {
         isValid: false,
-        error: 'Capture group is required',
+        error: 'Capture group name is required',
         maxGroups: 0
       }
     }
 
-    // Check if it's a numeric capture group
+    // Check if it's a numeric capture group (NOT ALLOWED)
     const isNumeric = /^\d+$/.test(String(captureGroup))
+    console.log('[OperationParser] Is numeric capture group:', isNumeric)
 
     if (isNumeric) {
-      const numericGroup = parseInt(captureGroup, 10)
-
-      if (numericGroup < 0) {
-        return {
-          isValid: false,
-          error: 'Capture group cannot be negative',
-          maxGroups: 0
-        }
-      }
-
-      // Count capture groups in pattern
-      const patternContent = pattern.slice(1, -1)
-      const regex = new RegExp(patternContent)
-
-      // Test with a sample string to count groups
-      const testMatch = 'test sample string 123 456'.match(regex)
-      const maxGroups = testMatch ? testMatch.length - 1 : 0
-
-      if (numericGroup > maxGroups) {
-        return {
-          isValid: false,
-          error: `Capture group ${numericGroup} not found. Pattern has ${maxGroups} group(s).`,
-          maxGroups: maxGroups
-        }
-      }
-
+      console.log('[OperationParser] Numeric capture groups are not allowed')
       return {
-        isValid: true,
-        error: null,
-        maxGroups: maxGroups
+        isValid: false,
+        error: 'Only named capture groups are allowed. Please use a descriptive name (e.g., username, ipAddress).',
+        maxGroups: 0
       }
-    } else {
-      // Named capture group - validate format (alphanumeric and underscore)
-      const namedGroupPattern = /^[a-zA-Z_][a-zA-Z0-9_]*$/
+    }
 
-      if (!namedGroupPattern.test(String(captureGroup))) {
-        return {
-          isValid: false,
-          error: 'Named capture group must start with a letter or underscore and contain only alphanumeric characters and underscores',
-          maxGroups: 0
-        }
-      }
+    // Validate named capture group format (alphanumeric and underscore)
+    const namedGroupPattern = /^[a-zA-Z_][a-zA-Z0-9_]*$/
 
-      // Check if the named group exists in the pattern
-      const patternContent = pattern.slice(1, -1)
-      const namedGroupRegex = new RegExp(`\\(\\?<${captureGroup}>`)
-
-      if (!namedGroupRegex.test(patternContent)) {
-        return {
-          isValid: false,
-          error: `Named capture group '${captureGroup}' not found in pattern. Use syntax: (?<${captureGroup}>...)`,
-          maxGroups: 0
-        }
-      }
-
+    if (!namedGroupPattern.test(String(captureGroup))) {
       return {
-        isValid: true,
-        error: null,
-        maxGroups: 0 // Named groups don't have numeric max
+        isValid: false,
+        error: 'Named capture group must start with a letter or underscore and contain only alphanumeric characters and underscores',
+        maxGroups: 0
       }
+    }
+
+    // Check if the named group exists in the pattern
+    let patternContent = pattern
+
+    // Remove leading/trailing slashes if present
+    if (pattern.startsWith('/') && pattern.lastIndexOf('/') > 0) {
+      const lastSlash = pattern.lastIndexOf('/')
+      patternContent = pattern.substring(1, lastSlash)
+    }
+
+    const namedGroupRegex = new RegExp(`\\(\\?<${captureGroup}>`)
+
+    if (!namedGroupRegex.test(patternContent)) {
+      return {
+        isValid: false,
+        error: `Named capture group '${captureGroup}' not found in pattern. Use syntax: (?<${captureGroup}>...)`,
+        maxGroups: 0
+      }
+    }
+
+    return {
+      isValid: true,
+      error: null,
+      maxGroups: 0 // Named groups don't have numeric max
     }
   } catch (error) {
     return {

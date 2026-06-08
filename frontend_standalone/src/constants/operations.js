@@ -36,6 +36,7 @@ export const OPERATION_TYPES = {
  * @type {Array<Object>}
  */
 export const COMMON_REGEX_PATTERNS = [
+  // .NET-compatible named group syntax: (?<groupName>...)
   {
     name: 'IP Address (IPv4)',
     pattern: '/(?<ipAddress>\\d+\\.\\d+\\.\\d+\\.\\d+)/',
@@ -62,7 +63,7 @@ export const COMMON_REGEX_PATTERNS = [
   },
   {
     name: 'URL',
-    pattern: '/(?<url>https?:\\/\\/[^\\s]+)/',
+    pattern: '/(?<url>https?://[^\\s"\'\\\\]+)/',
     captureGroup: 'url',
     example: 'Extracts URLs starting with http:// or https://',
     description: 'HTTP/HTTPS URL',
@@ -86,7 +87,7 @@ export const COMMON_REGEX_PATTERNS = [
   },
   {
     name: 'Port Number',
-    pattern: '/(?<port>\\b[0-9]{1}[0-9]{0}[0-9]{0}[0-9]{0}[0-9]{0}\\b)/',
+    pattern: '/(?<port>\\b[0-9]{1,5}\\b)/',
     captureGroup: 'port',
     example: 'Extracts "8080" from text or "192.168.1.1:8080"',
     description: 'Port number (1-65535)',
@@ -96,13 +97,13 @@ export const COMMON_REGEX_PATTERNS = [
     name: 'Windows File Path',
     pattern: '/(?<windowsPath>[A-Za-z]:\\\\[^\\s]+)/',
     captureGroup: 'windowsPath',
-    example: 'Extracts "C:\\\\Users\\\\Admin\\\\file.txt"',
+    example: 'Extracts "C:\\Users\\Admin\\file.txt"',
     description: 'Windows absolute file path',
     sampleValue: 'File saved to C:\\Users\\Admin\\Documents\\report.pdf successfully'
   },
   {
     name: 'Linux File Path',
-    pattern: '/(?<linuxPath>\\/[^\\s]+)/',
+    pattern: '/(?<linuxPath>/[^\\s]+)/',
     captureGroup: 'linuxPath',
     example: 'Extracts "/var/log/syslog"',
     description: 'Linux absolute file path',

@@ -158,7 +158,10 @@
                           </q-chip>
                         </q-item-label>
                         <q-item-label caption>
-                          Category: {{ scope.opt.category }}
+                          {{ scope.opt.description || 'Category: ' + scope.opt.category }}
+                        </q-item-label>
+                        <q-item-label caption class="text-blue-grey-6">
+                          Tag: &lt;{{ scope.opt.tag }}&gt;
                         </q-item-label>
                       </q-item-section>
                     </q-item>

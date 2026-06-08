@@ -41,6 +41,222 @@ const CONSTANTS = {
     DEVICE: ['beatname', 'device_type', 'fullyqualifiedbeatname', 'vmid'],
     METRICS: ['quantity', 'amount', 'size', 'rate'],
     CUSTOM: ['augmented', 'tag1', 'tag2', 'tag3', 'tag4', 'tag5', 'tag6', 'tag7', 'tag8', 'tag9', 'tag10']
+  },
+  // LogRhythm schema field descriptions from MPE Rule Builder Parsing Guide
+  LR_FIELD_DESCRIPTIONS: {
+    // Temporal fields
+    normal_msg_date: 'Timestamp when the log was generated or received, corrected to UTC',
+    time: 'Time component of the log timestamp',
+    minutes: 'Minutes component of elapsed time',
+    seconds: 'Seconds component of elapsed time',
+    milliseconds: 'Milliseconds component of elapsed time',
+
+    // Network fields - IP addresses
+    sip: 'The IP address from which activity originated (i.e., attacker, client)',
+    dip: 'The IP address that was affected by the activity (i.e., target, server)',
+    snatip: 'The Network Address Translated (NAT) IP address from which activity originated',
+    dnatip: 'The Network Address Translated (NAT) IP address that was affected by the activity',
+
+    // Network fields - MAC addresses
+    smac: 'The MAC address from which activity originated (i.e., attacker, client)',
+    dmac: 'The MAC address that was affected by the activity (i.e., target, server)',
+
+    // Network fields - Interfaces
+    sinterface: 'The network port/interface from which the activity originated',
+    dinterface: 'The network port/interface that was affected by the activity',
+
+    // Network fields - Hostnames
+    sname: 'The hostname from which activity originated (i.e., attacker, client)',
+    dname: 'The hostname that was affected by the activity (i.e., target, server)',
+
+    // Network fields - Ports
+    sport: 'The port from which activity originated (i.e., client, attacker port)',
+    dport: 'The port to which activity was targeted (i.e., server, target port)',
+    snatport: 'The NAT port from which activity originated',
+    dnatport: 'The NAT port to which activity was targeted',
+
+    // Network fields - Protocol
+    protnum: 'The IANA protocol number',
+    protname: 'The IANA protocol name',
+
+    // Network fields - Bytes/Packets
+    kilobytesin: 'Kilobytes received by impacted host',
+    kilobytesout: 'Kilobytes sent by impacted host',
+    kilobytes: 'Total kilobytes in session',
+    packetsin: 'Packets received by impacted host',
+    packetsout: 'Packets sent by impacted host',
+
+    // Identity fields
+    login: 'The originating user or system account of the activity reported in the log',
+    sender: 'The sender of an email or the "caller number" for a VOIP log',
+    recipient: 'The recipient of an email or the dialed number for a VOIP log',
+    account: 'The user or system account impacted by activity reported in the log',
+    group: 'The user group or role impacted by activity reported in the log',
+    domainimpacted: 'The Windows or DNS domain name referenced or impacted by activity',
+    domainorigin: 'The Windows or DNS domain where the logged activity originated',
+
+    // Process fields
+    command: 'The specific command executed that has been recorded in the log message',
+    process: 'System or application process described by the log message',
+    processid: 'Numeric ID value for a process',
+    parentprocessid: 'The parent process ID of a system or application process',
+    parentprocessname: 'The parent process name of a system or application process',
+    parentprocesspath: 'The full path of a parent process',
+
+    // Security fields
+    hash: 'The hash value reported in the log (MD5, SHA1, SHA256)',
+    subject: 'The subject of an email or the general category of the log',
+    object: 'The resource (i.e., file) referenced or impacted by activity',
+    action: 'Field for "what was done" as described in the log',
+    status: 'The vendor\'s perspective on the state of a system, process, or entity',
+    objectname: 'The descriptive name of the object',
+    objecttype: 'A category type for the object (e.g., file, image, pdf, etc.)',
+    policy: 'The specific policy referenced (i.e., Firewall, Proxy) in a log message',
+    result: 'The outcome of a command operation or action',
+    reason: 'The justification for an action or result when not an explicit policy',
+    sessiontype: 'The type of session described in the log (e.g., console, CLI, web)',
+    severity: 'The vendor\'s view of the severity of the log',
+    threatname: 'The name of a threat described in the log message (e.g., malware, exploit)',
+    threatid: 'ID number or unique identifier of a threat',
+    cve: 'CVE ID (i.e., CVE-1999-0003) from vulnerability scan data',
+    serialnumber: 'The hardware or software serial number in a log message',
+
+    // Content fields
+    url: 'The URL referenced or impacted by activity reported in the log',
+    useragent: 'The User Agent string from web server logs',
+    responsecode: 'The explicit and well-defined response code for an action or command',
+    version: 'The software or hardware device version',
+    session: 'Unique user or system session identifier',
+    vendorinfo: 'Description of a specific vendor log or event identifier',
+
+    // Device fields
+    beatname: 'The name of the log collector beat',
+    device_type: 'The type of device that generated the log',
+    fullyqualifiedbeatname: 'The fully qualified name of the log collector beat',
+    vmid: 'Specific vendor message ID for the log used to describe a type of event',
+
+    // Metrics fields
+    quantity: 'A numeric count of something',
+    amount: 'The qualitative description of quantity (percentage or relative numbers)',
+    size: 'Numeric description of capacity (e.g., disk size)',
+    rate: 'Defines a number of something per unit of time',
+
+    // Custom/Map tags
+    augmented: 'Custom augmented field for additional data',
+    tag1: 'Map tag for identifying data in the log for sub-rules (does not parse to metadata)',
+    tag2: 'Map tag for identifying data in the log for sub-rules (does not parse to metadata)',
+    tag3: 'Map tag for identifying data in the log for sub-rules (does not parse to metadata)',
+    tag4: 'Map tag for identifying data in the log for sub-rules (does not parse to metadata)',
+    tag5: 'Map tag for identifying data in the log for sub-rules (does not parse to metadata)',
+    tag6: 'Map tag for identifying data in the log for sub-rules (does not parse to metadata)',
+    tag7: 'Map tag for identifying data in the log for sub-rules (does not parse to metadata)',
+    tag8: 'Map tag for identifying data in the log for sub-rules (does not parse to metadata)',
+    tag9: 'Map tag for identifying data in the log for sub-rules (does not parse to metadata)',
+    tag10: 'Map tag for identifying data in the log for sub-rules (does not parse to metadata)'
+  },
+  // Field name to Tag mapping from MPE Rule Builder Parsing Guide
+  // Field (human-readable label) -> Tag (actual parsing tag used in policy)
+  LR_FIELD_TO_TAG: {
+    // Device fields
+    'Beat Name': 'beatname',
+    'Device Type': 'device_type',
+    'Fully Qualified Beat Name': 'fullyqualifiedbeatname',
+
+    // Temporal fields
+    Time: 'time',
+    Minutes: 'minutes',
+    Seconds: 'seconds',
+    Milliseconds: 'milliseconds',
+
+    // Application Tab fields
+    Object: 'object',
+    'Object Name': 'objectname',
+    'Object Type': 'objecttype',
+    Hash: 'hash',
+    Policy: 'policy',
+    Result: 'result',
+    URL: 'url',
+    'User Agent': 'useragent',
+    'Response Code': 'responsecode',
+    Subject: 'subject',
+    Version: 'version',
+    Command: 'command',
+    Reason: 'reason',
+    Action: 'action',
+    Status: 'status',
+    'Session Type': 'sessiontype',
+    'Process Name': 'process',
+    'Process ID': 'processid',
+    'Parent Process ID': 'parentprocessid',
+    'Parent Process Name': 'parentprocessname',
+    'Parent Process Path': 'parentprocesspath',
+
+    // Metrics fields
+    Quantity: 'quantity',
+    Amount: 'amount',
+    Size: 'size',
+    Rate: 'rate',
+
+    // Content fields
+    Session: 'session',
+
+    // Kbytes/Packets fields
+    'Host (Impacted) KBytes Rcvd': 'kilobytesin',
+    'Host (Impacted) KBytes Sent': 'kilobytesout',
+    'Host (Impacted) Kbytes Total': 'kilobytes',
+    'Host (Impacted) Packets Rcvd': 'packetsin',
+    'Host (Impacted) Packets Sent': 'packetsout',
+
+    // Classification fields
+    Severity: 'severity',
+    'Vendor Message ID': 'vmid',
+    'Vendor Info': 'vendorinfo',
+    'Threat Name': 'threatname',
+    'Threat ID': 'threatid',
+    CVE: 'cve',
+
+    // Host Tab fields
+    'MAC Address (Origin)': 'smac',
+    'MAC Address (Impacted)': 'dmac',
+    'Interface (Origin)': 'sinterface',
+    'Interface (Impacted)': 'dinterface',
+    'IP Address (Origin)': 'sip',
+    'IP Address (Impacted)': 'dip',
+    'NAT IP Address (Origin)': 'snatip',
+    'NAT IP Address (Impacted)': 'dnatip',
+    'Hostname (Origin)': 'sname',
+    'Hostname (Impacted)': 'dname',
+    'Serial Number': 'serialnumber',
+
+    // Identity Tab fields
+    'User (Origin)': 'login',
+    'User (Impacted)': 'account',
+    Sender: 'sender',
+    Recipient: 'recipient',
+    Group: 'group',
+
+    // Network Tab fields
+    'Domain (Impacted)': 'domainimpacted',
+    'Domain (Origin)': 'domainorigin',
+    'Protocol Number': 'protnum',
+    'Protocol Name': 'protname',
+    'TCP/UDP Port (Origin)': 'sport',
+    'TCP/UDP Port (Impacted)': 'dport',
+    'NAT TCP/UDP Port (Origin)': 'snatport',
+    'NAT TCP/UDP Port (Impacted)': 'dnatport',
+
+    // Custom/Map tags
+    Augmented: 'augmented',
+    'Tag 1': 'tag1',
+    'Tag 2': 'tag2',
+    'Tag 3': 'tag3',
+    'Tag 4': 'tag4',
+    'Tag 5': 'tag5',
+    'Tag 6': 'tag6',
+    'Tag 7': 'tag7',
+    'Tag 8': 'tag8',
+    'Tag 9': 'tag9',
+    'Tag 10': 'tag10'
   }
 }
 
@@ -742,23 +958,34 @@ export class MappingService {
 
   /**
    * Get common LogRhythm schema fields grouped by category
+   * Uses Field names as labels (human-readable) and Tags as values (for policy mapping)
    *
-   * @returns {Array<Object>} Array of field options with label, value, category
+   * @returns {Array<Object>} Array of field options with label (Field), value (Tag), tag, category, description
    */
   static getLRSchemaFields () {
     const fields = []
 
-    for (const [category, fieldNames] of Object.entries(CONSTANTS.LR_FIELD_CATEGORIES)) {
-      for (const field of fieldNames) {
+    // Build reverse mapping: tag -> field name
+    const tagToField = {}
+    for (const [fieldName, tag] of Object.entries(CONSTANTS.LR_FIELD_TO_TAG)) {
+      tagToField[tag] = fieldName
+    }
+
+    for (const [category, tagNames] of Object.entries(CONSTANTS.LR_FIELD_CATEGORIES)) {
+      for (const tag of tagNames) {
+        // Get the human-readable field name, fallback to tag if not found
+        const fieldName = tagToField[tag] || tag
         fields.push({
-          label: field,
-          value: field,
-          category: category.toLowerCase()
+          label: fieldName, // Human-readable field name shown in dropdown
+          value: tag, // Tag used for actual mapping in policy
+          tag: tag, // Expose tag separately for display
+          category: category.toLowerCase(),
+          description: CONSTANTS.LR_FIELD_DESCRIPTIONS[tag] || ''
         })
       }
     }
 
-    // Sort alphabetically
+    // Sort alphabetically by label (field name)
     fields.sort((a, b) => a.label.localeCompare(b.label))
 
     return fields
